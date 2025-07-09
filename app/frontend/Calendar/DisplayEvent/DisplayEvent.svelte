@@ -13,8 +13,8 @@
     </PersonsAutocomplete>
   </vbox>
   <grid class="location">
-    <Checkbox bind:checked={event.isOnline} label={$t`Online`} disabled />
-    <input type="url" bind:value={event.onlineMeetingURL} disabled />
+    <Checkbox checked={event.isOnline} label={$t`Online`} disabled />
+    <input type="url" value={event.onlineMeetingURL} disabled />
     <hbox class="buttons">
       <Button
         label={$t`Copy`}
@@ -36,7 +36,7 @@
         />
     </hbox>
     <Checkbox checked={!!event.location} label={$t`In Presence`} disabled />
-    <input type="url" bind:value={event.location} disabled />
+    <input type="url" value={event.location} disabled />
   </grid>
   <hbox>{$t`When`}</hbox>
   <grid class="time">
@@ -51,37 +51,42 @@
 
     <label for="duration">{$t`Duration`}</label>
     <hbox>
-      <input class="duration" type="number" bind:value={durationInUnit} disabled />
-      <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} disabled />
+      <input class="duration" type="number" value={durationInUnit} disabled />
+      <DurationUnit durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} disabled />
     </hbox>
   </grid>
-  <Checkbox label={$t`All day`} bind:checked={event.allDay} disabled />
+  <Checkbox label={$t`All day`} checked={event.allDay} disabled />
   <Checkbox label={$t`Repeated`} checked={event.recurrenceCase != RecurrenceCase.Normal} disabled />
   {#if event.recurrenceCase != RecurrenceCase.Normal}
     <hbox>
-      <label>{`Every`}</label>&nbsp;<input class="auto" type="number" disabled bind:value={interval} />&nbsp;
-      <select bind:value={frequency} disabled>
-        <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
-        <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
-        <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
-        <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+      <hbox>{$t`Every *=> Every 2 weeks`}</hbox>
+      &nbsp;
+      {#if interval > 1}
+        <hbox class="value">{interval}</hbox>
+        &nbsp;
+      {/if}
+      <select value={frequency} disabled>
+        <option value={Frequency.Daily}>{$plural(interval, { one: 'day', other: 'days' })}</option>
+        <option value={Frequency.Weekly}>{$plural(interval, { one: 'week', other: 'weeks' })}</option>
+        <option value={Frequency.Monthly}>{$plural(interval, { one: 'month', other: 'months' })}</option>
+        <option value={Frequency.Yearly}>{$plural(interval, { one: 'year', other: 'years' })}</option>
       </select>
     </hbox>
     {#if frequency == Frequency.Yearly }
-      <RadioGroup bind:group={week} items={yearWeekOptions} disabled />
+      <RadioGroup value={week} items={yearWeekOptions} disabled />
     {:else if frequency == Frequency.Monthly }
-      <RadioGroup bind:group={week} items={monthWeekOptions} disabled />
+      <RadioGroup value={week} items={monthWeekOptions} disabled />
     {:else if frequency == Frequency.Weekly }
-      <CheckboxGroup size="sm" radius="xl" bind:group={weekdays} label={$t`On days`} items={weekdayOptions} disabled />
+      <CheckboxGroup size="sm" radius="xl" group={weekdays} label={$t`On days`} items={weekdayOptions} disabled />
     {/if}
     <hbox>
-      <Radio label="{$t`Forever`}" bind:group={end} value="none" disabled />
+      <Radio label="{$t`Forever`}" group={end} value="none" disabled />
     </hbox>
     <hbox>
-      <Radio class="inline" label="{$t`For `}" bind:group={end} value="count" disabled />&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={count} disabled> end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
+      <Radio class="inline" label="{$t`For `}" group={end} value="count" disabled />&nbsp;<input class="auto" type="number" min={1} max={99} value={count} disabled> end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
     </hbox>
     <hbox>
-      <Radio class="inline" label="{$t`Until`}" bind:group={end} value="date" disabled />&nbsp;<DateInput date={seriesEndTime} disabled />
+      <Radio class="inline" label="{$t`Until`}" group={end} value="date" disabled />&nbsp;<DateInput date={seriesEndTime} disabled />
     </hbox>
   {/if}
   <Checkbox label={$t`Alarm`} checked={!!event.alarm} disabled />
@@ -107,17 +112,19 @@
 
   export let event: Event;
 
+  $: frequency = event.recurrenceRule?.frequency || Frequency.Daily;
+  $: interval = event.recurrenceRule?.interval || 1;
+  $: count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
+  $: weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
+  $: week = event.recurrenceRule?.week || 0;
+  $: end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  $: seriesEndTime = event.recurrenceRule?.seriesEndTime || event.startTime;
+  $: minDate = event.startTime;
   let durationUnit: DurationUnit;
   let durationInUnit: number;
-  let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
-  let interval = event.recurrenceRule?.interval || 1;
-  let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
-  let week = event.recurrenceRule?.week || 0;
-  let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  let seriesEndTime = event.recurrenceRule?.seriesEndTime || event.startTime;
-  let minDate = event.startTime;
-  let yearWeekOptions, monthWeekOptions, weekdayOptions;
+  let yearWeekOptions;
+  let monthWeekOptions;
+  let weekdayOptions;
 
   updateDateUI();
   function updateDateUI() {

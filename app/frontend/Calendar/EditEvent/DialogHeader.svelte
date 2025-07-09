@@ -78,7 +78,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSave || canSaveSeries}
+        {#if canSaveSingle || canSaveSeries}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -98,10 +98,10 @@
                 iconSize="16px"
                 />
 
-              {#if canSave}
+              {#if canSaveSingle}
                 <MenuItem
                   label={$t`Change only this instance`}
-                  onClick={onSave}
+                  onClick={onSaveException}
                   classes="font-normal" />
               {/if}
               {#if $event.seriesStatus == "middle"}
@@ -148,7 +148,6 @@
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
-  import type RepeatBox from "./RepeatBox.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -163,22 +162,21 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
-  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
-  export let repeatBox: RepeatBox;
 
   $: event.startEditing(); // not `$event`
   $: newCalendar = event.calendar; // not `$event`
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
-  $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged;
-  $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
-  $: canSave = hasMinimalProps && (
-    $event.hasChanged() ||
-    repeatBox && !event.parentEvent || // Change single event into series
-    newCalendar != event.calendar);
+  $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
+  $: parentEvent = $event.parentEvent;
+  $: canSaveSeries = hasMinimalPropsChanged && $event.recurrenceCase == RecurrenceCase.Instance ||
+    $parentEvent?.hasChanged();
+  $: canSaveSingle = hasMinimalPropsChanged || // Single changed
+    hasMinimalProps && event.recurrenceRule && !event.parentEvent || // Change single event into series
+    newCalendar != event.calendar;
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
@@ -187,34 +185,23 @@
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
-    if (!repeatBox) {
-      if (!master.recurrenceRule) {
-        // Event had never been a recurring event.
-        return true;
-      }
+    if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
       if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return false;
       }
-      master.recurrenceRule = null;
-    } else {
-      let rule = repeatBox.newRecurrenceRule();
-      if (master.recurrenceRule) {
-        if (rule.timesMatch(master.recurrenceRule)) {
-          return true;
-        }
-        if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
-          return false;
-        }
+    } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
+        !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
+      if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
+        return false;
       }
-      master.recurrenceRule = rule;
     }
     return true;
   }
 
   function onCancel() {
-    assert(event.unedited, "need unedited state");
-    event.copyFrom(event.unedited);
-    event.finishEditing();
+    // assert(event.unedited, "need unedited state");
+    event.cancelEditing();
+    event.parentEvent?.cancelEditing(); // master, when recurrence was changed
     onClose();
   }
 
@@ -224,10 +211,6 @@
   }
 
   async function saveEvent(event: Event) {
-    if (repeatBox && !event.parentEvent) {
-      // Turning a single event into a series. (The reverse is done in `onChangeAll()`.)
-      event.recurrenceRule = repeatBox.newRecurrenceRule();
-    }
     if (event.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
       event = await event.moveToCalendar(newCalendar);
@@ -259,6 +242,12 @@
     await saveEvent(master);
     master.finishEditing();
     await event.truncateRecurrence();
+    onClose();
+  }
+
+  async function onSaveException() {
+    await saveEvent(event);
+    event.parentEvent?.cancelEditing();
     onClose();
   }
 

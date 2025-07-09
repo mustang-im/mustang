@@ -203,6 +203,9 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * this still (intentionally) returns false.
    */
   timesMatch(rule: RecurrenceRule) {
+    if (!rule) {
+      return false;
+    }
     // Must be fast, because it's used by `event.hasChanged()`
     const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
@@ -237,7 +240,8 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (this.occurrences.length < this.count && this.occurrences.at(-1)! < seriesEndTime) {
       this.fillOccurrences(this.count, seriesEndTime);
     }
-    return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
+    return this.occurrences;
+    //return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
   getOccurrenceByIndex(index: number): Date | void {
@@ -276,7 +280,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         };
         break;
       case Frequency.Monthly:
-        if (!this.weekdays) {
+        if (!this.week) {
           this.month += this.interval;
         } else {
           this.day++;
@@ -287,7 +291,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         }
         break;
       case Frequency.Yearly:
-        if (!this.weekdays) {
+        if (!this.week) {
           this.year += this.interval;
         } else {
           this.day++;

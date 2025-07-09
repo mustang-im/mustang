@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
-import { RecurrenceRule } from "./RecurrenceRule";
+import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
@@ -131,6 +131,7 @@ export class Event extends Observable {
   recurrenceCase = RecurrenceCase.Normal;
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
+  @notifyChangedProperty
   protected _recurrenceRule: RecurrenceRule | null = null;
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -290,12 +291,15 @@ export class Event extends Observable {
    * Removes a recurrence pattern and all instances and exceptions.
    */
   protected clearRecurrenceRule() {
-    if (this._recurrenceRule) {
-      this.clearExceptions();
-      this._recurrenceRule = null;
-      this.recurrenceCase = RecurrenceCase.Normal; // notifies
-      this.instances.replaceAll([this]);
+    if (!this._recurrenceRule) {
+      return;
     }
+    // clearExceptions() in finishEditing()
+    this._muteObservers = true;
+    this.recurrenceCase = RecurrenceCase.Normal;
+    this._muteObservers = false;
+    this._recurrenceRule = null; // notifies
+    this.instances.replaceAll([this]);
   }
   /**
    * Updates a recurrence pattern.
@@ -303,13 +307,30 @@ export class Event extends Observable {
    */
   protected setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    let timesMatch = this._recurrenceRule?.timesMatch(rule);
-    this._recurrenceRule = rule;
-    this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (!timesMatch) {
-      this.clearExceptions();
-    }
+    this._muteObservers = true;
+    this.recurrenceCase = RecurrenceCase.Master;
+    this._muteObservers = false;
+    this._recurrenceRule = rule; // notifies
+    // clearExceptions() as necessary in finishEditing()
     this.generateRecurringInstances();
+  }
+
+  newRecurrenceRule(frequency: Frequency, interval = 1, week = 0, weekdays?: number[]): void {
+    let init: RecurrenceInit = {
+      masterDuration: this.duration,
+      seriesStartTime: this.startTime,
+      frequency,
+      interval,
+    };
+    if (frequency == Frequency.Weekly) {
+      init.weekdays = weekdays ?? [this.startTime.getDay()]; // e.g. Monday and Thursday
+    } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
+      init.week = week;
+      if (week) {
+        init.weekdays = [this.startTime.getDay()]; // e.g. 3rd Wednesday of month
+      }
+    }
+    this.recurrenceRule = new RecurrenceRule(init);
   }
 
   /** Create a new instance of the same event.
@@ -433,7 +454,19 @@ export class Event extends Observable {
     this.unedited.copyFrom(this);
   }
   finishEditing() {
+    if (this.unedited?.recurrenceCase == RecurrenceCase.Master) {
+      let timesMatch = this.unedited._recurrenceRule?.timesMatch(this._recurrenceRule);
+      if (!timesMatch) {
+        this.clearExceptions();
+      }
+    }
     this.unedited = null;
+  }
+  cancelEditing() {
+    if (this.unedited) {
+      this.copyFrom(this.unedited);
+    }
+    this.finishEditing();
   }
 
   createMeeting() {
@@ -539,12 +572,14 @@ export class Event extends Observable {
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     this.calUID ??= crypto.randomUUID();
     await this.calendar.storage.saveEvent(this);
+
     if (this.recurrenceCase == RecurrenceCase.Master) {
       this.generateRecurringInstances();
     } else if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
       this.parentEvent.instances.remove(this);
       this.parentEvent.exceptions.add(this);
+      await this.parentEvent.save();
     }
   }
 

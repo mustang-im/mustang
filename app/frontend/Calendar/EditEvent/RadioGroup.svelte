@@ -5,9 +5,8 @@
     <hbox>
       <input type="radio"
         value={item.value}
-        checked={item.value === group}
-        on:change={() => group = item.value}
-        on:change
+        checked={item.value === value}
+        on:change={() => onChanged(item)}
         {disabled}
         id={"radio" + i}
         />
@@ -17,10 +16,18 @@
 </radiogroup>
 
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: any }>();
+
   export let items: RadioOption[] = [];
-  export let group: any;
+  export let value: any;
   export let disabled = false;
   export let vertical = false;
+
+  function onChanged(item: any) {
+    value = item.value;
+    dispatchEvent("change", item);
+  }
 </script>
 <script lang="ts" context="module">
   export type RadioOption = {label: string, value: any, disabled?: boolean};
