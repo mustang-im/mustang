@@ -2,6 +2,7 @@ import { arrayRemove, assert } from "./util";
 
 export class Observable {
   _observers: Array<observerFunc<any>> = [];
+  _muteObservers = false;
   _properties = {};
   subscribe(observer: observerFunc<this>): () => void {
     this.callObserver(observer, null, null);
@@ -12,6 +13,9 @@ export class Observable {
     return unsubscribe;
   }
   notifyObservers(propertyName?: string, oldValue?: any): void {
+    if (this._muteObservers) {
+      return;
+    }
     for (let observer of this._observers) {
       this.callObserver(observer, propertyName, oldValue);
     }
