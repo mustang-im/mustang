@@ -16,22 +16,23 @@
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
 
-  /**
-   * TODO Bug: Only accepts `html` on component creation.
-   * After that, it's out-only.
-   * @see <https://github.com/ueberdosis/tiptap/issues/4918>
-   * in/out */
+  /** in/out */
   export let html: string;
   /** out only */
   export let editor: Editor;
   export let tabindex = null;
 
   let rootEl: HTMLDivElement;
+  let lastHTML: string = null;
 
   onMount(onLoad);
 
   function onLoad() {
     editorElementCreatedMutationObserver.observe(rootEl, {childList: true});
+    createEditor();
+  }
+
+  function createEditor() {
     editor = new Editor({
       element: rootEl,
       extensions: [
@@ -60,20 +61,21 @@
         editor = editor;
       },
       onUpdate: ({ editor }) => {
-        html = editor.getHTML();
+        html = lastHTML = editor.getHTML();
       },
     });
+    lastHTML = html;
   }
 
   export function forceReload() {
     if (editor) {
       editor.destroy();
     }
-    onLoad();
+    createEditor();
   }
 
-  // TODO Listen to html. But removes all whitespace.
-  //$: editor && editor.commands.setContent(html);
+  // html changed by caller, not editor
+  $: html != lastHTML && forceReload();
 
   onDestroy(() => {
     if (editor) {
