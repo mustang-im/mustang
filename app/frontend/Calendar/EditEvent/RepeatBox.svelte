@@ -38,11 +38,11 @@
       </hbox>
     {:else if frequency == Frequency.Monthly }
       <RadioGroup value={week} items={monthWeekOptions} vertical={true}
-      on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
-      {:else if frequency == Frequency.Yearly }
+        on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
+    {:else if frequency == Frequency.Yearly }
       <RadioGroup value={week} items={yearWeekOptions} vertical={true}
         on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
-      {/if}
+    {/if}
   </vbox>
 
   <hbox class="every">
@@ -116,13 +116,13 @@
     if (weekno < 5) {
       let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
       yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
-      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of the month`, value: weekno });
+      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
       let weekname = $t`last`;
       yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
-      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of the month`, value: 5 });
+      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: 5 });
     }
 
     if (week && (week < 5 || yearWeekOptions.length == 2)) {

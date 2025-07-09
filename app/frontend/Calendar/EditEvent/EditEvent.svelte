@@ -67,6 +67,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
@@ -90,7 +91,6 @@
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import DescriptionIcon from "lucide-svelte/icons/notebook-pen";
   import { t } from "../../../l10n/l10n";
-  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
 
   export let event: Event;
 
