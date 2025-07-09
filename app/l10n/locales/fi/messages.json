@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Pääset käsiksi pilvitiedostoihin olemassa olevalla tililläsi",
   "GgTY5U": "{num, plural, one {minuutti} other {minuuttia}}",
-  "Jq4085": "viimeinen",
   "3aHaM3": "Joka",
   "Xhyc0J": "{0} {1}",
-  "YZT8K4": "{0} {1} {1} vuonna {2}"
+  "YZT8K4": "{0} {1} {1} vuonna {2}",
+  "ebMGPp": "ensimmäinen",
+  "A346wK": "Neljäs",
+  "1itj2S": "Viimeinen",
+  "Z8EEE6": "toinen",
+  "h8/KyK": "kolmas"
 }

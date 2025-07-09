@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Hozzáférés a felhőfájlokhoz a meglévő fiókjában",
   "GgTY5U": "{num, plural, one {perc} other {perc}}",
-  "Jq4085": "utolsó",
   "3aHaM3": "Minden alkalommal",
   "Xhyc0J": "A {0} {1}",
-  "YZT8K4": "{0} {1} {1} a {2}"
+  "YZT8K4": "{0} {1} {1} a {2}",
+  "ebMGPp": "első",
+  "A346wK": "negyedik",
+  "1itj2S": "utolsó",
+  "Z8EEE6": "második",
+  "h8/KyK": "harmadik"
 }

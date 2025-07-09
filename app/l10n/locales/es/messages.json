@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Acceda a sus archivos en la nube en su cuenta existente",
   "GgTY5U": "{num, plural, one {minuto} other {minutos}}",
-  "Jq4085": "último",
   "3aHaM3": "Cada",
   "Xhyc0J": "El {0} {1}",
-  "YZT8K4": "El {0} {1} en {2}"
+  "YZT8K4": "El {0} {1} en {2}",
+  "ebMGPp": "primero",
+  "A346wK": "cuarto",
+  "1itj2S": "último",
+  "Z8EEE6": "segundo",
+  "h8/KyK": "tercero"
 }

@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "기존 계정에서 클라우드 파일에 액세스",
   "GgTY5U": "{num, plural, one {분} other {분}}",
-  "Jq4085": "마지막",
   "3aHaM3": "매번",
   "Xhyc0J": "0} {1}에",
-  "YZT8K4": "2}의 {0} {1}에"
+  "YZT8K4": "2}의 {0} {1}에",
+  "ebMGPp": "first",
+  "A346wK": "fourth",
+  "1itj2S": "last",
+  "Z8EEE6": "second",
+  "h8/KyK": "third"
 }

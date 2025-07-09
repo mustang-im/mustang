@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Přístup ke cloudovým souborům ve stávajícím účtu",
   "GgTY5U": "{num, plural, one {minuta} other {minut}}",
-  "Jq4085": "poslední",
   "3aHaM3": "Každou",
   "Xhyc0J": "{0} {1}Ve středu {0} {1}",
-  "YZT8K4": "Na {0} {1} v {2} měsíci září."
+  "YZT8K4": "Na {0} {1} v {2} měsíci září.",
+  "ebMGPp": "první",
+  "A346wK": "čtvrtý",
+  "1itj2S": "poslední",
+  "Z8EEE6": "druhá",
+  "h8/KyK": "třetí"
 }

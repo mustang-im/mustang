@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Prieiga prie debesies failų esančioje paskyroje",
   "GgTY5U": "{num, plural, one {minutė} other {minučių}}",
-  "Jq4085": "paskutinis",
   "3aHaM3": "Kas kartą",
   "Xhyc0J": "{0} {1} {0} {1} dieną",
-  "YZT8K4": "{0} {1} dieną {2}"
+  "YZT8K4": "{0} {1} dieną {2}",
+  "ebMGPp": "pirmasis",
+  "A346wK": "ketvirtoji",
+  "1itj2S": "paskutinis",
+  "Z8EEE6": "antrasis",
+  "h8/KyK": "trečiasis"
 }

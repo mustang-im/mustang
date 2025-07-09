@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Zugriff auf Ihre Cloud-Dateien in Ihrem bestehenden Konto",
   "GgTY5U": "{num, plural, one {Minute} other {Minuten}}",
-  "Jq4085": "zuletzt",
   "3aHaM3": "Alle",
   "Xhyc0J": "Am {0} {1}",
-  "YZT8K4": "Am {0} {1} in {2}"
+  "YZT8K4": "Am {0} {1} in {2}",
+  "ebMGPp": "erste",
+  "A346wK": "vierte",
+  "1itj2S": "zuletzt",
+  "Z8EEE6": "zweite",
+  "h8/KyK": "dritte"
 }

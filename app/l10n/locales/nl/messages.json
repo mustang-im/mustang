@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Toegang tot uw cloudbestanden in uw bestaande account",
   "GgTY5U": "{num, plural, one {minuut} other {minuten}}",
-  "Jq4085": "laatste",
   "3aHaM3": "Elke",
   "Xhyc0J": "Op de {0} {1}",
-  "YZT8K4": "Op de {0} {1} in {2}"
+  "YZT8K4": "Op de {0} {1} in {2}",
+  "ebMGPp": "eerste",
+  "A346wK": "vierde",
+  "1itj2S": "laatste",
+  "Z8EEE6": "tweede",
+  "h8/KyK": "derde"
 }

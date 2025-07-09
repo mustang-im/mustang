@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Få tilgang til skyfilene dine i den eksisterende kontoen din",
   "GgTY5U": "{num, plural, one {minutt} other {minutter}}",
-  "Jq4085": "siste",
   "3aHaM3": "Hver",
   "Xhyc0J": "Den {0} {1}",
-  "YZT8K4": "Den {0} {1} i {2}"
+  "YZT8K4": "Den {0} {1} i {2}",
+  "ebMGPp": "første",
+  "A346wK": "fjerde",
+  "1itj2S": "siste",
+  "Z8EEE6": "andre",
+  "h8/KyK": "tredje"
 }

@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Få adgang til dine cloud-filer på din eksisterende konto",
   "GgTY5U": "{num, plural, one {minut} other {minutter}}",
-  "Jq4085": "sidste",
   "3aHaM3": "Hver",
   "Xhyc0J": "Den {0} {1}",
-  "YZT8K4": "Den {0} {1} i {2}"
+  "YZT8K4": "Den {0} {1} i {2}",
+  "ebMGPp": "første",
+  "A346wK": "fjerde",
+  "1itj2S": "sidste",
+  "Z8EEE6": "anden",
+  "h8/KyK": "tredje"
 }

@@ -798,8 +798,12 @@
   "Z6QE5q": "WebDAV",
   "2LQSbP": "Juurdepääs oma pilvefailidele oma olemasoleva konto kaudu",
   "GgTY5U": "{num, plural, one {minut} other {minutit}}",
-  "Jq4085": "viimane",
   "3aHaM3": "Iga",
   "Xhyc0J": "{0} {1}",
-  "YZT8K4": "{0} {1} {1} aastal {2}"
+  "YZT8K4": "{0} {1} {1} aastal {2}",
+  "ebMGPp": "esimene",
+  "A346wK": "neljas",
+  "1itj2S": "Viimane",
+  "Z8EEE6": "teine",
+  "h8/KyK": "kolmas"
 }
