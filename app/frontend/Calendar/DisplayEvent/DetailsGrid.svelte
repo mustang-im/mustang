@@ -4,6 +4,11 @@
     <TimeDisplay {event} />
   {/if}
 
+  {#if $event.recurrenceCase == RecurrenceCase.Master}
+    <hbox />
+    <hbox class="recurrence">{ruleAsLabel($event.recurrenceRule, $event.startTime)}</hbox>
+  {/if}
+
   {#if $participants?.hasItems}
     <ParticipantsIcon size="16px" />
     <ParticipantsDisplay {event} />
@@ -23,7 +28,8 @@
 </grid>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
+  import { ruleAsLabel } from "../../../logic/Calendar/RecurrenceRule";
   import ClockIcon from "lucide-svelte/icons/clock-8";
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
@@ -41,9 +47,16 @@
   grid.event-display-grid {
     grid-template-columns: max-content max-content;
     justify-items: start;
-    align-items: center;
+    align-items: start;
     gap: 16px;
   }
+  grid.event-display-grid :global(> svg) {
+    margin-block-start: 4px;
+  }
+  .recurrence {
+    font-weight: 600;
+  }
+  .recurrence,
   .location {
     flex-wrap: wrap;
   }

@@ -1,4 +1,7 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { kAllWeekdays, weekdayLabel } from "../../frontend/Util/date";
+import { gt, getUILocale } from "../../l10n/l10n";
+import { assert } from "../util/util";
 
 export enum Frequency {
   None = "NONE",
@@ -207,16 +210,15 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
       return false;
     }
     // Must be fast, because it's used by `event.hasChanged()`
-    const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
-    let thisWeekdays = this.weekdays || allWeekdays;
-    let ruleWeekdays = rule.weekdays || allWeekdays;
+    let thisWeekdays = this.weekdays || kAllWeekdays;
+    let ruleWeekdays = rule.weekdays || kAllWeekdays;
     return rule.masterDuration == this.masterDuration &&
       rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
       rule.week == this.week &&
       rule.first == this.first &&
-      allWeekdays.every(weekday =>
+      kAllWeekdays.every(weekday =>
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
@@ -340,4 +342,95 @@ function sanitizeCalDate(dateStr: string) {
     dateStr = dateStr.replace(/(....)(..)(..T..)(..)(..)/, "$1-$2-$3:$4:$5");
   }
   return sanitize.date(dateStr);
+}
+
+/**
+ * @returns A human-readable, translated description of the recurrence.
+ * E.g. "Every month, on the third Wednesday of the month"
+ */
+export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
+  let label = "";
+  if (r.frequency == Frequency.Daily) {
+    label += r.interval == 1
+      ? gt`Every day`
+      : gt`Every ${r.interval} days`;
+  } else if (r.frequency == Frequency.Weekly) {
+    label += r.interval == 1
+      ? gt`Every week`
+      : gt`Every ${r.interval} weeks`;
+    label += `, ` + gt`on *=> as in: Every week, on Thursday` + ` `;
+
+    let weekdays = kAllWeekdays.filter(weekday => r.weekdays.includes(weekday));
+    label += sortedList(weekdays, weekday => weekdayLabel(weekday, "long"));
+  } else if (r.frequency == Frequency.Monthly) {
+    label += r.interval == 1
+      ? gt`Every month`
+      : gt`Every ${r.interval} months`;
+    label += `, `;
+    if (r.week) {
+      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} *=> as in: on the third Wednesday of the month`;
+    } else {
+      label += gt`on the ${startTime.toLocaleDateString(getUILocale(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
+    }
+  } else if (r.frequency == Frequency.Yearly) {
+    label += r.interval == 1
+      ? gt`Every year`
+      : gt`Every ${r.interval} years`;
+    label += `, `;
+    if (r.week) {
+      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> as in: on the third Wednesday in September`;
+    } else {
+      label += gt`on ${startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
+    }
+  }
+  return label;
+}
+
+function weekName(week: number) {
+  assert(1 <= week && week <= 5, "invalid week");
+  let weekname = [
+    gt`first *=> as in: On the first Wednesday in July`,
+    gt`second *=> as in: On the second Wednesday in July`,
+    gt`third *=> as in: On the third Wednesday in July`,
+    gt`fourth *=> as in: On the fourth Wednesday in July`,
+    gt`last *=> as in: On the last Wednesday in July`,
+  ];
+  return weekname[week - 1];
+}
+
+/**
+ * @param entries A sorted list of numbers
+ * @returns comma-separated list, whereas
+ *   the last comma is replaced with "and",
+ *   and consequitive ranges are collapsed with "to".
+ *   E.g. "3-6, 3, 4-10, 11, 12-14 and 19" */
+function sortedList(entries: number[], labelFunc: (value: number) => string): string {
+  let label = "";
+  let duringRange = false;
+  let i = 0;
+  for (let value of entries) {
+    let nextValue = entries[i + 1];
+    // separator
+    if (i == 0) {
+      // start
+    } else if (duringRange) {
+      if (nextValue != value + 1) {
+        // ... to ...
+        label += ` ` + gt`to *=> as in: Monday to Friday` + ` `;
+        duringRange = false;
+      }
+    } else if (i + 1 == entries.length) { // last
+      // ... and ...
+      label += ` ` + gt`and *=> as in: Monday and Friday` + ` `;
+    } else if (nextValue == value + 1) {
+      duringRange = true;
+    } else {
+      label += `, `;
+    }
+    if (!duringRange) {
+      label += labelFunc(value);
+    }
+    i++;
+  }
+  return label;
 }
