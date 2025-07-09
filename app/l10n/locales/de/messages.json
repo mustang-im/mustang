@@ -800,10 +800,10 @@
   "GgTY5U": "{num, plural, one {Minute} other {Minuten}}",
   "3aHaM3": "Alle",
   "Xhyc0J": "Am {0} {1}",
-  "YZT8K4": "Am {0} {1} in {2}",
-  "ebMGPp": "erste",
-  "A346wK": "vierte",
-  "1itj2S": "zuletzt",
-  "Z8EEE6": "zweite",
-  "h8/KyK": "dritte"
+  "YZT8K4": "Am {0} {1} im {2}",
+  "ebMGPp": "ersten",
+  "A346wK": "vierten",
+  "1itj2S": "letzten",
+  "Z8EEE6": "zweiten",
+  "h8/KyK": "dritten"
 }
