@@ -168,6 +168,7 @@
 
   $: event.startEditing(); // not `$event`
   $: newCalendar = event.calendar; // not `$event`
+  $: oldEvent = event.unedited;
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
@@ -176,7 +177,7 @@
     $parentEvent?.hasChanged();
   $: canSaveSingle = hasMinimalPropsChanged || // Single changed
     hasMinimalProps && event.recurrenceRule && !event.parentEvent || // Change single event into series
-    newCalendar != event.calendar;
+    newCalendar != oldEvent?.calendar && hasMinimalProps;
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
@@ -211,7 +212,7 @@
   }
 
   async function saveEvent(event: Event) {
-    if (event.calendar != newCalendar && newCalendar) {
+    if (oldEvent.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
       event = await event.moveToCalendar(newCalendar);
     } else {
@@ -278,7 +279,7 @@
   }
 
   function onChangeCalendar(aCalendar: Account) {
-    newCalendar = aCalendar as Calendar
+    event.calendar = aCalendar as Calendar
     $selectedCalendar = newCalendar;
     // Will be applied during save
   }

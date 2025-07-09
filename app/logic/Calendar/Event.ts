@@ -657,7 +657,9 @@ export class Event extends Observable {
    *
    * @returns the new (or same) Event object */
   async moveToCalendar(newCalendar: Calendar): Promise<Event> {
-    if (this.calendar == newCalendar || !newCalendar) {
+    if (this.unedited?.calendar == newCalendar ||
+      (this.calendar == newCalendar && !this.unedited)
+      || !newCalendar) {
       return this;
     }
     this.calendar?.events.remove(this);
