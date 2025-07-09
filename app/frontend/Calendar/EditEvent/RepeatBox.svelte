@@ -114,13 +114,18 @@
     let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
-      let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
+      let weekname = [
+        $t`first *=> as in: On the first Wednesday in July`,
+        $t`second *=> as in: On the second Wednesday in July`,
+        $t`third *=> as in: On the third Wednesday in July`,
+        $t`fourth *=> as in: On the fourth Wednesday in July`,
+      ][weekno - 1];
       yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
-      let weekname = $t`last`;
+      let weekname = $t`last *=> as in: On the last Wednesday in July`;
       yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: 5 });
     }
