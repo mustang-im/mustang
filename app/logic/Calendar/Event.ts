@@ -292,9 +292,9 @@ export class Event extends Observable {
    */
   protected clearRecurrenceRule() {
     if (this._recurrenceRule) {
-      this.clearExceptions();
-      this._recurrenceRule = null;
-      this.recurrenceCase = RecurrenceCase.Normal; // notifies
+      // this.clearExceptions(); in finishEditing()
+      this._recurrenceRule = null; // notifies
+      this.recurrenceCase = RecurrenceCase.Normal;
       this.instances.replaceAll([this]);
     }
   }
@@ -304,16 +304,15 @@ export class Event extends Observable {
    */
   protected setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    let timesMatch = this._recurrenceRule?.timesMatch(rule);
-    this._recurrenceRule = rule;
-    this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (!timesMatch) {
-      this.clearExceptions();
-    }
+    this._recurrenceRule = rule; // notifies
+    this._muteObservers = true;
+    this.recurrenceCase = RecurrenceCase.Master;
+    this._muteObservers = false;
+    // clearExceptions() as necessary in finishEditing()
     this.generateRecurringInstances();
   }
 
-  newRecurrenceRule(frequency: Frequency, interval = 1, weekdays?: number[], week?: number): void {
+  newRecurrenceRule(frequency: Frequency, interval = 1, week = 0, weekdays?: number[]): void {
     let init: RecurrenceInit = {
       masterDuration: this.duration,
       seriesStartTime: this.startTime,
@@ -323,7 +322,7 @@ export class Event extends Observable {
     if (frequency == Frequency.Weekly) {
       init.weekdays = weekdays ?? [this.startTime.getDay()];
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
-      init.week = week ?? 0;
+      init.week = week;
     }
     this.recurrenceRule = new RecurrenceRule(init);
   }
@@ -449,6 +448,12 @@ export class Event extends Observable {
     this.unedited.copyFrom(this);
   }
   finishEditing() {
+    if (this.unedited?.recurrenceCase == RecurrenceCase.Master) {
+      let timesMatch = this.unedited._recurrenceRule?.timesMatch(this._recurrenceRule);
+      if (!timesMatch) {
+        this.clearExceptions();
+      }
+    }
     this.unedited = null;
   }
   cancelEditing() {

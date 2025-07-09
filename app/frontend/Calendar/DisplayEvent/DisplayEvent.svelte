@@ -73,9 +73,9 @@
       </select>
     </hbox>
     {#if frequency == Frequency.Yearly }
-      <RadioGroup group={week} items={yearWeekOptions} disabled />
+      <RadioGroup value={week} items={yearWeekOptions} disabled />
     {:else if frequency == Frequency.Monthly }
-      <RadioGroup group={week} items={monthWeekOptions} disabled />
+      <RadioGroup value={week} items={monthWeekOptions} disabled />
     {:else if frequency == Frequency.Weekly }
       <CheckboxGroup size="sm" radius="xl" group={weekdays} label={$t`On days`} items={weekdayOptions} disabled />
     {/if}

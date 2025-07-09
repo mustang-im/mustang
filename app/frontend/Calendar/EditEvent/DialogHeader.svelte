@@ -162,7 +162,6 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
-  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;

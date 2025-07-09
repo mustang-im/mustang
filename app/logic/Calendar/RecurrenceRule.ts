@@ -237,7 +237,8 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (this.occurrences.length < this.count && this.occurrences.at(-1)! < seriesEndTime) {
       this.fillOccurrences(this.count, seriesEndTime);
     }
-    return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
+    return this.occurrences;
+    //return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
   getOccurrenceByIndex(index: number): Date | void {

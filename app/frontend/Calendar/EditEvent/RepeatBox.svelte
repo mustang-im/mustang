@@ -14,7 +14,7 @@
 {#if frequency != Frequency.None }
   <vbox class="frequency">
     {#if frequency == Frequency.Daily }
-      <RadioGroup bind:group={daily} items={dailyOptions} vertical={true}
+      <RadioGroup bind:value={daily} items={dailyOptions} vertical={true}
         on:change={() => catchErrors(onDailyOptionChanged)}
         disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
         />
@@ -37,18 +37,20 @@
         </hbox>
       </hbox>
     {:else if frequency == Frequency.Monthly }
-      <RadioGroup bind:group={week} items={monthWeekOptions} vertical={true} />
-    {:else if frequency == Frequency.Yearly }
-      <RadioGroup bind:group={week} items={yearWeekOptions} vertical={true} />
-    {/if}
+      <RadioGroup value={week} items={monthWeekOptions} vertical={true}
+      on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
+      {:else if frequency == Frequency.Yearly }
+      <RadioGroup value={week} items={yearWeekOptions} vertical={true}
+        on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
+      {/if}
   </vbox>
 
   <hbox class="every">
     <label for="every">{$t`Every`}</label>
-    <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every"
-      on:change={() => catchErrors(() => onIntervalChanged)} />
+    <input class="auto" type="number" min={1} max={99} value={interval} id="every"
+      on:change={(ev) => catchErrors(() => onIntervalChanged(ev.currentTarget.value))} />
     <select value={frequency} class="selector"
-      on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
+      on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget.value))}>
       <option value={Frequency.Daily}>{$plural(interval, { one: 'day', other: 'days' })}</option>
       <option value={Frequency.Weekly}>{$plural(interval, { one: 'week', other: 'weeks' })}</option>
       <option value={Frequency.Monthly}>{$plural(interval, { one: 'month', other: 'months' })}</option>
@@ -81,7 +83,7 @@
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { catchErrors } from "../../Util/error";
-  import { arrayRemove } from '../../../logic/util/util';
+  import { arrayRemove, assert } from '../../../logic/util/util';
   import { getUILocale, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -114,13 +116,14 @@
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
       let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
-      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
-      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday}`, value: weekno });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
+      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of the month`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
-      yearWeekOptions.push({ label: $t`On the last ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: 5 });
-      monthWeekOptions.push({ label: $t`On the last ${weekday}`, value: 5 });
+      let weekname = $t`last`;
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
+      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of the month`, value: 5 });
     }
 
     if (week && (week < 5 || yearWeekOptions.length == 2)) {
@@ -165,33 +168,44 @@
     frequency = Frequency.Weekly;
     daily = "everyday";
     master.startEditing();
-    master.newRecurrenceRule(frequency, interval, weekdays, week);
+    master.newRecurrenceRule(frequency, interval, week, weekdays);
+  }
+
+  function onWeekChanged(item: RadioOption) {
+    console.log("on week changed", item, "before", week, "set to", item.value);
+    let newWeek = item.value;
+    master.startEditing();
+    master.newRecurrenceRule(frequency, interval, newWeek, weekdays);
+    console.log("week is now", master.recurrenceRule.week, master.recurrenceRule.frequency);
   }
 
   function onWeekdayChanged(weekday: number) {
-    if (weekdays.includes(weekday)) {
+    if (weekdays.includes(weekday)) { // toggle
       arrayRemove(weekdays, weekday);
     } else {
       weekdays.push(weekday);
     }
     console.log("weekdays changed", weekday, weekdays);
     master.startEditing();
-    master.newRecurrenceRule(frequency, interval, weekdays, week);
+    master.newRecurrenceRule(frequency, interval, week, weekdays);
   }
 
-  function onIntervalChanged() {
+  function onIntervalChanged(newValue: string) {
+    console.log("new interval", newValue, typeof newValue);
+    interval = Number(newValue);
     master.startEditing();
-    master.newRecurrenceRule(frequency, interval, weekdays, week);
+    master.newRecurrenceRule(frequency, interval, week, weekdays);
   }
 
   async function onFrequencyChanged(newValue: string) {
     console.log("frequency changed cur", frequency, "to", newValue);
-    let newFrequency = newValue as Frequency;
-    if (newFrequency == Frequency.None || !newFrequency) {
+    frequency = newValue as Frequency;
+    assert(frequency, "Need frequency");
+    if (frequency == Frequency.None) {
       master.recurrenceRule = null;
-    } else if (newFrequency != master.recurrenceRule?.frequency) {
+    } else if (frequency != master.recurrenceRule?.frequency) {
       master.startEditing();
-      master.newRecurrenceRule(newFrequency, interval, weekdays, week);
+      master.newRecurrenceRule(frequency, interval, week, weekdays);
     }
   }
 </script>
