@@ -89,7 +89,7 @@
   export let event: Event;
 
   $: master = $event.parentEvent ?? event;
-  $: frequency = $master.recurrenceRule?.frequency ?? Frequency.Weekly;
+  $: frequency = $master.recurrenceRule?.frequency ?? Frequency.None;
   $: interval = $master.recurrenceRule?.interval ?? 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   $: weekdays = $master.recurrenceRule?.weekdays?.slice() ?? [$event.startTime.getDay()];
@@ -195,7 +195,8 @@
   async function onFrequencyChanged(newValue: string) {
     frequency = newValue as Frequency;
     assert(frequency, "Need frequency");
-    if (frequency == Frequency.None) {
+    if (frequency == Frequency.None && master.recurrenceRule) {
+      master.startEditing();
       master.recurrenceRule = null;
     } else if (frequency != master.recurrenceRule?.frequency) {
       master.startEditing();

@@ -203,6 +203,9 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * this still (intentionally) returns false.
    */
   timesMatch(rule: RecurrenceRule) {
+    if (!rule) {
+      return false;
+    }
     // Must be fast, because it's used by `event.hasChanged()`
     const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
