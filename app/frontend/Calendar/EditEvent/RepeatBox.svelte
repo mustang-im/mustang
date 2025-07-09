@@ -24,7 +24,7 @@
         <hbox class="options">
           {#each weekdayOptions as weekday}
             <RoundButton
-              label={weekday.label}
+              label={weekday.tooltip}
               selected={weekdays.includes(weekday.value)}
               onClick={() => catchErrors(() => onWeekdayChanged(weekday.value))}
               disabled={weekday.disabled}
@@ -83,6 +83,7 @@
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { catchErrors } from "../../Util/error";
+  import { kAllWeekdays, weekdayLabel } from "../../Util/date";
   import { arrayRemove, assert } from '../../../logic/util/util';
   import { getUILocale, t, plural } from "../../../l10n/l10n";
 
@@ -141,18 +142,18 @@
         weekdays.push(event.startTime.getDay());
       }
     }
-    weekdayOptions = [1, 2, 3, 4, 5, 6, 7].map(day => new Date(2010, 2, day)).map(date => ({
-      value: date.getDay(),
-      disabled: date.getDay() == event.startTime.getDay(),
-      label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
+    weekdayOptions = kAllWeekdays.map(weekday => ({
+      value: weekday,
+      disabled: weekday == event.startTime.getDay(),
+      label: weekdayLabel(weekday, "narrow"),
+      tooltip: weekdayLabel(weekday, "long"),
     }));
 
     /* end
     if (seriesEndTime <= event.startTime) {
       seriesEndTime = new Date(event.startTime);
       seriesEndTime.setHours(23, 59, 59, 0);
-    }
-    */
+    }*/
     minDate = event.startTime;
     event.notifyObservers();
   }

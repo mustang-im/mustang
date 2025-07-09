@@ -65,6 +65,24 @@ export function getTimeString(date: Date): string {
 }
 
 /**
+ * @param weekday day of the week
+ * @param form How long the name should be
+ *    narrow = 1 char
+ *    short = 2 chars
+ *    long = full name
+ * @return Name for the weekday, e.g. "Mo" or "Monday" */
+export function weekdayLabel(weekday: number, form: "long" | "short" | "narrow") {
+  let date = new Date(2010, 2, weekday);
+  return date.toLocaleDateString(getUILocale(), { weekday: form });
+};
+
+/** Monday to Sunday, in order (sorted).
+ *
+ * If we ever want to support Sunday being the first day of the week,
+ * simply change this to `[0, 1, 2, 3, 4, 5, 6]` at runtime. */
+export const kAllWeekdays = [1, 2, 3, 4, 5, 6, 0];
+
+/**
  * @param ianaTimezone IANA timezone, e.g. "Europe/Berlin"
  * @returns the city in English, for most timezones */
 export function getTimezoneDisplay(ianaTimezone: string): string {

@@ -2,7 +2,7 @@
  https://github.com/sveltejs/svelte/issues/2308 -->
 <radiogroup class:vertical>
   {#each items as item, i}
-    <hbox>
+    <hbox title={item.tooltip ?? item.label}>
       <input type="radio"
         value={item.value}
         checked={item.value === value}
@@ -30,7 +30,7 @@
   }
 </script>
 <script lang="ts" context="module">
-  export type RadioOption = {label: string, value: any, disabled?: boolean};
+  export type RadioOption = {label: string, tooltip?: string, value: any, disabled?: boolean};
 </script>
 
 <style>
