@@ -120,7 +120,6 @@
   "mYGY3B": "Data",
   "H7OUPr": "Giorno",
   "yRdqWH": "Giorno/mese",
-  "HuVZMK": "Giorni",
   "fufFVs": "Rifiuta chiamata",
   "vHbCEc": "Predefinito: {0}",
   "cnGeoo": "Elimina",
@@ -183,7 +182,6 @@
   "H3kCln": "Nome host",
   "NvtofW": "L'ora deve essere inferiore a 24",
   "NM0gWu": "L'ora deve essere compresa tra 1 e 12 quando si usa am o pm",
-  "yY8wAv": "Ore",
   "Ylq7PY": "Come spesso controllare i messaggi nuovi e cancellati.\\n\\n Nota: Se il server supporta la posta PUSH, le nuove e-mail appariranno immediatamente indipendenti da questa impostazione.",
   "lJz24K": "Invio della posta",
   "6xx3Ei": "Identità",
@@ -610,8 +608,6 @@
   "TJdDH8": "Necessità di almeno 1 spazio di lavoro",
   "5tOy9B": "Ancora nessuna risposta",
   "OJx3wK": "Non disponibile",
-  "bXCP9f": "Su {0} {1}",
-  "0vZgze": "Sul sito {0} {1} in {2}",
   "bYNZNN": "Aprire le impostazioni di questo account",
   "Pg0AlQ": "Inserire il nome dell'area di lavoro",
   "5WYZKZ": "Risultati della ricerca",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizzatore",
   "/tmE06": "Tentativo",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Accedete ai vostri file cloud nel vostro account esistente"
+  "2LQSbP": "Accedete ai vostri file cloud nel vostro account esistente",
+  "GgTY5U": "{num, plural, one {minuto} other {minuti}}",
+  "Jq4085": "ultimo",
+  "3aHaM3": "Ogni",
+  "Xhyc0J": "Il {0} {1}",
+  "YZT8K4": "Il {0} {1} in {2}"
 }

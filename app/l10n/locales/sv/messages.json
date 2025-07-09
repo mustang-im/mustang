@@ -120,7 +120,6 @@
   "mYGY3B": "Datum",
   "H7OUPr": "Dag",
   "yRdqWH": "Dag/Månad",
-  "HuVZMK": "Dagar",
   "fufFVs": "Avvisa samtal",
   "vHbCEc": "Standard: {0}",
   "cnGeoo": "Radera",
@@ -183,7 +182,6 @@
   "H3kCln": "Värdnamn",
   "NvtofW": "Timmast vara mindre än 24",
   "NM0gWu": "Timmen måste vara mellan 1 och 12 vid användning av am eller pm",
-  "yY8wAv": "Timmar",
   "Ylq7PY": "Hur ofta för att kontrollera nya och raderade meddelanden. Obs!: Om servern stöder PUSH-post kommer nya e-postmeddelanden att visas omedelbart oberoende av denna inställning.",
   "lJz24K": "Jag skickar e-post",
   "6xx3Ei": "Identiteter",
@@ -610,8 +608,6 @@
   "TJdDH8": "Behöver minst 1 arbetsyta",
   "5tOy9B": "Inget svar ännu",
   "OJx3wK": "Ej tillgänglig",
-  "bXCP9f": "På {0} {1}",
-  "0vZgze": "På {0} {1} i {2}",
   "bYNZNN": "Öppna inställningar för detta konto",
   "Pg0AlQ": "Ange ett namn på arbetsytan",
   "5WYZKZ": "Sökresultat",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Arrangör",
   "/tmE06": "Tentativ",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Få tillgång till dina molnfiler i ditt befintliga konto"
+  "2LQSbP": "Få tillgång till dina molnfiler i ditt befintliga konto",
+  "GgTY5U": "{num, plural, one {minut} other {minuter}}",
+  "Jq4085": "sista",
+  "3aHaM3": "Varje",
+  "Xhyc0J": "På den {0} {1}",
+  "YZT8K4": "På den {0} {1} i {2}"
 }

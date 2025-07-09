@@ -120,7 +120,6 @@
   "mYGY3B": "Tanggal",
   "H7OUPr": "Hari",
   "yRdqWH": "Hari/Bulan",
-  "HuVZMK": "Hari",
   "fufFVs": "Menolak panggilan",
   "vHbCEc": "Standar: {0}",
   "cnGeoo": "Menghapus",
@@ -183,7 +182,6 @@
   "H3kCln": "Nama host",
   "NvtofW": "Jam moust kurang dari 24",
   "NM0gWu": "Jam harus antara 1 dan 12 ketika menggunakan am atau pm",
-  "yY8wAv": "Jam",
   "Ylq7PY": "Seberapa sering untuk memeriksa pesan baru dan dihapus.\\n\\n Catatan: Jika server mendukung surat PUSH, email baru akan muncul segera independen dari pengaturan ini.\\nTherefore, interval harus tinggi.",
   "lJz24K": "Aku mengirim surat",
   "6xx3Ei": "Identitas",
@@ -610,8 +608,6 @@
   "TJdDH8": "Membutuhkan setidaknya 1 ruang kerja",
   "5tOy9B": "Belum ada tanggapan",
   "OJx3wK": "Tidak tersedia",
-  "bXCP9f": "Di {0} {1}",
-  "0vZgze": "Di {0} {1} di {2}",
   "bYNZNN": "Buka pengaturan akun ini",
   "Pg0AlQ": "Masukkan nama ruang kerja",
   "5WYZKZ": "Hasil pencarian",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Penyelenggara",
   "/tmE06": "Tentatif",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Mengakses file cloud Anda di akun yang sudah ada"
+  "2LQSbP": "Mengakses file cloud Anda di akun yang sudah ada",
+  "GgTY5U": "{num, plural, one {menit} other {menit}}",
+  "Jq4085": "terakhir",
+  "3aHaM3": "Setiap",
+  "Xhyc0J": "Pada angka {0} {1}",
+  "YZT8K4": "Pada angka {0} {1} di {2}"
 }

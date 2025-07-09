@@ -120,7 +120,6 @@
   "mYGY3B": "Data",
   "H7OUPr": "Dia",
   "yRdqWH": "Dia/Mês",
-  "HuVZMK": "Dias",
   "fufFVs": "Recusar chamada",
   "vHbCEc": "Padrão: {0}",
   "cnGeoo": "Excluir",
@@ -183,7 +182,6 @@
   "H3kCln": "Nome do anfitrião",
   "NvtofW": "A hora deve ser inferior a 24",
   "NM0gWu": "A hora deve estar entre 1h e 12h ao usar manhã ou tarde",
-  "yY8wAv": "Horas",
   "Ylq7PY": "Com que frequência verificar para mensagens novas e excluídas.\\n\\n Nota: Se o servidor suporta o correio PUSH, novos e-mails aparecerão imediatamente independentes desta configuração.\\nPortanto, o intervalo deve ser alto.",
   "lJz24K": "Eu envio correio",
   "6xx3Ei": "Identidades",
@@ -610,8 +608,6 @@
   "TJdDH8": "Necessita de pelo menos 1 espaço de trabalho",
   "5tOy9B": "Ainda sem resposta",
   "OJx3wK": "Não disponível",
-  "bXCP9f": "No sítio {0} {1}",
-  "0vZgze": "No sítio {0} {1} em {2}",
   "bYNZNN": "Abrir definições desta conta",
   "Pg0AlQ": "Introduzir um nome de espaço de trabalho",
   "5WYZKZ": "Resultados da pesquisa",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizador",
   "/tmE06": "Tentativa",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Aceder aos seus ficheiros na nuvem na sua conta existente"
+  "2LQSbP": "Aceder aos seus ficheiros na nuvem na sua conta existente",
+  "GgTY5U": "{num, plural, one {minuto} other {minutos}}",
+  "Jq4085": "último",
+  "3aHaM3": "A cada",
+  "Xhyc0J": "No dia {0} {1}",
+  "YZT8K4": "No dia {0} {1} em {2}"
 }

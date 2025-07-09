@@ -158,7 +158,6 @@
   "mYGY3B": "Date",
   "H7OUPr": "Day",
   "yRdqWH": "Day/Month",
-  "HuVZMK": "Days",
   "fufFVs": "Decline call",
   "vHbCEc": "Default: {0}",
   "cnGeoo": "Delete",
@@ -237,7 +236,6 @@
   "H3kCln": "Hostname",
   "NvtofW": "Hour moust be less than 24",
   "NM0gWu": "Hour must be between 1 and 12 when using am or pm",
-  "yY8wAv": "Hours",
   "Ylq7PY": "How often to check for new and deleted messages.\\n\\nNote: If the server supports PUSH mail, new emails will appear immediately independent of this setting.\\nTherefore, the interval should be high.",
   "FBknns": "HTML",
   "lJz24K": "I send mail",
@@ -373,8 +371,6 @@
   "pl68Oy": "On day {0} of every month",
   "oxf578": "On day {0}",
   "aTK0Fh": "On days",
-  "bXCP9f": "On the {0} {1}",
-  "0vZgze": "On the {0} {1} in {2}",
   "GAeRDx": "On the last {0}",
   "4qp50s": "On the last {0} in {1}",
   "oXOSPE": "Online",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizer",
   "/tmE06": "Tentative",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Access your cloud files in your existing account"
+  "2LQSbP": "Access your cloud files in your existing account",
+  "GgTY5U": "{num, plural, one {minute} other {minutes}}",
+  "Jq4085": "last",
+  "3aHaM3": "Every",
+  "Xhyc0J": "On the {0} {1}",
+  "YZT8K4": "On the {0} {1} in {2}"
 }

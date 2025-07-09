@@ -120,7 +120,6 @@
   "mYGY3B": "Data",
   "H7OUPr": "Dzień",
   "yRdqWH": "Dzień/Miesiąc",
-  "HuVZMK": "Dni",
   "fufFVs": "Odrzuć połączenie",
   "vHbCEc": "Domyślnie: {0}",
   "cnGeoo": "Usuń",
@@ -183,7 +182,6 @@
   "H3kCln": "Prowadzący",
   "NvtofW": "Godzina musi być minejsza niż 24",
   "NM0gWu": "Godzina musi wynosić od 1 do 12 godzin rano lub wieczorem.",
-  "yY8wAv": "Godziny",
   "Ylq7PY": "Jak często sprawdzać nowe i usuwane wiadomości. Jeśli serwer obsługuje pocztę PUSH, nowe e-maile wydają się bezpośrednio niezależne od tego otoczenia.\\nTherefore, przedział powinien być wysoki.",
   "lJz24K": "Wysyłam pocztę",
   "6xx3Ei": "Tożsamości",
@@ -610,8 +608,6 @@
   "TJdDH8": "Potrzebujesz co najmniej 1 miejsca do pracy",
   "5tOy9B": "Brak odpowiedzi",
   "OJx3wK": "Niedostępne",
-  "bXCP9f": "Na stronie {0} {1}",
-  "0vZgze": "Na stronie {0} {1} w {2}",
   "bYNZNN": "Otwórz ustawienia tego konta",
   "Pg0AlQ": "Wprowadź nazwę obszaru roboczego",
   "5WYZKZ": "Wyniki wyszukiwania",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizator",
   "/tmE06": "Wstępnie",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Dostęp do plików w chmurze na istniejącym koncie"
+  "2LQSbP": "Dostęp do plików w chmurze na istniejącym koncie",
+  "GgTY5U": "{num, plural, one {minuta} other {minuty}}",
+  "Jq4085": "ostatni",
+  "3aHaM3": "Co",
+  "Xhyc0J": "W {0} {1}",
+  "YZT8K4": "W {0} {1} w {2}"
 }

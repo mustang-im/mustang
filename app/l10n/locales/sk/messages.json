@@ -120,7 +120,6 @@
   "mYGY3B": "Dátum",
   "H7OUPr": "Deň",
   "yRdqWH": "Deň / mesiac",
-  "HuVZMK": "Dní",
   "fufFVs": "Decline volanie",
   "vHbCEc": "Predvolené: {0}",
   "cnGeoo": "Zmazať",
@@ -183,7 +182,6 @@
   "H3kCln": "Aktuality",
   "NvtofW": "Hodinový moust byť menej ako 24",
   "NM0gWu": "Hodina musí byť medzi 1 a 12 pri použití am alebo popoludní",
-  "yY8wAv": "Hodiny",
   "Ylq7PY": "Ako často kontrolovať nové a vymazané správy.\\n\\n Poznámka: Ak server podporuje PUSH mail, nové e-maily sa objavia okamžite nezávislé z tohto nastavenia.\\nTfore, interval by mal byť vysoký.",
   "lJz24K": "Posielam poštu",
   "6xx3Ei": "Identity",
@@ -610,8 +608,6 @@
   "TJdDH8": "Potrebujete aspoň 1 pracovný priestor",
   "5tOy9B": "Zatiaľ bez odpovede",
   "OJx3wK": "Nie je k dispozícii",
-  "bXCP9f": "Na stránke {0} {1}",
-  "0vZgze": "Na stránke {0} {1} v {2}",
   "bYNZNN": "Otvorenie nastavení tohto účtu",
   "Pg0AlQ": "Zadajte názov pracovného priestoru",
   "5WYZKZ": "Výsledky vyhľadávania",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizátor",
   "/tmE06": "Predbežné",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Prístup ku cloudovým súborom v existujúcom konte"
+  "2LQSbP": "Prístup ku cloudovým súborom v existujúcom konte",
+  "GgTY5U": "{num, plural, one {minúta} other {minút}}",
+  "Jq4085": "posledný",
+  "3aHaM3": "Každú",
+  "Xhyc0J": "V {0} {1}týždni",
+  "YZT8K4": "Na {0} {1} v {2}"
 }

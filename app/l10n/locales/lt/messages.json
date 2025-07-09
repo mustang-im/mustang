@@ -158,7 +158,6 @@
   "mYGY3B": "Data",
   "H7OUPr": "Diena",
   "yRdqWH": "Diena/mėnuo",
-  "HuVZMK": "Dienos",
   "fufFVs": "Atsisakyti skambučio",
   "vHbCEc": "Numatytoji reikšmė: {0}",
   "cnGeoo": "Ištrinti",
@@ -237,7 +236,6 @@
   "H3kCln": "Prieglobsčio vardas",
   "NvtofW": "Valanda turi būti trumpesnė nei 24",
   "NM0gWu": "Naudojant am arba pm, valanda turi būti nuo 1 iki 12.",
-  "yY8wAv": "Valandos",
   "Ylq7PY": "Kaip dažnai tikrinti naujus ir ištrintus laiškus.Pastaba: Jei serveris palaiko PUSH mail, nauji laiškai bus rodomi iš karto, nepriklausomai nuo šio nustatymo.Todėl intervalas turėtų būti didelis.",
   "FBknns": "HTML",
   "lJz24K": "Siunčiu laiškus",
@@ -373,8 +371,6 @@
   "pl68Oy": "Kiekvieno mėnesio {0}.",
   "oxf578": "Dieną {0}",
   "aTK0Fh": "Dienomis",
-  "bXCP9f": "Svetainėje {0} {1}",
-  "0vZgze": "Svetainėje {0} {1} {2}",
   "GAeRDx": "Paskutinį kartą {0}",
   "4qp50s": "Paskutiniame {0} puslapyje {1}",
   "oXOSPE": "Internete",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizatorius",
   "/tmE06": "Preliminarus",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Prieiga prie debesies failų esančioje paskyroje"
+  "2LQSbP": "Prieiga prie debesies failų esančioje paskyroje",
+  "GgTY5U": "{num, plural, one {minutė} other {minučių}}",
+  "Jq4085": "paskutinis",
+  "3aHaM3": "Kas kartą",
+  "Xhyc0J": "{0} {1} {0} {1} dieną",
+  "YZT8K4": "{0} {1} dieną {2}"
 }

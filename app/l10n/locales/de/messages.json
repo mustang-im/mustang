@@ -120,7 +120,6 @@
   "mYGY3B": "Datum",
   "H7OUPr": "Tag",
   "yRdqWH": "Tag/Monat",
-  "HuVZMK": "Tage",
   "fufFVs": "Anruf ablehnen",
   "vHbCEc": "Standard: {0}",
   "cnGeoo": "Löschen",
@@ -183,7 +182,6 @@
   "H3kCln": "Hostname",
   "NvtofW": "Stunde muss kleiner als 24 sein",
   "NM0gWu": "Die Stunde muss zwischen 1 und 12 sein, wenn AM oder PM verwendet wird",
-  "yY8wAv": "Stunden",
   "Ylq7PY": "Wie oft auf neue und gelöschte Nachrichten geprüft werden soll.\\n\\n Hinweis: Wenn der Server PUSH-Mail unterstützt, werden neue E-Mails sofort und unabhängig von dieser Einstellung erscheinen.\\nDaher sollte das Intervall hoch sein.",
   "lJz24K": "Versenden",
   "6xx3Ei": "Identitäten",
@@ -610,8 +608,6 @@
   "TJdDH8": "Sie benötigen mindestens 1 Arbeitsbereich",
   "5tOy9B": "Noch keine Antwort",
   "OJx3wK": "Nicht verfügbar",
-  "bXCP9f": "Auf der Website {0} {1}",
-  "0vZgze": "Auf der Website {0} {1} in {2}",
   "bYNZNN": "Einstellungen dieses Kontos öffnen",
   "Pg0AlQ": "Bitte geben Sie einen Arbeitsbereichsnamen ein",
   "5WYZKZ": "Suchergebnisse",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organisator",
   "/tmE06": "Vorläufige",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Zugriff auf Ihre Cloud-Dateien in Ihrem bestehenden Konto"
+  "2LQSbP": "Zugriff auf Ihre Cloud-Dateien in Ihrem bestehenden Konto",
+  "GgTY5U": "{num, plural, one {Minute} other {Minuten}}",
+  "Jq4085": "zuletzt",
+  "3aHaM3": "Alle",
+  "Xhyc0J": "Am {0} {1}",
+  "YZT8K4": "Am {0} {1} in {2}"
 }

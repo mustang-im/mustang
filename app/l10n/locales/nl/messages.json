@@ -120,7 +120,6 @@
   "mYGY3B": "Datum",
   "H7OUPr": "Dag",
   "yRdqWH": "Dag/Maand",
-  "HuVZMK": "Dagen",
   "fufFVs": "Weiger oproep",
   "vHbCEc": "Standaard: {0}",
   "cnGeoo": "Verwijderen",
@@ -183,7 +182,6 @@
   "H3kCln": "Hostnaam",
   "NvtofW": "Uren moet zijn dan 24",
   "NM0gWu": "Uur moet tussen 1 en 12 zijn bij gebruik van am of pm",
-  "yY8wAv": "Uren",
   "Ylq7PY": "Hoe vaak om te controleren op nieuwe en verwijderde berichten. Als de server PUSH-mail ondersteunt, zullen er nieuwe e-mails onafhankelijk zijn van deze setting.",
   "lJz24K": "Ik stuur mail",
   "6xx3Ei": "Identiteiten",
@@ -610,8 +608,6 @@
   "TJdDH8": "Ten minste 1 werkplek nodig",
   "5tOy9B": "Nog geen reactie",
   "OJx3wK": "Niet beschikbaar",
-  "bXCP9f": "Op de {0} {1}",
-  "0vZgze": "Op de {0} {1} in {2}",
   "bYNZNN": "Instellingen van deze account openen",
   "Pg0AlQ": "Voer een naam voor de werkruimte in",
   "5WYZKZ": "Zoekresultaten",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organisator",
   "/tmE06": "Voorlopig",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Toegang tot uw cloudbestanden in uw bestaande account"
+  "2LQSbP": "Toegang tot uw cloudbestanden in uw bestaande account",
+  "GgTY5U": "{num, plural, one {minuut} other {minuten}}",
+  "Jq4085": "laatste",
+  "3aHaM3": "Elke",
+  "Xhyc0J": "Op de {0} {1}",
+  "YZT8K4": "Op de {0} {1} in {2}"
 }

@@ -120,7 +120,6 @@
   "mYGY3B": "Päivämäärä",
   "H7OUPr": "Päivä",
   "yRdqWH": "Päivä/Kuukausi",
-  "HuVZMK": "Päivää",
   "fufFVs": "Hylkää puhelu",
   "vHbCEc": "Oletus: {0}",
   "cnGeoo": "Poista",
@@ -183,7 +182,6 @@
   "H3kCln": "Isäntänimi",
   "NvtofW": "Tunnin on oltava alle 24",
   "NM0gWu": "Tunnin on oltava 1 ja 12 väliltä kun käytetään am tai pm",
-  "yY8wAv": "Tuntia",
   "Ylq7PY": "Kuinka usein tarkistat uusia ja poistettuja viestejä? Huomautus: Jos palvelin tukee PUSH-postia, uudet sähköpostit näkyvät välittömästi riippumattomina tästä asetuksesta.",
   "lJz24K": "Lähetän postia",
   "6xx3Ei": "Henkilöllisyydet",
@@ -610,8 +608,6 @@
   "TJdDH8": "Tarvitaan vähintään 1 työtila",
   "5tOy9B": "Ei vastausta vielä",
   "OJx3wK": "Ei saatavilla",
-  "bXCP9f": "Osoitteessa {0} {1}",
-  "0vZgze": "Osoitteessa {0} {1} {2}",
   "bYNZNN": "Avaa tämän tilin asetukset",
   "Pg0AlQ": "Kirjoita työtilan nimi",
   "5WYZKZ": "Hakutulokset",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Järjestäjä",
   "/tmE06": "Alustava",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Pääset käsiksi pilvitiedostoihin olemassa olevalla tililläsi"
+  "2LQSbP": "Pääset käsiksi pilvitiedostoihin olemassa olevalla tililläsi",
+  "GgTY5U": "{num, plural, one {minuutti} other {minuuttia}}",
+  "Jq4085": "viimeinen",
+  "3aHaM3": "Joka",
+  "Xhyc0J": "{0} {1}",
+  "YZT8K4": "{0} {1} {1} vuonna {2}"
 }

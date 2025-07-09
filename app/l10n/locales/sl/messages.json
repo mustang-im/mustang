@@ -158,7 +158,6 @@
   "mYGY3B": "Datum",
   "H7OUPr": "Dan",
   "yRdqWH": "Dan/mesec",
-  "HuVZMK": "Dnevi",
   "fufFVs": "Zavrnitev klica",
   "vHbCEc": "Privzeto: {0}",
   "cnGeoo": "Izbriši",
@@ -237,7 +236,6 @@
   "H3kCln": "Ime gostitelja",
   "NvtofW": "Ura mora biti krajša od 24",
   "NM0gWu": "Pri uporabi am ali pm mora biti ura med 1 in 12.",
-  "yY8wAv": "Ure",
   "Ylq7PY": "Kako pogosto preverjati nova in izbrisana sporočila.\\n\\nPomnilnik: Če strežnik podpira pošto PUSH, se nova e-poštna sporočila pojavijo takoj, ne glede na to nastavitev.\\nTudi interval mora biti velik.",
   "FBknns": "HTML",
   "lJz24K": "Pošiljam pošto",
@@ -373,8 +371,6 @@
   "pl68Oy": "Na spletni strani {0}. vsakega meseca",
   "oxf578": "Na dan {0}",
   "aTK0Fh": "V dneh",
-  "bXCP9f": "Na spletnem mestu {0} {1}",
-  "0vZgze": "Na spletni strani {0} {1} v {2}",
   "GAeRDx": "Na zadnjem {0}",
   "4qp50s": "Na zadnji strani {0} v {1}",
   "oXOSPE": "Spletna stran",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizator",
   "/tmE06": "Okvirna spletna stran",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Dostopajte do svojih datotek v oblaku v obstoječem računu"
+  "2LQSbP": "Dostopajte do svojih datotek v oblaku v obstoječem računu",
+  "GgTY5U": "{num, plural, one {minuta} other {minut}}",
+  "Jq4085": "zadnji",
+  "3aHaM3": "Vsako",
+  "Xhyc0J": "Na {0} {1} {0} {1}",
+  "YZT8K4": "na {0} {1} v {2}"
 }

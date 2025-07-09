@@ -158,7 +158,6 @@
   "mYGY3B": "Dato",
   "H7OUPr": "Dag",
   "yRdqWH": "Dag/måned",
-  "HuVZMK": "Dager",
   "fufFVs": "Avvis samtale",
   "vHbCEc": "Standard: {0}",
   "cnGeoo": "Slett",
@@ -237,7 +236,6 @@
   "H3kCln": "Vertsnavn",
   "NvtofW": "Timen må være mindre enn 24",
   "NM0gWu": "Timen må være mellom 1 og 12 når du bruker am eller pm",
-  "yY8wAv": "Timer",
   "Ylq7PY": "Hvor ofte du skal se etter nye og slettede meldinger. \\n\\nBemerk: Hvis serveren støtter PUSH-post, vil nye e-postmeldinger vises umiddelbart uavhengig av denne innstillingen. \\nIntervallet bør derfor være høyt.",
   "FBknns": "HTML",
   "lJz24K": "Jeg sender e-post",
@@ -373,8 +371,6 @@
   "pl68Oy": "På {0}. i hver måned",
   "oxf578": "På dagen {0}",
   "aTK0Fh": "På dager",
-  "bXCP9f": "På {0} {1}",
-  "0vZgze": "På {0} {1} i {2}",
   "GAeRDx": "På den siste {0}",
   "4qp50s": "På den siste {0} i {1}",
   "oXOSPE": "På nett",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Arrangør",
   "/tmE06": "Foreløpig",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Få tilgang til skyfilene dine i den eksisterende kontoen din"
+  "2LQSbP": "Få tilgang til skyfilene dine i den eksisterende kontoen din",
+  "GgTY5U": "{num, plural, one {minutt} other {minutter}}",
+  "Jq4085": "siste",
+  "3aHaM3": "Hver",
+  "Xhyc0J": "Den {0} {1}",
+  "YZT8K4": "Den {0} {1} i {2}"
 }

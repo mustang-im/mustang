@@ -120,7 +120,6 @@
   "mYGY3B": "Data",
   "H7OUPr": "Zi",
   "yRdqWH": "zi/lună",
-  "HuVZMK": "Zile",
   "fufFVs": "Respingere apel",
   "vHbCEc": "Implicit: {0}",
   "cnGeoo": "Ștergere",
@@ -183,7 +182,6 @@
   "H3kCln": "Nume gazdă",
   "NvtofW": "Oră moust mai mică de 24",
   "NM0gWu": "Ora trebuie să fie între 1 și 12 când se utilizează ora sau ora medie",
-  "yY8wAv": "Ore",
   "Ylq7PY": "Cât de des se verifică mesajele noi și șterse.\\n\\nNObservație: Dacă serverul acceptă PUSH mail, e-mailurile noi vor apărea imediat, indiferent de această setare.\\nDe aceea, intervalul trebuie să fie mare.",
   "lJz24K": "Eu trimit e-mail",
   "6xx3Ei": "Identități",
@@ -610,8 +608,6 @@
   "TJdDH8": "Aveți nevoie de cel puțin 1 spațiu de lucru",
   "5tOy9B": "Niciun răspuns încă",
   "OJx3wK": "Nu este disponibil",
-  "bXCP9f": "Pe {0} {1}",
-  "0vZgze": "Pe {0} {1} în {2}",
   "bYNZNN": "Deschideți setările acestui cont",
   "Pg0AlQ": "Vă rugăm să introduceți un nume de spațiu de lucru",
   "5WYZKZ": "Rezultatele căutării",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizator",
   "/tmE06": "Tentativă",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Accesați fișierele cloud în contul dvs. existent"
+  "2LQSbP": "Accesați fișierele cloud în contul dvs. existent",
+  "GgTY5U": "{num, plural, one {minut} other {minute}}",
+  "Jq4085": "ultimul",
+  "3aHaM3": "La fiecare",
+  "Xhyc0J": "În {0} {1}",
+  "YZT8K4": "Pe {0} {1} în {2}"
 }

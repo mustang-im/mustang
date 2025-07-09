@@ -158,7 +158,6 @@
   "mYGY3B": "Kuupäev",
   "H7OUPr": "Päev",
   "yRdqWH": "Päev/kuu",
-  "HuVZMK": "Päevad",
   "fufFVs": "Keelata kõne",
   "vHbCEc": "Vaikimisi: {0}",
   "cnGeoo": "Kustuta",
@@ -237,7 +236,6 @@
   "H3kCln": "Hostname",
   "NvtofW": "Tund peab olema vähem kui 24",
   "NM0gWu": "Tund peab olema vahemikus 1 ja 12, kui kasutatakse am või pm.",
-  "yY8wAv": "Tunnid",
   "Ylq7PY": "Kui tihti uusi ja kustutatud sõnumeid kontrollida.\\n\\n Märkus: Kui server toetab PUSH maili, ilmuvad uued kirjad kohe, sõltumata sellest seadistusest.\\nSellepärast peaks intervall olema suur.",
   "FBknns": "HTML",
   "lJz24K": "Ma saadan posti",
@@ -373,8 +371,6 @@
   "pl68Oy": "{0}. iga kuu",
   "oxf578": "Päeval {0}",
   "aTK0Fh": "Päevadel",
-  "bXCP9f": "Veebilehel {0} {1}",
-  "0vZgze": "Veebilehel {0} {1} {2}",
   "GAeRDx": "Viimasel {0}",
   "4qp50s": "Viimasel {0} aastal {1}",
   "oXOSPE": "Online",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Korraldaja",
   "/tmE06": "Esialgne",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Juurdepääs oma pilvefailidele oma olemasoleva konto kaudu"
+  "2LQSbP": "Juurdepääs oma pilvefailidele oma olemasoleva konto kaudu",
+  "GgTY5U": "{num, plural, one {minut} other {minutit}}",
+  "Jq4085": "viimane",
+  "3aHaM3": "Iga",
+  "Xhyc0J": "{0} {1}",
+  "YZT8K4": "{0} {1} {1} aastal {2}"
 }

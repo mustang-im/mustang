@@ -122,7 +122,6 @@
   "mYGY3B": "التاريخ",
   "H7OUPr": "يوم",
   "yRdqWH": "اليوم/الشهر",
-  "HuVZMK": "أيام",
   "fufFVs": "رفض المكالمة",
   "vHbCEc": "الافتراضي: {0}",
   "cnGeoo": "حذف",
@@ -185,7 +184,6 @@
   "H3kCln": "Hostname",
   "NvtofW": "اقل من 24 ساعة فأر",
   "NM0gWu": "يجب أن تكون الساعة بين 1 و 12 عند استخدام صم أو مساء",
-  "yY8wAv": "الساعات",
   "Ylq7PY": "كم مرة تحقق من الرسائل الجديدة والمحذفة Note: If the server supports PUSH mail, new emails will appear immediately independent of this setting./n Thererefore, the interval should be high.",
   "lJz24K": "",
   "6xx3Ei": "الهويات",
@@ -659,8 +657,6 @@
   "zKmtH1": "عنوان URL دعوة اجتماع غير صالح",
   "OJx3wK": "غير متوفر",
   "4XbsEl": "ليس في الاجتماع",
-  "bXCP9f": "على {0} {1}",
-  "0vZgze": "على {0} {1} في {2}",
   "bYNZNN": "فتح إعدادات هذا الحساب",
   "FcPUSR": "يرجى إضافة بعض المستلمين",
   "mwJQvm": "الرجاء إدخال موضوع",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "المنظم",
   "/tmE06": "مبدئي",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "الوصول إلى ملفاتك السحابية في حسابك الحالي"
+  "2LQSbP": "الوصول إلى ملفاتك السحابية في حسابك الحالي",
+  "GgTY5U": "{num, plural, one {دقيقة} other {دقيقة}}",
+  "Jq4085": "الأخير",
+  "3aHaM3": "كل",
+  "Xhyc0J": "في يوم {0} {1}",
+  "YZT8K4": "في يوم {0} {1} في {2}"
 }

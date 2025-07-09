@@ -158,7 +158,6 @@
   "mYGY3B": "Datums",
   "H7OUPr": "Diena",
   "yRdqWH": "Diena/mēnesis",
-  "HuVZMK": "Dienas",
   "fufFVs": "Noraidīt zvanu",
   "vHbCEc": "Noklusējuma iestatījumi: {0}",
   "cnGeoo": "Dzēst",
@@ -237,7 +236,6 @@
   "H3kCln": "Uzņēmēja vārds",
   "NvtofW": "Stunda nedrīkst būt īsāka par 24 stundām.",
   "NM0gWu": "Izmantojot am vai pm, stundai jābūt no 1 līdz 12.",
-  "yY8wAv": "Stundas",
   "Ylq7PY": "Cik bieži jāpārbauda, vai nav saņemtas jaunas un dzēstas ziņas.Piezīme: Ja serveris atbalsta PUSH pastu, jauni e-pasti parādīsies nekavējoties neatkarīgi no šī iestatījuma.Tādēļ intervālam jābūt lielam.",
   "FBknns": "HTML",
   "lJz24K": "Es sūtu pastu",
@@ -373,8 +371,6 @@
   "pl68Oy": "Katru mēnesi {0}.",
   "oxf578": "Dienā {0}",
   "aTK0Fh": "Dienās",
-  "bXCP9f": "Uz {0} {1}",
-  "0vZgze": "Uz {0} {1} in {2}",
   "GAeRDx": "Pēdējā {0}",
   "4qp50s": "Pēdējā {0} sadaļā {1}",
   "oXOSPE": "Tiešsaistē",
@@ -800,5 +796,10 @@
   "Q7Qbxi": "Organizators",
   "/tmE06": "Provizoriski",
   "Z6QE5q": "WebDAV",
-  "2LQSbP": "Piekļūstiet saviem mākoņa failiem esošajā kontā"
+  "2LQSbP": "Piekļūstiet saviem mākoņa failiem esošajā kontā",
+  "GgTY5U": "{num, plural, one {minūte} other {minūtes}}",
+  "Jq4085": "pēdējais",
+  "3aHaM3": "Katru reizi",
+  "Xhyc0J": "{0} {1} dienā",
+  "YZT8K4": "{0} {1} in {2} septembrī"
 }
