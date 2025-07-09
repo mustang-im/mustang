@@ -101,7 +101,7 @@
               {#if canSaveSingle}
                 <MenuItem
                   label={$t`Change only this instance`}
-                  onClick={onSave}
+                  onClick={onSaveException}
                   classes="font-normal" />
               {/if}
               {#if $event.seriesStatus == "middle"}
@@ -241,6 +241,12 @@
     await saveEvent(master);
     master.finishEditing();
     await event.truncateRecurrence();
+    onClose();
+  }
+
+  async function onSaveException() {
+    await saveEvent(event);
+    event.parentEvent?.cancelEditing();
     onClose();
   }
 

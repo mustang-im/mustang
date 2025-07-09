@@ -566,12 +566,14 @@ export class Event extends Observable {
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     this.calUID ??= crypto.randomUUID();
     await this.calendar.storage.saveEvent(this);
+
     if (this.recurrenceCase == RecurrenceCase.Master) {
       this.generateRecurringInstances();
     } else if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
       this.parentEvent.instances.remove(this);
       this.parentEvent.exceptions.add(this);
+      await this.parentEvent.save();
     }
   }
 
