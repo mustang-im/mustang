@@ -64,7 +64,7 @@
     bottom: 0px;
     left: 0px;
     overflow: hidden;
-    z-index: 0;
+    z-index: -1;
 
     width: 100%;
     aspect-ratio: 1/1;
@@ -76,8 +76,5 @@
     letter-spacing: 0.378px;
     text-transform: uppercase;
     font-weight: 300;
-  }
-  .events :global(.event) {
-    z-index: 1;
   }
 </style>
