@@ -114,12 +114,12 @@
   import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus";
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
-  import { myTimezone, isMyTimezone } from "../../Util/date";
+  import { myTimezone, isSameTimezone } from "../../Util/date";
   import { getUILocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
 
-  $: showTimezone = !isMyTimezone($event.timezone);
+  $: showTimezone = !isSameTimezone($event.timezone, $event.startTime);
   $: $event.endTime, checkEndTime();
   $: isMultipleDays = $event.startTime && $event.endTime &&
     // all day events have the non-inclusive next day as end

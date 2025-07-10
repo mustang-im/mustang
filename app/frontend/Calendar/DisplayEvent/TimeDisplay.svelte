@@ -2,7 +2,7 @@
   <hbox class="starttime">
     {getDateTimeString($event.startTime)}
   </hbox>
-  {#if !isMyTimezone($event.timezone)}
+  {#if !isSameTimezone($event.timezone, $event.startTime)}
     <hbox class="timezone">
       {getTimezoneDisplay($event.timezone)}
       {$event.startTime?.toLocaleString(getUILocale(), {
@@ -23,7 +23,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { getDateTimeString, getDurationString, getTimezoneDisplay, isMyTimezone } from "../../Util/date";
+  import { getDateTimeString, getDurationString, getTimezoneDisplay, isSameTimezone } from "../../Util/date";
   import { getUILocale, t } from "../../../l10n/l10n";
 
   export let event: Event;

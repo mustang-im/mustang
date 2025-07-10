@@ -91,8 +91,14 @@ export function getTimezoneDisplay(ianaTimezone: string): string {
 export function myTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
-export function isMyTimezone(ianaTimezone: string) {
-  return !ianaTimezone || ianaTimezone == myTimezone();
+export function isSameTimezone(ianaTimezone: string, time: Date) {
+  let summer = new Date(time);
+  summer.setMonth(summer.getMonth() + 6);
+  let tz = {
+    timeZone: ianaTimezone,
+  };
+  return time.toLocaleString("de") == time.toLocaleString("de", tz) &&
+    summer.toLocaleString("de") == summer.toLocaleString("de", tz);
 }
 
 export function getToday() {
