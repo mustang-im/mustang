@@ -8,3 +8,4 @@ dist/
 !backend/prebuild.sh
 !build.sh
 NodeMobile.xcframework
+!setup-ios.sh
