@@ -7,3 +7,5 @@ node_modules/
 dist/
 !backend/prebuild.sh
 !build.sh
+NodeMobile.xcframework
+!setup-ios.sh

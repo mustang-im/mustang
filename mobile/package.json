@@ -8,7 +8,8 @@
     "build": "./build.sh",
     "start-android": "cap run android",
     "start-ios": "cap run ios",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup:ios": "cd ios && ./setup-ios.sh"
   },
   "dependencies": {
     "@capacitor/android": "^7.2.0",
