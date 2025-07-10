@@ -34,15 +34,6 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DD0EE6402DD299F1002B679D /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -64,20 +55,26 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DD0EE6412DD299F5002B679D /* Exceptions for "nodejs-project" folder in "App" target */ = {
+		BF6AD6482E202E4100999418 /* Exceptions for "nodejs-project" folder in "App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				index.js,
+				build/better_sqlite3.node,
+				"prebuilds/ios-arm64-simulator/bufferutil.node",
 			);
 			target = 504EC3031FED79650016851F /* App */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		BFB473CD2E1DCEB2008D311F /* libTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = libTests;
+			sourceTree = "<group>";
+		};
 		DD0EE6372DD26C52002B679D /* nodejs-project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DD0EE6412DD299F5002B679D /* Exceptions for "nodejs-project" folder in "App" target */,
+				BF6AD6482E202E4100999418 /* Exceptions for "nodejs-project" folder in "App" target */,
 			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
@@ -112,6 +109,7 @@
 			children = (
 				DD0EE6422DD29A3E002B679D /* nodejs-project */,
 				504EC3061FED79650016851F /* App */,
+				BFB473CD2E1DCEB2008D311F /* libTests */,
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
@@ -165,7 +163,6 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
-				DD0EE6402DD299F1002B679D /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -185,7 +182,7 @@
 		504EC2FC1FED79650016851F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0920;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 0920;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
@@ -256,8 +253,12 @@
 			);
 			inputFileListPaths = (
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -419,6 +420,16 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/App/nodejs-project/builds/better_sqlite3.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/bufferutil.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/better_sqlite3.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/sdf",
+					"$(PROJECT_DIR)/App/nodejs-project/build",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator/bufferutil.node",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator",
+				);
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = im.mustang.capa;
@@ -441,6 +452,16 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/App/nodejs-project/builds/better_sqlite3.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/bufferutil.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/better_sqlite3.node",
+					"$(PROJECT_DIR)/App/nodejs-project/build/sdf",
+					"$(PROJECT_DIR)/App/nodejs-project/build",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator/bufferutil.node",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = im.mustang.capa;

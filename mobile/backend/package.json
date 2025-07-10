@@ -5,18 +5,8 @@
   "main": "./index.ts",
   "type": "module",
   "scripts": {
-    "prebuild:android-arm": "MOBILE_ARCH=android-arm ./prebuild.sh",
-    "prebuild:android-arm64": "MOBILE_ARCH=android-arm64 ./prebuild.sh",
-    "prebuild:android-x64": "MOBILE_ARCH=android-x64 ./prebuild.sh",
-    "prebuild:ios-sim": "MOBILE_ARCH=ios-x64-simulator ./prebuild.sh",
-    "prebuild:ios-sim-arm": "MOBILE_ARCH=ios-arm64-simulator ./prebuild.sh",
-    "prebuild:ios-dev": "MOBILE_ARCH=ios-arm64 ./prebuild.sh",
-    "prebuild:android": "yarn prebuild:android-arm64 && yarn prebuild:android-x64",
-    "prebuild:ios": "yarn prebuild:ios-sim && yarn prebuild:ios-sim-arm && yarn prebuild:ios-dev",
-    "prebuild:all": "yarn prebuild:android && yarn prebuild:ios",
-    "build:android": "yarn prebuild:android && vite build",
-    "build:ios": "yarn prebuild:ios && vite build",
-    "build:all": "yarn build:android && yarn build:ios"
+    "prebuild": "./prebuild.sh",
+    "build": "vite build"
   },
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",
@@ -31,6 +21,7 @@
     "ky": "^1.2.3",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.13",
+    "vite-plugin-conditional-compile": "^1.4.5",
     "vite-plugin-static-copy": "^2.3.1",
     "ws": "^8.16.0"
   },

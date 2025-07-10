@@ -12,24 +12,15 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
-import fetch, {
-  Blob,
-  blobFrom,
-  blobFromSync,
-  File,
-  fileFrom,
-  fileFromSync,
-  FormData,
-  Headers,
-  Request,
-  Response,
-} from 'node-fetch';
-if (!globalThis.fetch) {
-  globalThis.fetch = fetch
-  globalThis.Headers = Headers
-  globalThis.Request = Request
-  globalThis.Response = Response
-}
+// #if [IOS]
+import fetch, { Headers, Request, Response } from 'node-fetch';
+
+// Set node-fetch as global fetch
+globalThis.fetch = fetch
+globalThis.Headers = Headers
+globalThis.Request = Request
+globalThis.Response = Response
+// #endif
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
