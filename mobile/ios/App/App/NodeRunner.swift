@@ -17,7 +17,7 @@ import NodeMobile
         nodeStarted = true
 
         // Run on a background thread so we don’t block the UI
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
                 // —— DEBUG: list contents of nodejs-project folder ——
                 if let folderURL = Bundle.main.resourceURL?.appendingPathComponent("nodejs-project") {
                     if let items = try? FileManager.default.contentsOfDirectory(atPath: folderURL.path) {
