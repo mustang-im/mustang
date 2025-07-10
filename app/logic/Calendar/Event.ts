@@ -662,7 +662,7 @@ export class Event extends Observable {
       || !newCalendar) {
       return this;
     }
-    this.calendar?.events.remove(this);
+    (this.unedited.calendar || this.calendar)?.events.remove(this);
     let newEvent = newCalendar.newEvent();
     if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newEvent)) {
       this.calendar = newCalendar;
