@@ -34,7 +34,7 @@
 		</dict>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>This app needs to communicate with a local backend via WebSocket for mail synchronization.</string>
+	<string>The app frontend needs to communicate with a local backend via WebSocket for mail synchronization, storage and other tasks. We want the app to run entirely local without any cloud service, that's why the service runs locally on the device.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
