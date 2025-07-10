@@ -2,7 +2,7 @@
 //  NodeRunner.swift
 //  App
 //
-//  Created by Juergen Pona on 06.05.2025.
+//  (c) 2025 Mustang code
 //
 
 import Foundation
