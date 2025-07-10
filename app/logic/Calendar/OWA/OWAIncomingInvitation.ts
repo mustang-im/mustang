@@ -1,7 +1,7 @@
 import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
-import type { OWAEvent } from "./OWAEvent";
 import type { OWACalendar } from "./OWACalendar";
+import type { OWAEvent } from "./OWAEvent";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { assert } from "../../util/util";
@@ -14,14 +14,14 @@ const ResponseTypes: Record<InvitationResponseInMessage, string> = {
 };
 
 export class OWAIncomingInvitation extends IncomingInvitation {
-  declare calendar: OWACalendar;
-  declare message: OWAEMail;
-  declare event: OWAEvent;
+  declare readonly calendar: OWACalendar;
+  declare readonly message: OWAEMail;
   readonly itemID: string | void;
 
   constructor(calendar: OWACalendar, message: OWAEMail) {
     super(calendar, message);
-    this.itemID = this.event?.itemID;
+    let event = calendar.events.find(event => event.calUID == this.event.calUID);
+    this.itemID = event?.itemID;
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
