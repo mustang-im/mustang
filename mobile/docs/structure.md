@@ -11,7 +11,9 @@ The app config directory and files directory should be in `/data/data/im.mustang
 
 #### Node Native
 
-Node native modules should not be included in the Frameworks section of `App/Target` setting in Xcode.
+Node native modules should not be included and be explicitly removed in the Frameworks section of `App/Target` setting in Xcode. Because without doing this the app will throw a memory error on launching with an error message like `Release/[node native] not found` in debug.
+
+_You'll likely see it automatically added in the setting with `Do not embed` selected so make sure you select it and click the minus button on the bottom left of the section._
 
 #### Debugging
 
