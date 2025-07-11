@@ -2,6 +2,7 @@ import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
+import { InvitationEvent } from "./Invitation/InvitationEvent";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";
@@ -696,7 +697,7 @@ export class Event extends Observable {
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
     email.iCalMethod = "REPLY";
-    email.event = new Event();
+    email.event = new InvitationEvent();
     email.event.copyFrom(this);
     // Only myself in reply: RFC 5546 3.2.3
     email.event.participants.replaceAll([myParticipant]);
