@@ -16,9 +16,9 @@
 
   {#if event.location}
     <LocationIcon size="16px" />
-    <hbox class="location font-normal">
+    <value class="location font-normal">
       {$event.location}
-    </hbox>
+    </value>
   {/if}
 
   {#if $event.isOnline && $event.onlineMeetingURL}
@@ -45,10 +45,11 @@
 
 <style>
   grid.event-display-grid {
-    grid-template-columns: max-content max-content;
+    grid-template-columns: max-content 1fr;
     justify-items: start;
     align-items: start;
     gap: 16px;
+    max-width: 100%;
   }
   grid.event-display-grid :global(> svg) {
     margin-block-start: 4px;
@@ -59,5 +60,6 @@
   .recurrence,
   .location {
     flex-wrap: wrap;
-  }
+    max-width: 100%;
+}
 </style>
