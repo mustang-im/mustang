@@ -1,5 +1,5 @@
 import ICalParser from "./ICalParser";
-import { Event } from "../Event";
+import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
@@ -15,18 +15,19 @@ export class ICalEMailProcessor extends EMailProcessor {
     let invitationStr = await invitationBlob.text();
     let ics = new ICalParser(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
-    let event = new Event();
+    let event = new InvitationEvent();
     let isEvent = convertICalParserToEvent(ics, event);
     if (!isEvent) {
       return;
     }
+    event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
 
     if (email.invitationMessage == InvitationMessage.ParticipantReply ||
-        email.invitationMessage == InvitationMessage.CancelledEvent) {
+      email.invitationMessage == InvitationMessage.CancelledEvent) {
       let foundEventInCalendars = email.getUpdateCalendars();
       for (let calendar of foundEventInCalendars) {
         let incomingInvitation = calendar.getIncomingInvitationForEMail(email);

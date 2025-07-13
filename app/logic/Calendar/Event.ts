@@ -2,6 +2,7 @@ import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
+import { InvitationEvent } from "./Invitation/InvitationEvent";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";
@@ -200,6 +201,10 @@ export class Event extends Observable {
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   myParticipation = InvitationResponse.Unknown;
+  /** Only for incoming meetings
+   * The event was cancelled by the organizer (not our user). */
+  @notifyChangedProperty
+  isCancelled = false;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -381,11 +386,13 @@ export class Event extends Observable {
   fromExtraJSON(json: any) {
     assert(typeof (json) == "object", "Must be a JSON object");
     this.syncState = json.syncState;
+    this.isCancelled = sanitize.boolean(json.isCancelled, false);
     this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
   }
   toExtraJSON(): any {
     let json: any = {};
     json.syncState = this.syncState;
+    json.isCancelled = this.isCancelled;
     json.lastUpdateTime = this.lastUpdateTime;
     return json;
   }
@@ -488,12 +495,6 @@ export class Event extends Observable {
 
   get isOutgoingMeeting(): boolean {
     return this.myParticipation == InvitationResponse.Organizer;
-  }
-
-  /** Only for incoming meetings
-   * The event was cancelled by the organizer (not our user). */
-  get isCancelled(): boolean {
-    return !this.participants.some(participant => participant.response == InvitationResponse.Organizer);
   }
 
   /** Call this whenever the master changes */
@@ -697,7 +698,7 @@ export class Event extends Observable {
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
     email.iCalMethod = "REPLY";
-    email.event = new Event();
+    email.event = new InvitationEvent();
     email.event.copyFrom(this);
     // Only myself in reply: RFC 5546 3.2.3
     email.event.participants.replaceAll([myParticipant]);

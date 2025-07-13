@@ -53,13 +53,13 @@ export class IncomingInvitation {
     if (this.event?.lastUpdateTime <= event?.lastUpdateTime) {
       return;
     }
-    // Is this action reversible? If so, need to check timestamp.
+    event.isCancelled = true;
     let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
     if (organizer) {
       organizer.response = InvitationResponse.Decline;
-      event.lastUpdateTime = this.event.lastUpdateTime;
-      await event.save();
     }
+    event.lastUpdateTime = this.event.lastUpdateTime;
+    await event.save();
   }
 
   /** ParticpantReply: an invitee replied to your outgoing invitation */
@@ -83,7 +83,7 @@ export class IncomingInvitation {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
     if (this.invitationMessage == InvitationMessage.CancelledEvent) {
       await this.updateCancelled();
-    } else {
+    } else if (this.invitationMessage == InvitationMessage.ParticipantReply) {
       await this.updateParticipantReply();
     }
   }

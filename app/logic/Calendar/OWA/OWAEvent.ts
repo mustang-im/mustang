@@ -97,11 +97,12 @@ export class OWAEvent extends Event {
     this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
     this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
     this.isOnline = sanitize.boolean(json.IsOnlineMeeting, false);
+    this.isCancelled = sanitize.boolean(json.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (json.Organizer) {
       organizer = json.Organizer.Mailbox.EmailAddress;
-      json.Organizer.ResponseType = json.IsCancelled ? "Decline" : "Organizer";
+      json.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
       addParticipants([json.Organizer], participants);
     }
     if (json.RequiredAttendees) {
