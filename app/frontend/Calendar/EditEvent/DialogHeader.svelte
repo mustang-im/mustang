@@ -143,7 +143,7 @@
   import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
-  import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
+  import { CalendarEventMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent, selectedCalendar } from "../selected";
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
@@ -179,7 +179,7 @@
     newCalendar != event.calendar;
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
-  $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
+  $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
 
@@ -284,7 +284,7 @@
   }
 
   function onExpandToWindow() {
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 
   function onShrink() {
@@ -294,7 +294,7 @@
 
   function onClose() {
     event.finishEditing();
-    let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
+    let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
     if (!isFullWindow) {
       // Make sidebar disappear, see CalendarApp.svelte

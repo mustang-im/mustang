@@ -58,11 +58,6 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.isIncomingMeeting && !event.isCancelled}
-    <hbox class="buttons">
-      <InvitationResponseButtons {event} />
-    </hbox>
-  {/if}
 </vbox>
 
 <script lang="ts">
@@ -77,7 +72,6 @@
   import LocationBox from './LocationBox.svelte';
   import OnlineMeetingBox from './OnlineMeetingBox.svelte';
   import DescriptionBox from './DescriptionBox.svelte';
-  import InvitationResponseButtons from "./InvitationResponseButtons.svelte";
   import Section from "./Section.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   import DialogHeader from "./DialogHeader.svelte";
@@ -161,10 +155,6 @@
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
-  }
-  .buttons {
-    align-items: center;
-    padding: 8px;
   }
   :global(.inline) {
     display: inline-flex !important;

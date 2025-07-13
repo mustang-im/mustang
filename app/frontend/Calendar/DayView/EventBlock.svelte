@@ -52,7 +52,7 @@
   function onOpen(ev: MouseEvent) {
     ev.stopPropagation();
     $selectedEvent = event;
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

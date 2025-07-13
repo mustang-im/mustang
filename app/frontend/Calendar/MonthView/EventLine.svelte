@@ -35,7 +35,7 @@
 
   function onOpen() {
     $selectedEvent = event;
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

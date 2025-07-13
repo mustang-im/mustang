@@ -11,7 +11,7 @@
     </vbox>
     <vbox flex class="sidebar" slot="right">
       {#if $selectedEvent}
-        <EditEvent event={$selectedEvent} />
+        <ShowEvent event={$selectedEvent} />
       {:else}
         <!--<TaskList />-->
       {/if}
@@ -28,7 +28,7 @@
   import MainView from "./MainView.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
-  import EditEvent from "./EditEvent/EditEvent.svelte";
+  import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
@@ -48,7 +48,7 @@
     event.startTime.setMilliseconds(0);
     event.endTime = new Date(event.startTime.getTime());
     event.endTime.setMinutes(event.startTime.getMinutes() + defaultLengthInMinutes);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

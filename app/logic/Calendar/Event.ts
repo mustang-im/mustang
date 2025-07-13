@@ -490,7 +490,8 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
-  /** Only for incoming meetings */
+  /** Only for incoming meetings
+   * The event was cancelled by the organizer (not our user). */
   get isCancelled(): boolean {
     return !this.participants.some(participant => participant.response == InvitationResponse.Organizer);
   }

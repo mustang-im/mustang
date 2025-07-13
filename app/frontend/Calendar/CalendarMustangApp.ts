@@ -2,7 +2,7 @@ import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
 import type { Event } from "../../logic/Calendar/Event";
 import CalendarApp from "../Calendar/CalendarApp.svelte";
-import EditEvent from "./EditEvent/EditEvent.svelte";
+import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
 import CalendarIcon from "../Calendar/CalendarIcon.svelte";
 import EditIcon from "lucide-svelte/icons/pencil";
 import { derived } from "svelte/store";
@@ -14,8 +14,8 @@ export class CalendarMustangApp extends MustangApp {
   icon = CalendarIcon;
   mainWindow = CalendarApp;
 
-  editEvent(event: Event) {
-    let edit = new EventEditMustangApp();
+  showEvent(event: Event) {
+    let edit = new CalendarEventMustangApp();
     edit.title = derived(event, event => event.title ?? edit.name);
     edit.mainWindowProperties = {
       event: event,
@@ -25,11 +25,11 @@ export class CalendarMustangApp extends MustangApp {
   }
 }
 
-export class EventEditMustangApp extends MustangApp {
-  id = "calendar-event-edit";
+export class CalendarEventMustangApp extends MustangApp {
+  id = "calendar-event-show";
   name = gt`Event`;
   icon = EditIcon;
-  mainWindow = EditEvent;
+  mainWindow = ShowEvent;
 }
 
 export const calendarMustangApp = new CalendarMustangApp();

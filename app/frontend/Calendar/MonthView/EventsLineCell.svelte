@@ -49,7 +49,7 @@
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date(start.getTime() + 10 * k1HourMS);
     event.endTime = new Date(start.getTime() + 11 * k1HourMS);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

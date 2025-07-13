@@ -112,13 +112,15 @@
   .buttons {
     align-items: center;
     justify-content: center;
-    margin-block-start: 16px;
+    flex-wrap: wrap;
   }
   .buttons > :global(button) {
     margin-inline-start: 12px;
+    margin-block-start: 16px;
   }
   .buttons :global(button.menu-button) {
     margin-inline-start: 4px;
+    position: absolute;
   }
   .buttons :global(button .label) {
     margin-inline-end: 6px;

@@ -8,7 +8,7 @@
       {#if $message.event}
         <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
       {:else}
-        No event found
+        {$t`No event found`}
       {/if}
     {:catch ex}
       {ex?.message ?? ex}
@@ -88,35 +88,5 @@
     align-items: center;
     justify-content: center;
     margin-block-start: 16px;
-  }
-  .buttons > :global(button) {
-    margin-inline-start: 12px;
-  }
-  .buttons :global(button.menu-button) {
-    margin-inline-start: 4px;
-  }
-  .buttons :global(button .label) {
-    margin-inline-end: 6px;
-  }
-  .buttons > :global(button.accept) {
-    color: #1B8022;
-    background-color: #AAE3D2;
-  }
-  .buttons :global(button.accept) {
-    color: #1B8022;
-  }
-  .buttons :global(button.decline) {
-    color: #FE1B1B;
-    border-color: #F69FA1;
-  }
-  .buttons :global(button.accept.done) {
-    color: white;
-    background-color: #36957A;
-    opacity: 100%;
-  }
-  .buttons :global(button.decline.done) {
-    color: white;
-    background-color: #A86F69;
-    opacity: 100%;
   }
 </style>

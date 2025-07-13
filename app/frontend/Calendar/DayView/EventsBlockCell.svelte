@@ -33,7 +33,7 @@
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date(start);
     event.endTime = new Date(start);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 
