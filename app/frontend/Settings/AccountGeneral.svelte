@@ -19,14 +19,22 @@
           <hbox class="icon placeholder" />
         {/if}
 
-        <label for="name">{$t`Workspace`}</label>
-        <select bind:value={account.workspace}>
+        <label for="workspace">{$t`Workspace`}</label>
+        <select bind:value={account.workspace} name="workspace">
           {#each appGlobal.workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>
           {/each}
         </select>
         <hbox />
         <hbox />
+
+        {#if account instanceof MailAccount || account instanceof ChatAccount || account instanceof MeetAccount}
+          <label for="realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name`}</label>
+          <input type="text" bind:value={account.realname} name="realname" on:change={onChange}
+            title={$t`Your real name, as shown to other people when you are sending messages`} />
+          <hbox />
+          <hbox />
+        {/if}
       </grid>
     </vbox>
   </HeaderGroupBox>
@@ -45,6 +53,9 @@
   import { selectedCategory } from "./Window/selected";
   import { settingsCategories } from "./SettingsCategories";
   import { accountColors } from "../../logic/Abstract/Workspace";
+  import { MailAccount } from "../../logic/Mail/MailAccount";
+  import { ChatAccount } from "../../logic/Chat/ChatAccount";
+  import { MeetAccount } from "../../logic/Meet/MeetAccount";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
   import { catchErrors } from "../Util/error";
@@ -92,5 +103,9 @@
   .icon.placeholder {
     width: 24px;
     height: 24px;
+  }
+
+  input[name] {
+    margin-block-end: 24px;
   }
 </style>
