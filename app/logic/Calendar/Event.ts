@@ -2,7 +2,7 @@ import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
-import { InvitationEvent } from "./Invitation/InvitationEvent";
+import { IncomingInvitation } from "./Invitation/IncomingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";
@@ -14,7 +14,6 @@ import { Lock } from "../util/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Event extends Observable {
@@ -678,49 +677,14 @@ export class Event extends Observable {
     return newEvent;
   }
 
-  // TODO Move code to `IncomingInvitation` class
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let { identity, myParticipant } = this.participantMe(mailAccount);
     let hasChanged = myParticipant.response != response;
     myParticipant.response = response;
     if (hasChanged) {
-      await this.sendInvitationResponse(myParticipant, identity.account);
+      await IncomingInvitation.sendInvitationResponse(this, myParticipant, identity.account);
     }
-  }
-
-  // TODO Move code to `IncomingInvitation` class
-  async sendInvitationResponse(myParticipant: Participant, account: MailAccount) {
-    let organizer = this.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
-    let email = account.newEMailFrom();
-    email.from.emailAddress = myParticipant.emailAddress;
-    email.from.name = myParticipant.name || email.from.name;
-    email.to.add(organizer);
-    email.iCalMethod = "REPLY";
-    email.event = new InvitationEvent();
-    email.event.copyFrom(this);
-    // Only myself in reply: RFC 5546 3.2.3
-    email.event.participants.replaceAll([myParticipant]);
-    if (email.event.descriptionText) {
-      email.text = email.event.descriptionText;
-      email.html = email.event.descriptionHTML;
-    }
-
-    let subject = "";
-    if (myParticipant.response == InvitationResponse.Accept) {
-      subject = gt`Confirmed *=> Accepted to join this business meeting`;
-    } else if (myParticipant.response == InvitationResponse.Decline) {
-      subject = gt`Declined *=> Refused to join this business meeting`;
-    } else if (myParticipant.response == InvitationResponse.Tentative) {
-      subject = gt`Tentative *=> Not sure to join this business meeting`;
-    }
-    if (subject) {
-      subject += ": ";
-    }
-    email.subject = subject + email.event.title;
-
-    await account.send(email);
   }
 
   /**
