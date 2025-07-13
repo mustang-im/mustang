@@ -102,7 +102,6 @@ export class IncomingInvitation {
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
     email.iCalMethod = "REPLY";
-    let { InvitationEvent } = await import("./InvitationEvent"); // TODO HACK to avoid circular import
     email.event = new InvitationEvent();
     email.event.copyFrom(repliedEvent);
     // Only myself in reply: RFC 5546 3.2.3

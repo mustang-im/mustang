@@ -2,7 +2,6 @@ import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
-import { IncomingInvitation } from "./Invitation/IncomingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";
@@ -683,6 +682,7 @@ export class Event extends Observable {
     let hasChanged = myParticipant.response != response;
     myParticipant.response = response;
     if (hasChanged) {
+      const { IncomingInvitation } = await import("./Invitation/IncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
       await IncomingInvitation.sendInvitationResponse(this, myParticipant, identity.account);
     }
   }
