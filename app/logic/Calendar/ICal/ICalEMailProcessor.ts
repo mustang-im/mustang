@@ -20,13 +20,14 @@ export class ICalEMailProcessor extends EMailProcessor {
     if (!isEvent) {
       return;
     }
+    event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
 
     if (email.invitationMessage == InvitationMessage.ParticipantReply ||
-        email.invitationMessage == InvitationMessage.CancelledEvent) {
+      email.invitationMessage == InvitationMessage.CancelledEvent) {
       let foundEventInCalendars = email.getUpdateCalendars();
       for (let calendar of foundEventInCalendars) {
         let incomingInvitation = calendar.getIncomingInvitationFor(email);

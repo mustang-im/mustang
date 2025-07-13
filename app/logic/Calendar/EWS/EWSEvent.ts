@@ -99,11 +99,12 @@ export class EWSEvent extends Event {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(xmljs.Location, "");
+    this.isCancelled = sanitize.boolean(xmljs.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (xmljs.Organizer) {
       organizer = xmljs.Organizer.Mailbox.EmailAddress;
-      xmljs.Organizer.ResponseType = sanitize.boolean(xmljs.IsCancelled) ? "Decline" : "Organizer";
+      xmljs.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
       addParticipants(xmljs.Organizer, participants);
     }
     if (xmljs.RequiredAttendees?.Attendee) {

@@ -201,6 +201,10 @@ export class Event extends Observable {
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   myParticipation = InvitationResponse.Unknown;
+  /** Only for incoming meetings
+   * The event was cancelled by the organizer (not our user). */
+  @notifyChangedProperty
+  isCancelled = false;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -382,11 +386,13 @@ export class Event extends Observable {
   fromExtraJSON(json: any) {
     assert(typeof (json) == "object", "Must be a JSON object");
     this.syncState = json.syncState;
+    this.isCancelled = sanitize.boolean(json.isCancelled, false);
     this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
   }
   toExtraJSON(): any {
     let json: any = {};
     json.syncState = this.syncState;
+    json.isCancelled = this.isCancelled;
     json.lastUpdateTime = this.lastUpdateTime;
     return json;
   }
@@ -489,12 +495,6 @@ export class Event extends Observable {
 
   get isOutgoingMeeting(): boolean {
     return this.myParticipation == InvitationResponse.Organizer;
-  }
-
-  /** Only for incoming meetings
-   * The event was cancelled by the organizer (not our user). */
-  get isCancelled(): boolean {
-    return !this.participants.some(participant => participant.response == InvitationResponse.Organizer);
   }
 
   /** Call this whenever the master changes */

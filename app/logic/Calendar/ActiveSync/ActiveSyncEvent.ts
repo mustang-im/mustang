@@ -71,14 +71,20 @@ export class ActiveSyncEvent extends Event {
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
+    this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
     let attendees = ensureArray(wbxmljs.Attendees?.Attendee);
     if (wbxmljs.OrganizerEmail) {
-      let status = wbxmljs.MeetingStatus & 4 ? InvitationResponse.Decline : InvitationResponse.Organizer;
-      let organizer = attendees.find(attendee => attendee.Email == wbxmljs.OrganizerEmail);
+      let status = this.isCancelled ? InvitationResponse.Decline : InvitationResponse.Organizer;
+      let organizerEmail = sanitize.emailAddress(wbxmljs.OrganizerEmail);
+      let organizer = attendees.find(attendee => attendee.Email == organizerEmail);
       if (organizer) {
         organizer.AttendeeStatus = status;
       } else {
-        attendees.unshift({ Email: wbxmljs.OrganizerEmail, Name: wbxmljs.OrganizerName, AttendeeStatus: status });
+        attendees.unshift({
+          Email: organizerEmail,
+          Name: sanitize.label(wbxmljs.OrganizerName),
+          AttendeeStatus: status
+        });
       }
     }
     this.participants.replaceAll(attendees.map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
