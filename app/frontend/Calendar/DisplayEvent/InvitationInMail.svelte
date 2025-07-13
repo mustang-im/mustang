@@ -67,14 +67,14 @@
     if (event && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
       await event.moveToCalendar(selectedCalendar);
     }
-    incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
+    incomingInvitation = selectedCalendar.getIncomingInvitationForEMail(message);
     event = incomingInvitation.calEvent();
   }
 
   async function onUpdate() {
     let foundEventInCalendars = message.getUpdateCalendars();
     for (let calendar of foundEventInCalendars) {
-      let incomingInvitation = calendar.getIncomingInvitationFor(message);
+      let incomingInvitation = calendar.getIncomingInvitationForEMail(message);
       await incomingInvitation.updateFromOtherInvitationMessage();
     }
   }

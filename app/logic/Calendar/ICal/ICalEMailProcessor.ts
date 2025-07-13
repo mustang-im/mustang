@@ -29,7 +29,7 @@ export class ICalEMailProcessor extends EMailProcessor {
         email.invitationMessage == InvitationMessage.CancelledEvent) {
       let foundEventInCalendars = email.getUpdateCalendars();
       for (let calendar of foundEventInCalendars) {
-        let incomingInvitation = calendar.getIncomingInvitationFor(email);
+        let incomingInvitation = calendar.getIncomingInvitationForEMail(email);
         await incomingInvitation.updateFromOtherInvitationMessage();
       }
     }
