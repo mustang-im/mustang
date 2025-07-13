@@ -676,14 +676,15 @@ export class Event extends Observable {
     return newEvent;
   }
 
+  /** TODO Move to @see IncomingInvitation */
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let { identity, myParticipant } = this.participantMe(mailAccount);
     let hasChanged = myParticipant.response != response;
     myParticipant.response = response;
     if (hasChanged) {
-      const { IncomingInvitation } = await import("./Invitation/IncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
-      await IncomingInvitation.sendInvitationResponse(this, myParticipant, identity.account);
+      const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
+      await ICalIncomingInvitation.sendInvitationResponse(this, myParticipant, identity.account);
     }
   }
 
