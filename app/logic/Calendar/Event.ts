@@ -676,7 +676,7 @@ export class Event extends Observable {
     return newEvent;
   }
 
-  /** TODO Move to @see IncomingInvitation */
+  /** TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation */
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let { identity, myParticipant } = this.participantMe(mailAccount);
