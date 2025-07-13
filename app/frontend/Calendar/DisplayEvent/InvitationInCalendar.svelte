@@ -1,12 +1,14 @@
-<DialogHeader {event} />
-<vbox class="content" flex>
-  <InvitationDisplay {event} selectedCalendar={event.calendar} {calendars} />
+<vbox class="show-event">
+  <DialogHeader {event} />
+  <vbox class="content" flex>
+    <InvitationDisplay {event} selectedCalendar={event.calendar} {calendars} />
 
-  {#if event.isCancelled }
-    {$t`This event has been cancelled by the organizer`}
-  {:else}
-    <InvitationButtons incomingInvitation={event} myParticipation={event.myParticipation} />
-  {/if}
+    {#if event.isCancelled }
+      {$t`This event has been cancelled by the organizer`}
+    {:else}
+      <InvitationButtons incomingInvitation={event} myParticipation={event.myParticipation} />
+    {/if}
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -23,6 +25,9 @@ $: calendars = new ArrayColl([event.calendar]);
 </script>
 
 <style>
+  .show-event {
+    container-type: inline-size;
+  }
   .content {
     padding: 24px 32px;
   }

@@ -13,6 +13,47 @@
             iconSize="16px"
             />
         {/if}
+        {#if $event.recurrenceCase == RecurrenceCase.Instance}
+          <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
+            <RoundButton
+              slot="control"
+              label={$t`Delete event`}
+              icon={DeleteIcon}
+              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              classes="plain delete"
+              border={false}
+              iconSize="16px"
+              />
+
+            {#if !event.isIncomingMeeting}
+              <MenuItem
+                label={$t`Delete only this instance`}
+                onClick={onDelete}
+                classes="font-normal" />
+              {#if $event.seriesStatus == "middle"}
+                <MenuItem
+                  label={$t`Delete remainder of series`}
+                  onClick={onDeleteRemainder}
+                  classes="font-normal" />
+              {/if}
+            {/if}
+            <MenuItem
+              label={$t`Delete entire series`}
+              onClick={onDeleteAll}
+              classes="font-normal" />
+          </ButtonMenu>
+        {:else}
+          <RoundButton
+            label={$t`Delete event`}
+            icon={DeleteIcon}
+            onClick={onDelete}
+            disabled={!event.dbID && !event.parentEvent}
+            classes="plain delete"
+            border={false}
+            iconSize="16px"
+            />
+        {/if}
+      </hbox>
       <hbox class="account-icon">
         <hbox class="account-icon-dummy">
           <Button icon={AccountIcon} />
@@ -46,22 +87,26 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { CalendarEventMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import Stack from "../../Shared/Stack.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import AccountIcon from "lucide-svelte/icons/user-round";
   import ExpandDialogIcon from "lucide-svelte/icons/chevrons-left";
   import ShrinkDialogIcon from "lucide-svelte/icons/chevrons-right";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
 
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
+  let isDeleteSeriesOpen = false;
 
   function onExpandToWindow() {
     calendarMustangApp.showEvent(event);
@@ -70,6 +115,32 @@
   function onShrink() {
     $selectedEvent = event;
     openApp(calendarMustangApp);
+  }
+
+  async function onDelete() {
+    if (event.seriesStatus == "only") {
+      await event.parentEvent.deleteIt();
+    } else {
+      await event.deleteIt();
+    }
+    $selectedEvent = null;
+    onClose();
+  }
+
+  async function onDeleteAll() {
+    if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+      return;
+    }
+    let master = event.parentEvent;
+    await master.deleteIt();
+    $selectedEvent = null;
+    onClose();
+  }
+
+  async function onDeleteRemainder() {
+    await event.truncateRecurrence();
+    $selectedEvent = null;
+    onClose();
   }
 
   function onClose() {
