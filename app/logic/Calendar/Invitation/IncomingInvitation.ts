@@ -2,7 +2,7 @@ import type { Calendar } from "../Calendar";
 import type { Event } from "../Event";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { EMail } from "../../Mail/EMail";
-import { assert } from "../../util/util";
+import { AbstractFunction, assert } from "../../util/util";
 
 export class IncomingInvitation {
   readonly calendar: Calendar;
@@ -26,23 +26,7 @@ export class IncomingInvitation {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let event = this.calEvent();
-    if (!event) {
-      event = this.calendar.newEvent();
-      event.copyFrom(this.event);
-      this.calendar.events.add(event);
-    } else if (this.event.lastUpdateTime >= event.lastUpdateTime) {
-      event.copyFrom(this.event);
-    }
-    let { myParticipant } = event.participantMe(this.message.folder.account);
-    /* else add participant? */
-    let hasChanged = event.myParticipation != response;
-    event.myParticipation = this.myParticipation = myParticipant.response = response;
-    await event.save();
-    if (hasChanged) {
-      await event.sendInvitationResponse(myParticipant, this.message.folder.account);
-    }
+    throw new AbstractFunction();
   }
 
   /** CancelledEvent: the organiser cancelled an incoming meeting */

@@ -1,7 +1,7 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
-import { IncomingInvitation } from "./Invitation/IncomingInvitation";
+import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -40,7 +40,7 @@ export class Calendar extends Account {
   }
 
   getIncomingInvitationForEMail(message: EMail) {
-    return new IncomingInvitation(this, message);
+    return new ICalIncomingInvitation(this, message);
   }
 
   async listEvents() {
