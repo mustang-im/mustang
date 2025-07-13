@@ -16,65 +16,7 @@
   {/if}
   <hbox class="buttons">
     {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
-      {#if myParticipation == InvitationResponse.Organizer}
-        {$t`You sent this invitation`}
-      {:else if myParticipation == InvitationResponse.Accept}
-        <Button
-          label={$t`Confirmed *=> A meeting request has been confirmed by you`}
-          icon={AcceptIcon}
-          selected={true}
-          onClick={onOpenInCalendar}
-          classes="accept done font-normal" />
-        <ButtonMenu buttonIcon={ChevronDownIcon}>
-          <MenuItem
-            label={$t`Change to Reject *=> not attend the meeting`}
-            onClick={onDecline}
-            icon={DeclineIcon}
-            classes="decline font-normal" />
-          <MenuItem
-            label={$t`Change to Maybe *=> Maybe attend the meeting`}
-            onClick={onTentative}
-            icon={MaybeIcon}
-            classes="maybe font-normal" />
-        </ButtonMenu>
-      {:else if myParticipation == InvitationResponse.Decline}
-        <Button
-          label={$t`Rejected *=> A meeting request has been declined by you`}
-          icon={DeclineIcon}
-          selected={true}
-          onClick={onOpenInCalendar}
-          classes="decline done font-normal" />
-        <ButtonMenu buttonIcon={ChevronDownIcon}>
-          <MenuItem
-            label={$t`Change to Accept *=> attend the meeting`}
-            onClick={onAccept}
-            icon={AcceptIcon}
-            classes="accept font-normal" />
-          <MenuItem
-            label={$t`Change to Maybe *=> Maybe attend the meeting`}
-            onClick={onTentative}
-            icon={MaybeIcon}
-            classes="maybe font-normal" />
-        </ButtonMenu>
-      {:else}
-        <Button
-          label={$t`Confirm *=> Confirm to attend the meeting`}
-          onClick={onAccept}
-          icon={AcceptIcon}
-          classes="accept font-normal" />
-        <Button
-          label={$t`Reject *=> Decline to attend the meeting`}
-          onClick={onDecline}
-          icon={DeclineIcon}
-          classes="decline secondary font-normal" />
-        <ButtonMenu buttonIcon={ChevronDownIcon}>
-          <MenuItem
-            label={$t`Maybe *=> Maybe attend the meeting`}
-            onClick={onTentative}
-            icon={MaybeIcon}
-            classes="maybe font-normal" />
-        </ButtonMenu>
-      {/if}
+      <InvitationButtons {incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
     {:else if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
       {#await onUpdate()}
         <!-- Update processing -->
@@ -92,24 +34,16 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
-  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { openEventFromOtherApp } from "../open";
+  import { InvitationMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
+  import InvitationButtons from "./InvitationButtons.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
-  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
-  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import Button from "../../Shared/Button.svelte";
-  import AcceptIcon from "lucide-svelte/icons/check-check";
-  import DeclineIcon from "lucide-svelte/icons/x";
-  import MaybeIcon from "lucide-svelte/icons/circle-help";
-  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   let calendars: Collection<Calendar>;
   let selectedCalendar: Calendar | undefined;
-  let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
 
@@ -123,7 +57,8 @@
   }
   async function loadCalendars() {
     calendars = message.getUpdateCalendars();
-    selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID)) || calendars.first;
+    selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID))
+      ?? calendars.first;
     if (selectedCalendar) {
       await selectCalendar();
     }
@@ -132,24 +67,8 @@
     if (event && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
       await event.moveToCalendar(selectedCalendar);
     }
-    event = selectedCalendar.events.find(event => event.calUID == message.event.calUID);
     incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
-    myParticipation = incomingInvitation.myParticipation;
-  }
-
-  async function respond(response: InvitationResponseInMessage) {
-    await incomingInvitation.respondToInvitation(response);
-    myParticipation = response;
-    event ??= selectedCalendar.events.find(event => event.calUID == message.event.calUID);
-  }
-  async function onAccept() {
-    await respond(InvitationResponse.Accept);
-  }
-  async function onTentative() {
-    await respond(InvitationResponse.Tentative);
-  }
-  async function onDecline() {
-    await respond(InvitationResponse.Decline);
+    event = incomingInvitation.calEvent();
   }
 
   async function onUpdate() {
@@ -158,14 +77,6 @@
       let incomingInvitation = calendar.getIncomingInvitationFor(message);
       await incomingInvitation.updateFromOtherInvitationMessage();
     }
-  }
-
-  async function onOpenInCalendar() {
-    let calEvent = incomingInvitation.calEvent();
-    if (!calEvent) {
-      return;
-    }
-    openEventFromOtherApp(calEvent);
   }
 </script>
 
