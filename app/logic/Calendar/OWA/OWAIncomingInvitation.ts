@@ -3,7 +3,7 @@ import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage
 import type { OWACalendar } from "./OWACalendar";
 import type { OWAEvent } from "./OWAEvent";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
-import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
+import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 

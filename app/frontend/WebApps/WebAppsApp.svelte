@@ -9,7 +9,7 @@
 {/if}
 
 <script lang="ts">
-  import type WebAppListed from "../../logic/WebApps/WebAppListed";
+  import type { WebAppListed } from "../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../logic/app";
   import AppRunner from "./Launcher/WebAppRunner.svelte";
   import AppStore from "./Shop/WebAppStore.svelte";

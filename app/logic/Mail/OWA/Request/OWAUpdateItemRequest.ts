@@ -1,6 +1,6 @@
-import OWARequest from "./OWARequest";
+import { OWARequest } from "./OWARequest";
 
-export default class OWAUpdateItemRequest extends OWARequest {
+export class OWAUpdateItemRequest extends OWARequest {
   Body: any = {
     __type: "UpdateItemRequest:#Exchange",
     ConflictResolution: "AlwaysOverwrite",

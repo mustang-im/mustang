@@ -1,9 +1,9 @@
 import type { OWAEvent } from "../OWAEvent";
-import OWARequest from "../../../Mail/OWA/Request/OWARequest";
+import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 
 /** This is similar to the UpdateItem request,
  * but the format of the item id is different. */
-export default class OWAUpdateOccurrenceRequest extends OWARequest {
+export class OWAUpdateOccurrenceRequest extends OWARequest {
   Body: any = {
     __type: "UpdateItemRequest:#Exchange",
     ConflictResolution: "AlwaysOverwrite",

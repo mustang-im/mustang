@@ -1,4 +1,4 @@
-export default class OWACreatePersonaRequest {
+export class OWACreatePersonaRequest {
   /** Persona requests are wrapped in an additional object for some reason. */
   readonly request: any = {
     __type: "CreatePersonaJsonRequest:#Exchange",

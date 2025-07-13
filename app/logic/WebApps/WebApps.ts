@@ -1,11 +1,11 @@
-import WebAppCategory from "./WebAppCategory";
-import WebAppListed from "./WebAppListed";
+import { WebAppCategory } from "./WebAppCategory";
+import { WebAppListed } from "./WebAppListed";
 import appStore from "./webAppStore.json";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { MapColl, ArrayColl } from 'svelte-collections';
 import { showError } from "../../frontend/Util/error";
 
-export default class WebApps {
+export class WebApps {
   /** fullID -> AppCategory */
   readonly categories = new MapColl<string, WebAppCategory>();
   readonly apps = new MapColl<string, WebAppListed>();

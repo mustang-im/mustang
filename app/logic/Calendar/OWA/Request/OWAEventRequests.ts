@@ -1,4 +1,4 @@
-import OWARequest from "../../../Mail/OWA/Request/OWARequest";
+import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 import type { OWAEvent } from "../OWAEvent";
 
 export function owaGetEventsRequest(eventIDs: string[]): OWARequest {

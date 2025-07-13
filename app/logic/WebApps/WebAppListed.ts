@@ -5,7 +5,7 @@ import { sourceLocale } from "../../l10n/list";
  * A third party web app listed in our app store.
  * The user can select and use this app.
  */
-export default class WebAppListed {
+export class WebAppListed {
   /** e.g. "microsoft-word" */
   id: string;
   /** Categories to which this app belongs.

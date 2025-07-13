@@ -1,7 +1,7 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
-import OutgoingInvitation from "./Invitation/OutgoingInvitation";
+import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";

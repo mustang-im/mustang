@@ -8,7 +8,7 @@ import type { MeetAccount } from './Meet/MeetAccount';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { FileSharingAccount } from './Files/FileSharingAccount';
 import type { Workspace } from './Abstract/Workspace';
-import WebApps from './WebApps/WebApps';
+import { WebApps } from './WebApps/WebApps';
 import { ArrayColl, Collection, mergeColls } from 'svelte-collections';
 
 class AppGlobal {

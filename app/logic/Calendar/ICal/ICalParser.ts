@@ -33,7 +33,7 @@ class ICalContainer {
   }
 }
 
-export default class ICalParser {
+export class ICalParser {
   containers: Record<string, ICalContainer[]> = Object.create(null);
   constructor(calendar: string) {
     let current: ICalContainer | ICalParser = this;

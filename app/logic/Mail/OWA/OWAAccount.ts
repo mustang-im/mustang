@@ -11,8 +11,8 @@ import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressboo
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
-import OWACreateItemRequest from "./Request/OWACreateItemRequest";
-import OWASubscribeToNotificationRequest from "./Request/OWASubscribeToNotificationRequest";
+import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
+import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";

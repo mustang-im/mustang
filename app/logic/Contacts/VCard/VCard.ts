@@ -1,4 +1,4 @@
-import ICalParser from "../../Calendar/ICal/ICalParser";
+import { ICalParser } from "../../Calendar/ICal/ICalParser";
 import type { ICalEntry } from "../../Calendar/ICal/ICalParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";

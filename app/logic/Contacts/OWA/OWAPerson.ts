@@ -1,9 +1,9 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { OWAAddressbook } from './OWAAddressbook';
-import OWACreatePersonaRequest from "./Request/OWACreatePersonaRequest";
-import OWADeletePersonaRequest from "./Request/OWADeletePersonaRequest";
-import OWAUpdatePersonaRequest from "./Request/OWAUpdatePersonaRequest";
+import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
+import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";
+import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class OWAPerson extends Person {

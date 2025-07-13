@@ -1,4 +1,4 @@
-export default class OWARequest {
+export class OWARequest {
   readonly __type: string;
   readonly Header = {
     __type: "JsonRequestHeaders:#Exchange",

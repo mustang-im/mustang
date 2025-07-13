@@ -20,7 +20,7 @@
 </Scroll>
 
 <script lang="ts">
-  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import AppLaunchButton from "./WebAppLaunchButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";

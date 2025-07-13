@@ -3,7 +3,7 @@ import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
-import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
+import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { ensureArray } from "../../util/util";

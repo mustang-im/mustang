@@ -8,7 +8,7 @@
 </vbox>
 
 <script lang="ts">
-  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
 
   export let app: WebAppListed;
   export let runningApp: WebAppListed; /* in/out */

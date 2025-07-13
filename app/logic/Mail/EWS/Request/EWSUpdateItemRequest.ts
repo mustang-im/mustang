@@ -1,4 +1,4 @@
-export default class EWSUpdateItemRequest {
+export class EWSUpdateItemRequest {
   m$UpdateItem: any = {
     m$ItemChanges: {
       t$ItemChange: {

@@ -1,6 +1,6 @@
-import OWARequest from "./OWARequest";
+import { OWARequest } from "./OWARequest";
 
-export default class OWADeleteItemRequest extends OWARequest {
+export class OWADeleteItemRequest extends OWARequest {
   Body: any = {
     __type: "DeleteItemRequest:#Exchange",
     ItemIds: [{

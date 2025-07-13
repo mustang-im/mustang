@@ -2,7 +2,7 @@ import type { OWAEvent } from "../OWAEvent";
 
 /** As with OWAUpdateOccurenceRequest, this is similar to the
  * OWAUpdateOffice365EventRequest but the format of the item id is different. */
-export default class OWAUpdateOffice365OccurrenceRequest {
+export class OWAUpdateOffice365OccurrenceRequest {
   readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
   readonly Header = {
     __type: "JsonRequestHeaders:#Exchange",

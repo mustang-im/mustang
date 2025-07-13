@@ -5,7 +5,7 @@
 </vbox>
 
 <script lang="ts">
-  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
+  import type { WebAppCategory } from "../../../logic/WebApps/WebAppCategory";
   import CategoryEntry from "./CategoryEntry.svelte";
   import type { MapColl, Collection } from "svelte-collections";
 

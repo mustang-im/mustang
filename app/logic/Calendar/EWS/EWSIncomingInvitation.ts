@@ -2,7 +2,7 @@ import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { EWSCalendar } from "./EWSCalendar";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
-import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
+import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { assert } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {

@@ -24,7 +24,7 @@
 </vbox>
 
 <script lang="ts">
-  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";

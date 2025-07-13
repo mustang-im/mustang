@@ -1,4 +1,4 @@
-import OWARequest from "../../../Mail/OWA/Request/OWARequest";
+import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 
 export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindPeople", {

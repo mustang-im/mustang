@@ -1,4 +1,4 @@
-export default class OWASubscribeToNotificationRequest {
+export class OWASubscribeToNotificationRequest {
   /** This request is a special snowflake. Not only did they copy the Persona
    * approach of wrapping the request in an object, they then put their data
    * in a separate property of that object rather than in the request. */

@@ -3,7 +3,7 @@
  * so some parts of the code are duplicated but other parts are not.
  * To properly reflect the inheritance would require three additional classes.
  */
-export default class OWAUpdateOffice365EventRequest {
+export class OWAUpdateOffice365EventRequest {
   readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
   readonly Header = {
     __type: "JsonRequestHeaders:#Exchange",

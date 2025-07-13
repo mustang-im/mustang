@@ -1,8 +1,8 @@
 import type { EWSEvent } from "./EWSEvent";
-import OutgoingInvitation from "../Invitation/OutgoingInvitation";
+import { OutgoingInvitation } from "../Invitation/OutgoingInvitation";
 import type { MailIdentity } from "../../Mail/MailIdentity";
 
-export default class EWSOutgoingInvitation extends OutgoingInvitation {
+export class EWSOutgoingInvitation extends OutgoingInvitation {
   event: EWSEvent;
 
   get identity(): MailIdentity {

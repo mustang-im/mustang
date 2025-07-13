@@ -2,8 +2,8 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
-import ICalParser from "./ICalParser";
-import WindowsToIANATimezone from "./WindowsToIANATimezone";
+import { ICalParser } from "./ICalParser";
+import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
 
