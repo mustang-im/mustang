@@ -116,4 +116,9 @@
   .right :global(> *:first-child) {
     flex: 1 0 0;
   }
+
+  .left,
+  .right {
+    overflow: auto;
+  }
 </style>
