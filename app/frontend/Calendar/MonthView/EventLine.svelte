@@ -2,6 +2,7 @@
   title={eventAsText}
   style="--color: {event.color ?? event.calendar?.color}"
   class:all-day={$event.allDay}
+  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
@@ -70,8 +71,15 @@
     padding: 0px 4px;
     opacity: 85%;
   }
+  .event.cancelled {
+    opacity: 30%;
+  }
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
+  }
+  .cancelled .time,
+  .cancelled .title {
+    text-decoration: line-through;
   }
 </style>

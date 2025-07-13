@@ -1,4 +1,4 @@
-<vbox class="invitation-display">
+<vbox class="invitation-display" class:cancelled={$event.isCancelled}>
   <hbox class="title-row">
     <hbox class="title selectable">
       {event.title ?? ""}
@@ -38,6 +38,9 @@
   .title {
     font-size: 20px;
     font-weight: bold;
+  }
+  .cancelled .title {
+    text-decoration: line-through;
   }
   .details-grid {
     margin: 20px 16px;

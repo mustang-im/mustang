@@ -7,6 +7,7 @@
     width: {100 / conflicts.length}%;
     --color: {event.color ?? event.calendar?.color}"
   class:conflict={conflicts.length > 1}
+  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if showTime}
     <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
@@ -84,11 +85,18 @@
     margin-inline-start: -2px;
     border: 2px solid red;
   }
+  .event.cancelled {
+    opacity: 30%;
+  }
   .time {
     font-weight: 600;
   }
   .time, .title {
     margin-inline-start: 6px;
     margin-block-start: 5px;
+  }
+  .cancelled .time,
+  .cancelled .title {
+    text-decoration: line-through;
   }
 </style>
