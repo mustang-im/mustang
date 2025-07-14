@@ -1,5 +1,6 @@
 import { newOAuth2UI, OAuth2UIMethod, mapBackOAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
+import type { OAuth2UI } from "./UI/OAuth2UI";
 import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordLocalStorage";
@@ -45,6 +46,7 @@ export class OAuth2 extends Observable {
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
+  protected ui: OAuth2UI | null = null;
 
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
@@ -121,9 +123,14 @@ export class OAuth2 extends Observable {
    * @returns accessToken
    */
   async loginWithUI(): Promise<string> {
-    let ui = newOAuth2UI(this.uiMethod, this);
-    let authCode = await ui.login();
+    this.ui = newOAuth2UI(this.uiMethod, this);
+    let authCode = await this.ui.login();
+    this.ui = null;
     return await this.getAccessTokenFromAuthCode(authCode);
+  }
+
+  abort() {
+    this.ui?.abort();
   }
 
   /**

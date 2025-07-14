@@ -29,4 +29,7 @@ export class OAuth2UI extends Observable {
   async login(): Promise<string> {
     throw new AbstractFunction();
   }
+
+  abort() {
+  }
 }

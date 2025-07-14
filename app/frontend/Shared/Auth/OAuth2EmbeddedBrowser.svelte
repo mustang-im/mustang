@@ -15,7 +15,7 @@
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
   import Browser from "../Browser.svelte";
-  import { UserCancelled, type URLString, sleep } from "../../../logic/util/util";
+  import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -31,7 +31,7 @@
   }
 
   function onClose() {
-    dialog.failed(new UserCancelled($t`Authentication dialog was closed`));
+    dialog.failed(new UserCancelled($t`Login dialog was closed`));
   }
 
   onMount(async () => {
@@ -41,7 +41,8 @@
       }
     });
     await sleep(15 * 60); // 15 mins
-    dialog.failed(new UserCancelled($t`Authentication dialog was closed due to inaction`));
+    // Not `UserCancelled`, because we want to show that error msg to the user
+    dialog.failed(new UserError($t`Login dialog was closed due to inaction`));
   });
 </script>
 

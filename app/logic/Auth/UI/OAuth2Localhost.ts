@@ -1,7 +1,7 @@
 import { OAuth2UI } from "./OAuth2UI";
 import { appGlobal } from "../../app";
 import { k1MinuteMS } from "../../../frontend/Util/date";
-import { assert, UserError, type URLString } from "../../util/util";
+import { UserCancelled, UserError, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 /**
@@ -14,6 +14,7 @@ export class OAuth2Localhost extends OAuth2UI {
   /** Will be called when a login URL is ready.
    * Load this URL into the browser. */
   loginURLCallback: (url: URLString) => Promise<void>;
+  protected onAbort: () => void;
 
   async login(): Promise<string> {
     assert(this.loginURLCallback, "Need URL callback");
@@ -32,8 +33,13 @@ export class OAuth2Localhost extends OAuth2UI {
       const minutes = 15;
       let killTimeout = setTimeout(() => {
         server.close();
+        // Not `UserCancelled`, because we want to show that error msg to the user
         reject(new UserError(gt`Authentication page timed out after ${minutes} minutes`));
       }, minutes * k1MinuteMS);
+      this.onAbort = () => {
+        server.close();
+        reject(new UserCancelled(gt`Login aborted by user`));
+      }
       server.get("/login-success", (urlPath: URLString) => {
         try {
           // console.log("OAuth2: Login finished", url);
@@ -46,5 +52,9 @@ export class OAuth2Localhost extends OAuth2UI {
         }
       });
     });
+  }
+
+  abort() {
+    this.onAbort?.();
   }
 }
