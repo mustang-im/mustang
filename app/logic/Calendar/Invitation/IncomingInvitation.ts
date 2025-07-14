@@ -2,7 +2,7 @@ import type { Calendar } from "../Calendar";
 import type { Event } from "../Event";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { EMail } from "../../Mail/EMail";
-import { AbstractFunction, assert } from "../../util/util";
+import { AbstractFunction, NotReached, assert } from "../../util/util";
 
 export class IncomingInvitation {
   readonly calendar: Calendar;
@@ -31,7 +31,7 @@ export class IncomingInvitation {
 
   /** CancelledEvent: the organiser cancelled an incoming meeting */
   async updateCancelled() {
-    assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
+    assert(this.invitationMessage == InvitationMessage.CancelledEvent, "Not a cancellation");
     let event = this.calEvent();
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     if (this.event?.lastUpdateTime <= event?.lastUpdateTime) {
@@ -48,7 +48,7 @@ export class IncomingInvitation {
 
   /** ParticpantReply: an invitee replied to your outgoing invitation */
   async updateParticipantReply() {
-    assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
+    assert(this.invitationMessage == InvitationMessage.ParticipantReply, "Not a reply");
     let event = this.calEvent();
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     let invitee = this.event.participants.find(participant => participant.response != InvitationResponse.Organizer);
@@ -64,11 +64,12 @@ export class IncomingInvitation {
 
   /** Handle CancelledEvent and ParticpantReply */
   async updateFromOtherInvitationMessage() {
-    assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
     if (this.invitationMessage == InvitationMessage.CancelledEvent) {
       await this.updateCancelled();
     } else if (this.invitationMessage == InvitationMessage.ParticipantReply) {
       await this.updateParticipantReply();
+    } else {
+      throw new NotReached();
     }
   }
 }
