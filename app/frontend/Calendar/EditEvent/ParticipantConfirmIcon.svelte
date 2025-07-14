@@ -1,17 +1,17 @@
 <hbox class="participant-status-icon font-smallest"
-  class:confirmed={participant.response == InvitationResponse.Accept}
-  class:declined={participant.response == InvitationResponse.Decline}
-  class:tentative={participant.response == InvitationResponse.Tentative}
-  class:organizer={participant.response == InvitationResponse.Organizer}
-  class:unknown={participant.response == InvitationResponse.Unknown}
+  class:confirmed={$participant.response == InvitationResponse.Accept}
+  class:declined={$participant.response == InvitationResponse.Decline}
+  class:tentative={$participant.response == InvitationResponse.Tentative}
+  class:organizer={$participant.response == InvitationResponse.Organizer}
+  class:unknown={$participant.response == InvitationResponse.Unknown}
   >
-  {#if participant.response == InvitationResponse.Organizer}
+  {#if $participant.response == InvitationResponse.Organizer}
     <OrganizerIcon {size} title={$t`Tentative *=> Not sure to join this business meeting`} />
-  {:else if participant.response == InvitationResponse.Accept}
+  {:else if $participant.response == InvitationResponse.Accept}
     <AcceptedIcon {size} title={$t`Confirmed *=> Accepted to join this business meeting`} />
-  {:else if participant.response == InvitationResponse.Decline}
+  {:else if $participant.response == InvitationResponse.Decline}
     <DeclinedIcon {size} title={$t`Declined *=> Refused to join this business meeting`} />
-  {:else if participant.response == InvitationResponse.Tentative}
+  {:else if $participant.response == InvitationResponse.Tentative}
     <TentativeIcon {size} title={$t`Tentative *=> Not sure to join this business meeting`} />
   {:else}
     <!--<UnknownIcon {size} title={$t`No response yet`} />-->

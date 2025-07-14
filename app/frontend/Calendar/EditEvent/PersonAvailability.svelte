@@ -1,4 +1,5 @@
 <hbox class="availability font-smallest" class:yes={available} class:no={available === false}>
+<!--
   {#if available }
     <span class="yes">{$t`Available`}</span>
   {:else if available === false }
@@ -6,6 +7,7 @@
   {:else}
     <span class="unknown">{$t`Unknown`}</span>
   {/if}
+-->
 </hbox>
 
 <script lang="ts">
