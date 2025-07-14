@@ -5,7 +5,7 @@
 
     {#if $event.isCancelled }
       <hbox class="cancelled-text">
-        {$t`This meeting has been cancelled by the organizer`}
+        {$t`This meeting has been cancelled by the organizer. You may delete it.`}
       </hbox>
     {:else}
       <InvitationButtons incomingInvitation={event} myParticipation={event.myParticipation} />
@@ -35,8 +35,7 @@ $: calendars = new ArrayColl([event.calendar]);
   }
   .cancelled-text {
     flex-wrap: wrap;
-    background-color: red;
-    color: white;
+    background-color: rgba(255, 98, 0, 0.443);
     padding: 8px 12px;
     border-radius: 3px;
     margin: 8px;

@@ -17,7 +17,13 @@
   <hbox class="buttons">
     {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
       <InvitationButtons {incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
-    {:else if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
+    {:else if $message.invitationMessage == InvitationMessage.CancelledEvent }
+      <hbox class="cancelled-text">
+        {$t`This meeting has been cancelled by the organizer`}
+      </hbox>
+    {/if}
+
+    {#if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
       {#await onUpdate()}
         <!-- Update processing -->
       {:then}
@@ -88,5 +94,12 @@
     align-items: center;
     justify-content: center;
     margin-block-start: 16px;
+  }
+  .cancelled-text {
+    flex-wrap: wrap;
+    background-color: rgba(255, 166, 0, 0.291);
+    padding: 8px 12px;
+    border-radius: 3px;
+    margin: 8px;
   }
 </style>
