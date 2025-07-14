@@ -214,6 +214,13 @@ export class OWAEvent extends Event {
     if (this.calendar.account.isOffice365()) {
       request.addField("CalendarItem", "StartTimeZoneId", timezone, "calendar:StartTimeZoneId");
       request.addField("CalendarItem", "EndTimeZoneId", timezone, "calendar:EndTimeZoneId");
+      (request.Header as any).TimeZoneContext = {
+        __type: "TimeZoneContext:#Exchange",
+        TimeZoneDefinition: {
+          __type: "TimeZoneDefinitionType:#Exchange",
+          id: timezone,
+        }
+      };
     } else {
       request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:StartTimeZone");
       request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:EndTimeZone");
