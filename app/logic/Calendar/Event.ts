@@ -4,8 +4,6 @@ import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
-import type { MailIdentity } from "../Mail/MailIdentity";
-import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
@@ -399,22 +397,6 @@ export class Event extends Observable {
     return new OutgoingInvitation(this);
   }
 
-  participantMe(mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
-    let results = [];
-    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations);
-    for (let account of accounts) {
-      for (let identity of account.identities) {
-        for (let myParticipant of this.participants) {
-          if (identity.isEMailAddress(myParticipant.emailAddress)) {
-            results.push({ identity, myParticipant });
-          }
-        }
-      }
-    }
-    assert(results.length == 1, "Failed to find unique identity for meeting");
-    return results[0];
-  }
-
   /** Assumes that `startEditing()` was called before */
   hasChanged(): boolean {
     return !!this.unedited && !this.matches(this.unedited);
@@ -679,13 +661,8 @@ export class Event extends Observable {
   /** TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation */
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
-    let { identity, myParticipant } = this.participantMe(mailAccount);
-    let hasChanged = myParticipant.response != response;
-    myParticipant.response = response;
-    if (hasChanged) {
-      const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
-      await ICalIncomingInvitation.sendInvitationResponse(this, myParticipant, identity.account);
-    }
+    const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
+    await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
   }
 
   /**

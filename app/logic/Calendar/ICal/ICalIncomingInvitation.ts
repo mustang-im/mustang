@@ -1,11 +1,13 @@
+import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import type { Event } from "../Event";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { Participant } from "../Participant";
 import type { MailAccount } from "../../Mail/MailAccount";
+import type { MailIdentity } from "../../Mail/MailIdentity";
+import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 
 export class ICalIncomingInvitation extends IncomingInvitation {
   async respondToInvitation(response: InvitationResponseInMessage) {
@@ -18,7 +20,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     } else if (this.event?.lastUpdateTime >= event.lastUpdateTime) {
       event.copyFrom(this.event);
     }
-    let { myParticipant } = event.participantMe(this.message.folder.account);
+    let { myParticipant } = ICalIncomingInvitation.participantMe(this.event, this.message.folder.account);
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
@@ -26,6 +28,32 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     if (hasChanged) {
       await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, this.message.folder.account);
     }
+  }
+
+  static async respondToInvitationFromCalEvent(repliedEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
+    let { identity, myParticipant } = this.participantMe(repliedEvent, mailAccount);
+    let hasChanged = myParticipant.response != response;
+    myParticipant.response = response;
+    await repliedEvent.save();
+    if (hasChanged) {
+      await ICalIncomingInvitation.sendInvitationResponse(repliedEvent, myParticipant, identity.account);
+    }
+  }
+
+  static participantMe(event: Event, mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
+    let results = [];
+    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations);
+    for (let account of accounts) {
+      for (let identity of account.identities) {
+        for (let myParticipant of event.participants) {
+          if (identity.isEMailAddress(myParticipant.emailAddress)) {
+            results.push({ identity, myParticipant });
+          }
+        }
+      }
+    }
+    assert(results.length == 1, "Failed to find unique identity for meeting");
+    return results[0];
   }
 
   /** Helper for @see Event.respondToInvitation() */
