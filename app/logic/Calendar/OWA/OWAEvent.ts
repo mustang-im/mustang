@@ -14,7 +14,7 @@ import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemReques
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { k1MinuteMS } from "../../../frontend/Util/date";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
@@ -378,6 +378,15 @@ export class OWAEvent extends Event {
       Id: this.itemID,
     });
     await this.calendar.account.callOWA(request);
+    let events = new ArrayColl<OWAEvent>();
+    try {
+      await this.calendar.getEvents([this.itemID], events);
+    } catch (ex) {
+      console.error(ex);
+    }
+    if (events.isEmpty) { // OWA deleted the event from the server
+      await this.deleteLocally();
+    }
   }
 }
 

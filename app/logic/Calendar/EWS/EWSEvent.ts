@@ -403,6 +403,7 @@ export class EWSEvent extends Event {
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);
+    await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
 }
 

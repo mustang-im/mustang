@@ -253,6 +253,7 @@ export class ActiveSyncEvent extends Event {
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
     await super.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
+    await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
 }
 
