@@ -92,6 +92,9 @@ export function myTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 export function isSameTimezone(ianaTimezone: string, time: Date) {
+  if (!ianaTimezone) {
+    return true;
+  }
   let summer = new Date(time);
   summer.setMonth(summer.getMonth() + 6);
   let tz = {
