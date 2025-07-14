@@ -239,8 +239,14 @@
     master.startEditing();
     master.copyEditableFieldsFrom(event);
     master.calUID = null;
+    if (event.parentEvent.recurrenceRule) {
+      let { frequency, interval, week, weekdays } = event.parentEvent.recurrenceRule;
+      master.newRecurrenceRule(frequency, interval, week, weekdays);
+    }
     await saveEvent(master);
     master.finishEditing();
+    event.parentEvent.cancelEditing();
+    event.cancelEditing();
     await event.truncateRecurrence();
     onClose();
   }
@@ -272,6 +278,8 @@
   }
 
   async function onDeleteRemainder() {
+    event.parentEvent.cancelEditing();
+    event.cancelEditing();
     await event.truncateRecurrence();
     $selectedEvent = null;
     onClose();

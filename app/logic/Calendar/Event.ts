@@ -526,16 +526,17 @@ export class Event extends Observable {
     // Normally the parent of an instance would always have a
     // recurrence rule, but this might get removed during saving,
     // and would cause Svelte to crash if we didn't handle it.
-    let rule = this.parentEvent?.recurrenceRule;
+    let master = this.parentEvent?.unedited ?? this.parentEvent;
+    let rule = master?.recurrenceRule;
     if (!rule) {
       return "none";
     }
-    if (rule.countIs(this.parentEvent.exclusions.length + 1)) {
+    if (rule.countIs(master.exclusions.length + 1)) {
       return "only";
     }
     // Not supporting "last" any more; fortunately nobody needs it
     // (it's prohibitively expensive to compute these days)
-    return this.isNew ? this == this.parentEvent.instances.first ? "first" : "middle" : "exception";
+    return this.isNew ? this.recurrenceStartTime.getDate() == master.instances.first.recurrenceStartTime.getDate() ? "first" : "middle" : "exception";
   }
 
   /**
