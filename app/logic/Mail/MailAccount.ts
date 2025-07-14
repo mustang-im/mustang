@@ -3,17 +3,14 @@ import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
-import { Event } from "../Calendar/Event";
-import { Participant } from "../Calendar/Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation/InvitationStatus";
-import { ContactEntry, type Person } from "../Abstract/Person";
+import { ContactEntry } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, AbstractFunction, type URLString } from "../util/util";
+import { AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
-import { Collection, ArrayColl, MapColl } from 'svelte-collections';
+import { Collection, ArrayColl } from 'svelte-collections';
 
 export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
