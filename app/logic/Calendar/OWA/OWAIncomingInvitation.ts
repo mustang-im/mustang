@@ -32,7 +32,10 @@ export class OWAIncomingInvitation extends IncomingInvitation {
       Id: this.message.itemID,
     });
     let result = await this.calendar.account.callOWA(request);
-    await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
+    // await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox, but allow the user to go to the calendar event first
+    if (response == InvitationResponse.Decline) {
+      await this.calEvent()?.deleteLocally();
+    }
     // Exchange will have created a calendar item if there wasn't one already
     let itemID = result.Items.find(item => item?.__type == "CalendarItem:#Exchange")?.ItemId?.Id;
     if (itemID) {

@@ -28,15 +28,21 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     if (hasChanged) {
       await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, this.message.folder.account);
     }
+    if (response == InvitationResponse.Decline) {
+      await event.deleteIt();
+    }
   }
 
-  static async respondToInvitationFromCalEvent(repliedEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
-    let { identity, myParticipant } = this.participantMe(repliedEvent, mailAccount);
+  static async respondToInvitationFromCalEvent(event: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
+    let { identity, myParticipant } = this.participantMe(event, mailAccount);
     let hasChanged = myParticipant.response != response;
-    repliedEvent.myParticipation = myParticipant.response = response;
-    await repliedEvent.save();
+    event.myParticipation = myParticipant.response = response;
+    await event.save();
     if (hasChanged) {
-      await ICalIncomingInvitation.sendInvitationResponse(repliedEvent, myParticipant, identity.account);
+      await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, identity.account);
+    }
+    if (response == InvitationResponse.Decline) {
+      await event.deleteIt();
     }
   }
 

@@ -20,7 +20,10 @@ export class EWSIncomingInvitation extends IncomingInvitation {
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.message.itemID });
     await this.calendar.account.callEWS(request);
-    await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
+    // await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox, but allow the user to go to the calendar event first
+    if (response == InvitationResponse.Decline) {
+      await this.calEvent()?.deleteLocally();
+    }
     await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }
 

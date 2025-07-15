@@ -378,9 +378,13 @@ export class OWAEvent extends Event {
       Id: this.itemID,
     });
     await this.calendar.account.callOWA(request);
+
+    if (response == InvitationResponse.Decline) {
+      await this.deleteLocally();
+    }
     let events = new ArrayColl<OWAEvent>();
     try {
-      await this.calendar.getEvents([this.itemID], events);
+      await this.calendar.getEvents([this.itemID], events); // Sync whatever Exchange decides to do
     } catch (ex) {
       // TODO catch only a specific error, throw all others
       console.error(ex);
