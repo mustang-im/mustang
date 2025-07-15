@@ -13,7 +13,7 @@
       />
   {/if}
 </hbox>
-<Menu bind:isMenuOpen anchor={menuAnchorE} {boundaryElSel}>
+<Menu bind:isMenuOpen anchor={menuAnchorE} {boundaryElSel} {placement}>
   <slot />
 </Menu>
 
@@ -21,6 +21,7 @@
   import Button from "../Button.svelte";
   import Menu from "./Menu.svelte";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
+  import type { Placement } from "@popperjs/core";
 
   /** in/out */
   export let isMenuOpen: boolean = false;
@@ -36,6 +37,10 @@
   export let boundaryElSel: string = "body";
   export let label: string = "";
   export let buttonIcon = MenuIcon;
+  /** Where the popup should appear in relation to the anchor.
+   * above/below ("top"/"bottom") and left/right ("start"/"end")
+   * in */
+  export let placement: Placement = "bottom-end";
 
   let menuAnchorE: HTMLElement;
   function onMenuToggle(event: MouseEvent) {
