@@ -382,6 +382,7 @@ export class OWAEvent extends Event {
     try {
       await this.calendar.getEvents([this.itemID], events);
     } catch (ex) {
+      // TODO catch only a specific error, throw all others
       console.error(ex);
     }
     if (events.isEmpty) { // OWA deleted the event from the server
