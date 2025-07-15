@@ -609,7 +609,7 @@ export class Event extends Observable {
       if (this.isOutgoingMeeting) {
         await this.outgoingInvitation.sendCancellations();
       } else if (this.isIncomingMeeting) {
-        await this.respondToInvitation(InvitationResponse.Decline);
+        await this.respondWithoutSaving(InvitationResponse.Decline);
       }
     } catch (ex) {
       this.calendar.errorCallback(ex);
@@ -671,7 +671,20 @@ export class Event extends Observable {
   }
 
   /** TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation */
-  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    await this.respondWithoutSaving(response);
+    await this.save();
+  }
+
+  /** Not used by EWS or OWA. Otherwise, used by:
+   * - respondToInvitation
+   * - deleteFromServer to send a Decline when deleting an invitation event
+   * - ActiveSyncIncomingInvitation to send a response using a pseudo-event
+   *   when responding to an invitation in the ActiveSync Inbox
+   *
+   * ActiveSyncEvent overrides and calls this for an ActiveSync invitation.
+   */
+  async respondWithoutSaving(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
     await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
