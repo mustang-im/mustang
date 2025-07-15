@@ -235,15 +235,29 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences[count - 1] != null && this.occurrences[count] == null;
   }
 
-  getOccurrencesByDate(seriesEndTime: Date, seriesStartTime: Date = this.seriesStartTime): Date[] {
-    if (this.seriesEndTime && this.seriesEndTime < seriesEndTime) {
-      seriesEndTime = this.seriesEndTime;
-    }
-    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < seriesEndTime) {
-      this.fillOccurrences(this.count, seriesEndTime);
-    }
+  getOccurrenceAfter(date: Date): Date | undefined {
+    this.fillOccurrences(this.count, date);
+    return this.occurrences.find(occurrence => occurrence > date);
+  }
+
+  getOccurrenceBefore(date: Date): Date | undefined {
+    this.fillOccurrences(this.count, date);
+    return this.occurrences.findLast(occurrence => occurrence < date);
+  }
+
+  getOccurrenceNotAfter(date: Date): Date | undefined {
+    this.fillOccurrences(this.count, date);
+    return this.occurrences.findLast(occurrence => occurrence <= date);
+  }
+
+  getOccurrenceNotBefore(date: Date): Date | undefined {
+    this.fillOccurrences(this.count, date);
+    return this.occurrences.find(occurrence => occurrence >= date);
+  }
+
+  getOccurrencesByDate(seriesEndTime: Date/*, seriesStartTime: Date = this.seriesStartTime*/): Date[] {
+    this.fillOccurrences(this.count, seriesEndTime);
     return this.occurrences;
-    //return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
   getOccurrenceByIndex(index: number): Date | void {
@@ -257,14 +271,12 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (this.seriesEndTime && this.seriesEndTime < date) {
       return -1;
     }
-    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < date) {
-      this.fillOccurrences(this.count, date);
-    }
+    this.fillOccurrences(this.count, date);
     return this.occurrences.findIndex(d => d.getTime() == date.getTime());
   }
 
-  fillOccurrences(count: number, seriesEndTime?: Date) {
-    while (this.occurrences.length < count) {
+  fillOccurrences(count: number, date?: Date) {
+    while (this.occurrences.length < count && (!date || this.occurrences.at(-1)! <= date)) {
       switch (this.frequency) {
       case Frequency.Daily:
         this.day += this.interval;
@@ -320,15 +332,16 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         occurrence.setDate(-6);
         this.day = occurrence.getDate();
       }
-      if (seriesEndTime && occurrence > seriesEndTime) {
-        break;
-      }
       if (this.weekdays && !this.weekdays.includes(occurrence.getDay())) {
         continue;
       }
       if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && occurrence.getDate() != this.day) {
         // Ran out of days in the month, so rewind to the last day in the month.
         occurrence.setDate(0);
+      }
+      // Don't allow more occurrences than the series wants
+      if (this.seriesEndTime && occurrence > this.seriesEndTime) {
+        break;
       }
       this.occurrences.push(occurrence);
     }

@@ -9,8 +9,11 @@ function check(calString: string, data: Partial<RecurrenceInit>, expected: [numb
     let ruleFromString = RecurrenceRule.fromCalString(36e5, data.seriesStartTime as Date, calString);
     expect(rule).toEqual(ruleFromString);
   }
-  expect(rule.getOccurrenceByIndex(1)).toEqual(new Date(...expected[1]));
-  expect(rule.getOccurrencesByDate(new Date(2010, 10, 10))).toEqual(expected.map(args => new Date(...args)));
+  let expectedDates = expected.map(args => new Date(...args));
+  expect(rule.getOccurrenceBefore(expectedDates[1])).toEqual(expectedDates[0]);
+  expect(rule.getOccurrenceByIndex(1)).toEqual(expectedDates[1]);
+  expect(rule.getOccurrenceAfter(expectedDates[1])).toEqual(expectedDates[2]);
+  expect(rule.getOccurrencesByDate(new Date(2010, 10, 10))).toEqual(expectedDates);
 }
 
 test("Daily with interval and end date", () => {
