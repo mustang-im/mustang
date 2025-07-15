@@ -1,3 +1,5 @@
+import { gt } from "../../../l10n/l10n";
+
 export class OWAError extends Error {
   readonly type: string;
   constructor(response: any) {
@@ -19,5 +21,8 @@ export class OWAError extends Error {
     }
     super(message);
     this.type = type;
+    if (this.type == "ErrorItemNotFound") {
+      this.message = gt`This was deleted on the server`;
+    }
   }
 }
