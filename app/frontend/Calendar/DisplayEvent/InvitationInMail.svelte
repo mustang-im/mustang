@@ -16,7 +16,7 @@
   {/if}
   <hbox class="buttons">
     {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
-      <InvitationButtons {incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
+      <InvitationButtons invitation={incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
     {:else if $message.invitationMessage == InvitationMessage.CancelledEvent }
       <hbox class="cancelled-text">
         {$t`This meeting has been cancelled by the organizer`}

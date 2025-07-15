@@ -76,12 +76,21 @@
   import { t } from "../../../l10n/l10n";
 
   export let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
-  export let incomingInvitation: IncomingInvitation | Event;
+  export let invitation: IncomingInvitation | Event;
 
   async function respond(response: InvitationResponseInMessage) {
-    await incomingInvitation.respondToInvitation(response);
     myParticipation = response;
+    if (invitation instanceof Event) {
+      await invitation.respondToInvitation(response);
+      await invitation.save();
+    } else if (invitation instanceof IncomingInvitation) {
+      await invitation.respondToInvitationFromMail(response);
+      await invitation.calEvent()?.save();
+    } else {
+      throw new NotReached();
+    }
   }
+
   async function onAccept() {
     await respond(InvitationResponse.Accept);
   }
@@ -94,13 +103,13 @@
 
   async function onOpenInCalendar() {
     let calEvent: Event
-    if (incomingInvitation instanceof IncomingInvitation) {
-      calEvent = incomingInvitation.calEvent();
+    if (invitation instanceof IncomingInvitation) {
+      calEvent = invitation.calEvent();
       if (!calEvent) {
         return;
       }
-    } else if (incomingInvitation instanceof Event) {
-      calEvent = incomingInvitation;
+    } else if (invitation instanceof Event) {
+      calEvent = invitation;
     } else {
       throw new NotReached();
     }

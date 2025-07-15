@@ -670,11 +670,25 @@ export class Event extends Observable {
     return newEvent;
   }
 
-  /** TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation */
+  /**
+   * This API is called by:
+   * - `deleteFromServer()` to send a `Decline` when deleting an invitation event
+   * - `ActiveSyncIncomingInvitation`, when responding to an invitation in the
+   *   ActiveSync email, where by `this` is an `InvitationEvent`.
+   *
+   * This implementation is used by protocols:
+   * - Personal calendar
+   * - CalDAV
+   * - ActiveSync, indirectly: `ActiveSyncEvent` overrides this and then calls this.
+   * Not used by: EWS, OWA
+   *
+   * TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation
+   */
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
     await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
+    // Do *not* save, because some callers are deleted events or `InvitationEvent`. Caller saves as needed.
   }
 
   /**

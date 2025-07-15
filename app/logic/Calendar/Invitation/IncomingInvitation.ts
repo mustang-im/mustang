@@ -25,7 +25,7 @@ export class IncomingInvitation {
     return this.calendar.events.find(event => event.calUID == this.event.calUID);
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage) {
+  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
     throw new AbstractFunction();
   }
 

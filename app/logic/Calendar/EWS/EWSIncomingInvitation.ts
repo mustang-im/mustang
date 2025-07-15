@@ -15,7 +15,7 @@ export class EWSIncomingInvitation extends IncomingInvitation {
   declare readonly calendar: EWSCalendar;
   declare readonly message: EWSEMail;
 
-  async respondToInvitation(response: InvitationResponseInMessage) {
+  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.message.itemID });

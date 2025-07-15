@@ -8,7 +8,7 @@
         {$t`This meeting has been cancelled by the organizer. You may delete it.`}
       </hbox>
     {:else}
-      <InvitationButtons incomingInvitation={event} myParticipation={$event.myParticipation} />
+      <InvitationButtons invitation={event} myParticipation={$event.myParticipation} />
     {/if}
   </vbox>
 </vbox>

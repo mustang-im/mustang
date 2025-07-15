@@ -10,7 +10,7 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class ICalIncomingInvitation extends IncomingInvitation {
-  async respondToInvitation(response: InvitationResponseInMessage) {
+  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let event = this.calEvent();
     if (!event) {
@@ -24,7 +24,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
-    await event.save();
+    // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
@@ -36,7 +36,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     let { identity, myParticipant } = this.participantMe(calEvent, mailAccount);
     let hasChanged = myParticipant.response != response;
     calEvent.myParticipation = myParticipant.response = response;
-    await calEvent.save();
+    // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = calEvent.startTime?.getTime() > Date.now() || calEvent.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
