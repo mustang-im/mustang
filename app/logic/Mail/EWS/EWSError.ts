@@ -1,5 +1,6 @@
 import { XML2JSON, type Json } from "./XML2JSON";
 import type { JsonRequest } from "./EWSAccount";
+import { gt } from "../../../l10n/l10n";
 
 export class EWSError extends Error {
   readonly request: JsonRequest;
@@ -79,5 +80,8 @@ export class EWSItemError extends Error {
     this.request = aRequest;
     this.error = errorResponseJSON;
     this.type = errorResponseJSON.ResponseCode;
+    if (this.type == "ErrorItemNotFound") {
+      this.message = gt`This was deleted on the server`;
+    }
   }
 }
