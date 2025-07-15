@@ -4,7 +4,7 @@ import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
-import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
+import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/Lock";
@@ -436,7 +436,7 @@ export class Event extends Observable {
     if (this.unedited) {
       return;
     }
-    this.timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone;
+    this.timezone ||= myTimezone();
     this.unedited = this.calendar.newEvent();
     this.unedited.copyFrom(this);
   }
