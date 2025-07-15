@@ -24,7 +24,7 @@
     {/if}
 
     {#if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
-      {#await onUpdate()}
+      {#await event && onUpdate()}
         <!-- Update processing -->
       {:then}
         <!-- Update processed -->
