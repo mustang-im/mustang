@@ -1,4 +1,5 @@
 import type { Account } from "../../Abstract/Account";
+import { gt } from "../../../l10n/l10n";
 
 export class ActiveSyncError extends Error {
   type: string;
@@ -178,7 +179,7 @@ const messages: Record<string, Record<number, string>> = {
     5: "Temporary server error",
     6: "Malformed request",
     7: "Conflicting change on server",
-    8: "Item not found",
+    8: gt`This was deleted on the server`, // "Item not found"
     9: "Out of disk space",
     12: "Folder hierarchy changed",
     13: "Incomplete request",
