@@ -99,8 +99,8 @@ export class OWAEvent extends Event {
     this.isCancelled = sanitize.boolean(json.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
-    if (json.Organizer) {
-      organizer = json.Organizer.Mailbox.EmailAddress;
+    if (json.Organizer && (json.RequiredAttendees || json.OptionalAttendees)) {
+      organizer = sanitize.emailAddress(json.Organizer.Mailbox.EmailAddress);
       json.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
       addParticipants([json.Organizer], participants);
     }
