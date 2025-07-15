@@ -536,7 +536,7 @@ export class Event extends Observable {
     }
     // Not supporting "last" any more; fortunately nobody needs it
     // (it's prohibitively expensive to compute these days)
-    return this.isNew ? this.recurrenceStartTime.getDate() == master.instances.first.recurrenceStartTime.getDate() ? "first" : "middle" : "exception";
+    return this.isNew ? this.recurrenceStartTime.getTime() == master.instances.first.recurrenceStartTime.getTime() ? "first" : "middle" : "exception";
   }
 
   /**
