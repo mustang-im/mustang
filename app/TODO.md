@@ -1,6 +1,24 @@
+# Release
+* License notification bar
+* Beta banner, or hide features in production
+* Calendar: DB change
+* Calendar: Find identity; main account
+* Sentry: Most common bugs
+* Calendar: Bugs
+* Password
+  * Settings: Password field deletes password
+  * Manual setup: Password change ignored
+
+# Next week
+* Payment: Upgrade
+  * Upgrade page in Settings: Billing
+  * Server
+* OAuth
+  * Google: Add Parula brand
+  * Google: Renewal TAC
+  * Microsoft: localhost redirect URL
+
 # Next
-  * Beta banner
-  * License notification bar
   * Actions (Filters)
     * Run on fetch, not full download
     * Save/load folder and tag
@@ -51,8 +69,7 @@
 * MailChat/Thread: Jail HTML: Styles and size
 ## Nick
 * Mac: Use Mac Password manager
-* Gmail: Log in with browser
-* Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
+* Manual setup: OAuth2 UI: "Browser" goes back to "Separate window"
 ## mjl
 * Back button (after clicking on an email address in an email, want to go back to email)
 * Selected message: After switching back to email, email is not longer selected
@@ -73,7 +90,7 @@
   * modern feeling
  ## Freshness
 * Account colors
-* Icons for accounts, based on favicon or user-set
+* Icons for accounts: user-set
 * Pic for users, in identities
 * Unified inbox: Show account as tag or icon
 
