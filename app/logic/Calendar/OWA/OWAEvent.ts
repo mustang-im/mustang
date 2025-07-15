@@ -378,15 +378,14 @@ export class OWAEvent extends Event {
       Id: this.itemID,
     });
     await this.calendar.account.callOWA(request);
-    let events = new ArrayColl<OWAEvent>();
     try {
-      await this.calendar.getEvents([this.itemID], events);
+      await this.calendar.getEvents([this.itemID], new ArrayColl<OWAEvent>());
     } catch (ex) {
-      // TODO catch only a specific error, throw all others
-      console.error(ex);
-    }
-    if (events.isEmpty) { // OWA deleted the event from the server
-      await this.deleteLocally();
+      if (ex.type == "ErrorItemNotFound") { // expected
+        await this.deleteLocally(); // OWA deleted the event from the server
+      } else {
+        throw ex;
+      }
     }
   }
 }
