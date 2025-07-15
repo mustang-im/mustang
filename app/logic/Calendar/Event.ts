@@ -741,21 +741,13 @@ export class Event extends Observable {
     this.exclusions.clear();
   }
 
-  /** Only for master of a recurrence
-   * Remove all instances, exceptions and exclusions
-   * on or after that `end` time. */
-  setSeriesEnd(end: Date) {
-    assert(this.recurrenceCase == RecurrenceCase.Master, "Need to be master");
-    this.recurrenceRule.seriesEndTime = end;
-    // TODO delete instances, exceptions and exclusions after this date
-    this.notifyObservers();
-  }
-
   /**
    * Changes the current recurrence to be limited by count.
-   */
+   *
+   * Removes all instances, exceptions and exclusions
+   * on or after that `end` time. */
   async setRecurrenceCount(count: number) {
-    assert(this.recurrenceRule, "Need to have a rule to set its count");
+    assert(this.recurrenceCase == RecurrenceCase.Master && this.recurrenceRule, "Need to be master");
     let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
     this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first });
     await this.trimExceptionsAndExclusions(this.recurrenceRule.getOccurrenceByIndex(count - 1));
@@ -763,9 +755,11 @@ export class Event extends Observable {
 
   /**
    * Changes the current recurrence to be limited by end time.
-   */
+   *
+   * Removes all instances, exceptions and exclusions
+   * on or after that `end` time. */
   async setRecurrenceEndTime(seriesEndTime: Date) {
-    assert(this.recurrenceRule, "Need to have a rule to set its end time");
+    assert(this.recurrenceCase == RecurrenceCase.Master && this.recurrenceRule, "Need to be master");
     let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
     this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, frequency, interval, weekdays, week, first });
     await this.trimExceptionsAndExclusions(seriesEndTime);
@@ -781,36 +775,6 @@ export class Event extends Observable {
     }
   }
 
-  /**
-   * Deletes the event and any subsequent instances that are not exceptions.
-   */
-  private async truncateRecurrence_old(start: Date) {
-    let master = this.parentEvent ?? this;
-    assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must be a Recurrence.Master");
-    let lastException = start;
-    for (let exception of master.exceptions) {
-      if (exception.recurrenceStartTime > lastException) {
-        lastException = exception.recurrenceStartTime;
-      }
-    }
-    master.generateRecurringInstances(lastException);
-    let exclusions = master.instances.contents.filter(event => event.recurrenceStartTime> start && event.recurrenceStartTime < lastException);
-    if (lastException > start) {
-      // Isn't cache invalidation fun!
-      exclusions.push(master.getOccurrenceByDate(start));
-    }
-    let count = master.recurrenceRule.getIndexOfOccurrence(lastException) + (lastException > start ? 1 : 0);
-    if (master.recurrenceRule.getOccurrenceByIndex(count)) {
-      await master.setRecurrenceCount(count);
-    }
-    if (exclusions.length) {
-      await master.makeExclusions(exclusions);
-    } else if (!this.isNew) {
-      await this.calendar.storage.deleteEvent(this);
-    }
-    await master.save();
-  }
-
   /** Creates a new series with the same properties and recurrence,
    * but starting at the given date.
    *
@@ -823,7 +787,7 @@ export class Event extends Observable {
     let oldMaster = this.parentEvent ?? this;
     // @Neil are there cases where master.recurrenceRule is null? You had an `if if (oldMaster.recurrenceRule)` in the old code...
     assert(oldMaster.recurrenceCase == RecurrenceCase.Master && oldMaster.recurrenceRule, "Need old master");
-    oldMaster.recurrenceRule.seriesEndTime = start;
+    oldMaster.setRecurrenceEndTime(start);
     let master = this.calendar.newEvent();
     master.startEditing(); // #701
     master.copyEditableFieldsFrom(oldMaster);
