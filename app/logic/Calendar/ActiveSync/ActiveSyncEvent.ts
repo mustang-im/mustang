@@ -244,6 +244,10 @@ export class ActiveSyncEvent extends Event {
     }))));
   }
 
+  async respondWithoutSaving(response: InvitationResponseInMessage): Promise<void> {
+    await super.respondWithoutSaving(response, this.calendar.account);
+  }
+
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = {
@@ -260,7 +264,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await super.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
+    await this.respondWithoutSaving(response); // needs 16.x to do this automatically
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
 }

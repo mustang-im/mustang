@@ -36,7 +36,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     let { identity, myParticipant } = this.participantMe(calEvent, mailAccount);
     let hasChanged = myParticipant.response != response;
     calEvent.myParticipation = myParticipant.response = response;
-    await calEvent.save();
+    // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = calEvent.startTime?.getTime() > Date.now() || calEvent.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
