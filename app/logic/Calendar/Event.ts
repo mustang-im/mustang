@@ -774,22 +774,22 @@ export class Event extends Observable {
   /**
    * Deletes the event and any subsequent instances that are not exceptions.
    */
-  async truncateRecurrence() {
-    let master = this.parentEvent;
-    assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
-    let lastException = this.recurrenceStartTime;
+  async truncateRecurrence(start: Date) {
+    let master = this.parentEvent ?? this;
+    assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must be a Recurrence.Master");
+    let lastException = start;
     for (let exception of master.exceptions) {
       if (exception.recurrenceStartTime > lastException) {
         lastException = exception.recurrenceStartTime;
       }
     }
     master.generateRecurringInstances(lastException);
-    let exclusions = master.instances.contents.filter(event => event.recurrenceStartTime> this.recurrenceStartTime && event.recurrenceStartTime < lastException);
-    if (lastException > this.recurrenceStartTime) {
+    let exclusions = master.instances.contents.filter(event => event.recurrenceStartTime> start && event.recurrenceStartTime < lastException);
+    if (lastException > start) {
       // Isn't cache invalidation fun!
-      exclusions.push(master.getOccurrenceByDate(this.recurrenceStartTime));
+      exclusions.push(master.getOccurrenceByDate(start));
     }
-    let count = master.recurrenceRule.getIndexOfOccurrence(lastException) + (lastException > this.recurrenceStartTime ? 1 : 0);
+    let count = master.recurrenceRule.getIndexOfOccurrence(lastException) + (lastException > start ? 1 : 0);
     if (master.recurrenceRule.getOccurrenceByIndex(count)) {
       await master.setRecurrenceCount(count);
     }
@@ -799,6 +799,27 @@ export class Event extends Observable {
       await this.calendar.storage.deleteEvent(this);
     }
     await master.save();
+  }
+
+  /** Creates a new series with the same properties and recurrence,
+   * but starting at the given date.
+   * Truncates this old series at the same time.
+   * @returns the new master event
+   */
+  async cloneSeriesStartingAt(start: Date): Promise<Event> {
+    let master = this.calendar.newEvent();
+    master.startEditing(); // #701
+    master.copyEditableFieldsFrom(this);
+    master.startTime = new Date(start);
+    master.calUID = null;
+    if (this.parentEvent.recurrenceRule) {
+      let { frequency, interval, week, weekdays } = this.parentEvent.recurrenceRule;
+      master.newRecurrenceRule(frequency, interval, week, weekdays);
+    }
+    master.finishEditing(); // #701
+    await this.save();
+    await this.truncateRecurrence(start);
+    return master;
   }
 }
 

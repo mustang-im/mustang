@@ -235,19 +235,9 @@
   }
 
   async function onChangeRemainder() {
-    let master = event.calendar.newEvent();
-    master.startEditing();
-    master.copyEditableFieldsFrom(event);
-    master.calUID = null;
-    if (event.parentEvent.recurrenceRule) {
-      let { frequency, interval, week, weekdays } = event.parentEvent.recurrenceRule;
-      master.newRecurrenceRule(frequency, interval, week, weekdays);
-    }
-    await saveEvent(master);
-    master.finishEditing();
+    await event.cloneSeriesStartingAt(event.startTime);
     event.parentEvent.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence();
     onClose();
   }
 
@@ -281,7 +271,7 @@
   async function onDeleteRemainder() {
     event.parentEvent.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence();
+    await event.truncateRecurrence(event.startTime);
     $selectedEvent = null;
     onClose();
   }
