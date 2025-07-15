@@ -117,8 +117,9 @@
     flex: 1 0 0;
   }
 
+  /*
   .left,
   .right {
-    overflow: auto;
-  }
+    overflow: auto; TODO breaks popups
+  }*/
 </style>
