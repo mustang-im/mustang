@@ -1,4 +1,4 @@
-import type { Event } from "../Event";
+import { type Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type iCalMethod } from "./InvitationStatus";
 import { type MailIdentity, findIdentityForEMailAddress } from "../../Mail/MailIdentity";
@@ -45,6 +45,10 @@ export class OutgoingInvitation {
   async sendInvitations() {
     let event = this.event;
     let unedited = this.event.unedited;
+    let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
+    if (!isFuture) {
+      return;
+    }
     let removed = unedited.participants.subtract(event.participants);
     // Use the original event when sending cancellations
     unedited.outgoingInvitation.sendCancellationsTo(removed);
@@ -55,6 +59,10 @@ export class OutgoingInvitation {
   }
 
   async sendCancellations() {
+    let isFuture = this.event.startTime?.getTime() > Date.now() || this.event.recurrenceCase == RecurrenceCase.Master;
+    if (!isFuture) {
+      return;
+    }
     let unedited = this.event.unedited;
     if (unedited) {
       await unedited.outgoingInvitation.sendCancellationsTo(unedited.participants);

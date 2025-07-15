@@ -1,5 +1,5 @@
 import { IncomingInvitation } from "../Invitation/IncomingInvitation";
-import type { Event } from "../Event";
+import { type Event, RecurrenceCase } from "../Event";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { Participant } from "../Participant";
@@ -25,18 +25,22 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
     await event.save();
-    if (hasChanged) {
+
+    let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
+    if (hasChanged && isFuture) {
       await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, this.message.folder.account);
     }
   }
 
-  static async respondToInvitationFromCalEvent(repliedEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
-    let { identity, myParticipant } = this.participantMe(repliedEvent, mailAccount);
+  static async respondToInvitationFromCalEvent(calEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
+    let { identity, myParticipant } = this.participantMe(calEvent, mailAccount);
     let hasChanged = myParticipant.response != response;
-    repliedEvent.myParticipation = myParticipant.response = response;
-    await repliedEvent.save();
-    if (hasChanged) {
-      await ICalIncomingInvitation.sendInvitationResponse(repliedEvent, myParticipant, identity.account);
+    calEvent.myParticipation = myParticipant.response = response;
+    await calEvent.save();
+
+    let isFuture = calEvent.startTime?.getTime() > Date.now() || calEvent.recurrenceCase == RecurrenceCase.Master;
+    if (hasChanged && isFuture) {
+      await ICalIncomingInvitation.sendInvitationResponse(calEvent, myParticipant, identity.account);
     }
   }
 
@@ -57,7 +61,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
   }
 
   /** Helper for @see Event.respondToInvitation() */
-  static async sendInvitationResponse(repliedEvent: Event, myParticipant: Participant, account: MailAccount) {
+  protected static async sendInvitationResponse(repliedEvent: Event, myParticipant: Participant, account: MailAccount) {
     let organizer = repliedEvent.participants.find(participant => participant.response == InvitationResponse.Organizer);
     assert(organizer, "Invitation should have an organizer");
     let email = account.newEMailFrom();
