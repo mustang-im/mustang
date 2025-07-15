@@ -381,10 +381,11 @@ export class OWAEvent extends Event {
     try {
       await this.calendar.getEvents([this.itemID], new ArrayColl<OWAEvent>());
     } catch (ex) {
-      if (ex.type != "ErrorItemNotFound") {
+      if (ex.type == "ErrorItemNotFound") { // expected
+        await this.deleteLocally(); // OWA deleted the event from the server
+      } else {
         throw ex;
       }
-      await this.deleteLocally(); // OWA deleted the event from the server
     }
   }
 }
