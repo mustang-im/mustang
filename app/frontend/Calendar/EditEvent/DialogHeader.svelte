@@ -227,10 +227,10 @@
       return;
     }
     let master = event.parentEvent;
-    master.startEditing();
+    master.startEditing(); // #701
     master.copyEditableFieldsFrom(event);
     await master.save();
-    master.finishEditing();
+    master.finishEditing(); // #701
     onClose();
   }
 
@@ -257,6 +257,7 @@
     onClose();
   }
 
+  // <copied to="../DisplayEvent/DialogHeader.svelte">
   async function onDelete() {
     if (event.seriesStatus == "only") {
       await event.parentEvent.deleteIt();
@@ -309,6 +310,7 @@
       $selectedEvent = null;
     }
   }
+  // </copied>
 </script>
 
 <style>

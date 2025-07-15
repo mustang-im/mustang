@@ -108,15 +108,7 @@
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
   let isDeleteSeriesOpen = false;
 
-  function onExpandToWindow() {
-    calendarMustangApp.showEvent(event);
-  }
-
-  function onShrink() {
-    $selectedEvent = event;
-    openApp(calendarMustangApp);
-  }
-
+  // <copied from="../EditEvent/DialogHeader.svelte">
   async function onDelete() {
     if (event.seriesStatus == "only") {
       await event.parentEvent.deleteIt();
@@ -138,7 +130,9 @@
   }
 
   async function onDeleteRemainder() {
-    await event.truncateRecurrence();
+    event.parentEvent.cancelEditing();
+    event.cancelEditing();
+    await event.truncateRecurrence(event.startTime);
     $selectedEvent = null;
     onClose();
   }
@@ -151,6 +145,16 @@
       $selectedEvent = null;
     }
   }
+
+  function onExpandToWindow() {
+    calendarMustangApp.showEvent(event);
+  }
+
+  function onShrink() {
+    $selectedEvent = event;
+    openApp(calendarMustangApp);
+  }
+  // </copied>
 </script>
 
 <style>
