@@ -101,8 +101,8 @@ export class EWSEvent extends Event {
     this.isCancelled = sanitize.boolean(xmljs.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
-    if (xmljs.Organizer) {
-      organizer = xmljs.Organizer.Mailbox.EmailAddress;
+    if (xmljs.Organizer && (xmljs.RequiredAttendees?.Attendee || xmljs.OptionalAttendees?.Attendee)) {
+      organizer = sanitize.emailAddress(xmljs.Organizer.Mailbox.EmailAddress);
       xmljs.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
       addParticipants(xmljs.Organizer, participants);
     }

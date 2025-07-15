@@ -72,7 +72,10 @@ export class ActiveSyncEvent extends Event {
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
     let attendees = ensureArray(wbxmljs.Attendees?.Attendee);
-    if (wbxmljs.OrganizerEmail) {
+    if (wbxmljs.OrganizerEmail && attendees.length) {
+      for (let attendee of attendees) {
+        attendee.Email = sanitize.emailAddress(attendee.Email);
+      }
       let status = this.isCancelled ? InvitationResponse.Decline : InvitationResponse.Organizer;
       let organizerEmail = sanitize.emailAddress(wbxmljs.OrganizerEmail);
       let organizer = attendees.find(attendee => attendee.Email == organizerEmail);
@@ -86,7 +89,7 @@ export class ActiveSyncEvent extends Event {
         });
       }
     }
-    this.participants.replaceAll(attendees.map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
+    this.participants.replaceAll(attendees.map(attendee => new Participant(attendee.Email, sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
     this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
