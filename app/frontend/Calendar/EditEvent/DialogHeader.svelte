@@ -168,6 +168,11 @@
 
   $: event.startEditing(); // not `$event`
   let newCalendar = event.calendar; // Don't listen to $event #730
+  let prevEventID = event.id;
+  $: if (event.id != prevEventID) {
+    newCalendar = event.calendar;
+    prevEventID = event.id;
+  };
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
