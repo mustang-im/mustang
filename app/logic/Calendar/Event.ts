@@ -653,6 +653,17 @@ export class Event extends Observable {
     }
     newEvent.copyFrom(this);
     newEvent.calendar = newCalendar;
+
+    // Replace organizer with email matching the new calendar
+    let organizer = newEvent.participants.find(p => p.response == InvitationResponse.Organizer);
+    if (organizer) {
+      let participants = new ArrayColl(newEvent.participants);
+      participants.remove(organizer);
+      newEvent.participants.clear(); // createMeeting checks this
+      newEvent.createMeeting();
+      newEvent.participants.addAll(participants);
+    }
+
     newCalendar.events.add(newEvent);
     await newEvent.save();
     await this.deleteIt();
