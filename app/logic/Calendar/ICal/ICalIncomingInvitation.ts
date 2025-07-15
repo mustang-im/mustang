@@ -33,7 +33,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
   static async respondToInvitationFromCalEvent(repliedEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
     let { identity, myParticipant } = this.participantMe(repliedEvent, mailAccount);
     let hasChanged = myParticipant.response != response;
-    myParticipant.response = response;
+    repliedEvent.myParticipation = myParticipant.response = response;
     await repliedEvent.save();
     if (hasChanged) {
       await ICalIncomingInvitation.sendInvitationResponse(repliedEvent, myParticipant, identity.account);
