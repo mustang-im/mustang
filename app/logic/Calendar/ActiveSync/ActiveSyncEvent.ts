@@ -72,7 +72,7 @@ export class ActiveSyncEvent extends Event {
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
     let attendees = ensureArray(wbxmljs.Attendees?.Attendee);
-    if (wbxmljs.OrganizerEmail && attendees) {
+    if (wbxmljs.OrganizerEmail && attendees.length) {
       for (let attendee of attendees) {
         attendee.Email = sanitize.emailAddress(attendee.Email);
       }
