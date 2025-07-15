@@ -728,6 +728,36 @@ export class Event extends Observable {
   }
 
   /**
+   * Changes the current recurrence to be limited by count.
+   */
+  async setRecurrenceCount(count: number) {
+    assert(this.recurrenceRule, "Need to have a rule to set its count");
+    let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
+    this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first });
+    await this.trimExceptionsAndExclusions(this.recurrenceRule.getOccurrenceByIndex(count - 1));
+  }
+
+  /**
+   * Changes the current recurrence to be limited by end time.
+   */
+  async setRecurrenceEndTime(seriesEndTime: Date) {
+    assert(this.recurrenceRule, "Need to have a rule to set its end time");
+    let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
+    this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, frequency, interval, weekdays, week, first });
+    await this.trimExceptionsAndExclusions(seriesEndTime);
+  }
+
+  protected async trimExceptionsAndExclusions(seriesEndTime: Date) {
+    this.exclusions.removeAll(this.exclusions.filterOnce(exclusion => exclusion > seriesEndTime));
+    let exceptions = this.exceptions.filterOnce(exception => exception.recurrenceStartTime > seriesEndTime);
+    this.exceptions.removeAll(exceptions);
+    for (let exception of exceptions) {
+      // not using delete because that creates exclusions
+      await this.calendar.storage.deleteEvent(exception);
+    }
+  }
+
+  /**
    * Deletes the event and any subsequent instances that are not exceptions.
    */
   async truncateRecurrence() {
@@ -747,9 +777,7 @@ export class Event extends Observable {
     }
     let count = master.recurrenceRule.getIndexOfOccurrence(lastException) + (lastException > this.recurrenceStartTime ? 1 : 0);
     if (master.recurrenceRule.getOccurrenceByIndex(count)) {
-      let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first });
-      await master.saveToServer();
+      await master.setRecurrenceCount(count);
     }
     if (exclusions.length) {
       await master.makeExclusions(exclusions);
