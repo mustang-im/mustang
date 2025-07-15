@@ -778,16 +778,16 @@ export class Event extends Observable {
   /** Creates a new series with the same properties and recurrence,
    * but starting at the given date.
    *
-   * It will also truncate the old series at that start time.
+   * It will *not* truncate the old series at that start time.
+   * Call `oldMaster.setRecurrenceEndTime(start)` for that,
+   * on the unmodified oldMaster.
    *
    * @param start From when on the new series should start
    * @returns the new master event
    */
   async cloneSeriesStartingAt(start: Date): Promise<Event> {
     let oldMaster = this.parentEvent ?? this;
-    // @Neil are there cases where master.recurrenceRule is null? You had an `if if (oldMaster.recurrenceRule)` in the old code...
     assert(oldMaster.recurrenceCase == RecurrenceCase.Master && oldMaster.recurrenceRule, "Need old master");
-    oldMaster.setRecurrenceEndTime(start);
     let master = this.calendar.newEvent();
     master.startEditing(); // #701
     master.copyEditableFieldsFrom(oldMaster);
@@ -796,8 +796,6 @@ export class Event extends Observable {
     let { frequency, interval, week, weekdays } = oldMaster.recurrenceRule;
     master.newRecurrenceRule(frequency, interval, week, weekdays);
     master.finishEditing(); // #701
-    await this.save();
-    await oldMaster.save();
     return master;
   }
 }

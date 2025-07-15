@@ -235,10 +235,14 @@
   }
 
   async function onChangeRemainder() {
+    let start = new Date(event.startTime);
     let oldMaster = event.parentEvent;
-    let newMaster = await event.cloneSeriesStartingAt(event.startTime);
+    let newMaster = await event.cloneSeriesStartingAt(start);
     oldMaster.cancelEditing();
     event.cancelEditing();
+    oldMaster.setRecurrenceEndTime(start);
+    await newMaster.save();
+    await oldMaster.save();
     onClose();
   }
 
