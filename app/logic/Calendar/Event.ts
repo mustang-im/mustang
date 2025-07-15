@@ -741,6 +741,16 @@ export class Event extends Observable {
     this.exclusions.clear();
   }
 
+  /** Only for master of a recurrence
+   * Remove all instances, exceptions and exclusions
+   * on or after that `end` time. */
+  setSeriesEnd(end: Date) {
+    assert(this.recurrenceCase == RecurrenceCase.Master, "Need to be master");
+    this.recurrenceRule.seriesEndTime = end;
+    // TODO delete instances, exceptions and exclusions after this date
+    this.notifyObservers();
+  }
+
   /**
    * Changes the current recurrence to be limited by count.
    */
@@ -774,7 +784,7 @@ export class Event extends Observable {
   /**
    * Deletes the event and any subsequent instances that are not exceptions.
    */
-  async truncateRecurrence(start: Date) {
+  private async truncateRecurrence_old(start: Date) {
     let master = this.parentEvent ?? this;
     assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must be a Recurrence.Master");
     let lastException = start;
@@ -803,22 +813,27 @@ export class Event extends Observable {
 
   /** Creates a new series with the same properties and recurrence,
    * but starting at the given date.
-   * Truncates this old series at the same time.
+   *
+   * It will also truncate the old series at that start time.
+   *
+   * @param start From when on the new series should start
    * @returns the new master event
    */
   async cloneSeriesStartingAt(start: Date): Promise<Event> {
+    let oldMaster = this.parentEvent ?? this;
+    // @Neil are there cases where master.recurrenceRule is null? You had an `if if (oldMaster.recurrenceRule)` in the old code...
+    assert(oldMaster.recurrenceCase == RecurrenceCase.Master && oldMaster.recurrenceRule, "Need old master");
+    oldMaster.recurrenceRule.seriesEndTime = start;
     let master = this.calendar.newEvent();
     master.startEditing(); // #701
-    master.copyEditableFieldsFrom(this);
+    master.copyEditableFieldsFrom(oldMaster);
     master.startTime = new Date(start);
     master.calUID = null;
-    if (this.parentEvent.recurrenceRule) {
-      let { frequency, interval, week, weekdays } = this.parentEvent.recurrenceRule;
-      master.newRecurrenceRule(frequency, interval, week, weekdays);
-    }
+    let { frequency, interval, week, weekdays } = oldMaster.recurrenceRule;
+    master.newRecurrenceRule(frequency, interval, week, weekdays);
     master.finishEditing(); // #701
     await this.save();
-    await this.truncateRecurrence(start);
+    await oldMaster.save();
     return master;
   }
 }

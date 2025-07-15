@@ -130,9 +130,11 @@
   }
 
   async function onDeleteRemainder() {
-    event.parentEvent.cancelEditing();
+    let oldMaster = event.parentEvent;
+    oldMaster.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence(event.startTime);
+    oldMaster.setSeriesEnd(event.startTime);
+    await oldMaster.save();
     $selectedEvent = null;
     onClose();
   }
