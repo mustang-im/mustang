@@ -1,8 +1,8 @@
 <vbox class="invitation">
   {#if $message.event}
-    <InvitationDisplay event={message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+    <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
   {:else if $message.invitationMessage}
-    {#await loadEvent()}
+    {#await loadEvent(message)}
       {$t`Loading event...`}
     {:then}
       {#if $message.event}
@@ -49,7 +49,7 @@
 
   export let message: EMail;
   let calendars: Collection<Calendar>;
-  let selectedCalendar: Calendar | undefined;
+  let selectedCalendar: Calendar | undefined; // undefined, because `null` means "All accounts" for `<AccountDropDown>`
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
 
@@ -57,7 +57,8 @@
     loadCalendars();
   }
 
-  async function loadEvent() {
+  async function loadEvent(message: EMail) {
+    event = undefined;
     await message.loadEvent();
     await loadCalendars();
   }
