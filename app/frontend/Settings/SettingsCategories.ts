@@ -104,7 +104,7 @@ accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, n
 const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, true);
 calendarSettings.subCategories.addAll([
 ]);
-calendarSettings.accounts = appGlobal.calendars;
+calendarSettings.accounts = appGlobal.calendarAccounts;
 // #if [!WEBMAIL]
 calendarSettings.newAccountUI = SetupCalendar;
 // #endif
@@ -114,7 +114,7 @@ settingsCategories.add(calendarSettings);
 const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, true);
 contactsSettings.subCategories.addAll([
 ]);
-contactsSettings.accounts = appGlobal.addressbooks;
+contactsSettings.accounts = appGlobal.addressbookAccounts;
 // #if [!WEBMAIL]
 contactsSettings.newAccountUI = SetupContacts;
 // #endif

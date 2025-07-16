@@ -32,7 +32,7 @@ export class CalDAVEvent extends Event {
     if (!isEvent) {
       return false;
     }
-    this.url = new URL(entry.url, this.calendar.calendarURL).href;
+    this.url = new URL(entry.url, this.calendar.url).href;
     this.etag = entry.etag;
     return true;
   }
@@ -61,7 +61,7 @@ export class CalDAVEvent extends Event {
         iCalString: iCal,
         filename,
       });
-      this.url = new URL(filename, this.calendar.calendarURL).href;
+      this.url = new URL(filename, this.calendar.url).href;
     }
     await super.saveToServer();
   }

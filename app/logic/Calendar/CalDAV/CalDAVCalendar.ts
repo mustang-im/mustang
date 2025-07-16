@@ -13,7 +13,7 @@ export class CalDAVCalendar extends Calendar {
   declare account: CalDAVAccount;
   declare readonly events: ArrayColl<CalDAVEvent>;
   /** URL of the specific calendar - a CalDAV account can contain multiple calendars */
-  calendarURL: URLString;
+  url: URLString;
   davCalendar: DAVCalendar | null = null;
   ctag: string | null = null;
   protected readonly syncLock = new Lock();
@@ -70,7 +70,7 @@ export class CalDAVCalendar extends Calendar {
       }));
       let syncResponse = await this.account.client.smartCollectionSync({
         collection: {
-          url: this.calendarURL,
+          url: this.url,
           ctag: this.ctag,
           syncToken: this.syncState,
           objects: localObjects,
@@ -121,18 +121,18 @@ export class CalDAVCalendar extends Calendar {
   }
 
   getEventByURL(relativeURL: URLString): CalDAVEvent | void {
-    let url = new URL(relativeURL, this.calendarURL).href;
+    let url = new URL(relativeURL, this.url).href;
     return this.events.find(e => e.url == url);
   }
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
-    this.calendarURL = sanitize.url(json.calendarURL);
+    this.url = sanitize.url(json.url);
     this.ctag = sanitize.string(json.ctag, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
-    json.calendarURL = this.calendarURL;
+    json.url = this.url;
     json.ctag = this.ctag;
     return json;
   }

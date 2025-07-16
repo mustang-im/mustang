@@ -30,7 +30,7 @@
       <WorkspaceAccounts title={$t`Mail`} allAccounts={appGlobal.emailAccounts} accountSettingsID="mail" {workspace} />
       <WorkspaceAccounts title={$t`Chat`} allAccounts={appGlobal.chatAccounts} accountSettingsID="chat" {workspace} />
       <WorkspaceAccounts title={$t`Meet`} allAccounts={appGlobal.meetAccounts} accountSettingsID="meet" {workspace} />
-      <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendars} accountSettingsID="calendar" {workspace} />
+      <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendarAccounts} accountSettingsID="calendar" {workspace} />
       <WorkspaceAccounts title={$t`Addressbook`} allAccounts={appGlobal.addressbooks} accountSettingsID="contacts" {workspace} />
     </hbox>
   </vbox>
