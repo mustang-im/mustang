@@ -112,9 +112,9 @@ export class MailAccount extends TCPAccount {
     appGlobal.emailAccounts.remove(this);
   }
 
-  isEMailAddress(emailAddress: string): boolean {
+  isMyEMailAddress(emailAddress: string): boolean {
     return this.emailAddress == emailAddress ||
-      this.identities.some(id => id.emailAddress == emailAddress);
+      this.identities.some(id => id.isEMailAddress(emailAddress));
   }
 
   /** Get the `specialFolder` in this account. */

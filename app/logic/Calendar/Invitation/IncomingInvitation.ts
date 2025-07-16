@@ -17,7 +17,12 @@ export class IncomingInvitation {
     this.invitationMessage = message.invitationMessage;
     this.event = message.event;
     let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
+    this.myParticipation = event?.myParticipation || (this.amIOrganizer() ? InvitationResponse.Organizer : InvitationResponse.NoResponseReceived);
+  }
+
+  amIOrganizer(): boolean {
+    let organizer = this.event.participants.find(participant => participant.response == InvitationResponse.Organizer);
+    return this.message.folder.account.isMyEMailAddress(organizer.emailAddress);
   }
 
   /** `this.event` is from the invitation email, but `calEvent` is the event in the calendar */
