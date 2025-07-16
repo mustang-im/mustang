@@ -80,7 +80,7 @@ export class EWSItemError extends Error {
     this.request = aRequest;
     this.error = errorResponseJSON;
     this.type = errorResponseJSON.ResponseCode;
-    if (this.type == "ErrorItemNotFound") {
+    if (this.type == "ErrorItemNotFound" || this.message.endsWith("Object reference not set to an instance of an object.")) {
       this.message = gt`This was deleted on the server`;
     }
   }
