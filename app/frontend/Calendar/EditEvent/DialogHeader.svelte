@@ -166,8 +166,8 @@
 
   export let event: Event;
 
-  let newCalendar = event.calendar;
   $: event.startEditing(); // not `$event`
+  let newCalendar = event.calendar; // Don't listen to $event #730
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
@@ -180,7 +180,6 @@
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
-
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
 
