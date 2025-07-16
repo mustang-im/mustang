@@ -49,7 +49,7 @@ export class IncomingInvitation {
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     let invitee = this.event.participants.find(participant => participant.response != InvitationResponse.Organizer);
     let participant = event.participants.find(participant => participant.emailAddress == invitee.emailAddress);
-    let timestamp = this.message.sent; // TODO Use DTSTAMP from ICS
+    let timestamp = this.event.lastUpdateTime;
     if (participant &&
       (!participant.lastUpdateTime || participant.lastUpdateTime < timestamp)) {
       participant.response = invitee.response;

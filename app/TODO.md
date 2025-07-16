@@ -1,8 +1,7 @@
 # Release
 * License notification bar
 * Beta banner, or hide features in production
-* Calendar: DB change
-* Calendar: Find identity; main account
+* Calendar: Find identity
 * Calendar: Bugs
 * Password
   * Settings: Password field deletes password
@@ -16,6 +15,7 @@
   * Google: Add Parula brand
   * Google: Renewal TAC
   * Microsoft: localhost redirect URL
+* Calendar: DB change; main account
 
 # Next
   * Actions (Filters)
