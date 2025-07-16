@@ -40,7 +40,8 @@
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
 
   function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date($selectedDate);
     event.startTime.setMinutes(0);

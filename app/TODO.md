@@ -3,7 +3,6 @@
 * Beta banner, or hide features in production
 * Calendar: DB change
 * Calendar: Find identity; main account
-* Sentry: Most common bugs
 * Calendar: Bugs
 * Password
   * Settings: Password field deletes password

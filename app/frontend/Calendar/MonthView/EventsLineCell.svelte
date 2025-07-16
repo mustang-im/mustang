@@ -45,7 +45,8 @@
   }
 
   function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date(start.getTime() + 10 * k1HourMS);
     event.endTime = new Date(start.getTime() + 11 * k1HourMS);
