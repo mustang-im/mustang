@@ -239,7 +239,8 @@
     await newMaster.save();
     event.parentEvent.cancelEditing();
     event.cancelEditing();
-    await event.setRecurrenceEndTime(newMaster.startTime);
+    event.truncateRecurrencesFromHere();
+    await event.save();
     onClose();
   }
 

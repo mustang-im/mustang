@@ -775,7 +775,7 @@ export class Event extends Observable {
   /**
    * Deletes this instance or exception, and all after that.
    */
-  async truncateRecurrencesFromHere() {
+  truncateRecurrencesFromHere() {
     assert((this.recurrenceCase == RecurrenceCase.Instance || this.recurrenceCase == RecurrenceCase.Exception) &&
       this.parentEvent?.recurrenceRule, "Must be a recurring instance");
     let master = this.parentEvent;
