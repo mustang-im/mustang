@@ -166,7 +166,7 @@
 
   export let event: Event;
 
-  let newCalendar: Calendar;
+  let newCalendar = event.calendar;
   $: event.startEditing(); // not `$event`
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
