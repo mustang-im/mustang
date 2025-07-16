@@ -48,6 +48,7 @@ import Devices from "./Meet/Devices.svelte";
 // #endif
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../l10n/l10n";
+import { production } from "../../logic/build";
 
 export const settingsCategories = new ArrayColl<SettingsCategory>();
 export const accountSettings = new ArrayColl<AccSetting>();
@@ -92,7 +93,9 @@ chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountUI = SetupChat;
 // #endif
 chatSettings.forApp = chatMustangApp;
-settingsCategories.add(chatSettings);
+if (!production) {
+  settingsCategories.add(chatSettings);
+}
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
 // #if [!WEBMAIL]
@@ -134,7 +137,9 @@ meetSettings.newAccountUI = SetupMeetAccount;
 // #endif
 // #if [PROPRIETARY]
 meetSettings.forApp = meetMustangApp;
-settingsCategories.add(meetSettings);
+if (!production) {
+  settingsCategories.add(meetSettings);
+}
 // #endif
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
@@ -147,13 +152,17 @@ filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => a
 filesSettings.newAccountUI = SetupFiles;
 // #endif
 filesSettings.forApp = filesMustangApp;
-settingsCategories.add(filesSettings);
+if (!production) {
+  settingsCategories.add(filesSettings);
+}
 
-const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
-appSettings.subCategories.addAll([
+const webAppSettings = new SettingsCategory("app", gt`App integration`, null, true);
+webAppSettings.subCategories.addAll([
 ]);
-appSettings.forApp = webAppsMustangApp;
-settingsCategories.add(appSettings);
+webAppSettings.forApp = webAppsMustangApp;
+if (!production) {
+  settingsCategories.add(webAppSettings);
+}
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([

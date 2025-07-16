@@ -9,19 +9,30 @@ import { filesMustangApp } from "../Files/FilesMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
 import { mustangApps, selectedApp } from "./selectedApp";
+import { production } from "../../logic/build";
 
 export function loadMustangApps() {
-  mustangApps.addAll([
-    contactsMustangApp,
-    mailMustangApp,
-    chatMustangApp,
-    // #if [PROPRIETARY]
-    meetMustangApp,
-    // #endif
-    calendarMustangApp,
-    filesMustangApp,
-    webAppsMustangApp,
-    settingsMustangApp,
-  ]);
+  if (production) {
+    mustangApps.addAll([
+      contactsMustangApp,
+      mailMustangApp,
+      calendarMustangApp,
+      filesMustangApp,
+      settingsMustangApp,
+    ]);
+  } else {
+    mustangApps.addAll([
+      contactsMustangApp,
+      mailMustangApp,
+      chatMustangApp,
+      // #if [PROPRIETARY]
+      meetMustangApp,
+      // #endif
+      calendarMustangApp,
+      filesMustangApp,
+      webAppsMustangApp,
+      settingsMustangApp,
+    ]);
+  }
   selectedApp.set(contactsMustangApp);
 }
