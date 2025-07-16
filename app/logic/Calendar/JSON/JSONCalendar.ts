@@ -11,8 +11,6 @@ export class JSONCalendar {
     json.name = cal.name;
     json.protocol = cal.protocol;
     json.url = cal.url;
-    json.username = cal.username;
-    json.workspaceID = cal.workspace?.id;
     json.syncState = cal.syncState;
     return json;
   }

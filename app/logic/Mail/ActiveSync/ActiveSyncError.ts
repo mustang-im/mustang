@@ -1,10 +1,12 @@
 import type { Account } from "../../Abstract/Account";
+import type { Calendar } from "../../Calendar/Calendar";
+import type { Addressbook } from "../../Contacts/Addressbook";
 import { gt } from "../../../l10n/l10n";
 
 export class ActiveSyncError extends Error {
   type: string;
   code: string;
-  constructor(aCommand: string, aStatus: string, account: Account) {
+  constructor(aCommand: string, aStatus: string, account: Account | Calendar | Addressbook) {
     let msg = globalMessages[aStatus] || messages[aCommand]?.[aStatus] || `ActiveSync ${aCommand} status ${aStatus}`;
     if (account) {
       msg = account.name + ": " + msg;
