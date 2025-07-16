@@ -529,7 +529,7 @@ export class EWSAccount extends MailAccount {
         }
         ewsFolder.fromXML(folder);
         this.folderMap.set(folder.FolderId.Id, ewsFolder);
-      }
+      } // else TODO set calendar.folderID and addressbook.folderID
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {

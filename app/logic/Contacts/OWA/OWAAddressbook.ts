@@ -3,10 +3,13 @@ import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
   canSync: boolean = true;
   readonly persons: ArrayColl<OWAPerson>;
   readonly groups: ArrayColl<OWAGroup>;
@@ -121,6 +124,16 @@ export class OWAAddressbook extends Addressbook {
 
   getGroupByPersonaID(id: string): OWAGroup | void {
     return this.groups.find(p => p.personaID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }
 

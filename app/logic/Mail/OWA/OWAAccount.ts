@@ -297,7 +297,7 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      }
+      } // else TODO set calendar.folderID and addressbook.folderID
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {

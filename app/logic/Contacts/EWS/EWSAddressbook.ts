@@ -9,6 +9,8 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
   canSync: boolean = true;
   readonly persons: ArrayColl<EWSPerson>;
   readonly groups: ArrayColl<EWSGroup>;
@@ -231,5 +233,15 @@ export class EWSAddressbook extends Addressbook {
 
   protected getGroupByItemID(id: string): EWSGroup | void {
     return this.groups.find(p => p.itemID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }

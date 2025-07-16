@@ -5,12 +5,14 @@ import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
-import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
   readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
@@ -75,7 +77,7 @@ export class EWSCalendar extends Calendar {
     await this.save();
   }
 
-  async syncFolder(folder: string, syncState: string | null): Promise<string> {
+  protected async syncFolder(folder: string, syncState: string | null): Promise<string> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
@@ -251,5 +253,15 @@ export class EWSCalendar extends Calendar {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }
