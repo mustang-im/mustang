@@ -101,7 +101,7 @@ export class OWAEvent extends Event {
     let participants: Participant[] = [];
     if (json.Organizer && (json.RequiredAttendees || json.OptionalAttendees)) {
       organizer = sanitize.emailAddress(json.Organizer.Mailbox.EmailAddress);
-      json.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
+      json.Organizer.ResponseType = "Organizer";
       addParticipants([json.Organizer], participants);
     }
     if (json.RequiredAttendees) {

@@ -103,7 +103,7 @@ export class EWSEvent extends Event {
     let participants: Participant[] = [];
     if (xmljs.Organizer && (xmljs.RequiredAttendees?.Attendee || xmljs.OptionalAttendees?.Attendee)) {
       organizer = sanitize.emailAddress(xmljs.Organizer.Mailbox.EmailAddress);
-      xmljs.Organizer.ResponseType = this.isCancelled ? "Decline" : "Organizer";
+      xmljs.Organizer.ResponseType = "Organizer";
       addParticipants(xmljs.Organizer, participants);
     }
     if (xmljs.RequiredAttendees?.Attendee) {

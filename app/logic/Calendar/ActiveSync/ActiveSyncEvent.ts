@@ -76,16 +76,15 @@ export class ActiveSyncEvent extends Event {
       for (let attendee of attendees) {
         attendee.Email = sanitize.emailAddress(attendee.Email);
       }
-      let status = this.isCancelled ? InvitationResponse.Decline : InvitationResponse.Organizer;
       let organizerEmail = sanitize.emailAddress(wbxmljs.OrganizerEmail);
       let organizer = attendees.find(attendee => attendee.Email == organizerEmail);
       if (organizer) {
-        organizer.AttendeeStatus = status;
+        organizer.AttendeeStatus = InvitationResponse.Organizer;
       } else {
         attendees.unshift({
           Email: organizerEmail,
           Name: sanitize.label(wbxmljs.OrganizerName),
-          AttendeeStatus: status
+          AttendeeStatus: InvitationResponse.Organizer,
         });
       }
     }

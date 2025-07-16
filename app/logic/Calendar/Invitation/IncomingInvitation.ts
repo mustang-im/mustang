@@ -38,10 +38,6 @@ export class IncomingInvitation {
       return;
     }
     event.isCancelled = true;
-    let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    if (organizer) {
-      organizer.response = InvitationResponse.Decline;
-    }
     event.lastUpdateTime = this.event.lastUpdateTime;
     await event.save();
   }
