@@ -60,6 +60,9 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.location) {
     lines.push(["LOCATION", event.location]);
   }
+  if (event.isCancelled) {
+    lines.push(["STATUS", "CANCELLED"]);
+  }
   let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
   if (organizer) {
     lines.push(["ORGANIZER", "MAILTO:" + organizer.emailAddress]);

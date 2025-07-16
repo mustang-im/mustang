@@ -83,6 +83,9 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   if (vevent.entries.location) {
     event.location = vevent.entries.location[0].value;
   }
+  if (vevent.entries.status?.[0].value == "CANCELLED") {
+    event.isCancelled = true;
+  }
   let organizer: Participant | undefined;
   if (vevent.entries.organizer) {
     let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
