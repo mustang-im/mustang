@@ -1,5 +1,5 @@
-import { CalendarAccount } from "../CalendarAccount";
-import { CalDAVCalendar } from "./CalDAVCalendar";
+import { AddressbookAccount } from "../AddressbookAccount";
+import { CardDAVAddressbook } from "./CardDAVAddressbook";
 import { AuthMethod } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { NotReached, assert } from "../../util/util";
@@ -7,9 +7,9 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import type { DAVClient } from "tsdav";
 
-export class CalDAVAccount extends CalendarAccount {
-  readonly protocol: string = "caldav";
-  declare calendars: ArrayColl<CalDAVCalendar>;
+export class CardDAVAccount extends AddressbookAccount {
+  readonly protocol: string = "carddav";
+  declare readonly addressbooks: ArrayColl<CardDAVAddressbook>;
   client: DAVClient;
 
   async login(interactive: true) {
@@ -31,7 +31,7 @@ export class CalDAVAccount extends CalendarAccount {
         username: this.username,
         password: usePassword ? this.password : undefined,
       },
-      defaultAccountType: "caldav",
+      defaultAccountType: "carddav",
     };
     this.client = await appGlobal.remoteApp.createWebDAVClient(options);
     await this.client.login();
@@ -47,28 +47,28 @@ export class CalDAVAccount extends CalendarAccount {
     }
   }
 
-  async listCalendars(): Promise<void> {
-    if (this.calendars.hasItems) {
+  async listAddressbooks(): Promise<void> {
+    if (this.addressbooks.hasItems) {
       return;
     }
     // TODO Read from DB
 
     // Add new calendars from server
-    this.calendars.addAll(await this.listCalendarsOnServer(false));
+    this.addressbooks.addAll(await this.listAddressbooksOnServer(false));
   }
 
-  async listCalendarsOnServer(duplicates: boolean): Promise<ArrayColl<CalDAVCalendar>> {
-    let calendars = new ArrayColl<CalDAVCalendar>();
-    let davCalendars = await this.client.fetchCalendars();
-    assert(davCalendars.length, "No CalDAV calendars found");
-    for (let davCalendar of davCalendars) {
-      if (!duplicates && this.calendars.some(cal => cal.url == davCalendar.url)) {
+  async listAddressbooksOnServer(duplicates: boolean): Promise<ArrayColl<CardDAVAddressbook>> {
+    let calendars = new ArrayColl<CardDAVAddressbook>();
+    let davAddressbooks = await this.client.fetchAddressBooks();
+    assert(davAddressbooks.length, "No CardDAV addressbooks found");
+    for (let davAddressbook of davAddressbooks) {
+      if (!duplicates && this.addressbooks.some(ab => ab.url == davAddressbook.url)) {
         continue;
       }
-      console.log("Found CalDAV calendar", davCalendar.displayName);
-      let cal = new CalDAVCalendar();
-      cal.name = (typeof(davCalendar.displayName == "string") ? davCalendar.displayName as string : null) || gt`Calendar`;
-      cal.url = davCalendar.url;
+      console.log("Found CardDAV addressbook", davAddressbook.displayName);
+      let cal = new CardDAVAddressbook();
+      cal.name = (typeof (davAddressbook.displayName == "string") ? davAddressbook.displayName as string : null) || gt`Calendar`;
+      cal.url = davAddressbook.url;
       calendars.add(cal);
     }
     return calendars;

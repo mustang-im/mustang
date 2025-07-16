@@ -1,4 +1,7 @@
 import { Account } from "../Abstract/Account";
+import { appGlobal } from "../app";
+import type { Calendar } from "./Calendar";
+import { ArrayColl } from "svelte-collections";
 
 /**
  * This is a user account on a server with its own login and configuration,
@@ -9,12 +12,34 @@ import { Account } from "../Abstract/Account";
  * e.g. JMAP, EWS, OWA, ActiveSync, are *not* `CalendarAccount`s,
  * but their Calendar uses the `MailAccount` as `account`.
  */
-export class CalendarAccount extends Account {
+export abstract class CalendarAccount extends Account {
   readonly protocol: string = "calendar-server";
-  storage: CalendarAccountStorage | null = null;
+  storage: CalendarStorage | null = null;
+  readonly calendars = new ArrayColl<Calendar>();
+
+  abstract listCalendars(): Promise<void>;
+
+  /**
+   * @param duplicates Include those that are already known locally
+   */
+  abstract listCalendarsOnServer(duplicates: boolean): Promise<ArrayColl<Calendar>>;
+
+  async save(): Promise<void> {
+    await this.storage?.saveAccount(this);
+  }
+
+  async deleteIt(): Promise<void> {
+    await super.deleteIt();
+    await this.storage?.deleteAccount(this);
+    appGlobal.calendarAccounts.remove(this);
+  }
 }
 
-export interface CalendarAccountStorage {
-  saveccount(account: CalendarAccount): Promise<void>;
+export interface CalendarStorage {
+  saveEvent(event: Event): Promise<void>;
+  deleteEvent(event: Event): Promise<void>;
+  saveCalendar(calendar: Calendar): Promise<void>;
+  deleteCalendar(calendar: Calendar): Promise<void>;
+  saveAccount(account: CalendarAccount): Promise<void>;
   deleteAccount(account: CalendarAccount): Promise<void>;
 }

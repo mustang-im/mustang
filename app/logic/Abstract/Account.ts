@@ -203,7 +203,7 @@ export function getAllAccounts(): Collection<Account> {
   allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filter(o => !!o));
   allAccounts.addAll(appGlobal.chatAccounts);
   allAccounts.addAll(appGlobal.addressbooks);
-  allAccounts.addAll(appGlobal.calendars);
+  allAccounts.addAll(appGlobal.calendarAccounts);
   allAccounts.addAll(appGlobal.meetAccounts);
   return allAccounts;
 }
