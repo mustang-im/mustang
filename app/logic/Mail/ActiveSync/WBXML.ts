@@ -24,12 +24,12 @@ const kTags = [
   [,,,,, "Provision", "Policies", "Policy", "PolicyType", "PolicyKey", "Data", "Status", "RemoteWipe", "EASProvisionDoc", "DevicePasswordEnabled", "AlphanumericDevicePasswordRequired", "RequireStorageCardEncryption", "PasswordRecoveryEnabled",, "AttachmentsEnabled", "MinDevicePasswordLength", "MaxInactivityTimeDeviceLock", "MaxDevicePasswordFailedAttempts", "MaxAttachmentSize", "AllowSimpleDevicePassword", "DevicePasswordExpiration", "DevicePasswordHistory", "AllowStorageCard", "AllowCamera", "RequireDeviceEncryption", "AllowUnsignedApplications", "AllowUnsignedInstallationPackages", "MinDevicePasswordComplexCharacters", "AllowWiFi", "AllowTextMessaging", "AllowPOPIMAPEmail", "AllowBluetooth", "AllowIrDA", "RequireManualSyncWhenRoaming", "AllowDesktopSync", "MaxCalendarAgeFilter", "AllowHTMLEmail", "MaxEmailAgeFilter", "MaxEmailBodyTruncationSize", "MaxEmailHTMLBodyTruncationSize", "RequireSignedSMIMEMessages", "RequireEncryptedSMIMEMessages", "RequireSignedSMIMEAlgorithm", "RequireEncryptionSMIMEAlgorithm", "AlowSMIMEEncryptionAlgorithmNegotiation", "AllowSMIMESoftCerts", "AllowBrowser", "AllowConsumerEmail", "AllowRemoteDesktop", "AllowInternetSharing", "UnapprovedInROMApplicationList", "ApplicationName", "ApprovedApplicationList"],
   [,,,,, "Search",, "Store", "Name", "Query", "Options", "Range", "Status", "Response", "Result", "Properties", "Total"],
   [,,,,, "DisplayName", "Phone", "Office", "Title", "Company", "Alias", "FirstName", "LastName", "HomePhone", "MobilePhone", "EmailAddress"],
-  [,,,,, "BodyPreference", "Type", "TruncationSize",,, "Body", "Data", "EstimatedDataSize", "Truncated", "Attachments", "Attachment", "DisplayName", "FileReference", "Method", "ContentId", "ContentLocation", "IsInline", "NativeBodyType",, "Preview"],
+  [,,,,, "BodyPreference", "Type", "TruncationSize",,, "Body", "Data", "EstimatedDataSize", "Truncated", "Attachments", "Attachment", "DisplayName", "FileReference", "Method", "ContentId", "ContentLocation", "IsInline", "NativeBodyType",, "Preview",,,,,,,, "Location"],
   [,,,,, "Settings", "Status",, "Set",,,,,,,,,,,,,, "DeviceInformation", "Model"],
   [],
   [,,,,, "ItemOperations", "Fetch", "Store", "Options",,, "Properties",, "Status", "Response",,,, "EmptyFolderContents", "DeleteSubFolders"],
   [,,,,, "SendMail",,, "SaveInSentItems",,,,,,,, "Mime", "ClientId", "Status"],
-  [,,,,,,,,, "ConversationId", "ConversationIndex", "LastVerbExecuted", "LastVerbExecutionTime",, "Sender",,,,"FirstDayOfWeek", "MeetingMessageType", "IsDraft", "Bcc"],
+  [,,,,,,,,, "ConversationId", "ConversationIndex", "LastVerbExecuted", "LastVerbExecutionTime",, "Sender", "CalendarType",,,"FirstDayOfWeek", "MeetingMessageType",, "IsDraft", "Bcc"],
 ];
 
 /**
