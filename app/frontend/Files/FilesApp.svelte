@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <LeftPane bind:listFiles bind:listDirs bind:viewFile bind:activeTab={$selectedSearchTab} />
+    <LeftPane bind:listFiles bind:listDirs bind:viewFile bind:activeTab={$selectedLeftTab} />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if viewFile}
@@ -22,7 +22,7 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { selectedFolder, selectedSearchTab } from "./selected";
+  import { selectedFolder, selectedLeftTab } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
