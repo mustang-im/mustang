@@ -166,13 +166,8 @@
 
   export let event: Event;
 
+  let newCalendar: Calendar;
   $: event.startEditing(); // not `$event`
-  let newCalendar = event.calendar; // Don't listen to $event #730
-  let prevEventID = event.id;
-  $: if (event.id != prevEventID) {
-    newCalendar = event.calendar;
-    prevEventID = event.id;
-  };
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
@@ -185,8 +180,21 @@
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
+
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
+
+  $: updateEvent(event) // #730
+  let prevEventID = event.id;
+  function updateEvent(event: Event) {
+    if (event.id == prevEventID) {
+      return;
+    }
+    prevEventID = event.id;
+
+    // Runs when a different event loaded
+    newCalendar = event.calendar;
+  };
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
