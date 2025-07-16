@@ -11,13 +11,10 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
-  readonly events: ArrayColl<EWSEvent>;
+  declare readonly account: EWSAccount;
+  declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
-
-  get account(): EWSAccount {
-    return this.mainAccount as EWSAccount;
-  }
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);

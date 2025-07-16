@@ -1,15 +1,31 @@
-import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
+import type { CalendarAccount } from "./CalendarAccount";
+import type { MailAccount } from "../Mail/MailAccount";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
 import type { EMail } from "../Mail/EMail";
-import { appGlobal } from "../app";
-import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 import { recurrenceColl } from "./RecurrenceColl";
+import { appGlobal } from "../app";
+import { Observable, notifyChangedProperty } from "../util/Observable";
+import { ArrayColl, type Collection } from "svelte-collections";
+import type { ComponentType } from "svelte";
 
-export class Calendar extends Account {
+export class Calendar extends Observable {
+  id: string;
+  /** The primary ID in the type-specific database (not in accounts DB) */
+  dbID: number | string | null = null;
   readonly protocol: string = "calendar-local";
+  account: CalendarAccount | MailAccount;
+  @notifyChangedProperty
+  name: string;
+  /** A `data:` URL to an image that represents this account.
+   * E.g. the company logo. */
+  @notifyChangedProperty
+  icon: string | ComponentType | null = null;
+  @notifyChangedProperty
+  color: string = "#FFFFFF";
+
   /** Contains
    * - single events
    * - recurring masters
@@ -55,17 +71,15 @@ export class Calendar extends Account {
   }
 
   async deleteIt(): Promise<void> {
-    await super.deleteIt();
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);
   }
 
   fromConfigJSON(json: any) {
-    super.fromConfigJSON(json);
     this.syncState = json.syncState;
   }
   toConfigJSON(): any {
-    let json = super.toConfigJSON();
+    let json = {} as any;
     json.syncState = this.syncState;
     return json;
   }
