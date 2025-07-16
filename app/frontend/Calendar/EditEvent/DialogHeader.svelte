@@ -183,6 +183,18 @@
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
 
+  $: updateEvent(event) // #730
+  let prevEventID = event.id;
+  function updateEvent(event: Event) {
+    if (event.id == prevEventID) {
+      return;
+    }
+    prevEventID = event.id;
+
+    // Runs when a different event loaded
+    newCalendar = event.calendar;
+  };
+
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
     if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
