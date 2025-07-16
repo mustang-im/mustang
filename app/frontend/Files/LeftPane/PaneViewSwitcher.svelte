@@ -1,5 +1,6 @@
 <vbox class="island">
   <IslandSwitcher faint={false}>
+    {#if !production}
     <Button
       label={$t`My computer`}
       icon={ComputerIcon}
@@ -16,6 +17,7 @@
       onClick={() => active = FilesView.CloudStorage}
       selected={active == FilesView.CloudStorage}
       />
+    {/if}
     <Button
       label={$t`Persons`}
       icon={PersonIcon}
@@ -25,8 +27,8 @@
       onClick={() => active = FilesView.Person}
       selected={active == FilesView.Person}
       />
-      <!--
-      <Button
+    <!--
+    <Button
       label={$t`Projects`}
       icon={ProjectIcon}
       classes="vertical"
@@ -36,7 +38,8 @@
       selected={active == FilesView.Project}
       />
       -->
-      <Button
+    {#if !production}
+    <Button
       label={$t`Recent`}
       icon={RecentIcon}
       classes="vertical"
@@ -53,6 +56,7 @@
       onClick={() => active = FilesView.Search}
       selected={active == FilesView.Search}
       />
+    {/if}
   </IslandSwitcher>
 </vbox>
 
@@ -68,6 +72,7 @@
 </script>
 
 <script lang="ts">
+  import { production } from "../../../logic/build";
   import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ComputerIcon from "lucide-svelte/icons/computer";
