@@ -6,6 +6,7 @@ import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -17,6 +18,7 @@ export class OWACalendar extends Calendar {
   readonly events: ArrayColl<OWAEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  listEventsOnce = new RunOnce(() => this.listEventsSlow());
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -47,6 +49,10 @@ export class OWACalendar extends Calendar {
   }
 
   async listEvents() {
+    await this.listEventsOnce.maybeRun();
+  }
+
+  async listEventsSlow() {
     if (!this.dbID) {
       await this.save();
     }

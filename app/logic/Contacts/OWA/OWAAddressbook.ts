@@ -3,6 +3,7 @@ import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -13,6 +14,7 @@ export class OWAAddressbook extends Addressbook {
   canSync: boolean = true;
   readonly persons: ArrayColl<OWAPerson>;
   readonly groups: ArrayColl<OWAGroup>;
+  listContactsOnce = new RunOnce(() => this.listContactsSlow());
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -26,6 +28,10 @@ export class OWAAddressbook extends Addressbook {
   }
 
   async listContacts() {
+    await this.listContactsOnce.maybeRun();
+  }
+
+  async listContactsSlow() {
     let response = await this.account.callOWA(new OWAGetPeopleFiltersRequest());
     let contacts = response.find(filter => !filter.IsReadOnly);
     if (!contacts) {
