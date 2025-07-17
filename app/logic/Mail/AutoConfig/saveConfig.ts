@@ -15,7 +15,9 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
-  fillConfig(config, emailAddress, password);
+  if (config.source != "manual") {
+    fillConfig(config, emailAddress, password);
+  }
 
   let identity = new MailIdentity(config);
   identity.realname = config.realname;

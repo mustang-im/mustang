@@ -182,7 +182,6 @@
       if (!await manualConfigEl.onContinue()) {
         return;
       }
-      fillConfig(config, emailAddress, password);
       errorMessage = null;
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
