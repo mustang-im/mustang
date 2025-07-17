@@ -247,10 +247,16 @@ export class ActiveSyncEvent extends Event {
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = {
-      Request: {
+      // TODO support ActiveSync 14.0
+      Request: this.serverID ? {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
         RequestId: this.serverID,
+      } : {
+        UserResponse: ActiveSyncResponse[response],
+        CollectionId: this.calendar.serverID,
+        RequestId: this.parentEvent.serverID,
+        InstanceId: this.recurrenceStartTime.toISOString(),
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);

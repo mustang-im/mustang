@@ -400,8 +400,28 @@ export class EWSEvent extends Event {
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
+    let itemID = this.itemID;
+    // Unfortunately this API won't take an OccurrenceItemId directly.
+    if (!itemID) {
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance");
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+          },
+          m$ItemIds: {
+            t$OccurrenceItemId: {
+              RecurringMasterId: this.parentEvent.itemID,
+              InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
+            },
+          },
+        },
+      };
+      let response = await this.calendar.account.callEWS(request);
+      itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
+    }
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: itemID });
     await this.calendar.account.callEWS(request);
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
