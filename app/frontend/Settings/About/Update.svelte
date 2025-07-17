@@ -27,7 +27,8 @@
 
   /** @returns have update */
   async function checkForUpdate(): Promise<boolean> {
-    return await appGlobal.remoteApp.checkForUpdate();
+    haveUpdate = await appGlobal.remoteApp.checkForUpdate();
+    return haveUpdate;
   }
 
   async function installUpdate() {
