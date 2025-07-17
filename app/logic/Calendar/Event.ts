@@ -498,7 +498,7 @@ export class Event extends Observable {
     let index = this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime);
     assert(index != -1, "occurrence date not in recurrence");
     this.generateRecurringInstances(recurrenceStartTime);
-    return this.instances.last;
+    return this.instances.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
   }
 
   protected makeExclusionLocally(recurrenceStartTime: Date) {
