@@ -127,20 +127,11 @@ export class OWAAccount extends MailAccount {
     }
     await addressbook.listContacts();
 
-    // Link (until #155) or create the default calendar.
-    // TODO: Support user-added calendars. Compare calendar ID.
-    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
-    console.log("found the OWA cal again", calendar?.name);
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.username;
-      calendar.workspace = this.workspace;
-      calendar.mainAccount = this;
-      appGlobal.calendars.add(calendar);
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        await calendar.listEvents();
+      }
     }
-    await calendar.listEvents();
 
     await this.callOWA(new OWASubscribeToNotificationRequest());
 
@@ -301,7 +292,26 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } // else TODO set calendar.folderID and addressbook.folderID
+      } else if (folder.FolderClass == "IPF.Appointment") {
+        // Link (until #155) or create the default calendar.
+        // TODO: Support user-added calendars. Compare FolderId.
+        // FolderClass is IPF.Appointment.Birthday for the Birthdays calendar
+        // N.B. Only default calendar can handle meeting requests and responses
+        if (folder.DistinguishedFolderId == "calendar") {
+          let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
+          if (!calendar) {
+            calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+            calendar.name = this.name;
+            calendar.url = this.url;
+            calendar.username = this.username;
+            calendar.workspace = this.workspace;
+            calendar.mainAccount = this;
+            appGlobal.calendars.add(calendar);
+          }
+          calendar.folderID = folder.FolderId.Id;
+          await calendar.save();
+        }
+      } // Addressbook FolderId currently handled in OWAAddressbook
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {
@@ -369,6 +379,16 @@ export class OWAAccount extends MailAccount {
 
   protected handleHierarchyNotification(notification: any) {
     try {
+      let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == notification.folderId) as OWAAddressbook | null;
+      if (addressbook) {
+        addressbook.listContacts().catch(this.errorCallback);;
+        return;
+      }
+      let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == notification.folderId) as OWACalendar | null;
+      if (calendar) {
+        calendar.listEvents().catch(this.errorCallback);
+        return;
+      }
       let parent = this.folderMap.get(notification.parentFolderId);
       if (!parent && notification.parentFolderId != this.msgFolderRootID) {
         return;
