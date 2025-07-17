@@ -552,7 +552,7 @@ export class ActiveSyncAccount extends MailAccount {
         case "2":
           for (let serverID of ensureArray(response.Folders.Folder)) {
             let pingable = this.pingsMRU.find(pingable => pingable.serverID == serverID);
-            pingable?.ping();
+            await pingable?.ping();
           }
           continue;
         case "5":
