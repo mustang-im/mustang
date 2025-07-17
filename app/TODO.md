@@ -1,7 +1,6 @@
 # Release
 * License notification bar
 * Beta banner, or hide features in production
-* Calendar: Find identity #682
 * Password
   * Settings: Password field deletes password #777
   * Manual setup: Password change ignored #309
@@ -15,6 +14,7 @@
   * Google: Renewal TAC
   * Microsoft: localhost redirect URL
 * Calendar: DB change; main account
+* Calendar: Find identity #682
 
 # Next
   * Actions (Filters)
