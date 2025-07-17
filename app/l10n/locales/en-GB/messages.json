@@ -406,7 +406,6 @@
   "Pg0AlQ": "Please enter a workspace name",
   "Exu0q9": "Please fill out * in catch-all From address {0}",
   "vp9xFY": "Please log in to account {0} first",
-  "2sNeQn": "Please select a calendar first",
   "9freiF": "Please set up a mail account first",
   "E1Pc8/": "Poll interval",
   "wpmkz0": "Popup",
@@ -826,5 +825,6 @@
   "1lUuN3": "Waiting for you to complete the login in your browser",
   "IWdJMb": "Your real name, as shown to other people when you are sending messages",
   "X1IUi+": "Login inline",
-  "g8gV5K": "This was deleted on the server"
+  "g8gV5K": "This was deleted on the server",
+  "2x9Z/v": "Please set up a calendar first"
 }
