@@ -29,7 +29,7 @@ import { faker } from '@faker-js/faker';
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = new FakeChatPerson();
   let addressbook = new FakeAddressbook();
-  let persons = fakePersons(50, addressbook);
+  let persons = fakePersons(20, addressbook);
   appGlobal.addressbooks.add(addressbook);
   appGlobal.emailAccounts.add(new FakeMailAccount(persons, appGlobal.me));
   appGlobal.chatAccounts.add(new FakeChatAccount(persons, appGlobal.me));
@@ -180,6 +180,7 @@ class FakeFolder extends Folder {
     if (this.messages.hasItems) {
       return this.messages;
     }
+    let messages = new ArrayColl<FakeEMail>();
     let lastReadTime = new Date();
     lastReadTime.setHours(lastReadTime.getHours() - 1);
     let emailNr = 0;
@@ -193,9 +194,10 @@ class FakeFolder extends Folder {
         emailNr++;
         let msg = this.newEMail();
         msg.setFake(person, pUID, this.account.meUID, lastReadTime, emailNr);
-        this.messages.add(msg);
+        messages.add(msg);
       }
     }
+    this.messages.addAll(messages.sortBy(msg => msg.received));
     return this.messages;
   }
   async getNewMessages(): Promise<Collection<EMail>> {
@@ -288,7 +290,7 @@ class FakeMailIdentity extends MailIdentity {
 export class FakeChatAccount extends ChatAccount {
   me: Person;
   msgCount: number;
-  constructor(persons: Collection<Person>, me: Person, msgCount = 300) {
+  constructor(persons: Collection<Person>, me: Person, msgCount = 20) {
     super();
     this.name = "Test chat 1";
     this.realname = me.name;
@@ -379,7 +381,7 @@ export class FakeCalendar extends Calendar {
       this.events.add(event);
     }
   }
-  newEvent(parentEvent?: Event): FakeEvent {
+  newEvent(parentEvent?: FakeEvent): FakeEvent {
     return new FakeEvent(this, parentEvent);
   }
 }

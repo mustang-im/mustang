@@ -22,6 +22,7 @@
   --inverted-fg: white; /* #142862, #213547 */
   --selected-bg: #20AE9E; /* or #27C1AA */
   --selected-fg: white;
+  --icon-primary: #27C1AA;
   --hover-bg: #A9DAD4;
   --hover-fg: #160C27;
   --selected-hover-bg: #1C998B;

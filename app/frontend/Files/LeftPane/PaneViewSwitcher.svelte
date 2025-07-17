@@ -1,6 +1,6 @@
 <vbox class="island">
   <IslandSwitcher faint={false}>
-    {#if !production}
+    {#if $isDemo}
     <Button
       label={$t`My computer`}
       icon={ComputerIcon}
@@ -38,7 +38,7 @@
       selected={active == FilesView.Project}
       />
       -->
-    {#if !production}
+    {#if $isDemo}
     <Button
       label={$t`Recent`}
       icon={RecentIcon}
@@ -72,7 +72,7 @@
 </script>
 
 <script lang="ts">
-  import { production } from "../../../logic/build";
+  import { isDemo } from "../../AppsBar/demo";
   import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ComputerIcon from "lucide-svelte/icons/computer";
