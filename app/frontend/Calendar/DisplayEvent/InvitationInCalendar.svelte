@@ -1,6 +1,6 @@
-<vbox class="show-event">
+<vbox class="show-event" flex>
   <DialogHeader {event} />
-  <vbox class="content" flex>
+  <vbox class="content">
     <InvitationDisplay {event} selectedCalendar={event.calendar} {calendars} />
 
     {#if $event.isCancelled }
@@ -11,6 +11,9 @@
       <InvitationButtons invitation={event} myParticipation={$event.myParticipation} />
     {/if}
   </vbox>
+  <vbox class="description" flex>
+    <WebView html={$event.descriptionHTML} title="" {headHTML} />
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -18,12 +21,22 @@
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
   import DialogHeader from "./DialogHeader.svelte";
+  import WebView from "../../Shared/WebView.svelte";
+  import cssContent from "../../Mail/Message/content.css?inline";
+  import cssBody from "../../Mail/Message/content-body.css?inline";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
+  export let message: Message;
+  export let previousMessage: Message = null;
+  export let hideHeaderFollowup = false;
+  export let openMenuOnMessageHover = false;
+
   export let event: Event;
 
-$: calendars = new ArrayColl([event.calendar]);
+  $: calendars = new ArrayColl([event.calendar]);
+
+  let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>
 
 <style>
