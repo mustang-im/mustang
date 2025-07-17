@@ -175,6 +175,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
         }
       }
     });
+    this.account.addPingable(this);
   }
 
   getEventByServerID(id: string): ActiveSyncEvent | void {
