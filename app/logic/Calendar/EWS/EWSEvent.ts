@@ -404,7 +404,7 @@ export class EWSEvent extends Event {
     // Unfortunately this API won't take an OccurrenceItemId directly.
     if (!itemID) {
       // In case the invitation is for a single instance of a recurring meeting
-      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance");
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
       let request = {
         m$GetItem: {
           m$ItemShape: {

@@ -376,7 +376,7 @@ export class OWAEvent extends Event {
     // Unfortunately this API won't take an OccurrenceItemId directly.
     if (!itemID) {
       // In case the invitation is for a single instance of a recurring meeting
-      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance");
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
       let request = owaGetOccurrenceIdRequest(this);
       let response = await this.calendar.account.callOWA(request);
       itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
