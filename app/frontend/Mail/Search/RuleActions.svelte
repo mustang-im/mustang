@@ -12,6 +12,7 @@
   </Checkbox>
   <Checkbox bind:checked={hasAddTag} allowFalse={false} allowIndetermined={true}
     on:change={updateTag}
+    disabled tooltip={$t`Not working yet - Coming soon`}
     label={$t`Tags`}>
     <TagIcon size="16px" slot="icon" />
   </Checkbox>
@@ -22,6 +23,7 @@
   {/if}
   <Checkbox bind:checked={hasFolder} allowFalse={false} allowIndetermined={true}
     on:change={updateFolder}
+    disabled tooltip={$t`Not working yet - Coming soon`}
     label={rule.copy ? $t`Copy to folder ${rule.toFolder?.name}` : $t`Move to folder ${rule.toFolder?.name}`}>
     <FolderIcon size="16px" slot="icon" />
   </Checkbox>
@@ -38,11 +40,13 @@
   {/if}
   <Checkbox bind:checked={rule.markAsSpam} allowIndetermined={true}
     label={rule.markAsSpam === false ? $t`Mark as not spam` : $t`Mark as spam`}
+    disabled tooltip={$t`Not working yet - Coming soon`}
     classes="star">
     <SpamIcon size="16px" slot="icon" />
   </Checkbox>
   <Checkbox bind:checked={rule.deleteTrash} allowFalse={false} allowIndetermined={true}
     on:change={updateDelete}
+    disabled tooltip={$t`Not working yet - Coming soon`}
     label={$t`Delete`}
     classes="delete">
     <TrashIcon size="16px" slot="icon" />

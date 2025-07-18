@@ -1,9 +1,16 @@
-<hbox class={classes} class:on={checked === true} class:off={checked === false} class:indetermined={checked === undefined || checked === null}>
+<hbox
+  title={tooltip}
+  class:on={checked === true}
+  class:off={checked === false}
+  class:indetermined={checked === undefined || checked === null}
+  class:disabled
+  class={classes}>
   {#if checked === true}
     <Checkbox
       checked
       on:click={onToggle}
       bind:id
+      {disabled}
       color="var(--selected-bg)"
       size="sm" radius="sm" />
   {:else if checked == false && allowIndetermined}
@@ -11,12 +18,14 @@
       indeterminate
       on:click={onToggle}
       bind:id
+      {disabled}
       color="red"
       size="sm" radius="sm" />
   {:else}
     <Checkbox
       on:click={onToggle}
       bind:id
+      {disabled}
       color="var(--selected-bg)"
       size="sm" radius="sm" />
   {/if}
@@ -31,15 +40,22 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher<{ change: boolean }>();
 
-  export let checked;
+  /** in/out */
+  export let checked: boolean | null | undefined;
+  /** in only */
   export let label = "";
   export let classes = "";
   export let allowIndetermined = checked === undefined || checked === null;
   export let allowFalse = true;
+  export let disabled = false;
+  export let tooltip: string | null = null;
 
   let id: string;
 
   function onToggle() {
+    if (disabled) {
+      return;
+    }
     if (checked === true && allowFalse) {
       checked = false;
     } else if (checked === true) {
