@@ -8,6 +8,7 @@
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
+    <DemoBarLeft />
     <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     <vbox flex>
       <DemoBarTop />
