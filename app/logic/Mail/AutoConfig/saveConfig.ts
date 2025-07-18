@@ -38,6 +38,9 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
  * Changes the config in-place.
  */
 export function fillConfig(config: MailAccount, emailAddress: string, password: string) {
+  if (config.source == "manual") {
+    return;
+  }
   assert(emailAddress, `${config.name}: Need email address`);
   config.realname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
   config.emailAddress = emailAddress;
