@@ -20,7 +20,7 @@ export class OWAIncomingInvitation extends IncomingInvitation {
 
   constructor(calendar: OWACalendar, message: OWAEMail) {
     super(calendar, message);
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
+    let event = this.calEvent() as OWAEvent;
     this.itemID = event?.itemID;
   }
 

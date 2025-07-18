@@ -16,7 +16,7 @@ export class IncomingInvitation {
     this.message = message;
     this.invitationMessage = message.invitationMessage;
     this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
+    let event = this.calEvent();
     this.myParticipation = event?.myParticipation ||
       (this.amIOrganizer()
         ? InvitationResponse.Organizer
@@ -33,7 +33,11 @@ export class IncomingInvitation {
 
   /** `this.event` is from the invitation email, but `calEvent` is the event in the calendar */
   calEvent(): Event | null {
-    return this.calendar.events.find(event => event.calUID == this.event.calUID);
+    // First find a standalone event or master.
+    let event = this.calendar.events.find(event => event.calUID == this.event.calUID && !event.recurrenceStartTime);
+    // If this is an occurrence, find it now.
+    return this.event.recurrenceStartTime ? event.getOccurrenceByDate(this.event.recurrenceStartTime) : event;
+    // TODO What if you were only invited to a single exception?
   }
 
   async respondToInvitationFromMail(response: InvitationResponseInMessage) {
