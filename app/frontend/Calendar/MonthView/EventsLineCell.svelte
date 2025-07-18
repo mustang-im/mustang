@@ -2,7 +2,9 @@
   {#if $displayEvents && !$displayEvents.isEmpty}
     <Scroll>
       {#each $displayEvents.each as event (event.id)}
-        <EventLine {event} {start} />
+        {#if event.startTime && event.endTime}
+          <EventLine {event} {start} />
+        {/if}
       {/each}
     </Scroll>
   {/if}
