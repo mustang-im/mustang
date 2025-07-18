@@ -14,13 +14,14 @@
       </hbox>
     </hbox>
     <vbox flex class="right-page">
-      <MainContent category={$selectedCategory} />
+      <MainContent category={showCategory} />
     </vbox>
   </Scroll>
 </Splitter>
 
 <script lang="ts">
   import { settingsCategories } from "../SettingsCategories";
+  import type { SettingsCategory } from "./SettingsCategory";
   import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
@@ -29,10 +30,15 @@
   import Splitter from "../../Shared/Splitter.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import { useDebounce } from "@svelteuidev/composables";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
   let categories = settingsCategories;
+
+  let showCategory: SettingsCategory;
+  const selectCategoryDebounced = useDebounce(() => showCategory = $selectedCategory, 1);
+  $: $selectedCategory, selectCategoryDebounced();
 
   $: onSearch($globalSearchTerm)
   function onSearch(searchTerm: string) {
