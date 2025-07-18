@@ -9,6 +9,7 @@
     <SubAppsList mainApp={app} bind:selectedApp />
   {/each}
   <vbox flex class="middle">
+    <DemoBarLeft />
   </vbox>
   <vbox class="above-setup">
     <DemoToggle />
@@ -22,6 +23,7 @@
   import AppIcon from "./AppIcon.svelte";
   import SubAppsList from "./SubAppsList.svelte";
   import DemoToggle from "./DemoToggle.svelte";
+  import DemoBarLeft from "./DemoBarLeft.svelte";
 
   /* in/out */
   export let selectedApp: MustangApp;
