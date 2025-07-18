@@ -101,7 +101,7 @@
   $: start, $events, setAllDayEvents();
   function setAllDayEvents() {
     let end = new Date(start.getTime() + showDays * k1DayMS);
-    allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
+    allDayEvents = events.filterObservable(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
   }
 
   function goToToday() {

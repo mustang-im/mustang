@@ -10,8 +10,9 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate } from "../selected";
+  import { selectedCalendar } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
+  import { appGlobal } from "../../../logic/app";
   import EventBlock from "./EventBlock.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
