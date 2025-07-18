@@ -1,9 +1,6 @@
 # Release
 * License notification bar
-* Beta banner, or hide features in production
-* Password
-  * Settings: Password field deletes password #777
-  * Manual setup: Password change ignored #309
+* Settings: Password field deletes password #777
 
 # Next week
 * Payment: Upgrade
