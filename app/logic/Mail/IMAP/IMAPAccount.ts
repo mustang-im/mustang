@@ -203,7 +203,7 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
+  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
     try {
       connection?.close();
@@ -211,7 +211,7 @@ export class IMAPAccount extends MailAccount {
       // Sometimes gives "Connection not available". Do nothing.
     }
 
-    purpose ??= this.connections.getKeyForValue(connection);
+    let purpose = this.connections.getKeyForValue(connection);
     assert(purpose, "Connection purpose unknown");
     this.connections.set(purpose, null);
     this.notifyObservers();
