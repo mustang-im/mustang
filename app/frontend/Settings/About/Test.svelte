@@ -9,7 +9,7 @@
 </hbox>
 
 <script lang="ts">
-  import { getTestObjects } from "../../../logic/testData";
+  import { addTestDataToGlobal } from "../../../logic/testData";
   import { openApp } from "../../AppsBar/selectedApp";
   import { chatMustangApp } from "../../Chat/ChatMustangApp";
   import { appGlobal } from "../../../logic/app";
@@ -29,7 +29,7 @@
     appGlobal.addressbooks.clear();
     appGlobal.fileSharingAccounts.clear();
     await sleep(0.1);
-    await getTestObjects();
+    await addTestDataToGlobal();
     appGlobal.personalAddressbook = appGlobal.addressbooks.first;
     appGlobal.collectedAddressbook = null;
     $selectedAccount = appGlobal.emailAccounts.first;

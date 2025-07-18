@@ -10,8 +10,6 @@
  {$t`${appName} is built using the following Open-Source components. We sincerely thank those authors and contributors.`}
 </div>
 
-<Test />
-
 <iframe
   src={attributionURL}
   title="Licenses" sandbox=""
@@ -23,7 +21,6 @@
   import { appName } from "../../../logic/build";
   import { fetchGzip } from "../../Util/util";
   import T from '../../../l10n/T.svelte';
-  import Test from "./Test.svelte";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 

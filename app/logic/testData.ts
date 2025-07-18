@@ -2,6 +2,7 @@ import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
 import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
+import { MeetAccount } from './Meet/MeetAccount';
 import { DeliveryStatus, UserChatMessage } from './Chat/Message';
 import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
@@ -12,6 +13,8 @@ import { FileSharingAccount } from './Files/FileSharingAccount';
 import type { File } from './Files/File';
 import { Directory } from './Files/Directory';
 import { Calendar } from './Calendar/Calendar';
+import { Participant as CalendarParticipant } from './Calendar/Participant';
+import { InvitationResponse } from './Calendar/Invitation/InvitationStatus';
 import { Addressbook } from './Contacts/Addressbook';
 import { Event } from './Calendar/Event';
 import { EMail } from './Mail/EMail';
@@ -26,7 +29,45 @@ import { notifyChangedProperty } from './util/Observable';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
 
-export async function getTestObjects(): Promise<void> {
+export const realMailAccounts = new ArrayColl<MailAccount>();
+export const realChatAccounts = new ArrayColl<ChatAccount>();
+export const realMeetAccounts = new ArrayColl<MeetAccount>();
+export const realAddressbooks = new ArrayColl<Addressbook>();
+export const realCalendars = new ArrayColl<Calendar>();
+
+export async function testDataOn() {
+  realMailAccounts.replaceAll(appGlobal.emailAccounts);
+  realChatAccounts.replaceAll(appGlobal.chatAccounts);
+  realMeetAccounts.replaceAll(appGlobal.meetAccounts);
+  realAddressbooks.replaceAll(appGlobal.addressbooks);
+  realCalendars.replaceAll(appGlobal.calendars);
+
+  let addressbook = new FakeAddressbook();
+  let persons = fakePersons(10, addressbook);
+  appGlobal.addressbooks.replaceAll([ addressbook ]);
+  appGlobal.emailAccounts.replaceAll([ new FakeMailAccount(persons, appGlobal.me) ]);
+  appGlobal.chatAccounts.replaceAll([ new FakeChatAccount(persons, appGlobal.me) ]);
+  appGlobal.calendars.replaceAll([ new FakeCalendar(persons) ]);
+  appGlobal.meetAccounts.replaceAll([ new FakeMeetAccount() ]);
+  appGlobal.fileSharingAccounts.replaceAll([ new FakeFileSharingAccount() ]);
+  await appGlobal.emailAccounts.first.login(false);
+  await appGlobal.chatAccounts.first.login(false);
+}
+
+export async function testDataOff() {
+  appGlobal.emailAccounts.replaceAll(realMailAccounts);
+  appGlobal.chatAccounts.replaceAll(realChatAccounts);
+  appGlobal.meetAccounts.replaceAll(realMeetAccounts);
+  appGlobal.addressbooks.replaceAll(realAddressbooks);
+  appGlobal.calendars.replaceAll(realCalendars);
+  realMailAccounts.clear();
+  realChatAccounts.clear();
+  realMeetAccounts.clear();
+  realAddressbooks.clear();
+  realCalendars.clear();
+}
+
+export async function addTestDataToGlobal(): Promise<void> {
   appGlobal.me = new FakeChatPerson();
   let addressbook = new FakeAddressbook();
   let persons = fakePersons(20, addressbook);
@@ -368,13 +409,16 @@ class FakeChatMessage extends UserChatMessage {
 }
 
 export class FakeCalendar extends Calendar {
-  persons: Collection<Person>;
+  randomParticipants: Collection<CalendarParticipant>;
   constructor(persons: Collection<Person>, eventCount = 50) {
     super();
     this.name = faker.company.name();
     this.storage = new DummyCalendarStorage();
 
-    this.persons = persons;
+    this.randomParticipants = new ArrayColl(persons.contents.map(person => {
+      let personUID = PersonUID.fromPerson(person);
+      return new CalendarParticipant(personUID.emailAddress, personUID.name, InvitationResponse.NoResponseReceived);
+    }));
     for (let i = 1; i <= eventCount; i++) {
       let event = this.newEvent();
       event.setTime(i > 5);
@@ -386,6 +430,8 @@ export class FakeCalendar extends Calendar {
   }
 }
 
+
+
 class FakeEvent extends Event {
   declare calendar: FakeCalendar;
   constructor(calendar: FakeCalendar, parentEvent?: FakeEvent) {
@@ -395,8 +441,8 @@ class FakeEvent extends Event {
     this.location = faker.datatype.boolean() ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
     let participantsCount = Math.random() * 5;
     for (let i = 1; i < participantsCount; i++) {
-      let person = this.calendar.persons.getIndex(Math.floor(Math.random() * this.calendar.persons.length));
-      this.participants.add(person);
+      let participant = this.calendar.randomParticipants.getIndex(Math.floor(Math.random() * this.calendar.randomParticipants.length));
+      this.participants.add(participant);
     }
   }
   setTime(future: boolean) {

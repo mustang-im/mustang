@@ -6,16 +6,14 @@
 </vbox>
 
 <script lang="ts">
-  import { isDemo, realAddressbooks, realCalendars, realEmailAccounts } from "./demo";
+  import { isDemo } from "./demo";
+  import { testDataOff, testDataOn } from "../../logic/testData";
   import { loadDemoMustangApps, loadMustangApps } from "./loadMustangApps";
-  import { FakeAddressbook, FakeCalendar, FakeChatAccount, FakeFileSharingAccount, FakeMailAccount, fakePersons } from "../../logic/testData";
-  import { FakeMeetAccount } from "../../logic/Meet/FakeMeeting";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { selectedCalendar, selectedEvent } from "../Calendar/selected";
   import { selectedAccount as selectedChatAccount } from "../Chat/selected";
   import { selectedAccount as selectedMailAccount, selectedFolder as selectedMailFolder, selectedMessage as selectedEMail } from "../Mail/Selected";
   import { selectedAccount as selectedFilesAccount, selectedFolder as selectedFileFolder, selectedFile, selectedFiles } from "../Files/selected";
-  import { appGlobal } from "../../logic/app";
   import AppButton from "./AppButton.svelte";
   import DemoIcon from "lucide-svelte/icons/sparkles";
   import { catchErrors } from "../Util/error";
@@ -29,6 +27,7 @@
     } else {
       alphaAppsOff();
       await testDataOff();
+      resetSelections();
     }
     $isDemo = startDemo;
   }
@@ -41,28 +40,7 @@
     loadMustangApps();
   }
 
-  async function testDataOn() {
-    realEmailAccounts.replaceAll(appGlobal.emailAccounts);
-    realAddressbooks.replaceAll(appGlobal.addressbooks);
-    realCalendars.replaceAll(appGlobal.calendars);
-
-    let addressbook = new FakeAddressbook();
-    let persons = fakePersons(10, addressbook);
-    appGlobal.addressbooks.replaceAll([ addressbook ]);
-    appGlobal.emailAccounts.replaceAll([ new FakeMailAccount(persons, appGlobal.me) ]);
-    appGlobal.chatAccounts.replaceAll([ new FakeChatAccount(persons, appGlobal.me) ]);
-    appGlobal.calendars.replaceAll([ new FakeCalendar(persons) ]);
-    appGlobal.meetAccounts.replaceAll([ new FakeMeetAccount() ]);
-    appGlobal.fileSharingAccounts.replaceAll([ new FakeFileSharingAccount() ]);
-    await appGlobal.emailAccounts.first.login(false);
-    await appGlobal.chatAccounts.first.login(false);
-  }
-
-  async function testDataOff() {
-    appGlobal.emailAccounts.replaceAll(realEmailAccounts);
-    appGlobal.addressbooks.replaceAll(realAddressbooks);
-    appGlobal.calendars.replaceAll(realCalendars);
-
+  function resetSelections() {
     $selectedPerson = null;
     $selectedEvent = null;
     $selectedMailAccount = null;
