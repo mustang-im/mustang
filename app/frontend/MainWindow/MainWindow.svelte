@@ -10,6 +10,7 @@
   <hbox flex>
     <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     <vbox flex>
+      <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if !$selectedApp}
         {$t`Loading apps...`}
@@ -56,6 +57,8 @@
   // #if [!WEBMAIL]
   import InitialSetup from "../Setup/Import/InitialSetup.svelte";
   // #endif
+  import DemoBarLeft from "./DemoBarLeft.svelte";
+  import DemoBarTop from "./DemoBarTop.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
