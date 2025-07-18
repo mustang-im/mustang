@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -12,7 +12,7 @@ import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice36
 import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -372,14 +372,23 @@ export class OWAEvent extends Event {
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
+    let itemID = this.itemID;
+    // Unfortunately this API won't take an OccurrenceItemId directly.
+    if (!itemID) {
+      // In case the invitation is for a single instance of a recurring meeting
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
+      let request = owaGetOccurrenceIdRequest(this);
+      let response = await this.calendar.account.callOWA(request);
+      itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
+    }
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",
-      Id: this.itemID,
+      Id: itemID,
     });
     await this.calendar.account.callOWA(request);
     try {
-      await this.calendar.getEvents([this.itemID], new ArrayColl<OWAEvent>());
+      await this.calendar.getEvents([itemID], new ArrayColl<OWAEvent>(), this.parentEvent);
     } catch (ex) {
       if (ex.type == "ErrorItemNotFound") { // expected
         await this.deleteLocally(); // OWA deleted the event from the server

@@ -1,6 +1,21 @@
 import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 import type { OWAEvent } from "../OWAEvent";
 
+export function owaGetOccurrenceIdRequest(event: OWAEvent): OWARequest {
+  return new OWARequest("GetItem", {
+    __type: "GetItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+    },
+    ItemIds: [{
+      __type: "OccurrenceItemId:#Exchange",
+      RecurringMasterId: event.parentEvent.itemID,
+      InstanceIndex: event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
+    }],
+  });
+}
+
 export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
