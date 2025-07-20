@@ -42,6 +42,7 @@ export async function testDataOn() {
   realAddressbooks.replaceAll(appGlobal.addressbooks);
   realCalendars.replaceAll(appGlobal.calendars);
 
+  appGlobal.me ??= new FakeChatPerson();
   let addressbook = new FakeAddressbook();
   let persons = fakePersons(10, addressbook);
   appGlobal.addressbooks.replaceAll([ addressbook ]);
@@ -165,7 +166,7 @@ export class FakeMailAccount extends MailAccount {
   constructor(persons: Collection<Person>, me: Person, msgCount = 300) {
     super();
     this.name = "Yahoo Test";
-    this.emailAddress = me.emailAddresses.first.value;
+    this.emailAddress = me.emailAddresses.first.value ?? "You";
     this.realname = me.name;
     this.username = this.emailAddress;
     this.password = faker.internet.password();
