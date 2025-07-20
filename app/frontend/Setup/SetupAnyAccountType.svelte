@@ -1,4 +1,4 @@
-<Header title={$t`Set up another account`} />
+<Header title={appGlobal.emailAccounts.hasItems ?  $t`Set up another account` : $t`Set up your first account`} />
 
 <hbox class="add-buttons">
   <ExpanderButton
@@ -34,6 +34,7 @@
   import { SetupMustangApp } from "./SetupMustangApp";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { openApp } from "../AppsBar/selectedApp";
+  import { appGlobal } from "../../logic/app";
   import SetupMail from "./Mail/SetupMail.svelte";
   import SetupContacts from "./Contacts/SetupContacts.svelte";
   import SetupCalendar from "./Calendar/SetupCalendar.svelte";
