@@ -10,9 +10,11 @@
 
 <script lang="ts">
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
-  import type { Folder } from "../../logic/Mail/Folder";
+  import { Folder } from "../../logic/Mail/Folder";
   import type { EMail } from "../../logic/Mail/EMail";
+  import { DownloadObserver } from "../../logic/Mail/DownloadObserver";
   import { Person } from "../../logic/Abstract/Person";
+  import { PersonUID } from "../../logic/Abstract/PersonUID";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Contacts/Person/Selected";
@@ -23,7 +25,6 @@
   import MailChat from "./MailChat/MailChat.svelte";
   import FolderPropertiesPage, { openFolderProperties } from "./FolderPropertiesPage.svelte";
   import { ArrayColl } from "svelte-collections";
-  import { PersonUID } from "../../logic/Abstract/PersonUID";
 
   $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
@@ -41,6 +42,7 @@
         $selectedMessage = null;
       }
       await folder.listMessages();
+      downloadRecentMessages(folder);
     } catch (ex) {
       if (ex.authFail) {
         // await folder.account.login(true);
@@ -49,6 +51,18 @@
         showError(ex);
       }
     }
+  }
+
+  let downloadObservers = new Map<Folder, DownloadObserver>();
+  function downloadRecentMessages(folder: Folder) {
+    if (downloadObservers.get(folder)) {
+      return;
+    }
+    let lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    let observer = new DownloadObserver(msg => msg.received > lastMonth);
+    folder.messages.registerObserver(observer);
+    downloadObservers.set(folder, observer);
   }
 
   $: $selectedMessage && selectPerson($selectedMessage)
