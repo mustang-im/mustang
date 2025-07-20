@@ -29,11 +29,12 @@ import { notifyChangedProperty } from './util/Observable';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
 
-export const realMailAccounts = new ArrayColl<MailAccount>();
-export const realChatAccounts = new ArrayColl<ChatAccount>();
-export const realMeetAccounts = new ArrayColl<MeetAccount>();
-export const realAddressbooks = new ArrayColl<Addressbook>();
-export const realCalendars = new ArrayColl<Calendar>();
+const realMailAccounts = new ArrayColl<MailAccount>();
+const realChatAccounts = new ArrayColl<ChatAccount>();
+const realMeetAccounts = new ArrayColl<MeetAccount>();
+const realAddressbooks = new ArrayColl<Addressbook>();
+const realCalendars = new ArrayColl<Calendar>();
+let realMe: Person;
 
 export async function testDataOn() {
   realMailAccounts.replaceAll(appGlobal.emailAccounts);
@@ -42,7 +43,10 @@ export async function testDataOn() {
   realAddressbooks.replaceAll(appGlobal.addressbooks);
   realCalendars.replaceAll(appGlobal.calendars);
 
-  appGlobal.me ??= new FakeChatPerson();
+  realMe = appGlobal.me;
+  if (!appGlobal.me?.name) {
+    appGlobal.me = new FakeChatPerson();
+  }
   let addressbook = new FakeAddressbook();
   let persons = fakePersons(10, addressbook);
   appGlobal.addressbooks.replaceAll([ addressbook ]);
@@ -56,6 +60,7 @@ export async function testDataOn() {
 }
 
 export async function testDataOff() {
+  appGlobal.me = realMe;
   appGlobal.emailAccounts.replaceAll(realMailAccounts);
   appGlobal.chatAccounts.replaceAll(realChatAccounts);
   appGlobal.meetAccounts.replaceAll(realMeetAccounts);
