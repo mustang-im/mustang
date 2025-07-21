@@ -338,6 +338,7 @@ export class IMAPAccount extends MailAccount {
 
   protected async saveSent(email: EMail): Promise<void> {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
+    email.isRead = true;
     await sentFolder.addMessage(email);
   }
 
