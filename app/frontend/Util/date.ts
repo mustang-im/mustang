@@ -37,7 +37,7 @@ export function getDateTimeString(date: Date): string {
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date): string {
+export function getDateString(date: Date, fullDate = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
   if (!date) {
     return "";
   }
@@ -51,7 +51,7 @@ export function getDateString(date: Date): string {
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit" };
   } else { // full date
-    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit" };
+    dateDetails = fullDate;
   }
   return date.toLocaleString(getUILocale(), dateDetails);
 }

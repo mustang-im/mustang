@@ -5,7 +5,7 @@
         {$t`Contact history *=> The log of previous interactions with this person`}
       </hbox>
       <vbox class="log" flex slot="content">
-        <FastList items={messages} columns="12px 60px 48px 1fr">
+        <FastList items={messages} columns="12px 5em 48px 1fr">
           <LogBox {message} {person} let:item={message} slot="row"
             previousMessage={messages.getIndex(messages.indexOf(message) - 1)} />
         </FastList>

@@ -2,7 +2,7 @@
   title={time?.toLocaleDateString(getUILocale()) + "\n" + time?.toLocaleTimeString(getUILocale())}>
   {#if !sameDay}
     <hbox class="date">
-      {getDateString(time)}
+      {getDateString(time, { year: "2-digit", month: "2-digit", day: "2-digit" })}
     </hbox>
   {/if}
   <hbox class="time">
@@ -24,6 +24,7 @@
 
 <style>
   .time-box {
+    /* column width in <ContactHistory>. Must be wide enough for "20/08/28" (.date content).  */
     overflow: hidden;
     padding: 6px 4px 4px 0px;
   }
