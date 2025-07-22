@@ -40,7 +40,7 @@ export class AllAccounts extends MailAccount {
 
     let sent = new AllFolders(this);
     sent.name = gt`Sent`;
-    inbox.specialFolder = SpecialFolder.Sent;
+    sent.specialFolder = SpecialFolder.Sent;
     sent.followSpecialFolder(SpecialFolder.Sent);
     this.specialFolders.add(sent as any as Folder);
 
