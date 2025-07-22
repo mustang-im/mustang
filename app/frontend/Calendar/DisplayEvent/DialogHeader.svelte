@@ -2,7 +2,7 @@
   <Stack>
     <hbox class="title-background" style="--header-color: {event.calendar?.color}" />
     <hbox class="window-title-bar" flex>
-      <hbox class="buttons" flex>
+      <hbox class="buttons">
         {#if !isFullWindow}
           <RoundButton
             label={$t`Expand dialog size to full window`}
@@ -165,12 +165,14 @@
     flex: none;
   }
   .title-background {
+    background: var(--header-color);
+    /* background image, in the account color
     background:
       linear-gradient(var(--header-color), var(--header-color)),
       linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
       url("../../asset/header-background.jpeg");
     background-blend-mode: multiply;
-    background-repeat: repeat-x;
+    background-repeat: repeat-x; */
   }
   /*  background-image: url("../../asset/header-background.jpeg");*/
   .buttons :global(button) {
@@ -189,7 +191,7 @@
     align-self: end;
     position: relative;
     left: 0;
-    top: 18px;
+    top: 10px;
   }
   .account-name {
     margin-inline-start: 8px;
@@ -201,6 +203,9 @@
     width: 24px;
     align-items: center;
     justify-content: center;
+  }
+  .account-icon-dummy :global(button:not(.add-specificity)) {
+    background-color: white;
   }
   @container (max-width: 400px) {
     .account-icon {

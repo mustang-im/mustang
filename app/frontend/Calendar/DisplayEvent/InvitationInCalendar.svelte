@@ -27,11 +27,6 @@
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let message: Message;
-  export let previousMessage: Message = null;
-  export let hideHeaderFollowup = false;
-  export let openMenuOnMessageHover = false;
-
   export let event: Event;
 
   $: calendars = new ArrayColl([event.calendar]);

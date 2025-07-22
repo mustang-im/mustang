@@ -333,12 +333,14 @@
     flex: none;
   }
   .title-background {
+    background: var(--header-color);
+    /* background image, in the account color
     background:
       linear-gradient(var(--header-color), var(--header-color)),
       linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
       url("../../asset/header-background.jpeg");
     background-blend-mode: multiply;
-    background-repeat: repeat-x;
+    background-repeat: repeat-x; */
   }
   /*  background-image: url("../../asset/header-background.jpeg");*/
   .buttons :global(button) {
@@ -357,7 +359,7 @@
     align-self: end;
     position: relative;
     left: 0;
-    top: 4px;
+    top: 10px;
   }
   .account-selector {
     align-items: end;
@@ -368,6 +370,9 @@
     width: 24px;
     align-items: center;
     justify-content: center;
+  }
+  .account-icon-dummy :global(button:not(.add-specificity)) {
+    background-color: white;
   }
   @container (max-width: 400px) {
     .account-icon {
