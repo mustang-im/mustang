@@ -20,7 +20,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import DownloadIcon from "lucide-svelte/icons/download";
+  import DownloadIcon from "lucide-svelte/icons/refresh-cw";
   import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
   import DoneIcon from "lucide-svelte/icons/check";
   import NewIcon from "lucide-svelte/icons/sparkle";
