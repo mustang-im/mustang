@@ -33,6 +33,11 @@
       label={$t`Add to ${addressbook.name}`}
       onClick={() => addToAddressbook(addressbook)} />
   {/each}
+
+  <MenuLabel label={$t`Other actions`} />
+  <MenuItem
+    label={recipient.name ? $t`Copy name and email address` : $t`Copy email address`}
+    onClick={copyToClipboard} />
 </Menu>
 
 <script lang="ts">
@@ -78,6 +83,14 @@
   function addToPerson(otherPerson: Person) {
     otherPerson.emailAddresses.add(new ContactEntry(recipient.emailAddress));
     recipient.person = otherPerson;
+  }
+
+  function copyToClipboard() {
+    let text = recipient.emailAddress;
+    if (recipient.name) {
+      text = recipient.name + " <" + recipient.emailAddress + ">";
+    }
+    navigator.clipboard.writeText(text);
   }
 </script>
 
