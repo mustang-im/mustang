@@ -57,8 +57,10 @@
   /** What to show when the user hovers with the mouse over the
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
-  export let tooltip: string = label +
-    (shortCutInfo ? "\n\n" + $t`Shortcut: ${shortCutInfo}` : '');
+  export let tooltip: string = label
+    ? label +
+      (shortCutInfo ? "\n\n" + $t`Shortcut: ${shortCutInfo}` : '')
+    : null;
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
