@@ -135,14 +135,14 @@
         return;
       }
       await tick();
-      let contentRow = contentE.firstChild?.firstChild as HTMLElement;
+      let contentRow = contentE?.firstChild?.firstChild as HTMLElement;
       if (!contentRow) {
         return;
       }
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
-      showRows = Math.min(items.length, Math.floor(availableHeight / rowHeight));
+      showRows = Math.min(items.length, Math.ceil(availableHeight / rowHeight));
       // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
       showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
@@ -232,7 +232,7 @@
 
   function onScrollWheel(event: WheelEvent) {
     // How many rows to scroll each time, in either direction (+/-)
-    let scrollRows = Math.round(event.deltaY / (rowHeight || 20)); // 3 rows
+    let scrollRows = Math.ceil(event.deltaY / (rowHeight || 20)); // 3 rows
     scrollPos += scrollRows;
     scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
@@ -247,7 +247,7 @@
       clearTimeout(scrollPosByScrollBar);
     }, 200);
 
-    scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
+    scrollPos = Math.ceil(scrollbarE.scrollTop / rowHeight);
   }
 
   function onSelectElement(clickedItem: T, event: MouseEvent) {
