@@ -65,6 +65,10 @@ export class Attachment extends Observable {
     return file;
   }
 
+  get ext(): string {
+    return this.filename.split(".").pop();
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);

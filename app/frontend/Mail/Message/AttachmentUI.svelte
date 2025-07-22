@@ -4,7 +4,7 @@
   >
   <hbox bind:this={iconEl}>
     <hbox class="icon" on:click={() => catchErrors(onOpen)}>
-      <FileIcon {ext} localFilePath={attachment.filename} size={24} />
+      <FileIcon ext={attachment.ext} localFilePath={attachment.filepathLocal} size={24} />
     </hbox>
     <vbox class="info">
       <hbox title={$attachment.filename} class="filename top-row font-normal">
@@ -33,8 +33,6 @@
 
   export let attachment: Attachment;
   export let message: EMail;
-
-  $: ext = attachment.filename.split(".").pop();
 
   async function onOpen() {
     await attachment.openOSApp();
