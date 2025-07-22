@@ -404,6 +404,7 @@
     margin-block-end: 8px;
     margin-inline-start: 18px;
     margin-inline-end: 24px;
+    font-weight: bold;
   }
   .subject input {
     width: 100%;
