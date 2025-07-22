@@ -58,6 +58,7 @@
   .label {
     padding-inline-start: 8px;
     font-weight: 300;
+    height: 20px; /* avoid line break */
   }
   .count {
     background-color: red;
