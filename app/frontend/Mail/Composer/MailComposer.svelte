@@ -212,7 +212,7 @@
 
   let loading = false;
   async function loadText() {
-    if (!mail.isDraft) {
+    if (!mail.hasHTML) {
       return;
     }
     loading = true;
