@@ -5,7 +5,9 @@
       <hbox flex class="name font-small">{$person.name}</hbox>
       <slot name="top-right" {person} />
     </hbox>
-    <slot name="second-row" {person} />
+    <hbox class="second-row">
+      <slot name="second-row" {person} />
+    </hbox>
   </vbox>
 </hbox>
 
@@ -28,11 +30,15 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
+  .first-row {
+    height: 1.3em; /* prevent line breaks */
+  }
+  .second-row:first-child {
+    max-height: 1.3em;
+  }
   .main {
     margin-block-start: 0px;
     padding: 10px 16px 10px 4px;
-  }
-  .name {
   }
   .person[size="small"] .main {
     padding: 1px 20px 0px 0px;
