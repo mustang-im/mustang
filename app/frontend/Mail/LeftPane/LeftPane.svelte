@@ -140,7 +140,7 @@
     height: unset;
   }
   .buttons {
-    margin: 8px 8px 0px -8px;
+    margin: 8px 8px 0 8px;
     align-items: end;
   }
   .buttons :global(button) {
