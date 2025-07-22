@@ -1,8 +1,9 @@
 <IslandSwitcher faint={active == SearchView.Folder}>
   <Button
-    label={$t`Folders`}
+    tooltip={$t`Inbox`}
+    label={$t`Inbox *=> Mail folder where new mail arrives. The translation of "Inbox" MUST be less than 7 characters long.`.substring(0, 7)}
     icon={FolderIcon}
-    iconOnly
+    iconOnly={active == SearchView.Folder}
     iconSize="16px"
     onClick={() => active = SearchView.Folder}
     selected={active == SearchView.Folder}
