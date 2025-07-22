@@ -58,7 +58,7 @@
         />
     </hbox>
     <hbox class="attachments">
-      {#if $attachments.hasItems}
+      {#if $message.hasVisibleAttachments}
         <AttachmentIcon size="14px" />
       {/if}
     </hbox>
@@ -120,7 +120,6 @@
 
   export let message: EMail;
 
-  $: attachments = message.attachments;
   $: tags = message.tags;
   $: contactName = personDisplayName($message.contact);
 

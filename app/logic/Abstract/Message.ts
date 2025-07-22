@@ -118,6 +118,9 @@ export class Message extends Observable {
   get hasHTML(): boolean {
     return !!this._rawHTML;
   }
+  get hasVisibleAttachments(): boolean {
+    return this.attachments.hasItems && this.attachments.some(att => !att.hidden);
+  }
 
   /** Allow images and stylesheets to load from https: ? */
   get loadExternalImages(): boolean {
