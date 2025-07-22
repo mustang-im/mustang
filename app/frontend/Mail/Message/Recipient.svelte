@@ -1,4 +1,8 @@
-<hbox class="recipient" on:click={(event) => catchErrors(() => onOpen(event))} bind:this={anchor}>
+<hbox class="recipient"
+  on:click={(event) => catchErrors(() => onOpen(event))}
+  bind:this={anchor}
+  class:is-contact={recipient.findPerson()}
+  >
   <div class="name" title={recipient.name + "\n" + recipient.emailAddress}>
     {personDisplayName(recipient)}
   </div>
@@ -8,7 +12,7 @@
         @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
       </div>
     {:else}
-      <hbox>{$t`Invalid address`}</hbox>
+      <hbox class="invalid">{$t`Invalid address`}</hbox>
     {/if}
   {/if}
 </hbox>
@@ -84,17 +88,17 @@
   .recipient {
     cursor: pointer;
   }
-  .recipient:hover {
+  .recipient.is-contact:hover {
     color: var(--link-hover-fg);
   }
   .name {
     display: inline;
-    margin-inline-end: 4px;
   }
-  .domain {
+  .domain,
+  .invalid {
     display: inline;
     font-weight: normal;
     font-style: italic;
-    margin-inline-start: 4px;
+    margin-inline-start: 6px;
   }
 </style>

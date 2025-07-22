@@ -3,35 +3,15 @@
     {#if $message.contact instanceof Person && $message.contact.picture}
       <PersonPicture person={$message.contact} />
     {/if}
-    <vbox>
-      <hbox class="from">
-        {#if $message.outgoing}
-          <value class="from" title={$message.from.emailAddress}>
-            {$t`me *=> myself as sender of the email`}
-          </value>
-        {:else}
-          <Recipient recipient={$message.from} />
-        {/if}
-      </hbox>
-      {#if $message.to.hasItems}
-        <hbox class="to font-small">
-          {$t`to`}&nbsp;
-          <RecipientList recipients={$message.to} />
-        </hbox>
+    <hbox class="from">
+      {#if $message.outgoing}
+        <value class="from" title={$message.from.emailAddress}>
+          {$t`me *=> myself as sender of the email`}
+        </value>
+      {:else}
+        <Recipient recipient={$message.from} />
       {/if}
-      {#if $message.cc.hasItems}
-        <hbox class="cc font-small">
-          {$t`cc`}&nbsp;
-          <RecipientList recipients={$message.cc} />
-        </hbox>
-      {/if}
-      {#if $message.bcc.hasItems}
-        <hbox class="bcc font-small">
-          {$t`bcc`}&nbsp;
-          <RecipientList recipients={$message.bcc} />
-        </hbox>
-      {/if}
-    </vbox>
+    </hbox>
     <hbox flex />
     <vbox class="top-right">
       <MessageToolbar {message} />
@@ -56,6 +36,26 @@
       </hbox>
     </vbox>
   </hbox>
+  <vbox class="recipients">
+    {#if $message.to.hasItems}
+      <hbox class="to font-small">
+        <hbox class="label">{$t`to`}</hbox>
+        <RecipientsList recipients={$message.to} />
+      </hbox>
+    {/if}
+    {#if $message.cc.hasItems}
+      <hbox class="cc font-small">
+        <hbox class="label">{$t`cc`}</hbox>
+        <RecipientsList recipients={$message.cc} />
+      </hbox>
+    {/if}
+    {#if $message.bcc.hasItems}
+      <hbox class="bcc font-small">
+        <hbox class="label">{$t`bcc`}</hbox>
+        <RecipientsList recipients={$message.bcc} />
+      </hbox>
+    {/if}
+  </vbox>
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
@@ -85,7 +85,7 @@
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import type { Tag } from "../../../logic/Abstract/Tag";
   import MessageToolbar from "./MessageToolbar.svelte";
-  import RecipientList from "./RecipientList.svelte";
+  import RecipientsList from "./RecipientsList.svelte";
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
@@ -168,6 +168,13 @@
   .outgoing .from {
     font-weight: normal;
     color: grey;
+  }
+  .recipients {
+    justify-content: end;
+  }
+  .recipients .label {
+    margin-block-start: 2px;
+    margin-inline-end: 6px;
   }
   .to {
     color: grey;
