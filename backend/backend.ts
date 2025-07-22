@@ -300,16 +300,8 @@ function restartApp() {
 
 /** @returns have update */
 async function checkForUpdate(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    autoUpdater.checkForUpdates();
-    autoUpdater.once("update-available", () => {
-      resolve(true);
-    });
-    autoUpdater.once("update-not-available", () => {
-      resolve(false);
-    });
-    autoUpdater.once("error", reject);
-  });
+  let result = await autoUpdater.checkForUpdates();
+  return result?.isUpdateAvailable?? false;
 }
 
 async function installUpdate() {
