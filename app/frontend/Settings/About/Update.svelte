@@ -1,12 +1,12 @@
 <vbox class="update">
   {#await checkForUpdate()}
-    <div>{$t`Checking for updates…`}</div>
+    <div class="status">{$t`Checking for updates…`}</div>
   {:then}
     {#if haveUpdate}
-      <div>{$t`You can update`}</div>
+      <div class="status">{$t`You can update`}</div>
       <Button label={$t`Install update`} onClick={installUpdate} />
     {:else}
-      <div>{$t`This is the latest version`}</div>
+      <div class="status">{$t`This is the latest version`}</div>
       <Button label={$t`Check for update`} onClick={checkForUpdate} errorCallback={showError} />
     {/if}
   {:catch ex}
@@ -40,3 +40,12 @@
     errorEx = ex;
   }
 </script>
+
+<style>
+  .update {
+    align-items: start;
+  }
+  .status {
+    margin-block-end: 8px;
+  }
+</style>
