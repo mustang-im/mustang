@@ -17,7 +17,6 @@ export function searchLog(person: Person, limit: number): Collection<LogEntry> {
   let colls = new ArrayColl<Collection<LogEntry>>();
   addColl(colls, getEMails(person, limit));
   // addColl(colls, getChatMessages(person, limit));
-  addColl(colls, getEMailAttachments(person, limit));
   addColl(colls, getCalendarEvents(person, limit));
   const old = new Date(0);
   return mergeColls(colls).sortBy((entry: LogEntry) => {
@@ -38,10 +37,28 @@ function addColl(colls: ArrayColl<Collection<LogEntry>>, func: Promise<Collectio
     .catch(showError);
 }
 
-async function getEMails(person: Person, limit: number): Promise<Collection<EMail>> {
+async function getEMails(person: Person, limit: number): Promise<Collection<EMail | File>> {
   let search = newSearchEMail();
   search.includesPerson = person;
-  return await search.startSearch(limit);
+  let emails = await search.startSearch(limit);
+  let results = new ArrayColl<EMail | File>();
+  if (!emails.hasItems) {
+    return results;
+  }
+  results.addAll(emails);
+
+  // Attachments as separate files entries
+  for (let email of emails) {
+    for (let attachment of email.attachments) {
+      if (attachment.hidden) {
+        continue;
+      }
+      let file = attachment.asFileEntry();
+      file.lastMod = email.sent;
+      results.add(file);
+    }
+  }
+  return results;
 }
 
 async function getChatMessages(person: Person, limit: number): Promise<Collection<ChatMessage>> {
@@ -59,25 +76,4 @@ async function getCalendarEvents(person: Person, limit: number): Promise<Collect
     }
   }
   return events;
-}
-
-async function getEMailAttachments(person: Person, limit: number): Promise<Collection<File>> {
-  let search = newSearchEMail();
-  search.includesPerson = person;
-  search.hasAttachment = true;
-  let emails = await search.startSearch(limit);
-  let attachments = new ArrayColl<File>();
-  if (emails.hasItems) {
-    for (let email of emails) {
-      for (let attachment of email.attachments) {
-        if (attachment.hidden) {
-          continue;
-        }
-        let file = attachment.asFileEntry();
-        file.lastMod = email.sent;
-        attachments.add(file);
-      }
-    }
-  }
-  return attachments;
 }
