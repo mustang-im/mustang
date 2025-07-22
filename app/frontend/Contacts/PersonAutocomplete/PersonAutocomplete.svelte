@@ -55,10 +55,12 @@
       return [];
     }
     try {
-      inputStr = inputStr.toLowerCase();
+      let inputParts = inputStr.toLowerCase().split(" ");
       let persons: Person[] = [];
       for (let ab of appGlobal.addressbooks) {
-        persons.push(...ab.persons.filter(person => person.name?.toLowerCase().includes(inputStr)));
+        persons.push(...ab.persons.filterOnce(person => inputParts.every(inputPart =>
+          person.name?.toLowerCase().includes(inputPart) ||
+          person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
       }
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {
