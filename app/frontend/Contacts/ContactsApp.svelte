@@ -49,4 +49,12 @@
     background-blend-mode: soft-light;
     color: var(--main-pattern-fg);
   }
+  @media (prefers-color-scheme: dark) {
+    .right-pane {
+      background: url(../asset/background-repeat.png) repeat;
+      background-color: var(--main-pattern-bg);
+      background-blend-mode: overlay;
+      color: var(--main-pattern-fg);
+    }
+  }
 </style>
