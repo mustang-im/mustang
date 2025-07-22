@@ -52,7 +52,7 @@
   .above-setup {
     position: fixed;
     width: 63px;
-    bottom: 52px;
+    bottom: 68px;
     margin: 0 auto;
   }
   .app-bar :global(.app-button.settings) {

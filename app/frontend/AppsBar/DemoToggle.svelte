@@ -1,7 +1,7 @@
 <vbox class="demo" title={$t`Turns on a demo mode with fake data and applications that we are planning to enable soon`}>
   <AppButton on:click={() => catchErrors(onToggle)} selected={$isDemo}>
     <hbox slot="label">{$t`Soon`}</hbox>
-    <DemoIcon slot="icon" />
+    <DemoIcon slot="icon" size="20px" />
   </AppButton>
 </vbox>
 
