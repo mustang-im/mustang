@@ -157,7 +157,7 @@
   border-bottom-right-radius: 5px;
 }
 .person-autocomplete :global(.autocomplete-list-item-create) {
-  opacity: 50%;
+  color: rgb(from var(--main-fg) r g b / 50%);
   font-size: 14px;
 }
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {
