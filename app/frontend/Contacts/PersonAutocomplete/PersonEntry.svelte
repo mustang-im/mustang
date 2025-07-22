@@ -1,7 +1,7 @@
 <hbox class="person"
   class:selected={popupOpen}
   class:no-pic={!$person.person?.picture}
-  title={person.name}
+  title={person.name + "\n" + person.emailAddress}
   bind:this={popupAnchor}
   on:click={onPopupToggle}>
   <slot name="before-avatar" />
