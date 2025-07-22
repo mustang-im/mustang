@@ -352,6 +352,19 @@ a:hover {
   color: var(--selected-hover-fg);
 }
 
+/* App background pattern */
+.background-pattern {
+  background: url(./asset/background-repeat.png) repeat;
+  background-color: var(--main-pattern-bg);
+  background-blend-mode: soft-light;
+  color: var(--main-pattern-fg);
+}
+@media (prefers-color-scheme: dark) {
+  .background-pattern {
+    background-blend-mode: overlay;
+  }
+}
+
 /* Fix svelte-ui dropdown */
 
 .svelteui-NativeSelect-root select option:hover {

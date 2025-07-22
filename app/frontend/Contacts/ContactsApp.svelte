@@ -3,7 +3,7 @@
     <PersonsToolbar {persons} bind:selectedAddressbook />
     <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} />
   </vbox>
-  <vbox flex class="right-pane" slot="right">
+  <vbox flex class="right-pane background-pattern" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}
       <Scroll>
         <PersonDetails person={$selectedPerson} />
@@ -42,19 +42,5 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
-  }
-  .right-pane {
-    background: url(../asset/background-repeat.png) repeat;
-    background-color: var(--main-pattern-bg);
-    background-blend-mode: soft-light;
-    color: var(--main-pattern-fg);
-  }
-  @media (prefers-color-scheme: dark) {
-    .right-pane {
-      background: url(../asset/background-repeat.png) repeat;
-      background-color: var(--main-pattern-bg);
-      background-blend-mode: overlay;
-      color: var(--main-pattern-fg);
-    }
   }
 </style>

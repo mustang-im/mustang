@@ -15,7 +15,7 @@
   <vbox class="right-pane" slot="right">
     {#if filteredMessages && selectedPerson }
       <Header person={selectedPerson} />
-      <vbox flex class="messages">
+      <vbox flex class="messages background-pattern">
         <MessageList messages={filteredMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             <MailMessage {message} {previousMessage} />
@@ -84,11 +84,6 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
-  }
-  .messages {
-    background: url(../../asset/background-repeat.png) repeat;
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
   }
   .editor {
     height: 96px;
