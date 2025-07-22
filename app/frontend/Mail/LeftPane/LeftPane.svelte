@@ -9,7 +9,8 @@
           <GetMailButton folder={selectedFolder ?? selectedAccount?.inbox} />
         {/if}
         {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
-          <WriteButton {selectedAccount} />
+          <WriteButton {selectedAccount}
+            to={activeTab == SearchView.Person && $selectedPerson ? PersonUID.fromPerson($selectedPerson) : null } />
         {/if}
       </hbox>
     </hbox>
@@ -42,6 +43,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
