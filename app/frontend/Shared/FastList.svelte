@@ -143,8 +143,6 @@
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
       showRows = Math.min(items.length, Math.ceil(availableHeight / rowHeight));
-      // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
-      showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
       let scrollHeight = items.length * rowHeight;
       scrollbarHidden = scrollHeight <= availableHeight;
