@@ -127,7 +127,7 @@ export class ActiveSyncEvent extends Event {
         MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.seriesStartTime.getMonth() + 1) : [],
         Until: toCompact(this.recurrenceRule.seriesEndTime) || [],
         DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.seriesStartTime.getDate()) : [],
-        FirstDayOfWeek: this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
+        FirstDayOfWeek: this.recurrenceRule.frequency == Frequency.Weekly && this.calendar.account.protocolVersion != "14.0" ? String(this.recurrenceRule.first) : [],
       } : [],
       Subject: this.title,
       Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
