@@ -6,13 +6,16 @@
     <hbox class="name font-small">
       {attachment.filename}
     </hbox>
-    <hbox class="size font-small">
-      {$t`${Math.ceil($attachment.size / 1024)} KB`}
+    <hbox class="second-line">
+      <hbox class="size font-small">
+        {$t`${Math.ceil($attachment.size / 1024)} KB`}
+      </hbox>
+      <hbox flex />
+      <hbox class="buttons">
+        <Button plain icon={DeleteIcon} iconSize="16px" iconOnly onClick={onDelete} />
+        <!--<Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />-->
+      </hbox>
     </hbox>
-  </vbox>
-  <vbox class="buttons">
-    <Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />
-    <Button plain icon={DeleteIcon} iconSize="16px" iconOnly onClick={onDelete} />
   </vbox>
 </hbox>
 
@@ -64,7 +67,6 @@
   }
   .buttons {
     align-items: start;
-    margin-block-start: 4px;
   }
   .buttons :global(svg) {
     color: lightgrey;

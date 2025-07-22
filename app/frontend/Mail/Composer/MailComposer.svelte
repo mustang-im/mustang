@@ -396,8 +396,7 @@
     margin-block-start: 4px;
   }
   .attachments {
-    min-width: 120px;
-    max-width: 350px;
+    width: 300px;
     margin-inline-end: -12px;
   }
   .subject {
