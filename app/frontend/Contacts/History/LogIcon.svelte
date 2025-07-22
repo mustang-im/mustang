@@ -31,7 +31,7 @@
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import IncomingIcon from "lucide-svelte/icons/arrow-big-right";
 
-  export let type: "email" | "chat" | "event" | "call";
+  export let type: "email" | "chat" | "file" | "event" | "call";
   /** Whether the previous entry also had the same type */
   export let repeatType: boolean = false;
   export let outgoing: boolean | null;

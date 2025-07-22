@@ -13,11 +13,11 @@
     <ChatIcon {size} slot="icon" />
   </LogIcon>
 {:else if message instanceof File}
-  <LogIcon type="call" outgoing={false}
-    repeatType={previousMessage instanceof File}
+  <!-- repeatType={previousMessage instanceof File && previousMessage.mimetype == message.mimetype} -->
+  <LogIcon type="file" outgoing={false}
     color="#2ecccd" fgcolor="black"
     tooltip={message.name ?? ""}>
-    <FileIcon {size} slot="icon" />
+    <FileIcon ext={message.ext} localFilePath={message.filepathLocal} size={parseInt(size)} slot="icon" />
   </LogIcon>
 {:else if message instanceof Event}
   <LogIcon type="event" outgoing={message.isIncomingMeeting}
@@ -49,11 +49,11 @@
   import { Event } from "../../../logic/Calendar/Event";
   import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import LogIcon from "./LogIcon.svelte";
+  import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import MailIcon from "lucide-svelte/icons/mail";
   import ChatIcon from "lucide-svelte/icons/message-square";
   import EventIcon from "lucide-svelte/icons/calendar";
   import CallIcon from "lucide-svelte/icons/phone";
-  import FileIcon from "lucide-svelte/icons/file";
   import UnknownIcon from "lucide-svelte/icons/badge-question-mark";
   import { t } from "../../../l10n/l10n";
 
