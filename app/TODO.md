@@ -1,15 +1,13 @@
 # Release
+* Polish based on feedback
 * License notification bar
-* Settings: Password field deletes password #777
-
-# Next week
 * Payment: Upgrade
   * Upgrade page in Settings: Billing
   * Server
 * OAuth
-  * Google: Add Parula brand
-  * Google: Renewal TAC
-  * Microsoft: localhost redirect URL
+  * Google: Add Parula brand - DONE
+  * Google: Renewal TAC - Started, waiting for Google
+  * Microsoft: localhost redirect URL - Client ID vs. account unclear
 * Calendar: DB change; main account
 * Calendar: Find identity #682
 
