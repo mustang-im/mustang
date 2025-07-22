@@ -18,8 +18,8 @@
             <Button
               label={$t`Show more`}
               onClick={showMore}
-              classes="secondary"
               icon={ShowMoreIcon}
+              plain={true}
               />
             </hbox>
         {/if}
