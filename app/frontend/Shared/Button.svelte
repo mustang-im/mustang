@@ -1,5 +1,5 @@
 <button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
-  title={typeof(disabled) == "string" ? disabled : tooltip} class="button {classes}" class:plain
+  title={tooltipCalc} class="button {classes}" class:plain
   disabled={!!disabled} class:disabled class:selected
   {tabindex}
   >
@@ -57,10 +57,7 @@
   /** What to show when the user hovers with the mouse over the
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
-  export let tooltip: string = label
-    ? label +
-      (shortCutInfo ? "\n\n" + $t`Shortcut: ${shortCutInfo}` : '')
-    : null;
+  export let tooltip: string | null = null;
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
@@ -71,6 +68,16 @@
 
   $: hasIcon = !!icon || $$slots.icon || loading;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
+  $: tooltipCalc = typeof(disabled) == "string"
+    ? disabled
+    : tooltip
+      ? tooltip
+      : label
+        ? label +
+          (shortCutInfo
+            ? "\n\n" + $t`Shortcut: ${shortCutInfo}`
+            : "")
+        : null;
 
   let loading = false;
   async function myOnClick(event: Event) {
