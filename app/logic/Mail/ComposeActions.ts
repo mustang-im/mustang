@@ -26,7 +26,9 @@ export class ComposeActions {
     function getDate(date: Date) {
       return date.toLocaleString(getUILocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
-    return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
+    let from = this.email.from.name || this.email.from.emailAddress;
+    let date = getDate(this.email.sent);
+    return `${from} wrote on ${date}:`;
   }
 
   generateMessageID(): void {
