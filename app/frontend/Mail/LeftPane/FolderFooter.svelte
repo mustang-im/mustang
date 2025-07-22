@@ -99,6 +99,8 @@
   $: account = folder?.account;
   $: messages = folder?.messages;
 
+  $: folder && catchErrors(startSearch);
+
   let searchTerm: string;
   async function onSearchTermChanged() {
     await startSearch();
