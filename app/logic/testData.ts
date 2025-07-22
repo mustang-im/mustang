@@ -34,14 +34,23 @@ const realChatAccounts = new ArrayColl<ChatAccount>();
 const realMeetAccounts = new ArrayColl<MeetAccount>();
 const realAddressbooks = new ArrayColl<Addressbook>();
 const realCalendars = new ArrayColl<Calendar>();
+const realFileSharingAccounts = new ArrayColl<FileSharingAccount>();
 let realMe: Person;
 
 export async function testDataOn() {
+  realAddressbooks.replaceAll(appGlobal.addressbooks);
   realMailAccounts.replaceAll(appGlobal.emailAccounts);
   realChatAccounts.replaceAll(appGlobal.chatAccounts);
   realMeetAccounts.replaceAll(appGlobal.meetAccounts);
-  realAddressbooks.replaceAll(appGlobal.addressbooks);
   realCalendars.replaceAll(appGlobal.calendars);
+  realFileSharingAccounts.replaceAll(appGlobal.fileSharingAccounts);
+
+  appGlobal.addressbooks.clear();
+  appGlobal.emailAccounts.clear();
+  appGlobal.chatAccounts.clear();
+  appGlobal.calendars.clear();
+  appGlobal.meetAccounts.clear();
+  appGlobal.fileSharingAccounts.clear();
 
   realMe = appGlobal.me;
   if (!appGlobal.me?.name) {
@@ -54,23 +63,34 @@ export async function testDataOn() {
   appGlobal.chatAccounts.replaceAll([ new FakeChatAccount(persons, appGlobal.me) ]);
   appGlobal.calendars.replaceAll([ new FakeCalendar(persons) ]);
   appGlobal.meetAccounts.replaceAll([ new FakeMeetAccount() ]);
-  appGlobal.fileSharingAccounts.replaceAll([ new FakeFileSharingAccount() ]);
+  appGlobal.fileSharingAccounts.replaceAll([new FakeFileSharingAccount()]);
+
   await appGlobal.emailAccounts.first.login(false);
   await appGlobal.chatAccounts.first.login(false);
 }
 
 export async function testDataOff() {
+  appGlobal.addressbooks.clear();
+  appGlobal.emailAccounts.clear();
+  appGlobal.chatAccounts.clear();
+  appGlobal.calendars.clear();
+  appGlobal.meetAccounts.clear();
+  appGlobal.fileSharingAccounts.clear();
+
   appGlobal.me = realMe;
+  appGlobal.addressbooks.replaceAll(realAddressbooks);
   appGlobal.emailAccounts.replaceAll(realMailAccounts);
   appGlobal.chatAccounts.replaceAll(realChatAccounts);
   appGlobal.meetAccounts.replaceAll(realMeetAccounts);
-  appGlobal.addressbooks.replaceAll(realAddressbooks);
   appGlobal.calendars.replaceAll(realCalendars);
+  appGlobal.fileSharingAccounts.replaceAll(realFileSharingAccounts);
+
+  realAddressbooks.clear();
   realMailAccounts.clear();
   realChatAccounts.clear();
   realMeetAccounts.clear();
-  realAddressbooks.clear();
   realCalendars.clear();
+  realFileSharingAccounts.clear();
 }
 
 export async function addTestDataToGlobal(): Promise<void> {
