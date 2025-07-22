@@ -80,7 +80,6 @@
     await account.deleteIt();
 
     // Reset selected
-    $selectedCategory = settingsCategories.first;
     if ($selectedAccount == account) {
       $selectedAccount = appGlobal.emailAccounts.first;
       $selectedFolder = $selectedAccount?.inbox;
