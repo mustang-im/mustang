@@ -1,3 +1,4 @@
+import { File as FileEntry } from "../Files/File";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
@@ -53,6 +54,17 @@ export class Attachment extends Observable {
     return clone;
   }
 
+  asFileEntry(): FileEntry {
+    let file = new FileEntry();
+    file.setFileName(this.filename);
+    file.filepathLocal = this.filepathLocal;
+    file.size = this.size;
+    file.mimetype = this.mimeType;
+    file.contents = this.content;
+    file.id = this.contentID;
+    return file;
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
@@ -88,6 +100,7 @@ export enum ContentDisposition {
 const kHiddenMIMETypes = [
   "application/ics", // calendar invitation
   "text/vcard", // vCard
+  "text/calendar", // vCard
   "application/pkcs7-signature", // S/MIME signature
   "application/pgp-signature", // PGP signature
   "application/pgp-keys", // Sender announcing his PGP keys

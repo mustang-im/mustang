@@ -84,14 +84,7 @@
         if (attachment.hidden) {
           continue;
         }
-        let file = new File();
-        file.setFileName(attachment.filename);
-        file.filepathLocal = attachment.filepathLocal;
-        file.size = attachment.size;
-        file.mimetype = attachment.mimeType;
-        file.contents = attachment.content;
-        file.id = attachment.contentID;
-        listFiles.add(file);
+        listFiles.add(attachment.asFileEntry());
       }
     }
     console.log("found", listFiles.length, "files and", listDirs.length, "dirs from/to", person.name);

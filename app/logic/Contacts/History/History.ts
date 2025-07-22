@@ -4,26 +4,29 @@ import type { EMail } from "../../Mail/EMail";
 import type { ChatMessage } from "../../Chat/Message";
 import { VideoConfMeeting } from "../../Meet/VideoConfMeeting";
 import { Event } from "../../Calendar/Event";
+import { File } from "../../Files/File";
 import { newSearchEMail } from "../../Mail/Store/setStorage";
 import { newSearchChat } from "../../Chat/AccountsList/ChatAccounts";
 import { ArrayColl, Collection, mergeColls } from "svelte-collections";
 import { showError } from "../../../frontend/Util/error";
 import { appGlobal } from "../../app";
 
-export type LogEntry = Message | Event | VideoConfMeeting; // & { time: Date }
+export type LogEntry = Message | File | Event | VideoConfMeeting; // & { time: Date }
 
 export function searchLog(person: Person, limit: number): Collection<LogEntry> {
   let colls = new ArrayColl<Collection<LogEntry>>();
   addColl(colls, getEMails(person, limit));
   // addColl(colls, getChatMessages(person, limit));
+  addColl(colls, getEMailAttachments(person, limit));
   addColl(colls, getCalendarEvents(person, limit));
   const old = new Date(0);
   return mergeColls(colls).sortBy((entry: LogEntry) => {
     let time =
       entry instanceof Message ? entry.sent :
-        entry instanceof Event ? entry.startTime :
-          entry instanceof VideoConfMeeting ? entry.started ?? entry.event?.startTime :
-            old;
+        entry instanceof File ? entry.lastMod :
+          entry instanceof Event ? entry.startTime :
+            entry instanceof VideoConfMeeting ? entry.started ?? entry.event?.startTime :
+              old;
     (entry as any)._history_time = time;
     return -time.getTime();
   });
@@ -56,4 +59,25 @@ async function getCalendarEvents(person: Person, limit: number): Promise<Collect
     }
   }
   return events;
+}
+
+async function getEMailAttachments(person: Person, limit: number): Promise<Collection<File>> {
+  let search = newSearchEMail();
+  search.includesPerson = person;
+  search.hasAttachment = true;
+  let emails = await search.startSearch(limit);
+  let attachments = new ArrayColl<File>();
+  if (emails.hasItems) {
+    for (let email of emails) {
+      for (let attachment of email.attachments) {
+        if (attachment.hidden) {
+          continue;
+        }
+        let file = attachment.asFileEntry();
+        file.lastMod = email.sent;
+        attachments.add(file);
+      }
+    }
+  }
+  return attachments;
 }
