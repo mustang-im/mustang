@@ -10,6 +10,7 @@ import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
 import { mustangApps, selectedApp } from "./selectedApp";
 import { production } from "../../logic/build";
+import { visualMustangApp } from "../Visual/VisualMustangApp";
 
 export function loadMustangApps() {
   if (!production) {
@@ -39,6 +40,7 @@ export function loadDemoMustangApps() {
     calendarMustangApp,
     filesMustangApp,
     webAppsMustangApp,
+    visualMustangApp,
     settingsMustangApp,
   ]);
   selectedApp.set(contactsMustangApp);
