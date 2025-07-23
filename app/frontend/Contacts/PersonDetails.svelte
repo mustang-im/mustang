@@ -1,12 +1,12 @@
 <vbox flex class="person-page font-small">
   <NameBox {person} />
 
-  <Splitter initialRightRatio={1} name="contact-history">
-    <Scroll hideHorizontalScrollbar={true} slot="left">
+  <SplitterBidirectional initialSecondRatio={1} name="contact-history" {horizontal}>
+    <Scroll hideHorizontalScrollbar={true} slot="first">
       <ContactBoxes {person} />
     </Scroll>
-    <ContactHistory {person} slot="right" />
-  </Splitter>
+    <ContactHistory {person} slot="second" />
+  </SplitterBidirectional>
 </vbox>
 
 <script lang="ts">
@@ -14,10 +14,12 @@
   import NameBox from "./NameBox.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
   import ContactHistory from "./History/ContactHistory.svelte";
-  import Splitter from "../Shared/Splitter.svelte";
+  import SplitterBidirectional from "../Shared/SplitterBidirectional.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 
   export let person: Person;
+
+  export let horizontal = false; // HACK TODO adapt to container size
 </script>
 
 <style>

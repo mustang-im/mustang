@@ -30,12 +30,13 @@
   import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
+  export let showPast = false;
 
   $: filteredEvents = $globalSearchTerm
-    ? events.filterObservable(ev => ev.startTime.getTime() > Date.now() &&
+    ? events.filterObservable(ev => (ev.startTime.getTime() > Date.now() || showPast) &&
       (ev.title?.toLowerCase().includes($globalSearchTerm) ||
        ev.descriptionText?.toLowerCase().includes($globalSearchTerm)))
-    : events.filterObservable(ev => ev.startTime.getTime() > Date.now());
+    : events.filterObservable(ev => (ev.startTime.getTime() > Date.now() || showPast));
 </script>
 
 <style>

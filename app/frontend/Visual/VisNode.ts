@@ -1,14 +1,15 @@
 import { ArrayColl, type Collection } from "svelte-collections";
 import type { Node, NodeOptions, Edge, Color, ArrowHead } from "vis-network";
 import { DataSet } from "vis-data";
-import { assert } from "../../logic/util/util";
+import { AbstractFunction, assert } from "../../logic/util/util";
+import type { ComponentType, SvelteComponentTyped } from "svelte";
 
 export class NodeEx implements Node {
   id: number;
   label: string;
   color?: string | Color;
 
-  private edges = new ArrayColl<Edge>();
+  edges = new ArrayColl<Edge>();
   hasExpanded = false;
   /** Pinned to center of screen */
   fixed = false;
@@ -26,7 +27,9 @@ export class NodeEx implements Node {
     this.hasExpanded = true;
     return new ArrayColl<NodeEx>();
   };
-  async openSide(): Promise<void> {
+
+  openSide(): SvelteComponentInstance | null {
+    return null;
   };
 
   edgeTo(toNode: NodeEx) {
@@ -113,3 +116,9 @@ export function networkForNodes(nodes: Collection<NodeEx>): { nodes: DataSet<Nod
     edges: edgesDataSet,
   };
 }
+
+export type SvelteComponentInstance = {
+  component: ComponentType<SvelteComponentTyped>;
+  /** Parameters that will be passed to `component` as Svelte component properties */
+  properties: Record<string, any>;
+};

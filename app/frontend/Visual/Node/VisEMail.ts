@@ -1,10 +1,13 @@
-import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
+import { NodeEx, ListNodeEx, type SvelteComponentInstance } from "../VisNode";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import VerticalMessageList from "../../Mail/Vertical/VerticalMessageList.svelte";
+import MessageDisplay from "../../Mail/Message/MessageDisplay.svelte";
 import { getDateString } from "../../Util/date";
-import { ArrayColl, Collection, MapColl } from "svelte-collections";
+import { showError } from "../../Util/error";
 import { gt } from "../../../l10n/l10n";
+import { type Collection, MapColl, ArrayColl } from "svelte-collections";
 
 /** Node for single email */
 export class VisEMail extends NodeEx {
@@ -20,6 +23,15 @@ export class VisEMail extends NodeEx {
     }, fromNode);
     this.email = email;
   }
+
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: MessageDisplay,
+      properties: {
+        message: this.email,
+      },
+    };
+  };
 }
 
 /** Node that expands to a list of 10 emails,
@@ -45,7 +57,17 @@ export class VisEMailSearch extends ListNodeEx {
     return nodes;
   };
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    let emails = new ArrayColl<EMail>();
+    this.search.startSearch(300)
+      .then(es => emails.addAll(es))
+      .catch(showError);
+    return {
+      component: VerticalMessageList,
+      properties: {
+        messages: emails,
+      },
+    };
   };
 }
 
@@ -77,7 +99,13 @@ export class VisEMailFolder extends ListNodeEx {
     return nodes;
   };
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: VerticalMessageList,
+      properties: {
+        messages: this.folder.messages,
+      },
+    };
   };
 }
 
@@ -92,4 +120,4 @@ export function visEMailFolder(folder: Folder, fromNode?: NodeEx): VisEMailFolde
   return vis;
 }
 
-const visEMailFolders = new MapColl<Folder, VisEMailFolder>();
+export const visEMailFolders = new MapColl<Folder, VisEMailFolder>();

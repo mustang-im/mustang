@@ -1,19 +1,25 @@
-<vbox class="visual-app">
-  <div bind:this={networkE} class="network" />
+<vbox class="vis-graph" bind:clientHeight={height} bind:clientWidth={width} flex>
+  <div bind:this={networkE} class="network" style="width: {width}px; height: {height}px; " />
 </vbox>
 
 <script lang="ts">
-  import { networkForNodes, NodeEx } from "./Vis";
+  import { networkForNodes, NodeEx, type SvelteComponentInstance } from "./VisNode";
   import { AdditionCollection } from "svelte-collections";
   import { onMount } from "svelte";
   import { Network } from "vis-network";
   import { showError } from "../Util/error";
+  import { createEventDispatcher } from "svelte";
+  import { visPersons } from "./Node/VisPerson";
+  import { visEMailFolder, visEMailFolders } from "./Node/VisEMail";
+  const dispatchEvent = createEventDispatcher<{ openSide: SvelteComponentInstance }>();
 
   export let start: NodeEx;
 
   let nodes = new AdditionCollection<NodeEx>();
 
   async function addStartNode() {
+    visPersons.clear();
+    visEMailFolders.clear(); // HACK TODO Store on nodes/graph somehow
     setFixed(start);
     nodes.add(start);
     nodes.addColl(await start.expand());
@@ -29,6 +35,8 @@
 
   async function onNodeSelected(node: NodeEx) {
     console.log("on node selected", node.label);
+    dispatchEvent("openSide", node.openSide());
+
     setFixed(node);
     if (node.hasExpanded) {
       return;
@@ -50,6 +58,8 @@
   let network: Network;
   let data = networkForNodes(nodes);
   let networkE: HTMLDivElement;
+  let width: number;
+  let height: number;
   onMount(() => {
     let options = {
       /*physics: {
@@ -65,7 +75,6 @@
     network = new Network(networkE, data, options);
 
     network.on("selectNode", visEvent => {
-      console.log("selected", visEvent);
       let node = getNodeFromVisEvent(visEvent);
       if (node) {
         onNodeSelected(node)
@@ -81,12 +90,11 @@
     });
   });
 
-  $: console.log("nodes", $nodes.contents, "data nodes", data.nodes.length, "data edges", data.edges.length);
+  // $: console.log("nodes", $nodes.contents, "data nodes", data.nodes.length, "data edges", data.edges.length);
 </script>
 
 <style>
-  .network {
-    width: calc(100vw - 64px);
-    height: calc(100vh - 40px);
+  .vis-graph {
+    width:99%;
   }
 </style>

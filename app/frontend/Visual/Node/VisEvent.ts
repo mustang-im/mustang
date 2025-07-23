@@ -1,9 +1,11 @@
-import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
+import { NodeEx, ListNodeEx, type SvelteComponentInstance } from "../VisNode";
 import { Event, RecurrenceCase } from "../../../logic/Calendar/Event";
+import { visPersonUID } from "./VisPerson";
+import ShowEvent from "../../Calendar/DisplayEvent/ShowEvent.svelte";
+import ListView from "../../Calendar/ListView/ListView.svelte";
 import { getDateString, getTimeString } from "../../Util/date";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
-import { visPersonUID } from "./VisPerson";
 
 /** Node for a single meeting */
 export class VisEvent extends NodeEx {
@@ -39,7 +41,13 @@ export class VisEvent extends NodeEx {
     return this.persons();
   }
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: ShowEvent,
+      properties: {
+        event: this.event,
+      },
+    };
   };
 }
 
@@ -55,6 +63,13 @@ export class VisEventsList extends ListNodeEx {
     }, fromNode);
   }
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: ListView,
+      properties: {
+        events: this.events,
+        showPast: true,
+      },
+    };
   };
 }

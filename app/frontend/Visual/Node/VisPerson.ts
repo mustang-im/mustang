@@ -1,4 +1,4 @@
-import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
+import { NodeEx, ListNodeEx, type SvelteComponentInstance } from "../VisNode";
 import type { Person } from "../../../logic/Abstract/Person";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { RecurrenceCase } from "../../../logic/Calendar/Event";
@@ -6,9 +6,11 @@ import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { VisEMailSearch } from "./VisEMail";
 import { VisEvent, VisEventsList } from "./VisEvent";
 import { appGlobal } from "../../../logic/app";
+import PersonDetails from "../../Contacts/PersonDetails.svelte";
 import { showError } from "../../Util/error";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
+import PersonsList from "../../Contacts/Person/PersonsList.svelte";
 
 /** Node for a single person.
  * it can expand to show related persons, email lists etc. */
@@ -111,7 +113,14 @@ export class VisPerson extends NodeEx {
     return nodes;
   }
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: PersonDetails,
+      properties: {
+        person: this.person,
+        horizontal: true,
+      },
+    };
   };
 }
 
@@ -133,7 +142,14 @@ export class VisPersonsList extends ListNodeEx {
     }, fromNode);
   }
 
-  async openSide(): Promise<void> {
+  openSide(): SvelteComponentInstance | null {
+    return {
+      component: PersonsList,
+      properties: {
+        persons: this.persons,
+        size: "small",
+      },
+    };
   };
 }
 
@@ -152,4 +168,4 @@ export function visPersonUID(personUID: PersonUID, fromNode?: NodeEx): VisPerson
   return visPerson(personUID.createPerson(), fromNode);
 }
 
-const visPersons = new MapColl<Person, VisPerson>();
+export const visPersons = new MapColl<Person, VisPerson>();
