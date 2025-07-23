@@ -12,11 +12,37 @@
   export let start: NodeEx;
 
   let nodes = new AdditionCollection<NodeEx>();
-  start.fixed = true;
-  nodes.add(start);
-  start.expand()
-    .then(n => nodes.addColl(n))
-    .catch(showError);
+
+  async function addStartNode() {
+    setFixed(start);
+    nodes.add(start);
+    nodes.addColl(await start.expand());
+  }
+
+  function getNodeFromVisEvent(visEvent: any): NodeEx | null {
+      let nodeID = visEvent.nodes?.[0];
+      if (!nodeID) {
+        return null;
+      }
+      return nodes.find(n => n.id == nodeID);
+  }
+
+  async function onNodeSelected(node: NodeEx) {
+    console.log("on node selected", node.label);
+    setFixed(node);
+    let newNodes = await node.expand();
+    nodes.addColl(newNodes);
+  }
+
+  async function onNodeDeselected(node: NodeEx) {
+  }
+
+  let fixed = start;
+  function setFixed(node: NodeEx) {
+    fixed.fixed = false;
+    //node.fixed = true;
+    fixed = node;
+  }
 
   let network: Network;
   let data = networkForNodes(nodes);
@@ -31,7 +57,25 @@
         shape: "circle",
       },
     };
+    addStartNode()
+      .catch(showError);
     network = new Network(networkE, data, options);
+
+    network.on("selectNode", visEvent => {
+      console.log("selected", visEvent);
+      let node = getNodeFromVisEvent(visEvent);
+      if (node) {
+        onNodeSelected(node)
+          .catch(showError);
+      }
+    });
+    network.on("deselectNode", visEvent => {
+      let node = getNodeFromVisEvent(visEvent);
+      if (node) {
+        onNodeDeselected(node)
+          .catch(showError);
+      }
+    });
   });
 
   $: console.log("nodes", $nodes.contents, "data nodes", data.nodes.length, "data edges", data.edges.length);

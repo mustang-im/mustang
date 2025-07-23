@@ -6,8 +6,9 @@ import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { VisEMailSearch } from "./VisEMail";
 import { VisEvent, VisEventsList } from "./VisEvent";
 import { appGlobal } from "../../../logic/app";
-import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
+import { showError } from "../../Util/error";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
 
 /** Node for a single person.
  * it can expand to show related persons, email lists etc. */
@@ -40,16 +41,15 @@ export class VisPerson extends NodeEx {
     emailsSearch.includesPerson = this.person;
     nodes.add(new VisEMailSearch(emailsSearch, this));
 
-    nodes.addAll(this.expandEvents());
+    nodes.addAll(this.eventNodes());
 
-    nodes.addAll(await this.expandRelatedPersons());
-    /*Promise.all([
-      async () => nodes.addAll(await this.expandRelatedPersons()),
-    ]).catch(showError);*/
+    (async () => {
+      nodes.addAll(await this.relatedPersonsNodes());
+    })().catch(showError);
     return nodes;
   }
 
-  protected expandEvents(): Collection<NodeEx> {
+  protected eventNodes(): Collection<NodeEx> {
     let nodes = new ArrayColl<NodeEx>();
     let events = appGlobal.calendarEvents.filterOnce(ev => ev.participants.some(p => p.matchesPerson(this.person)));
     let now = new Date();
@@ -76,7 +76,7 @@ export class VisPerson extends NodeEx {
     return nodes;
   }
 
-  protected async expandRelatedPersons(): Promise<Collection<NodeEx>> {
+  protected async relatedPersonsNodes(): Promise<Collection<NodeEx>> {
     let nodes = new ArrayColl<NodeEx>();
     let search = newSearchEMail();
     search.includesPerson = this.person;
@@ -101,12 +101,12 @@ export class VisPerson extends NodeEx {
         listNode.persons.add(person);
         nodes.add(visPerson(person, listNode));
       }
-      // Connect these persons among themselves
+      /* // Connect these persons among themselves
       let fromNode = visPersonUID(email.from);
       for (let toUID of involved) {
         let toNode = visPersons.get(toUID.findPerson());
         fromNode?.edgeTo(toNode);
-      }
+      }*/
     }
     return nodes;
   }

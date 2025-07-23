@@ -4,8 +4,9 @@ import { DataSet } from "vis-data";
 
 export class NodeEx implements Node {
   id: number;
-  edges = new ArrayColl<Edge>();
+  label: string;
   color?: string | Color;
+  edges = new ArrayColl<Edge>();
   /** Pinned to center of screen */
   fixed = false;
 
@@ -24,7 +25,9 @@ export class NodeEx implements Node {
     if (!toNode || toNode == this) {
       return;
     }
-    if (this.edges.find(edge => edge.from == this.id && edge.to == toNode.id)) {
+    if (this.edges.find(edge =>
+          edge.from == this.id && edge.to == toNode.id ||
+          edge.to == this.id && edge.from == toNode.id)) {
       // TODO strengthen connection
       return;
     }
