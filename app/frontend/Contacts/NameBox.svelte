@@ -1,7 +1,11 @@
 <GroupBox classes="person">
   <hbox flex class="main-left" slot="content" language={getUILocale()}>
     <hbox flex>
-      <PersonPicture {person} size={64} allowPlaceholder={true} />
+      {#if person.picture}
+        <PersonPicture {person} size={64} allowPlaceholder={true} />
+      {:else}
+        <hbox class="no-avatar" />
+      {/if}
       <vbox class="main-info">
         <hbox class="name">
           <EditableSimpleText bind:value={person.name}
@@ -153,6 +157,9 @@
     margin-inline-start: 12px;
     margin-block-start: 16px;
     margin-block-end: 16px;
+  }
+  .no-avatar {
+    width: 6px;
   }
   .name,
   .name :global(input) {
