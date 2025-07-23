@@ -26,30 +26,27 @@ export class VisPerson extends NodeEx {
       label: name,
       shape: "circle",
       color: "red",
-    });
+    }, fromNode);
     this.person = person;
-    if (fromNode) {
-      this.edges.add(new EdgeEx(fromNode, this));
-    }
   }
 
   async expand(): Promise<Collection<NodeEx>> {
     console.log("expand person", this.person.name);
-    let nodes = new ArrayColl<NodeEx>();
+    let nodes = await super.expand();
 
     let emailsSearch = newSearchEMail();
     emailsSearch.includesPerson = this.person;
     nodes.add(new VisEMailSearch(emailsSearch, this));
 
-    nodes.addAll(this.eventNodes());
+    nodes.addAll(this.events());
 
     (async () => {
-      nodes.addAll(await this.relatedPersonsNodes());
+      nodes.addAll(await this.relatedPersons());
     })().catch(showError);
     return nodes;
   }
 
-  protected eventNodes(): Collection<NodeEx> {
+  protected events(): Collection<NodeEx> {
     let nodes = new ArrayColl<NodeEx>();
     let events = appGlobal.calendarEvents.filterOnce(ev => ev.participants.some(p => p.matchesPerson(this.person)));
     let now = new Date();
@@ -62,7 +59,9 @@ export class VisPerson extends NodeEx {
       nodes.add(pastNode);
       pastNode.events = pastEvents;
       for (let event of pastEvents) {
-        nodes.add(new VisEvent(event, pastNode));
+        let visEvent = new VisEvent(event, pastNode);
+        nodes.add(visEvent);
+        //nodes.addAll(visEvent.persons());
       }
     }
     if (futureEvents.hasItems) {
@@ -70,17 +69,19 @@ export class VisPerson extends NodeEx {
       nodes.add(futureNode);
       futureNode.events = futureEvents;
       for (let event of futureEvents) {
-        nodes.add(new VisEvent(event, futureNode));
+        let visEvent = new VisEvent(event, futureNode);
+        nodes.add(visEvent);
+        // nodes.addAll(visEvent.expand());
       }
     }
     return nodes;
   }
 
-  protected async relatedPersonsNodes(): Promise<Collection<NodeEx>> {
+  protected async relatedPersons(): Promise<Collection<NodeEx>> {
     let nodes = new ArrayColl<NodeEx>();
     let search = newSearchEMail();
     search.includesPerson = this.person;
-    let emails = await search.startSearch();
+    let emails = await search.startSearch(100);
 
     let listNode = new VisPersonsList(gt`Persons in same email`, this);
     nodes.add(listNode);
@@ -104,8 +105,7 @@ export class VisPerson extends NodeEx {
       /* // Connect these persons among themselves
       let fromNode = visPersonUID(email.from);
       for (let toUID of involved) {
-        let toNode = visPersons.get(toUID.findPerson());
-        fromNode?.edgeTo(toNode);
+        nodes.add(visPersonUID(toUID, fromNode));
       }*/
     }
     return nodes;
@@ -130,10 +130,7 @@ export class VisPersonsList extends ListNodeEx {
       label: label ?? gt`Related rersons`,
       shape: "box",
       color: "red",
-    });
-    if (fromNode) {
-      this.edges.add(new EdgeEx(fromNode, this));
-    }
+    }, fromNode);
   }
 
   async openSide(): Promise<void> {
@@ -143,12 +140,11 @@ export class VisPersonsList extends ListNodeEx {
 export function visPerson(person: Person, fromNode?: NodeEx): VisPerson {
   let existing = visPersons.get(person);
   if (existing) {
-    fromNode?.edgeTo(existing);
+    // fromNode?.edgeTo(existing); // TODO Creates double-connections between the same 2 nodes, despite NodeEx.edgeTo() checking for that
     return existing;
   }
   let vis = new VisPerson(person, fromNode);
   visPersons.set(person, vis);
-  fromNode?.edgeTo(vis);
   return vis;
 }
 

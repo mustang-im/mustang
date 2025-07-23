@@ -17,11 +17,8 @@ export class VisEMail extends NodeEx {
         getDateString(email.received),
       shape: email.outgoing ? "triangle" : "triangleDown",
       color: "blue",
-    });
+    }, fromNode);
     this.email = email;
-    if (fromNode) {
-      this.edges.add(new EdgeEx(fromNode, this));
-    }
   }
 }
 
@@ -35,13 +32,12 @@ export class VisEMailSearch extends ListNodeEx {
       label: gt`EMails`,
       shape: "box",
       color: "blue",
-    });
+    }, fromNode);
     this.search = search;
-    this.edges.add(new EdgeEx(fromNode, this));
   }
 
   async expand(): Promise<Collection<NodeEx>> {
-    let nodes = new ArrayColl<NodeEx>();
+    let nodes = await super.expand();
     let emails = await this.search.startSearch(10);
     for (let email of emails) {
       nodes.add(new VisEMail(email, this));
@@ -63,13 +59,12 @@ export class VisEMailFolder extends ListNodeEx {
       label: folder.name,
       shape: "box",
       color: "blue",
-    });
+    }, fromNode);
     this.folder = folder;
-    this.edges.add(new EdgeEx(fromNode, this));
   }
 
   async expand(): Promise<Collection<NodeEx>> {
-    let nodes = new ArrayColl<NodeEx>();
+    let nodes = await super.expand();
 
     for (let subfolder of this.folder.subFolders) {
       nodes.add(new VisEMailFolder(subfolder, this));
@@ -94,7 +89,6 @@ export function visEMailFolder(folder: Folder, fromNode?: NodeEx): VisEMailFolde
   }
   let vis = new VisEMailFolder(folder, fromNode);
   visEMailFolders.set(folder, vis);
-  fromNode?.edgeTo(vis);
   return vis;
 }
 

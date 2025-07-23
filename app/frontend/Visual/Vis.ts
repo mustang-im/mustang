@@ -1,21 +1,29 @@
 import { ArrayColl, type Collection } from "svelte-collections";
 import type { Node, NodeOptions, Edge, Color, ArrowHead } from "vis-network";
 import { DataSet } from "vis-data";
+import { assert } from "../../logic/util/util";
 
 export class NodeEx implements Node {
   id: number;
   label: string;
   color?: string | Color;
-  edges = new ArrayColl<Edge>();
+
+  private edges = new ArrayColl<Edge>();
+  hasExpanded = false;
   /** Pinned to center of screen */
   fixed = false;
 
-  constructor(init: NodeOptions) {
+  constructor(init: NodeOptions, fromNode?: NodeEx) {
     this.id = ++lastID;
     Object.assign(this, init);
+    if (fromNode) {
+      this.edges.add(new EdgeEx(fromNode, this));
+    }
   }
 
   async expand(): Promise<Collection<NodeEx>> {
+    assert(!this.hasExpanded, this.label + " already expanded");
+    this.hasExpanded = true;
     return new ArrayColl<NodeEx>();
   };
   async openSide(): Promise<void> {

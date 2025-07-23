@@ -30,6 +30,9 @@
   async function onNodeSelected(node: NodeEx) {
     console.log("on node selected", node.label);
     setFixed(node);
+    if (node.hasExpanded) {
+      return;
+    }
     let newNodes = await node.expand();
     nodes.addColl(newNodes);
   }
