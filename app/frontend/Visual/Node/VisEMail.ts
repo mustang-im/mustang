@@ -1,9 +1,9 @@
-import { NodeEx, EdgeEx } from "../Vis";
+import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { getDateString } from "../../Util/date";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 /** Node for single email */
@@ -27,7 +27,7 @@ export class VisEMail extends NodeEx {
 
 /** Node that expands to a list of 10 emails,
  * with arbitrary search criteria */
-export class VisEMailSearch extends NodeEx {
+export class VisEMailSearch extends ListNodeEx {
   search: SearchEMail;
 
   constructor(search: SearchEMail, fromNode: NodeEx) {
@@ -55,7 +55,7 @@ export class VisEMailSearch extends NodeEx {
 
 /** Node that expends to a list of 10 emails,
  * from a given mail account folder, e.g. inbox */
-export class VisEMailFolder extends NodeEx {
+export class VisEMailFolder extends ListNodeEx {
   folder: Folder;
 
   constructor(folder: Folder, fromNode: NodeEx) {
@@ -70,6 +70,11 @@ export class VisEMailFolder extends NodeEx {
 
   async expand(): Promise<Collection<NodeEx>> {
     let nodes = new ArrayColl<NodeEx>();
+
+    for (let subfolder of this.folder.subFolders) {
+      nodes.add(new VisEMailFolder(subfolder, this));
+    }
+
     let emails = this.folder.messages.getIndexRange(0, 10);
     for (let email of emails) {
       nodes.add(new VisEMail(email, this));
@@ -80,3 +85,17 @@ export class VisEMailFolder extends NodeEx {
   async openSide(): Promise<void> {
   };
 }
+
+export function visEMailFolder(folder: Folder, fromNode?: NodeEx): VisEMailFolder {
+  let existing = visEMailFolders.get(folder);
+  if (existing) {
+    fromNode?.edgeTo(existing);
+    return existing;
+  }
+  let vis = new VisEMailFolder(folder, fromNode);
+  visEMailFolders.set(folder, vis);
+  fromNode?.edgeTo(vis);
+  return vis;
+}
+
+const visEMailFolders = new MapColl<Folder, VisEMailFolder>();

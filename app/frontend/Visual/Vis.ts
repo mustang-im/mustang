@@ -6,6 +6,8 @@ export class NodeEx implements Node {
   id: number;
   edges = new ArrayColl<Edge>();
   color?: string | Color;
+  /** Pinned to center of screen */
+  fixed = false;
 
   constructor(init: NodeOptions) {
     this.id = ++lastID;
@@ -28,6 +30,9 @@ export class NodeEx implements Node {
     }
     this.edges.add(new EdgeEx(this, toNode));
   }
+}
+
+export class ListNodeEx extends NodeEx {
 }
 
 export class EdgeEx implements Edge {

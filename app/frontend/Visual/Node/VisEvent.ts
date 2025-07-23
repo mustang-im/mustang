@@ -1,6 +1,8 @@
-import { NodeEx, EdgeEx } from "../Vis";
+import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
 import { Event, RecurrenceCase } from "../../../logic/Calendar/Event";
 import { getDateString, getTimeString } from "../../Util/date";
+import { gt } from "../../../l10n/l10n";
+import type { Collection } from "svelte-collections";
 
 /** Node for a single meeting */
 export class VisEvent extends NodeEx {
@@ -21,6 +23,25 @@ export class VisEvent extends NodeEx {
       color: color,
     });
     this.event = event;
+    if (fromNode) {
+      this.edges.add(new EdgeEx(fromNode, this));
+    }
+  }
+
+  async openSide(): Promise<void> {
+  };
+}
+
+/** Node for a list of meetings */
+export class VisEventsList extends ListNodeEx {
+  events: Collection<Event>;
+
+  constructor(label: string | null, fromNode?: NodeEx) {
+    super({
+      label: label ?? gt`Meetings`,
+      shape: "box",
+      color: "#fffb00ff",
+    });
     if (fromNode) {
       this.edges.add(new EdgeEx(fromNode, this));
     }

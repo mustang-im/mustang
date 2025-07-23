@@ -1,12 +1,13 @@
-import { NodeEx, EdgeEx } from "../Vis";
+import { NodeEx, EdgeEx, ListNodeEx } from "../Vis";
 import type { Person } from "../../../logic/Abstract/Person";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { RecurrenceCase } from "../../../logic/Calendar/Event";
 import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { VisEMailSearch } from "./VisEMail";
-import { VisEvent } from "./VisEvent";
+import { VisEvent, VisEventsList } from "./VisEvent";
 import { appGlobal } from "../../../logic/app";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 /** Node for a single person.
  * it can expand to show related persons, email lists etc. */
@@ -56,11 +57,21 @@ export class VisPerson extends NodeEx {
     nextWeek.setDate(nextWeek.getDate() + 7);
     let pastEvents = events.filterOnce(ev => ev.startTime < now && ev.recurrenceCase == RecurrenceCase.Normal);
     let futureEvents = events.filterOnce(ev => ev.startTime > now && (ev.recurrenceCase == RecurrenceCase.Normal || ev.startTime < nextWeek));
-    for (let event of pastEvents) {
-      nodes.add(new VisEvent(event, this));
+    if (pastEvents.hasItems) {
+      let pastNode = new VisEventsList(gt`Previous meetings`, this);
+      nodes.add(pastNode);
+      pastNode.events = pastEvents;
+      for (let event of pastEvents) {
+        nodes.add(new VisEvent(event, pastNode));
+      }
     }
-    for (let event of futureEvents) {
-      nodes.add(new VisEvent(event, this));
+    if (futureEvents.hasItems) {
+      let futureNode = new VisEventsList(gt`Upcoming meetings`, this);
+      nodes.add(futureNode);
+      futureNode.events = futureEvents;
+      for (let event of futureEvents) {
+        nodes.add(new VisEvent(event, futureNode));
+      }
     }
     return nodes;
   }
@@ -70,6 +81,10 @@ export class VisPerson extends NodeEx {
     let search = newSearchEMail();
     search.includesPerson = this.person;
     let emails = await search.startSearch();
+
+    let listNode = new VisPersonsList(gt`Persons in same email`, this);
+    nodes.add(listNode);
+    listNode.persons = new SetColl<Person>();
 
     for (let email of emails) {
       let involved = new SetColl<PersonUID>();
@@ -83,15 +98,11 @@ export class VisPerson extends NodeEx {
       // Create persons and connect them to this person
       for (let personUID of involved) {
         let person = personUID.createPerson();
-        let visPerson = visPersons.get(person);
-        if (!visPerson) {
-          visPerson = new VisPerson(person, this);
-          visPersons.set(person, visPerson);
-          nodes.add(visPerson);
-        }
+        listNode.persons.add(person);
+        nodes.add(visPerson(person, listNode));
       }
       // Connect these persons among themselves
-      let fromNode = visPersons.get(email.from.findPerson());
+      let fromNode = visPersonUID(email.from);
       for (let toUID of involved) {
         let toNode = visPersons.get(toUID.findPerson());
         fromNode?.edgeTo(toNode);
@@ -108,6 +119,41 @@ export class VisPersonUID extends VisPerson {
   constructor(personUID: PersonUID, fromNode: NodeEx) {
     super(personUID.createPerson(), fromNode);
   }
+}
+
+/** Node for a list of persons */
+export class VisPersonsList extends ListNodeEx {
+  persons: Collection<Person>;
+
+  constructor(label: string | null, fromNode?: NodeEx) {
+    super({
+      label: label ?? gt`Related rersons`,
+      shape: "box",
+      color: "red",
+    });
+    if (fromNode) {
+      this.edges.add(new EdgeEx(fromNode, this));
+    }
+  }
+
+  async openSide(): Promise<void> {
+  };
+}
+
+export function visPerson(person: Person, fromNode?: NodeEx): VisPerson {
+  let existing = visPersons.get(person);
+  if (existing) {
+    fromNode?.edgeTo(existing);
+    return existing;
+  }
+  let vis = new VisPerson(person, fromNode);
+  visPersons.set(person, vis);
+  fromNode?.edgeTo(vis);
+  return vis;
+}
+
+export function visPersonUID(personUID: PersonUID, fromNode?: NodeEx): VisPerson {
+  return visPerson(personUID.createPerson(), fromNode);
 }
 
 const visPersons = new MapColl<Person, VisPerson>();

@@ -12,6 +12,7 @@
   export let start: NodeEx;
 
   let nodes = new AdditionCollection<NodeEx>();
+  start.fixed = true;
   nodes.add(start);
   start.expand()
     .then(n => nodes.addColl(n))
@@ -22,6 +23,10 @@
   let networkE: HTMLDivElement;
   onMount(() => {
     let options = {
+      /*physics: {
+        enabled: true,
+        wind: { x: 1, y: 0 },
+      },*/
       nodes: {
         shape: "circle",
       },
