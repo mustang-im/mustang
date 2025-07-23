@@ -4,12 +4,20 @@
 * Payment: Upgrade
   * Upgrade page in Settings: Billing
   * Server
+* ISPDB CalDAV
 * OAuth
   * Google: Add Parula brand - DONE
   * Google: Renewal TAC - Started, waiting for Google
   * Microsoft: localhost redirect URL - Client ID vs. account unclear
 * Calendar: DB change; main account
 * Calendar: Find identity #682
+
+# Polish
+* Account icons
+* Contacts History
+  * Now bar
+  * Hide all recurring events more than 1 week in the future
+  * Make icon clickable
 
 # Next
   * Actions (Filters)
