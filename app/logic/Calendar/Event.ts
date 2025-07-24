@@ -100,6 +100,9 @@ export class Event extends Observable {
   get hasHTML(): boolean {
     return !!this.rawHTMLDangerous;
   }
+  get hasDescription(): boolean {
+    return !!this.rawHTMLDangerous || !!this.rawText;
+  }
 
   @notifyChangedProperty
   startTime: Date;

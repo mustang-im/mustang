@@ -11,9 +11,11 @@
       <InvitationButtons invitation={event} myParticipation={$event.myParticipation} />
     {/if}
   </vbox>
-  <vbox class="description" flex>
-    <WebView html={$event.descriptionHTML} title="" {headHTML} />
-  </vbox>
+  {#if $event.hasDescription}
+    <Paper>
+      <WebView html={$event.descriptionHTML} title="" {headHTML} />
+    </Paper>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -22,6 +24,7 @@
   import InvitationButtons from "./InvitationButtons.svelte";
   import DialogHeader from "./DialogHeader.svelte";
   import WebView from "../../Shared/WebView.svelte";
+  import Paper from "../../Shared/Paper.svelte";
   import cssContent from "../../Mail/Message/content.css?inline";
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import { ArrayColl } from "svelte-collections";
@@ -40,6 +43,7 @@
   }
   .content {
     padding: 24px 32px;
+    margin-block-end: 32px;
   }
   .cancelled-text {
     flex-wrap: wrap;
