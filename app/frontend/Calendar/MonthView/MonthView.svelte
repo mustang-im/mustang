@@ -10,7 +10,7 @@
   <grid flex class="month">
     {#each weekDays as day}
       <hbox class="weekday">
-        {day.toLocaleDateString(getUILocale(), { weekday: "short" })}
+        {day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "short" })}
       </hbox>
     {/each}
     {#each days as day}
@@ -33,7 +33,7 @@
   import { selectedDate } from "../selected";
   import { getWeekDays } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;

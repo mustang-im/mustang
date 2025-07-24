@@ -1,6 +1,6 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { kAllWeekdays, weekdayLabel } from "../../frontend/Util/date";
-import { gt, getUILocale } from "../../l10n/l10n";
+import { getDateTimeFormatPref, gt } from "../../l10n/l10n";
 import { assert } from "../util/util";
 
 export enum Frequency {
@@ -383,7 +383,7 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
     if (r.week) {
       label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} *=> as in: on the third Wednesday of the month`;
     } else {
-      label += gt`on the ${startTime.toLocaleDateString(getUILocale(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
+      label += gt`on the ${startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
     }
   } else if (r.frequency == Frequency.Yearly) {
     label += r.interval == 1
@@ -391,9 +391,9 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
       : gt`Every ${r.interval} years`;
     label += `, `;
     if (r.week) {
-      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> as in: on the third Wednesday in September`;
+      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })} *=> as in: on the third Wednesday in September`;
     } else {
-      label += gt`on ${startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
+      label += gt`on ${startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
     }
   }
   return label;

@@ -3,7 +3,7 @@
   <DurationUnit bind:durationInSeconds={beforeInSec} bind:durationInUnit bind:this={durationUnit} />
   {#if $event.alarm}
     <hbox class="label suffix">{$t`before, at`}</hbox>
-    <hbox class="label time">{$event.alarm.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}</hbox>
+    <hbox class="label time">{$event.alarm.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}</hbox>
     <!--<TimeInput bind:time={$event.alarm} />-->
   {/if}
   <Button
@@ -21,7 +21,7 @@
   import DurationUnit from "./DurationUnit.svelte";
   import Button from "../../Shared/Button.svelte";
   import XIcon from "lucide-svelte/icons/x";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let event: Event;
 

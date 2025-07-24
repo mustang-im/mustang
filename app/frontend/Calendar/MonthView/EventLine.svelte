@@ -6,7 +6,7 @@
   class:selected={$selectedEvent == event}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
-      <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
+      <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
       {startTime}
     </hbox>
   {/if}
@@ -18,13 +18,13 @@
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
 
   export let event: Event;
   /** Time where the cell (not the event) starts */
   export let start: Date;
 
-  $: startTime = $event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));

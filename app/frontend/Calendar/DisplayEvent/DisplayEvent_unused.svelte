@@ -108,7 +108,7 @@
   import { Checkbox, Radio } from "@svelteuidev/core";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
-  import { getUILocale, t, plural } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
 
@@ -128,19 +128,19 @@
 
   updateDateUI();
   function updateDateUI() {
-    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
+    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric", month: "long" })}`, value: 0 }];
     monthWeekOptions = [{ label: $t`On day ${event.startTime.getDate()}`, value: 0 }];
 
-    let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
+    let weekday = event.startTime.toLocaleDateString(getDateTimeFormatPref(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
       let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
-      yearWeekOptions.push({ label: `On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
+      yearWeekOptions.push({ label: `On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })}`, value: weekno });
       monthWeekOptions.push({ label: `On the ${weekname} ${weekday}`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
-      yearWeekOptions.push({ label: $t`On the last ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: 5 });
+      yearWeekOptions.push({ label: $t`On the last ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })}`, value: 5 });
       monthWeekOptions.push({ label: $t`On the last ${weekday}`, value: 5 });
     }
 
@@ -152,7 +152,7 @@
       value: date.getDay(),
       checked: date.getDay() == event.startTime.getDay() || weekdays.includes(date.getDay()),
       disabled: date.getDay() == event.startTime.getDay(),
-      label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
+      label: date.toLocaleDateString(getDateTimeFormatPref(), { weekday: "narrow" }),
     }));
 
     if (seriesEndTime <= event.startTime) {

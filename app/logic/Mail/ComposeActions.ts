@@ -9,7 +9,7 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
-import { getUILocale, gt } from "../../l10n/l10n";
+import { getDateTimeFormatPref, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 
 /** Functions based on the email, which are either
@@ -24,7 +24,7 @@ export class ComposeActions {
 
   quotePrefixLine(): string {
     function getDate(date: Date) {
-      return date.toLocaleString(getUILocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+      return date.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
     let from = this.email.from.name || this.email.from.emailAddress;
     let date = getDate(this.email.sent);
@@ -119,7 +119,7 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Date:</span> <span class="value">
-          ${this.email.sent.toLocaleString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
+          ${this.email.sent.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
         </span>
       </div>
       <div>

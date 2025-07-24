@@ -4,9 +4,9 @@ import { VideoStream } from "./VideoStream";
 import { MeetAccount } from "./MeetAccount";
 import { LocalMediaDeviceStreams } from "./LocalMediaDeviceStreams";
 import { DummyMeetStorage } from "./SQL/DummyMeetStorage";
-import { PersonUID } from "../Abstract/PersonUID";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { assert, type URLString } from "../util/util";
-import { getUILocale } from "../../l10n/l10n";
+import { getDateTimeFormatPref } from "../../l10n/l10n";
 import { faker } from '@faker-js/faker';
 
 export class FakeMeeting extends VideoConfMeeting {
@@ -28,7 +28,7 @@ export class FakeMeeting extends VideoConfMeeting {
   }
 
   async createNewConference() {
-    let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.state = MeetingState.Init;
   }

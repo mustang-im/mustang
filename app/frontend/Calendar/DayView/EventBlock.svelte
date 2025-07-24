@@ -10,7 +10,7 @@
   class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if showTime}
-    <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
+    <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
     <hbox class="time">{startTime}</hbox>
   {/if}
   {#if showTitle}
@@ -23,7 +23,7 @@
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
 
   export let event: Event;
@@ -33,7 +33,7 @@
   export let end: Date;
   export let otherEvents: Collection<Event>;
 
-  $: startTime = $event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));

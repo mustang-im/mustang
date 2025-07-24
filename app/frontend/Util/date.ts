@@ -1,4 +1,4 @@
-import { getUILocale, gPlural, gt } from "../../l10n/l10n";
+import { getDateTimeFormatPref, gPlural, gt } from "../../l10n/l10n";
 
 /**
 * @returns
@@ -25,7 +25,7 @@ export function getDateTimeString(date: Date): string {
   } else { // full date
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
-  return date.toLocaleString(getUILocale(), dateDetails);
+  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
 }
 
 /**
@@ -53,7 +53,7 @@ export function getDateString(date: Date, fullDate = { year: "numeric", month: "
   } else { // full date
     dateDetails = fullDate;
   }
-  return date.toLocaleString(getUILocale(), dateDetails);
+  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
 }
 
 /** @returns Time, e.g. "15:23" */
@@ -61,7 +61,7 @@ export function getTimeString(date: Date): string {
   if (!date) {
     return "";
   }
-  return date.toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
+  return date.toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
 }
 
 /**
@@ -73,7 +73,7 @@ export function getTimeString(date: Date): string {
  * @return Name for the weekday, e.g. "Mo" or "Monday" */
 export function weekdayLabel(weekday: number, form: "long" | "short" | "narrow") {
   let date = new Date(2010, 2, weekday);
-  return date.toLocaleDateString(getUILocale(), { weekday: form });
+  return date.toLocaleDateString(getDateTimeFormatPref(), { weekday: form });
 };
 
 /** Monday to Sunday, in order (sorted).

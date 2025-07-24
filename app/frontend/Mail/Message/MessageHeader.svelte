@@ -59,7 +59,7 @@
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
-    <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
+    <value class="date font-small" title={$message.sent?.toLocaleString(getDateTimeFormatPref())}>
       {getDateTimeString($message.sent)}
     </value>
     <vbox class="display-mode">
@@ -97,7 +97,7 @@
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
   import { onDestroy } from "svelte";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

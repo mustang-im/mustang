@@ -5,7 +5,7 @@ import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { assert, sleep, type URLString } from "../../util/util";
-import { gt, getUILocale } from "../../../l10n/l10n";
+import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
 import { VideoStream } from "../VideoStream";
 
 export class M3Conf extends VideoConfMeeting {
@@ -90,7 +90,7 @@ export class M3Conf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
-    let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     let event = await this.httpPost("events", {
       title: `Meeting ${time}`,
       description: "",

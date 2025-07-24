@@ -13,8 +13,8 @@
         <hbox class="top-left header" />
         {#each days as day}
           <vbox class="day-header header">
-            <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
-            <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
+            <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
+            <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "long" })}</hbox>
             <vbox class="all-day-events">
               {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
                 <AllDayEvent {event} {start} />
@@ -42,7 +42,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;

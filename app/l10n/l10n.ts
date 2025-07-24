@@ -86,13 +86,26 @@ export function getUILocale(): string {
   return cachedUILocale;
 }
 
-export function getUILocalePref() {
+export function getUILocalePref(): string {
   return sanitize.nonemptystring(localStorage.getItem("ui.locale"), "");
 }
 
 export function saveUILocale(language: string) {
   localStorage.setItem("ui.locale", language);
   cachedUILocale = null;
+}
+
+let cachedDateTimeFormat: string;
+
+export function getDateTimeFormatPref(): string {
+  cachedDateTimeFormat ??=
+    sanitize.nonemptystring(localStorage.getItem("ui.dateTime"), getUILocale());
+  return cachedDateTimeFormat;
+}
+
+export function saveDateTimeFormat(language: string) {
+  cachedDateTimeFormat = language;
+  localStorage.setItem("ui.dateTime", language);
 }
 
 let loadedLocale = false;

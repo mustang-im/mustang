@@ -7,7 +7,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
-import { getUILocale, gt } from "../../../l10n/l10n";
+import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
 import { Room, RemoteParticipant, RoomEvent, type RpcInvocationData } from "livekit-client";
 
 export class LiveKitConf extends VideoConfMeeting {
@@ -64,7 +64,7 @@ export class LiveKitConf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
-    let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.id = crypto.randomUUID();
     this.state = MeetingState.Init;

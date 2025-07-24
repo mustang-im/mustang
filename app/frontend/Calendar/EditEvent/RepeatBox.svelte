@@ -85,7 +85,7 @@
   import { catchErrors } from "../../Util/error";
   import { kAllWeekdays, weekdayLabel } from "../../Util/date";
   import { arrayRemove, assert } from '../../../logic/util/util';
-  import { getUILocale, t, plural } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
 
@@ -109,10 +109,10 @@
 
   $: $event.startTime, updateDateUI();
   function updateDateUI() {
-    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
-    monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric" })}. of every month`, value: 0 }];
+    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric", month: "long" })}`, value: 0 }];
+    monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}. of every month`, value: 0 }];
 
-    let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
+    let weekday = event.startTime.toLocaleDateString(getDateTimeFormatPref(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
       let weekname = [
@@ -121,13 +121,13 @@
         $t`third *=> as in: On the third Wednesday in July`,
         $t`fourth *=> as in: On the fourth Wednesday in July`,
       ][weekno - 1];
-      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
       let weekname = $t`last *=> as in: On the last Wednesday in July`;
-      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: 5 });
     }
 
