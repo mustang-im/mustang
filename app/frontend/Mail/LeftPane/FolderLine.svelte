@@ -61,15 +61,17 @@
     height: 20px; /* avoid line break */
   }
   .count {
-    background-color: red;
+    background-color: #ff000099;
     color: white;
     border-radius: 20px;
     border: 1px solid var(--border);
-    height: 100%;
-    aspect-ratio: 1/1;
     justify-content: center;
-    margin-inline-end: 8px;
+    align-items: center;
     font-weight: bold;
+    max-height: 1.3em;
+    min-width: calc(1.4em - 8px);
+    padding-inline: 4px;
+    margin-inline-end: 8px;
   }
   .folder:hover .count {
     display: none;
