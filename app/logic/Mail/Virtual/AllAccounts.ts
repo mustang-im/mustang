@@ -29,7 +29,8 @@ export class AllAccounts extends MailAccount {
     all.name = gt`All messages`;
     all.specialFolder = SpecialFolder.All;
     //all.followSpecialFolder(SpecialFolder.All);
-    all.folders = mergeColls(this.accounts.map(account => account.getAllFolders()));
+    all.folders = mergeColls(this.accounts.map(account => account.getAllFolders().
+      filterObservable(folder => folder.specialFolder != SpecialFolder.Trash && folder.specialFolder != SpecialFolder.Spam)));
     this.specialFolders.add(all as any as Folder);
 
     let inbox = new AllFolders(this);
