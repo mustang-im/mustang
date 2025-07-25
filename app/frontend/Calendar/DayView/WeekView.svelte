@@ -151,6 +151,8 @@
   .weekday {
     margin-block-start: -4px;
     margin-block-end: 4px;
+    max-height: 1.3em;
+    overflow: hidden;
   }
   .range-header {
     align-items: center;
