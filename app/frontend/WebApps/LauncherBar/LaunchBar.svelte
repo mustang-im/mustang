@@ -11,6 +11,7 @@
       iconSize="32px"
       iconOnly
       plain
+      disabled={showStore}
       label={$t`Add apps`}
       />
   </hbox>
@@ -18,12 +19,12 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
+  import { showingWebApp } from "../Runner/WebAppsRunning";
   import AppLaunchButton from "./LaunchBarButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
-  import { showingWebApp } from "../Runner/WebAppsRunning";
 
   export let apps: Collection<WebAppListed>;
   export let showStore = false; /* in/out */
