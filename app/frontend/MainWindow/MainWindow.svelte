@@ -30,6 +30,7 @@
 </vbox>
 <MeetBackground />
 <MailInBackground />
+<WebAppsInBackground />
 
 <script lang="ts">
   import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
@@ -55,6 +56,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
+  import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
   // #if [!WEBMAIL]
   import InitialSetup from "../Setup/Import/InitialSetup.svelte";
   // #endif

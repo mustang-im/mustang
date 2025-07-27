@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import AppLaunchButton from "./WebAppLaunchButton.svelte";
+  import AppLaunchButton from "./LaunchPageButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";

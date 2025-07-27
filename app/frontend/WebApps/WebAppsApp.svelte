@@ -1,25 +1,32 @@
-{#if runningApp}
-  <AppRunner {runningApp} />
-{:else if showStore}
-  <AppStore bind:showStore />
-{:else if appGlobal.webApps.myApps}
-  <AppsLauncher bind:showStore apps={appGlobal.webApps.myApps} bind:runningApp />
-{:else}
-  Loading...
-{/if}
+<hbox flex class="web-apps">
+  <LaunchBar {apps} bind:showStore />
+  <Scroll>
+    {#if showStore}
+      <WebAppStore bind:showStore />
+    {:else}
+      <WebAppsRunning />
+    {/if}
+  </Scroll>
+</hbox>
 
 <script lang="ts">
   import type { WebAppListed } from "../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../logic/app";
-  import AppRunner from "./Launcher/WebAppRunner.svelte";
-  import AppStore from "./Shop/WebAppStore.svelte";
-  import AppsLauncher from "./Launcher/WebAppsLauncher.svelte";
+  import LaunchBar from "./LauncherBar/LaunchBar.svelte";
+  import WebAppsRunning from "./Runner/WebAppsRunning.svelte";
+  import WebAppStore from "./Shop/WebAppStore.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import { onMount } from "svelte";
 
   let showStore = false;
   let runningApp: WebAppListed;
 
+  $: apps = appGlobal.webApps.myApps;
+
   onMount(async () => {
     await appGlobal.webApps.load();
+    if (appGlobal.webApps.myApps.isEmpty) {
+      showStore = true;
+    }
   });
 </script>
