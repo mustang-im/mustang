@@ -1,23 +1,30 @@
-<vbox class="app-button">
+<vbox class="app-button" class:running class:selected>
   <Button
     label={app.nameTranslated}
     onClick={startApp}
-    selected={$showingWebApp == app}
+    {selected}
     {disabled}
     iconOnly plain>
-    <vbox class="icon" slot="icon">
+    <hbox class="icon" slot="icon">
+      <vbox class="dot">
+        <DotIcon size={32} />
+      </vbox>
       <img src={app.icon} width="32" height="32" alt="" />
-    </vbox>
+    </hbox>
   </Button>
 </vbox>
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import Button from "../../Shared/Button.svelte";
   import { showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import Button from "../../Shared/Button.svelte";
+  import DotIcon from "lucide-svelte/icons/dot";
 
   export let app: WebAppListed;
   export let disabled = false;
+
+  $: selected = $showingWebApp == app;
+  $: running = $webAppsRunning.contains(app);
 
   function startApp() {
     webAppsRunning.add(app);
@@ -27,7 +34,6 @@
 
 <style>
   .app-button :global(button.plain) {
-    padding: 8px;
     border-radius: 0px;
   }
   .app-button :global(button:not(.selected):hover) {
@@ -45,4 +51,21 @@
   /*.app-button :global(button.disabled) {
     opacity: unset;
   }*/
+  .icon {
+    padding: 8px 8px 8px 0px;
+  }
+  .dot {
+    justify-content: center;
+    align-items: center;
+    width: 8px;
+    color: var(--appbar-fg);
+    margin-inline-start: 2px;
+    margin-inline-end: 3px;
+  }
+  .app-button:not(.running) .dot :global(> *) {
+    display: none;
+  }
+  .app-button.selected .dot :global(> *) {
+    display: none;
+  }
 </style>
