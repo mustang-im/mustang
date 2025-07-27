@@ -10,16 +10,15 @@
 </hbox>
 
 <script lang="ts">
-  import type { WebAppListed } from "../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../logic/app";
   import LaunchBar from "./LauncherBar/LaunchBar.svelte";
   import WebAppsRunning from "./Runner/WebAppsRunning.svelte";
   import WebAppStore from "./Shop/WebAppStore.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import { onMount } from "svelte";
+  import { showingWebApp, webAppsRunning } from "./Runner/WebAppsRunning";
 
   let showStore = false;
-  let runningApp: WebAppListed;
 
   $: apps = appGlobal.webApps.myApps;
 
@@ -29,4 +28,6 @@
       showStore = true;
     }
   });
+
+  // $: console.log("showing app", $showingWebApp?.nameTranslated, "running", $webAppsRunning.contents.map(app => app.nameTranslated));
 </script>
