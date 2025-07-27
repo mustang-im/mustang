@@ -1,8 +1,8 @@
 // #if [!WEBMAIL]
-<webview bind:this={webviewE} src={url ?? dataURL} {title} />
+<webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url ?? dataURL} {title} />
+<iframe bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
 // #endif
 
 <!--
@@ -52,6 +52,8 @@
   export let title: string;
   /** Size the <WebView> to the size of the content */
   export let autoSize = false;
+  export let hidden = false;
+
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -258,5 +260,8 @@
   }
   iframe {
     border: none;
+  }
+  .hidden {
+    visibility: collapse;
   }
 </style>
