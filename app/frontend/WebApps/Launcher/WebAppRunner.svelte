@@ -1,9 +1,8 @@
-<WebView url={app.start} title={app.nameTranslated} {hidden} />
+<WebView url={runningApp.start} title={runningApp.nameTranslated} />
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import WebView from "../../Shared/WebView.svelte";
 
-  export let app: WebAppListed;
-  export let hidden = false;
+  export let runningApp: WebAppListed;
 </script>
