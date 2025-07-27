@@ -1,4 +1,5 @@
-<vbox class="app-button" class:running class:selected>
+<vbox class="app-button" class:running class:selected
+  on:contextmenu={contextMenu.onContextMenu}>
   <Button
     label={app.nameTranslated}
     onClick={startApp}
@@ -14,21 +15,42 @@
   </Button>
 </vbox>
 
+<ContextMenu bind:this={contextMenu}>
+  {#if running}
+    <MenuItem
+      onClick={closeApp}
+      label={$t`Close` + " " + app.nameTranslated}
+      icon={CloseIcon} />
+  {/if}
+</ContextMenu>
+
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import DotIcon from "lucide-svelte/icons/dot";
+  import CloseIcon from "lucide-svelte/icons/square-x";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let app: WebAppListed;
   export let disabled = false;
 
   $: selected = $showingWebApp == app;
   $: running = $webAppsRunning.contains(app);
+  let contextMenu: ContextMenu;
 
   function startApp() {
     webAppsRunning.add(app);
     $showingWebApp = app;
+  }
+
+  function closeApp() {
+    webAppsRunning.remove(app);
+    if ($showingWebApp == app) {
+      $showingWebApp = webAppsRunning.last;
+    }
   }
 </script>
 
