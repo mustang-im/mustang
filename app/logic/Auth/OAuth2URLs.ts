@@ -43,7 +43,7 @@ export const OAuth2URLs = [
     scope: "https://mail.google.com/ https://www.googleapis.com/auth/carddav https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/drive",
     clientID: "592666826535-3ba3dp3eghj978d2r6nojihk699h9b4n.apps.googleusercontent.com",
     clientSecret: "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",
-    doPKCE: false,
+    doPKCE: true,
   },
   {
     domains: ["yahoo.com"],
