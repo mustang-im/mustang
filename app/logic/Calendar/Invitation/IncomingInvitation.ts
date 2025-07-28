@@ -64,7 +64,8 @@ export class IncomingInvitation {
     let event = this.calEvent();
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     if (event.recurrenceCase == RecurrenceCase.Instance) {
-      event.participants.replaceAll(event.participants.contents.map(p => new Participant(p.emailAddress, p.name, p.response)));
+      event.participants.replaceAll(event.participants.contents.map(p =>
+        new Participant(p.emailAddress, p.name, p.response)));
     }
     let invitee = this.event.participants.find(participant => participant.response != InvitationResponse.Organizer);
     let participant = event.participants.find(participant => participant.emailAddress == invitee.emailAddress);
