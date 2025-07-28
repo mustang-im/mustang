@@ -8,6 +8,7 @@
     initialSecondRatio={horizontal ? 2 : 1}
     slot="right">
     <vbox flex class="message-list-pane" slot="first">
+      <PaymentBar />
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
       {#if !horizontal}
@@ -35,6 +36,7 @@
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
+  import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
