@@ -42,9 +42,10 @@ export class OutgoingInvitation {
 
   async sendCancellationsTo(participants: Collection<Participant>) {
     let sendTo = participants.filterOnce(participant => [InvitationResponse.Accept, InvitationResponse.Decline, InvitationResponse.NoResponseReceived].includes(participant.response));
-    if (sendTo.hasItems) {
-      await this.send("CANCEL", sendTo);
+    if (sendTo.isEmpty) {
+      return;
     }
+    await this.send("CANCEL", sendTo);
   }
 
   async sendInvitations() {
