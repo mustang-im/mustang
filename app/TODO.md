@@ -89,11 +89,21 @@
 * Threading
 * Good
   * modern feeling
+## Stefanie
+* Onboarding
+  * Start with email setup, not selection screen
+  * Don't exit setup
+* gmx.net / web.de unable to verify the first certificate on macOS 14.5
+* Contacts: Add (+) when "All" selected: add to personal addressbook
+* Demo: Files: Add Files for persons
+* Chat: selected person not shown
+* Mail: Get out of Folder settings mode
  ## Freshness
 * Account colors
 * Icons for accounts: user-set
 * Pic for users, in identities
 * Unified inbox: Show account as tag or icon
+
 
 # Chat
 
