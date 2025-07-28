@@ -31,15 +31,19 @@ export class OutgoingInvitation {
 
   async sendInvitationsTo(participants: Collection<Participant>) {
     let sendTo = participants.filterOnce(participant => participant.response != InvitationResponse.Organizer);
-    for (let participant of sendTo) {
-      participant.response ||= InvitationResponse.NoResponseReceived;
+    if (sendTo.hasItems) {
+      for (let participant of sendTo) {
+        participant.response ||= InvitationResponse.NoResponseReceived;
+      }
+      await this.send("REQUEST", sendTo);
     }
-    await this.send("REQUEST", sendTo);
   }
 
   async sendCancellationsTo(participants: Collection<Participant>) {
-    let sendTo = participants.filterOnce(participant => participant.response > InvitationResponse.Organizer);
-    await this.send("CANCEL", sendTo);
+    let sendTo = participants.filterOnce(participant => [InvitationResponse.Accept, InvitationResponse.Decline, InvitationResponse.NoResponseReceived].includes(participant.response));
+    if (sendTo.hasItems) {
+      await this.send("CANCEL", sendTo);
+    }
   }
 
   async sendInvitations() {
