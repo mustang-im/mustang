@@ -124,7 +124,7 @@ settingsCategories.add(contactsSettings);
 // #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
 meetSettings.subCategories.addAll([
-  new SettingsCategory("meet-appearance", gt`Appearance`),
+  // new SettingsCategory("meet-appearance", gt`Appearance`),
   new SettingsCategory("meet-devices", gt`Devices`, Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
@@ -153,7 +153,7 @@ const appSettings = new SettingsCategory("app", gt`App integration`, null, true)
 appSettings.subCategories.addAll([
 ]);
 appSettings.forApp = webAppsMustangApp;
-settingsCategories.add(appSettings);
+// settingsCategories.add(appSettings);
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
