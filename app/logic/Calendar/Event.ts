@@ -565,7 +565,7 @@ export class Event extends Observable {
       this.recurrenceCase = RecurrenceCase.Exception;
       this.parentEvent.instances.remove(this);
       this.parentEvent.exceptions.add(this);
-      await this.parentEvent.save();
+      this.calendar.events.add(this);
     }
   }
 
