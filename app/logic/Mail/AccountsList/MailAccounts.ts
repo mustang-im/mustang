@@ -75,17 +75,17 @@ export async function readMailAccounts(): Promise<Collection<MailAccount>> {
 const kProtocolLabel = {
   // Displayed to user, but do not translate (technical term)
   "imap": "IMAP",
-  "pop3": "POP3",
   "smtp": "SMTP",
-  "jmap": "JMAP",
   "ews": "EWS",
   "owa": "OWA",
   "activesync": "ActiveSync",
-  "graph": "MS Graph",
+  "graph": "MS Graph (beta)",
+  "jmap": "JMAP (alpha)",
+  "pop3": "POP3 (later)",
 }
 
 export function listMailProtocols(): string[] {
-  return Object.keys(kProtocolLabel).filter(p => p != "smtp" &&
+  return Object.keys(kProtocolLabel).filter(p => p != "smtp" && p != "pop3" &&
     (/*!appGlobal.isMobile*/ true || p != "owa"));
 }
 
