@@ -147,10 +147,14 @@ export function getDurationString(durationInMS: number): string {
 }
 
 /** 1 day, in seconds */
-export const k1DayS = 86400;
-export const k1HourS = 3600;
 export const k1MinuteS = 60;
+export const k1HourS = 3600;
+export const k1DayS = 86400;
+export const k1WeekS = 7 * k1DayS;
+export const k1MonthS = 31 * k1DayS;
 /** 1 day, in milliseconds */
-export const k1DayMS = 86400 * 1000;
-export const k1HourMS = 3600 * 1000;
-export const k1MinuteMS = 60 * 1000;
+export const k1MinuteMS = k1MinuteS * 1000;
+export const k1HourMS = k1HourS * 1000;
+export const k1DayMS = k1DayS * 1000;
+export const k1WeekMS = k1WeekS * 1000;
+export const k1MonthMS = k1MonthS * 1000;
