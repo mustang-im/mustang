@@ -26,6 +26,7 @@
     </vbox>
   </vbox>
   <vbox flex class="meetings">
+    <vbox flex />
     <vbox flex class="upcoming">
       <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
       <MeetingList meetings={upcomingMeetings}>
@@ -38,6 +39,7 @@
         <div slot="emptyMsg" class="emptyMsg font-small">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
+    <vbox flex />
     <hbox class="test">
       <ExpandSection>
         <vbox class="buttons">
@@ -72,15 +74,17 @@
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
   import { sleep, UserError } from "../../../logic/util/util";
-  import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
 
   const now = new Date();
-  const maxUpcoming = new Date(); // TODO now + 8 hours
-  const maxPrevious = new Date(); // TODO now - 14 days
+  const maxUpcoming = new Date();
+  maxUpcoming.setHours(23); // today
+  maxUpcoming.setMinutes(59);
+  const maxPrevious = new Date();
+  maxPrevious.setDate(maxPrevious.getDate() - 14); // last 14 days
   const upcomingMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime > now && event.startTime < maxUpcoming);
-  const previousMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime < now && event.startTime > maxPrevious);
+  const previousMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime < now && event.startTime > maxPrevious).reverse();
 
   function getAccount(): MeetAccount {
     let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
