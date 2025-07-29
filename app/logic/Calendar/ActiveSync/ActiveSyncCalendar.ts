@@ -20,13 +20,11 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
   protected readonly requestLock = new Lock();
+  /** ActiveSync ServerId for this calendar */
+  serverID: string;
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
-  }
-
-  get serverID() {
-    return new URL(this.url).searchParams.get("serverID");
   }
 
   async ping() {
@@ -116,7 +114,8 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   async listEvents() {
-    if (!this.dbID) {
+    if (!this.dbID || !this.serverID) {
+      this.serverID ??= new URL(this.url).searchParams.get("serverID");
       await this.save();
     }
 
@@ -180,5 +179,15 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   getEventByServerID(id: string): ActiveSyncEvent | void {
     return this.events.find(p => p.serverID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.serverID = sanitize.string(json.serverID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.serverID = this.serverID;
+    return json;
   }
 }

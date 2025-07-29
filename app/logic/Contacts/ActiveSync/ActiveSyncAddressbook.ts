@@ -14,13 +14,11 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
   protected readonly requestLock = new Lock();
+  /** ActiveSync ServerId for this addressbook */
+  serverID: string;
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
-  }
-
-  get serverID() {
-    return new URL(this.url).searchParams.get("serverID");
   }
 
   async ping() {
@@ -84,7 +82,8 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   async listContacts() {
-    if (!this.dbID) {
+    if (!this.dbID || !this.serverID) {
+      this.serverID ??= new URL(this.url).searchParams.get("serverID");
       await this.save();
     }
 
@@ -133,4 +132,14 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   // ActiveSync does not support groups.
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.serverID = sanitize.string(json.serverID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.serverID = this.serverID;
+    return json;
+  }
 }
