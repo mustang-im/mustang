@@ -375,13 +375,14 @@ export async function openPurchasePage(paidCallback?: (license: Ticket) => void,
   startPolling(paidCallback);
 }
 
-/** How often to poll after the user clicked [Buy] */
-const kPurchasePollInterval = 10 * 1000; // 10 seconds
-/** For how long to poll after the user clicked [Buy] */
-const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
 let purchasePoller: NodeJS.Timeout | null = null;
 
 function startPolling(paidCallback?: (license: Ticket) => void) {
+  /** How often to poll after the user clicked [Buy] */
+  const kPurchasePollInterval = 10 * 1000; // 10 seconds
+  /** For how long to poll after the user clicked [Buy] */
+  const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
+
   stopPurchasePolling();
   purchasePoller = setInterval(async () => {
     try {
