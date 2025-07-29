@@ -112,11 +112,10 @@
 
   $: participants = meeting.participants;
 
-  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 15 min
   maxUpcoming.setMinutes(maxUpcoming.getMinutes() + 15);
-  const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
+  const upcomingMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime > now && event.startTime < maxUpcoming);
   $: upcomingMeeting = $upcomingMeetings.first;
   $: upcomingMeetingInMin = upcomingMeeting?.startTime ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
 

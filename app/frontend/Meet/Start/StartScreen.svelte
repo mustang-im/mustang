@@ -76,12 +76,11 @@
   import { faker } from "@faker-js/faker";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
 
-  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
   const maxPrevious = new Date(); // TODO now - 14 days
-  const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
-  const previousMeetings = allEvents.filter(event => event.startTime < now && event.startTime > maxPrevious);
+  const upcomingMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime > now && event.startTime < maxUpcoming);
+  const previousMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime < now && event.startTime > maxPrevious);
 
   function getAccount(): MeetAccount {
     let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
