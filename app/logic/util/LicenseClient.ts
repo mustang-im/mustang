@@ -191,9 +191,7 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
   let name: string | null = null;
   let emailAddresses = new SetColl<string>();
   for (let account of appGlobal.emailAccounts) {
-    console.log("account", account.name, account.username, account);
     for (let identity of account.identities) {
-      console.log("  identity", identity.emailAddress, identity.realname);
       let emailAddress = identity.emailAddress;
       if (identity.isCatchAll) {
         emailAddress = emailAddress.replace("*", "any");
@@ -203,8 +201,6 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
     }
   }
   if (emailAddresses.isEmpty) {
-    //console.log("ems", emailAddresses.contents, "acc", appGlobal.emailAccounts.contents);
-    console.log("no");
     throw new AccountMissingError();
   }
 

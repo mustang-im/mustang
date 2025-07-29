@@ -1,6 +1,5 @@
 # Branch - before merge
 * Show license bar only for Exchange accounts
-* Fix poller after Buy button not finding any accounts
 
 # Release
 * Polish based on feedback
