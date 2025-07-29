@@ -1,6 +1,3 @@
-# Branch - before merge
-* Show license bar only for Exchange accounts
-
 # Release
 * Polish based on feedback
 * License notification bar
