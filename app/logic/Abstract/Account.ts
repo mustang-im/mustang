@@ -44,8 +44,6 @@ export class Account extends Observable {
   acceptBrokenTLSCerts = false;
   @notifyChangedProperty
   loginOnStartup = true;
-  /** User needs a software license to use this feature */
-  readonly needsLicense: boolean = false;
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error | null = null;
   /** Non-fatal errors, including when processing a single email */
@@ -108,6 +106,10 @@ export class Account extends Observable {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
 
+  /** User needs a software license to use this account */
+  needsLicense(): boolean {
+    return false;
+  }
 
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */

@@ -30,7 +30,6 @@ export class EWSAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
-  readonly needsLicense: boolean = true;
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
@@ -106,6 +105,10 @@ export class EWSAccount extends MailAccount {
 
   async logout(): Promise<void> {
     await this.oAuth2?.logout();
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /**

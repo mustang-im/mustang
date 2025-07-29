@@ -19,7 +19,6 @@ import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class GraphAccount extends MailAccount {
   readonly protocol: string = "graph";
-  readonly needsLicense: boolean = true;
   accountID: string;
   userID: UUID;
   allFolders = new MapColl<string, GraphFolder>();
@@ -104,6 +103,10 @@ export class GraphAccount extends MailAccount {
       await this.oAuth2.login(interactive);
       assert(this.oAuth2.isLoggedIn, this.name + `: ` + gt`OAuth2: Login failed`);
     }
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /**

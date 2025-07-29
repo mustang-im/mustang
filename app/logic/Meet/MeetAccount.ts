@@ -6,7 +6,6 @@ import { AbstractFunction } from "../util/util";
 
 export class MeetAccount extends Account {
   readonly protocol: string = "meet";
-  readonly needsLicense: boolean = true;
   storage: MeetAccountStorage | null = null;
 
   // Capabilities of the implementation
@@ -26,6 +25,10 @@ export class MeetAccount extends Account {
   async login(interactive: boolean) {
     await ensureLicensed();
     await super.login(interactive);
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /** You still need to `.start()` the conference */

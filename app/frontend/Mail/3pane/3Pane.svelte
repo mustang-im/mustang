@@ -36,7 +36,11 @@
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
+  // #if [PROPRIETARY]
   import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
+  // #else
+  import PaymentBar from "../../Shared/Empty.svelte";
+  // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';

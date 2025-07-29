@@ -47,7 +47,11 @@
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  // #if [PROPRIETARY]
   import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
+  // #else
+  import PaymentBar from "../../Shared/Empty.svelte";
+  // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import { Collection, mergeColls } from 'svelte-collections';
   import { faker } from "@faker-js/faker";

@@ -1,4 +1,4 @@
-{#if account?.needsLicense}
+{#if account?.needsLicense()}
   <vbox class="payment-bar">
     {#await getLicense()}
       <!-- Checking license... -->
@@ -46,7 +46,7 @@
   function testLicense() {
     license = new Ticket();
     let exp = new Date();
-    exp.setDate(exp.getDate() + 20);
+    exp.setDate(exp.getDate() - 2);
     license.expiresOn = exp;
     license.valid = !license.isExpired;
     console.log("Test license expires in", license.daysLeft, "days, soon", license.isSoonExpiring, "old", license.hasRecentlyExpired, "expired", license.isExpired, "ticket", license);

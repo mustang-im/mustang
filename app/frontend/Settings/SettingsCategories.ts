@@ -157,7 +157,9 @@ appSettings.forApp = webAppsMustangApp;
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
+  // #if [PROPRIETARY]
   new SettingsCategory("license", gt`Billing`, License),
+  // #endif
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
 ]);
 settingsCategories.add(about);
