@@ -3,11 +3,11 @@
   subtitle={$t`${config.name} requires you to do some manual steps for initial set up`} />
 
 <ol class="instructions">
-  {#each config.setupInstructions as step}
+  {#each config.setup.instructions as step}
     <li>
       {#if step.url}
         <a href={step.url} target="_blank">
-          <Button label="Go to setup" classes="filled" />
+          <Button label={$t`Go to ${config.name} *=> Go to Google`} classes="filled" />
         </a>
       {:else if step.enterPassword}
         {step.instruction || $t`Password`}
@@ -24,10 +24,10 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { t } from "../../../l10n/l10n";
   import Header from "../Shared/Header.svelte";
   import Button from "../../Shared/Button.svelte";
   import Password from "../Shared/Password.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let config: MailAccount;
   export let password: string; /** in/out */

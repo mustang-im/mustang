@@ -168,7 +168,7 @@
     } else if (step == Step.FoundConfig) {
       fillConfig(config, emailAddress, password);
       errorMessage = null;
-      if (config.setupInstructions) {
+      if (config.setup?.instructions) {
         step = Step.Instructions;
       } else if (config.oAuth2) {
         step = Step.Login;
