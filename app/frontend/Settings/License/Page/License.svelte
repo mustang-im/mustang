@@ -1,6 +1,6 @@
 <vbox>
   {#await getLicense()}
-    {$t`Checking...`}
+    <div class="message">{$t`Checking...`}</div>
   {:then}
     {#if license.isSoonExpiring}
       <SoonExpiring bind:license />
@@ -16,12 +16,13 @@
       <NeverPaid bind:license />
     {/if}
   {:catch ex}
+    <div class="error-intro message">{$t`Failed to contact the license server`}</div>
     <ErrorMessageInline {ex} />
   {/await}
 </vbox>
 
 <script lang="ts">
-  import { checkLicense, Ticket, BadTicket } from "../../../../logic/util/LicenseClient";
+  import { checkSavedLicense, Ticket, BadTicket, fetchLicenseFromServer } from "../../../../logic/util/LicenseClient";
   import HaveLicense from "./HaveLicense.svelte";
   import SoonExpiring from "./SoonExpiring.svelte";
   import Expired from "./Expired.svelte";
@@ -36,7 +37,8 @@
   let wasValid = false; // to detect that the license was just purchased
 
   async function getLicense() {
-    license = await checkLicense();
+    license = await checkSavedLicense();
+    license = await fetchLicenseFromServer();
     wasValid = license.valid;
     console.log("License ticket", license);
   }
@@ -50,3 +52,9 @@
     console.log("Test license expires in", license.daysLeft, "days, soon", license.isSoonExpiring, "old", license.hasRecentlyExpired, "expired", license.isExpired, "ticket", license);
   }
 </script>
+
+<style>
+  .error-intro {
+    margin: 4px 20px;
+  }
+</style>

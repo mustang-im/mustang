@@ -118,7 +118,7 @@ export async function ensureLicensed() {
   if (ticket?.valid && !ticket.requiresRefresh) {
     return;
   }
-  ticket = await checkLicense();
+  ticket = await checkSavedLicense();
   /* Allows the Open-Source parts - e.g. email signatures - to check whether
    * this is a paid version.
    * Also a cache, to avoid re-validating the ticket cryptographically for every server call. */
@@ -158,7 +158,7 @@ async function nextPoll() {
   }
   gPolling = true;
   try {
-    let ticket = await checkLicense();
+    let ticket = await checkSavedLicense();
     if (ticket.isSoonExpiring || ticket.hasRecentlyExpired || ticket.requiresRefresh) {
       await fetchTicket();
     }
@@ -166,6 +166,10 @@ async function nextPoll() {
   } catch (ex) {
     logError(ex);
   }
+}
+
+export async function fetchLicenseFromServer(): Promise<Ticket> {
+  return fetchTicket();
 }
 
 /** A promise that resolves when a ticket refresh finishes */
@@ -220,10 +224,10 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
     // this purge to happen accidentally, even after a server bug.)
     saveTicket(null);
   }
-  let ticket = await checkLicense();
+  let ticket = await checkSavedLicense();
   if (!ticket?.valid) {
     await startTrial(emailAddresses.contents, name);
-    ticket = await checkLicense();
+    ticket = await checkSavedLicense();
   }
   return ticket;
 }
@@ -272,7 +276,7 @@ export async function addTicketFromString(signedTicketStr: string) {
 /**
  * Checks the saved ticket to see whether it is valid.
  */
-export async function checkLicense(): Promise<Ticket> {
+export async function checkSavedLicense(): Promise<Ticket> {
   let signedTicket = getSavedTicket();
   if (!signedTicket) {
     return new BadTicket();

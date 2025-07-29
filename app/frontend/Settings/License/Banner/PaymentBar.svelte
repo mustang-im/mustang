@@ -23,7 +23,7 @@
 {/if}
 
 <script lang="ts">
-  import { checkLicense, Ticket, BadTicket } from "../../../../logic/util/LicenseClient";
+  import { checkSavedLicense, Ticket, BadTicket } from "../../../../logic/util/LicenseClient";
   import { Account } from "../../../../logic/Abstract/Account";
   import PaidJustNow from "./PaidJustNow.svelte";
   import SoonExpiring from "./SoonExpiring.svelte";
@@ -38,7 +38,7 @@
   let wasValid = false; // to detect that the license was just purchased
 
   async function getLicense() {
-    license = await checkLicense();
+    license = await checkSavedLicense();
     wasValid = license.valid;
     console.log("License ticket", license);
   }
