@@ -6,6 +6,7 @@ import { AbstractFunction } from "../util/util";
 
 export class MeetAccount extends Account {
   readonly protocol: string = "meet";
+  readonly needsLicense: boolean = true;
   storage: MeetAccountStorage | null = null;
 
   // Capabilities of the implementation

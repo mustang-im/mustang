@@ -1,11 +1,11 @@
 import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
+import type { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
-import type { OAuth2 } from "../Auth/OAuth2";
 
 export class Account extends Observable {
   id: string;
@@ -44,6 +44,8 @@ export class Account extends Observable {
   acceptBrokenTLSCerts = false;
   @notifyChangedProperty
   loginOnStartup = true;
+  /** User needs a software license to use this feature */
+  readonly needsLicense: boolean = false;
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error | null = null;
   /** Non-fatal errors, including when processing a single email */

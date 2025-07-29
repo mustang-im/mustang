@@ -19,6 +19,7 @@ import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class GraphAccount extends MailAccount {
   readonly protocol: string = "graph";
+  readonly needsLicense: boolean = true;
   accountID: string;
   userID: UUID;
   allFolders = new MapColl<string, GraphFolder>();

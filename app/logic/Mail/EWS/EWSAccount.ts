@@ -30,6 +30,7 @@ export class EWSAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
+  readonly needsLicense: boolean = true;
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
@@ -66,7 +67,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await ensureLicensed();
+    await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
     await super.login(interactive);
     await this.loginCommon(interactive);
 

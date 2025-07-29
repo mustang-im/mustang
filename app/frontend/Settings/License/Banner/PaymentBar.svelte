@@ -1,35 +1,38 @@
-<vbox class="payment-bar">
-  {#await getLicense()}
-    {$t`Checking...`}
-  {:then}
-    {#if license.isSoonExpiring}
-      <SoonExpiring bind:license />
-    {:else if license.isExpired}
-      <Expired bind:license />
-    {:else if license.valid && !wasValid}
-      <PaidJustNow />
-    {:else if license.valid}
-      <!-- Have valid license -->
-    {:else if owlLicense}
-      <Upgrade bind:license {owlLicense} />
-    {:else}
-      <NeverPaid bind:license />
-    {/if}
-  {:catch ex}
-    <ErrorMessageInline {ex} />
-  {/await}
-</vbox>
+{#if account?.needsLicense}
+  <vbox class="payment-bar">
+    {#await getLicense()}
+      <!-- Checking license... -->
+    {:then}
+      {#if license.isSoonExpiring}
+        <SoonExpiring bind:license />
+      {:else if license.isExpired}
+        <Expired bind:license />
+      {:else if license.valid && !wasValid}
+        <PaidJustNow />
+      {:else if license.valid}
+        <!-- Have valid license -->
+      {:else if owlLicense}
+        <Upgrade bind:license {owlLicense} />
+      {:else}
+        <NeverPaid bind:license />
+      {/if}
+    {:catch ex}
+      <ErrorMessageInline {ex} />
+    {/await}
+  </vbox>
+{/if}
 
 <script lang="ts">
   import { checkLicense, Ticket, BadTicket } from "../../../../logic/util/LicenseClient";
+  import { Account } from "../../../../logic/Abstract/Account";
   import PaidJustNow from "./PaidJustNow.svelte";
   import SoonExpiring from "./SoonExpiring.svelte";
   import Upgrade from "./Upgrade.svelte";
   import Expired from "./Expired.svelte";
   import NeverPaid from "./NeverPaid.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
-  import { t } from "../../../../l10n/l10n";
 
+  export let account: Account;
   let license: Ticket = new BadTicket();
   let owlLicense: Ticket | null = null;
   let wasValid = false; // to detect that the license was just purchased

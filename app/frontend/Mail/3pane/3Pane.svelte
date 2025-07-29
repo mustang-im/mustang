@@ -8,7 +8,7 @@
     initialSecondRatio={horizontal ? 2 : 1}
     slot="right">
     <vbox flex class="message-list-pane" slot="first">
-      <PaymentBar />
+      <PaymentBar account={selectedAccount} />
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
       {#if !horizontal}

@@ -33,6 +33,7 @@ export class OWAAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
+  readonly needsLicense: boolean = true;
   readonly folderMap = new Map<string, OWAFolder>;
   /**
    * We get notifications for folders we're not interested in.
