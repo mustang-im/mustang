@@ -66,7 +66,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await ensureLicensed();
+    await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
     await super.login(interactive);
     await this.loginCommon(interactive);
 
@@ -105,6 +105,10 @@ export class EWSAccount extends MailAccount {
 
   async logout(): Promise<void> {
     await this.oAuth2?.logout();
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /**

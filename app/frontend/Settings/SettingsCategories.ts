@@ -25,7 +25,7 @@ import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
-import Billing from "./About/Billing.svelte";
+import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
 // #if [!WEBMAIL]
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
@@ -157,7 +157,9 @@ appSettings.forApp = webAppsMustangApp;
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
-  new SettingsCategory("billing", gt`Billing`, Billing),
+  // #if [PROPRIETARY]
+  new SettingsCategory("license", gt`Billing`, License),
+  // #endif
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
 ]);
 settingsCategories.add(about);

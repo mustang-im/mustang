@@ -27,6 +27,10 @@ export class MeetAccount extends Account {
     await super.login(interactive);
   }
 
+  needsLicense(): boolean {
+    return true;
+  }
+
   /** You still need to `.start()` the conference */
   newMeeting(): VideoConfMeeting {
     throw new AbstractFunction();

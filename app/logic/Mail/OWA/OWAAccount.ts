@@ -156,6 +156,10 @@ export class OWAAccount extends MailAccount {
     return appGlobal.remoteApp.OWA.clearStorageData(this.partition);
   }
 
+  needsLicense(): boolean {
+    return true;
+  }
+
   /**
    * This uses Exchange to construct the message rather than
    * building the MIME ourselves.

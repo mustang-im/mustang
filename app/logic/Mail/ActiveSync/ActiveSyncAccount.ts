@@ -123,6 +123,10 @@ export class ActiveSyncAccount extends MailAccount {
     this.oAuth2?.logout();
   }
 
+  needsLicense(): boolean {
+    return true;
+  }
+
   async send(email: EMail): Promise<void> {
     if (email.bcc.hasItems) {
       throw new NotSupported("ActiveSync does not support BCC");

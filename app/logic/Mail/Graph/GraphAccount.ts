@@ -105,6 +105,10 @@ export class GraphAccount extends MailAccount {
     }
   }
 
+  needsLicense(): boolean {
+    return true;
+  }
+
   /**
    * @param path The function and object to call. This is the part of the URL path *after* the user.
    * @param args URL query parameters. Will be appended after "?"
