@@ -39,7 +39,7 @@ export class OWAAddressbook extends Addressbook {
       this.groups.clear();
       return;
     }
-    this.folderID = contacts.FolderId;
+    this.folderID ??= contacts.FolderId;
     if (!this.name) {
       this.name = contacts.DisplayName;
     }

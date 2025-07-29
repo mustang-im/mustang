@@ -549,7 +549,7 @@ export class EWSAccount extends MailAccount {
           addressbook.mainAccount = this;
           appGlobal.addressbooks.add(addressbook);
         }
-        addressbook.folderID = folder.FolderId.Id;
+        addressbook.folderID ??= folder.FolderId.Id;
         await addressbook.save();
       }
     }
@@ -571,7 +571,7 @@ export class EWSAccount extends MailAccount {
           calendar.mainAccount = this;
           appGlobal.calendars.add(calendar);
         }
-        calendar.folderID = folder.FolderId.Id;
+        calendar.folderID ??= folder.FolderId.Id;
         await calendar.save();
       }
     }

@@ -308,7 +308,7 @@ export class OWAAccount extends MailAccount {
             calendar.mainAccount = this;
             appGlobal.calendars.add(calendar);
           }
-          calendar.folderID = folder.FolderId.Id;
+          calendar.folderID ??= folder.FolderId.Id;
           await calendar.save();
         }
       } // Addressbook FolderId currently handled in OWAAddressbook
