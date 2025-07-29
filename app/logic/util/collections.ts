@@ -16,7 +16,6 @@ export function filterUnique<T>(source: Collection<T>, compareFunc: (a: T, b: T)
       unique.add(newItem);
     }
   }
-  return unique;
 }
 
 export function getNext<T>(list: ArrayColl<T>, curObject: T): T | null {
