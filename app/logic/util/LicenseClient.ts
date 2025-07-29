@@ -397,7 +397,7 @@ function startPolling(paidCallback?: (license: Ticket) => void) {
     }
   }, kPurchasePollInterval);
 
-  setTimeout(() => stopPurchasePolling, kPurchasePollFor);
+  setTimeout(stopPurchasePolling, kPurchasePollFor);
 }
 
 function stopPurchasePolling() {
