@@ -8,11 +8,12 @@ import { ArrayColl, Collection } from "svelte-collections";
  */
 export function filterUnique<T>(source: Collection<T>, compareFunc: (a: T, b: T) => boolean): ArrayColl<T> {
   let unique = new ArrayColl<T>();
-  if (source) {
-    for (let newItem of source) {
-      if (!unique.find(previous => compareFunc(previous, newItem))) {
-        unique.add(newItem);
-      }
+  if (!source) {
+    return unique;
+  }
+  for (let newItem of source) {
+    if (!unique.find(previous => compareFunc(previous, newItem))) {
+      unique.add(newItem);
     }
   }
   return unique;
