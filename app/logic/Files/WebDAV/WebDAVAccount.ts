@@ -2,7 +2,7 @@ import { FileSharingAccount } from "../FileSharingAccount";
 import { WebDAVDirectory } from "./WebDAVDirectory";
 import { AuthMethod } from "../../Abstract/Account";
 import { ArrayColl } from "svelte-collections";
-import { NotReached, assert } from "../../util/util";
+import { NotImplemented, NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { appGlobal } from "../../app";
 import type { DAVClient } from "tsdav";
@@ -80,5 +80,9 @@ export class WebDAVAccount extends FileSharingAccount {
     }
 
     await this.save();
+  }
+
+  async save() {
+    throw new NotImplemented(); // TODO DB for files
   }
 }

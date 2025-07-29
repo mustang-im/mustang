@@ -1,17 +1,35 @@
-import type { MailAccount } from "../MailAccount";
-import { ContactEntry, Person } from "../../Abstract/Person";
+import { MailAccount } from "../MailAccount";
+import { ContactEntry } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
 import { MailIdentity } from "../MailIdentity";
 import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
+import type { Account } from "../../Abstract/Account";
+import { Calendar } from "../../Calendar/Calendar";
+import { Addressbook } from "../../Contacts/Addressbook";
+import { FileSharingAccount } from "../../Files/FileSharingAccount";
+import { ChatAccount } from "../../Chat/ChatAccount";
+import { MeetAccount } from "../../Meet/MeetAccount";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { NotReached, assert } from "../../util/util";
 import { SetColl } from "svelte-collections";
 
 export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   await saveConfig(config, emailAddress, password);
-  getFirstMessages(config).catch(backgroundError);
+
+  if (config.setup) {
+    let s = config.setup;
+    let services = [s.calendar, s.addressbook, s.fileShare, s.chat, s.meet];
+    for (let service of services) {
+      if (service) {
+        await saveChildService(service, config);
+      }
+    }
+  }
+
+  getFirstMessages(config)
+    .catch(backgroundError);
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
@@ -32,6 +50,18 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   await config.saveAll();
 }
 
+export async function saveChildService(config: Account, parent: Account): Promise<void> {
+  config.realname = parent.realname;
+  config.username = parent.username;
+  config.password = parent.password;
+  config.name = parent.name;
+  config.color = parent.color;
+  config.icon = parent.icon;
+  config.mainAccount = parent;
+  addAccountToGlobal(config);
+  await config.save();
+}
+
 /**
  * Replaces any variables (e.g. %EMAILADDRESS%) in the config with the
  * concrete user values. Also adds real name etc.
@@ -49,12 +79,14 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   config.hostname = replaceVar(config.hostname, emailAddress);
   config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
 
+  // Rename existing account
   let existingAccount = appGlobal.emailAccounts.find(acc => acc.name == config.name);
   if (existingAccount && !existingAccount.name.includes(emailAddress)) {
     config.name += " " + emailAddress;
     existingAccount.name += " " + existingAccount.emailAddress;
     existingAccount.save().catch(backgroundError);
   }
+
   if (config.outgoing) {
     if (config.outgoing.name == config.name) {
       config.outgoing.name += " "; // Hack for SMTP and uniqueness
@@ -132,5 +164,23 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     person.emailAddresses.add(contact);
     collected.add(person);
     await person.saveLocally();
+  }
+}
+
+function addAccountToGlobal(account: Account) {
+  if (account instanceof MailAccount) {
+    appGlobal.emailAccounts.add(account);
+  } else if (account instanceof Calendar) {
+    appGlobal.calendars.add(account);
+  } else if (account instanceof Addressbook) {
+    appGlobal.addressbooks.add(account);
+  } else if (account instanceof FileSharingAccount) {
+    appGlobal.fileSharingAccounts.add(account);
+  } else if (account instanceof ChatAccount) {
+    appGlobal.chatAccounts.add(account);
+  } else if (account instanceof MeetAccount) {
+    appGlobal.meetAccounts.add(account);
+  } else {
+    throw new NotReached();
   }
 }

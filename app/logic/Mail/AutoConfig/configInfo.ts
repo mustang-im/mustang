@@ -1,12 +1,8 @@
-import type { MailAccount } from "../MailAccount";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
+import { TCPAccount, TLSSocketType } from "../../Abstract/TCPAccount";
+import type { Account } from "../../Abstract/Account";
 import type { URLString } from "../../util/util";
 
-export function hasEncryption(tls: TLSSocketType): boolean {
-  return tls == TLSSocketType.TLS || tls == TLSSocketType.STARTTLS;
-}
-
-export function isStandardPort(config: MailAccount) {
+export function isStandardPort(config: TCPAccount) {
   return !!kStandardPorts.find(p =>
     config.protocol == p.protocol && config.tls == p.tls && config.port == p.port);
 }
@@ -42,5 +38,44 @@ export function getStandardURL(protocol: string, domain: string): URLString {
     return `https://graph.microsoft.com`;
   } else {
     return "";
+  }
+}
+
+export function hasEncryption(tls: TLSSocketType): boolean {
+  return tls == TLSSocketType.TLS || tls == TLSSocketType.STARTTLS;
+}
+
+export function getHostname(account: Account): string | null {
+  if (account instanceof TCPAccount) {
+    return account.hostname;
+  }
+  if (!account.url) {
+    return null;
+  }
+  try {
+    return new URL(account.url).hostname;
+  } catch (ex) {
+    return null;
+  }
+}
+
+export function getTLS(account: Account): TLSSocketType {
+  if (account instanceof TCPAccount) {
+    return account.tls;
+  }
+  if (!account.url) {
+    return TLSSocketType.Unknown;
+  }
+  try {
+    let url = new URL(account.url);
+    if (url.protocol == "https:") {
+      return TLSSocketType.TLS;
+    } else if (url.protocol == "http:") {
+      return TLSSocketType.Plain;
+    } else {
+      return TLSSocketType.Unknown;
+    }
+  } catch (ex) {
+    return null;
   }
 }

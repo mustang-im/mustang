@@ -6,9 +6,10 @@ import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
+import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, type URLString } from "../util/util";
+import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl } from 'svelte-collections';
 
@@ -33,8 +34,7 @@ export class MailAccount extends TCPAccount {
   readonly identities = new ArrayColl<MailIdentity>();
   @notifyChangedProperty
   readonly filterRuleActions = new ArrayColl<FilterRuleAction>();
-  /** Only for setup. We know a config, but the user needs to do some manual steps for this ISP */
-  setupInstructions: SetupInstruction[] | null = null;
+  setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
 
@@ -239,11 +239,4 @@ export enum DeleteStrategy {
   DeleteImmediately = 1,
   Flag = 1,
   MoveToTrash = 3,
-}
-
-export class SetupInstruction {
-  instruction: string | null;
-  url: URLString | null;
-  enterPassword: boolean = false;
-  enterUsername: boolean = false;
 }

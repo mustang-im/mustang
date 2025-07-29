@@ -1,14 +1,16 @@
 <hbox class="direction">
   {#if outgoing}
     <ArrowLeftIcon size={16} />
-  {:else}
+  {:else if config.protocol == "imap" || config.protocol == "pop3"}
     <ArrowRightIcon size={16} />
   {/if}
 </hbox>
 <hbox class="protocol">{labelForMailProtocol(config.protocol)}</hbox>
-<hbox class="hostname"><HostnameDomain hostname={config.hostname} />{isStandardPort(config) ? "" : ":" + config.port}</hbox>
+<hbox class="hostname">
+  <HostnameDomain hostname={getHostname(config) ?? ""} />{config instanceof TCPAccount && !isStandardPort(config) ? ":" + config.port : ""}
+</hbox>
 <hbox class="tls" class:tls-warning={tlsWarning} class:has-encryption={hasEnc}>
-  {socketLabel(config.tls)}
+  {socketLabel(tls)}
   {#if tlsWarning}
     - {tlsWarning}
   {/if}
@@ -22,9 +24,9 @@
 </hbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
-  import { isStandardPort, hasEncryption } from "../../../logic/Mail/AutoConfig/configInfo";
+  import { Account } from "../../../logic/Abstract/Account";
+  import { TCPAccount, TLSSocketType } from "../../../logic/Abstract/TCPAccount";
+  import { isStandardPort, hasEncryption, getTLS, getHostname } from "../../../logic/Mail/AutoConfig/configInfo";
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import HostnameDomain from "../Shared/HostnameDomain.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
@@ -34,11 +36,14 @@
   import { t } from "../../../l10n/l10n";
 
   /** in */
-  export let config: MailAccount;
+  export let config: Account;
 
+  $: console.log(config);
+
+  $: tls = getTLS(config);
+  $: hasEnc = hasEncryption(tls);
+  $: tlsWarning = !hasEncryption(tls) ? $t`Attackers can read your password and mails` : null;
   $: outgoing = config.protocol == "smtp";
-  $: hasEnc = hasEncryption(config.tls);
-  $: tlsWarning = !hasEncryption(config.tls) ? $t`Attackers can read your password and mails` : null;
 
   function socketLabel(tls: TLSSocketType): string {
     if (tls == TLSSocketType.TLS) {
@@ -61,6 +66,7 @@
     opacity: 60%;
   }
   .hostname {
+    justify-content: end;
     margin-inline-start: 16px;
     margin-inline-end: 16px;
   }

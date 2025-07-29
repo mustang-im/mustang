@@ -90,5 +90,5 @@ export function listMailProtocols(): string[] {
 }
 
 export function labelForMailProtocol(protocol: string): string {
-  return kProtocolLabel[protocol];
+  return kProtocolLabel[protocol] ?? protocol.toUpperCase();
 }

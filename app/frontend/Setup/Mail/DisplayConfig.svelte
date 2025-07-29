@@ -1,8 +1,10 @@
 <grid class="result">
   <DisplayConfigServer {config} />
-  {#if config.outgoing}
-    <DisplayConfigServer config={config.outgoing} />
-  {/if}
+  {#each childServices as childService}
+    {#if childService}
+      <DisplayConfigServer config={childService} />
+    {/if}
+  {/each}
 </grid>
 
 <script lang="ts">
@@ -11,6 +13,10 @@
 
   /** in */
   export let config: MailAccount;
+
+  $: childServices = [ config.outgoing,
+    config.setup?.calendar, config.setup?.addressbook,
+    config.setup?.fileShare, config.setup?.meet ];
 </script>
 
 <style>
