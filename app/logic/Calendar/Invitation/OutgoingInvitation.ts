@@ -30,12 +30,12 @@ export class OutgoingInvitation {
   }
 
   async sendInvitationsTo(participants: Collection<Participant>) {
-    let sendTo = participants.filterOnce(participant => participant.response != InvitationResponse.Organizer);
+    for (let participant of participants) {
+      participant.response ||= InvitationResponse.NoResponseReceived;
+    }
+    let sendTo = participants.filterOnce(participant => participant.isInvitee);
     if (sendTo.isEmpty) {
       return;
-    }
-    for (let participant of sendTo) {
-      participant.response ||= InvitationResponse.NoResponseReceived;
     }
     await this.send("REQUEST", sendTo);
   }
