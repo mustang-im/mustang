@@ -41,9 +41,7 @@ export class OutgoingInvitation {
   }
 
   async sendCancellationsTo(participants: Collection<Participant>) {
-    const participantResponses = [ InvitationResponse.Accept, InvitationResponse.Decline,
-      InvitationResponse.Tentative, InvitationResponse.NoResponseReceived];
-    let sendTo = participants.filterOnce(participant => participantResponses.includes(participant.response));
+    let sendTo = participants.filterOnce(participant => participant.isInvitee);
     if (sendTo.isEmpty) {
       return;
     }

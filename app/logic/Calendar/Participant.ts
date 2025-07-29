@@ -1,5 +1,5 @@
 import { PersonUID, findPerson } from "../Abstract/PersonUID";
-import { InvitationResponse } from "./Invitation/InvitationStatus";
+import { InvitationResponse, kInviteeResponses } from "./Invitation/InvitationStatus";
 import { notifyChangedProperty } from "../util/Observable";
 
 export class Participant extends PersonUID {
@@ -16,5 +16,9 @@ export class Participant extends PersonUID {
     super(emailAddress, name ?? person?.name ?? emailAddress);
     this.person = person;
     this.response = response;
+  }
+
+  get isInvitee(): boolean {
+    return kInviteeResponses.includes(this.response);
   }
 }

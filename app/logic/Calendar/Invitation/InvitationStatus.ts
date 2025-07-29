@@ -56,6 +56,9 @@ export enum InvitationResponse {
   NoResponseReceived = 5,
 }
 
+export const kInviteeResponses = [InvitationResponse.Accept, InvitationResponse.Decline,
+  InvitationResponse.Tentative, InvitationResponse.NoResponseReceived];
+
 /** Just the values that can appear in iTip messages */
 export type InvitationResponseInMessage = InvitationResponse.Accept | InvitationResponse.Tentative | InvitationResponse.Decline;
 
