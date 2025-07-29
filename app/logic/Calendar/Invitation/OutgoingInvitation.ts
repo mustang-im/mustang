@@ -31,6 +31,9 @@ export class OutgoingInvitation {
 
   async sendInvitationsTo(participants: Collection<Participant>) {
     let sendTo = participants.filterOnce(participant => participant.response != InvitationResponse.Organizer);
+    if (sendTo.isEmpty) {
+      return;
+    }
     for (let participant of sendTo) {
       participant.response ||= InvitationResponse.NoResponseReceived;
     }
@@ -38,7 +41,12 @@ export class OutgoingInvitation {
   }
 
   async sendCancellationsTo(participants: Collection<Participant>) {
-    let sendTo = participants.filterOnce(participant => participant.response > InvitationResponse.Organizer);
+    const participantResponses = [ InvitationResponse.Accept, InvitationResponse.Decline,
+      InvitationResponse.Tentative, InvitationResponse.NoResponseReceived];
+    let sendTo = participants.filterOnce(participant => participantResponses.includes(participant.response));
+    if (sendTo.isEmpty) {
+      return;
+    }
     await this.send("CANCEL", sendTo);
   }
 
