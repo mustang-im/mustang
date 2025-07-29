@@ -1,5 +1,5 @@
 <Header
-  title={$t`Select the addressbook you want to use`}
+  title={$t`Select the addressbooks you want to use`}
   subtitle=""
 />
 {#await load()}
@@ -9,9 +9,9 @@
   </hbox>
 {:then}
   <vbox flex class="calendar">
-    {#each addressbooks.each as addressbook}
+    {#each $addressbooks.each as addressbook}
       <label>
-        <input type="radio" bind:group={selectedAddressbook} value={addressbook}>
+        <input type="checkbox" bind:checked={addressbook.enabled}>
         {addressbook.displayName}
       </label>
     {/each}
@@ -35,7 +35,7 @@
   import Spinner from "../../Shared/Spinner.svelte";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
-  import { Collection } from "svelte-collections";
+  import { ArrayColl, Collection } from "svelte-collections";
   import type { DAVAddressBook } from "tsdav";
 
   /** in/out */
@@ -44,22 +44,26 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
-  let addressbooks: Collection<DAVAddressBook>;
-  let selectedAddressbook: DAVAddressBook;
+
+  let addressbooks: ArrayColl<Card>;
 
   async function load() {
-    addressbooks = await config.listAddressbooks();
-    assert(addressbooks.hasItems, gt`No addressbooks found in this account`);
+    addressbooks = await config.listAddressbooks(true);
     if (addressbooks.length == 1) {
-      selectedAddressbook = addressbooks.first;
       await onContinue();
     }
   }
 
   async function onContinue() {
-    config.addressbookURL = selectedAddressbook.url;
-    await config.listContacts();
-    appGlobal.addressbooks.add(config);
+    appGlobal.calendars.addAll(addressbooks.filterOnce(cal =>
+      cal.enabled &&
+      !confurlome(existing => existing.url == cal.url)));
+    for (let calendar of addressbooks) {
+      if (calendar.enabled) {
+        calendar.listEvents()
+          .catch(config.errorCallback);
+      }
+    }
     await config.save();
     showPage = null;
   }

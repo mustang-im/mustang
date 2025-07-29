@@ -228,7 +228,7 @@ export class ActiveSyncEvent extends Event {
     };
     let result = await this.calendar.account.callEAS("ItemOperations", request);
     if (result.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status, this.calendar.account);
+      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status, this.calendar);
     }
     let event = this.calendar.newEvent(this.parentEvent);
     event.fromWBXML(result.Response.Fetch.Properties);
