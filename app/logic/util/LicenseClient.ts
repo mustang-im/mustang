@@ -359,11 +359,6 @@ function isFirstRun(): boolean {
 }
 
 const kGetLicenseURL = siteRoot;
-/** How often to poll after the user clicked [Buy] */
-const kPurchasePollInterval = 10 * 1000; // 10 seconds
-/** For how long to poll after the user clicked [Buy] */
-const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
-let purchasePoller: NodeJS.Timeout | null = null;
 
 /** Called from [Bug] button in license bar and in settings page,
  * and on first run */
@@ -379,6 +374,12 @@ export async function openPurchasePage(paidCallback?: (license: Ticket) => void,
   await appGlobal.remoteApp.openExternalURL(pageURL);
   startPolling(paidCallback);
 }
+
+/** How often to poll after the user clicked [Buy] */
+const kPurchasePollInterval = 10 * 1000; // 10 seconds
+/** For how long to poll after the user clicked [Buy] */
+const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
+let purchasePoller: NodeJS.Timeout | null = null;
 
 function startPolling(paidCallback?: (license: Ticket) => void) {
   stopPurchasePolling();
