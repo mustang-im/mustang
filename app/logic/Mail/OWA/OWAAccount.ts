@@ -381,7 +381,7 @@ export class OWAAccount extends MailAccount {
     try {
       let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == notification.folderId) as OWAAddressbook | null;
       if (addressbook) {
-        addressbook.listContacts().catch(this.errorCallback);;
+        addressbook.listContacts().catch(this.errorCallback);
         return;
       }
       let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == notification.folderId) as OWACalendar | null;
