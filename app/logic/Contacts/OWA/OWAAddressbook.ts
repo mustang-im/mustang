@@ -39,13 +39,14 @@ export class OWAAddressbook extends Addressbook {
       this.groups.clear();
       return;
     }
+    let newFolderID = !this.folderID; // Temporary until support for multiple address books
     this.folderID ??= contacts.FolderId;
     if (!this.name) {
       this.name = contacts.DisplayName;
     }
-    //if (!this.dbID) { Temporary until support for multiple address books
+    if (!this.dbID || newFolderID) {
       await this.save();
-    //}
+    }
 
     let persons = [];
     let groups = [];

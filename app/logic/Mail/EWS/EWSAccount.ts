@@ -465,9 +465,9 @@ export class EWSAccount extends MailAccount {
     }
     for (let folderID of folderIDs) {
       try {
-        let folder = this.folderMap.get(folderID);
-        if (folder) {
-          await folder.updateChangedMessages();
+        let mailFolder = this.folderMap.get(folderID);
+        if (mailFolder) {
+          await mailFolder.updateChangedMessages();
           continue;
         }
         let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folderID) as EWSAddressbook | null;
