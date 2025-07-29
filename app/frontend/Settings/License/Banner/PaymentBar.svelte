@@ -40,7 +40,6 @@
   async function getLicense() {
     license = await checkSavedLicense();
     wasValid = license.valid;
-    console.log("License ticket", license);
   }
 
   function testLicense() {

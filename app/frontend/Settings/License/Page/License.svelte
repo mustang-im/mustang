@@ -40,7 +40,7 @@
     license = await checkSavedLicense();
     license = await fetchLicenseFromServer();
     wasValid = license.valid;
-    console.log("License ticket", license);
+    console.log("License ticket on payment settings page", license);
   }
 
   function testLicense() {
