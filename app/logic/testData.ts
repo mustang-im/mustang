@@ -484,7 +484,7 @@ class FakeEvent extends Event {
 export class FakeFileSharingAccount extends FileSharingAccount {
   constructor() {
     super();
-    this.name = "Dropbox";
+    this.name = "G Drive";
     let dirCount = Math.random() * 10;
     let dirs: Directory[] = [];
     for (let i = 0; i < dirCount; i++) {
