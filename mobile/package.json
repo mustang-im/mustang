@@ -17,7 +17,7 @@
     "@capacitor/core": "latest",
     "@capacitor/ios": "^7.2.0",
     "@capacitor/splash-screen": "latest",
-    "capacitor-nodejs": "https://github.com/hampoelz/capacitor-nodejs/releases/download/v1.0.0-beta.7/capacitor-nodejs.tgz"
+    "capacitor-nodejs": "https://github.com/hampoelz/capacitor-nodejs/releases/download/v1.0.0-beta.9/capacitor-nodejs.tgz"
   },
   "devDependencies": {
     "@capacitor/cli": "6.1.2",
