@@ -4,9 +4,7 @@
 * Payment: Upgrade
   * Upgrade page in Settings: Billing
   * Server
-* ISPDB CalDAV
 * OAuth
-  * Google: Add Parula brand - DONE
   * Google: Renewal TAC - Started, waiting for Google
   * Microsoft: localhost redirect URL - Client ID vs. account unclear
 * Calendar: DB change; main account
