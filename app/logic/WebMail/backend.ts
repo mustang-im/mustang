@@ -50,7 +50,7 @@ export class WebMailBackend {
     navigator.clipboard.writeText(text);
   }
   async openExternalURL(url: string) {
-    window.open(url, "_blank", "noopener");
+    window.open(url, "_blank", "noopener, noreferrer");
   }
   async openFileInNativeApp(filePath: string) {
     let url = "file://" + filePath;
