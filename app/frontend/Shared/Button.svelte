@@ -146,7 +146,7 @@
     color: var(--selected-hover-fg);
   }
   button.secondary {
-    border-color: var(--button-secondard-line);
+    border-color: var(--button-border);
   }
   button.filled {
     background-color: var(--inverted-bg);

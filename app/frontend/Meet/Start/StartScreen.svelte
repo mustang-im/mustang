@@ -1,14 +1,37 @@
-<hbox flex>
-  <vbox flex class="actions-container">
-    <vbox class="actions">
+<vbox flex>
+  <hbox class="buttons top-left">
+    <RoundButton
+      label={$t`Plan a meeting`}
+      icon={AddToCalendarIcon}
+      classes="add-event create large"
+      iconSize="22px" padding="10px" />
+  </hbox>
+  <vbox flex class="buttons-container">
+    <hbox flex />
+    <vbox class="buttons center">
       {#if $selectedPerson}
-        <Button label={$t`Call ${$selectedPerson.name}`} onClick={callSelected} errorCallback={showError} classes="call-person secondary">
+        <Button
+          label={$t`Call ${$selectedPerson.name}`}
+          onClick={callSelected} errorCallback={showError}
+          classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
       {/if}
-      <Button label={$t`Start an ad-hoc meeting`} icon={VideoIcon} onClick={startAdHocMeeting} errorCallback={showError} classes="secondary" />
-      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
-      <hbox>
+      <Button
+        label={$t`Start new`}
+        icon={VideoIcon}
+        iconSize="20px"
+        onClick={startAdHocMeeting}
+        errorCallback={showError}
+        classes="start-new primary create filled" />
+    </vbox>
+    <vbox class="error">
+      {#if errorMsg}
+        <ErrorMessage bind:errorMessage={errorMsg} errorGravity={ErrorGravity.Error} />
+      {/if}
+    </vbox>
+    <hbox flex />
+      <hbox class="join-container">
         <input class="meeting-link" type="url" bind:value={conferenceURL}
           placeholder={$t`Enter meeting link to join`}
           on:input={() => errorMsg = null}
@@ -18,26 +41,24 @@
           disabled={!conferenceURL}
           onClick={joinByURL} errorCallback={showError} />
       </hbox>
-    </vbox>
-    <vbox class="error">
-      {#if errorMsg}
-        <ErrorMessage bind:errorMessage={errorMsg} errorGravity={ErrorGravity.Error} />
-      {/if}
-    </vbox>
   </vbox>
-  <vbox flex class="meetings">
+  <hbox class="meetings" flex>
     <vbox flex />
     <vbox flex class="upcoming">
-      <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
-      <MeetingList meetings={upcomingMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings coming up`}</div>
-      </MeetingList>
+      {#if true || $upcomingMeetings.hasItems}
+        <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
+        <MeetingList meetings={upcomingMeetings}>
+          <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings coming up`}</div>
+        </MeetingList>
+        {/if}
     </vbox>
     <vbox flex class="previous">
-      <hbox class="title font-small">{$t`Previous meetings`}</hbox>
-      <MeetingList meetings={previousMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No recent meetings`}</div>
-      </MeetingList>
+      {#if true || $previousMeetings.hasItems}
+        <hbox class="title font-small">{$t`Previous meetings`}</hbox>
+        <MeetingList meetings={previousMeetings}>
+          <div slot="emptyMsg" class="emptyMsg font-small">{$t`No recent meetings`}</div>
+        </MeetingList>
+      {/if}
     </vbox>
     <vbox flex />
     <hbox class="test">
@@ -50,8 +71,8 @@
         </vbox>
       </ExpandSection>
     </hbox>
-  </vbox>
-</hbox>
+  </hbox>
+</vbox>
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
@@ -76,6 +97,7 @@
   import { sleep, UserError } from "../../../logic/util/util";
   import { faker } from "@faker-js/faker";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
 
   const now = new Date();
   const maxUpcoming = new Date();
@@ -191,20 +213,65 @@
 </script>
 
 <style>
-  .actions-container {
-    align-items: center;
-    justify-content: center;
-    flex: 2 0 0;
+  .buttons.top-left {
+    margin: 24px 12px 12px 32px;
+    align-items: start;
+    justify-content: start;
   }
-  .actions :global(> *) {
+  .buttons :global(button.add-event svg) {
+    stroke-width: 1.7px;
+  }
+  .buttons-container {
+    flex: 3 0 0;
+    align-items: center;
+  }
+  .buttons :global(> *) {
     margin-block-start: 12px;
   }
-  .actions :global(.call-person .avatar) {
+  .buttons.center :global(> button) {
+    padding-inline-end: 18px;
+  }
+  .buttons.center :global(> button.call-person) {
+    padding-block: 8px;
+  }
+  .buttons.center :global(> button.start-new) {
+    padding-block: 6px;
+  }
+  .buttons.center :global(> button.start-new svg) {
+    stroke-width: 1.6px;
+  }
+  .buttons :global(.call-person .avatar) {
     margin: -4px 0px;
   }
-  .actions-container .error {
+  .buttons-container .error {
     position: absolute;
     bottom: 100px;
+  }
+  .join-container {
+    margin: 12px;
+  }
+  .meeting-link {
+    margin-inline-end: 4px;
+  }
+  .meetings {
+    align-items: start;
+  }
+  .join-container,
+  .upcoming,
+  .previous {
+    justify-content: center;
+    margin-inline: 32px;
+    margin-block: 12px;
+  }
+  .upcoming {
+    flex: 2 0 0;
+  }
+  .title {
+    font-weight: bold;
+    margin-block-end: 12px;
+  }
+  .emptyMsg {
+    color: grey;
   }
   .test {
     align-self: end;
@@ -217,22 +284,5 @@
   }
   .test .buttons :global(> *) {
     margin-block-end: 12px;
-  }
-  .meeting-link {
-    margin-inline-end: 4px;
-  }
-  .meetings {
-    justify-content: center;
-  }
-  .upcoming,
-  .previous {
-    justify-content: center;
-  }
-  .title {
-    font-weight: bold;
-    margin-block-end: 12px;
-  }
-  .emptyMsg {
-    color: grey;
   }
 </style>
