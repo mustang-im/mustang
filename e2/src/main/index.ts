@@ -25,6 +25,7 @@ function createWindow(): void {
         preload: join(import.meta.dirname, '../preload/index.mjs'),
         sandbox: false,
         webviewTag: true,
+        backgroundThrottling: false,
       }
     })
     setMainWindow(mainWindow);
