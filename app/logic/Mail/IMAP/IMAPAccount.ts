@@ -206,7 +206,7 @@ export class IMAPAccount extends MailAccount {
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
     try {
-      connection?.close();
+      await connection?.close();
     } catch (ex) {
       // Sometimes gives "Connection not available". Do nothing.
     }
