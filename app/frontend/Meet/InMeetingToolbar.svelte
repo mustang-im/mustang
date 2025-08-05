@@ -126,10 +126,6 @@
   import Scroll from "../Shared/Scroll.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
-  import CameraIcon from "lucide-svelte/icons/video";
-  import CameraOffIcon from "lucide-svelte/icons/video-off";
-  import MicrophoneIcon from "lucide-svelte/icons/mic";
-  import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import ScreenShareIcon from "lucide-svelte/icons/screen-share-off";
   import ScreenShareOffIcon from "lucide-svelte/icons/screen-share";
   import LeaveIcon from "lucide-svelte/icons/phone";
