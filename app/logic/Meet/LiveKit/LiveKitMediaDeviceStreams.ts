@@ -1,15 +1,17 @@
 import { MediaDeviceStreams } from "../MediaDeviceStreams";
-import { notifyChangedAccessor } from "../../util/Observable";
-import { NotSupported, assert } from "../../util/util";
-import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
+import { notifyChangedProperty, notifyChangedAccessor } from "../../util/Observable";
+import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
 export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   localParticipant: LocalParticipant;
-  currentCameraID: string;
-  currentMicID: string;
+  @notifyChangedProperty
+  protected _cameraDevice: string;
+  @notifyChangedProperty
+  protected _micDevice: string;
 
   @notifyChangedAccessor
   get cameraOn(): boolean {
@@ -26,7 +28,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
 
   async setCameraOn(on: boolean, device?: string) {
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
-    if (device && device != this.currentCameraID && this.cameraMicStream) {
+    if (device && device != this._cameraDevice && this.cameraMicStream) {
       /* `setCameraEnabled(false)` doesn't actually stop the stream, but just mutes/unmutes it.
        * So, the device is accepted initially, but device *changes* are ignored in
        * `setCameraEnabled(true, { deviceId: ... })`.
@@ -40,12 +42,12 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
     await this.localParticipant.setCameraEnabled(on, {
       deviceId: device,
     });
-    this.currentCameraID = device;
+    this._cameraDevice = device;
     this.cameraMicStream = this.getCameraMicStream();
   }
   async setMicOn(on: boolean, device?: string) {
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
-    if (device && device != this.currentMicID && this.cameraMicStream) {
+    if (device && device != this._micDevice && this.cameraMicStream) {
       for (let trackPub of this.localParticipant.getTrackPublications()) {
         if (trackPub.source == Track.Source.Microphone) {
           this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
@@ -59,8 +61,12 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
       voiceIsolation: true,
       autoGainControl: true,
     });
-    this.currentMicID = device;
+    this._micDevice = device;
     this.cameraMicStream = this.getCameraMicStream();
+  }
+  async setCameraMicOn(cameraOn: boolean, micOn: boolean, cameraDevice: string = this._cameraDevice, micDevice: string = this._micDevice) {
+    this.setMicOn(micOn, micDevice);
+    this.setCameraOn(cameraOn, cameraDevice);
   }
 
   async setScreenShare(on: boolean) {
