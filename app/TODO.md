@@ -26,8 +26,6 @@
     * Invitations
     * Free/Busy
     * Tasks
-  * Meet
-    * Close camera
   * Contacts
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
@@ -161,7 +159,6 @@
 
 # Meet
 ## UI
-* Close camera
 * Self: Black after turning off cam
 * Meeting pic in UI before joining conference
 

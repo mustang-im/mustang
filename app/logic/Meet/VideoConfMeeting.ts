@@ -86,7 +86,7 @@ export class VideoConfMeeting extends Observable {
 
   /** Called when the user's own local cam/screen from `.mediaDeviceStreams` changes */
   protected async streamsChanged(propName: string, oldValue: MediaStream) {
-    console.log("Stream changed", propName, "from", oldValue?.getTracks(), "to", this.mediaDeviceStreams[propName]?.getTracks());
+    console.log("Stream changed", propName, "from", oldValue?.getTracks?.(), "to", this.mediaDeviceStreams[propName]?.getTracks?.());
     if (propName == "cameraMicStream") {
       let stream = this.mediaDeviceStreams.cameraMicStream;
       if (stream) {

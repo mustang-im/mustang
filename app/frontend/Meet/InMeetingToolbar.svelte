@@ -162,8 +162,7 @@
     meInited = true;
     me.cameraOn = cameraOnSetting.value;
     me.micOn = micOnSetting.value;
-    await stream.setMicOn(me.micOn, selectedMicSetting.value);
-    await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
+    await stream.setCameraMicOn(me.cameraOn, me.micOn, selectedCameraSetting.value, selectedMicSetting.value);
     await getDevices();
   }
 
@@ -181,8 +180,7 @@
   async function leave() {
     await meeting.hangup();
     await stream.setScreenShare(false);
-    await stream.setMicOn(false);
-    await stream.setCameraOn(false);
+    await stream.setCameraMicOn(false, false);
     appGlobal.meetings.remove(meeting);
   }
 
@@ -192,8 +190,8 @@
 
   async function changeMicOn(on: boolean) {
     me.micOn = on;
-    await stream.setMicOn(me.micOn, selectedMicSetting.value);
     micOnSetting.value = me.micOn;
+    await stream.setMicOn(me.micOn, selectedMicSetting.value);
   }
 
   async function changeMicSelected(deviceID: string) {
@@ -203,8 +201,8 @@
 
   async function changeCameraOn(on: boolean) {
     me.cameraOn = on;
-    await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
     cameraOnSetting.value = me.cameraOn;
+    await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
   }
 
   async function changeCameraSelected(deviceID: string) {

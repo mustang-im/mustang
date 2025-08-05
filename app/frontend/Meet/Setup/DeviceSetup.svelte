@@ -1,12 +1,12 @@
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
-    <Video stream={$deviceStream.cameraMicStream} muted={true} />
+    <Video stream={$deviceStream?.cameraMicStream} muted={true} />
   </vbox>
   <hbox class="buttons">
     <DeviceButton video={false} {devices}
       on={$micOnSetting.value}
       selectedID={$selectedMicSetting.value}
-      stream={$deviceStream.cameraMicStream}
+      stream={$deviceStream?.cameraMicStream}
       on:changeOn={event => micOnSetting.value = event.detail}
       on:changeDevice={event => selectedMicSetting.value = event.detail}
       />
@@ -29,16 +29,15 @@
 
   let devices: MediaDeviceInfo[];
 
-  let deviceStream = new LocalMediaDeviceStreams();
+  let deviceStream: LocalMediaDeviceStreams;
   async function startCamMic() {
-    await deviceStream.setMicOn(micOnSetting.value, selectedMicSetting.value);
-    await deviceStream.setCameraOn(cameraOnSetting.value, selectedCameraSetting.value);
+    deviceStream ??= new LocalMediaDeviceStreams();
+    await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
     await getDevices();
   }
 
   async function stopCamMic() {
-    await deviceStream.setMicOn(false);
-    await deviceStream.setCameraOn(false);
+    await deviceStream.setCameraMicOn(false, false);
   }
 
   async function getDevices() {
@@ -51,8 +50,7 @@
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
 
-  $: catchErrors(() => deviceStream?.setMicOn($micOnSetting.value, $selectedMicSetting.value));
-  $: catchErrors(() => deviceStream?.setCameraOn($cameraOnSetting.value, $selectedCameraSetting.value));
+  $: catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value));
 
   onMount(async () => catchErrors(startCamMic));
   onDestroy(async () => catchErrors(stopCamMic));

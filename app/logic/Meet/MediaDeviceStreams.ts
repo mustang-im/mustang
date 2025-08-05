@@ -29,6 +29,9 @@ export class MediaDeviceStreams extends Observable {
   async setMicOn(on: boolean, device?: string) {
     throw new AbstractFunction();
   }
+  async setCameraMicOn(cameraOn: boolean, micOn: boolean, cameraDevice: string = undefined, micDevice: string = undefined) {
+    throw new AbstractFunction();
+  }
 
   async setScreenShare(on: boolean) {
     throw new AbstractFunction();
