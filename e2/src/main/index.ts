@@ -2,7 +2,7 @@ import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../
 import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater from 'electron-updater';
+import electronUpdater, { UpdateCheckResult } from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
@@ -97,6 +97,8 @@ if (gotLock) {
   // Event 'second-instance' will be called within the primary instance
 }
 
+let update: UpdateCheckResult | null = null;
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -126,11 +128,15 @@ async function whenReady() {
   })
 
   try {
-    await autoUpdater.checkForUpdatesAndNotify();
+    update = await autoUpdater.checkForUpdatesAndNotify();
     setInterval(async () => {
       try {
+        if (update?.updateInfo.version) {
+          console.log(`Already have update waiting.`);
+          return; // `checkForUpdates()` downloads the update on every call
+        }
         console.log("Routinely checking for app updates...");
-        await autoUpdater.checkForUpdatesAndNotify();
+        update = await autoUpdater.checkForUpdatesAndNotify();
       } catch (ex) {
         console.error(ex);
       }
@@ -144,10 +150,21 @@ async function whenReady() {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+  if (process.platform == 'darwin') {
+    updateAndRestartNowIfNeeded();
+  } else {
+    app.quit();
   }
-})
+});
+
+async function updateAndRestartNowIfNeeded() {
+  if (update?.updateInfo.version) {
+    autoUpdater.autoRunAppAfterInstall = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.quitAndInstall();
+    // TODO restart after install, but open only a background window
+  } // else do nothing
+}
 
 // macOS: Capture URL during launch
 app.on("open-url", (_event, url) => {
