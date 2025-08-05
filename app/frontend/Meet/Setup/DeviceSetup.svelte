@@ -1,7 +1,6 @@
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
-    <!-- svelte-ignore a11y-media-has-caption -->
-    <video bind:this={videoEl} muted />
+    <Video stream={cameraStream} muted={true} />
   </vbox>
   <hbox class="buttons">
     <DeviceButton video={false} {devices}
@@ -22,12 +21,13 @@
 
 <script lang="ts">
   import { cameraOnSetting, micOnSetting, selectedCameraSetting, selectedMicSetting } from "./selectedDevices";
-  import { catchErrors } from "../../Util/error";
-  import { onDestroy, onMount, tick } from "svelte";
   import DeviceButton from "./DeviceButton.svelte";
+  import Video from "../View/Video/Video.svelte";
+  import { catchErrors } from "../../Util/error";
+  import { assert } from "../../../logic/util/util";
+  import { onDestroy, onMount, tick } from "svelte";
 
   let cameraStream: MediaStream;
-  let videoEl: HTMLVideoElement;
   let devices: MediaDeviceInfo[];
 
   //$: $cameraOn, $micOn, $selectedCamera, $selectedMic, () => catchErrors(restartCamMic);
@@ -50,20 +50,7 @@
         deviceId: selectedMicSetting.value,
       } : false,
     });
-    if (!cameraStream || !videoEl) {
-      return;
-    }
-    videoEl.srcObject = cameraStream;
-    try {
-      await videoEl.play();
-    } catch (ex) {
-      if (ex?.message?.includes("https://goo.gl/LdLk22")) {
-        console.error(ex);
-        // ignore
-      } else {
-        throw ex;
-      }
-    }
+    assert(cameraStream, "Failed to open camera, in device setup");
 
     await getDevices();
   }
@@ -75,8 +62,6 @@
     for (let track of cameraStream.getTracks()) {
       track.stop();
     }
-    videoEl.pause();
-    videoEl.srcObject = null;
     cameraStream = null;
   }
 
@@ -95,14 +80,9 @@
 </script>
 
 <style>
-  .self-video video {
+  .self-video {
     align-items: center;
     justify-content: center;
-  }
-  .self-video video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
   }
   .buttons {
     margin-block-start: -22px;
