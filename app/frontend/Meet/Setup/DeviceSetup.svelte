@@ -1,12 +1,12 @@
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
-    <Video stream={cameraStream} muted={true} />
+    <Video stream={$deviceStream.cameraMicStream} muted={true} />
   </vbox>
   <hbox class="buttons">
     <DeviceButton video={false} {devices}
       on={$micOnSetting.value}
       selectedID={$selectedMicSetting.value}
-      stream={cameraStream}
+      stream={$deviceStream.cameraMicStream}
       on:changeOn={event => micOnSetting.value = event.detail}
       on:changeDevice={event => selectedMicSetting.value = event.detail}
       />
@@ -21,48 +21,24 @@
 
 <script lang="ts">
   import { cameraOnSetting, micOnSetting, selectedCameraSetting, selectedMicSetting } from "./selectedDevices";
+  import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import DeviceButton from "./DeviceButton.svelte";
   import Video from "../View/Video/Video.svelte";
   import { catchErrors } from "../../Util/error";
-  import { assert } from "../../../logic/util/util";
   import { onDestroy, onMount, tick } from "svelte";
 
-  let cameraStream: MediaStream;
   let devices: MediaDeviceInfo[];
 
-  //$: $cameraOn, $micOn, $selectedCamera, $selectedMic, () => catchErrors(restartCamMic);
-  $: catchErrors(() => restartCamMic($cameraOnSetting, $micOnSetting, $selectedCameraSetting, $selectedMicSetting));
-  async function restartCamMic(..._dummy: any[]) {
-    console.log("restart camera");
-    await stopCamMic();
-    await startCamMic();
-  }
-
+  let deviceStream = new LocalMediaDeviceStreams();
   async function startCamMic() {
-    if (!cameraOnSetting.value && !micOnSetting.value) {
-      return;
-    }
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: cameraOnSetting.value ? {
-        deviceId: selectedCameraSetting.value,
-      } : false,
-      audio: micOnSetting.value ? {
-        deviceId: selectedMicSetting.value,
-      } : false,
-    });
-    assert(cameraStream, "Failed to open camera, in device setup");
-
+    await deviceStream.setMicOn(micOnSetting.value, selectedMicSetting.value);
+    await deviceStream.setCameraOn(cameraOnSetting.value, selectedCameraSetting.value);
     await getDevices();
   }
 
   async function stopCamMic() {
-    if (!cameraStream) {
-      return;
-    }
-    for (let track of cameraStream.getTracks()) {
-      track.stop();
-    }
-    cameraStream = null;
+    await deviceStream.setMicOn(false);
+    await deviceStream.setCameraOn(false);
   }
 
   async function getDevices() {
@@ -74,6 +50,9 @@
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
+
+  $: catchErrors(() => deviceStream?.setMicOn($micOnSetting.value, $selectedMicSetting.value));
+  $: catchErrors(() => deviceStream?.setCameraOn($cameraOnSetting.value, $selectedCameraSetting.value));
 
   onMount(async () => catchErrors(startCamMic));
   onDestroy(async () => catchErrors(stopCamMic));
