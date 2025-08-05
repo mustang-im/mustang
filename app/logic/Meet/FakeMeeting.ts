@@ -48,6 +48,13 @@ export class FakeMeeting extends VideoConfMeeting {
     this.setSpeakerRandomly();
   }
 
+  async hangup() {
+    for (let participant of this.participants) {
+      this.removeParticipant(participant);
+    }
+    await super.hangup();
+  }
+
   async addParticipant(person?: PersonUID) {
     let p = new MeetingParticipant();
     p.id = crypto.randomUUID();
@@ -72,7 +79,13 @@ export class FakeMeeting extends VideoConfMeeting {
 
   async removeParticipant(participant?: MeetingParticipant) {
     participant ??= this.participants.first;
-    this.videos.removeAll(this.videos.filter(v => v.participant == participant));
+    let videos = this.videos.filterOnce(v => v.participant == participant);
+    for (let video of videos) {
+      for (let track of video.stream.getTracks()) {
+        track.stop();
+      }
+    }
+    this.videos.removeAll(videos);
     this.participants.remove(participant);
   }
 
