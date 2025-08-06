@@ -6,9 +6,9 @@
       {width} {height}
       classes={videoStreamClassName(video)} />
   {:else if video.isMe}
-    <img src={appGlobal.me.picture} alt={$t`me`} />
-  {:else if video.participant}
-    <img src={video.participant.picture} alt={video.participant.name} />
+    <img src={appGlobal.me.picture} alt={label} />
+  {:else if video.participant?.person?.picture}
+    <img src={video.participant?.person?.picture} alt={label} />
   {/if}
 
   {#if video.participant}
@@ -23,7 +23,6 @@
   import { VideoStream, videoStreamClassName } from "../../../../logic/Meet/VideoStream";
   import Video from "./Video.svelte";
   import ParticipantItem from "../../ParticipantsList/ParticipantItem.svelte";
-  import { t } from "../../../../l10n/l10n";
 
   export let video: VideoStream;
   export let label: string;
