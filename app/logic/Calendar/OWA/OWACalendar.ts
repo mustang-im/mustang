@@ -15,14 +15,11 @@ export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
-  readonly events: ArrayColl<OWAEvent>;
+  declare account: OWAAccount;
+  declare readonly events: ArrayColl<OWAEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
   listEventsOnce = new RunOnce(() => this.listEventsSlow());
-
-  get account(): OWAAccount {
-    return this.mainAccount as OWAAccount;
-  }
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
