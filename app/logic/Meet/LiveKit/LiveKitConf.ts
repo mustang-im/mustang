@@ -111,7 +111,7 @@ export class LiveKitConf extends VideoConfMeeting {
 
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.room.localParticipant.sid;
-    this.myParticipant.name = this.room.localParticipant.name ?? appGlobal.me.name;
+    this.myParticipant.name = this.room.localParticipant.name || appGlobal.me.name;
     this.myParticipant.role = ParticipantRole.User;
     this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
     this.state = MeetingState.Ongoing;

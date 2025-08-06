@@ -149,7 +149,7 @@ export class M3Conf extends VideoConfMeeting {
       me.name = me.display_name;
       me.picture
       return {
-        name: me.display_name,
+        name: me.display_name || appGlobal.me.name,
         email: me.email,
         picture: me.avatar_url,
         id: me.id,
