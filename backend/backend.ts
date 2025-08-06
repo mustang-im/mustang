@@ -350,8 +350,7 @@ function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[]) => P
     async (request, callback) => {
       // Security
       let url = new URL(request.securityOrigin);
-      // TODO Prod URL?
-      assert(url.protocol == "file" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
+      assert(url.protocol == "file:" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
       assert(request.userGesture, `Screen share must be initiated by the user`);
       let screens = await desktopCapturer.getSources({
         types: ["screen", "window"],
