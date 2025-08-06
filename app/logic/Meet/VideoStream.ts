@@ -19,7 +19,9 @@ export class VideoStream {
 }
 
 export function videoStreamClassName(video: VideoStream): string {
-  if (video.isMe) {
+  if (video.isMe&& video.isScreenShare) {
+    return "self screen";
+  } else if (video.isMe) {
     return "self";
   } else if (video.isScreenShare) {
     return "screen";
