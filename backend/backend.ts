@@ -339,7 +339,7 @@ function showFileInFolder(filePath: string) {
   shell.showItemInFolder(filePath);
 }
 
-function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[]) => Promise<DesktopCapturerSource>,
+function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], error?: Error) => Promise<DesktopCapturerSource>,
     thumbnailWidth: number, thumbnailHeight: number) {
   console.log("Screen sharing dialog", !!onSelect ? "shown" : "closed");
   if (!onSelect || typeof(onSelect) != "function") {
@@ -348,16 +348,23 @@ function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[]) => P
   }
   session.defaultSession.setDisplayMediaRequestHandler(
     async (request, callback) => {
-      // Security
-      let url = new URL(request.securityOrigin);
-      assert(url.protocol == "file:" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
-      assert(request.userGesture, `Screen share must be initiated by the user`);
-      let screens = await desktopCapturer.getSources({
-        types: ["screen", "window"],
-        thumbnailSize: { width: thumbnailWidth, height: thumbnailHeight },
-      });
-      let screen = await onSelect(screens);
-      callback({ video: screen, audio: 'loopback' });
+      try {
+        // Security
+        let url = new URL(request.securityOrigin);
+        assert(url.protocol == "file:" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
+        assert(request.userGesture, `Screen share must be initiated by the user`);
+        let screens = await desktopCapturer.getSources({
+          types: ["screen", "window"],
+          thumbnailSize: { width: thumbnailWidth, height: thumbnailHeight },
+        });
+        let screen = await onSelect(screens);
+        callback({ video: screen, audio: 'loopback' });
+      } catch (ex) {
+        if (!(ex instanceof Error)) {
+          ex = new Error(ex + "");
+        }
+        onSelect([], ex as Error);
+      }
     },
     // If true, use the system picker if available.
     // Note: this is currently experimental. If the system picker

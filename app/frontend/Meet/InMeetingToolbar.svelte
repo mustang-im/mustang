@@ -13,7 +13,7 @@
     <RoundButton
       label={$t`Screen share`}
       classes="screen-share large"
-      selected={$me?.screenSharing}
+      selected={$me?.screenSharing || wantScreenShare}
       onClick={toggleScreenShare}
       icon={$me?.screenSharing ? ScreenShareIcon : ScreenShareOffIcon}
       iconSize="24px"
@@ -211,13 +211,19 @@
   }
 
   let selectScreenShare: SelectScreenShare;
+  let wantScreenShare = false;
   async function toggleScreenShare() {
-    me.screenSharing = !me.screenSharing;
-    if (me.screenSharing) {
+    if (wantScreenShare) {
+      return;
+    }
+    wantScreenShare = !me.screenSharing;
+    if (wantScreenShare) {
       startScreenSharing()
         .catch(onScreenSharingError);
     } else {
+      wantScreenShare = false;
       await stream.setScreenShare(false);
+      me.screenSharing = false;
     }
   }
 
@@ -225,12 +231,16 @@
     await selectScreenShare.openSelector(onScreenSharingError);
     await stream.setScreenShare(true);
     await selectScreenShare.closeSelector();
+    wantScreenShare = false;
+    me.screenSharing = true;
   }
 
   async function onScreenSharingError(ex: Error) {
+    wantScreenShare = false;
     console.error(ex);
     await selectScreenShare.closeSelector();
     await stream.setScreenShare(false);
+    me.screenSharing = false;
   }
 
   let showViewSelector = false;

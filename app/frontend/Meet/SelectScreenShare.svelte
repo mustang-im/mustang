@@ -1,4 +1,4 @@
-<Popup bind:popupOpen={showSelector} {popupAnchor} autoClose={false}
+<Popup bind:popupOpen={isOpen} {popupAnchor} autoClose={false}
   placement="top-start" boundaryElSel=".main">
   <vbox class="dialog">
     {#if errorMessage}
@@ -24,18 +24,25 @@
 
     {:else}
       {$t`Looking for your screens and windows…`}
-    {/if}
 
-    <!-- TODO How to properly report abort or errors to caller?
-      https://github.com/electron/electron/issues/45517#issuecomment-2965188048
-    <hbox flex />
-    <hbox class="buttons">
-      <Button
-        label={$t`Cancel`}
-        onClick={() => onError(new UserError($t`User aborted screen share selection`))}
-        />
-    </hbox>
-    -->
+      {#await sleep(2)}
+        <!---->
+      {:then}
+        <!--
+          I want to always allow [Cancel]. But:
+          TODO How to properly signal abort or errors to caller?
+          https://github.com/electron/electron/issues/47980
+          https://github.com/electron/electron/issues/45517
+        -->
+        <hbox class="buttons">
+          <Button
+            label={$t`Cancel`}
+            onClick={() => onError(new UserError($t`User aborted screen share selection`))}
+            classes="secondary"
+            />
+        </hbox>
+      {/await}
+    {/if}
   </vbox>
 </Popup>
 <hbox bind:this={popupAnchor} />
@@ -44,14 +51,23 @@
   import { appGlobal } from "../../logic/app";
   import Popup from "../Shared/Popup.svelte";
   import Scroll from "../Shared/Scroll.svelte";
-  import Button from "../Shared/Button.svelte";
-  import { UserError } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
   import { onDestroy } from "svelte";
   import { ArrayColl } from "svelte-collections";
+  import Button from "../Shared/Button.svelte";
+  import { UserError, sleep } from "../../logic/util/util";
   type DesktopCapturerSource = any; // import type { DesktopCapturerSource } from "electron";
 
-  let showSelector: boolean = false;
+  export async function openSelector(onError: (ex: Error) => void) {
+    onErrorCallback = onError;
+    isOpen = true;
+    await onOpen();
+  }
+  export async function closeSelector() {
+    await onClose();
+  }
+
+  export let isOpen: boolean = false;
   let isListening = false;
   let popupAnchor: HTMLElement;
   let errorMessage: string | null = null;
@@ -69,7 +85,17 @@
   let onReject: (ex: Error) => void;
   let onErrorCallback: (ex: Error) => void;
 
-  async function onScreensRequested(aScreens: any[]) {
+  export async function onOpen() {
+    isListening = true;
+    await appGlobal.remoteApp.onScreenSharingSelect(onScreensListed,
+      kThumbnailWidth, kThumbnailHeight);
+  }
+
+  async function onScreensListed(aScreens: DesktopCapturerSource[], error?: Error) {
+    if (error) {
+      onErrorCallback(error);
+      return;
+    }
     screens.clear();
     for (let aScreen of aScreens) {
       screens.add({
@@ -99,26 +125,13 @@
     await onClose();
   }
 
-  export async function openSelector(onError: (ex: Error) => void) {
-    onErrorCallback = onError;
-    showSelector = true;
-    await onOpen();
-  }
-  export async function closeSelector() {
-    await onClose();
-  }
-
-  export async function onOpen() {
-    isListening = true;
-    await appGlobal.remoteApp.onScreenSharingSelect(onScreensRequested,
-    kThumbnailWidth, kThumbnailHeight);
-  }
-
   async function onClose() {
     screens.clear();
-    if (showSelector) {
-      showSelector = false;
+    if (isOpen) {
+      isOpen = false;
     }
+    onDone = null;
+    onReject = null;
     if (isListening) {
       await appGlobal.remoteApp.onScreenSharingSelect(null);
       isListening = false;
@@ -160,7 +173,7 @@
     margin-block-start: 8px;
   }
   .buttons {
-    align-items: center;
+    align-items: end;
     justify-content: end;
   }
 </style>
