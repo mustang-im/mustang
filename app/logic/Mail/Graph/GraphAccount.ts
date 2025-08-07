@@ -60,6 +60,8 @@ export class GraphAccount extends MailAccount {
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.icon = this.icon;
+      addressbook.color = this.color;
       appGlobal.addressbooks.add(addressbook);
     }
     addressbook.account = this;
@@ -72,6 +74,8 @@ export class GraphAccount extends MailAccount {
       calendar.url = this.url;
       calendar.username = this.username;
       calendar.workspace = this.workspace;
+      calendar.icon = this.icon;
+      calendar.color = this.color;
       appGlobal.calendars.add(calendar);
     }
     calendar.account = this;

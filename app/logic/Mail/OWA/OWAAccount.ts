@@ -122,9 +122,13 @@ export class OWAAccount extends MailAccount {
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.icon = this.icon;
+      addressbook.color = this.color;
       addressbook.mainAccount = this;
       appGlobal.addressbooks.add(addressbook);
     }
+    addressbook.icon ??= this.icon; // Migration, remove later
+    addressbook.color ??= this.color;
     await addressbook.listContacts();
 
     for (let calendar of appGlobal.calendars) {
@@ -305,9 +309,13 @@ export class OWAAccount extends MailAccount {
             calendar.url = this.url;
             calendar.username = this.username;
             calendar.workspace = this.workspace;
+            calendar.icon = this.icon;
+            calendar.color = this.color;
             calendar.mainAccount = this;
             appGlobal.calendars.add(calendar);
           }
+          calendar.icon ??= this.icon; // Migration, remove later
+          calendar.color ??= this.color;
           calendar.folderID ??= folder.FolderId.Id;
           await calendar.save();
         }

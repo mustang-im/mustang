@@ -453,6 +453,8 @@ export class ActiveSyncAccount extends MailAccount {
             if (calendar) {
               calendar.name = change.DisplayName;
               calendar.serverID ??= change.ServerId;
+              calendar.icon ??= this.icon; // Migration, remove later
+              calendar.color ??= this.color;
             } else {
               calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.name = change.DisplayName;
@@ -460,6 +462,8 @@ export class ActiveSyncAccount extends MailAccount {
               calendar.url = url.toString();
               calendar.username = this.username;
               calendar.workspace = this.workspace;
+              calendar.icon = this.icon;
+              calendar.color = this.color;
               calendar.mainAccount = this;
               appGlobal.calendars.add(calendar);
             }
@@ -471,6 +475,8 @@ export class ActiveSyncAccount extends MailAccount {
             if (addressbook) {
               addressbook.name = change.DisplayName;
               addressbook.serverID ??= change.ServerId;
+              addressbook.icon ??= this.icon; // Migration, remove later
+              addressbook.color ??= this.color;
             } else {
               addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.name = change.DisplayName;
@@ -478,6 +484,8 @@ export class ActiveSyncAccount extends MailAccount {
               addressbook.url = url.toString();
               addressbook.username = this.username;
               addressbook.workspace = this.workspace;
+              addressbook.icon = this.icon;
+              addressbook.color = this.color;
               addressbook.mainAccount = this;
               appGlobal.addressbooks.add(addressbook);
             }

@@ -164,10 +164,10 @@
 
 ## Protocol
 * LiveKit
-  * Hand up
-  * Reconnect
+  * Waiting room
   * Server
-  * Login
+    * Invite links
+  * Reconnect
 * M3 server
   * Open/close cam and mic
   * Participant opening/closing cam is delayed

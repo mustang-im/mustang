@@ -546,9 +546,13 @@ export class EWSAccount extends MailAccount {
           addressbook.url = this.url;
           addressbook.username = this.username;
           addressbook.workspace = this.workspace;
+          addressbook.icon = this.icon;
+          addressbook.color = this.color;
           addressbook.mainAccount = this;
           appGlobal.addressbooks.add(addressbook);
         }
+        addressbook.icon ??= this.icon; // Migration, remove later
+        addressbook.color ??= this.color;
         addressbook.folderID ??= folder.FolderId.Id;
         await addressbook.save();
       }
@@ -568,9 +572,13 @@ export class EWSAccount extends MailAccount {
           calendar.url = this.url;
           calendar.username = this.username;
           calendar.workspace = this.workspace;
+          calendar.icon = this.icon;
+          calendar.color = this.color;
           calendar.mainAccount = this;
           appGlobal.calendars.add(calendar);
         }
+        calendar.icon ??= this.icon; // Migration, remove later
+        calendar.color ??= this.color;
         calendar.folderID ??= folder.FolderId.Id;
         await calendar.save();
       }

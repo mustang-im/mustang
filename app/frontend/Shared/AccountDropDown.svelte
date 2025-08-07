@@ -1,7 +1,11 @@
 <hbox class="account-selector">
   {#if icon}
     <hbox class="icon" style="--account-color: {$selectedAccount?.color ?? "black"}">
-      <svelte:component this={icon} />
+      {#if accountIcon && typeof(accountIcon) == "string" }
+        <img src={accountIcon} width="18px" height="18px" alt="" class="logo" />
+      {:else if icon}
+        <svelte:component this={icon} />
+      {/if}
     </hbox>
   {/if}
   <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
@@ -33,8 +37,11 @@
   export let icon: ConstructorOfATypedSvelteComponent | null = null;
   export let withLabel: boolean = true;
 
+  $: accountIcon = $selectedAccount?.icon;
+  $: console.log(selectedAccount?.name, "icon", accountIcon);
+
   $: showAccounts = filterByWorkspace && $selectedWorkspace
-    ? accounts.filter(acc => acc.workspace == $selectedWorkspace)
+    ? accounts.filterObservable(acc => acc.workspace == $selectedWorkspace)
     : accounts;
 
   $: selectedAccount, defaultSelection();
