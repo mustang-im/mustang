@@ -84,10 +84,10 @@
     margin-inline-start: 2px;
     margin-inline-end: 3px;
   }
-  .app-button:not(.running) .dot :global(> *) {
-    display: none;
+  .selected .dot {
+    color: var(--appbar-bg);
   }
-  .app-button.selected .dot :global(> *) {
+  .app-button:not(.running) .dot :global(> *) {
     display: none;
   }
 </style>
