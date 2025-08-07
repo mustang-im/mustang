@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
+    "typescript": "^5.9.2",
     "vite": "^5.4.2"
   },
   "repository": {
