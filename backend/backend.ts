@@ -299,9 +299,23 @@ function restartApp() {
 }
 
 /** @returns have update */
-async function checkForUpdate(): Promise<boolean> {
+async function checkForUpdate(): Promise<boolean | undefined> {
   let result = await autoUpdater.checkForUpdates();
-  return result.isUpdateAvailable;
+  return result?.isUpdateAvailable;
+  /* return new Promise(async (resolve, reject) => {
+    let result = await autoUpdater.checkForUpdates();
+    if (result?.isUpdateAvailable) {
+      resolve(true);
+      return;
+    }
+    autoUpdater.once("update-available", () => {
+      resolve(true);
+    });
+    autoUpdater.once("update-not-available", () => {
+      resolve(false);
+    });
+    autoUpdater.once("error", reject);
+  });*/
 }
 
 async function installUpdate() {
