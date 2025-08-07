@@ -89,7 +89,7 @@
     padding-block: 8px;
   }
   .actions :global(button.close-app) {
-    color: red;
+    color: #FC8787;
   }
   .button-placeholder {
     height: 40px;
