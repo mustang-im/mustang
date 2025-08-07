@@ -327,10 +327,10 @@ export class Event extends Observable {
       interval,
     };
     if (frequency == Frequency.Weekly) {
-      init.weekdays = weekdays ?? [this.startTime.getDay()]; // e.g. Monday and Thursday
+      init.weekdays = weekdays?.includes(this.startTime.getDay()) ? weekdays : [...weekdays?.length > 1 ? weekdays : [], this.startTime.getDay()]; // e.g. Monday and Thursday
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
-      init.week = week;
       if (week) {
+        init.week = week == 5 && isLastWeekOfMonth(this.startTime) ? 5 : Math.ceil(this.startTime.getDate() / 7);
         init.weekdays = [this.startTime.getDay()]; // e.g. 3rd Wednesday of month
       }
     }
@@ -819,4 +819,10 @@ export enum RecurrenceCase {
    * Like an instance, but at a different time or with modified properties.
    * Overrides a specific instance. */
   Exception = "exception",
+}
+
+function isLastWeekOfMonth(date: Date) {
+  date = new Date(date);
+  date.setDate(date.getDate() + 7);
+  return date.getDate() < 8;
 }
