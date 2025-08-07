@@ -40,7 +40,8 @@
 
   onMount(async () => {
     await appStore.load();
-    selectedCategory = categories.find(cat => cat.fullID == "recommended");
+    let catID = appStore.myApps.hasItems ? "selectedApps" : "recommended";
+    selectedCategory = categories.find(cat => cat.fullID == catID);
   });
 
   function closeStore() {
