@@ -26,7 +26,7 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import { showingWebApp, selectedWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import DotIcon from "lucide-svelte/icons/dot";
@@ -43,7 +43,7 @@
 
   function startApp() {
     webAppsRunning.add(app);
-    $showingWebApp = app;
+    $showingWebApp = $selectedWebApp = app;
   }
 
   function closeApp() {

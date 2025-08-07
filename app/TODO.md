@@ -103,7 +103,6 @@
 
 # WebApps
 
-* Keep running
 * Session per app
 * Session of email account
 * Add app multiple times

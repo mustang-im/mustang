@@ -3,20 +3,17 @@
   <Scroll>
     {#if showStore}
       <WebAppStore bind:showStore />
-    {:else}
-      <WebAppsRunning />
     {/if}
   </Scroll>
 </hbox>
 
 <script lang="ts">
+  import { showingWebApp, selectedWebApp } from "./Runner/WebAppsRunning";
   import { appGlobal } from "../../logic/app";
   import LaunchBar from "./LauncherBar/LaunchBar.svelte";
-  import WebAppsRunning from "./Runner/WebAppsRunning.svelte";
   import WebAppStore from "./Shop/WebAppStore.svelte";
   import Scroll from "../Shared/Scroll.svelte";
-  import { onMount } from "svelte";
-  import { showingWebApp, webAppsRunning } from "./Runner/WebAppsRunning";
+  import { onDestroy, onMount } from "svelte";
 
   let showStore = false;
 
@@ -28,6 +25,19 @@
       showStore = true;
     }
   });
+
+  onDestroy(() => {
+    $showingWebApp = null;
+  });
+
+  $: showApp(showStore)
+  function showApp(showStore: boolean) {
+    if (showStore) {
+      $showingWebApp = null;
+    } else if (!showStore) {
+      $showingWebApp = $selectedWebApp;
+    }
+  }
 
   // $: console.log("showing app", $showingWebApp?.nameTranslated, "running", $webAppsRunning.contents.map(app => app.nameTranslated));
 </script>
