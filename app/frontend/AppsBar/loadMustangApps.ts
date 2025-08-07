@@ -24,6 +24,7 @@ export function loadMustangApps() {
     mailMustangApp,
     calendarMustangApp,
     filesMustangApp,
+    webAppsMustangApp,
     settingsMustangApp,
   ]);
 }
