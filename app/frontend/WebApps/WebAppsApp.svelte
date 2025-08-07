@@ -32,9 +32,9 @@
 
   $: showApp(showStore)
   function showApp(showStore: boolean) {
-    if (showStore) {
+    if (showStore && $showingWebApp) {
       $showingWebApp = null;
-    } else if (!showStore) {
+    } else if (!showStore && !$showingWebApp) {
       $showingWebApp = $selectedWebApp;
     }
   }

@@ -51,6 +51,9 @@
     if ($showingWebApp == app) {
       $showingWebApp = webAppsRunning.last;
     }
+    if ($selectedWebApp == app) {
+      $selectedWebApp = webAppsRunning.last;
+    }
   }
 </script>
 

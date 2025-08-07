@@ -38,7 +38,7 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import { selectedWebApp, showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
   import AppLaunchButton from "./LaunchBarButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -62,6 +62,7 @@
   function closeApp() {
     webAppsRunning.remove($showingWebApp);
     $showingWebApp = webAppsRunning.last;
+    $selectedWebApp = webAppsRunning.last;
   }
 </script>
 

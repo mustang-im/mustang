@@ -25,6 +25,7 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
+  import { selectedWebApp, showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
@@ -43,6 +44,13 @@
   }
   function remove() {
     myApps.remove(app);
+    webAppsRunning.remove(app);
+    if ($selectedWebApp == app) {
+      $selectedWebApp = webAppsRunning.last;
+    }
+    if ($showingWebApp == app) {
+      $showingWebApp = webAppsRunning.last;
+    }
   }
 </script>
 

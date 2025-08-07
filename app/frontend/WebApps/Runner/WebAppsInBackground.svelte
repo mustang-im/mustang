@@ -1,5 +1,5 @@
 <vbox class="webapps" class:running={$showingWebApp}>
-  {#each webAppsRunning.each as webApp}
+  {#each $webAppsRunning.each as webApp}
     <vbox class="webapp" class:running={$showingWebApp == webApp}>
       <WebAppRunner app={webApp} />
     </vbox>
