@@ -135,7 +135,7 @@ export class ComposeActions {
   }
 
   async forwardAsAttachment(): Promise<EMail> {
-    await this.email.loadAttachments();
+    await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     let a = new Attachment();
@@ -156,6 +156,17 @@ export class ComposeActions {
     redirect.html = this.email.html;
     redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
     return redirect;
+  }
+
+  async editAsNew(): Promise<EMail> {
+    await this.email.loadAttachments();
+    let clone = this.email.folder.account.newEMailFrom();
+    clone.to.addAll(this.email.to);
+    clone.cc.addAll(this.email.cc);
+    clone.subject = this.email.subject;
+    clone.html = this.email.html;
+    clone.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    return clone;
   }
 
   convertInlineAttachmentsURLs() {

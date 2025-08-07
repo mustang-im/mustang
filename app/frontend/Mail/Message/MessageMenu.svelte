@@ -19,6 +19,13 @@
   label={$t`Redirect`}
   tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
   icon={RedirectIcon} />
+{#if message.outgoing}
+  <MenuItem
+    onClick={editAsNew}
+    label={$t`Edit as new`}
+    tooltip={$t`Create a new message with the same content and recipients`}
+    icon={EditAsNewIcon} />
+{/if}
 <MenuItem
   onClick={deleteMessage}
   classes="danger"
@@ -58,6 +65,7 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ForwardIcon from "lucide-svelte/icons/forward";
   import RedirectIcon from "lucide-svelte/icons/move-right";
+  import EditAsNewIcon from "lucide-svelte/icons/iteration-ccw";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import TranslateIcon from "lucide-svelte/icons/languages";
@@ -94,6 +102,10 @@
   async function redirect() {
     let redirect = await message.compose.redirect();
     mailMustangApp.writeMail(redirect);
+  }
+  async function editAsNew() {
+    let clone = await message.compose.editAsNew();
+    mailMustangApp.writeMail(clone);
   }
 
   async function deleteMessage() {
