@@ -226,7 +226,7 @@
   }
 
   function setCursorDefault() {
-    if (mail.to.isEmpty && !mail.rawHTMLDangerous) {
+    if (mail.to.isEmpty) {
       return;
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
