@@ -3,7 +3,7 @@
   url={startURL}
   on:page-change={onPageChange}
   on:close={onClose}
-  {sessionSaveID}
+  sessionID={dialog.oAuth2.account?.webSessionID}
   {withURLbar}
   >
   <hbox class="account" slot="urlbar-left">
@@ -22,7 +22,6 @@
   export let dialog: OAuth2Tab | OAuth2Embed;
   export let withURLbar = true;
 
-  let sessionSaveID = "login:" + dialog.oAuth2.account?.id;
   let startURL: URLString;
 
   async function onPageChange(event: CustomEvent<URLString>) {

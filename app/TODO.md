@@ -103,9 +103,6 @@
 
 # WebApps
 
-* Session per app
-* Session of email account
-* Add app multiple times
 * Add custom app
   * Name
   * URL

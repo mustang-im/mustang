@@ -4,6 +4,7 @@ import appStore from "./webAppStore.json";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { MapColl, ArrayColl } from 'svelte-collections';
 import { showError } from "../../frontend/Util/error";
+import { filterUnique } from "../util/collections";
 
 export class WebApps {
   /** fullID -> AppCategory */
@@ -16,6 +17,15 @@ export class WebApps {
     if (this.apps.hasItems) {
       return;
     }
+    this.loadStore();
+    this.loadMyApps();
+    this.myApps.subscribe(() => {
+      this.categories.get("selectedApps").apps = filterUnique(this.myApps, (a, b) => a.id == b.id);
+      this.saveMyApps();
+    });
+  }
+
+  loadStore() {
     for (let json of appStore.categories) {
       let cat = WebAppCategory.fromJSON(json);
       this.categories.set(cat.fullID, cat);
@@ -25,24 +35,26 @@ export class WebApps {
       let apps = this.apps.contents.filter(app => app.categoryFullIDs.includes(category.fullID));
       category.apps.addAll(apps);
     }
+  }
 
+  loadMyApps() {
     try {
-      let configuredIDs = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("apps.selected"), null)), []);
-      for (let configuredID of configuredIDs) {
+      let configuredApps = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("webapps.selected"), null)), []);
+      for (let json of configuredApps) {
         try {
-          let app = this.apps.find(app => app.id == sanitize.nonemptystring(configuredID));
+          let app = WebAppListed.fromJSON(json);
           this.myApps.add(app);
         } catch (ex) {
-          console.log("Configured app not found in app store", ex);
+          console.log("Configured webapp could not be read", ex);
         }
       }
     } catch (ex) {
       showError(ex);
     }
-    this.myApps.subscribe(() => {
-      let myAppIDs = this.myApps.map(app => app.id).contents;
-      localStorage.setItem("apps.selected", JSON.stringify(myAppIDs));
-    });
-    this.categories.get("selectedApps").apps = this.myApps;
+  }
+
+  saveMyApps() {
+    let json = this.myApps.contents.map(app => app.toJSON());
+    localStorage.setItem("webapps.selected", JSON.stringify(json));
   }
 }

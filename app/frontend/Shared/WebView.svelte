@@ -1,5 +1,5 @@
 // #if [!WEBMAIL]
-<webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
+<webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden {partition} />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
 <iframe bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
@@ -53,6 +53,8 @@
   /** Size the <WebView> to the size of the content */
   export let autoSize = false;
   export let hidden = false;
+  /** The cookie storage. For `<webview partition="persist:...">` */
+  export let sessionID: string | null = null;
 
   /**
    * Which HTTP servers may be called automatically during the HTML load,
@@ -64,6 +66,8 @@
    * This does *not* limit user clicks on links like `<a href="https://...">`.
    */
   export let allowServerCalls: boolean | string = true;
+
+  $: partition = sessionID ? "persist:" + sessionID : undefined;
 
   onMount(() =>{
     if (autoSize) {

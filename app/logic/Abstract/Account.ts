@@ -106,6 +106,11 @@ export class Account extends Observable {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
 
+  /** The cookie store to use when loading this account. For `<webview partition="persist:...">` */
+  get webSessionID(): string | null {
+    return this.id;
+  }
+
   /** User needs a software license to use this account */
   needsLicense(): boolean {
     return false;
