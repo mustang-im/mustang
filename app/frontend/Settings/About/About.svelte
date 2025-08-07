@@ -9,13 +9,21 @@
   </T>
 </div>
 
+<vbox class="update">
+  <Update />
+</vbox>
+
 <script lang="ts">
-  import Icon from 'svelte-icon/Icon.svelte';
-  import logo from '../../asset/icon/general/logo.svg?raw';
   import { appName, appVersion, siteRoot } from '../../../logic/build';
-  import { t } from '../../../l10n/l10n';
+  import Update from './Update.svelte';
+  import Icon from 'svelte-icon/Icon.svelte';
   import T from '../../../l10n/T.svelte';
+  import logo from '../../asset/icon/general/logo.svg?raw';
+  import { t } from '../../../l10n/l10n';
 </script>
 
 <style>
+  .update {
+    margin-block-start: 24px;
+  }
 </style>

@@ -8,7 +8,8 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater } from "electron";
+import electronUpdater from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
@@ -17,6 +18,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+const { autoUpdater } = electronUpdater;
 
 let jpc: JPCWebSocket | null = null;
 
@@ -58,6 +60,8 @@ async function createSharedAppObject() {
     setAsDefaultApp,
     onScreenSharingSelect,
     restartApp,
+    checkForUpdate,
+    installUpdate,
     setTheme,
     openMenu,
     getConfigDir,
@@ -292,6 +296,37 @@ function isOSNotificationSupported(): boolean {
 function restartApp() {
   app.relaunch();
   app.quit();
+}
+
+/** @returns have update */
+async function checkForUpdate(): Promise<boolean | undefined> {
+  let result = await autoUpdater.checkForUpdates();
+  return result?.isUpdateAvailable;
+  /* return new Promise(async (resolve, reject) => {
+    let result = await autoUpdater.checkForUpdates();
+    if (result?.isUpdateAvailable) {
+      resolve(true);
+      return;
+    }
+    autoUpdater.once("update-available", () => {
+      resolve(true);
+    });
+    autoUpdater.once("update-not-available", () => {
+      resolve(false);
+    });
+    autoUpdater.once("error", reject);
+  });*/
+}
+
+async function installUpdate() {
+  await autoUpdater.downloadUpdate();
+  await new Promise((resolve, reject) => {
+    autoUpdater.once("update-downloaded", () => {
+      resolve(null);
+    });
+    autoUpdater.once("error", reject);
+  });
+  autoUpdater.quitAndInstall(true, true);
 }
 
 function setTheme(theme: "system" | "light" | "dark") {
