@@ -1,0 +1,6 @@
+provider: github
+protocol: https
+releaseType: release
+channel: mustang
+owner: mustang-im
+repo: mustang

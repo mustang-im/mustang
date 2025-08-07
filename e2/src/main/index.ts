@@ -7,6 +7,10 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
 
+if (is.dev) {
+  autoUpdater.forceDevUpdateConfig = true;
+}
+
 function createWindow(): void {
   try {
     startupBackend();
