@@ -107,8 +107,15 @@
   let monthWeekOptions: RadioOption[];
   let yearWeekOptions: RadioOption[];
 
-  $: $event.startTime, updateDateUI();
+  $: $event.startTime, $event.duration, updateDateUI();
   function updateDateUI() {
+    master.startEditing();
+    master.startTime = event.startTime;
+    master.duration = event.duration;
+    master.newRecurrenceRule(frequency, interval, week, weekdays);
+    week = master.recurrenceRule.week;
+    weekdays = master.recurrenceRule.weekdays?.slice() ?? [$event.startTime.getDay()];
+
     yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric", month: "long" })}`, value: 0 }];
     monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}. of every month`, value: 0 }];
 
@@ -131,17 +138,6 @@
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: 5 });
     }
 
-    if (week && (week < 5 || yearWeekOptions.length == 2)) {
-      week = weekno;
-    }
-
-    if (!weekdays.includes(event.startTime.getDay())) {
-      if (weekdays.length == 1) {
-        weekdays[0] = event.startTime.getDay();
-      } else {
-        weekdays.push(event.startTime.getDay());
-      }
-    }
     weekdayOptions = kAllWeekdays.map(weekday => ({
       value: weekday,
       disabled: weekday == event.startTime.getDay(),
