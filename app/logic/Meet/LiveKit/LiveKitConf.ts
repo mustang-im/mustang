@@ -16,7 +16,6 @@ export class LiveKitConf extends VideoConfMeeting {
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
   webSocketURL: URLString;
-  token: string;
   room: Room | null = null;
   mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
@@ -35,31 +34,6 @@ export class LiveKitConf extends VideoConfMeeting {
    * @throws OAuth2Error
    */
   async login(interactive: boolean, relogin = false): Promise<void> {
-    assert(this.account.controllerBaseURL, "Need controller URL");
-  }
-
-  protected async ky() {
-    assert(this.account.controllerBaseURL, "Need controller URL");
-    const headers: any = {
-      "Content-Type": "application/json",
-      "Origin": this.account.webFrontendBaseURL, // Controller uses this to find the room
-    };
-    return appGlobal.remoteApp.kyCreate({
-      prefixUrl: this.account.controllerBaseURL,
-      headers: headers,
-      timeout: 3000,
-      result: "json",
-    });
-  }
-
-  protected async httpPost(urlSuffix: string, sendJSON: any): Promise<any> {
-    let ky = await this.ky();
-    return await ky.post(urlSuffix, { json: sendJSON });
-  }
-
-  protected async httpGet(urlSuffix: string): Promise<any> {
-    let ky = await this.ky();
-    return await ky.get(urlSuffix);
   }
 
   async createNewConference() {
@@ -90,22 +64,34 @@ export class LiveKitConf extends VideoConfMeeting {
     this.state = MeetingState.JoinConference;
   }
 
+  protected async createParticipantInLiveKitCloudSandbox(): Promise<string> {
+    let myName = appGlobal.me.name;
+    assert(this.account.webFrontendBaseURL, "Need web frontend base URL");
+    let ky = await appGlobal.remoteApp.kyCreate({
+      headers: {
+        "Content-Type": "application/json",
+        "Origin": this.account.webFrontendBaseURL, // Controller uses this to find the room
+      },
+      timeout: 3000,
+      result: "json",
+    });
+    const e = encodeURIComponent;
+    let response = await ky.get(`https://cloud-api.livekit.io/api/sandbox/connection-details?roomName=${e(this.id)}&participantName=${e(myName)}`);
+    this.webSocketURL = response.serverUrl;
+    let participantToken = response.participantToken;
+    // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(participantToken)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
+    return participantToken;
+  }
+
   async start() {
     assert(this.id, "Need to create the conference first");
     await super.start();
-
-    let myName = appGlobal.me.name;
-    const e = encodeURIComponent;
-    let response = await this.httpGet(`connection-details?roomName=${e(this.id)}&participantName=${e(myName)}`);
-    this.webSocketURL = response.serverUrl;
-    this.token = response.participantToken;
-    // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(this.token)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
-    await this.joinAfterStart();
+    await this.joinAfterStart(await this.createParticipantInLiveKitCloudSandbox());
   }
 
-  protected async joinAfterStart() {
+  protected async joinAfterStart(participantToken: string) {
     this.room = new Room();
-    await this.room.connect(this.webSocketURL, this.token);
+    await this.room.connect(this.webSocketURL, participantToken);
     this.title = this.room.name;
     this.mediaDeviceStreams.localParticipant = this.room.localParticipant;
 
