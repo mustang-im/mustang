@@ -101,6 +101,29 @@
 * Unified inbox: Show account as tag or icon
 
 
+# WebApps
+
+* Session per app
+* Session of email account
+* Add app multiple times
+* Add custom app
+  * Name
+  * URL
+  * Icon (Default: Automatic from favicon of URL)
+  * For Meet: Other people can see the same document based on the URL
+  * For Integration:
+    * URL for email address search
+    * URL for email subject substring search
+    * URL for project search
+
+## During meeting
+* URL
+  * Catch clipboard with URL
+  * Share link via meeting
+  * Open URL shared
+* Share screen of Mustang (?)
+
+
 # Chat
 
 ## UI
