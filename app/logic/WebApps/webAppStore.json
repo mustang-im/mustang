@@ -64,6 +64,32 @@
       }
     },
     {
+      "id": "communication",
+      "parentID": null,
+      "fullID": "communication",
+      "name": {
+        "en": "Communication",
+        "de": "Kommunikation"
+      },
+      "description": {
+        "en": "Apps that allow you to talk with other humans",
+        "de": "Anwendungen, die helfen, mit anderen Menschen zu sprechen."
+      }
+    },
+    {
+      "id": "videoconf",
+      "parentID": "communication",
+      "fullID": "communication/videoconf",
+      "name": {
+        "en": "Video conference",
+        "de": "Video-Konferenz"
+      },
+      "description": {
+        "en": "Meet online with others",
+        "de": "Online-Meetings"
+      }
+    },
+    {
       "id": "graphics",
       "parentID": null,
       "fullID": "graphics",
@@ -162,6 +188,22 @@
       "homepage": "https://www.figma.com",
       "start": "https://www.figma.com/login",
       "icon": "https://s3-alpha.figma.com/hub/file/1481185752/fa4cd070-6a79-4e1b-b079-8b9b76408595-cover.png"
+    },
+    {
+      "id": "microsoft-teams",
+      "categoryFullIDs": [
+        "communication/videoconf"
+      ],
+      "name": {
+        "en": "Microsoft Teams"
+      },
+      "description": {
+        "en": "Office365 online video conference",
+        "de": "Office365 Online-Video-Konferenz"
+      },
+      "homepage": "www.microsoft.com/microsoft-teams/",
+      "start": "https://teams.microsoft.com",
+      "icon": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/Icon-Teams-28x281"
     },
     {
       "id": "collabora",
