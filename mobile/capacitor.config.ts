@@ -1,4 +1,5 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import { env } from 'node:process';
 
 const config: CapacitorConfig = {
   appId: "im.mustang.capa",
@@ -14,10 +15,10 @@ const config: CapacitorConfig = {
   },
   android: {
     buildOptions: {
-      keystorePath: process.env.KEYSTORE_PATH,
-      keystorePassword: process.env.KEYSTORE_PASS,
-      keystoreAlias: process.env.KEYSTORE_ALIAS,
-      keystoreAliasPassword: process.env.KEYSTORE_ALIAS_PASS,
+      keystorePath: env.KEYSTORE_PATH,
+      keystorePassword: env.KEYSTORE_PASS,
+      keystoreAlias: env.KEYSTORE_ALIAS,
+      keystoreAliasPassword: env.KEYSTORE_ALIAS_PASS,
     }
   }
 }
