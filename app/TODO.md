@@ -112,6 +112,9 @@
     * URL for email address search
     * URL for email subject substring search
     * URL for project search
+* Store: Add more apps
+* window.open()
+* Save/load last URL of app, in separate localStorage item
 
 ## During meeting
 * URL
