@@ -1,5 +1,5 @@
 import type { SettingsCategory } from "./SettingsCategory";
-import { settingsCategories } from "../SettingsCategories";
+import { accountSettings, settingsCategories } from "../SettingsCategories";
 import type { MustangApp } from "../../AppsBar/MustangApp";
 import type { Account } from "../../../logic/Abstract/Account";
 import { settingsMustangApp } from "./SettingsMustangApp";
@@ -31,6 +31,15 @@ export function getSettingsCategoryForApp(app: MustangApp) {
 
 export function openSettingsCategoryForApp(app: MustangApp) {
   let cat = getSettingsCategoryForApp(app);
+  selectedCategory.set(cat);
+  openApp(settingsMustangApp);
+}
+
+export function openSettingsCategoryForAccount(account: Account) {
+  // let mainCat = getAllSettingsCategories().find(cat => cat.accounts.contains(account));
+  let cat = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+  assert(cat, "Account not found in settings");
+  selectedAccount.set(account);
   selectedCategory.set(cat);
   openApp(settingsMustangApp);
 }
