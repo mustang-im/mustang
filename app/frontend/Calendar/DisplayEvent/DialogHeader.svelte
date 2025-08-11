@@ -132,7 +132,8 @@
   async function onDeleteRemainder() {
     event.parentEvent.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence(event.startTime);
+    event.truncateRecurrencesFromHere();
+    await event.save();
     $selectedEvent = null;
     onClose();
   }
