@@ -24,7 +24,7 @@ export class CardDAVPerson extends Person {
 
   fromDAVObject(entry: DAVObject) {
     convertVCardToPerson(entry.data, this);
-    this.url = new URL(entry.url, this.addressbook.addressbookURL).href;
+    this.url = new URL(entry.url, this.addressbook.url).href;
     this.syncState = entry.etag;
   }
 
@@ -53,7 +53,7 @@ export class CardDAVPerson extends Person {
         vCardString: vCard,
         filename,
       });
-      this.url = new URL(filename, this.addressbook.addressbookURL).href;
+      this.url = new URL(filename, this.addressbook.url).href;
     }
     await super.saveToServer();
   }

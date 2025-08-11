@@ -21,7 +21,7 @@
         <WorkspaceAccounts title={$t`Mail`} allAccounts={appGlobal.emailAccounts} accountSettingsID="mail" workspace={null} />
         <WorkspaceAccounts title={$t`Chat`} allAccounts={appGlobal.chatAccounts} accountSettingsID="chat" workspace={null} />
         <WorkspaceAccounts title={$t`Meet`} allAccounts={appGlobal.meetAccounts} accountSettingsID="meet" workspace={null} />
-        <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendars} accountSettingsID="calendar" workspace={null} />
+        <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendarAccounts} accountSettingsID="calendar" workspace={null} />
         <WorkspaceAccounts title={$t`Addressbook`} allAccounts={appGlobal.addressbooks} accountSettingsID="contacts" workspace={null} />
       </hbox>
     </HeaderGroupBox>
@@ -59,7 +59,9 @@
     appGlobal.emailAccounts.find(acc => !acc.workspace) ||
     appGlobal.chatAccounts.find(acc => !acc.workspace) ||
     appGlobal.meetAccounts.find(acc => !acc.workspace) ||
+    appGlobal.calendarAccounts.find(acc => !acc.workspace) ||
     appGlobal.calendars.find(acc => !acc.workspace) ||
+    appGlobal.addressbookAccounts.find(acc => !acc.workspace) ||
     appGlobal.addressbooks.find(acc => !acc.workspace) ||
     $changedWorkspace < 0; // Just to trigger refresh
 

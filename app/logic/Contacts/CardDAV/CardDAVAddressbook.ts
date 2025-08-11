@@ -1,25 +1,23 @@
 import { Addressbook } from "../Addressbook";
+import type { CardDAVAccount } from "./CardDAVAccount";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
-import { AuthMethod } from "../../Abstract/Account";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
-import { NotReached, assert, type URLString } from "../../util/util";
-import { gt } from "../../../l10n/l10n";
-import { ArrayColl, Collection } from "svelte-collections";
-import type { DAVClient, DAVAddressBook, DAVObject } from "tsdav";
+import type { URLString } from "../../util/util";
+import type { ArrayColl } from "svelte-collections";
+import type { DAVAddressBook, DAVObject } from "tsdav";
 
 export class CardDAVAddressbook extends Addressbook {
   readonly protocol: string = "carddav";
+  declare account: CardDAVAccount;
   canSync: boolean = true;
   declare readonly persons: ArrayColl<CardDAVPerson>;
   declare readonly groups: ArrayColl<CardDAVGroup>;
   /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */
-  addressbookURL: URLString;
+  url: URLString;
   davAddressbook: DAVAddressBook;
   ctag: string | null = null;
-  client: DAVClient;
   protected readonly syncLock = new Lock();
 
   newPerson(): CardDAVPerson {
@@ -29,65 +27,15 @@ export class CardDAVAddressbook extends Addressbook {
     return new CardDAVGroup(this);
   }
 
-  async login(interactive: true) {
-    let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
-    let usePassword = this.authMethod == AuthMethod.Password;
-    if (useOAuth2) {
-      assert(this.oAuth2, gt`Need OAuth2 configuration`);
-      if (!this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(interactive);
-      }
-    }
-    assert(usePassword || useOAuth2, gt`Unknown authentication method`);
-    let options = {
-      serverUrl: this.url,
-      authType: useOAuth2 ? "Oauth" : "Basic",
-      credentials: useOAuth2 ? {
-        access_token: this.oAuth2.accessToken,
-      } : {
-        username: this.username,
-        password: usePassword ? this.password : undefined,
-      },
-      defaultAccountType: "carddav",
-    };
-    this.client = await appGlobal.remoteApp.createWebDAVClient(options);
-    await this.client.login();
-  }
-
   get isLoggedIn(): boolean {
-    if (this.authMethod == AuthMethod.OAuth2) {
-      return this.oAuth2.isLoggedIn;
-    } else if (this.authMethod == AuthMethod.Password) {
-      return !!this.password;
-    } else {
-      throw new NotReached(gt`Unknown authentication method`);
-    }
-  }
-
-  async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
-    let lock = await this.syncLock.lock();
-    try {
-      return new ArrayColl(await this.client.fetchAddressBooks());
-    } finally {
-      lock.release();
-    }
+    return this.account.isLoggedIn;
   }
 
   async listContacts() {
     if (!this.dbID) {
       await this.save();
     }
-
-    if (!this.davAddressbook) {
-      let addressbooks = await this.listAddressbooks();
-      assert(addressbooks.hasItems, "No CardDAV addressbooks found");
-      // console.log("Found CardDAV address books", addressbooks.contents);
-      this.davAddressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
-      assert(this.davAddressbook, "Selected CardDAV addressbook URL not found");
-    }
-
     await this.sync();
-
     await this.save();
   }
 
@@ -96,7 +44,7 @@ export class CardDAVAddressbook extends Addressbook {
     try {
       this.persons.clear();
       this.groups.clear();
-      let vCardEntries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
+      let vCardEntries = await this.account.client.fetchVCards({ addressBook: this.davAddressbook });
       for (let vCardEntry of vCardEntries) {
         await this.addPerson(vCardEntry);
       }
@@ -114,13 +62,13 @@ export class CardDAVAddressbook extends Addressbook {
         data: undefined, // unused by function, and expensive to calculate
         id: undefined, // unused by function, and not passed by iCalEntry
       }));
-      let syncResponse = await this.client.smartCollectionSync({
+      let syncResponse = await this.account.client.smartCollectionSync({
         collection: {
-          url: this.addressbookURL,
+          url: this.url,
           ctag: this.ctag,
           syncToken: this.syncState,
           objects: localObjects,
-          objectMultiGet: (...args) => this.client.addressBookMultiGet(...args),
+          objectMultiGet: (...args) => this.account.client.addressBookMultiGet(...args),
         },
         method: 'webdav',
         detailedResult: true,
@@ -164,18 +112,18 @@ export class CardDAVAddressbook extends Addressbook {
   }
 
   getPersonByURL(relativeURL: URLString): CardDAVPerson | void {
-    let url = new URL(relativeURL, this.addressbookURL).href;
+    let url = new URL(relativeURL, this.url).href;
     return this.persons.find(p => p.url == url);
   }
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
-    this.addressbookURL = sanitize.url(json.addressbookURL);
+    this.url = sanitize.url(json.addressbookURL);
     this.ctag = sanitize.string(json.ctag, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
-    json.addressbookURL = this.addressbookURL;
+    json.addressbookURL = this.url;
     json.ctag = this.ctag;
     return json;
   }
