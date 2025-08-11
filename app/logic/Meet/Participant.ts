@@ -28,5 +28,7 @@ export enum ParticipantRole {
   User = "user",
   Guest = "guest",
   Agent = "agent",
+  /** User is in waiting room. He cannot listen nor publish. */
+  Waiting = "waiting",
   Invited = "invited",
 }

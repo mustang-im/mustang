@@ -17,6 +17,7 @@ export class LiveKitConf extends VideoConfMeeting {
   protected webSocket: WebSocket;
   webSocketURL: URLString;
   room: Room | null = null;
+  encryptionKey: string | null = null;
   mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
   constructor(account: LiveKitAccount) {
@@ -57,11 +58,36 @@ export class LiveKitConf extends VideoConfMeeting {
   async join(url: URLString) {
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
+    // Parse URL <http://meet.example.com/room/abcd/?key=34636436>
     assert(this.account.isMeetingURL(urlParsed), gt`This meeting URL is not supported`);
-    let roomID = urlParsed.pathname.replace("/rooms/", "");
-    assert(roomID.match(/^[a-zA-Z0-9\-]*$/), gt`Not a valid meeting invitation URL`);
-    this.id = roomID;
+    let paths = urlParsed.pathname.split("/").filter(c => !!c);
+    assert(paths[0] == "room", "Not a meeting room URL");
+    let roomName = paths[1];
+    assert(roomName, "Meeting room name is missing");
+    assert(roomName.match(/^[a-zA-Z0-9\-]*$/), gt`Not a valid meeting invitation URL`);
+    this.id = roomName;
+    let anchor = new URLSearchParams(urlParsed.hash);
+    this.encryptionKey = anchor.get("key");
     this.state = MeetingState.JoinConference;
+  }
+
+  async joinWithInvitation(url: URLString) {
+    await this.join(url);
+    let urlObj = new URL(url);
+    let anchor = new URLSearchParams(urlObj.hash);
+    let invitationToken = anchor.get("invitation");
+    let myName = anchor.get("name");
+
+    let tokenURL = "https://api.beonex.com/livekit-creator/meeting/join-from-invitation?" + new URLSearchParams({
+      roomName: this.id,
+      myName,
+      invitationToken,
+    }).toString();
+    let response = await fetch(tokenURL);
+    let tokens = await response.json();
+    console.log("invitation code result", tokens);
+    let joinToken = tokens.joinToken;
+    await this.joinAfterStart(joinToken);
   }
 
   protected async createParticipantInLiveKitCloudSandbox(): Promise<string> {
