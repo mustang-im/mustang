@@ -15,6 +15,7 @@
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
   import Browser from "../Browser.svelte";
+  import { PasswordFill } from "./PasswordFill";
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
@@ -23,10 +24,14 @@
   export let withURLbar = true;
 
   let startURL: URLString;
+  let passwordFill = new PasswordFill(dialog.oAuth2.account);
 
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;
     dialog.urlChanged(url);
+
+    let doc = (event.currentTarget as HTMLElement).ownerDocument;
+    passwordFill.onPageChange(doc);
   }
 
   function onClose() {
