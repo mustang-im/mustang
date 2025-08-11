@@ -13,7 +13,7 @@ import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { OAuth2 } from "../../Auth/OAuth2";
@@ -85,12 +85,12 @@ export class OWAAccount extends MailAccount {
         this.oAuth2 = new OWAAuth(this);
       }
       await this.oAuth2.login(interactive);
-      await this.listFolders();
+      await this.listFolders(true);
     } else {
       try {
-        await this.listFolders();
+        await this.listFolders(true);
       } catch (ex) {
-        if (!/^HTTP (401|440)/.test(ex.message)) {
+        if (!(ex instanceof LoginError)) {
           throw ex;
         }
         let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
@@ -106,7 +106,7 @@ export class OWAAccount extends MailAccount {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status} ${response.statusText}`);
         }
-        await this.listFolders();
+        await this.listFolders(true);
       }
     }
   }
@@ -214,8 +214,8 @@ export class OWAAccount extends MailAccount {
     await this.callOWA(request);
   }
 
-  async callOWA(aRequest: any): Promise<any> {
-    if (!this.hasLoggedIn) {
+  async callOWA(aRequest: any, forLogin?: true): Promise<any> {
+    if (!forLogin && !this.hasLoggedIn) {
       throw new LoginError(null, "Please login");
     }
     let url = this.url + 'service.svc';
@@ -263,26 +263,9 @@ export class OWAAccount extends MailAccount {
     return result;
   }
 
-  async listFolders(): Promise<void> {
+  async listFolders(forLogin?: true): Promise<void> {
     await this.throttle.throttle();
-    let lock = await this.semaphore.lock();
-    let sessionData: any;
-    try {
-      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, false);
-    } finally {
-      lock.release();
-    }
-    if (!sessionData) {
-      throw new Error("Authentication window was closed by user");
-    }
-    this.url = sessionData.owaURL ?? this.url;
-    let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
-    if (this.isThrottleError(result)) {
-      return await this.listFolders();
-    }
-    if (result.MessageText) {
-      throw new Error(result.MessageText);
-    }
+    let result = await this.callOWA(owaFindFoldersRequest(true), forLogin);
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of result.RootFolder.Folders) {

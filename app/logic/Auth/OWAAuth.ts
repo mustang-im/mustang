@@ -4,6 +4,7 @@ import type { OAuth2 } from "./OAuth2";
 import { OAuth2LoginNeeded } from "./OAuth2Error";
 import { OAuth2Tab } from "./UI/OAuth2Tab";
 import type { OWAAccount } from "../Mail/OWA/OWAAccount";
+import { owaFindFoldersRequest } from "../Mail/OWA/Request/OWAFolderRequests";
 import { appGlobal } from "../app";
 import { assert, NotReached, type URLString } from "../util/util";
 
@@ -65,7 +66,7 @@ export class OWAAuth extends WebBasedAuth {
 
   // Called from `startLogin()` during account setup
   async getAccessTokenFromAuthCode(authCode: string): Promise<string> {
-    await appGlobal.remoteApp.OWA.fetchSessionData(this.account.partition, this.account.url, false);
+    await this.account.callOWA(owaFindFoldersRequest(), true);
     return "";
   }
 
@@ -77,7 +78,7 @@ export class OWAAuth extends WebBasedAuth {
   // Called from `OAuth2Embed.urlChanged()` and `OAuth2Tab.urlChanged()`
   async isAuthDoneURL(url: URLString): Promise<boolean> {
     try {
-      await appGlobal.remoteApp.OWA.fetchSessionData(this.account.partition, this.account.url, false);
+      await this.account.callOWA(owaFindFoldersRequest(), true);
       this.isLoggedIn = true;
     } catch (ex) {
       this.isLoggedIn = false;
