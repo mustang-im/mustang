@@ -41,15 +41,15 @@ export class OAuth2 extends Observable {
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
-  protected refreshToken?: string;
+  refreshToken?: string;
   @notifyChangedProperty
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
-  protected ui: OAuth2UI | null = null;
+  ui: OAuth2UI | null = null;
 
   expiresAt: Date | null = null;
-  protected expiryTimout: NodeJS.Timeout;
+  expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
   idTokenCallback: (idToken: string, oAuth2: OAuth2) => void;
 
@@ -196,7 +196,7 @@ export class OAuth2 extends Observable {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
+  async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
     if (this.clientSecret) {
@@ -274,7 +274,7 @@ export class OAuth2 extends Observable {
   }
 
   /** Helper for auth Done URL */
-  isAuthDoneURL(url: URLString): boolean {
+  async isAuthDoneURL(url: URLString): Promise<boolean> {
     let urlParams = Object.fromEntries(new URL(url).searchParams);
     console.log("OAuth2 page change to", url, "doneURL is", this.authDoneURL, "matches", this.authDoneURL == url,
       "is auth done", url.startsWith(this.authDoneURL) && this.verificationToken && urlParams.state == this.verificationToken);
@@ -357,17 +357,17 @@ export class OAuth2 extends Observable {
   /**
    * @returns refreshToken (or null, if not available)
    */
-  protected async getRefreshTokenFromStorage(): Promise<string | null> {
+  async getRefreshTokenFromStorage(): Promise<string | null> {
     return await getPassword(this.storageKey);
   }
-  protected async deleteRefreshTokenFromStorage(): Promise<void> {
+  async deleteRefreshTokenFromStorage(): Promise<void> {
     await deletePassword(this.storageKey);
   }
-  protected async storeRefreshToken(refreshToken: string): Promise<void> {
+  async storeRefreshToken(refreshToken: string): Promise<void> {
     assert(refreshToken, "Nothing to store");
     await setPassword(this.storageKey, refreshToken);
   }
-  protected get storageKey(): string {
+  get storageKey(): string {
     let host = new URL(this.tokenURL).host.replaceAll(".", "-");
     let username = this.account.username.replace(/@/, "-").replaceAll(".", "-");
     return `oauth2.refreshToken.${host}.${username}`;

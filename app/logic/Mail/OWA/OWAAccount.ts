@@ -7,7 +7,7 @@ import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
 import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotifications";
 import { OWAOffice365Notifications } from "./Notification/OWAOffice365Notifications";
-import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
@@ -17,6 +17,9 @@ import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import type { OAuth2 } from "../../Auth/OAuth2";
+import { OAuth2UIMethod } from "../../Auth/UI/OAuth2UIMethod";
+import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
@@ -61,7 +64,7 @@ export class OWAAccount extends MailAccount {
    * multiple OWA accounts for the same host.
    */
   get partition(): string {
-    return 'persist:login:' + this.id;
+    return 'persist:' + this.id;
   }
 
   // See below as to why this doesn't use OAuth2.
@@ -70,7 +73,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async verifyLogin(): Promise<void> {
-    await this.loginCommon(true);
+    await this.loginCommon(false);
   }
 
   /**
@@ -79,9 +82,11 @@ export class OWAAccount extends MailAccount {
    */
   protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      // The backend has the logic for posing the login page
-      // using the correct cookie jar and auto-filling it.
-      await this.listFolders(interactive);
+      if (!this.oAuth2) {
+        this.oAuth2 = new OWAAuth(this);
+      }
+      await this.oAuth2.login(interactive);
+      await this.listFolders();
     } else {
       try {
         await this.listFolders();
@@ -107,7 +112,7 @@ export class OWAAccount extends MailAccount {
     }
   }
 
-  async login(interactive: boolean, verifyOnly?: boolean): Promise<void> {
+  async login(interactive: boolean): Promise<void> {
     await ensureLicensed();
     await super.login(interactive);
     await this.loginCommon(interactive);
@@ -148,7 +153,7 @@ export class OWAAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
-    return appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    return this.oAuth2 ? this.oAuth2.logout() : appGlobal.remoteApp.OWA.clearStorageData(this.partition);
   }
 
   needsLicense(): boolean {
@@ -255,16 +260,12 @@ export class OWAAccount extends MailAccount {
     return result;
   }
 
-  async listFolders(interactive?: boolean): Promise<void> {
-    let autofillJS: string | null = "";
-    if (interactive) {
-      autofillJS = owaAutoFillLoginPage(this.username, this.password);
-    }
+  async listFolders(): Promise<void> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let sessionData: any;
     try {
-      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, false);
     } finally {
       lock.release();
     }
@@ -281,7 +282,7 @@ export class OWAAccount extends MailAccount {
     }
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
-    for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
+    for (let folder of result.RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;

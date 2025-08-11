@@ -2,22 +2,24 @@
   <hbox class="header">
     <hbox class="emailAddress font-small">{$account.emailAddress}</hbox>
     <hbox flex />
-    <hbox class="buttons">
-      {#if oAuth2Running != OAuth2UIMethod.Embed}
-        <Button label={$t`Login inline *=> within the same application window`}
-          onClick={() => run(loginEmbed)}
+    {#if account.oAuth2 instanceof OAuth2}
+      <hbox class="buttons">
+        {#if oAuth2Running != OAuth2UIMethod.Embed}
+          <Button label={$t`Login inline *=> within the same application window`}
+            onClick={() => run(loginEmbed)}
+            errorCallback={showError}
+            />
+        {/if}
+        <Button label={$t`Login in browser`}
+          onClick={() => run(loginBrowser)}
           errorCallback={showError}
           />
-      {/if}
-      <Button label={$t`Login in browser`}
-        onClick={() => run(loginBrowser)}
-        errorCallback={showError}
-        />
-      <Button label={showConfirmCopied ? $t`URL copied` : $t`Copy URL`}
-        onClick={() => run(loginCopyURL)}
-        errorCallback={showError}
-        />
-    </hbox>
+        <Button label={showConfirmCopied ? $t`URL copied` : $t`Copy URL`}
+          onClick={() => run(loginCopyURL)}
+          errorCallback={showError}
+          />
+      </hbox>
+    {/if}
   </hbox>
   {#if oAuth2Running == OAuth2UIMethod.Embed && embed}
     <vbox class="browser">
@@ -40,8 +42,9 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { OAuth2 } from "../../../logic/Auth/OAuth2";
   import { OAuth2UIMethod } from "../../../logic/Auth/UI/OAuth2UIMethod";
-  import { OAuth2UI } from "../../../logic/Auth/UI/OAuth2UI";
+  import type { OAuth2UI } from "../../../logic/Auth/UI/OAuth2UI";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
   import { OAuth2SystemBrowser } from "../../../logic/Auth/UI/OAuth2SystemBrowser";
   import { OAuth2Localhost } from "../../../logic/Auth/UI/OAuth2Localhost";

@@ -26,8 +26,8 @@ export class OAuth2Embed extends OAuth2UI {
       this.failFunc = reject;
     });
   }
-  urlChanged(url: URLString) {
-    if (this.oAuth2.isAuthDoneURL(url)) {
+  async urlChanged(url: URLString) {
+    if (await this.oAuth2.isAuthDoneURL(url)) {
       this.success(url);
     }
   }

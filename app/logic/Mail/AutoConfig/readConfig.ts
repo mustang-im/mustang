@@ -14,6 +14,8 @@ import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileS
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
 import { SetupInfo } from "./SetupInfo";
+import { OWAAccount } from "../OWA/OWAAccount";
+import { OWAAuth } from "../../Auth/OWAAuth";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
@@ -164,6 +166,9 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
 }
 
 function getOAuth2Config(account: Account, autoConfigXML: any): OAuth2 {
+  if (account instanceof OWAAccount) {
+    return new OWAAuth(account);
+  }
   let oAuth2: OAuth2;
   // try built-in
   let hostname = account instanceof TCPAccount ? account.hostname : account.url ? new URL(account.url).hostname : null;

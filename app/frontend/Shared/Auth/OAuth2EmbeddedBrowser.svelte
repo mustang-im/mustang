@@ -1,6 +1,7 @@
 <Browser
   title={$t`Authentication`}
   url={startURL}
+  autofill={owaAutoFillLoginPage(dialog.oAuth2.account.username, dialog.oAuth2.account.password)}
   on:page-change={onPageChange}
   on:close={onClose}
   sessionID={dialog.oAuth2.account?.webSessionID}
@@ -15,6 +16,7 @@
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
   import Browser from "../Browser.svelte";
+  import { owaAutoFillLoginPage } from "../../../logic/Mail/OWA/Login/OWALoginAutoFill";
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
@@ -26,7 +28,7 @@
 
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;
-    dialog.urlChanged(url);
+    await dialog.urlChanged(url);
   }
 
   function onClose() {

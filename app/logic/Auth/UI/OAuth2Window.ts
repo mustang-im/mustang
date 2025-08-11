@@ -22,9 +22,9 @@ export class OAuth2Window extends OAuth2UI {
     return await new Promise((resolve, reject) => {
       let ipcRenderer = (window as any).electron.ipcRenderer; // TODO use JPC, or remove window
       let weClosed = false;
-      let onNavigation = (event, url: URLString) => {
+      let onNavigation = async (event, url: URLString) => {
         try {
-          if (this.oAuth2.isAuthDoneURL(url)) {
+          if (await this.oAuth2.isAuthDoneURL(url)) {
             ipcRenderer.removeListener('oauth2-navigate', onNavigation);
             ipcRenderer.removeListener('oauth2-close', onClose);
             weClosed = true;
