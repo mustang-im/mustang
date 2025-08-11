@@ -1,23 +1,29 @@
+import { WebAuth } from "./WebAuth";
 import type { OAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import type { OAuth2 } from "./OAuth2";
 import { OAuth2LoginNeeded } from "./OAuth2Error";
 import { OAuth2Tab } from "./UI/OAuth2Tab";
-import type { OWAAccount} from "../Mail/OWA/OWAAccount";
+import type { OWAAccount } from "../Mail/OWA/OWAAccount";
 import { appGlobal } from "../app";
-import { Observable } from "../util/Observable";
-import { assert, type URLString } from "../util/util";
+import { assert, NotReached, type URLString } from "../util/util";
 
 /// Class to perform fake OAuth2 to log into OWA web interface via browser
-export class OWAAuth extends Observable implements OAuth2 {
+export class OWAAuth extends WebAuth {
+  declare account: OWAAccount;
   ui: OAuth2Tab | null = null;
   isLoggedIn = false;
 
-  constructor(public account: OWAAccount) {
-    super();
+  constructor(account: OWAAccount) {
+    super(account);
   }
 
   // Called from `TBProfile.readMailAccount()`
   setTokenURLPasswordAuth(url: string | null | undefined) {
+  }
+
+  // Unused
+  get authorizationHeader(): never {
+    throw new NotReached();
   }
 
   // Called from `OWAAccount.loginCommon()`
@@ -52,6 +58,11 @@ export class OWAAuth extends Observable implements OAuth2 {
     return appGlobal.remoteApp.OWA.clearStorageData(this.account.partition);
   }
 
+  // Unused
+  async reset(): Promise<never> {
+    throw new NotReached();
+  }
+
   // Called from `startLogin()` during account setup
   async getAccessTokenFromAuthCode(authCode: string): Promise<string> {
     await appGlobal.remoteApp.OWA.fetchSessionData(this.account.partition, this.account.url, false);
@@ -82,33 +93,4 @@ export class OWAAuth extends Observable implements OAuth2 {
   // Called from `MailAccount.toConfigJSON()`
   toConfigJSON() {
   }
-
-  // Unused stuff but needed to fake out TypeScript for implements OAuth2
-  // Can't actually derive from OAuth2 because all its assertions would fail
-  // Note: This requires all of OAuth2's members to be public
-  tokenURL: URLString;
-  authURL: URLString;
-  authDoneURL: URLString;
-  scope: string;
-  clientID: string;
-  clientSecret: string | null;
-  doPKCE: boolean;
-  idToken: string;
-  verificationToken: string;
-  uiMethod: OAuth2UIMethod;
-  expiresAt: Date | null;
-  expiryTimout: NodeJS.Timeout; // sic
-  refreshErrorCallback: (ex : Error) => void;
-  idTokenCallback: (idToken: string, oAuth2: OAuth2) => void;
-  authorizationHeader: string;
-  loginWithPassword: (username: string, password: string) => Promise<string>;
-  reset: () => Promise<void>;
-  getAccessTokenFromRefreshToken: (refreshToken: string) => Promise<string>;
-  getAccessTokenFromParams: (params: any, additionaHeaders?: any, tokenURL?: string) => Promise<string>;
-  refreshInSeconds: (seconds: number) => void;
-  stop: () => void;
-  getRefreshTokenFromStorage: () => Promise<string | null>;
-  deleteRefreshTokenFromStorage: () => Promise<void>;
-  storeRefreshToken: (refreshToken: string) => Promise<void>;
-  storageKey: string;
 }

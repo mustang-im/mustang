@@ -13,6 +13,7 @@ import type { OAuth2 } from "../OAuth2";
  * this time with credentials.
  */
 export class OAuth2Redirect extends OAuth2UI {
+  declare oAuth2: OAuth2;
   /** You must call this before calling `oAuth2.login(true)` */
   static load(oAuth2: OAuth2) {
     // let storeIDToken = getLocalStorage("oauth2.webmail.idToken");

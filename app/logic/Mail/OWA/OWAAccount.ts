@@ -15,7 +15,6 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
-import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2UIMethod } from "../../Auth/UI/OAuth2UIMethod";
@@ -64,7 +63,7 @@ export class OWAAccount extends MailAccount {
    * multiple OWA accounts for the same host.
    */
   get partition(): string {
-    return 'persist:' + this.id;
+    return 'persist:' + this.webSessionID;
   }
 
   // See below as to why this doesn't use OAuth2.
@@ -73,7 +72,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async verifyLogin(): Promise<void> {
-    await this.loginCommon(false);
+    await this.loginCommon(true);
   }
 
   /**
