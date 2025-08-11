@@ -164,7 +164,7 @@
     margin-inline-end: 24px;
   }
   .browser {
-    min-height: 540px; // OWA login is slightly taller than regular oAuth2
+    min-height: 540px; /* OWA login is slightly taller than regular oAuth2 */
     min-width: 500px;
   }
   .waiting {
