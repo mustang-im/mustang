@@ -1,6 +1,7 @@
+import type { Account } from "../Abstract/Account";
 
-export function owaAutoFillLoginPage(username = "", password = "") {
-  return `(${autoFillPageScript})(${JSON.stringify(username)}, ${JSON.stringify(password)})`;
+export function autoFillLoginPage(account: Account) {
+  return `(${autoFillPageScript})(${JSON.stringify(account.username ?? "")}, ${JSON.stringify(account.password ?? "")})`;
 }
 
 /** This script will be exported as string and executed within the login page.
