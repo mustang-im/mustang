@@ -81,10 +81,13 @@ export class OWACalendar extends Calendar {
       let eventIDs: string[] = [];
       for (let item of result.RootFolder.Items) {
         let event = this.getEventByItemID(item.ItemId.Id);
-        if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime).getTime()) {
+        if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime, null)?.getTime()) {
+          // Our local event is already up-to-date,
+          // so we just add it directly to our results.
           events.add(event);
           events.addAll(event.exceptions);
         } else {
+          // This is a new or updated event that we need to fetch.
           eventIDs.push(item.ItemId.Id);
         }
       }
