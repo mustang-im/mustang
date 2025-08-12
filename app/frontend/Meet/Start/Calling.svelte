@@ -9,7 +9,7 @@
             {$t`Do you want to call?`}
           {:else if $meeting.state == MeetingState.OutgoingCall}
             {$t`You're calling...`}
-          {:else if $meeting.state == MeetingState.IncomingCall}
+          {:else if $meeting.state == MeetingState.IncomingCall} <!---->
           {/if}
         </hbox>
         <hbox class="who">
@@ -25,8 +25,8 @@
           {/if}
         </hbox>
         <hbox class="what">
-          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-          {:else if $meeting.state == MeetingState.OutgoingCall}
+          {#if $meeting.state == MeetingState.OutgoingCallConfirm} <!---->
+          {:else if $meeting.state == MeetingState.OutgoingCall} <!---->
           {:else if $meeting.state == MeetingState.IncomingCall}
             {$t`is calling you...`}
           {/if}

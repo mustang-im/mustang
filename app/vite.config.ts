@@ -22,7 +22,7 @@ export default defineConfig({
         PROPRIETARY: includeProprietary ? true : undefined,
       },
     }),
-    nodePolyfills({ include: ['buffer'], globals: { global: true, process: webMail } }),
+    nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
     olm,
     sentryVitePlugin({
