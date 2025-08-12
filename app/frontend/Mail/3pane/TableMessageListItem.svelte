@@ -16,7 +16,9 @@
 </hbox>
 <hbox class="direction">
   {#if $message.outgoing}
-    <OutgoingIcon size={16} />
+    <OutgoingIcon size={16} class="outgoing" />
+  {:else if $message.isReplied}
+    <ReplyIcon size={16} class="reply" />
   {/if}
 </hbox>
 <hbox class="correspondent"
@@ -109,6 +111,7 @@
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
+  import ReplyIcon from "lucide-svelte/icons/reply";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
@@ -223,9 +226,13 @@
   .direction {
     align-items: center;
   }
-  .direction :global(svg) {
+  .direction :global(svg.outgoing) {
     stroke-width: 1px;
     color: darkred;
+  }
+  .direction :global(svg.reply) {
+    stroke-width: 1px;
+    color: grey;
   }
   .star :global(svg) {
     stroke-width: 1px;
