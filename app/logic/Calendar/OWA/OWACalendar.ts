@@ -78,7 +78,17 @@ export class OWACalendar extends Calendar {
         break;
       }
       request.Body.Paging.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
-      await this.getEvents(result.RootFolder.Items.map(item => item.ItemId.Id), events);
+      let eventIDs: string[] = [];
+      for (let item of result.RootFolder.Items) {
+        let event = this.getEventByItemID(item.ItemId.Id);
+        if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime).getTime()) {
+          events.add(event);
+          events.addAll(event.exceptions);
+        } else {
+          eventIDs.push(item.ItemId.Id);
+        }
+      }
+      await this.getEvents(eventIDs, events);
     }
   }
 

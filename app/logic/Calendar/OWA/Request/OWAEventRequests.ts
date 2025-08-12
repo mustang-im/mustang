@@ -112,6 +112,10 @@ export function owaFindEventsRequest(folderID: string, maxFetchCount: number): O
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
       BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:LastModifiedTime",
+      }],
     },
     ParentFolderIds: [{
       __type: "DistinguishedFolderId:#Exchange",
