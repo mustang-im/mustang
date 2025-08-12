@@ -1,7 +1,7 @@
 import type { Account } from "../Abstract/Account";
 
 export function autoFillLoginPage(account: Account) {
-  return `(${autoFillPageScript})(${JSON.stringify(account.username || "")}, ${JSON.stringify(account.password || "")})`;
+  return `(${autoFillPageScript})(${JSON.stringify(account.username ?? "")}, ${JSON.stringify(account.password ?? "")})`;
 }
 
 /** This script will be exported as string and executed within the login page.
