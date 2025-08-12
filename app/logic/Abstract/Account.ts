@@ -1,5 +1,5 @@
 import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
-import type { WebAuth } from "../Auth/WebAuth";
+import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
@@ -29,7 +29,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
   @notifyChangedProperty
-  oAuth2: WebAuth = null;
+  oAuth2: WebBasedAuth = null;
   @notifyChangedProperty
   password: string | null = null;
   @notifyChangedProperty

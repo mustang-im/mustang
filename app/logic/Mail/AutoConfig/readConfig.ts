@@ -15,7 +15,7 @@ import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts"
 import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
 import { SetupInfo } from "./SetupInfo";
 import { OWAAccount } from "../OWA/OWAAccount";
-import type { WebAuth } from "../../Auth/WebAuth";
+import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -150,7 +150,7 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
     try {
       account.authMethod = authMethod;
       if (account.authMethod == AuthMethod.OAuth2) {
-        account.oAuth2 = getWebAuthConfig(account, fullXML); // can throw
+        account.oAuth2 = getAuthConfig(account, fullXML); // can throw
       }
       break; // success -> use this auth method
     } catch (ex) {
@@ -166,7 +166,7 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
   return account;
 }
 
-function getWebAuthConfig(account: Account, autoConfigXML: any): WebAuth {
+function getAuthConfig(account: Account, autoConfigXML: any): WebBasedAuth {
   if (account instanceof OWAAccount) {
     return new OWAAuth(account);
   }

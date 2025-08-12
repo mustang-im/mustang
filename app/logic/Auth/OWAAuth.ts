@@ -1,4 +1,4 @@
-import { WebAuth } from "./WebAuth";
+import { WebBasedAuth } from "./WebBasedAuth";
 import type { OAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import type { OAuth2 } from "./OAuth2";
 import { OAuth2LoginNeeded } from "./OAuth2Error";
@@ -7,8 +7,8 @@ import type { OWAAccount } from "../Mail/OWA/OWAAccount";
 import { appGlobal } from "../app";
 import { assert, NotReached, type URLString } from "../util/util";
 
-/// Class to perform fake OAuth2 to log into OWA web interface via browser
-export class OWAAuth extends WebAuth {
+/** Log into OWA web interface via browser. Mimics the `OAuth2` API. */
+export class OWAAuth extends WebBasedAuth {
   declare account: OWAAccount;
   ui: OAuth2Tab | null = null;
   isLoggedIn = false;

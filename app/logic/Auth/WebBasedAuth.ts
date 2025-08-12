@@ -3,7 +3,7 @@ import { Observable } from "../util/Observable";
 import type { URLString } from "../util/util";
 
 // Interface for authentication methods that use web pages, i.e. OWA and oAuth2.
-export abstract class WebAuth extends Observable {
+export abstract class WebBasedAuth extends Observable {
   account: Account;
   authDoneURL: URLString;
   accessToken?: string;

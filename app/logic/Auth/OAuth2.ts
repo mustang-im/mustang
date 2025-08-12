@@ -1,4 +1,4 @@
-import { WebAuth } from "./WebAuth";
+import { WebBasedAuth } from "./WebBasedAuth";
 import { newOAuth2UI, OAuth2UIMethod, mapBackOAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { OAuth2UI } from "./UI/OAuth2UI";
@@ -27,7 +27,7 @@ import { production } from "../build";
  * Before dropping (disposing of) this object, please call stop(). Otherwise,
  * the token will continue to be refreshed.
  */
-export class OAuth2 extends WebAuth {
+export class OAuth2 extends WebBasedAuth {
   /** OAuth2 base URL */
   tokenURL: URLString;
   tokenURLPasswordAuth?: URLString;
@@ -41,15 +41,15 @@ export class OAuth2 extends WebAuth {
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
-  refreshToken?: string;
+  protected refreshToken?: string;
   @notifyChangedProperty
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
-  ui: OAuth2UI | null = null;
+  protected ui: OAuth2UI | null = null;
 
   expiresAt: Date | null = null;
-  expiryTimout: NodeJS.Timeout;
+  protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
   idTokenCallback: (idToken: string, oAuth2: OAuth2) => void;
 
@@ -195,7 +195,7 @@ export class OAuth2 extends WebAuth {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
+  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
     if (this.clientSecret) {
@@ -356,17 +356,17 @@ export class OAuth2 extends WebAuth {
   /**
    * @returns refreshToken (or null, if not available)
    */
-  async getRefreshTokenFromStorage(): Promise<string | null> {
+  protected async getRefreshTokenFromStorage(): Promise<string | null> {
     return await getPassword(this.storageKey);
   }
-  async deleteRefreshTokenFromStorage(): Promise<void> {
+  protected async deleteRefreshTokenFromStorage(): Promise<void> {
     await deletePassword(this.storageKey);
   }
-  async storeRefreshToken(refreshToken: string): Promise<void> {
+  protected async storeRefreshToken(refreshToken: string): Promise<void> {
     assert(refreshToken, "Nothing to store");
     await setPassword(this.storageKey, refreshToken);
   }
-  get storageKey(): string {
+  protected get storageKey(): string {
     let host = new URL(this.tokenURL).host.replaceAll(".", "-");
     let username = this.account.username.replace(/@/, "-").replaceAll(".", "-");
     return `oauth2.refreshToken.${host}.${username}`;
