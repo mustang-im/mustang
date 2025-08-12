@@ -1,3 +1,4 @@
+import { WebBasedAuth } from "./WebBasedAuth";
 import { newOAuth2UI, OAuth2UIMethod, mapBackOAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { OAuth2UI } from "./UI/OAuth2UI";
@@ -5,7 +6,7 @@ import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordLocalStorage";
 import { appGlobal } from "../app";
-import { Observable, notifyChangedProperty } from "../util/Observable";
+import { notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
 import pkceChallenge from "pkce-challenge";
@@ -26,8 +27,7 @@ import { production } from "../build";
  * Before dropping (disposing of) this object, please call stop(). Otherwise,
  * the token will continue to be refreshed.
  */
-export class OAuth2 extends Observable {
-  account: Account;
+export class OAuth2 extends WebBasedAuth {
   /** OAuth2 base URL */
   tokenURL: URLString;
   tokenURLPasswordAuth?: URLString;
@@ -54,12 +54,11 @@ export class OAuth2 extends Observable {
   idTokenCallback: (idToken: string, oAuth2: OAuth2) => void;
 
   constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null, doPKCE = false) {
-    super();
+    super(account);
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
     assert(!authDoneURL || authDoneURL?.startsWith("https://") || authDoneURL?.startsWith("http://"), "Need OAuth2 login finish URL");
     assert(scope, "Need OAuth2 scope");
-    this.account = account;
     this.tokenURL = tokenURL;
     this.authURL = authURL;
     this.authDoneURL = authDoneURL ?? this.authDoneURL;
@@ -274,7 +273,7 @@ export class OAuth2 extends Observable {
   }
 
   /** Helper for auth Done URL */
-  isAuthDoneURL(url: URLString): boolean {
+  async isAuthDoneURL(url: URLString): Promise<boolean> {
     let urlParams = Object.fromEntries(new URL(url).searchParams);
     console.log("OAuth2 page change to", url, "doneURL is", this.authDoneURL, "matches", this.authDoneURL == url,
       "is auth done", url.startsWith(this.authDoneURL) && this.verificationToken && urlParams.state == this.verificationToken);

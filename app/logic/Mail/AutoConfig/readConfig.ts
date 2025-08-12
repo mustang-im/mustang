@@ -14,6 +14,9 @@ import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileS
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
 import { SetupInfo } from "./SetupInfo";
+import { OWAAccount } from "../OWA/OWAAccount";
+import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
+import { OWAAuth } from "../../Auth/OWAAuth";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
@@ -147,7 +150,7 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
     try {
       account.authMethod = authMethod;
       if (account.authMethod == AuthMethod.OAuth2) {
-        account.oAuth2 = getOAuth2Config(account, fullXML); // can throw
+        account.oAuth2 = getAuthConfig(account, fullXML); // can throw
       }
       break; // success -> use this auth method
     } catch (ex) {
@@ -163,7 +166,10 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
   return account;
 }
 
-function getOAuth2Config(account: Account, autoConfigXML: any): OAuth2 {
+function getAuthConfig(account: Account, autoConfigXML: any): WebBasedAuth {
+  if (account instanceof OWAAccount) {
+    return new OWAAuth(account);
+  }
   let oAuth2: OAuth2;
   // try built-in
   let hostname = account instanceof TCPAccount ? account.hostname : account.url ? new URL(account.url).hostname : null;

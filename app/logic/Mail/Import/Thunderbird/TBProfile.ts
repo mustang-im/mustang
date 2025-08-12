@@ -13,6 +13,7 @@ import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
 import { OAuth2URLs } from "../../../Auth/OAuth2URLs";
 import { OAuth2 } from "../../../Auth/OAuth2";
+import { OWAAuth } from "../../../Auth/OWAAuth";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, NotReached } from "../../../util/util";
@@ -105,7 +106,7 @@ export class ThunderbirdProfile {
         }
         let url = OAuth2URLs.find(url => url.hostnames.includes(hostname));
         assert(url, `${acc.name}: Need OAuth2 config for host ${hostname}`);
-        acc.oAuth2 = new OAuth2(
+        acc.oAuth2 = acc instanceof OWAAccount ? new OWAAuth(acc) : new OAuth2(
           acc as any as Account,
           url.tokenURL,
           url.authURL,

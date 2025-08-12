@@ -29,9 +29,9 @@ export class OAuth2Tab extends OAuth2UI {
       this.failFunc = reject;
     });
   }
-  urlChanged(url: URLString) {
+  async urlChanged(url: URLString) {
     // console.log("OAuth2 page change to", url);
-    if (this.oAuth2.isAuthDoneURL(url)) {
+    if (await this.oAuth2.isAuthDoneURL(url)) {
       this.success(url);
     }
   }

@@ -43,6 +43,7 @@
   /** The cookie storage. For `<webview partition="persist:...">` */
   export let sessionID: string;
   export let withURLbar = true;
+  export let autofill: string;
 
   $: partition = sessionID ? "persist:" + sessionID : undefined;
 
@@ -68,6 +69,9 @@
     });
     webviewE.addEventListener("did-stop-loading", () => {
       isLoading = false;
+      if (autofill) {
+        webviewE.executeJavaScript(autofill);
+      }
     });
   }
 
