@@ -82,7 +82,7 @@ export class OWACalendar extends Calendar {
       for (let item of result.RootFolder.Items) {
         let event = this.getEventByItemID(item.ItemId.Id);
         if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime, null)?.getTime()) {
-          // Our local event is already up-to-date, so we just add it directly to our results.
+          // Our local event is up-to-date, so just add it directly to the results.
           events.add(event);
           events.addAll(event.exceptions);
         } else {
