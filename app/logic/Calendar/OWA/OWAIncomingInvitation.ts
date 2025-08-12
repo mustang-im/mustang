@@ -16,7 +16,7 @@ const ResponseTypes: Record<InvitationResponseInMessage, string> = {
 export class OWAIncomingInvitation extends IncomingInvitation {
   declare readonly calendar: OWACalendar;
   declare readonly message: OWAEMail;
-  readonly itemID: string | void;
+  readonly itemID: string | undefined;
 
   constructor(calendar: OWACalendar, message: OWAEMail) {
     super(calendar, message);

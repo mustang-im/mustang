@@ -42,7 +42,7 @@ export class OWAAccount extends MailAccount {
    * But we have to special-case the root folder,
    * since Mustang doesn't use a dedicated root folder object.
    */
-  msgFolderRootID: string | void;
+  msgFolderRootID: string | undefined;
   @notifyChangedProperty
   hasLoggedIn = false;
   protected notifications: OWANotifications;

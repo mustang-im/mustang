@@ -163,7 +163,7 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
-  getPersonByURL(relativeURL: URLString): CardDAVPerson | void {
+  getPersonByURL(relativeURL: URLString): CardDAVPerson | undefined {
     let url = new URL(relativeURL, this.addressbookURL).href;
     return this.persons.find(p => p.url == url);
   }

@@ -184,7 +184,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  protected getPersonByItemID(id: string): EWSPerson | void {
+  protected getPersonByItemID(id: string): EWSPerson | undefined {
     return this.persons.find(p => p.itemID == id);
   }
 
@@ -231,7 +231,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  protected getGroupByItemID(id: string): EWSGroup | void {
+  protected getGroupByItemID(id: string): EWSGroup | undefined {
     return this.groups.find(p => p.itemID == id);
   }
 

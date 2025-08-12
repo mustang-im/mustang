@@ -127,7 +127,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     this.account.addPingable(this);
   }
 
-  getPersonByServerID(id: string): ActiveSyncPerson | void {
+  getPersonByServerID(id: string): ActiveSyncPerson | undefined {
     return this.persons.find(p => p.serverID == id);
   }
 
