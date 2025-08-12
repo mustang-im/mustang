@@ -132,7 +132,7 @@ export class EWSCalendar extends Calendar {
     return sanitize.string(syncState);
   }
 
-  getEventByItemID(id: string): EWSEvent | void {
+  getEventByItemID(id: string): EWSEvent | undefined {
     return this.events.find(p => p.itemID == id);
   }
 

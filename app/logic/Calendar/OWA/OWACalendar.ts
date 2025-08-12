@@ -44,7 +44,7 @@ export class OWACalendar extends Calendar {
     }));
   }
 
-  protected getEventByItemID(id: string): OWAEvent | void {
+  protected getEventByItemID(id: string): OWAEvent | undefined {
     return this.events.find(p => p.itemID == id);
   }
 

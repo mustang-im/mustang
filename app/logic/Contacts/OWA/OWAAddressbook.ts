@@ -126,11 +126,11 @@ export class OWAAddressbook extends Addressbook {
     }
   }
 
-  getPersonByPersonaID(id: string): OWAPerson | void {
+  getPersonByPersonaID(id: string): OWAPerson | undefined {
     return this.persons.find(p => p.personaID == id);
   }
 
-  getGroupByPersonaID(id: string): OWAGroup | void {
+  getGroupByPersonaID(id: string): OWAGroup | undefined {
     return this.groups.find(p => p.personaID == id);
   }
 

@@ -505,12 +505,12 @@ export class ActiveSyncAccount extends MailAccount {
           }
           let url = new URL(this.url);
           url.searchParams.set("serverID", deletion.ServerId);
-          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == deletion.ServerId)) as ActiveSyncAddressbook | void;
+          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == deletion.ServerId)) as ActiveSyncAddressbook | undefined;
           if (addressbook) {
             this.removePingable(addressbook);
             addressbook.deleteIt();
           }
-          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == deletion.ServerId)) as ActiveSyncCalendar | void;
+          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == deletion.ServerId)) as ActiveSyncCalendar | undefined;
           if (calendar) {
             this.removePingable(calendar);
             calendar.deleteIt();
