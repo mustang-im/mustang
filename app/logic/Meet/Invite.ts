@@ -8,7 +8,7 @@ import { assert, type URLString } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 
 export async function invitePerson(person: PersonUID, meeting: VideoConfMeeting) {
-  let invitationURL = await meeting.createInvitationURL();
+  let invitationURL = await meeting.createInvitationURL(person.name);
   assert(person.emailAddress, gt`You don't have an email address for ${person.name}. You can copy the invitation link and send it in another way.`);
   await invitePersonByEmail(person, invitationURL, meeting);
 }
