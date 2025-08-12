@@ -2,12 +2,13 @@ import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
 import type { Folder } from "../Folder";
+import { Lock, type Locked } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
 import { Buffer } from "buffer";
 import type Zip from "adm-zip";
-import { Lock, type Locked } from "../../util/Lock";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
@@ -110,8 +111,20 @@ export class MailZIP implements MailContentStorage {
       if (zip) {
         return zip;
       }
-      // Opens the existing ZIP file, or creates it when it doesn't exist.
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
+      try {
+        // Opens the existing ZIP file, or creates it when it doesn't exist.
+        zip = await appGlobal.remoteApp.newAdmZIP(filename);
+      } catch (ex) {
+        if (ex.message?.includes("Invalid or unsupported zip format")) {
+          logError(ex);
+          console.error("Corrupt ZIP file", filename);
+          // Delete and re-create it
+          await appGlobal.remoteApp.fs.rm(filename, { force: true });
+          zip = await appGlobal.remoteApp.newAdmZIP(filename);
+        } else {
+          throw ex;
+        }
+      }
       haveZips.set(filename, zip);
       return zip;
     } finally {
