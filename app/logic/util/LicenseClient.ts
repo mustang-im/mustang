@@ -39,7 +39,15 @@ import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
-const kPublicKey = `data:application/octet-stream;base64,MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6OOUqJLzc/q4b4Djfv091QCSA1QwS4scXQltt+WDSiiXI2DwyIA6bY4khJERDxrTdOQ+izx8SdVwwx7LQezRhnTi+Sls+sV7arkWiRz+13Y7LLApPvRZ1Db/nohue6lop3pjdAeudeVkWAViYdBQOv5A6U9uPl3Oki4CzJnHHiM8ojWVUte3HgyINzcIR4gdTH2aB4a97tUSq/sTbluQ2+7H4HLOjuUtaroIvR5Oq4tuAVKvhdO1UUi0JFXAbnOhljKWTsHdcsncB72pj3rUjrHyK8gViy6xDYycV81Rhq299QhQDmeX9zBAlr1YA2D72EzogxbS3gGUVnt05XR+rwIDAQAB`;
+// cat license.pem.pub, and append the part between "-----" after "base64,"
+const kPublicKey = `data:application/octet-stream;base64,MIIBI
+jANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxFMLzKJp3iEqjbnej/I8
+JB9pPvYqFqxwa9MZkvuHwpDLf00mKq86KGvxhbRiGz944NXk8Fb6jKbcnr85CWHy
+S/e4qc5MgfQMyJ51DkzTc5/tvEWzb8xjgbI3Qwr/emqmRgL3UtFSN+Za2Whwmp0I
+IquA6unKhpdWDXY8uZHWy0N7ilqpo90bdHqB8NBrs22oeFqejnk/VOCSAOoizV6j
+gWuDyHfr2GRiHb8iRPQlxTPg3zkR3nDjSp9JH7kwWwmDBrV4oC8rOCdkCAYW2ScB
+y0sjmpvA6wc8/NnsJkZg9veeoCDmeC2qSWdZFon1SUHnGcUGVGvVJedhBblAgRjh
+fQIDAQAB`;
 
 export class Ticket {
   /* The user currently has a valid license */
