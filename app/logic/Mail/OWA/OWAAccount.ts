@@ -152,7 +152,11 @@ export class OWAAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
-    return this.oAuth2 ? this.oAuth2.logout() : appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    if (this.oAuth2) {
+      await this.oAuth2.logout();
+    } else {
+      await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
   }
 
   needsLicense(): boolean {
