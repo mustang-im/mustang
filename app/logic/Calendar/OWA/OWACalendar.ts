@@ -78,7 +78,19 @@ export class OWACalendar extends Calendar {
         break;
       }
       request.Body.Paging.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
-      await this.getEvents(result.RootFolder.Items.map(item => item.ItemId.Id), events);
+      let eventIDs: string[] = [];
+      for (let item of result.RootFolder.Items) {
+        let event = this.getEventByItemID(item.ItemId.Id);
+        if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime, null)?.getTime()) {
+          // Our local event is up-to-date, so just add it directly to the results.
+          events.add(event);
+          events.addAll(event.exceptions);
+        } else {
+          // This is a new or updated event that we need to fetch.
+          eventIDs.push(item.ItemId.Id);
+        }
+      }
+      await this.getEvents(eventIDs, events);
     }
   }
 
