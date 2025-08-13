@@ -71,6 +71,21 @@ export class OWAAccount extends MailAccount {
     return this.hasLoggedIn;
   }
 
+  async testLoggedIn(): Promise<boolean> {
+    assert(!this.hasLoggedIn, "Only for use during login");
+    let url = this.url + 'service.svc';
+    let options = { headers: { Action: "FindFolder" } };
+    let bodyJSON = Object.assign({}, owaFindFoldersRequest());
+    let  response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    if ([401, 440].includes(response.status)) {
+      return false;
+    }
+    if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
+      return false;
+    }
+    return true;
+  }
+
   async verifyLogin(): Promise<void> {
     await this.loginCommon(true);
   }
@@ -85,28 +100,19 @@ export class OWAAccount extends MailAccount {
         this.oAuth2 = new OWAAuth(this);
       }
       await this.oAuth2.login(interactive);
-      await this.listFolders(true);
-    } else {
-      try {
-        await this.listFolders(true);
-      } catch (ex) {
-        if (!(ex instanceof LoginError)) {
-          throw ex;
-        }
-        let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
-        if (!elements) {
-          throw new Error(gt`Could not find login form`);
-        }
-        let response = await OWALoginBackground.submitLoginForm(this.username, this.password, this.partition, elements);
-        let formURL = new URL(elements.url);
-        let responseURL = new URL(response.url);
-        if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
-          throw new LoginError(null, gt`Password incorrect`);
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} ${response.statusText}`);
-        }
-        await this.listFolders(true);
+    } else if (!await this.testLoggedIn()) {
+      let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
+      if (!elements) {
+        throw new Error(gt`Could not find login form`);
+      }
+      let response = await OWALoginBackground.submitLoginForm(this.username, this.password, this.partition, elements);
+      let formURL = new URL(elements.url);
+      let responseURL = new URL(response.url);
+      if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
+        throw new LoginError(null, gt`Password incorrect`);
+      }
+      if (!response.ok || !await this.testLoggedIn()) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
       }
     }
   }
@@ -116,6 +122,7 @@ export class OWAAccount extends MailAccount {
     await super.login(interactive);
     await this.loginCommon(interactive);
     this.hasLoggedIn = true;
+    await this.listFolders();
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books. Compare addressbook ID.
@@ -214,8 +221,8 @@ export class OWAAccount extends MailAccount {
     await this.callOWA(request);
   }
 
-  async callOWA(aRequest: any, forLogin?: true): Promise<any> {
-    if (!forLogin && !this.hasLoggedIn) {
+  async callOWA(aRequest: any): Promise<any> {
+    if (!this.hasLoggedIn) {
       throw new LoginError(null, "Please login");
     }
     let url = this.url + 'service.svc';
@@ -263,9 +270,9 @@ export class OWAAccount extends MailAccount {
     return result;
   }
 
-  async listFolders(forLogin?: true): Promise<void> {
+  async listFolders(): Promise<void> {
     await this.throttle.throttle();
-    let result = await this.callOWA(owaFindFoldersRequest(true), forLogin);
+    let result = await this.callOWA(owaFindFoldersRequest(true));
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of result.RootFolder.Folders) {

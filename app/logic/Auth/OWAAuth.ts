@@ -66,7 +66,9 @@ export class OWAAuth extends WebBasedAuth {
 
   // Called from `startLogin()` during account setup
   async getAccessTokenFromAuthCode(authCode: string): Promise<string> {
-    await this.account.callOWA(owaFindFoldersRequest(), true);
+    if (!await this.account.testLoggedIn()) {
+      throw new OAuth2LoginNeeded();
+    }
     return "";
   }
 
@@ -77,13 +79,7 @@ export class OWAAuth extends WebBasedAuth {
 
   // Called from `OAuth2Embed.urlChanged()` and `OAuth2Tab.urlChanged()`
   async isAuthDoneURL(url: URLString): Promise<boolean> {
-    try {
-      await this.account.callOWA(owaFindFoldersRequest(), true);
-      this.isLoggedIn = true;
-    } catch (ex) {
-      this.isLoggedIn = false;
-    }
-    return this.isLoggedIn;
+    return this.isLoggedIn = await this.account.testLoggedIn();
   }
 
   // Called from `OAuth2Embed.success()` and `OAuth2Tab.success()`
