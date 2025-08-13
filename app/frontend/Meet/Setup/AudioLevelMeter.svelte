@@ -59,7 +59,7 @@
     }*/
   }
 
-  onMount(() => catchErrors(startMeter));
+  onMount(() => setTimeout(() => catchErrors(startMeter), 100)); // Wait for audio source to start
   onDestroy(() => catchErrors(stopMeter));
 </script>
 
