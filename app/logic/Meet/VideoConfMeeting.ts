@@ -53,6 +53,7 @@ export class VideoConfMeeting extends Observable {
     console.log("Call ended");
   };
 
+  /** Before joining */
   async createNewConference() {
     throw new AbstractFunction();
   }
@@ -64,7 +65,7 @@ export class VideoConfMeeting extends Observable {
    * (in certain situations, e.g. in an event as onlineMeetingURL)
    * and allow to join within Mustnag using the Meet feature.
    * Only works if `account.canCreateURL`. */
-  async createInvitationURL(): Promise<URLString> {
+  async createInvitationURL(forName?: string): Promise<URLString> {
     throw new NotSupported(gt`Cannot invite others using a link to this kind of meeting`);
   }
 
@@ -80,6 +81,8 @@ export class VideoConfMeeting extends Observable {
     throw new AbstractFunction();
   }
 
+  /** You are now starting a new conference on the server and
+   * you join the room that you created. */
   async start() {
     this.started = new Date();
   }

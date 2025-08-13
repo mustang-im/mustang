@@ -14,6 +14,8 @@ export class LiveKitAccount extends MeetAccount {
   canMultipleParticipants = true;
   canCreateURL = true;
 
+  readonly apiURL: URLString = "https://api.beonex.com/livekit-creator/";
+
   /** Meeting URL, and meeting link for invitees */
   get webFrontendBaseURL(): URLString {
     return this.url;
@@ -38,6 +40,6 @@ export class LiveKitAccount extends MeetAccount {
 
   isMeetingURL(url: URL): boolean {
     return url.origin == this.webFrontendBaseURL &&
-      url.pathname.startsWith("/rooms/");
+      url.hash.includes("room=");
   }
 }

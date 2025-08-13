@@ -345,7 +345,7 @@ async function verifyTicketSignature(signedTicket: SignedTicketFromServer): Prom
 }
 
 /** Read ticket from local settings */
-function getSavedTicket(): SignedTicketFromServer | null {
+export function getSavedTicket(): SignedTicketFromServer | null {
   let signedTicketStr = localStorage.getItem("license");
   if (!signedTicketStr) {
     return null;
