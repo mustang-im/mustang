@@ -17,7 +17,11 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.rp = rp;
     this.conf = conf;
     this.id = rp.identity;
-    this.role = rp.isAgent ? ParticipantRole.Agent : rp.permissions.canSubscribe ? ParticipantRole.Waiting : ParticipantRole.User;
+    this.role = rp.isAgent
+      ? ParticipantRole.Agent
+      : rp.permissions && !rp.permissions.canSubscribe
+        ? ParticipantRole.Waiting
+        : ParticipantRole.User;
     this.updateProps();
     rp.on(ParticipantEvent.ParticipantNameChanged, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
     rp.on(ParticipantEvent.AttributesChanged, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
