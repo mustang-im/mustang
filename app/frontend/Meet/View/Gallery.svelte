@@ -72,7 +72,7 @@
 
 <style>
   .gallery :global(.scroll) {
-    overflow-x: hidden;
+    overflow: hidden;
   }
   .participants {
     display: grid;
