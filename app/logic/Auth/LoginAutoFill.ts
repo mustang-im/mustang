@@ -18,7 +18,7 @@ function autoFillPageScript(username, password) {
 
   function checkForWidgets() {
     // Hotmail sometimes uses submit buttons.
-    let inputs = [...document.querySelectorAll("input, button")] as (HTMLInputElement | HTMLButtonElement)[];
+    let inputs = [...document.querySelectorAll("input, button")].filter(input => input.checkVisibility()) as (HTMLInputElement | HTMLButtonElement)[];
     let user = inputs.filter(input => input.type == "text" || input.type == "email");
     let pass = inputs.filter(input => input.type == "password");
     let submit = inputs.filter(input => input.type == "submit");
