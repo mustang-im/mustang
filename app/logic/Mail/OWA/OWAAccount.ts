@@ -111,8 +111,11 @@ export class OWAAccount extends MailAccount {
       if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
         throw new LoginError(null, gt`Password incorrect`);
       }
-      if (!response.ok || !await this.testLoggedIn()) {
+      if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+      if (!await this.testLoggedIn()) {
+        throw new LoginError(`Login check failed`);
       }
     }
   }
