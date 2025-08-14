@@ -693,7 +693,6 @@ export class Event extends Observable {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
     await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
-    // Do *not* save, because some callers are deleted events or `InvitationEvent`. Caller saves as needed.
   }
 
   /**

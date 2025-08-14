@@ -79,16 +79,8 @@
   export let invitation: IncomingInvitation | Event;
 
   async function respond(response: InvitationResponseInMessage) {
+    await invitation.respondToInvitation(response);
     myParticipation = response;
-    if (invitation instanceof Event) {
-      await invitation.respondToInvitation(response);
-      await invitation.save();
-    } else if (invitation instanceof IncomingInvitation) {
-      await invitation.respondToInvitationFromMail(response);
-      await invitation.calEvent()?.save();
-    } else {
-      throw new NotReached();
-    }
   }
 
   async function onAccept() {

@@ -14,7 +14,7 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
   declare readonly calendar: ActiveSyncCalendar;
   declare readonly message: ActiveSyncEMail;
 
-  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
+  async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = {
       Request: {
