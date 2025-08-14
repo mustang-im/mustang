@@ -9,9 +9,13 @@
     </hbox>
   {/if}
   <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
-    {#if showAllOption}
+    {#if showAllOption || typeof(showAllOption) == "string"}
       <option value={null}>
-        {$t`All`}
+        {#if typeof(showAllOption) == "string"}
+          {showAllOption}
+        {:else}
+          {$t`All`}
+        {/if}
       </option>
     {/if}
     {#each $showAccounts.each as account }
@@ -33,7 +37,7 @@
   export let selectedAccount: Account; /* in/out */
   export let accounts: Collection<Account>;
   export let filterByWorkspace: boolean;
-  export let showAllOption: boolean = false;
+  export let showAllOption: string | boolean = false;
   export let icon: ConstructorOfATypedSvelteComponent | null = null;
   export let withLabel: boolean = true;
 
