@@ -184,7 +184,11 @@
       }
       fillConfig(config, emailAddress, password);
       errorMessage = null;
-      step = Step.CheckConfig;
+      if (config.oAuth2) {
+        step = Step.Login;
+      } else {
+        step = Step.CheckConfig;
+      }
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
     } else if (step == Step.FinalizeConfig) {
