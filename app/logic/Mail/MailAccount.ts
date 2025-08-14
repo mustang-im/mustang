@@ -178,6 +178,7 @@ export class MailAccount extends TCPAccount {
     this.tls = other.tls;
     this.authMethod = other.authMethod;
     this.username = other.username;
+    this.password = other.password;
     this.emailAddress = other.emailAddress;
     this.realname = other.realname;
 
