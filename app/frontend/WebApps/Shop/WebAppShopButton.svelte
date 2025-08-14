@@ -3,31 +3,53 @@
     <img src={app.icon} width="96" height="96" alt="" />
   </vbox>
   <vbox class="nameDescr" flex>
-    <h2 class="name font-normal">{app.nameTranslated}</h2>
+    <h2 class="app-name font-normal">{app.nameTranslated}</h2>
     <div class="description font-smallest">{app.descriptionTranslated}</div>
   </vbox>
   <hbox class="actions">
-    {#each $myApps.filterObservable(a => a.id == app.id).each as selectedApp}
-      <Button
-        label={$t`Remove` + (app.account ? "\n" + app.account.name : "")}
-        icon={app.account?.icon}
-        classes="remove"
-        onClick={() => remove(selectedApp)}
-        />
-    {/each}
-  </hbox>
-  <hbox class="actions">
     {#if app.homepage}
-      <a class="homepage font-smallest" href={app.homepage} target="_blank">{$t`Website`}</a>
+      <a class="homepage font-smallest" href={app.homepage} target="_blank">{$t`Info`}</a>
     {/if}
     <hbox flex />
     <AccountDropDown accounts={appGlobal.emailAccounts} bind:selectedAccount filterByWorkspace={false} showAllOption={true} />
-    <Button
+    <RoundButton
       label={$t`Add`}
-      classes="add"
+      classes="add create"
+      icon={AddIcon}
       onClick={add}
       />
   </hbox>
+  {#if instances.hasItems}
+    <vbox class="instances-separator" />
+    <vbox class="instances">
+      {#each instances.each as iapp, i}
+        <hbox class="instance">
+          {#if iapp.account}
+            <RoundButton
+              label={iapp.account.name}
+              icon={iapp.account.icon}
+              classes="account plain" border={false}
+              />
+            <hbox class="account-name" flex>
+              {iapp.account.name}
+            </hbox>
+          {:else}
+            <RoundButton label="" icon={CircleIcon} disabled border={false}
+              classes="no-account plain" />
+            <hbox class="account-name" flex>
+              {iapp.nameTranslated?.split(" ").pop() + " " + i}
+            </hbox>
+          {/if}
+          <RoundButton
+            label={$t`Remove`}
+            icon={TrashIcon}
+            onClick={() => remove(iapp)}
+            classes="remove plain" border={false}
+            />
+        </hbox>
+      {/each}
+    </vbox>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -36,7 +58,10 @@
   import { Account } from "../../../logic/Abstract/Account";
   import { appGlobal } from "../../../logic/app";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import AddIcon from "lucide-svelte/icons/plus";
+  import TrashIcon from "lucide-svelte/icons/trash-2";
+  import CircleIcon from "lucide-svelte/icons/circle";
   import { t } from "../../../l10n/l10n";
 
   export let app: WebAppListed;
@@ -49,6 +74,7 @@
   }
 
   $: myApps = appGlobal.webApps.myApps;
+  $: instances = $myApps.filterObservable(a => a.id == app.id);
 
   function add() {
     myApps.add(app.instantiate(selectedAccount));
@@ -84,10 +110,8 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
-  .name {
+  .app-name {
     margin-block-start: 16px;
-  }
-  .description {
   }
   .actions {
     align-items: center;
@@ -99,5 +123,19 @@
     margin-block-start: 4px;
   }
   .homepage {
+  }
+  .instances-separator {
+    border-top: 1px solid var(--border);
+    margin-block-start: 16px;
+    margin-block-end: 8px;
+  }
+  .instance {
+    align-items: center;
+  }
+  .account-name {
+    justify-items: center;
+  }
+  .instance :global(.no-account svg) {
+    stroke-width: 4px;
   }
 </style>

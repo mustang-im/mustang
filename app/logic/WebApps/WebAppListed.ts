@@ -62,6 +62,7 @@ export class WebAppListed {
     let app = this.clone();
     assert(app.id, "Need app ID");
     assert(app.start, "Need app start URL");
+    app.account = account;
     app.webSessionID = account?.webSessionID ??
       "webapp:" + app.id + ":" + crypto.randomUUID().substring(0, 6);
     console.log("adding", app);
