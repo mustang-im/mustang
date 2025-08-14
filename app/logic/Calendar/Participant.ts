@@ -11,7 +11,7 @@ export class Participant extends PersonUID {
    * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
   lastUpdateTime: Date | null;
 
-  constructor(emailAddress: string, name: string, response: InvitationResponse) {
+  constructor(emailAddress: string, name: string, response: InvitationResponse = InvitationResponse.Unknown) {
     let person = findPerson(emailAddress);
     super(emailAddress, name ?? person?.name ?? emailAddress);
     this.person = person;
