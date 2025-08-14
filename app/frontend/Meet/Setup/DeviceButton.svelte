@@ -9,7 +9,7 @@
     >
     <svelte:fragment slot="icon">
       {#if stream && video && on}
-        <Video stream={stream} muted={true} width={40} height={40} />
+        <Video stream={stream} muted width={40} height={40} />
       {:else if stream && !video && on}
         <AudioLevelMeter stream={stream} width={40} height={40} />
       {:else}
