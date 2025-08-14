@@ -2,73 +2,97 @@
   <hbox flex />
   <hbox class="boxes" flex>
     <hbox flex />
-    <vbox class="box">
-      <vbox class="text">
-        <hbox class="what">
-          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-            {$t`Do you want to call?`}
-          {:else if $meeting.state == MeetingState.OutgoingCall}
-            {$t`You're calling...`}
-          {:else if $meeting.state == MeetingState.IncomingCall} <!---->
-          {/if}
-        </hbox>
-        <hbox class="who">
+    {#if $meeting.state != MeetingState.Init}
+      <vbox class="box">
+        <vbox class="text">
+          <hbox class="what">
+            {#if $meeting.state == MeetingState.OutgoingCallConfirm}
+              {$t`Do you want to call?`}
+            {:else if $meeting.state == MeetingState.OutgoingCall}
+              {$t`You're calling...`}
+            {:else if $meeting.state == MeetingState.IncomingCall} <!---->
+            {/if}
+          </hbox>
+          <hbox class="who">
+            {#if $participants.length == 1}
+              {participants.first.name}
+            {:else if $participants.length > 1}
+              {meeting.event?.title}
+            {/if}
+          </hbox>
+          <hbox class="who-count">
+            {#if $participants.length > 1}
+              ({participants.length} participants)
+            {/if}
+          </hbox>
+          <hbox class="what">
+            {#if $meeting.state == MeetingState.OutgoingCallConfirm} <!---->
+            {:else if $meeting.state == MeetingState.OutgoingCall} <!---->
+            {:else if $meeting.state == MeetingState.IncomingCall}
+              {$t`is calling you...`}
+            {/if}
+          </hbox>
+        </vbox>
+        <vbox class="participants" flex>
           {#if $participants.length == 1}
-            {participants.first.name}
+            <PersonPicture person={participants.first} size={196} />
           {:else if $participants.length > 1}
-            {meeting.event?.title}
+            <GroupPicture persons={participants} size={196} />
           {/if}
-        </hbox>
-        <hbox class="who-count">
-          {#if $participants.length > 1}
-            ({participants.length} participants)
+        </vbox>
+        <hbox class="actions">
+          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
+            <RoundButton classes="cancel"
+              label={$t`Cancel`}
+              icon={XIcon}
+              iconSize="24px"
+              onClick={cancel}
+              />
+          {:else}
+            <RoundButton classes="hangup"
+              label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
+              icon={HangUpIcon}
+              onClick={hangup}
+              iconSize="24px"
+              border={false} />
           {/if}
-        </hbox>
-        <hbox class="what">
-          {#if $meeting.state == MeetingState.OutgoingCallConfirm} <!---->
-          {:else if $meeting.state == MeetingState.OutgoingCall} <!---->
-          {:else if $meeting.state == MeetingState.IncomingCall}
-            {$t`is calling you...`}
+          <hbox flex />
+          {#if $meeting.state != MeetingState.OutgoingCall}
+            <RoundButton classes="accept"
+              label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
+              icon={CallIcon}
+              iconSize="24px"
+              onClick={accept}
+              border={false} />
           {/if}
         </hbox>
       </vbox>
-      <vbox class="participants" flex>
-        {#if $participants.length == 1}
-          <PersonPicture person={participants.first} size={196} />
-        {:else if $participants.length > 1}
-          <GroupPicture persons={participants} size={196} />
-        {/if}
-      </vbox>
-      <hbox class="actions">
-        {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallConfirm}
-          <RoundButton classes="cancel"
-            label={$t`Cancel`}
-            icon={XIcon}
-            iconSize="24px"
-            onClick={cancel}
-            />
-        {:else}
-          <RoundButton classes="hangup"
-            label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
-            icon={HangUpIcon}
-            onClick={hangup}
-            iconSize="24px"
-            border={false} />
-        {/if}
-        <hbox flex />
-        {#if $meeting.state != MeetingState.OutgoingCall}
-          <RoundButton classes="accept"
-            label={$meeting.state == MeetingState.Init ? $t`Start conference` : $meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
-            icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
-            iconSize="24px"
-            onClick={accept}
-            border={false} />
-        {/if}
-      </hbox>
-    </vbox>
     <hbox class="gap" />
+    {/if}
     <vbox class="device-setup">
-      <DeviceSetup />
+      <DeviceSetup>
+        <hbox class="actions left" flex slot="buttons-left">
+          {#if $meeting.state == MeetingState.Init}
+            <RoundButton classes="cancel"
+              label={$t`Cancel`}
+              icon={XIcon}
+              iconSize="24px"
+              onClick={cancel}
+              />
+          {/if}
+        </hbox>
+        <hbox class="actions right" flex slot="buttons-right">
+          {#if $meeting.state == MeetingState.Init}
+            <RoundButton classes="accept"
+              label={$t`Start conference`}
+              icon={OpenIcon}
+              iconSize="24px"
+              onClick={accept}
+              border={false} />
+          {/if}
+        </hbox>
+
+      </DeviceSetup>
     </vbox>
     <hbox flex />
   </hbox>
@@ -105,7 +129,6 @@
   import XIcon from "lucide-svelte/icons/x";
   import OpenIcon from "lucide-svelte/icons/door-open";
   import HourglassIcon from "lucide-svelte/icons/hourglass";
-  import { mergeColls } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
@@ -202,6 +225,13 @@
   .actions :global(button.hangup) {
     transform: rotate(135deg);
     background-color: #F34949 !important;
+  }
+  .device-setup .actions {
+    justify-content: center;
+    margin-top: 0px;
+  }
+  .device-setup .actions :global(button) {
+    padding: 9px;
   }
 
   .gap {

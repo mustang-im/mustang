@@ -3,6 +3,7 @@
     <Video stream={$deviceStream?.cameraMicStream} muted={true} />
   </vbox>
   <hbox class="buttons">
+    <slot name="buttons-left" />
     <DeviceButton video={false} {devices}
       on={$micOnSetting.value}
       selectedID={$selectedMicSetting.value}
@@ -16,6 +17,7 @@
       on:changeOn={event => cameraOnSetting.value = event.detail}
       on:changeDevice={event => selectedCameraSetting.value = event.detail}
       />
+    <slot name="buttons-right" />
   </hbox>
 </vbox>
 
