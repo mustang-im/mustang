@@ -49,6 +49,7 @@
   export let tabindex = null;
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
+  export let type: new (string, string) => PersonUID = PersonUID;
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     if (!inputStr || inputStr.length < 2) {
@@ -68,7 +69,7 @@
           if (skipPersons.find(p => p.emailAddress == c.value)) {
             continue;
           }
-          let uid = new PersonUID(c.value, person.name);
+          let uid = new type(c.value, person.name);
           uid.person = person;
           emailAddresses.push(uid);
         }
@@ -114,7 +115,7 @@
     }
     sanitize.emailAddress(emailAddress);
 
-    let personUID = new PersonUID(emailAddress, name);
+    let personUID = new type(emailAddress, name);
     onAddPerson(personUID);
     return personUID;
   }
