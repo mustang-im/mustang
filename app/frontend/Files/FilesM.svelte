@@ -1,6 +1,6 @@
 <vbox flex class="pane">
   {#if displayFiles}
-    <FilesList files={displayFiles} />
+    <FilesList files={displayFiles} dirs={displayDirs} />
   {/if}
 </vbox>
 {#if $appGlobal.isMobile}
@@ -8,10 +8,11 @@
 {/if}
 
 <script lang="ts">
-  import { File, FileOrDirectory } from "../../logic/Files/File";
+  import { File } from "../../logic/Files/File";
+  import { Directory } from "../../logic/Files/Directory";
   import type { Person } from "../../logic/Abstract/Person";
   import { newSearchEMail } from "../../logic/Mail/Store/setStorage";
-  import FilesList from "./FilesList.svelte";
+  import FilesList from "./FilesList/FilesList.svelte";
   import FilesBarM from "./FilesBarM.svelte";
   import { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../Util/error";
@@ -19,7 +20,8 @@
 
   export let person: Person;
 
-  let displayFiles = new ArrayColl<FileOrDirectory>();
+  let displayFiles = new ArrayColl<File>();
+  let displayDirs = new ArrayColl<Directory>();
   // $: personFolders = appGlobal.files.filter(file => file.sentToFrom == selectedPerson);
   // $: displayFiles = personFolders?.first?.files;
 
@@ -38,7 +40,7 @@
         let file = new File();
         file.setFileName(attachment.filename);
         file.filepathLocal = attachment.filepathLocal;
-        file.length = attachment.size;
+        file.size = attachment.size;
         file.mimetype = attachment.mimeType;
         file.contents = attachment.content;
         file.id = attachment.contentID;
