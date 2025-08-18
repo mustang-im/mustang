@@ -13,10 +13,10 @@
           <vbox flex class="sidebar" slot="top">
             <svelte:component this={sidebar} />
           </vbox>
-          <AppContentM slot="bottom" />
+          <AppContentRoutes slot="bottom" />
         </SplitterHorizontal>
       {:else}
-        <AppContentM />
+        <AppContentRoutes />
       {/if}
     </Router>
   {:catch ex}
@@ -41,7 +41,7 @@
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import AppContentM from "../AppsBar/AppContentM.svelte";
+  import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
