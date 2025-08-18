@@ -6,7 +6,7 @@
     <ChatAppM />
   </Route>
   <Route path="contacts/*">
-    <ContactsAppM />
+    <ContactsAppRoutes />
   </Route>
   <Route path="calendar/*">
     <CalendarApp />
@@ -29,7 +29,7 @@
   import { Route } from "svelte-navigator";
   import MailAppM from "../Mail/MailAppM.svelte";
   import ChatAppM from "../Chat/ChatAppM.svelte";
-  import ContactsAppM from "../Contacts/ContactsAppM.svelte";
+  import ContactsAppRoutes from "../Contacts/ContactsAppRoutes.svelte";
   import CalendarApp from "../Calendar/CalendarApp.svelte";
   import FilesAppM from "../Files/FilesAppM.svelte";
   import MeetAppM from "../Meet/MeetAppM.svelte";

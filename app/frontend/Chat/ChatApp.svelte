@@ -1,11 +1,11 @@
-<Splitter name="persons-list" initialRightRatio={4}>
-  <ChatsM slot="left" />
-  <ChatM chat={$selectedChat} slot="right" />
-</Splitter>
+{#if appGlobal.isMobile}
+  <ChatAppM />
+{:else}
+  <ChatAppD />
+{/if}
 
 <script lang="ts">
-  import { selectedChat } from "./selected";
-  import Splitter from "../Shared/Splitter.svelte";
-  import ChatsM from "./ChatsM.svelte";
-  import ChatM from "./ChatM.svelte";
+  import { appGlobal } from "../../logic/app";
+  import ChatAppD from "./ChatAppD.svelte";
+  import ChatAppM from "./ChatAppM.svelte";
 </script>
