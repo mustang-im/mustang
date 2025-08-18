@@ -1,9 +1,9 @@
 <vbox flex class="app-frame">
   <Route path="mail/*">
-    <MailAppM />
+    <MailAppRoutes />
   </Route>
   <Route path="chat/*">
-    <ChatAppM />
+    <ChatApp />
   </Route>
   <Route path="contacts/*">
     <ContactsAppRoutes />
@@ -12,26 +12,27 @@
     <CalendarApp />
   </Route>
   <Route path="files/*">
-    <FilesAppM />
+    <FilesAppRoutes />
   </Route>
   <Route path="meet/*">
-    <MeetAppM />
+    <MeetAppRoutes />
   </Route>
   <Route path="/app-menu/">
-    <AppMenuM />
+    <AppMenu />
   </Route>
   <Route path="/">
-    <MailAppM />
+    <!-- default, on app start-->
+    <MailAppRoutes />
   </Route>
 </vbox>
 
 <script lang="ts">
   import { Route } from "svelte-navigator";
-  import MailAppM from "../Mail/MailAppM.svelte";
-  import ChatAppM from "../Chat/ChatAppM.svelte";
+  import MailAppRoutes from "../Mail/MailAppRoutes.svelte";
+  import ChatApp from "../Chat/ChatApp.svelte";
   import ContactsAppRoutes from "../Contacts/ContactsAppRoutes.svelte";
   import CalendarApp from "../Calendar/CalendarApp.svelte";
-  import FilesAppM from "../Files/FilesAppM.svelte";
-  import MeetAppM from "../Meet/MeetAppM.svelte";
-  import AppMenuM from "./AppMenuM/AppMenu.svelte";
+  import FilesAppRoutes from "../Files/FilesAppRoutes.svelte";
+  import MeetAppRoutes from "../Meet/MeetAppRoutes.svelte";
+  import AppMenu from "./AppMenuM/AppMenu.svelte";
 </script>
