@@ -25,7 +25,7 @@ export class AllFolders extends Folder {
 
   followSpecialFolder(specialFolder: SpecialFolder) {
     this.specialFolder = specialFolder;
-    this.folders = this.account.allRootFolders.filter(folder =>
+    this.folders = this.account.allRootFolders.filterObservable(folder =>
       folder.specialFolder == specialFolder);
   }
 

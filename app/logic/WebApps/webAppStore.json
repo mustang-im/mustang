@@ -64,6 +64,36 @@
       }
     },
     {
+      "id": "spreadsheet",
+      "parentID": "productivity",
+      "fullID": "productivity/spreadsheet",
+      "name": {
+        "en": "Spreadsheet",
+        "de": "Tabellen-Kalkulation"
+      },
+      "description": {}
+    },
+    {
+      "id": "presentation",
+      "parentID": "productivity",
+      "fullID": "productivity/presentation",
+      "name": {
+        "en": "Presentation",
+        "de": "Präsentation"
+      },
+      "description": {}
+    },
+    {
+      "id": "text-editor",
+      "parentID": "productivity",
+      "fullID": "productivity/text-editor",
+      "name": {
+        "en": "Text editor",
+        "de": "Text-Verarbeitung"
+      },
+      "description": {}
+    },
+    {
       "id": "graphics",
       "parentID": null,
       "fullID": "graphics",
@@ -133,8 +163,7 @@
     {
       "id": "miro",
       "categoryFullIDs": [
-        "graphics/diagram",
-        "recommended"
+        "graphics/diagram"
       ],
       "name": {
         "en": "Miro"
@@ -144,7 +173,7 @@
         "de": "Visuelles Arbeitsblatt mit unbegrenztem Zoom für Mind Maps, Illustrationen, Diagramme, Fluss-Diagramme, und Geschäftsmodelle."
       },
       "homepage": "https://www.miro.com",
-      "start": "https://miro.com/login/",
+      "start": "https://miro.com/app/dashboard/",
       "icon": "https://files.readme.io/17d4a23-miro-logo-color-square.png"
     },
     {
@@ -225,37 +254,118 @@
       "icon": "https://cloud.cache.wpscdn.com/ovs-beta/account/libs/img/v1/pro/wps.d6f53e0f.svg"
     },
     {
-      "id": "google-docs",
-      "categoryFullIDs": [
-        "productivity/office-suite"
-      ],
-      "name": {
-        "en": "Google Docs"
-      },
-      "description": {
-        "en": " Seamless collaboration, from anywhere. Edit together in real-time with easy sharing, and use comments, suggestions, and action items to keep things moving.",
-        "de": "Nahtlos zusammenarbeiten – von überall aus. Sie können Dokumente ganz einfach freigeben und in Echtzeit gemeinsam bearbeiten, mit Kommentaren, Vorschlägen und zugewiesenen Aufgaben."
-      },
-      "homepage": "https://www.google.com/docs/about/",
-      "start": "https://docs.google.com/",
-      "icon": "https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg"
-    },
-    {
       "id": "microsoft-office",
       "categoryFullIDs": [
-        "productivity/office-suite",
-        "recommended"
+        "productivity/office-suite"
       ],
       "name": {
         "en": "Microsoft Office 365"
       },
       "description": {
-        "en": "The well-known Microsoft Office-Suite is now running on the Web",
+        "en": "The well-known Microsoft Office suite is now running on the Web",
         "de": "Die bekannte Microsoft Office-Suite läuft jetzt im Web"
       },
       "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
       "start": "https://m365.cloud.microsoft/launch/Word/",
       "icon": "https://raw.githubusercontent.com/mustang-im/mustang/refs/heads/master/app/frontend/asset/icon/brand/microsoft365.svg"
+    },
+    {
+      "id": "microsoft-word",
+      "categoryFullIDs": [
+        "productivity/text-editor",
+        "recommended"
+      ],
+      "name": {
+        "en": "Microsoft Word"
+      },
+      "description": {
+        "en": "The well-known Microsoft Word is now running on the Web",
+        "de": "Die bekannte Microsoft Word läuft jetzt im Web"
+      },
+      "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
+      "start": "https://word.cloud.microsoft",
+      "icon": "https://res.cdn.office.net/files/fabric-cdn-prod_20240610.001/assets/brand-icons/product/svg/word_32x1.svg"
+    },
+    {
+      "id": "microsoft-excel",
+      "categoryFullIDs": [
+        "productivity/spreadsheet",
+        "recommended"
+      ],
+      "name": {
+        "en": "Microsoft Excel"
+      },
+      "description": {
+        "en": "Microsoft Excel is now running on the Web",
+        "de": "Microsoft Excel läuft jetzt im Web"
+      },
+      "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
+      "start": "https://excel.cloud.microsoft",
+      "icon": "https://res.cdn.office.net/files/fabric-cdn-prod_20240610.001/assets/brand-icons/product/svg/excel_32x1.svg"
+    },
+    {
+      "id": "microsoft-powerpoint",
+      "categoryFullIDs": [
+        "productivity/presentation"
+      ],
+      "name": {
+        "en": "Microsoft PowerPoint"
+      },
+      "description": {
+        "en": "Create your slides, now on the Web",
+        "de": "Erstellen Sie Ihre Folien, jetzt im Web"
+      },
+      "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
+      "start": "https://powerpoint.cloud.microsoft",
+      "icon": "https://res.cdn.office.net/files/fabric-cdn-prod_20240610.001/assets/brand-icons/product/svg/powerpoint_32x1.svg"
+    },
+    {
+      "id": "google-docs",
+      "categoryFullIDs": [
+        "productivity/text-editor"
+      ],
+      "name": {
+        "en": "Google Docs"
+      },
+      "description": {
+        "en": "Seamless collaboration, from anywhere. Edit together in real-time with easy sharing, and use comments, suggestions, and action items to keep things moving.",
+        "de": "Nahtlos zusammenarbeiten – von überall aus. Sie können Dokumente ganz einfach freigeben und in Echtzeit gemeinsam bearbeiten, mit Kommentaren, Vorschlägen und zugewiesenen Aufgaben."
+      },
+      "homepage": "https://workspace.google.com/products/docs/",
+      "start": "https://docs.google.com/document/",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg"
+    },
+    {
+      "id": "google-sheets",
+      "categoryFullIDs": [
+        "productivity/spreadsheet"
+      ],
+      "name": {
+        "en": "Google Sheets"
+      },
+      "description": {
+        "en": "Manage, visualize and analyze data",
+        "de": "Daten verwalten, visualisieren und analysieren"
+      },
+      "homepage": "https://workspace.google.com/products/sheets/",
+      "start": "https://docs.google.com/spreadsheets/",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg"
+    },
+    {
+      "id": "google-slides",
+      "categoryFullIDs": [
+        "productivity/presentation"
+      ],
+      "name": {
+        "en": "Google Slides"
+      },
+      "description": {
+        "en": "Create and deliver impactful presentations",
+        "de": "Ansprechende Präsentationen im Team erstellen"
+      },
+      "homepage": "https://workspace.google.com/products/slides/",
+      "start": "https://docs.google.com/presentation/",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Google_Slides_logo_%282014-2020%29.svg"
     },
     {
       "id": "cryptpad",

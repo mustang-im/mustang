@@ -2,7 +2,7 @@ import type { EMail } from "../EMail";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
-import { getTagByName, Tag } from "../Tag";
+import { getTagByName, Tag } from "../../Abstract/Tag";
 import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./SQLDatabase";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -239,7 +239,7 @@ export class SQLEMail {
       )`);
   }
 
-  protected static transactionLock = new Lock();
+  protected static readonly transactionLock = new Lock();
 
   static async saveMultiple(emails: Collection<EMail>) {
     let lock = await SQLEMail.transactionLock.lock();

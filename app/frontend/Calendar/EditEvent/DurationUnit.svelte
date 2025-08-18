@@ -1,16 +1,14 @@
 <select id="duration-unit" bind:value={unitInSeconds} {disabled}>
   {#if !onlyDays}
-    <option value={k1MinuteS}>{$t`Minutes`}</option>
-    <option value={k1HourS}>{$t`Hours`}</option>
+    <option value={k1MinuteS}>{$plural(durationInUnit, { one: 'minute', other: 'minutes' })}</option>
+    <option value={k1HourS}>{$plural(durationInUnit, { one: 'hour', other: 'hours' })}</option>
   {/if}
-  <option value={k1DayS}>{$t`Days`}</option>
+  <option value={k1DayS}>{$plural(durationInUnit, { one: 'day', other: 'days' })}</option>
 </select>
 
 <script lang="ts">
-  import { t } from "../../../l10n/l10n";
-  import { createEventDispatcher } from 'svelte';
   import { k1DayS, k1HourS, k1MinuteS } from "../../Util/date";
-  const dispatch = createEventDispatcher<{ change: number }>();
+  import { plural, t } from "../../../l10n/l10n";
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
@@ -26,7 +24,8 @@
 
   $: durationInUnit = durationInSeconds / unitInSeconds;
 
-  $: unitInSeconds, onUnitChanged()
+  const onlyRoundNumbers = false;
+  $: unitInSeconds, onlyRoundNumbers && onUnitChanged()
   function onUnitChanged() {
     if (!durationInUnit) { // startup
       return;
@@ -46,11 +45,7 @@
   }
 
   $: durationInSeconds, onDurationChanged()
-  export function onDurationChanged() {
-    if (durationInSeconds <= 0) {
-      durationInSeconds = 60;
-    }
-
+  function onDurationChanged() {
     // Adapt unit
     if (durationInSeconds % k1DayS == 0) {
       newUnit(k1DayS);
@@ -59,7 +54,6 @@
     } else if (unitInSeconds != k1MinuteS) {
       newUnit(k1MinuteS);
     }
-    dispatch("change", durationInSeconds);
   }
 
   function newUnit(aUnitInSeconds: number) {

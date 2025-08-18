@@ -1,7 +1,7 @@
-import { getUILocale, gPlural, gt } from "../../l10n/l10n";
+import { getDateTimeFormatPref, gPlural, gt } from "../../l10n/l10n";
 
 /**
-* Returns:
+* @returns
 * For today: Time, e.g. "15:23"
 * This week: Weekday, Time, e.g. "Wed 15:23"
 * Other this year: Date without year and time, e.g. "23.11. 15:23"
@@ -10,7 +10,10 @@ import { getUILocale, gPlural, gt } from "../../l10n/l10n";
 * See also <https://momentjs.com> for relative time
 */
 export function getDateTimeString(date: Date): string {
-  var dateDetails = null;
+  if (!date) {
+    return "";
+  }
+  let dateDetails = null;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
@@ -22,11 +25,11 @@ export function getDateTimeString(date: Date): string {
   } else { // full date
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
-  return date.toLocaleString(getUILocale(), dateDetails);
+  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
 }
 
 /**
-* Returns:
+* @returns
 * For today: "Today"
 * This week: Weekday, long, e.g. "Wednesday"
 * Other this year: Date, without year, e.g. "23.11."
@@ -34,8 +37,11 @@ export function getDateTimeString(date: Date): string {
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date): string {
-  var dateDetails = null;
+export function getDateString(date: Date, fullDate = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
+  if (!date) {
+    return "";
+  }
+  let dateDetails = null;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
@@ -45,9 +51,57 @@ export function getDateString(date: Date): string {
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit" };
   } else { // full date
-    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit" };
+    dateDetails = fullDate;
   }
-  return date.toLocaleString(getUILocale(), dateDetails);
+  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
+}
+
+/** @returns Time, e.g. "15:23" */
+export function getTimeString(date: Date): string {
+  if (!date) {
+    return "";
+  }
+  return date.toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+}
+
+/**
+ * @param weekday day of the week
+ * @param form How long the name should be
+ *    narrow = 1 char
+ *    short = 2 chars
+ *    long = full name
+ * @return Name for the weekday, e.g. "Mo" or "Monday" */
+export function weekdayLabel(weekday: number, form: "long" | "short" | "narrow") {
+  let date = new Date(2010, 2, weekday);
+  return date.toLocaleDateString(getDateTimeFormatPref(), { weekday: form });
+};
+
+/** Monday to Sunday, in order (sorted).
+ *
+ * If we ever want to support Sunday being the first day of the week,
+ * simply change this to `[0, 1, 2, 3, 4, 5, 6]` at runtime. */
+export const kAllWeekdays = [1, 2, 3, 4, 5, 6, 0];
+
+/**
+ * @param ianaTimezone IANA timezone, e.g. "Europe/Berlin"
+ * @returns the city in English, for most timezones */
+export function getTimezoneDisplay(ianaTimezone: string): string {
+  return ianaTimezone.split("/").pop();
+}
+export function myTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+export function isSameTimezone(ianaTimezone: string, time: Date) {
+  if (!ianaTimezone) {
+    return true;
+  }
+  let summer = new Date(time);
+  summer.setMonth(summer.getMonth() + 6);
+  let tz = {
+    timeZone: ianaTimezone,
+  };
+  return time.toLocaleString("de") == time.toLocaleString("de", tz) &&
+    summer.toLocaleString("de") == summer.toLocaleString("de", tz);
 }
 
 export function getToday() {
@@ -93,10 +147,14 @@ export function getDurationString(durationInMS: number): string {
 }
 
 /** 1 day, in seconds */
-export const k1DayS = 86400;
-export const k1HourS = 3600;
 export const k1MinuteS = 60;
+export const k1HourS = 3600;
+export const k1DayS = 86400;
+export const k1WeekS = 7 * k1DayS;
+export const k1MonthS = 31 * k1DayS;
 /** 1 day, in milliseconds */
-export const k1DayMS = 86400 * 1000;
-export const k1HourMS = 3600 * 1000;
-export const k1MinuteMS = 60 * 1000;
+export const k1MinuteMS = k1MinuteS * 1000;
+export const k1HourMS = k1HourS * 1000;
+export const k1DayMS = k1DayS * 1000;
+export const k1WeekMS = k1WeekS * 1000;
+export const k1MonthMS = k1MonthS * 1000;

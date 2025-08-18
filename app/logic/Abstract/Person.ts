@@ -2,6 +2,7 @@ import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
+import { assert } from '../util/util';
 
 export class Person extends ContactBase {
   id: string;
@@ -9,10 +10,11 @@ export class Person extends ContactBase {
   firstName: string | null;
   @notifyChangedProperty
   lastName: string | null;
-  readonly emailAddresses = new ArrayColl<ContactEntry>();
-  readonly phoneNumbers = new ArrayColl<ContactEntry>();
-  readonly chatAccounts = new ArrayColl<ContactEntry>();
   readonly groups = new ArrayColl<ContactEntry>();
+  readonly emailAddresses = new ArrayColl<ContactEntry>();
+  readonly chatAccounts = new ArrayColl<ContactEntry>();
+  readonly phoneNumbers = new ArrayColl<ContactEntry>();
+  /** `StreetAddress` */
   readonly streetAddresses = new ArrayColl<ContactEntry>();
   /** Webpages about the person */
   readonly urls = new ArrayColl<ContactEntry>();
@@ -33,12 +35,31 @@ export class Person extends ContactBase {
    * Higher is more popular. */
   @notifyChangedProperty
   popularity: number = 0;
+  @notifyChangedProperty
+  syncState: number | string | undefined;
+
+  /**
+   * Saves the contact to the server and to the database.
+    */
+  async save() {
+    this.removeEmptyContactEntriesFrom([
+      this.groups,
+      this.emailAddresses,
+      this.chatAccounts,
+      this.phoneNumbers,
+      this.streetAddresses,
+      this.urls,
+      this.custom,
+    ]);
+    await super.save();
+    await this.saveLocally();
+    await this.saveToServer();
+  }
 
   /**
    * Saves the contact locally to the database.
     */
-  async save() {
-    await super.save();
+  async saveLocally() {
     await this.addressbook.storage.savePerson(this);
   }
 
@@ -46,12 +67,18 @@ export class Person extends ContactBase {
     // nothing to do for local persons
   }
 
+  protected removeEmptyContactEntriesFrom(colls: ArrayColl<ContactEntry>[]) {
+    for (let coll of colls) {
+      coll.removeAll(coll.filterOnce(entry => !entry.value));
+    }
+  }
+
   /**
-   * Deletes the contact from our database and on the server.
+   * Deletes the contact on the server and from our database.
     */
   async deleteIt() {
-    await this.deleteFromServer();
     await this.deleteLocally();
+    await this.deleteFromServer();
   }
 
   /**
@@ -69,6 +96,16 @@ export class Person extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local persons
+  }
+
+  fromExtraJSON(json: any) {
+    assert(typeof (json) == "object", "Must be a JSON object");
+    this.syncState = json.syncState;
+  }
+  toExtraJSON(): any {
+    let json: any = {};
+    json.syncState = this.syncState;
+    return json;
   }
 
   toString() {
@@ -112,13 +149,13 @@ export class Person extends ContactBase {
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
     this.notes = ((this.notes || "") + (other.notes || "")) || null;
-    this.emailAddresses.addAll(other.emailAddresses.filter(o => !this.emailAddresses.find(t => t.value == o.value)));
-    this.chatAccounts.addAll(other.chatAccounts.filter(o => !this.chatAccounts.find(t => t.value == o.value)));
-    this.phoneNumbers.addAll(other.phoneNumbers.filter(o => !this.phoneNumbers.find(t => t.value == o.value)));
-    this.streetAddresses.addAll(other.streetAddresses.filter(o => !this.streetAddresses.find(t => t.value == o.value)));
-    this.urls.addAll(other.urls.filter(o => !this.urls.find(t => t.value == o.value)));
-    this.groups.addAll(other.groups.filter(o => !this.groups.find(t => t.value == o.value)));
-    this.custom.addAll(other.custom.filter(o => !this.custom.find(t => t.value == o.value)));
+    this.emailAddresses.addAll(other.emailAddresses.filterOnce(o => !this.emailAddresses.find(t => t.value == o.value)));
+    this.chatAccounts.addAll(other.chatAccounts.filterOnce(o => !this.chatAccounts.find(t => t.value == o.value)));
+    this.phoneNumbers.addAll(other.phoneNumbers.filterOnce(o => !this.phoneNumbers.find(t => t.value == o.value)));
+    this.streetAddresses.addAll(other.streetAddresses.filterOnce(o => !this.streetAddresses.find(t => t.value == o.value)));
+    this.urls.addAll(other.urls.filterOnce(o => !this.urls.find(t => t.value == o.value)));
+    this.groups.addAll(other.groups.filterOnce(o => !this.groups.find(t => t.value == o.value)));
+    this.custom.addAll(other.custom.filterOnce(o => !this.custom.find(t => t.value == o.value)));
     await other.deleteIt();
   }
 
@@ -170,20 +207,21 @@ export class ContactEntry extends Observable {
   protocol: string | null; // "email", "tel", "fax", "matrix", "xmpp" etc.
   @notifyChangedProperty
   purpose: string | null; // "work", "home", "mobile", "other", "Teams", "WhatsApp", or any other text
+  /** Least preferred, per RFC 6350 5.3 @see <https://www.rfc-editor.org/rfc/rfc6350#section-5.3> */
+  static defaultPreference = 100;
   /** Lower is more preferred */
   @notifyChangedProperty
-  preference = 0;
+  preference: number = ContactEntry.defaultPreference;
 
-  constructor(value: string, purpose: string | null = null, protocol: string | null = null) {
+  constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference: number = ContactEntry.defaultPreference) {
     super();
     this.value = value;
     this.purpose = purpose;
     this.protocol = protocol;
+    this.preference = preference;
   }
 
   clone(): ContactEntry {
-    let copy = new ContactEntry(this.value, this.purpose, this.protocol);
-    copy.preference = this.preference;
-    return copy;
+    return new ContactEntry(this.value, this.purpose, this.protocol, this.preference);
   }
 }

@@ -1,14 +1,18 @@
-<hbox on:click={(event) => catchErrors(() => onOpen(event))} bind:this={anchor}>
-  <value class="name" title={recipient.name + "\n" + recipient.emailAddress}>
+<hbox class="recipient"
+  on:click={(event) => catchErrors(() => onOpen(event))}
+  bind:this={anchor}
+  class:is-contact={recipient.findPerson()}
+  >
+  <div class="name" title={recipient.name + "\n" + recipient.emailAddress}>
     {personDisplayName(recipient)}
-  </value>
+  </div>
   {#if !recipient.findPerson()}
     {#if recipient.emailAddress}
-      <value class="domain" title={recipient.emailAddress}>
+      <div class="domain" title={recipient.emailAddress}>
         @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
-      </value>
+      </div>
     {:else}
-      <hbox>{$t`Invalid address`}</hbox>
+      <hbox class="invalid">{$t`Invalid address`}</hbox>
     {/if}
   {/if}
 </hbox>
@@ -29,6 +33,11 @@
       label={$t`Add to ${addressbook.name}`}
       onClick={() => addToAddressbook(addressbook)} />
   {/each}
+
+  <MenuLabel label={$t`Other actions`} />
+  <MenuItem
+    label={recipient.name ? $t`Copy name and email address` : $t`Copy email address`}
+    onClick={copyToClipboard} />
 </Menu>
 
 <script lang="ts">
@@ -75,20 +84,34 @@
     otherPerson.emailAddresses.add(new ContactEntry(recipient.emailAddress));
     recipient.person = otherPerson;
   }
+
+  function copyToClipboard() {
+    let text = recipient.emailAddress;
+    if (recipient.name) {
+      text = recipient.name + " <" + recipient.emailAddress + ">";
+    }
+    navigator.clipboard.writeText(text);
+  }
 </script>
 
 <style>
   :global(.app-object):has(.name) {
     display: block;
   }
+  .recipient {
+    cursor: pointer;
+  }
+  .recipient.is-contact:hover {
+    color: var(--link-hover-fg);
+  }
   .name {
     display: inline;
-    margin-inline-end: 4px;
   }
-  .domain {
+  .domain,
+  .invalid {
     display: inline;
     font-weight: normal;
     font-style: italic;
-    margin-inline-start: 4px;
+    margin-inline-start: 6px;
   }
 </style>

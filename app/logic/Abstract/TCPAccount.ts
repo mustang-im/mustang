@@ -10,6 +10,13 @@ export class TCPAccount extends Account {
   @notifyChangedProperty
   tls = TLSSocketType.Unknown;
 
+  getHostname(): string | null {
+    return this.hostname;
+  }
+  getTLS(): TLSSocketType {
+    return this.tls;
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.hostname = sanitize.hostname(json.hostname, null);

@@ -1,3 +1,4 @@
+import { File as FileEntry } from "../Files/File";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
@@ -53,6 +54,21 @@ export class Attachment extends Observable {
     return clone;
   }
 
+  asFileEntry(): FileEntry {
+    let file = new FileEntry();
+    file.setFileName(this.filename);
+    file.filepathLocal = this.filepathLocal;
+    file.size = this.size;
+    file.mimetype = this.mimeType;
+    file.contents = this.content;
+    file.id = this.contentID;
+    return file;
+  }
+
+  get ext(): string {
+    return this.filename.split(".").pop();
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
@@ -71,6 +87,12 @@ export class Attachment extends Observable {
   async deleteFile() {
     throw new NotImplemented();
   }
+
+  /** Should not show to end user. This is true for auto-processing attachments
+   * like calendar invitations (ICS), vCards, encryption signatures etc. */
+  get hidden(): boolean {
+    return kHiddenMIMETypes.includes(this.mimeType);
+  }
 }
 
 export enum ContentDisposition {
@@ -78,3 +100,14 @@ export enum ContentDisposition {
   inline = "inline",
   attachment = "attachment",
 }
+
+const kHiddenMIMETypes = [
+  "application/ics", // calendar invitation
+  "text/vcard", // vCard
+  "text/calendar", // vCard
+  "application/pkcs7-signature", // S/MIME signature
+  "application/pgp-signature", // PGP signature
+  "application/pgp-keys", // Sender announcing his PGP keys
+  // "application/pkcs7-mime", // S/MIME encrypted
+  // "application/pgp-encrypted", // PGP encrypted
+];

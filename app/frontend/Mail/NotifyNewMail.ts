@@ -1,5 +1,8 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
+import { selectedMessage, selectedFolder, selectedAccount } from "./Selected";
+import { mailMustangApp } from "./MailMustangApp";
+import { openApp, bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
 import { getLocalStorage } from "../Util/LocalStorage";
 import { sleep } from "../../logic/util/util";
@@ -129,12 +132,11 @@ export async function showNewMail(messages: EMail[]) {
 
 async function openMessage(msg: EMail) {
   try {
-    appGlobal.remoteApp.unminimizeMainWindow();
-  } catch (ex) {
-    console.error(ex);
-  }
-  try {
-    alert("open message\n" + msg.subject); // TODO
+    selectedMessage.set(msg);
+    selectedFolder.set(msg.folder);
+    selectedAccount.set(msg.folder?.account);
+    openApp(mailMustangApp);
+    bringAppToFront();
   } catch (ex) {
     console.error(ex);
   }

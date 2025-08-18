@@ -17,7 +17,8 @@ import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
-import { NotReached } from '../../util/util';
+import { appGlobal } from '../../app';
+import { NotReached, NotSupported } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newAccountForProtocol(protocol: string): MailAccount {
@@ -48,6 +49,9 @@ function _newAccountForProtocol(protocol: string): MailAccount {
   // #endif
   // #if [!WEBMAIL && PROPRIETARY]
   if (protocol == "owa") {
+    if (/*appGlobal.isMobile*/ false) {
+      throw new NotSupported("OWA is not supported on mobile");
+    }
     return new OWAAccount();
   } else if (protocol == "activesync") {
     return new ActiveSyncAccount();
@@ -71,19 +75,20 @@ export async function readMailAccounts(): Promise<Collection<MailAccount>> {
 const kProtocolLabel = {
   // Displayed to user, but do not translate (technical term)
   "imap": "IMAP",
-  "pop3": "POP3",
   "smtp": "SMTP",
-  "jmap": "JMAP",
   "ews": "EWS",
   "owa": "OWA",
   "activesync": "ActiveSync",
-  "graph": "MS Graph",
+  "graph": "MS Graph (beta)",
+  "jmap": "JMAP (alpha)",
+  "pop3": "POP3 (later)",
 }
 
 export function listMailProtocols(): string[] {
-  return Object.keys(kProtocolLabel).filter(p => p != "smtp");
+  return Object.keys(kProtocolLabel).filter(p => p != "smtp" && p != "pop3" &&
+    (/*!appGlobal.isMobile*/ true || p != "owa"));
 }
 
 export function labelForMailProtocol(protocol: string): string {
-  return kProtocolLabel[protocol];
+  return kProtocolLabel[protocol] ?? protocol.toUpperCase();
 }

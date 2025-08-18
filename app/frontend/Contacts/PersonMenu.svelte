@@ -19,6 +19,7 @@
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { getNext } from "../../logic/util/collections";
   import { t } from "../../l10n/l10n";
 
   export let person: Person;
@@ -28,16 +29,11 @@
       person.addressbook = appGlobal.personalAddressbook;
       person.addressbook.persons.add(person);
     }
-    await person.saveToServer();
     await person.save();
   }
   async function deleteIt() {
     if (person == $selectedPerson) {
-      let addressbook = person.addressbook;
-      let posInAddressbook = addressbook.persons.indexOf(person);
-      let next = addressbook.persons.getIndex(posInAddressbook)
-        ?? addressbook.persons.first;
-      $selectedPerson = next;
+      $selectedPerson = getNext(person.addressbook?.persons, person);
     }
 
     await person.deleteIt();

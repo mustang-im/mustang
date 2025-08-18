@@ -1,11 +1,12 @@
 <hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
-  style="--account-color: {event.calendar?.color}"
+  style="--color: {event.color ?? event.calendar?.color}"
   class:all-day={$event.allDay}
+  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
-      <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
+      <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
       {startTime}
     </hbox>
   {/if}
@@ -17,17 +18,17 @@
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
 
   export let event: Event;
   /** Time where the cell (not the event) starts */
   export let start: Date;
 
-  $: startTime = event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
-  $: eventAsText = (event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
+  $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
-  $: isContinued = event.startTime < start;
+  $: isContinued = $event.startTime < start;
 
   function onSelect() {
     $selectedEvent = event;
@@ -35,7 +36,7 @@
 
   function onOpen() {
     $selectedEvent = event;
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 
@@ -49,13 +50,13 @@
     max-height: 1.4em;
     min-height: 1.4em;
 
-    background-color: var(--account-color);
-    color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
+    background-color: var(--color);
+    color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
   @media (prefers-color-scheme: dark) {
     .event {
       background-image:
-        linear-gradient(var(--account-color), var(--account-color)),
+        linear-gradient(var(--color), var(--color)),
         linear-gradient(#000000AA, #000000AA);
       background-blend-mode: overlay;
       background-color: unset;
@@ -70,8 +71,15 @@
     padding: 0px 4px;
     opacity: 85%;
   }
+  .event.cancelled {
+    opacity: 30%;
+  }
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
+  }
+  .cancelled .time,
+  .cancelled .title {
+    text-decoration: line-through;
   }
 </style>

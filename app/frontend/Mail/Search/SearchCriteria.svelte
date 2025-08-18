@@ -1,7 +1,6 @@
 <vbox flex class="search-criteria">
   {#if showSearchTerm}
     <hbox class="term font-normal">
-      {$t`Search for`}
       <SearchField bind:searchTerm={search.bodyText}
         placeholder={$t`Mail content or subject`} />
     </hbox>
@@ -54,7 +53,15 @@
   </Checkbox>
   {#if hasPerson}
     <vbox flex class="listbox">
-      <PersonsList persons={availablePersons} bind:selected={search.includesPerson} size="small" />
+      <!-- showSearch=false is a workaround for:
+       1. Enter name that is not in results ->
+       2. PersonsList clears `search.includesPerson` ->
+       3. `search` changes ->
+       4. `loadSearch()` triggers (it should not) ->
+       5. `hasPerson = false` ->
+       6. PersonsList disappears ->
+       7. User cannot correct search -->
+      <PersonsList persons={availablePersons} bind:selected={search.includesPerson} showSearch={false} size="small" />
     </vbox>
   {/if}
   <Checkbox bind:checked={hasTag} allowFalse={false} allowIndetermined={true}
@@ -95,7 +102,7 @@
 
 <script lang="ts">
   import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { availableTags } from "../../../logic/Abstract/Tag";
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { Folder } from "../../../logic/Mail/Folder";
   import { EMail } from "../../../logic/Mail/EMail";
@@ -106,7 +113,7 @@
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -139,7 +146,9 @@
   let sizeMinMB: number;
   let sizeMaxMB: number;
 
-  $: $search, loadSearch() // only when a different search is loaded, *not* `$search` when its contents change
+  // Should trigger *only* when a different search is loaded, *not* `$search` when its contents change,
+  // but it actually triggers for all changes to `search`, which causes bugs, see e.g. PersonList below.
+  $: search, loadSearch()
   function loadSearch() {
     // Enable/disable: `SearchEmail` to controls
     hasAccount = search.account ? true : null;

@@ -11,10 +11,8 @@
 
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
-  import { openApp, selectedApp } from "../../AppsBar/selectedApp";
-  import { selectedCategory } from "../../Settings/Window/selected";
-  import { getSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
-  import { settingsMustangApp } from "../../Settings/Window/SettingsMustangApp";
+  import { selectedApp } from "../../AppsBar/selectedApp";
+  import { openSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { calendarMustangApp } from "../../Calendar/CalendarMustangApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
@@ -35,8 +33,7 @@
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      $selectedCategory = getSettingsCategoryForApp(calendarMustangApp);
-      openApp(settingsMustangApp);
+      openSettingsCategoryForApp(calendarMustangApp);
     }
   }
 </script>

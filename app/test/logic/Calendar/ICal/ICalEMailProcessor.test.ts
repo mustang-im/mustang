@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
-import { Scheduling, ResponseType } from "../../../../logic/Calendar/Invitation";
+import type { Event } from "../../../../logic/Calendar/Event.ts";
+import type { EMail } from "../../../../logic/Mail/EMail.ts";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
 import * as fs from "node:fs/promises";
 
@@ -12,11 +13,12 @@ function toJSON(event: Event) {
     title: event.title,
     startTime: event.startTime?.toJSON(),
     endTime: event.endTime?.toJSON(),
-    timezone: event.timezone || undefined,
+    recurrenceStartTime: event.recurrenceStartTime?.toJSON(),
+    timezone: event.timezone != "UTC" && event.timezone || undefined,
     allDay: event.allDay,
     calUID: event.calUID,
     location: event.location,
-    descriptionText: event.descriptionText,
+    descriptionText: event.descriptionText || undefined,
     recurrenceRule: event.recurrenceRule?.getCalString(event.allDay),
     participants: event.participants.contents.map(participant => participant._properties),
   };
@@ -27,9 +29,9 @@ const allFiles = await fs.readdir(dataDir);
 const testFiles = allFiles.filter(name => name.endsWith(".ics")).map(name => name.slice(0, -4));
 test.each(testFiles)("Parse %s", async name => {
   const calendar = await fs.readFile(new URL(name + ".ics", dataDir), { encoding: 'utf-8' });
-  const [invitationMessage, event] = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
+  const [invitationMessage, event] = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir), { encoding: 'utf-8' }));
   const processor = new ICalEMailProcessor();
-  const email = {
+  const email: EMail = {
     attachments: [{
       mimeType: "text/calendar",
       content: {
@@ -41,5 +43,5 @@ test.each(testFiles)("Parse %s", async name => {
   };
   await processor.process(email, null);
   expect(email.invitationMessage).toEqual(invitationMessage);
-  expect(toJSON(email.event)).toEqual(event);
+  expect(toJSON(email.event as Event)).toEqual(event);
 });

@@ -39,9 +39,9 @@ export const contactsDatabaseSchema = sql`
     -- "work", "private", "mobile", user-custom values
     "purpose" TEXT default null,
     -- Order of preference.
-    -- Lower is more preferred.
+    -- 1 is most preferred, 100 is least preferred, per RFC 6350 5.3.
     -- Number across all contact methods. Preference value should be unique per person.
-    "preference" INTEGER default 0,
+    "preference" INTEGER default null,
     -- Additional data
     "json" TEXT default null,
     -- UNIQUE("personID", "value", "protocol", "purpose"),

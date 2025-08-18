@@ -1,4 +1,4 @@
-import OWARequest from "./OWARequest";
+import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {

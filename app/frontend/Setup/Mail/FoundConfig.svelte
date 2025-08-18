@@ -33,13 +33,13 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { filterUnique } from "../../../logic/Mail/AutoConfig/collections";
+  import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
+  import { filterUnique } from "../../../logic/util/collections";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
-  import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;

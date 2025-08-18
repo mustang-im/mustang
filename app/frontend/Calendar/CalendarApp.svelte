@@ -1,38 +1,53 @@
 <vbox flex class="calendar-app">
-  <vbox flex class="main" class:mobile={$appGlobal.isMobile}>
-    <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-      {#if !$appGlobal.isMobile}
-        <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+  <Splitter
+    initialRightRatio={0.25}
+    rightMinWidth={350}
+    >
+    <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
+      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
+        {#if !$appGlobal.isMobile}
+          <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+        {/if}
+        <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
+      </MainView>
+    </vbox>
+    <vbox flex class="sidebar" slot="right">
+      {#if $selectedEvent}
+        <ShowEvent event={$selectedEvent} />
+      {:else}
+        <!--<TaskList />-->
       {/if}
-      <ViewSelector bind:dateInterval={$selectedDateInterval} slot="top-right" />
-    </MainView>
-  </vbox>
+    </vbox>
+  </Splitter>
+  {#if $appGlobal.isMobile}
+    <CalendarViewBarM />
+  {/if}
 </vbox>
-{#if $appGlobal.isMobile}
-  <CalendarViewBarM />
-{/if}
+<CalendarInBackground />
 
 <script lang="ts">
-  import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
-  import { getLocalStorage } from "../Util/LocalStorage";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
+  import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
+  import { getLocalStorage } from "../Util/LocalStorage";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
-  import ViewSelector from "./ViewSelector.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
+  import TitleBarRight from "./TitleBarRight.svelte";
+  import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
+  import CalendarInBackground from "./CalendarInBackground.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
-  import { mergeColls } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  $: events = mergeColls(appGlobal.calendars.map(cal => cal.fillRecurrences(new Date(Date.now() + 1e11)))).filter(ev => !ev.recurrenceRule).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
 
   function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date($selectedDate);
     event.startTime.setMinutes(0);
@@ -40,7 +55,7 @@
     event.startTime.setMilliseconds(0);
     event.endTime = new Date(event.startTime.getTime());
     event.endTime.setMinutes(event.startTime.getMinutes() + defaultLengthInMinutes);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

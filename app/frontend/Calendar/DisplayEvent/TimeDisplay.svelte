@@ -2,6 +2,15 @@
   <hbox class="starttime">
     {getDateTimeString($event.startTime)}
   </hbox>
+  {#if !isSameTimezone($event.timezone, $event.startTime)}
+    <hbox class="timezone">
+      {getTimezoneDisplay($event.timezone)}
+      {$event.startTime?.toLocaleString(getDateTimeFormatPref(), {
+        hour: "numeric", minute: "numeric",
+        timeZone: event.timezone,
+    })}
+    </hbox>
+  {/if}
   {#if $event.endTime}
     <hbox class="duration-prefix">
       {$t`for *=> as prefix for a time duration, e.g. 'at 5 PM for 30 minutes'`}
@@ -14,8 +23,8 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { getDateTimeString, getDurationString } from "../../Util/date";
-  import { t } from "../../../l10n/l10n";
+  import { getDateTimeString, getDurationString, getTimezoneDisplay, isSameTimezone } from "../../Util/date";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let event: Event;
 </script>
@@ -26,6 +35,9 @@
   }
   .starttime {
     font-weight: bold;
+  }
+  .timezone {
+    margin-inline-start: 16px;
   }
   .duration-prefix {
     margin-inline-start: 16px;

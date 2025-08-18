@@ -1,4 +1,4 @@
-import { setMainWindow, startupBackend, shutdownBackend } from '../../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../../backend/backend';
 import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
@@ -25,6 +25,7 @@ function createWindow(): void {
         preload: join(import.meta.dirname, '../preload/index.mjs'),
         sandbox: false,
         webviewTag: true,
+        backgroundThrottling: false,
       }
     })
     setMainWindow(mainWindow);
@@ -86,13 +87,26 @@ function createWindow(): void {
   }
 }
 
+const gotLock = app.requestSingleInstanceLock();
+if (gotLock) {
+  app.whenReady()
+    .then(whenReady);
+} else {
+  // This is a second instance
+  app.quit();
+  // Event 'second-instance' will be called within the primary instance
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(async () => {
+async function whenReady() {
   // Set app user model id for MS Windows
   // <https://learn.microsoft.com/en-us/windows/win32/shell/appids>
   electronApp.setAppUserModelId('im.mustang');
+
+  // Remove exec path
+  handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
 
@@ -103,7 +117,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createWindow()
+  createWindow();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -124,7 +138,7 @@ app.whenReady().then(async () => {
   } catch (ex) {
     console.error(ex);
   }
-})
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -134,6 +148,37 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+// macOS: Capture URL during launch
+app.on("open-url", (_event, url) => {
+  startupArgs.url = url;
+  startupArgs.notifyObservers();
+
+  if (BrowserWindow.getAllWindows().length == 0 && app.isReady()) {
+    createWindow();
+  }
+});
+
+/** Called within the primary instance when a second instance of our app was called. */
+app.on("second-instance", (_, argv) => {
+  // Remove executable path and "--allow-file-access-from-files"
+  handleCommandline(argv.splice(2));
+});
+
+function handleCommandline(args: string[]) {
+  try {
+    console.log("commandline arguments", args);
+    startupArgs.commandline = args;
+    let lastArg = args[args.length - 1];
+    if (lastArg?.includes(":")) {
+      let urlObj = new URL(lastArg); // Check syntax
+      startupArgs.url = urlObj.href;
+    }
+    startupArgs.notifyObservers();
+  } catch (ex) {
+    console.error(ex);
+  }
+}
 
 function allowCrossDomainRequestsFromFrontend() {
   const filter = { urls: ["https://*/*", "http://*/*"] };

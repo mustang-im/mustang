@@ -3,7 +3,7 @@ import type { JMAPFolder } from "./JMAPFolder";
 import type { JMAPAccount } from "./JMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
-import { getTagByName, type Tag } from "../Tag";
+import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPGetResponse, TJMAPPerson } from "./JMAPTypes";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";

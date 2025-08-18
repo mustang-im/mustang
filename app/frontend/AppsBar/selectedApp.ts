@@ -1,4 +1,6 @@
 import type { MustangApp } from "./MustangApp";
+import { appGlobal } from "../../logic/app";
+import { backgroundError } from "../Util/error";
 import { ArrayColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
 import { navigate } from "svelte-navigator";
@@ -17,4 +19,10 @@ export function openApp(app: MustangApp) {
 export function goTo(pageURL: string) {
   console.log("Go to", pageURL, "from", window.location.href);
   navigate(pageURL);
+}
+
+export function bringAppToFront() {
+  window.focus();
+  appGlobal.remoteApp.unminimizeMainWindow()
+    .catch(backgroundError);
 }

@@ -1,15 +1,16 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
-import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
-import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
+import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
 import type { EWSCalendar } from "./EWSCalendar";
-import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
-import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
-import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { EWSOutgoingInvitation } from "./EWSOutgoingInvitation";
+import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
+import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
+import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -36,9 +37,9 @@ const RecurrenceType = {
 };
 
 export class EWSEvent extends Event {
-  calendar: EWSCalendar;
-  parentEvent: EWSEvent;
-  readonly instances: ArrayColl<EWSEvent | null | undefined>;
+  declare calendar: EWSCalendar;
+  declare parentEvent: EWSEvent;
+  declare readonly exceptions: ArrayColl<EWSEvent>;
 
   get itemID(): string | null {
     return this.pID;
@@ -52,12 +53,18 @@ export class EWSEvent extends Event {
     this.calUID = sanitize.nonemptystring(xmljs.UID, null);
     this.title = sanitize.nonemptystring(xmljs.Subject, "");
     if (xmljs.Body?.BodyType == "Text") {
-      this.descriptionText = sanitize.nonemptystring(xmljs.Body.Value, "");
+      this.rawText = sanitize.nonemptystring(xmljs.Body.Value, "");
+      this.rawHTMLDangerous = null;
     } else {
-      this.descriptionText = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
+      this.rawText = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
       if (xmljs.Body?.BodyType == "HTML") {
-        this.descriptionHTML = sanitize.nonemptystring(xmljs.Body.Value, "");
+        this.rawHTMLDangerous = sanitize.nonemptystring(xmljs.Body.Value, "");
+      } else {
+        this.rawHTMLDangerous = null;
       }
+    }
+    if (xmljs.DateTimeStamp) {
+      this.lastUpdateTime = sanitize.date(xmljs.DateTimeStamp);
     }
     if (xmljs.RecurrenceId) {
       this.recurrenceStartTime = sanitize.date(xmljs.RecurrenceId);
@@ -76,53 +83,57 @@ export class EWSEvent extends Event {
     this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
-      this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
+      this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(xmljs.Location, "");
+    this.isCancelled = sanitize.boolean(xmljs.IsCancelled, false);
+    let organizer: string | undefined;
     let participants: Participant[] = [];
+    if (xmljs.Organizer && (xmljs.RequiredAttendees?.Attendee || xmljs.OptionalAttendees?.Attendee)) {
+      organizer = sanitize.emailAddress(xmljs.Organizer.Mailbox.EmailAddress);
+      xmljs.Organizer.ResponseType = "Organizer";
+      addParticipants(xmljs.Organizer, participants);
+    }
     if (xmljs.RequiredAttendees?.Attendee) {
-      addParticipants(xmljs.RequiredAttendees.Attendee, participants);
+      addParticipants(xmljs.RequiredAttendees.Attendee, participants, organizer);
     }
     if (xmljs.OptionalAttendees?.Attendee) {
-      addParticipants(xmljs.OptionalAttendees.Attendee, participants);
+      addParticipants(xmljs.OptionalAttendees.Attendee, participants, organizer);
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
     }
   }
 
-  newRecurrenceRule(xmljs: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+  protected newRecurrenceRuleFromXML(xmljs: any): RecurrenceRule {
+    let masterDuration = this.duration;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(xmljs.NumberedRecurrence?.NumberOfOccurrences, Infinity);
     let key = Object.keys(RecurrenceType).find(key => key in xmljs);
@@ -132,7 +143,11 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingInvitation() {
+    return new EWSOutgoingInvitation(this);
   }
 
   async saveToServer() {
@@ -153,8 +168,14 @@ export class EWSEvent extends Event {
       this.parentEvent ?
       new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callEWS(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
+    request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { BodyType: "HTML", _TextContent_: this.rawHTMLDangerous } : { BodyType: "Text", _TextContent_: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
@@ -185,27 +206,27 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "EndTimeZone", { Id: timezone }, "calendar:EndTimeZone");
     let response = await this.calendar.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
-    if (this.calUID) {
-      return;
-    }
-    // Need an extra server roundtrip to get the UID
-    request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "calendar:UID",
-            }],
+
+    if (!this.calUID) {
+      // Need an extra server roundtrip to get the UID
+      request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "calendar:UID",
+              }],
+            },
+          },
+          m$ItemIds: {
+            t$ItemId: response.Items.CalendarItem.ItemId,
           },
         },
-        m$ItemIds: {
-          t$ItemId: response.Items.CalendarItem.ItemId,
-        },
-      },
-    };
-    response = await this.calendar.account.callEWS(request);
-    this.calUID = sanitize.nonemptystring(response.Items.CalendarItem.UID);
+      };
+      response = await this.calendar.account.callEWS(request);
+      this.calUID = sanitize.nonemptystring(response.Items.CalendarItem.UID);
+    }
   }
 
   async saveTask() {
@@ -232,7 +253,7 @@ export class EWSEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   saveRule(rule: RecurrenceRule) {
@@ -245,7 +266,7 @@ export class EWSEvent extends Event {
       pattern.t$Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       pattern.t$DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -255,26 +276,26 @@ export class EWSEvent extends Event {
       pattern.t$DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      pattern.t$DayOfMonth = rule.startDate.getDate();
+      pattern.t$DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      pattern.t$Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      pattern.t$Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
     let recurrence: any = {};
     recurrence[`t$${recurrenceType}Recurrence`] = pattern;
     if (rule.count < Infinity) {
       recurrence.t$NumberedRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
         t$NumberOfOccurrences: rule.count,
       };
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.t$EndDateRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
-        t$EndDate: this.dateString(rule.endDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$EndDate: this.dateString(rule.seriesEndTime, true),
       };
     } else {
       recurrence.t$NoEndRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
       };
     }
     return recurrence;
@@ -292,7 +313,7 @@ export class EWSEvent extends Event {
           m$ItemIds: {
             t$OccurrenceItemId: {
               RecurringMasterId: this.parentEvent.itemID,
-              InstanceIndex: this.parentEvent.instances.indexOf(this) + 1,
+              InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
             },
           },
           DeleteType: "MoveToDeletedItems",
@@ -303,17 +324,116 @@ export class EWSEvent extends Event {
     }
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
-    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
+  /** Returns a copy of the event as read from the server */
+  async fetchFromServer(): Promise<EWSEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let request = {
+      m$GetItem: {
+        m$ItemShape: {
+          t$BaseShape: "Default",
+          t$BodyType: "Best",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "item:Body",
+            }, {
+              FieldURI: "item:ReminderIsSet",
+            }, {
+              FieldURI: "item:ReminderMinutesBeforeStart",
+            }, {
+              FieldURI: "item:LastModifiedTime",
+            }, {
+              FieldURI: "item:TextBody",
+            }, {
+              FieldURI: "calendar:StartTimeZoneId",
+            }, {
+              FieldURI: "calendar:IsAllDayEvent",
+            }, {
+              FieldURI: "calendar:MyResponseType",
+            }, {
+              FieldURI: "calendar:RequiredAttendees",
+            }, {
+              FieldURI: "calendar:OptionalAttendees",
+            }, {
+              FieldURI: "calendar:Recurrence",
+            }, {
+              FieldURI: "calendar:ModifiedOccurrences",
+            }, {
+              FieldURI: "calendar:DeletedOccurrences",
+            }, {
+              FieldURI: "calendar:UID",
+            }, {
+              FieldURI: "calendar:RecurrenceId",
+            }, {
+              FieldURI: "task:Recurrence",
+            }],
+          },
+        },
+        m$ItemIds: {
+          t$ItemId: {
+            Id: this.itemID,
+          },
+        },
+      },
+    };
+    let result = await this.calendar.account.callEWS(request);
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromXML(result.Items.CalendarItem);
+    return event;
+  }
+
+  async makeExclusions(exclusions: EWSEvent[]) {
+    let request = {
+      m$DeleteItem: {
+        m$ItemIds: exclusions.map(event => ({
+          t$OccurrenceItemId: {
+            RecurringMasterId: this.itemID,
+            InstanceIndex: this.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
+          },
+        })),
+        DeleteType: "MoveToDeletedItems",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      },
+    };
     await this.calendar.account.callEWS(request);
+    await super.makeExclusions(exclusions);
+  }
+
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
+    let itemID = this.itemID;
+    // Unfortunately this API won't take an OccurrenceItemId directly.
+    if (!itemID) {
+      // In case the invitation is for a single instance of a recurring meeting
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+          },
+          m$ItemIds: {
+            t$OccurrenceItemId: {
+              RecurringMasterId: this.parentEvent.itemID,
+              InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
+            },
+          },
+        },
+      };
+      let response = await this.calendar.account.callEWS(request);
+      itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
+    }
+    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: itemID });
+    await this.calendar.account.callEWS(request);
+    await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
 }
 
-function addParticipants(attendees, participants: Participant[]) {
+function addParticipants(attendees, participants: Participant[], organizer?: string) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
+    if (emailAddress != organizer) {
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    }
   }
 }
 
@@ -337,7 +457,7 @@ class EWSUpdateOccurrenceRequest {
 
   constructor(event: EWSEvent, attributes?: {[key: string]: string | boolean}) {
     this.itemChange.t$OccurrenceItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1;
     Object.assign(this.m$UpdateItem, attributes);
   }
 
@@ -353,10 +473,10 @@ class EWSUpdateOccurrenceRequest {
       field.t$FieldURI = { FieldURI };
     }
     if (value == null) {
-      this.itemChange.t$Updates.t$DeleteItemField.push(field);
+      this.itemChange.t$Updates.t$DeleteItemField.unshift(field);
     } else {
       field["t$" + type] = { ["t$" + key]: value };
-      this.itemChange.t$Updates.t$SetItemField.push(field);
+      this.itemChange.t$Updates.t$SetItemField.unshift(field); // reverse order for Event time zone
     }
   }
 }

@@ -2,7 +2,7 @@ import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
-import OWACreateItemRequest from "./Request/OWACreateItemRequest";
+import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import {
   owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
   owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,

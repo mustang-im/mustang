@@ -5,6 +5,7 @@ import { Person } from "../../logic/Abstract/Person";
 import { selectedPerson } from "../Contacts/Person/Selected";
 import { NotImplemented } from "../../logic/util/util";
 
+// TODO compare openApp(), openEventFromOtherApp(), mailto: etc.
 export function openUIFor(obj: Observable) {
   if (obj instanceof Person) {
     selectedPerson.set(obj);

@@ -1,5 +1,6 @@
 <hbox class="value">
-  <a href="mailto:{value}">
+  <a href="mailto:{value}"
+    on:click={event => event.stopPropagation()}>
     {value}
   </a>
 </hbox>

@@ -1,11 +1,11 @@
 import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
+import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
-import type { OAuth2 } from "../Auth/OAuth2";
 
 export class Account extends Observable {
   id: string;
@@ -29,7 +29,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
   @notifyChangedProperty
-  oAuth2: OAuth2 = null;
+  oAuth2: WebBasedAuth = null;
   @notifyChangedProperty
   password: string | null = null;
   @notifyChangedProperty
@@ -106,6 +106,15 @@ export class Account extends Observable {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
 
+  /** The cookie store to use when loading this account. For `<webview partition="persist:...">` */
+  get webSessionID(): string | null {
+    return this.id;
+  }
+
+  /** User needs a software license to use this account */
+  needsLicense(): boolean {
+    return false;
+  }
 
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
@@ -133,7 +142,7 @@ export class Account extends Observable {
   fromConfigJSON(json: any) {
     assert(typeof (json) == "object", "Config must be a JSON object");
     (this.id as any) = sanitize.alphanumdash(json.id);
-    assert(this.protocol == sanitize.alphanumdash(json.protocol), "MailAccount object of wrong type passed in");
+    assert(this.protocol == sanitize.alphanumdash(json.protocol), `Account object of wrong type passed in: data ${json.protocol} != class ${this.protocol}`);
     this.username = sanitize.string(json.username, null);
     this.authMethod = sanitize.integerRange(json.authMethod, 0, 20);
     this.url = sanitize.url(json.url, null);
@@ -179,14 +188,16 @@ export enum AuthMethod {
 }
 
 let lastID = 0;
+let usedIDs = new Set<string>();
 function findFreeAccountID(): string {
   let allAccounts = getAllAccounts();
 
   for (let i = ++lastID; true; i++) {
     let id = "account" + i;
-    if (allAccounts.contents.some(acc => acc.id == id)) {
+    if (allAccounts.find(acc => acc.id == id) || usedIDs.has(id)) {
       continue;
     }
+    usedIDs.add(id);
     return id;
   }
 }

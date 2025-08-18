@@ -1,15 +1,18 @@
-<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if displayEvents && !displayEvents.isEmpty}
-    {#each displayEvents.each as event (event.id)}
-      <EventBlock {event} {start} {end} otherEvents={events} />
+<vbox flex class="events" on:dblclick={addEvent}>
+  {#if $displayEvents && !$displayEvents.isEmpty}
+    {#each $displayEvents.each as event (event.id)}
+      {#if event.startTime && event.endTime}
+        <EventBlock {event} {start} {end} otherEvents={events} />
+      {/if}
     {/each}
   {/if}
 </vbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate } from "../selected";
+  import { selectedCalendar } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
+  import { appGlobal } from "../../../logic/app";
   import EventBlock from "./EventBlock.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
@@ -25,19 +28,16 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
-  }
-
-  function selectDay() {
-    $selectedDate = start;
+    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
   }
 
   function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date(start);
     event.endTime = new Date(start);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 

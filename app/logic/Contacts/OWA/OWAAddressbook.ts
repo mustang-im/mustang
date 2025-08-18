@@ -3,12 +3,18 @@ import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { RunOnce } from "../../util/RunOnce";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
+  canSync: boolean = true;
   readonly persons: ArrayColl<OWAPerson>;
   readonly groups: ArrayColl<OWAGroup>;
+  listContactsOnce = new RunOnce(() => this.listContactsSlow());
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -22,6 +28,10 @@ export class OWAAddressbook extends Addressbook {
   }
 
   async listContacts() {
+    await this.listContactsOnce.maybeRun();
+  }
+
+  async listContactsSlow() {
     let response = await this.account.callOWA(new OWAGetPeopleFiltersRequest());
     let contacts = response.find(filter => !filter.IsReadOnly);
     if (!contacts) {
@@ -29,10 +39,12 @@ export class OWAAddressbook extends Addressbook {
       this.groups.clear();
       return;
     }
+    let newFolderID = !this.folderID; // Temporary until support for multiple address books
+    this.folderID ??= contacts.FolderId;
     if (!this.name) {
       this.name = contacts.DisplayName;
     }
-    if (!this.dbID) {
+    if (!this.dbID || newFolderID) {
       await this.save();
     }
 
@@ -72,11 +84,11 @@ export class OWAAddressbook extends Addressbook {
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
-          await person.save();
+          await person.saveLocally();
         } else {
           person = this.newPerson();
           person.fromJSON(result);
-          await person.save();
+          await person.saveLocally();
           this.persons.add(person);
         }
       } catch (ex) {
@@ -101,11 +113,11 @@ export class OWAAddressbook extends Addressbook {
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);
-          await group.save();
+          await group.saveLocally();
         } else {
           group = this.newGroup();
           group.fromJSON(result);
-          await group.save();
+          await group.saveLocally();
           this.groups.add(group);
         }
       } catch (ex) {
@@ -114,12 +126,22 @@ export class OWAAddressbook extends Addressbook {
     }
   }
 
-  getPersonByPersonaID(id: string): OWAPerson | void {
+  getPersonByPersonaID(id: string): OWAPerson | undefined {
     return this.persons.find(p => p.personaID == id);
   }
 
-  getGroupByPersonaID(id: string): OWAGroup | void {
+  getGroupByPersonaID(id: string): OWAGroup | undefined {
     return this.groups.find(p => p.personaID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }
 

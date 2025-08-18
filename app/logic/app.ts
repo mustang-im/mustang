@@ -6,9 +6,9 @@ import type { Addressbook } from './Contacts/Addressbook';
 import type { Calendar } from './Calendar/Calendar';
 import type { MeetAccount } from './Meet/MeetAccount';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
-import type { Directory } from './Files/File';
+import type { FileSharingAccount } from './Files/FileSharingAccount';
 import type { Workspace } from './Abstract/Workspace';
-import WebApps from './WebApps/WebApps';
+import { WebApps } from './WebApps/WebApps';
 import { Observable, notifyChangedProperty } from './util/Observable';
 import { ArrayColl, Collection, mergeColls } from 'svelte-collections';
 
@@ -17,9 +17,10 @@ class AppGlobal extends Observable {
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly addressbooks = new ArrayColl<Addressbook>();
   readonly calendars = new ArrayColl<Calendar>();
+  readonly calendarEvents = mergeColls(this.calendars.map(cal => cal.eventsWithRecurrences)).sortBy(ev => ev.startTime);
   readonly meetAccounts = new ArrayColl<MeetAccount>();
   readonly meetings = new ArrayColl<VideoConfMeeting>();
-  readonly files = new ArrayColl<Directory>();
+  readonly fileSharingAccounts = new ArrayColl<FileSharingAccount>();
   readonly workspaces = new ArrayColl<Workspace>();
   readonly webApps = new WebApps();
 

@@ -14,11 +14,11 @@
         {#each days as day}
           <vbox class="day-header header">
             <vbox class="date-day">
-              <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
-              <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
+              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
             </vbox>
             <vbox class="all-day-events">
-              {#each allDayEvents.contents.filter(ev => ev.startTime <= day && day <= ev.endTime) as event (event.id)}
+              {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
                 <AllDayEvent {event} {start} />
               {/each}
             </vbox>
@@ -45,7 +45,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -104,7 +104,7 @@
   $: start, $events, setAllDayEvents();
   function setAllDayEvents() {
     let end = new Date(start.getTime() + showDays * k1DayMS);
-    allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
+    allDayEvents = events.filterObservable(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
   }
 
   function goToToday() {
@@ -146,6 +146,7 @@
   }
   .day-header .date {
     font-size: 180%;
+    overflow-wrap: break-word;
   }
   .all-day-events {
     margin: 10px -16px -10px -16px;
@@ -154,6 +155,8 @@
   .weekday {
     margin-block-start: -4px;
     margin-block-end: 4px;
+    max-height: 1.3em;
+    overflow: hidden;
   }
   @container (max-height: 1000px)  {
     .day-header {

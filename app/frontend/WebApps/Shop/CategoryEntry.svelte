@@ -11,7 +11,7 @@
 {/if}
 
 <script lang="ts">
-  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
+  import type { WebAppCategory } from "../../../logic/WebApps/WebAppCategory";
   import Categories from "./Categories.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";

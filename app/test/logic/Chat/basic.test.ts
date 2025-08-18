@@ -12,7 +12,7 @@ test.each(kChatAccounts)("Test $protocol account $username", async (config) => {
   let acc = newChatAccountForProtocol(config.protocol);
   acc.username = config.username;
   acc.password = config.password;
-  acc.hostname = acc.hostname;
+  acc.hostname = config.hostname;
 
   await acc.login(false);
 });

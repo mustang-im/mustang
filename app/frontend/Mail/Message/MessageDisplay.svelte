@@ -4,8 +4,8 @@
   >
   <MessageHeader {message} />
   <MessageAttachments {message} />
-  {#if $message.event || $message.scheduling}
-    <Invitation {message} />
+  {#if $message.event || $message.invitationMessage}
+    <InvitationInMail {message} />
   {/if}
   <vbox class="body" flex>
     <Paper>
@@ -24,7 +24,7 @@
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
-  import Invitation from "../../Calendar/DisplayEvent/Invitation.svelte";
+  import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
   import MessageDisplayBarM from "./MessageDisplayBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import { catchErrors } from "../../Util/error";

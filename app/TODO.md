@@ -1,43 +1,50 @@
+# Release
+* Polish based on feedback
+* License notification bar
+* Payment: Upgrade
+  * Upgrade page in Settings: Billing
+  * Server
+* OAuth
+  * Google: Renewal TAC - Started, waiting for Google
+  * Microsoft: localhost redirect URL - Client ID vs. account unclear
+* Calendar: DB change; main account
+* Calendar: Find identity #682
+
+# Polish
+* Account icons
+* Contacts History
+  * Now bar
+  * Hide all recurring events more than 1 week in the future
+  * Make icon clickable
+
 # Next
-* Mail
-  * Beta banner
-  * Search
-    * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
-      * Email
-      * Chat
   * Actions (Filters)
-    * Run
+    * Run on fetch, not full download
+    * Save/load folder and tag
+    * Move on server fails, works locally
   * Calendar
-    * Edit Event:
-      * Buttons: Recurring
-      * Sidebar
-    * List view: FastList missing scrollbar
     * Invitations
     * Free/Busy
-  * Files
-    * Files (attachments) don't open
+    * Tasks
+  * Contacts
+    * Add new line with no value when editing
+      (if we can do it without moving the other boxes)
+    * Same name: Checkboxes
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
-  * OAuth2 login UI with browser/URL options
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bug: FastList doesn't update some rows #66
-  * Bug: FastList misses last row (off-by-1)
   * Threads
     * Search all folders
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
+  * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
-  * All accounts
-    * Use search folder
-    * Fix mergeColls() #72
   * Setup mail
     * After account delete: remove general panel
     * Scroll inside dialog, not whole window
-
-# Initial release
-* License notification bar
 
 # Feedback
 ## Elena
@@ -59,8 +66,7 @@
 * MailChat/Thread: Jail HTML: Styles and size
 ## Nick
 * Mac: Use Mac Password manager
-* Gmail: Log in with browser
-* Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
+* Manual setup: OAuth2 UI: "Browser" goes back to "Separate window"
 ## mjl
 * Back button (after clicking on an email address in an email, want to go back to email)
 * Selected message: After switching back to email, email is not longer selected
@@ -79,11 +85,44 @@
 * Threading
 * Good
   * modern feeling
+## Stefanie
+* Onboarding
+  * Start with email setup, not selection screen
+  * Don't exit setup
+* gmx.net / web.de unable to verify the first certificate on macOS 14.5
+* Contacts: Add (+) when "All" selected: add to personal addressbook
+* Demo: Files: Add Files for persons
+* Chat: selected person not shown
+* Mail: Get out of Folder settings mode
  ## Freshness
 * Account colors
-* Icons for accounts, based on favicon or user-set
+* Icons for accounts: user-set
 * Pic for users, in identities
 * Unified inbox: Show account as tag or icon
+
+
+# WebApps
+
+* Add custom app
+  * Name
+  * URL
+  * Icon (Default: Automatic from favicon of URL)
+  * For Meet: Other people can see the same document based on the URL
+  * For Integration:
+    * URL for email address search
+    * URL for email subject substring search
+    * URL for project search
+* Store: Add more apps
+* window.open()
+* Save/load last URL of app, in separate localStorage item
+
+## During meeting
+* URL
+  * Catch clipboard with URL
+  * Share link via meeting
+  * Open URL shared
+* Share screen of Mustang (?)
+
 
 # Chat
 
@@ -143,11 +182,17 @@
 
 # Meet
 ## UI
-* Open/close cam and mic
-* UI before joining conference
+* Self: Black after turning off cam
+* Meeting pic in UI before joining conference
 
 ## Protocol
+* LiveKit
+  * Waiting room
+  * Server
+    * Invite links
+  * Reconnect
 * M3 server
+  * Open/close cam and mic
   * Participant opening/closing cam is delayed
   * Mute/unmute without destroying stream
   * TURN server
@@ -200,7 +245,7 @@
 * Thread pane sort
 * Threading in Thread pane
 * Save/Load mail as .eml file
-* OS mailto: and send file as email
+* OS send file as email (dangerous) #315
 * Format/flowed
 * Encryption
   * PGP
@@ -279,6 +324,9 @@
 * SIP
   * Voice call to phone system
   * Incoming calls
+  * jssip
+* AI
+  * mcp-framework
 
 ## App logic
 * init

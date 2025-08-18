@@ -50,7 +50,7 @@
     inputEl.focus();
   }
 
-  function onKeyPress(event: KeyboardEvent, onEnter: () => void) {
+  function onKeyPress(event: KeyboardEvent) {
     if (event.key == "Escape") {
       event.preventDefault();
       event.stopPropagation();

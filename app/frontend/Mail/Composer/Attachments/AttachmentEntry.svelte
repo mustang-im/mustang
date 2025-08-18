@@ -1,24 +1,27 @@
 <hbox class="attachment">
   <hbox class="icon">
-    <FileIcon ext={$attachment.filename?.split(".").pop()} size={32} />
+    <FileIcon {ext} localFilePath={$attachment.filename} size={32} />
   </hbox>
   <vbox flex class="right">
     <hbox class="name font-small">
       {attachment.filename}
     </hbox>
-    <hbox class="size font-small">
-      {$t`${Math.ceil($attachment.size / 1024)} KB`}
+    <hbox class="second-line">
+      <hbox class="size font-small">
+        {$t`${Math.ceil($attachment.size / 1024)} KB`}
+      </hbox>
+      <hbox flex />
+      <hbox class="buttons">
+        <Button plain icon={DeleteIcon} iconSize="16px" iconOnly onClick={onDelete} />
+        <!--<Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />-->
+      </hbox>
     </hbox>
-  </vbox>
-  <vbox class="buttons">
-    <Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />
-    <Button plain icon={DeleteIcon} iconSize="16px" iconOnly onClick={onDelete} />
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { Attachment } from "../../../../logic/Abstract/Attachment";
-  import FileIcon from "../../../Files/FileIcon.svelte";
+  import FileIcon from "../../../Files/Thumbnail/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -27,6 +30,8 @@
 
   export let attachment: Attachment;
   export let attachments: Collection<Attachment>;
+
+  $: ext = attachment.filename.split(".").pop();
 
   async function onDelete() {
     attachments.remove(attachment);
@@ -62,7 +67,6 @@
   }
   .buttons {
     align-items: start;
-    margin-block-start: 4px;
   }
   .buttons :global(svg) {
     color: lightgrey;

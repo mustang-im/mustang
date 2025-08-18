@@ -5,7 +5,7 @@ import { gt } from "../../l10n/l10n";
 
 export class ContactsMustangApp extends MustangApp {
   id = "contacts";
-  name = gt`Contacts`;
+  name = gt`People *=> or Persons - Short word, less than 10 characters`;
   icon = contactsIcon;
   mainWindow = ContactsApp;
 }

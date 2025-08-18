@@ -12,8 +12,8 @@
 </vbox>
 
 <script lang="ts">
-  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
-  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import type { WebAppCategory } from "../../../logic/WebApps/WebAppCategory";
+  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import AppShopButton from "./WebAppShopButton.svelte";
 
   export let category: WebAppCategory;

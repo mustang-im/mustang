@@ -1,6 +1,6 @@
-import OWARequest from "./OWARequest";
+import { OWARequest } from "./OWARequest";
 
-export default class OWACreateItemRequest extends OWARequest {
+export class OWACreateItemRequest extends OWARequest {
   Body: any = {
     __type: "CreateItemRequest:#Exchange",
     Items: [{}],

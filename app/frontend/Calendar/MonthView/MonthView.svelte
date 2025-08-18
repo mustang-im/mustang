@@ -1,4 +1,5 @@
-<vbox class="month-view" flex>
+<vbox class="month-view" flex
+  on:mousewheel={event => catchErrors(() => onScrollWheel(event))}>
   <hbox class="range-header">
     <slot name="top-left" />
     <hbox flex />
@@ -9,7 +10,7 @@
   <grid flex class="month">
     {#each weekDays as day}
       <hbox class="weekday">
-        {day.toLocaleDateString(getUILocale(), { weekday: "short" })}
+        {day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "short" })}
       </hbox>
     {/each}
     {#each days as day}
@@ -31,8 +32,9 @@
   import DateRange from "../DateRange.svelte";
   import { selectedDate } from "../selected";
   import { getWeekDays } from "../../Util/date";
+  import { catchErrors } from "../../Util/error";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { getUILocale } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -55,6 +57,12 @@
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
+  }
+
+  function onScrollWheel(event: WheelEvent) {
+    const upDown = event.deltaY > 0 ? 1 : -1;
+    start.setDate(start.getDate() + showDays * upDown);
+    start = start;
   }
 </script>
 

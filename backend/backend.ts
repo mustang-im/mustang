@@ -3,18 +3,22 @@ import JPCWebSocket from '../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../app/logic/build';
 import { WebContents } from './WebContents';
+import { Observable, notifyChangedProperty } from '../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater } from "electron";
+import electronUpdater from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+const { autoUpdater } = electronUpdater;
 
 let jpc: JPCWebSocket | null = null;
 
@@ -51,7 +55,13 @@ async function createSharedAppObject() {
     openExternalURL,
     openFileInNativeApp,
     showFileInFolder,
+    startupArgs,
+    isDefaultApp,
+    setAsDefaultApp,
+    onScreenSharingSelect,
     restartApp,
+    checkForUpdate,
+    installUpdate,
     setTheme,
     openMenu,
     getConfigDir,
@@ -62,12 +72,17 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    createWebDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
     readFile,
     writeFile,
+    getIconForLocalFile,
+    getIconForFileType,
+    getThumbnailForLocalFile,
+    listDirectoryContents,
     fs: fsPromises,
     directory,
     platform,
@@ -240,6 +255,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     status: response.status,
     statusText: response.statusText,
     data: await response[responseType](),
+    RetryAfter: response.headers.get("Retry-After"),
     WWWAuthenticate: response.headers.get("WWW-Authenticate"),
   };
 }
@@ -282,6 +298,37 @@ function restartApp() {
   app.quit();
 }
 
+/** @returns have update */
+async function checkForUpdate(): Promise<boolean | undefined> {
+  let result = await autoUpdater.checkForUpdates();
+  return result?.isUpdateAvailable;
+  /* return new Promise(async (resolve, reject) => {
+    let result = await autoUpdater.checkForUpdates();
+    if (result?.isUpdateAvailable) {
+      resolve(true);
+      return;
+    }
+    autoUpdater.once("update-available", () => {
+      resolve(true);
+    });
+    autoUpdater.once("update-not-available", () => {
+      resolve(false);
+    });
+    autoUpdater.once("error", reject);
+  });*/
+}
+
+async function installUpdate() {
+  await autoUpdater.downloadUpdate();
+  await new Promise((resolve, reject) => {
+    autoUpdater.once("update-downloaded", () => {
+      resolve(null);
+    });
+    autoUpdater.once("error", reject);
+  });
+  autoUpdater.quitAndInstall(true, true);
+}
+
 function setTheme(theme: "system" | "light" | "dark") {
   if (!["system", "light", "dark"].includes(theme)) {
     throw new Error("Bad theme name " + theme);
@@ -297,8 +344,68 @@ function openFileInNativeApp(filePath: string) {
   shell.openPath(filePath);
 }
 
+class StartupArgs extends Observable {
+  /** URL that our app should open, e.g. mailto: URL */
+  @notifyChangedProperty
+  url: string | null = null;
+  /** All OS commandline arguments.
+   * Note: First argument is typically the app itself. */
+  @notifyChangedProperty
+  commandline: string[] | null = null;
+  /** Clear parameters when a specific handler has understood and handled them */
+  handled() {
+    this.url = null;
+    this.commandline = null;
+  }
+}
+export const startupArgs = new StartupArgs();
+
+/** @param protocol E.g. "mailto" */
+function isDefaultApp(protocol: string) {
+  return app.isDefaultProtocolClient(protocol);
+}
+
+/** @param protocol E.g. "mailto" */
+function setAsDefaultApp(protocol: string) {
+  return app.setAsDefaultProtocolClient(protocol);
+}
+
 function showFileInFolder(filePath: string) {
   shell.showItemInFolder(filePath);
+}
+
+function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], error?: Error) => Promise<DesktopCapturerSource>,
+    thumbnailWidth: number, thumbnailHeight: number) {
+  console.log("Screen sharing dialog", !!onSelect ? "shown" : "closed");
+  if (!onSelect || typeof(onSelect) != "function") {
+    session.defaultSession.setDisplayMediaRequestHandler(null);
+    return;
+  }
+  session.defaultSession.setDisplayMediaRequestHandler(
+    async (request, callback) => {
+      try {
+        // Security
+        let url = new URL(request.securityOrigin);
+        assert(url.protocol == "file:" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
+        assert(request.userGesture, `Screen share must be initiated by the user`);
+        let screens = await desktopCapturer.getSources({
+          types: ["screen", "window"],
+          thumbnailSize: { width: thumbnailWidth, height: thumbnailHeight },
+        });
+        let screen = await onSelect(screens);
+        callback({ video: screen, audio: 'loopback' });
+      } catch (ex) {
+        if (!(ex instanceof Error)) {
+          ex = new Error(ex + "");
+        }
+        onSelect([], ex as Error);
+      }
+    },
+    // If true, use the system picker if available.
+    // Note: this is currently experimental. If the system picker
+    // is available, it will be used and the media request handler
+    // will not be invoked.
+    { useSystemPicker: os.platform() == "darwin" });
 }
 
 
@@ -332,6 +439,10 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
+}
+
+function createWebDAVClient(options: any) {
+  return new DAVClient(options);
 }
 
 function newAdmZIP(filepath: string) {
@@ -371,7 +482,11 @@ function maximizeMainWindow() {
 
 function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {
   const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
+  if (!win) {
+    // race?
+    console.error(`WebContents ID ${webContentsID} not found`);
+    return;
+  }
   win.on(webviewEvent as any, (_: any, event: Event) => {
     eventHandler(event);
   });
@@ -394,6 +509,93 @@ function writeTextToClipboard(text: string) {
 
 function setBadgeCount(count: number) {
   app.setBadgeCount(count);
+}
+
+export interface FileStat {
+  /** Filename */
+  name: string;
+  /** File path, including file name */
+  path: string;
+  /** true: is a directory, false: is a file */
+  isDirectory: boolean;
+  /** File size, in bytes */
+  size: number | undefined;
+  /** Time of last modification */
+  lastMod: Date | undefined;
+}
+
+/**
+ * Get the files and directories within a directory on the harddrive
+ * @param dirPath path of the directory for which you want to see the contents
+ * @param withStats includes size and last modification time (slower, extra work)
+ * @param includeHidden include dotfiles (on Unix: name starting with ".")
+ * @returns list of files and directories in the directory
+ */
+async function listDirectoryContents(dirPath: string, withStats = true, includeHidden = false): FileStat[] {
+  let files = [] as FileStat[];
+  let entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
+  for (let entry of entries) {
+    if (!includeHidden && entry.name[0] == ".") {
+      continue;
+    }
+    let file = {} as FileStat;
+    file.name = entry.name;
+    file.path = path.join(entry.parentPath, entry.name);
+    if (entry.isDirectory()) {
+      file.isDirectory = true;
+    } else if (entry.isFile()) {
+      file.isDirectory = false;
+    } else {
+      continue;
+    }
+    if (withStats) {
+      let stat = await fsPromises.stat(file.path);
+      file.size = stat.size;
+      file.lastMod = stat.mtime;
+    }
+    files.push(file);
+  }
+  return files;
+}
+
+/** @returns data: URL */
+async function getIconForFileType(ext: string, mimetype: string): Promise<string> {
+  let dummy = path.join(app.getPath("temp"), "foo." + ext);
+  await fsPromises.writeFile(dummy, "");
+  const image = await app.getFileIcon(dummy);
+  await fsPromises.unlink(dummy);
+  return image.toDataURL();
+}
+
+/** @returns data: URL */
+async function getIconForLocalFile(fullPath: string): Promise<string> {
+  // size `large` not supported on MacOS, it causes the app to crash
+  let isMac = os.platform() == "darwin";
+  let image = await app.getFileIcon(fullPath, { size: isMac ? "normal" : "large" });
+  return image.toDataURL();
+}
+
+/** @returns data: URL */
+async function getThumbnailForLocalFile(fullPath: string, width: number, height: number): Promise<string | null> {
+  if (!fullPath) {
+    return null;
+  }
+  let platform = os.platform();
+  let haveOS = platform == "win32" || platform == "darwin"
+  let image: NativeImage;
+  if (haveOS) {
+    image = await nativeImage.createThumbnailFromPath(fullPath, { width, height });
+  } else { // electron doesn't implement createThumbnailFromPath() on Linux
+    let ext = fullPath.split(".").pop();
+    if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "gif" || ext == "bmp") {
+      // TODO check `~/.thumbnails/normal/` ?
+      image = nativeImage.createFromPath(fullPath);
+      image = image.resize({ width, quality: "good" }); // no height, to keep aspect ratio
+    } else {
+      return null;
+    }
+  }
+  return image.toDataURL();
 }
 
 function platform(): string {

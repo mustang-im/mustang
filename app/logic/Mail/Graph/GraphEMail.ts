@@ -3,7 +3,7 @@ import type { GraphFolder } from "./GraphFolder";
 import type { GraphAccount } from "./GraphAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
-import { getTagByName, type Tag } from "../Tag";
+import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./GraphTypes";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";

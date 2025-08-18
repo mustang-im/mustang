@@ -7,42 +7,22 @@
     {#if $message.contact instanceof Person && $message.contact.picture}
       <PersonPicture person={$message.contact} />
     {/if}
-    <vbox>
-      <hbox class="from">
-        {#if $message.outgoing}
-          <value class="from" title={$message.from.emailAddress}>
-            {from}
-          </value>
-        {:else}
-          <Recipient recipient={$message.from} />
-        {/if}
-      </hbox>
-      {#if $message.to.hasItems}
-        <hbox class="to font-small">
-          {$t`to`}&nbsp;
-          <RecipientList recipients={$message.to} />
-        </hbox>
+    <hbox class="from">
+      {#if $message.outgoing}
+        <value class="from" title={$message.from.emailAddress}>
+          {$t`me *=> myself as sender of the email`}
+        </value>
+      {:else}
+        <Recipient recipient={$message.from} />
       {/if}
-      {#if $message.cc.hasItems}
-        <hbox class="cc font-small">
-          {$t`cc`}&nbsp;
-          <RecipientList recipients={$message.cc} />
-        </hbox>
-      {/if}
-      {#if $message.bcc.hasItems}
-        <hbox class="bcc font-small">
-          {$t`bcc`}&nbsp;
-          <RecipientList recipients={$message.bcc} />
-        </hbox>
-      {/if}
-    </vbox>
+    </hbox>
     <hbox flex />
     <vbox class="top-right">
       <MessageToolbar {message} />
       <hbox>
         {#if $tags.hasItems}
           <hbox class="tags">
-            <TagSelector tags={$tags} {message} canAdd={false}>
+            <TagSelector tags={$tags} object={message} canAdd={false}>
               <RoundButton
                 slot="tag-button"
                 let:tag
@@ -60,10 +40,30 @@
       </hbox>
     </vbox>
   </hbox>
+  <vbox class="recipients">
+    {#if $message.to.hasItems}
+      <hbox class="to font-small">
+        <hbox class="label">{$t`to`}</hbox>
+        <RecipientsList recipients={$message.to} />
+      </hbox>
+    {/if}
+    {#if $message.cc.hasItems}
+      <hbox class="cc font-small">
+        <hbox class="label">{$t`cc`}</hbox>
+        <RecipientsList recipients={$message.cc} />
+      </hbox>
+    {/if}
+    {#if $message.bcc.hasItems}
+      <hbox class="bcc font-small">
+        <hbox class="label">{$t`bcc`}</hbox>
+        <RecipientsList recipients={$message.bcc} />
+      </hbox>
+    {/if}
+  </vbox>
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
-    <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
+    <value class="date font-small" title={$message.sent?.toLocaleString(getDateTimeFormatPref())}>
       {getDateTimeString($message.sent)}
     </value>
     {#if !$appGlobal.isSmall}
@@ -72,22 +72,32 @@
       </vbox>
     {/if}
   </hbox>
+  {#if message.to.isEmpty || message.from.emailAddress == kDummyPerson.emailAddress}
+  {#await message.loadForDisplay()}
+    <!-- Subject etc. are loaded by search,
+      and body is loaded by MessageBody calling message.loadBody(),
+      but not to/from etc. -->
+  {:catch ex}
+    <ErrorMessageInline {ex} />
+  {/await}
+{/if}
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID, kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";
-  import type { Tag } from "../../../logic/Mail/Tag";
+  import type { Tag } from "../../../logic/Abstract/Tag";
   import { appGlobal } from "../../../logic/app";
   import MessageToolbar from "./MessageToolbar.svelte";
-  import RecipientList from "./RecipientList.svelte";
+  import RecipientsList from "./RecipientsList.svelte";
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import { Swipe } from "../../Shared/Gesture";
@@ -95,14 +105,10 @@
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
   import { onDestroy } from "svelte";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let message: EMail;
 
-  $: from = message.outgoing
-    ? "me"
-    : message.contact?.name
-      ?? message.from.emailAddress;
   $: tags = message.tags;
 
   let readDelaySetting = getLocalStorage("mail.read.after", 0); // 0 = Immediately; -1 = Manually; 1 to 20 = delay in seconds
@@ -131,6 +137,9 @@
 
   $: selectPerson(message?.contact);
   function selectPerson(contact: PersonOrGroup | PersonUID) {
+    if (contact instanceof PersonUID) {
+      contact = contact.findPerson();
+    }
     if (!(contact instanceof Person)) {
       return;
     }
@@ -178,6 +187,13 @@
     font-weight: normal;
     color: grey;
   }
+  .recipients {
+    justify-content: end;
+  }
+  .recipients .label {
+    margin-block-start: 2px;
+    margin-inline-end: 6px;
+  }
   .to {
     color: grey;
   }
@@ -200,6 +216,9 @@
   }
   .display-mode {
     justify-content: end;
+  }
+  .message-header :global(.error) {
+    margin-inline: -4px -12px;
   }
   @media (max-width: 600px)  {
     .message-header {

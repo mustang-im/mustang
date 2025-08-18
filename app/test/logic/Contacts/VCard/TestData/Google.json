@@ -1,0 +1,81 @@
+{
+  "name": "John Doe",
+  "picture": "https://lh3.googleusercontent.com/contacts/AG6tpzFRvQdmBEZXbo8vE9Ju7deDp5FMyDWU9M_6FqtzqU1gWVOFyxci",
+  "lastName": "Doe",
+  "firstName": "John",
+  "emailAddresses": [
+    {
+      "value": "myemailaddress@example.org",
+      "protocol": "mailto",
+      "purpose": "work",
+      "preference": 100
+    },
+    {
+      "value": "anotheremail@mustang.im",
+      "protocol": "mailto",
+      "purpose": "home",
+      "preference": 100
+    },
+    {
+      "value": "thirdemail@example.com",
+      "protocol": "mailto",
+      "purpose": "other",
+      "preference": 100
+    }
+  ],
+  "phoneNumbers": [
+    {
+      "value": "+49 5456 56565",
+      "protocol": "tel",
+      "purpose": "home",
+      "preference": 100
+    },
+    {
+      "value": "+49 5678 90123",
+      "protocol": "tel",
+      "purpose": "other",
+      "preference": 100
+    },
+    {
+      "value": "+49 0349443423",
+      "protocol": "tel",
+      "purpose": "other",
+      "preference": 100
+    }
+  ],
+  "chatAccounts": [],
+  "streetAddresses": [
+    {
+      "value": {
+        "instructions": "\n123456",
+        "street": "Somerset Close",
+        "city": "Mönchengladbach",
+        "state": "",
+        "postalCode": "41179",
+        "country": "DE"
+      },
+      "purpose": "other",
+      "protocol": null,
+      "preference": 100
+    }
+  ],
+  "urls": [
+    {
+      "value": "https://www.mustang.im/",
+      "purpose": "other",
+      "protocol": "https",
+      "preference": 100
+    },
+        {
+      "value": "https://parula.beonex.com/",
+      "purpose": "other",
+      "protocol": "https",
+      "preference": 100
+    }
+  ],
+  "notes": "Some notes\nCustom: Some custom field",
+  "company": "Mustang",
+  "position": "CEO",
+  "department": "Technical Dept.",
+  "custom": []
+}

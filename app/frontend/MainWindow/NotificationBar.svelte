@@ -38,14 +38,17 @@
 {/if}
 
 <script lang="ts">
-  import { notifications, Notification } from "./Notification";
+  import type { Notification } from "./Notification";
   import Button from "../Shared/Button.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import ErrorInfoIcon from "lucide-svelte/icons/bot";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  $: notification = $notifications.sortBy(n => n.severity).first;
+  export let notifications: ArrayColl<Notification>;
+
+  $: notification = notifications.sortBy(n => n.severity).first;
 
   function onClose(notification: Notification) {
     notifications.remove(notification);

@@ -5,15 +5,16 @@
     left: {conflicts.indexOf(event) / conflicts.length * 100}%;
     height: {heightInPercent}%;
     width: {100 / conflicts.length}%;
-    --account-color: {event.calendar?.color}"
+    --color: {event.color ?? event.calendar?.color}"
   class:conflict={conflicts.length > 1}
+  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if showTime}
-    <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
+    <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
     <hbox class="time">{startTime}</hbox>
   {/if}
   {#if showTitle}
-    <hbox class="title">{event.title}</hbox>
+    <hbox class="title">{$event.title}</hbox>
   {/if}
 </hbox>
 
@@ -22,7 +23,7 @@
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
 
   export let event: Event;
@@ -32,25 +33,27 @@
   export let end: Date;
   export let otherEvents: Collection<Event>;
 
-  $: startTime = event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
-  $: eventAsText = (event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
+  $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
   $: blockHeightInMS = end.getTime() - start.getTime();
-  $: startPosInPercent = Math.max(0, (event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
-  $: heightInPercent = Math.min(100, (event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
+  $: startPosInPercent = Math.max(0, ($event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
+  $: heightInPercent = Math.min(100, ($event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
   /** Other events that run at the same time. Includes this event */
-  $: conflicts = otherEvents.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
-  $: showTime = start <= event.startTime && event.startTime < end || start.getHours() == 0;
+  $: conflicts = otherEvents.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+  $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
   $: showTitle = showTime || conflicts.length > 1;
 
-  function onSelect() {
+  function onSelect(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
   }
 
-  function onOpen() {
+  function onOpen(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 
@@ -61,13 +64,13 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 
-    background-color: var(--account-color);
-    color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
+    background-color: var(--color);
+    color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
   @media (prefers-color-scheme: dark) {
     .event {
       background-image:
-        linear-gradient(var(--account-color), var(--account-color)),
+        linear-gradient(var(--color), var(--color)),
         linear-gradient(#000000BB, #000000BB);
       background-blend-mode: overlay;
       background-color: unset;
@@ -82,11 +85,18 @@
     margin-inline-start: -2px;
     border: 2px solid red;
   }
+  .event.cancelled {
+    opacity: 30%;
+  }
   .time {
     font-weight: 600;
   }
   .time, .title {
     margin-inline-start: 6px;
     margin-block-start: 5px;
+  }
+  .cancelled .time,
+  .cancelled .title {
+    text-decoration: line-through;
   }
 </style>

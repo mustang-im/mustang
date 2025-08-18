@@ -3,17 +3,15 @@ import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
-import { Event } from "../Calendar/Event";
-import { Participant } from "../Calendar/Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation";
-import { ContactEntry, type Person } from "../Abstract/Person";
+import { ContactEntry } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
+import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, AbstractFunction, type URLString } from "../util/util";
+import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
-import { Collection, ArrayColl, MapColl } from 'svelte-collections';
+import { Collection, ArrayColl } from 'svelte-collections';
 
 export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
@@ -36,14 +34,9 @@ export class MailAccount extends TCPAccount {
   readonly identities = new ArrayColl<MailIdentity>();
   @notifyChangedProperty
   readonly filterRuleActions = new ArrayColl<FilterRuleAction>();
-  /** Only for setup. We know a config, but the user needs to do some manual steps for this ISP */
-  setupInstructions: SetupInstruction[] | null = null;
+  setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
-  /** List of all messages in all folders,
-   * filtered based on the person.
-   * TODO move up, across all accounts? */
-  readonly messages = new MapColl<Person, EMail>();
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();
@@ -84,22 +77,6 @@ export class MailAccount extends TCPAccount {
     throw new AbstractFunction();
   }
 
-  async sendInvitationResponse(invitation: Event, response: InvitationResponseInMessage): Promise<void> {
-    let organizer = invitation.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
-    let email = this.newEMailFrom();
-    email.to.add(organizer);
-    email.iCalMethod = "REPLY";
-    email.event = new Event();
-    email.event.copyFrom(invitation);
-    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
-    if (email.event.descriptionText) {
-      email.text = email.event.descriptionText;
-      email.html = email.event.descriptionHTML;
-    }
-    await this.send(email);
-  }
-
   /** Create a folder on the top level, sibling of Inbox.
    * @see Folder.createSubFolder() */
   async createToplevelFolder(name: string): Promise<Folder> {
@@ -115,7 +92,7 @@ export class MailAccount extends TCPAccount {
   }
 
   newEMailFrom(): EMail {
-    let folder = this.getSpecialFolder(SpecialFolder.Drafts);
+    let folder = this.getSpecialFolder(SpecialFolder.Sent);
     let email = folder.newEMail();
     email.compose.generateMessageID();
     email.needToLoadBody = false;
@@ -135,9 +112,9 @@ export class MailAccount extends TCPAccount {
     appGlobal.emailAccounts.remove(this);
   }
 
-  isEMailAddress(emailAddress: string): boolean {
+  isMyEMailAddress(emailAddress: string): boolean {
     return this.emailAddress == emailAddress ||
-      this.identities.some(id => id.emailAddress == emailAddress);
+      this.identities.some(id => id.isEMailAddress(emailAddress));
   }
 
   /** Get the `specialFolder` in this account. */
@@ -163,10 +140,15 @@ export class MailAccount extends TCPAccount {
       MailIdentity.fromConfigJSON(json, this)));
     this.filterRuleActions.clear();
     this.filterRuleActions.addAll(sanitize.array(json.filterRuleActions, []).map(json => {
-      let rule = new FilterRuleAction(this);
-      rule.fromJSON(json);
-      return rule;
-    }));
+      try {
+        let rule = new FilterRuleAction(this);
+        rule.fromJSON(json);
+        return rule;
+      } catch (ex) {
+        this.errorCallback(ex);
+        return null;
+      }
+    }).filter(rule => !!rule));
     if (json.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
@@ -196,6 +178,7 @@ export class MailAccount extends TCPAccount {
     this.tls = other.tls;
     this.authMethod = other.authMethod;
     this.username = other.username;
+    this.password = other.password;
     this.emailAddress = other.emailAddress;
     this.realname = other.realname;
 
@@ -257,11 +240,4 @@ export enum DeleteStrategy {
   DeleteImmediately = 1,
   Flag = 1,
   MoveToTrash = 3,
-}
-
-export class SetupInstruction {
-  instruction: string | null;
-  url: URLString | null;
-  enterPassword: boolean = false;
-  enterUsername: boolean = false;
 }

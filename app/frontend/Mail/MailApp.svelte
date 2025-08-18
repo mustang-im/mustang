@@ -5,7 +5,7 @@
 {:else if view == "vertical"}
  <VerticalLayout {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
 {:else}
-  <ThreePane {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  <ThreePane {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} horizontal={view != "widetable"} />
 {/if}
 
 <script lang="ts">
@@ -23,8 +23,9 @@
   import MailChat from "./MailChat/MailChat.svelte";
   import FolderPropertiesPage, { openFolderProperties } from "./FolderPropertiesPage.svelte";
   import { ArrayColl } from "svelte-collections";
+  import { PersonUID } from "../../logic/Abstract/PersonUID";
 
-  $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
+  $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
 
@@ -59,8 +60,10 @@
       $selectedPerson = message.contact;
       return;
     }
-    let personUID = message.outgoing ? message.to.first : message.from;
-    let person = personUID?.findPerson();
+    if (!(message.contact instanceof PersonUID)) {
+      return;
+    }
+    let person = message.contact?.findPerson();
     if (!person) {
       return;
     }

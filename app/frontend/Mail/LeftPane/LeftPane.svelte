@@ -5,14 +5,18 @@
       </vbox>
       <hbox flex />
       <hbox class="buttons">
+        {#if activeTab == SearchView.Folder}
+          <GetMailButton folder={selectedFolder ?? selectedAccount?.inbox} />
+        {/if}
         {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
-          <WriteButton account={selectedAccount} />
+          <WriteButton account={selectedAccount}
+            to={activeTab == SearchView.Person && $selectedPerson ? PersonUID.fromPerson($selectedPerson) : null } />
         {/if}
       </hbox>
     </hbox>
 
   {#if activeTab == SearchView.Person}
-    <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} />
+    <PersonsList persons={appGlobal.persons} bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
   {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={endSearchMode} />
@@ -39,6 +43,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
@@ -65,8 +70,8 @@
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedFolders: ArrayColl<Folder>;
+  export let activeTab: SearchView;
 
-  let activeTab = SearchView.Folder;
   $: if (!!$globalSearchTerm) openSearchPane();
   function openSearchPane() {
     activeTab = SearchView.Search;
@@ -82,10 +87,6 @@
       searchMessages = null;
     }
   }
-
-  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
-  // Reproduction: window title | search field | (x) button
-  $: if ($globalSearchTerm == null) endSearchMode();
   function endSearchMode() {
     activeTab = SearchView.Folder;
   }

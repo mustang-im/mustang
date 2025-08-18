@@ -206,7 +206,7 @@ export class IMAPAccount extends MailAccount {
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
     try {
-      connection?.close();
+      await connection?.close();
     } catch (ex) {
       // Sometimes gives "Connection not available". Do nothing.
     }
@@ -216,7 +216,8 @@ export class IMAPAccount extends MailAccount {
     this.connections.set(purpose, null);
     this.notifyObservers();
 
-    if (!this.oAuth2?.isLoggedIn) {
+    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+        !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
@@ -337,6 +338,7 @@ export class IMAPAccount extends MailAccount {
 
   protected async saveSent(email: EMail): Promise<void> {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
+    email.isRead = true;
     await sentFolder.addMessage(email);
   }
 

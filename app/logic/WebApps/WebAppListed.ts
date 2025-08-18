@@ -1,11 +1,13 @@
 import { getUILocale } from "../../l10n/l10n";
 import { sourceLocale } from "../../l10n/list";
+import { getAllAccounts, type Account } from "../Abstract/Account";
+import { assert } from "../util/util";
 
 /**
  * A third party web app listed in our app store.
  * The user can select and use this app.
  */
-export default class WebAppListed {
+export class WebAppListed {
   /** e.g. "microsoft-word" */
   id: string;
   /** Categories to which this app belongs.
@@ -51,15 +53,42 @@ export default class WebAppListed {
       "";
   }
 
+  /** The cookie storage. For `<webview partition="persist:...">` */
+  webSessionID: string | null;
+  /** Load the app in the cookie storage of this account. Should match `sessionID` */
+  account: Account | null;
+
+  instantiate(account?: Account): WebAppListed {
+    let app = this.clone();
+    assert(app.id, "Need app ID");
+    assert(app.start, "Need app start URL");
+    app.account = account;
+    app.webSessionID = account?.webSessionID ??
+      "webapp:" + app.id + ":" + crypto.randomUUID().substring(0, 6);
+    console.log("adding", app);
+    return app;
+  }
+
+  clone(): WebAppListed {
+    return WebAppListed.fromJSON(this.toJSON());
+  }
   static fromJSON(json: any): WebAppListed {
     let result = new WebAppListed();
-    const props = ['id', 'categoryFullIDs', 'name', 'description', 'icon', 'homepage', 'pricePage', 'start',];
-    for (let name in json) {
-      if (!props.includes(name)) {
-        continue;
-      }
+    for (let name of WebAppListed.jsonProps) {
       result[name] = json[name];
+    }
+    if (result.webSessionID) {
+      result.account = getAllAccounts().find(acc => acc.webSessionID == result.webSessionID);
     }
     return result;
   }
+  toJSON(): any {
+    let json = {} as any;
+    for (let name of WebAppListed.jsonProps) {
+      json[name] = this[name];
+    }
+    return json;
+  }
+  protected static jsonProps = ['id', 'categoryFullIDs', 'name', 'description', 'icon',
+    'homepage', 'pricePage', 'start', 'webSessionID',];
 }

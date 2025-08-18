@@ -48,16 +48,19 @@
   export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
+  export let typedText: string = ""; /* in/out */
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     if (!inputStr || inputStr.length < 2) {
       return [];
     }
     try {
-      inputStr = inputStr.toLowerCase();
+      let inputParts = inputStr.toLowerCase().split(" ");
       let persons: Person[] = [];
       for (let ab of appGlobal.addressbooks) {
-        persons.push(...ab.persons.filter(person => person.name?.toLowerCase().includes(inputStr)));
+        persons.push(...ab.persons.filterOnce(person => inputParts.every(inputPart =>
+          person.name?.toLowerCase().includes(inputPart) ||
+          person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
       }
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {
@@ -111,18 +114,11 @@
     }
     sanitize.emailAddress(emailAddress);
 
-    /* TODO
-    let person = new Person(appGlobal.collectedAddressbook);
-    person.name = name;
-    person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
-    appGlobal.persons.add(person);
-    */
     let personUID = new PersonUID(emailAddress, name);
     onAddPerson(personUID);
     return personUID;
   }
 
-  let typedText: string;
   function canCreate(typedText: string) {
     // email address is substring, e.g. "Fred <fred@example.com>"
     return typedText && sanitize.emailAddress(typedText, "");
@@ -161,7 +157,7 @@
   border-bottom-right-radius: 5px;
 }
 .person-autocomplete :global(.autocomplete-list-item-create) {
-  opacity: 50%;
+  color: rgb(from var(--main-fg) r g b / 50%);
   font-size: 14px;
 }
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {

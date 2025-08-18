@@ -103,7 +103,7 @@ export class MatrixAccount extends ChatAccount {
     // let picMXC = member.getMxcAvatarUrl();
     // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
     person.picture = picURL;
-    appGlobal.persons.add(person);
+    //appGlobal.persons.add(person);
     return person;
   }
   async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
@@ -175,7 +175,7 @@ export class MatrixAccount extends ChatAccount {
       person = new ChatPerson();
       person.name = event.displayname;
       person.picture = event.avatar_url; // may be null
-      appGlobal.persons.add(person);
+      //appGlobal.persons.add(person);
     }
 
     if (data.membership == "join" || data.membership == "leave") {

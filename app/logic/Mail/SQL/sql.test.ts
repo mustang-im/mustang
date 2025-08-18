@@ -4,8 +4,8 @@ import { SQLMailAccount } from './SQLMailAccount';
 import { SQLEMail } from './SQLEMail';
 import { SQLFolder } from './SQLFolder';
 import { SQLSearchEMail } from './SQLSearchEMail';
-import { readMailAccounts } from '../AccountsList/SQL';
-import { fakeChatPerson, fakeMailAccount, fakePersons } from '../../testData';
+import { readMailAccounts } from '../AccountsList/MailAccounts';
+import { FakeMailAccount, FakeChatPerson, fakePersons, FakeAddressbook } from '../../testData';
 import { makeTestDatabase } from './SQLDatabase';
 import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { appGlobal } from '../../app';
@@ -17,9 +17,10 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
-  appGlobal.me = fakeChatPerson();
-  appGlobal.persons.addAll(fakePersons(50));
-  let originalAccount = fakeMailAccount(appGlobal.persons, appGlobal.me, 30);
+  appGlobal.me = new FakeChatPerson();
+  let addressbook = new FakeAddressbook();
+  fakePersons(50, addressbook);
+  let originalAccount = new FakeMailAccount(addressbook.persons, appGlobal.me, 30);
   appGlobal.emailAccounts.add(originalAccount);
   expect(originalAccount).toBeDefined();
   let originalFolders = originalAccount.getAllFolders();
@@ -40,7 +41,7 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   }
 
   // Clear
-  appGlobal.persons.clear();
+  addressbook.persons.clear();
   appGlobal.emailAccounts.clear();
 
   // Read

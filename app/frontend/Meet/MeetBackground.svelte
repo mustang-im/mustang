@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
-  import { openApp, selectedApp, sidebarApp } from "../AppsBar/selectedApp";
+  import { openApp, selectedApp } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
   import { appGlobal } from "../../logic/app";
 
@@ -14,7 +14,7 @@
   $: meeting = $meetings.first;
   $: meeting && openMeet();
   function openMeet() {
-    if (meeting.state == MeetingState.OutgoingCallPrepare ||
+    if (meeting.state == MeetingState.OutgoingCallConfirm ||
         meeting.state == MeetingState.OutgoingCall ||
         meeting.state == MeetingState.IncomingCall) {
       openApp(meetMustangApp);

@@ -2,12 +2,13 @@ import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { ComposeActions } from "./ComposeActions";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
-import type { Tag } from "./Tag";
+import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
-import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
+import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage, type iCalMethod } from "../Calendar/Invitation";
+import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -78,7 +79,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   needToLoadBody = true;
   /** For SQLEMail and alternatives only */
-  storageLock = new Lock();
+  readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
   /* Only used when constructing iMIP outgoing messages */
@@ -201,36 +202,15 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let event: Event;
-    for (let calendar of appGlobal.calendars) {
-      event = calendar.events.find(event => event.calUID == this.event.calUID);
-      if (event) {
-        break;
-      }
+  getUpdateCalendars(): Collection<Calendar> {
+    assert(this.invitationMessage && this.event, "Must have event to find calendar");
+    let validCalendars = appGlobal.calendars.filter(calendar => calendar.canAcceptAnyInvitation);
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // Allow the user to move the local invitation event to another calendar
+      return validCalendars;
     }
-    if (!event) {
-      let calendar = appGlobal.calendars.first;
-      event = calendar.newEvent();
-      event.copyFrom(this.event);
-      event.response = InvitationResponse.NoResponseReceived;
-      calendar.events.add(event);
-      if (event.recurrenceRule) {
-        event.fillRecurrences(new Date(Date.now() + 1e11));
-      }
-    }
-    let participant = event.participants.find(participant => participant.emailAddress == this.folder.account.emailAddress);
-    if (participant) {
-      event.response = participant.response = response;
-      await event.save();
-      await this.sendInvitationResponse(response);
-    }
-    /* else add participant? */
-  }
-
-  protected async sendInvitationResponse(response: InvitationResponseInMessage): Promise<void> {
-    await this.folder.account.sendInvitationResponse(this.event, response);
+    let foundCalendars = validCalendars.filter(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
+    return foundCalendars;
   }
 
   async loadEvent() {
@@ -261,15 +241,13 @@ export class EMail extends Message {
       }
     }*/
 
-    if (!this.id || !this.subject || !this.from || !this.sent) {
-      this.id = sanitize.string(mail.messageId, this.id ?? "");
-      this.subject = sanitize.string(mail.subject, this.subject ?? "");
-      this.sent = sanitize.date(mail.date, this.sent ?? new Date());
-      if (mail.from?.address) {
-        this.from = findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
-      } else {
-        this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
-      }
+    this.id ??= sanitize.string(mail.messageId, this.id ?? "");
+    this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
+    this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
+    if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
+      this.from = mail.from?.address
+        ? findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null))
+        : kDummyPerson;
     }
     setPersons(this.to, mail.to);
     setPersons(this.cc, mail.cc);
@@ -355,6 +333,10 @@ export class EMail extends Message {
     check.dbID = this.dbID;
     await this.storage.readMessageWritableProps(check);
     return check.downloadComplete;
+  }
+
+  async loadForDisplay() {
+    await this.loadMIME();
   }
 
   async loadMIME() {

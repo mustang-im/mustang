@@ -5,9 +5,9 @@
  * Yes, it is all here, everything that you need to remove licenses.
  *
  * In case you are not aware, I have put much of my time into helping create
- * Thunderbird, Parula, and lots of other Open-Source software,
+ * Thunderbird, Mustang, Parula, and lots of other Open-Source software,
  * and this is how I pay for my work and how I can live.
- * So how about a little favor. If you use your cleverness to use the software
+ * So how about a little favor: If you use your cleverness to use the software
  * for free for yourself, please don't use that to broadly "help"
  * the rest of the world with cracked versions, with scripts, or with
  * instructions how to bypass the license.
@@ -24,41 +24,72 @@
  * build better software?
  *
  * Hey, I'll even give you a *free* legitimate license, if you just help a
- * little with the core product!
+ * little with the product!
  *
  * Ben Bucksch
  * Original creator
  */
 
-import { production, siteRoot } from "../build";
-import { getUILocale, gt } from "../../l10n/l10n";
+import { gLicense } from "./License";
+import { siteRoot } from "../build";
+import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
 import { appGlobal } from "../app";
 import { logError } from "../../frontend/Util/error";
-import { gLicense } from "./License";
+import { getUILocale, gt } from "../../l10n/l10n";
+import { SetColl } from "svelte-collections";
 
-const kSoonExpiringPollInterval = 24 * 60 * 60 * 1000; // 1 day
-const kSoonExpiring = 14 * 24 * 60 * 60 * 1000; // 2 weeks
-const kOld = -14 * 24 * 60 * 60 * 1000; // 2 weeks ago
-
-const kGetLicenseURL = `${siteRoot}/?`;
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
-const kPublicKey = `data:application/octet-stream;base64,MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6OOUqJLzc/q4b4Djfv091QCSA1QwS4scXQltt+WDSiiXI2DwyIA6bY4khJERDxrTdOQ+izx8SdVwwx7LQezRhnTi+Sls+sV7arkWiRz+13Y7LLApPvRZ1Db/nohue6lop3pjdAeudeVkWAViYdBQOv5A6U9uPl3Oki4CzJnHHiM8ojWVUte3HgyINzcIR4gdTH2aB4a97tUSq/sTbluQ2+7H4HLOjuUtaroIvR5Oq4tuAVKvhdO1UUi0JFXAbnOhljKWTsHdcsncB72pj3rUjrHyK8gViy6xDYycV81Rhq299QhQDmeX9zBAlr1YA2D72EzogxbS3gGUVnt05XR+rwIDAQAB`;
+// cat license.pem.pub, and append the part between "-----" after "base64,"
+const kPublicKey = `data:application/octet-stream;base64,MIIBI
+jANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxFMLzKJp3iEqjbnej/I8
+JB9pPvYqFqxwa9MZkvuHwpDLf00mKq86KGvxhbRiGz944NXk8Fb6jKbcnr85CWHy
+S/e4qc5MgfQMyJ51DkzTc5/tvEWzb8xjgbI3Qwr/emqmRgL3UtFSN+Za2Whwmp0I
+IquA6unKhpdWDXY8uZHWy0N7ilqpo90bdHqB8NBrs22oeFqejnk/VOCSAOoizV6j
+gWuDyHfr2GRiHb8iRPQlxTPg3zkR3nDjSp9JH7kwWwmDBrV4oC8rOCdkCAYW2ScB
+y0sjmpvA6wc8/NnsJkZg9veeoCDmeC2qSWdZFon1SUHnGcUGVGvVJedhBblAgRjh
+fQIDAQAB`;
 
 export class Ticket {
+  /* The user currently has a valid license */
   valid: boolean = false;
-  status: string = "missing";
   /** When this ticket expires */
   expiresOn: Date = new Date();
-  /** How much time is left until this ticket expires
-   * in milliseconds */
-  expiredIn: number = 0;
+  /** Should re-fetch from server */
   requiresRefresh: boolean = false;
+
+  /** How much time is left until this ticket expires.
+   * Negative numbers show the time since it expired.
+   * @unit milliseconds */
+  get expiresIn(): number {
+    return this.expiresOn.getTime() - Date.now();
+  }
+
+  /** How many full days until the license expires.
+   * Negative numbers show the days since it expired.
+   * @unit days */
+  get daysLeft(): number {
+    return Math.floor(this.expiresIn / k1DayMS);
+  }
+
+  get isExpired(): boolean {
+    return this.valid && this.expiresIn < 0;
+  }
+
+  get isSoonExpiring(): boolean {
+    const kSoonExpiring = 2 * k1WeekMS; // 2 weeks
+    return this.valid && !this.isExpired && this.expiresIn < kSoonExpiring;
+  }
+
+  get hasRecentlyExpired(): boolean {
+    const kRecentlyExpired = k1MonthMS; // 1 month
+    return this.valid && this.isExpired && this.expiresIn > kRecentlyExpired;
+  }
 }
 
 export class BadTicket extends Ticket {
-  constructor(status: string = "missing") {
+  constructor() {
     super();
-    this.status = status;
+    this.valid = false;
   }
 }
 
@@ -95,7 +126,7 @@ export async function ensureLicensed() {
   if (ticket?.valid && !ticket.requiresRefresh) {
     return;
   }
-  ticket = await checkLicense();
+  ticket = await checkSavedLicense();
   /* Allows the Open-Source parts - e.g. email signatures - to check whether
    * this is a paid version.
    * Also a cache, to avoid re-validating the ticket cryptographically for every server call. */
@@ -103,7 +134,7 @@ export async function ensureLicensed() {
   if (ticket?.valid && !ticket.requiresRefresh) {
     return;
   }
-  if (ticket.expiredIn < kOld) {
+  if (ticket.isExpired && !ticket.hasRecentlyExpired) {
     // We lost that user. Stop polling.
     throw new NoValidLicense();
   }
@@ -135,14 +166,18 @@ async function nextPoll() {
   }
   gPolling = true;
   try {
-    let ticket = await checkLicense();
-    if (ticket.status != "normal" && ticket.requiresRefresh) {
+    let ticket = await checkSavedLicense();
+    if (ticket.isSoonExpiring || ticket.hasRecentlyExpired || ticket.requiresRefresh) {
       await fetchTicket();
     }
     gLicense.license = ticket;
   } catch (ex) {
     logError(ex);
   }
+}
+
+export async function fetchLicenseFromServer(): Promise<Ticket> {
+  return fetchTicket();
 }
 
 /** A promise that resolves when a ticket refresh finishes */
@@ -166,28 +201,25 @@ async function fetchTicket(): Promise<Ticket> {
  */
 async function fetchTicketUnqueued(): Promise<Ticket> {
   let name: string | null = null;
-  let emailAddresses: string[] = [];
+  let emailAddresses = new SetColl<string>();
   for (let account of appGlobal.emailAccounts) {
     for (let identity of account.identities) {
       let emailAddress = identity.emailAddress;
       if (identity.isCatchAll) {
         emailAddress = emailAddress.replace("*", "any");
       }
-      emailAddresses.push(emailAddress);
-      if (!name) {
-        name = identity.realname;
-      }
+      emailAddresses.add(emailAddress);
+      name ??= identity.realname;
     }
   }
-  if (!emailAddresses.length || !name) {
+  if (emailAddresses.isEmpty) {
     throw new AccountMissingError();
   }
-  let email = emailAddresses[0];
 
-  let url = kLicenseServerURL + "ticket/" + email + "?" +
+  let url = kLicenseServerURL + "ticket/" + emailAddresses.first + "?" +
     new URLSearchParams({
-      name: name,
-      aliases: emailAddresses.slice(1).join(","),
+      name: name ?? "",
+      aliases: emailAddresses.contents.slice(1).join(","),
       tbversion: "100",
     });
   let response = await fetch(url, { cache: "reload" });
@@ -200,10 +232,10 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
     // this purge to happen accidentally, even after a server bug.)
     saveTicket(null);
   }
-  let ticket = await checkLicense();
+  let ticket = await checkSavedLicense();
   if (!ticket?.valid) {
-    await startTrial(emailAddresses, name);
-    ticket = await checkLicense();
+    await startTrial(emailAddresses.contents, name);
+    ticket = await checkSavedLicense();
   }
   return ticket;
 }
@@ -235,7 +267,7 @@ async function startTrial(emailAddresses: string[], name: string) {
   saveTicket(signedTicket);
 
   if (isFirstRun()) {
-    openPurchasePage("welcome");
+    openPurchasePage(null, "welcome");
   }
 }
 
@@ -252,7 +284,7 @@ export async function addTicketFromString(signedTicketStr: string) {
 /**
  * Checks the saved ticket to see whether it is valid.
  */
-export async function checkLicense(): Promise<Ticket> {
+export async function checkSavedLicense(): Promise<Ticket> {
   let signedTicket = getSavedTicket();
   if (!signedTicket) {
     return new BadTicket();
@@ -270,16 +302,8 @@ export async function checkLicense(): Promise<Ticket> {
   let end = Date.parse(ticketJSON.end);
   let refresh = Date.parse(ticketJSON.refresh);
   ticket.expiresOn = new Date(end);
-  ticket.expiredIn = end - Date.now();
-  ticket.valid = ticket.expiredIn > 0;
+  ticket.valid = !ticket.isExpired;
   ticket.requiresRefresh = ticket.valid && refresh < Date.now(); // ticket expired. poll on every call.
-  if (!ticket.valid) {
-    ticket.status = "expired";
-  } else if (ticket.expiredIn > kSoonExpiring) {
-    ticket.status = "normal";
-  } else {
-    ticket.status = "expiring";
-  }
   return ticket;
 }
 
@@ -321,7 +345,7 @@ async function verifyTicketSignature(signedTicket: SignedTicketFromServer): Prom
 }
 
 /** Read ticket from local settings */
-function getSavedTicket(): SignedTicketFromServer | null {
+export function getSavedTicket(): SignedTicketFromServer | null {
   let signedTicketStr = localStorage.getItem("license");
   if (!signedTicketStr) {
     return null;
@@ -342,36 +366,58 @@ function isFirstRun(): boolean {
   return isFirstRun;
 }
 
-/** How often to poll after the user clicked [Purchase] */
-const kPurchasePollInterval = 10 * 1000; // 10 seconds
-/** For how long to poll after the user clicked [Purchase] */
-const kPurchasePollFor = 30 * 60 * 1000; // 30 minutes
+const kGetLicenseURL = siteRoot;
 
-/** Called from [Purchase] button in license bar and in settings page */
-async function openPurchasePage(mode: "welcome" | "purchase" = "purchase") {
+/** Called from [Bug] button in license bar and in settings page,
+ * and on first run */
+export async function openPurchasePage(paidCallback?: (license: Ticket) => void, mode: "welcome" | "purchase" = "purchase") {
   let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
-  let pageURL = kGetLicenseURL + new URLSearchParams({
+  let pageURL = kGetLicenseURL + "?" + new URLSearchParams({
     email: primaryIdentity.emailAddress,
     name: primaryIdentity.realname,
     lang: getUILocale(),
     goal: mode,
   }) + "#" + mode;
-  await appGlobal.remoteApp.openLink(pageURL);
+  console.log("Opening payment page in browser", pageURL);
+  await appGlobal.remoteApp.openExternalURL(pageURL);
+  startPolling(paidCallback);
+}
 
-  let purchasePoller = setInterval(async () => {
+let purchasePoller: NodeJS.Timeout | null = null;
+
+function startPolling(paidCallback?: (license: Ticket) => void) {
+  /** How often to poll after the user clicked [Buy] */
+  const kPurchasePollInterval = 10 * 1000; // 10 seconds
+  /** For how long to poll after the user clicked [Buy] */
+  const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
+
+  stopPurchasePolling();
+  purchasePoller = setInterval(async () => {
     try {
-      await fetchTicket();
+      let ticket = await fetchTicket();
+      if (ticket.valid && paidCallback) {
+        stopPurchasePolling();
+        paidCallback(ticket);
+        paidCallback = null;
+      }
     } catch (ex) {
       logError(ex);
     }
   }, kPurchasePollInterval);
-  setTimeout(() => {
+
+  setTimeout(stopPurchasePolling, kPurchasePollFor);
+}
+
+function stopPurchasePolling() {
+  if (purchasePoller) {
     clearInterval(purchasePoller);
-  }, kPurchasePollFor);
+  }
+  purchasePoller = null;
 }
 
 export function startup() {
   nextPoll();
+  const kSoonExpiringPollInterval = k1DayMS; // 1 day
   setInterval(nextPoll, kSoonExpiringPollInterval);
 }
 startup(); // Hack, to avoid that Open-Source code depends on this file

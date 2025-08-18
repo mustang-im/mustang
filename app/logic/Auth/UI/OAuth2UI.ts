@@ -1,4 +1,4 @@
-import { OAuth2 } from "../OAuth2";
+import { WebBasedAuth } from "../WebBasedAuth";
 import { assert, AbstractFunction } from "../../util/util";
 import { Observable } from "../../util/Observable";
 
@@ -13,11 +13,11 @@ import { Observable } from "../../util/Observable";
  * These mechanisms are implemented as subclasses.
  */
 export class OAuth2UI extends Observable {
-  oAuth2: OAuth2;
+  oAuth2: WebBasedAuth;
 
-  constructor(oAuth2: OAuth2) {
+  constructor(oAuth2: WebBasedAuth) {
     super();
-    assert(oAuth2 instanceof OAuth2, "Need OAuth2 object");
+    assert(oAuth2 instanceof WebBasedAuth, "Need OAuth2 object");
     this.oAuth2 = oAuth2;
   }
 
@@ -28,5 +28,8 @@ export class OAuth2UI extends Observable {
    */
   async login(): Promise<string> {
     throw new AbstractFunction();
+  }
+
+  abort() {
   }
 }

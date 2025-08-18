@@ -2,7 +2,7 @@ import type { OWAEvent } from "../OWAEvent";
 
 /** As with OWAUpdateOccurenceRequest, this is similar to the
  * OWAUpdateOffice365EventRequest but the format of the item id is different. */
-export default class OWAUpdateOffice365OccurrenceRequest {
+export class OWAUpdateOffice365OccurrenceRequest {
   readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
   readonly Header = {
     __type: "JsonRequestHeaders:#Exchange",
@@ -21,7 +21,7 @@ export default class OWAUpdateOffice365OccurrenceRequest {
 
   constructor(event: OWAEvent, attributes?: { [key: string]: string | boolean }) {
     this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.ItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1;
     this.Body.EventId = this.itemChange.ItemId;
     // XXX Support for attributes is unknown at this time.
   }

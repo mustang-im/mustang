@@ -1,11 +1,11 @@
 <hbox style="justify-content: center">{$t`The threaded view does not yet work as intended.`}</hbox>
 <Scroll>
-  <vbox class="messages">
+  <vbox class="messages background-pattern">
     {#each $threadMessages.each as message, i}
       <MailMessage {message} previousMessage={threadMessages.getIndex(i - 1)} />
     {/each}
   </vbox>
-  <vbox class="rest" flex />
+  <vbox class="rest background-pattern" flex />
 </Scroll>
 
 <script lang="ts">
@@ -42,13 +42,6 @@
 </script>
 
 <style>
-  .messages,
-  .rest {
-    background: url(../../asset/background-repeat.png) repeat;
-    background-color: var(--main-pattern-bg);
-    background-blend-mode: soft-light;
-    color: var(--main-pattern-fg);
-  }
   @media (prefers-color-scheme: light) {
     .messages,
     .rest {

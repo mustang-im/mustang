@@ -40,10 +40,12 @@
   export let url: URLString = "";
   /** Tooltip when hovering */
   export let title: string;
-  export let sessionSaveID: string;
+  /** The cookie storage. For `<webview partition="persist:...">` */
+  export let sessionID: string;
   export let withURLbar = true;
+  export let autofill: string;
 
-  $: partition = sessionSaveID ? "persist:" + sessionSaveID : undefined;
+  $: partition = sessionID ? "persist:" + sessionID : undefined;
 
   function getDomain(url: URLString) {
     if (!url) {
@@ -67,6 +69,9 @@
     });
     webviewE.addEventListener("did-stop-loading", () => {
       isLoading = false;
+      if (autofill) {
+        webviewE.executeJavaScript(autofill);
+      }
     });
   }
 

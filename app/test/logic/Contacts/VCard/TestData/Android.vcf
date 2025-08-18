@@ -1,0 +1,32 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Flintstone;Fred;;;
+FN:Fred Flintstone
+SORT-STRING:Fred sign Call
+X-PHONETIC-FIRST-NAME:Fred
+X-PHONETIC-MIDDLE-NAME:sign
+X-PHONETIC-LAST-NAME:Call
+NICKNAME:Nick name Fred
+TEL;TYPE=CELL:+1-555-111-111
+TEL;TYPE=CELL:+1-555-888-888
+TEL;TYPE=WORK:+1-555-536-45
+TEL;TYPE=HOME:+1-555-555-555
+TEL;TYPE=PREF:+1-555-555-55555
+TEL;TYPE="User defined label":+1-555-555-5555
+EMAIL;TYPE=WORK:fred@example.com
+EMAIL;TYPE=WORK:fred@example.org
+ADR;TYPE=WORK;CHARSET=UTF-8:;;Steingasse 1\, Geröllheim;;;;
+ORG:Redwood
+TITLE:Driver
+URL:https://example.com/fred
+URL:https://example.org with space
+NOTE:Really funny guy
+X-AIM:AIM screen name
+X-AIM:Another AIM account
+X-JABBER:fred@jabber.example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Flintstone;Wilma;;;
+FN:Wilma Flintstone
+END:VCARD

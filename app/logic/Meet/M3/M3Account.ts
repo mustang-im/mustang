@@ -1,6 +1,7 @@
 import { MeetAccount } from "../MeetAccount";
+import { M3Conf } from "./M3Conf";
 import { OAuth2 } from "../../Auth/OAuth2";
-import { UserError, assert } from "../../util/util";
+import { UserError, assert, type URLString } from "../../util/util";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { gt } from "../../../l10n/l10n";
 
@@ -45,6 +46,15 @@ export class M3Account extends MeetAccount {
   }
 
   get isLoggedIn(): boolean {
-    return this.oauth2?.isLoggedIn;
+    return this.oauth2?.isLoggedIn ?? false;
+  }
+
+  newMeeting(): M3Conf {
+    return new M3Conf(this);
+  }
+
+  isMeetingURL(url: URL): boolean {
+    return url.origin == this.webFrontendBaseURL &&
+      url.pathname.startsWith("/room/") || url.pathname.startsWith("/invite/");
   }
 }

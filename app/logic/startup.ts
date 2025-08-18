@@ -4,10 +4,14 @@ import { readChatAccounts } from './Chat/AccountsList/ChatAccounts';
 import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
 import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
+import { readFileSharingAccounts } from './Files/AccountsList/FileSharingAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
-import { loadTagsList } from './Mail/Tag';
+import { loadTagsList } from './Abstract/Tag';
 import type { MailAccount } from './Mail/MailAccount';
+import type { Addressbook } from './Contacts/Addressbook';
+import type { Calendar } from './Calendar/Calendar';
+import type { FileSharingAccount } from './Files/FileSharingAccount';
 import { type Account, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from './build';
@@ -26,6 +30,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.meetAccounts.addAll(await readMeetAccounts());
   appGlobal.calendars.addAll(await readCalendars());
   appGlobal.addressbooks.addAll(await readAddressbooks());
+  appGlobal.fileSharingAccounts.addAll(await readFileSharingAccounts());
   setMainAccounts();
 
   // TODO Save the address book type and ensure that they are of the right type
@@ -60,12 +65,57 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
         .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
+
+  for (let account of appGlobal.addressbooks) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      addressbookLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
+  for (let account of appGlobal.calendars) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      calendarLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
+  for (let account of appGlobal.fileSharingAccounts) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      fileShareLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
 }
 
 async function emailAccountLogin(account: MailAccount) {
   await account.login(false);
   if (account.isLoggedIn) {
     await account.inbox.getNewMessages();
+  }
+}
+
+async function addressbookLogin(account: Addressbook) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.listContacts()
+  }
+}
+
+async function calendarLogin(account: Calendar) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.listEvents();
+  }
+}
+
+async function fileShareLogin(account: FileSharingAccount) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.sync();
   }
 }
 

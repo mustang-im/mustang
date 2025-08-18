@@ -13,6 +13,7 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLEvent extends Event {
   static async save(event: Event) {
     assert(event.calendar?.dbID, "Need calendar DB ID to save the event");
+    let jsonStr = JSON.stringify(event.toExtraJSON(), null, 2);
     let lock = await event.storageLock.lock();
     try {
       if (!event.dbID) {
@@ -22,34 +23,36 @@ export class SQLEvent extends Event {
             startTime, endTime, allDay, startTimeTZ,
             calUID, responseToOrganizer, pID, calendarID,
             recurrenceRule, recurrenceMasterEventID,
-            recurrenceStartTime, recurrenceIsException
+            recurrenceStartTime, recurrenceIsException, json
           ) VALUES (
-            ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
+            ${event.title}, ${event.rawText}, ${event.rawHTMLDangerous},
             ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0}, ${event.timezone},
-            ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
+            ${event.calUID}, ${event.myParticipation}, ${event.pID}, ${event.calendar?.dbID},
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
-            ${+!!event.parentEvent?.dbID}
+            ${+!!event.parentEvent?.dbID},
+            ${jsonStr}
           )`);
         event.dbID = insert.lastInsertRowid;
       } else {
         await (await getDatabase()).run(sql`
           UPDATE event SET
             title = ${event.title},
-            descriptionText = ${event.descriptionText},
-            descriptionHTML = ${event.descriptionHTML},
+            descriptionText = ${event.rawText},
+            descriptionHTML = ${event.rawHTMLDangerous},
             startTime = ${event.startTime.toISOString()},
             endTime = ${event.endTime.toISOString()},
             allDay = ${event.allDay ? 1 : 0},
             startTimeTZ = ${event.timezone},
             calUID = ${event.calUID},
-            responseToOrganizer = ${event.response},
+            responseToOrganizer = ${event.myParticipation},
             pID = ${event.pID},
             calendarID = ${event.calendar?.dbID},
             recurrenceRule = ${event.recurrenceRule?.getCalString(event.allDay)},
             recurrenceMasterEventID = ${event.parentEvent?.dbID},
             recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
-            recurrenceIsException = ${+!!event.parentEvent?.dbID}
+            recurrenceIsException = ${+!!event.parentEvent?.dbID},
+            json = ${jsonStr}
           WHERE id = ${event.dbID}
           `);
       }
@@ -67,15 +70,14 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `);
 
-    for (let i = 0; i < event.instances.length; i++) {
-      if (event.instances.get(i) === null) {
-        await (await getDatabase()).run(sql`
-          INSERT INTO eventExclusion (
-            recurrenceMasterEventID, recurrenceIndex
-          ) VALUES (
-            ${event.dbID}, ${i}
-          )`);
-      }
+    for (let exclusion of event.exclusions) {
+      let index = event.recurrenceRule.getIndexOfOccurrence(exclusion);
+      await (await getDatabase()).run(sql`
+        INSERT INTO eventExclusion (
+          recurrenceMasterEventID, recurrenceIndex
+        ) VALUES (
+          ${event.dbID}, ${index}
+        )`);
     }
   }
 
@@ -91,11 +93,14 @@ export class SQLEvent extends Event {
   }
 
   protected static async saveParticipant(event: Event, participant: Participant) {
+    let json = {} as any;
+    json.lastUpdateTime = participant.lastUpdateTime;
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
-        eventID, emailAddress, name, confirmed
+        eventID, emailAddress, name, confirmed, json
       ) VALUES (
-        ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response}
+        ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response},
+        ${JSON.stringify(json, null, 2)}
       )`);
   }
 
@@ -123,25 +128,26 @@ export class SQLEvent extends Event {
           title, descriptionText, descriptionHTML,
           startTime, endTime, allDay, startTimeTZ,
           calUID, responseToOrganizer, pID, calendarID,
-          recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
+          recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, json
         FROM event
         WHERE id = ${dbID}
         `) as any;
     }
     event.dbID = sanitize.integer(dbID);
     event.title = sanitize.label(row.title, "Meeting");
-    event.descriptionText = sanitize.label(row.descriptionText, "");
+    event.rawText = sanitize.label(row.descriptionText, "");
     let html = sanitize.string(row.descriptionHTML, null);
     if (html) {
-      event.descriptionHTML = html;
+      event.rawHTMLDangerous = html;
     }
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
     event.allDay = sanitize.boolean(row.allDay, false);
     event.timezone = sanitize.string(row.startTimeTZ, null);
     event.calUID = row.calUID;
-    event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
+    event.myParticipation = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
+    event.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
       if (event.calendar) {
@@ -152,21 +158,20 @@ export class SQLEvent extends Event {
     }
     if (row.recurrenceMasterEventID && row.recurrenceStartTime) {
       let masterID = sanitize.integer(row.recurrenceMasterEventID);
+      // TODO assumes that the master is read before the exception
       let parentEvent = events?.find(event => event.dbID == masterID);
       if (parentEvent?.recurrenceRule) {
         event.recurrenceCase = RecurrenceCase.Exception;
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
-        // TODO Expensive
-        let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-        // TODO assumes that the master is read before the exception
-        event.parentEvent.instances.set(occurrences.length - 1, event);
+        parentEvent.exceptions.add(event);
+        parentEvent.generateRecurringInstances(); // TODO the exception should keep the parent in sync automatically
       }
     }
     if (row.recurrenceRule) {
-      event.recurrenceCase = RecurrenceCase.Master;
-      event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, row.recurrenceRule);
+      event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
+      event.generateRecurringInstances(); // TODO the exclusion should keep the parent in sync automatically
     }
 
     await SQLEvent.readParticipants(event);
@@ -181,20 +186,30 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
-      event.instances.set(row.recurrenceIndex, null);
+      let index = row.recurrenceIndex;
+      let normalTime = event.recurrenceRule.getOccurrenceByIndex(index);
+      if (!normalTime) {
+        // TODO fillOccurences()?
+        event.calendar.errorCallback(new Error("Occurrence not filled"));
+        continue;
+      }
+      event.exclusions.add(normalTime);
     }
   }
 
   protected static async readParticipants(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        emailAddress, name, confirmed
+        emailAddress, name, confirmed, json
       FROM eventParticipant
       WHERE eventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
       try {
-        event.participants.add(new Participant(row.emailAddress, row.name, row.confirmed));
+        let participant = new Participant(row.emailAddress, row.name, row.confirmed);
+        let json = sanitize.json(row.json, {});
+        participant.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
+        event.participants.add(participant);
       } catch (ex) {
         backgroundError(ex);
       }
@@ -214,7 +229,7 @@ export class SQLEvent extends Event {
         title, descriptionText, descriptionHTML,
         startTime, endTime, allDay, startTimeTZ,
         calUID, responseToOrganizer, pID, id,
-        recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
+        recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, json
       FROM event
       WHERE calendarID = ${calendar.dbID}
       ORDER BY id

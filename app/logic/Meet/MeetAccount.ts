@@ -1,6 +1,8 @@
 import { Account } from "../Abstract/Account";
-import { ensureLicensed } from "../util/LicenseClient";
+import type { VideoConfMeeting } from "./VideoConfMeeting";
 import { appGlobal } from "../app";
+import { ensureLicensed } from "../util/LicenseClient";
+import { AbstractFunction } from "../util/util";
 
 export class MeetAccount extends Account {
   readonly protocol: string = "meet";
@@ -23,6 +25,19 @@ export class MeetAccount extends Account {
   async login(interactive: boolean) {
     await ensureLicensed();
     await super.login(interactive);
+  }
+
+  needsLicense(): boolean {
+    return true;
+  }
+
+  /** You still need to `.start()` the conference */
+  newMeeting(): VideoConfMeeting {
+    throw new AbstractFunction();
+  }
+
+  isMeetingURL(url: URL): boolean {
+    throw new AbstractFunction();
   }
 
   async save(): Promise<void> {

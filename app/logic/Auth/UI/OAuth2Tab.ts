@@ -1,7 +1,8 @@
 import { OAuth2UI } from "./OAuth2UI";
 import type { LoginDialogMustangApp } from "../../../frontend/Mail/MailMustangApp";
-import { assert, type URLString } from "../../util/util";
+import { UserCancelled, assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 /**
  * Opens the OAuth2 login webpage in a dialog within the app main window,
@@ -21,16 +22,16 @@ export class OAuth2Tab extends OAuth2UI {
   async login(): Promise<string> {
     this.startURL = await this.oAuth2.getAuthURL();
     // console.log("OAuth2 start url", this.startURL);
-    assert(oAuth2TabsOpen._observers.size, "OAuth2 tab: Observer got lost"); // mailMustangApp.tabsObserver is gone
+    assert((oAuth2TabsOpen as any)._observers.size, "OAuth2 tab: Observer got lost"); // mailMustangApp.tabsObserver is gone
     oAuth2TabsOpen.add(this);
     return new Promise((resolve, reject) => {
       this.doneFunc = resolve;
       this.failFunc = reject;
     });
   }
-  urlChanged(url: URLString) {
+  async urlChanged(url: URLString) {
     // console.log("OAuth2 page change to", url);
-    if (this.oAuth2.isAuthDoneURL(url)) {
+    if (await this.oAuth2.isAuthDoneURL(url)) {
       this.success(url);
     }
   }
@@ -50,6 +51,13 @@ export class OAuth2Tab extends OAuth2UI {
     assert(this.failFunc, "Need failFunc");
     this.close();
     this.failFunc(ex);
+    this.failFunc = null;
+    this.doneFunc = null;
+  }
+
+  abort() {
+    this.close();
+    this.failFunc?.(new UserCancelled(gt`Login aborted`));
     this.failFunc = null;
     this.doneFunc = null;
   }

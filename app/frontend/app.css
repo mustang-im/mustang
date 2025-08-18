@@ -22,6 +22,7 @@
   --inverted-fg: white; /* #142862, #213547 */
   --selected-bg: #20AE9E; /* or #27C1AA */
   --selected-fg: white;
+  --icon-primary: #27C1AA;
   --hover-bg: #A9DAD4;
   --hover-fg: #160C27;
   --selected-hover-bg: #1C998B;
@@ -203,6 +204,10 @@ value,
 .selectable {
   user-select: text;
 }
+value,
+.value {
+  overflow-wrap: anywhere;
+}
 
 .font-smallest {
   font-size: 12px;
@@ -300,7 +305,8 @@ select option:checked:hover {
   color: var(--selected-hover-fg);
 }*/
 /* most of these classes are for specificity. ditto below. */
-.autocomplete.select.is-fullwidth .autocomplete-list .autocomplete-list-item {
+.autocomplete.select.is-fullwidth .autocomplete-list .autocomplete-list-item,
+.autocomplete-list-item-create {
   background-color: var(--main-bg);
   color: var(--main-fg);
 }
@@ -351,6 +357,19 @@ a:hover {
 .fast-list .row.selected:hover > * {
   background-color: var(--selected-hover-bg);
   color: var(--selected-hover-fg);
+}
+
+/* App background pattern */
+.background-pattern {
+  background: url(./asset/background-repeat.png) repeat;
+  background-color: var(--main-pattern-bg);
+  background-blend-mode: soft-light;
+  color: var(--main-pattern-fg);
+}
+@media (prefers-color-scheme: dark) {
+  .background-pattern {
+    background-blend-mode: overlay;
+  }
 }
 
 /* Fix svelte-ui dropdown */

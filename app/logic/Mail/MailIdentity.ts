@@ -1,5 +1,6 @@
 import type { MailAccount } from "./MailAccount";
 import { PersonUID } from "../Abstract/PersonUID";
+import type { EMail } from "./EMail";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -55,6 +56,13 @@ export class MailIdentity extends Observable {
     } else {
       return this.emailAddress.toLowerCase() == emailAddress;
     }
+  }
+
+  newEMailFrom(): EMail {
+    let email = this.account.newEMailFrom();
+    email.from.name = this.name;
+    email.from.emailAddress = this.emailAddress;
+    return email;
   }
 
   /** @param config JSON object which contains the data for
@@ -124,4 +132,12 @@ export function findIdentityForEMailAddress(emailAddress: string): MailIdentity 
     }
   }
   return null;
+}
+
+export function findAllIdentities(): ArrayColl<MailIdentity> {
+  let identities = new ArrayColl<MailIdentity>();
+  for (let account of appGlobal.emailAccounts) {
+    identities.addAll(account.identities);
+  }
+  return identities;
 }

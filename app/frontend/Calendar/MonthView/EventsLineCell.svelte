@@ -1,28 +1,30 @@
 <vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if displayEvents && !displayEvents.isEmpty}
+  {#if $displayEvents && !$displayEvents.isEmpty}
     <Scroll>
-      {#each displayEvents.each as event (event.id)}
-        <EventLine {event} {start} />
+      {#each $displayEvents.each as event (event.id)}
+        {#if event.startTime && event.endTime}
+          <EventLine {event} {start} />
+        {/if}
       {/each}
     </Scroll>
   {/if}
   {#if withMonthOnFirst && start.getDate() == 1 ||
     withMonthOnMonday && start.getDay() == 1 }
     <hbox class="month-name font-normal">
-      {start.toLocaleDateString(getUILocale(), { month: "long" })}
+      {start.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })}
     </hbox>
   {/if}
 </vbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate, selectedDateInterval } from "../selected";
+  import { selectedCalendar, selectedDate } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { k1HourMS } from "../../Util/date";
   import EventLine from "./EventLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { assert } from "../../../logic/util/util";
-  import { t, getUILocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;
@@ -37,7 +39,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start);
+    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start);
   }
 
   function selectDay() {
@@ -45,11 +47,12 @@
   }
 
   function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date(start.getTime() + 10 * k1HourMS);
     event.endTime = new Date(start.getTime() + 11 * k1HourMS);
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>
 
@@ -81,8 +84,5 @@
     .month-name {
       display: none;
     }
-  }
-  .events :global(.event) {
-    z-index: 1;
   }
 </style>

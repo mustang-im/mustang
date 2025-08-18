@@ -1,26 +1,33 @@
 import { getBaseDomainFromURL } from "./netUtil";
 import type { URLString } from "./util";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
-import { convert as htmlToText } from "html-to-text";
+import { compile as makeHTMLToText } from "html-to-text";
 import markdownit from "markdown-it";
 import { gt } from "../../l10n/l10n";
 
+let htmlToText: (html: string) => string;
+
 export function convertHTMLToText(html: string): string {
-  return htmlToText(sanitizeHTML(html), {
-    formatters: {
-      removeFormatter: () => { },
-    },
-    selectors: [
-      {
-        selector: "img",
-        format: "removeFormatter",
+  if (!htmlToText) {
+    const options = {
+      formatters: {
+        removeFormatter: () => { },
       },
-      {
-        selector: "style",
-        format: "removeFormatter",
-      },
-    ],
-  });
+      selectors: [
+        {
+          selector: "img",
+          format: "removeFormatter",
+        },
+        {
+          selector: "style",
+          format: "removeFormatter",
+        },
+      ],
+    };
+    htmlToText = makeHTMLToText(options);
+  }
+  let text = htmlToText(sanitizeHTML(html));
+  return text;
 }
 
 let markdownitInstance;
@@ -35,16 +42,21 @@ export function convertTextToHTML(plaintext: string): string {
   return sanitizeHTML(html);
 }
 
+export function fixNewlines(text: string): string {
+  return text?.replace(/\r?\n/g, "\r\n");
+}
+
 export function sanitizeHTML(html: string): string {
   if (!html) {
     return null;
   }
   includeExternal = false;
-  return DOMPurify.sanitize(html, {
+  let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     FORBID_TAGS: ["svg", "mathml"],
     WHOLE_DOCUMENT: true,
   });
+  return sanitized;
 }
 
 export function sanitizeHTMLExternal(html: string): string {

@@ -1,0 +1,48 @@
+{
+  "name": "Simon Perreault",
+  "picture": null,
+  "lastName": "Perreault",
+  "firstName": "Simon",
+  "emailAddresses": [{
+    "value": "simon.perreault@viagenie.ca",
+    "purpose": "work",
+    "protocol": "mailto",
+    "preference": 100
+  }],
+  "phoneNumbers": [{
+    "value": "+1-418-656-9254;ext=102",
+    "purpose": "work",
+    "protocol": "tel",
+    "preference": 1
+  }, {
+    "value": "+1-418-262-6501",
+    "purpose": "work",
+    "protocol": "tel",
+    "preference": 100
+  }],
+  "chatAccounts": [],
+  "urls": [{
+    "value": "http://nomis80.org",
+    "purpose": "home",
+    "protocol": "http",
+    "preference": 100
+  }],
+  "streetAddresses": [{
+    "value": {
+      "instructions": "Suite D2-630\n",
+      "street": "2875 Laurier",
+      "city": "Quebec",
+      "state": "QC",
+      "postalCode": "G1V 2M2",
+      "country": "Canada"
+    },
+    "purpose": "work",
+    "protocol": null,
+    "preference": 100
+  }],
+  "notes": "",
+  "company": "Viagenie",
+  "department": "",
+  "position": "",
+  "custom": []
+}

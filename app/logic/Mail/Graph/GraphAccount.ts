@@ -53,32 +53,36 @@ export class GraphAccount extends MailAccount {
     inbox.startPolling();
 
     /*
-    let addressbook = appGlobal.addressbooks.find((addressbook: GraphAddressbook) => addressbook.protocol == "addressbook-graph" && addressbook.url == this.url && addressbook.username == this.username) as GraphAddressbook | void;
+    let addressbook = appGlobal.addressbooks.find((addressbook: GraphAddressbook) => addressbook.protocol == "addressbook-graph" && addressbook.url == this.url && addressbook.username == this.username) as GraphAddressbook | undefined;
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.icon = this.icon;
+      addressbook.color = this.color;
       appGlobal.addressbooks.add(addressbook);
     }
     addressbook.account = this;
     await addressbook.listContacts();
 
-    let calendar = appGlobal.calendars.find((calendar: GraphCalendar) => calendar.protocol == "calendar-graph" && calendar.url == this.url && calendar.username == this.username) as GraphCalendar | void;
+    let calendar = appGlobal.calendars.find((calendar: GraphCalendar) => calendar.protocol == "calendar-graph" && calendar.url == this.url && calendar.username == this.username) as GraphCalendar | undefined;
     if (!calendar) {
       calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
       calendar.name = this.name;
       calendar.url = this.url;
       calendar.username = this.username;
       calendar.workspace = this.workspace;
+      calendar.icon = this.icon;
+      calendar.color = this.color;
       appGlobal.calendars.add(calendar);
     }
     calendar.account = this;
     await calendar.listEvents();
     */
 
-    let chatAccount = appGlobal.chatAccounts.find((calendar: GraphChatAccount) => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username) as GraphChatAccount | void;
+    let chatAccount = appGlobal.chatAccounts.find((calendar: GraphChatAccount) => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username) as GraphChatAccount | undefined;
     if (!chatAccount) {
       chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
       chatAccount.name = this.name;
@@ -103,6 +107,10 @@ export class GraphAccount extends MailAccount {
       await this.oAuth2.login(interactive);
       assert(this.oAuth2.isLoggedIn, this.name + `: ` + gt`OAuth2: Login failed`);
     }
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /**

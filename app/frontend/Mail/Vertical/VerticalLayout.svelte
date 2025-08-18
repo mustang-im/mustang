@@ -1,9 +1,11 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
-  <LeftPane {accounts} bind:selectedAccount
-    {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
+  <LeftPane {accounts} {folders}
+    bind:selectedAccount bind:selectedFolder bind:selectedFolders bind:searchMessages
+    bind:activeTab={$selectedSearchTab}
     slot="left" />
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
     <vbox flex class="message-list-pane" slot="left">
+      <PaymentBar account={selectedAccount} />
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages />
       <FolderFooter folder={selectedFolder} bind:searchMessages />
@@ -22,13 +24,18 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-
+  import { selectedSearchTab } from "../Selected";
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import LeftPane from "../LeftPane/LeftPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
+  // #if [PROPRIETARY]
+  import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
+  // #else
+  import PaymentBar from "../../Shared/Empty.svelte";
+  // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
 

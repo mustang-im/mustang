@@ -1,4 +1,5 @@
 import { ContactEntry, Person } from "../../Abstract/Person";
+import { StreetAddress } from "../../Contacts/StreetAddress";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -26,7 +27,7 @@ export class JSONPerson {
     json.emailAddresses = this.saveContactsOfType(person.emailAddresses);
     json.chatAccounts = this.saveContactsOfType(person.chatAccounts);
     json.phoneNumbers = this.saveContactsOfType(person.phoneNumbers);
-    json.streetAddresses = this.saveContactsOfType(person.streetAddresses);
+    json.streetAddresses = this.saveStreetAddresses(person.streetAddresses);
     json.urls = this.saveContactsOfType(person.urls);
     json.custom = this.saveContactsOfType(person.custom);
     return json;
@@ -39,6 +40,19 @@ export class JSONPerson {
   static saveContact(contact: ContactEntry): any {
     let json: any = {};
     json.value = contact.value;
+    json.protocol = contact.protocol;
+    json.purpose = contact.purpose;
+    json.preference = contact.preference;
+    return json;
+  }
+
+  static saveStreetAddresses(addresses: Collection<ContactEntry>): any[] {
+    return addresses.contents.map(c => this.saveAddress(c));
+  }
+
+  static saveAddress(contact: ContactEntry): any {
+    let json: any = {};
+    json.value = new StreetAddress(contact.value).toJSON();
     json.protocol = contact.protocol;
     json.purpose = contact.purpose;
     json.preference = contact.preference;
@@ -80,7 +94,7 @@ export class JSONPerson {
       person.phoneNumbers.addAll(this.readContactsOfType(json.phoneNumbers));
     }
     if (json.streetAddresses) {
-      person.streetAddresses.addAll(this.readContactsOfType(json.streetAddresses));
+      person.streetAddresses.addAll(this.readStreetAddresses(json.streetAddresses));
     }
     if (json.urls) {
       person.urls.addAll(this.readContactsOfType(json.urls));
@@ -97,7 +111,21 @@ export class JSONPerson {
   protected static readContact(json: any): ContactEntry {
     let purpose = sanitize.label(json.purpose);
     let contact = new ContactEntry(sanitize.string(json.value), purpose);
-    contact.preference = sanitize.integer(json.preference, 100);
+    contact.preference = sanitize.integer(json.preference, ContactEntry.defaultPreference);
+    contact.protocol = sanitize.string(json.protocol, null);
+    return contact;
+  }
+
+  protected static readStreetAddresses(addresses: any[]): ArrayColl<ContactEntry> {
+    return new ArrayColl(contacts.map(c => this.readAddress(c)));
+  }
+
+  protected static readAddress(json: any): ContactEntry {
+    let purpose = sanitize.label(json.purpose);
+    let address = new StreetAddress();
+    address.fromJSON(json.value);
+    let contact = new ContactEntry(address.toString(), purpose);
+    contact.preference = sanitize.integer(json.preference, ContactEntry.defaultPreference);
     contact.protocol = sanitize.string(json.protocol, null);
     return contact;
   }

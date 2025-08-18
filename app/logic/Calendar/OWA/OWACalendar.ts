@@ -1,16 +1,24 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
+import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
-import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
+import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
+import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { ensureArray } from "../../util/util";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
   readonly events: ArrayColl<OWAEvent>;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
+  listEventsOnce = new RunOnce(() => this.listEventsSlow());
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -20,16 +28,31 @@ export class OWACalendar extends Calendar {
     return new OWAEvent(this, parentEvent);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
-    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
-    return participants.map((participant, i) => ({ participant, availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({ from: new Date(event.Start + "Z"), to: new Date(event.End + "Z"), free: event.FreeBusyType == "Free" })) }));
+  getIncomingInvitationForEMail(message: OWAEMail) {
+    return new OWAIncomingInvitation(this, message);
   }
 
-  protected getEventByItemID(id: string): OWAEvent | void {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
+    return participants.map((participant, i) => ({
+      participant,
+      availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
+        from: new Date(event.Start + "Z"),
+        to: new Date(event.End + "Z"),
+        free: event.FreeBusyType == "Free",
+      })),
+    }));
+  }
+
+  protected getEventByItemID(id: string): OWAEvent | undefined {
     return this.events.find(p => p.itemID == id);
   }
 
   async listEvents() {
+    await this.listEventsOnce.maybeRun();
+  }
+
+  async listEventsSlow() {
     if (!this.dbID) {
       await this.save();
     }
@@ -41,9 +64,7 @@ export class OWACalendar extends Calendar {
     */
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
-      if (event.dbID) {
-        await event.deleteIt();
-      }
+      await event.deleteLocally();
     }
     this.events.replaceAll(events);
   }
@@ -57,11 +78,23 @@ export class OWACalendar extends Calendar {
         break;
       }
       request.Body.Paging.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
-      await this.getEvents(result.RootFolder.Items.map(item => item.ItemId.Id), events);
+      let eventIDs: string[] = [];
+      for (let item of result.RootFolder.Items) {
+        let event = this.getEventByItemID(item.ItemId.Id);
+        if (event?.lastMod.getTime() == sanitize.date(item.LastModifiedTime, null)?.getTime()) {
+          // Our local event is up-to-date, so just add it directly to the results.
+          events.add(event);
+          events.addAll(event.exceptions);
+        } else {
+          // This is a new or updated event that we need to fetch.
+          eventIDs.push(item.ItemId.Id);
+        }
+      }
+      await this.getEvents(eventIDs, events);
     }
   }
 
-  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }
@@ -77,25 +110,36 @@ export class OWACalendar extends Calendar {
     }
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
         event.fromJSON(item);
-        await event.save();
+        await event.saveLocally();
         events.add(event);
-        if (parentEvent && event.recurrenceStartTime) {
-          event.parentEvent = parentEvent; // should already be correct
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event);
-        }
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
-        }
-        if (event.recurrenceRule) {
-          // Also include any filled occurrences we happen to have.
-          events.addAll(event.instances.contents.filter(instance => instance && !instance.dbID));
         }
       } catch (ex) {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  async createOrUpdateEventFromServerByID(itemID: string) {
+    let events = new ArrayColl<OWAEvent>();
+    await this.getEvents([itemID], events);
+    for (let event of events) {
+      if (!this.events.contains(event)) {
+        this.events.add(event);
+      }
+    }
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }

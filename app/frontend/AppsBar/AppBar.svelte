@@ -8,7 +8,10 @@
     </AppButton>
     <SubAppsList mainApp={app} bind:selectedApp />
   {/each}
-  <vbox flex class="bottom">
+  <vbox flex class="middle">
+  </vbox>
+  <vbox class="above-setup">
+    <DemoToggle />
   </vbox>
 </vbox>
 
@@ -18,6 +21,7 @@
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import SubAppsList from "./SubAppsList.svelte";
+  import DemoToggle from "./DemoToggle.svelte";
 
   /* in/out */
   export let selectedApp: MustangApp;
@@ -36,14 +40,20 @@
     z-index: 4;
   }
   .app-bar :global(.app-button),
-  .bottom {
+  .middle {
     border-right: 1px dotted var(--border);
   }
   @media (prefers-color-scheme: light) {
     .app-bar :global(.app-button),
-    .bottom {
+    .middle {
       border-right: 1px dotted grey;
     }
+  }
+  .above-setup {
+    position: fixed;
+    width: 63px;
+    bottom: 68px;
+    margin: 0 auto;
   }
   .app-bar :global(.app-button.settings) {
     position: fixed;

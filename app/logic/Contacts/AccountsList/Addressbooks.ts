@@ -5,6 +5,7 @@ import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 // #endif
 // #if [!WEBMAIL]
+import { CardDAVAddressbook } from '../CardDAV/CardDAVAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #else
 import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
@@ -29,7 +30,13 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
   }
   // #if [!WEBMAIL || WEBMAIL=JMAP]
   if (protocol == "addressbook-jmap") {
-    throw new NotImplemented("JMAP Addressbook not implemented"); // return new JMAPAddressbook();
+    throw new NotImplemented("JMAP Addressbook not implemented");
+    // return new JMAPAddressbook();
+  }
+  // #endif
+  // #if [!WEBMAIL]
+  if (protocol == "carddav") {
+    return new CardDAVAddressbook();
   }
   // #endif
   // #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]

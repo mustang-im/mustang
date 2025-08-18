@@ -1,15 +1,21 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { EWSEvent } from "./EWSEvent";
+import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
-import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
   readonly events: ArrayColl<EWSEvent>;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -17,6 +23,10 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  getIncomingInvitationForEMail(message: EWSEMail) {
+    return new EWSIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -40,7 +50,14 @@ export class EWSCalendar extends Calendar {
       },
     };
     let results = await this.account.callEWS(request);
-    return participants.map((participant, i) => ({ participant, availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({ from: new Date(event.StartTime + "Z"), to: new Date(event.EndTime + "Z"), free: event.BusyType == "Free" })) }));
+    return participants.map((participant, i) => ({
+      participant,
+      availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
+        from: new Date(event.StartTime + "Z"),
+        to: new Date(event.EndTime + "Z"),
+        free: event.BusyType == "Free",
+      })),
+    }));
   }
 
   async listEvents() {
@@ -60,7 +77,7 @@ export class EWSCalendar extends Calendar {
     await this.save();
   }
 
-  async syncFolder(folder: string, syncState: string | null): Promise<string> {
+  protected async syncFolder(folder: string, syncState: string | null): Promise<string> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
@@ -104,9 +121,7 @@ export class EWSCalendar extends Calendar {
         for (let deletion of ensureArray(result.Changes.Delete)) {
           let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
-            this.events.remove(event);
-            this.events.removeAll(event.instances);
-            await event.deleteIt();
+            await event.deleteLocally();
           }
         }
       }
@@ -117,7 +132,7 @@ export class EWSCalendar extends Calendar {
     return sanitize.string(syncState);
   }
 
-  getEventByItemID(id: string): EWSEvent | void {
+  getEventByItemID(id: string): EWSEvent | undefined {
     return this.events.find(p => p.itemID == id);
   }
 
@@ -130,14 +145,6 @@ export class EWSCalendar extends Calendar {
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
-    // Keep any filled instances we already generated.
-    for (let event of events) {
-      for (let instance of event.instances) {
-        if (!events.includes(instance)) {
-          events.push(instance);
-        }
-      }
-    }
     this.events.replaceAll(events);
   }
 
@@ -195,6 +202,8 @@ export class EWSCalendar extends Calendar {
             }, {
               FieldURI: "calendar:IsAllDayEvent",
             }, {
+              FieldURI: "calendar:IsCancelled",
+            }, {
               FieldURI: "calendar:MyResponseType",
             }, {
               FieldURI: "calendar:RequiredAttendees",
@@ -210,6 +219,8 @@ export class EWSCalendar extends Calendar {
               FieldURI: "calendar:UID",
             }, {
               FieldURI: "calendar:RecurrenceId",
+            }, {
+              FieldURI: "calendar:DateTimeStamp",
             }, {
               FieldURI: "task:Recurrence",
             }],
@@ -228,16 +239,12 @@ export class EWSCalendar extends Calendar {
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
-          await event.save();
+          await event.saveLocally();
         } else {
-          event = this.newEvent(parentEvent);
+          event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
           event.fromXML(item);
-          await event.save();
+          await event.saveLocally();
           events.push(event);
-        }
-        if (parentEvent && event.recurrenceStartTime) {
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event)
         }
         if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
           await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
@@ -246,5 +253,15 @@ export class EWSCalendar extends Calendar {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }

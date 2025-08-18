@@ -22,9 +22,9 @@ export default defineConfig({
         PROPRIETARY: includeProprietary ? true : undefined,
       },
     }),
-    nodePolyfills({ include: ['buffer'], globals: { global: true, process: webMail } }),
+    nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
-    olm,
+    // olm,
     sentryVitePlugin({
       org: "mustang-jq",
       project: "mustang"

@@ -1,0 +1,12 @@
+<audio
+  src={file.url}
+  controls
+  title={file.name}
+  />
+
+<script lang="ts">
+  import { File } from "../../../logic/Files/File";
+
+  export let file: File;
+  export let size = 16;
+</script>

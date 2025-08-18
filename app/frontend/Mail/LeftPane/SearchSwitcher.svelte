@@ -1,4 +1,4 @@
-<IslandSwitcher>
+<IslandSwitcher faint={active == SearchView.Folder}>
   <Button
     label={$t`Folders`}
     icon={FolderIcon}
@@ -11,16 +11,16 @@
     label={$t`Persons`}
     icon={PersonIcon}
     classes="vertical"
-    iconOnly
     iconSize="16px"
+    iconOnly={active != SearchView.Person}
     onClick={() => active = SearchView.Person}
     selected={active == SearchView.Person}
     />
   <Button
     label={$t`Search`}
     icon={SearchIcon}
-    iconOnly
     iconSize="16px"
+    iconOnly={active != SearchView.Search}
     onClick={() => active = SearchView.Search}
     selected={active == SearchView.Search}
     />
@@ -35,7 +35,7 @@
 </script>
 
 <script lang="ts">
-  import IslandSwitcher from "./IslandSwitcher.svelte";
+  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import FolderIcon from "lucide-svelte/icons/folder";
   import PersonIcon from "lucide-svelte/icons/user";

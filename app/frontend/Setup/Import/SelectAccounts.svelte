@@ -108,7 +108,8 @@
   }
 
   .protocol {
-    min-height: 16px;
+    min-height: 20px;
+    max-height: 20px;
     border-radius: 8px;
     color: white;
     border: 1px solid transparent;

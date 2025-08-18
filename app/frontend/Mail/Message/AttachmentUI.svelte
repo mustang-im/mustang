@@ -4,7 +4,7 @@
   >
   <hbox bind:this={iconEl}>
     <hbox class="icon" on:click={() => catchErrors(onOpen)}>
-      <FileIcon {ext} size={24} />
+      <FileIcon ext={attachment.ext} localFilePath={attachment.filepathLocal} size={24} />
     </hbox>
     <vbox class="info">
       <hbox title={$attachment.filename} class="filename top-row font-normal">
@@ -26,15 +26,13 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
-  import FileIcon from "../../Files/FileIcon.svelte";
+  import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
   export let message: EMail;
-
-  $: ext = attachment.filename.split(".").pop();
 
   async function onOpen() {
     await attachment.openOSApp();

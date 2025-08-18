@@ -1,0 +1,11 @@
+.idea/
+node_modules/
+.vscode/
+*.map
+.DS_Store
+.sourcemaps
+dist/
+!backend/prebuild.sh
+!build.sh
+NodeMobile.xcframework
+!setup-ios.sh

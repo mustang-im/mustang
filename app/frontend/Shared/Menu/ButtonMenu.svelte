@@ -1,9 +1,7 @@
-{#if $$slots.control}
-  <hbox class="menu button" bind:this={menuAnchorE}>
+<hbox class="menu button" bind:this={menuAnchorE}>
+  {#if $$slots.control}
     <slot name="control" />
-  </hbox>
-{:else}
-  <hbox class="menu button" bind:this={menuAnchorE}>
+  {:else}
     <Button
       icon={buttonIcon}
       iconSize={$appGlobal.isMobile ? "24px" : "16px"}
@@ -13,9 +11,9 @@
       plain
       classes="menu-button"
       />
-  </hbox>
-{/if}
-<Menu bind:isMenuOpen anchor={menuAnchorE} {boundaryElSel}>
+  {/if}
+</hbox>
+<Menu bind:isMenuOpen anchor={menuAnchorE} {boundaryElSel} {placement}>
   <slot />
 </Menu>
 
@@ -25,6 +23,7 @@
   import Menu from "./Menu.svelte";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
   import VerticalMenuIcon from "lucide-svelte/icons/ellipsis-vertical";
+  import type { Placement } from "@popperjs/core";
 
   /** in/out */
   export let isMenuOpen: boolean = false;
@@ -40,10 +39,15 @@
   export let boundaryElSel: string = "body";
   export let label: string = "";
   export let buttonIcon = appGlobal.isMobile ? VerticalMenuIcon : MenuIcon;
+  /** Where the popup should appear in relation to the anchor.
+   * above/below ("top"/"bottom") and left/right ("start"/"end")
+   * in */
+  export let placement: Placement = "bottom-end";
 
   let menuAnchorE: HTMLElement;
-  function onMenuToggle() {
+  function onMenuToggle(event: MouseEvent) {
     isMenuOpen = !isMenuOpen;
+    event.stopPropagation();
   }
 </script>
 

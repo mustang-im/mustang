@@ -10,16 +10,15 @@ import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
+  canSync: boolean = true;
   readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
-  protected requestLock = new Lock();
+  protected readonly requestLock = new Lock();
+  /** ActiveSync ServerId for this addressbook */
+  serverID: string;
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
-  }
-
-  get serverID() {
-    return new URL(this.url).searchParams.get("serverID");
   }
 
   async ping() {
@@ -83,7 +82,8 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   async listContacts() {
-    if (!this.dbID) {
+    if (!this.dbID || !this.serverID) {
+      this.serverID ??= new URL(this.url).searchParams.get("serverID");
       await this.save();
     }
 
@@ -101,12 +101,12 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           let person = this.getPersonByServerID(item.ServerId);
           if (person) {
             person.fromWBXML(item.ApplicationData);
-            await person.save();
+            await person.saveLocally();
           } else {
             person = this.newPerson();
             person.serverID = item.ServerId;
             person.fromWBXML(item.ApplicationData);
-            await person.save();
+            await person.saveLocally();
             this.persons.add(person);
           }
         } catch (ex) {
@@ -127,9 +127,19 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     this.account.addPingable(this);
   }
 
-  getPersonByServerID(id: string): ActiveSyncPerson | void {
+  getPersonByServerID(id: string): ActiveSyncPerson | undefined {
     return this.persons.find(p => p.serverID == id);
   }
 
   // ActiveSync does not support groups.
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.serverID = sanitize.string(json.serverID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.serverID = this.serverID;
+    return json;
+  }
 }

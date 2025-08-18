@@ -1,9 +1,9 @@
-import type WebAppListed from "./WebAppListed";
+import type { WebAppListed } from "./WebAppListed";
 import { ArrayColl } from "svelte-collections";
 import { getUILocale } from "../../l10n/l10n";
 import { sourceLocale } from "../../l10n/list";
 
-export default class WebAppCategory {
+export class WebAppCategory {
   /** Internal ID, without parent categories.
    * E.g. `"word-processing"` */
   id: string;

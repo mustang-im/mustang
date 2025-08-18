@@ -6,9 +6,11 @@ import { GraphChatAccount } from '../Graph/GraphChatAccount';
 // #if [!WEBMAIL]
 import { MatrixAccount } from '../Matrix/MatrixAccount';
 import { SQLChatStorage } from '../SQL/SQLChatStorage';
+import { SQLSearchChat } from '../SQL/SQLSearchChat';
 // #else
 import { DummyChatStorage } from '../SQL/DummyChatStorage';
 // #endif
+import { SearchChat } from '../SearchChat';
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
@@ -46,3 +48,11 @@ export async function readChatAccounts(): Promise<Collection<ChatAccount>> {
   return await SQLChatStorage.readChatAccounts();
 }
 // #endif
+
+export function newSearchChat(): SearchChat {
+  // #if [!WEBMAIL]
+  return new SQLSearchChat();
+  // #else
+  return new SearchChat();
+  // #endif
+}

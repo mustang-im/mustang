@@ -1,6 +1,6 @@
 import type { Participant } from "../../Participant";
 
-export default class OWAGetUserAvailabilityRequest {
+export class OWAGetUserAvailabilityRequest {
   /** Free/Busy requests are wrapped in an additional object for some reason. */
   readonly request: any = {
     __type: "GetUserAvailabilityInternalJsonRequest:#Exchange",

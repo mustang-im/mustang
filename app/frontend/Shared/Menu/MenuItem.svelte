@@ -96,7 +96,7 @@
     background-color: var(--selected-hover-bg);
     color: var(--selected-hover-fg);
   }
-  .selected {
+  .menuitem.selected {
     background-color: var(--selected-bg);
     color: var(--selected-fg);
   }

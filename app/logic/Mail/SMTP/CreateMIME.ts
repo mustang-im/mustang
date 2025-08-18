@@ -4,6 +4,7 @@ import { Attachment , ContentDisposition } from "../../Abstract/Attachment";
 import { getICal } from "../../Calendar/ICal/ICalGenerator";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+import { fixNewlines } from "../../util/convertHTML";
 import { blobToBase64 } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { default as Mail, Attachment as NMAttachment, Address as NMAddress } from "nodemailer/lib/mailer";
@@ -27,9 +28,12 @@ export class CreateMIME {
       to: CreateMIME.getRecipients(email.to),
       cc: CreateMIME.getRecipients(email.cc),
       bcc: CreateMIME.getRecipients(email.bcc),
-      text: email.text,
-      html: doHTML ? email.html : null,
-      icalEvent: getICal(email.event, email.iCalMethod),
+      text: fixNewlines(email.text),
+      html: doHTML ? fixNewlines(email.html) : null,
+      icalEvent: email.event ? {
+        content: getICal(email.event, email.iCalMethod),
+        method: email.iCalMethod,
+      } : undefined,
       attachDataUrls: true,
       attachments: await CreateMIME.getAttachments(email),
       headers: email.headers.contentKeyValues(),

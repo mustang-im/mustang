@@ -49,6 +49,7 @@
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
+  export let loadDelayMS = 500; // ms before showing the spinner
 
   let loading = false;
   async function myOnClick(event: Event) {
@@ -59,7 +60,7 @@
     disabled = true;
     let loadTimeout = setTimeout(() => {
       loading = true;
-    }, 500);
+    }, loadDelayMS);
     try {
       await onClick(event);
     } catch (ex) {
@@ -108,10 +109,10 @@
   .disabled {
     opacity: 50%;
   }
-  button:hover:not(.disabled) {
+  button.button:hover:not(.disabled) {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
-    border: 1px solid transparent !important;
+    border: 1px solid transparent;
   }
   .selected:not(.disabled) {
     background-color: var(--selected-bg);
@@ -121,7 +122,7 @@
     background-color: var(--selected-hover-bg);
     color: var(--selected-hover-fg);
   }
-  button.secondary {
+  button.border.secondary {
     border-color: var(--button-secondary-line);
   }
   button.plain {

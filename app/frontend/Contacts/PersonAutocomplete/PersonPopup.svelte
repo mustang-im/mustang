@@ -62,9 +62,7 @@
         {/each}
       </vbox>
     {/if}
-    <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
-      <AddressbookChanger {person} />
-    </hbox>
+    <slot name="bottom" {personUID} />
     <hbox class="bottom buttons">
       <Button plain
         label={$t`Edit`}
@@ -203,17 +201,6 @@
   }
   .other-email-address :global(svg) {
     margin-inline-end: 6px;
-  }
-  .addressbooks {
-    padding: 12px;
-    max-width: 280px;
-  }
-  .addressbooks.top-border {
-    border-top: 1px solid var(--border);
-  }
-  .addressbooks:not(.top-border) {
-    margin-block-start: -6px;
-    padding-block-start: 0px;
   }
   .bottom.buttons {
     border-top: 1px solid var(--border);

@@ -98,6 +98,8 @@
   $: account = folder?.account;
   $: messages = folder?.messages;
 
+  $: folder && catchErrors(startSearch);
+
   let searchTerm: string;
   async function onSearchTermChanged() {
     await startSearch();
@@ -129,18 +131,19 @@
       searchMessages = null;
       return;
     }
-    searchMessages = await folder.messages.filter(msg =>
+    searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
       (!searchTerm || searchTerm.length > 1) &&
       (!searchTerm ||
         msg.subject?.toLowerCase().includes(searchTerm) ||
+        msg.contact?.name?.toLowerCase().includes(searchTerm) ||
         msg.from?.name?.toLowerCase().includes(searchTerm) ||
         msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
         msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm) ||
           to.emailAddress?.toLowerCase().includes(searchTerm)) ||
         msg.text?.toLowerCase().includes(searchTerm))
-    );
+    ) as ArrayColl<EMail>;
   }
 
   /** Uses the DB to make a global search */

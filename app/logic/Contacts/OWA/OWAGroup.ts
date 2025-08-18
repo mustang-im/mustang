@@ -43,7 +43,7 @@ function findOrCreatePerson(emailAddress: string, name:string): Person {
   if (person) {
     return person;
   }
-  person = new Person(appGlobal.collectedAddressbook);
+  person = appGlobal.collectedAddressbook.newPerson();
   person.name = name;
   person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
   return person;

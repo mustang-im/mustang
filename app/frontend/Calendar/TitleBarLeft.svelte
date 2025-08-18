@@ -1,5 +1,12 @@
 <hbox class="title-bar">
-  <RoundButton classes="add-button create" label={$t`New event`} icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
+  <RoundButton
+    classes="add-button create"
+    label={$t`New event`}
+    icon={AddToCalendarIcon}
+    onClick={addEvent}
+    iconSize="22px"
+    padding="6px"
+    />
 </hbox>
 
 <script lang="ts">
@@ -20,16 +27,6 @@
     align-items: center;
     justify-content: center;
     margin: 4px;
-  }
-  .title-bar :global(.calendar-selector) {
-    margin-inline-end: 16px;
-  }
-  .title-bar :global(.account button) {
-    padding: 8px;
-  }
-  .title-bar :global(.account .icon svg) {
-    height: 20px;
-    width: 20px;
   }
   .title-bar :global(.add-button) {
     margin: 4px;

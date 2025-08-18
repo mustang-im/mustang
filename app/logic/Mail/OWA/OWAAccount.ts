@@ -7,16 +7,18 @@ import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
 import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotifications";
 import { OWAOffice365Notifications } from "./Notification/OWAOffice365Notifications";
-import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
-import OWACreateItemRequest from "./Request/OWACreateItemRequest";
-import OWASubscribeToNotificationRequest from "./Request/OWASubscribeToNotificationRequest";
+import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
+import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
-import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import type { OAuth2 } from "../../Auth/OAuth2";
+import { OAuth2UIMethod } from "../../Auth/UI/OAuth2UIMethod";
+import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
@@ -40,7 +42,7 @@ export class OWAAccount extends MailAccount {
    * But we have to special-case the root folder,
    * since Mustang doesn't use a dedicated root folder object.
    */
-  msgFolderRootID: string | void;
+  msgFolderRootID: string | undefined;
   @notifyChangedProperty
   hasLoggedIn = false;
   protected notifications: OWANotifications;
@@ -61,7 +63,7 @@ export class OWAAccount extends MailAccount {
    * multiple OWA accounts for the same host.
    */
   get partition(): string {
-    return 'persist:login:' + this.id;
+    return 'persist:' + this.webSessionID;
   }
 
   // See below as to why this doesn't use OAuth2.
@@ -79,9 +81,11 @@ export class OWAAccount extends MailAccount {
    */
   protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      // The backend has the logic for posing the login page
-      // using the correct cookie jar and auto-filling it.
-      await this.listFolders(interactive);
+      if (!this.oAuth2) {
+        this.oAuth2 = new OWAAuth(this);
+      }
+      await this.oAuth2.login(interactive);
+      await this.listFolders();
     } else {
       try {
         await this.listFolders();
@@ -107,7 +111,7 @@ export class OWAAccount extends MailAccount {
     }
   }
 
-  async login(interactive: boolean, verifyOnly?: boolean): Promise<void> {
+  async login(interactive: boolean): Promise<void> {
     await ensureLicensed();
     await super.login(interactive);
     await this.loginCommon(interactive);
@@ -122,25 +126,20 @@ export class OWAAccount extends MailAccount {
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.icon = this.icon;
+      addressbook.color = this.color;
       addressbook.mainAccount = this;
       appGlobal.addressbooks.add(addressbook);
     }
+    addressbook.icon ??= this.icon; // Migration, remove later
+    addressbook.color ??= this.color;
     await addressbook.listContacts();
 
-    // Link (until #155) or create the default calendar.
-    // TODO: Support user-added calendars. Compare calendar ID.
-    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
-    console.log("found the OWA cal again", calendar?.name);
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.username;
-      calendar.workspace = this.workspace;
-      calendar.mainAccount = this;
-      appGlobal.calendars.add(calendar);
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        await calendar.listEvents();
+      }
     }
-    await calendar.listEvents();
 
     await this.callOWA(new OWASubscribeToNotificationRequest());
 
@@ -153,7 +152,15 @@ export class OWAAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
-    return appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    if (this.oAuth2) {
+      await this.oAuth2.logout();
+    } else {
+      await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
+  }
+
+  needsLicense(): boolean {
+    return true;
   }
 
   /**
@@ -256,16 +263,12 @@ export class OWAAccount extends MailAccount {
     return result;
   }
 
-  async listFolders(interactive?: boolean): Promise<void> {
-    let autofillJS: string | null = "";
-    if (interactive) {
-      autofillJS = owaAutoFillLoginPage(this.username, this.password);
-    }
+  async listFolders(): Promise<void> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let sessionData: any;
     try {
-      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, false);
     } finally {
       lock.release();
     }
@@ -282,7 +285,7 @@ export class OWAAccount extends MailAccount {
     }
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
-    for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
+    for (let folder of result.RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
@@ -297,7 +300,30 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      }
+      } else if (folder.FolderClass == "IPF.Appointment") {
+        // Link (until #155) or create the default calendar.
+        // TODO: Support user-added calendars. Compare FolderId.
+        // FolderClass is IPF.Appointment.Birthday for the Birthdays calendar
+        // N.B. Only default calendar can handle meeting requests and responses
+        if (folder.DistinguishedFolderId == "calendar") {
+          let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
+          if (!calendar) {
+            calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+            calendar.name = this.name;
+            calendar.url = this.url;
+            calendar.username = this.username;
+            calendar.workspace = this.workspace;
+            calendar.icon = this.icon;
+            calendar.color = this.color;
+            calendar.mainAccount = this;
+            appGlobal.calendars.add(calendar);
+          }
+          calendar.icon ??= this.icon; // Migration, remove later
+          calendar.color ??= this.color;
+          calendar.folderID ??= folder.FolderId.Id;
+          await calendar.save();
+        }
+      } // Addressbook FolderId currently handled in OWAAddressbook
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {
@@ -365,6 +391,16 @@ export class OWAAccount extends MailAccount {
 
   protected handleHierarchyNotification(notification: any) {
     try {
+      let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == notification.folderId) as OWAAddressbook | null;
+      if (addressbook) {
+        addressbook.listContacts().catch(this.errorCallback);
+        return;
+      }
+      let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == notification.folderId) as OWACalendar | null;
+      if (calendar) {
+        calendar.listEvents().catch(this.errorCallback);
+        return;
+      }
       let parent = this.folderMap.get(notification.parentFolderId);
       if (!parent && notification.parentFolderId != this.msgFolderRootID) {
         return;

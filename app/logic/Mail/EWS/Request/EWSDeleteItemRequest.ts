@@ -1,4 +1,4 @@
-export default class EWSDeleteItemRequest {
+export class EWSDeleteItemRequest {
   m$DeleteItem: any = {
     m$ItemIds: {
       t$ItemId: {}

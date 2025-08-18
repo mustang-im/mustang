@@ -9,6 +9,7 @@
     "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
     "des.js": "^1.0.1",
+    "electron-updater": "^6.6.2",
     "express": "^4.19.2",
     "imapflow": "https://github.com/mustang-im/imapflow/",
     "js-md4": "^0.3.2",
@@ -16,6 +17,7 @@
     "nodemailer": "^6.9.13",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
+    "tsdav": "^2.1.4",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.16.0"
   },

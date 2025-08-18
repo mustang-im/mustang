@@ -1,13 +1,23 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
+import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
+import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
-import { Collection, ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
+import { recurrenceColl } from "./RecurrenceColl";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
+  /** Contains
+   * - single events
+   * - recurring masters
+   * - recurring exceptions
+   * If you want events to display @see eventWithRecurrences() */
   readonly events = new ArrayColl<Event>();
+  /** Can this calendar accept incoming invitations from inboxes in other accounts? */
+  readonly canAcceptAnyInvitation: boolean = true;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
@@ -15,19 +25,29 @@ export class Calendar extends Account {
     return new Event(this, parentEvent);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
-    return participants.map(participant => ({ participant, availability: [] }));
+  /** Calculated from `events`. Returns
+   * - Single events
+   * - Recurring instances generated
+   * - Recurring exceptions
+   *
+   * This is cached. It will observe changes to `events`, but
+   * the cache needs to be invalidated when
+   * recurring event masters change.
+   */
+  eventsWithRecurrences: Collection<Event> = recurrenceColl(this.events);
+
+  protected invalidateRecurringCache() {
   }
 
-  /**
-   * Ensures that instances for all recurring events in the calendar exist
-   * up to the provided date. Returns all events as a convenience.
-   */
-  fillRecurrences(endDate: Date): Collection<Event> {
-    for (let event of this.events.contents.filter(event => event.recurrenceRule)) {
-      event.fillRecurrences(endDate);
-    }
-    return this.events;
+  getIncomingInvitationForEMail(message: EMail) {
+    return new ICalIncomingInvitation(this, message);
+  }
+
+  async listEvents() {
+  }
+
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    return participants.map(participant => ({ participant, availability: [] }));
   }
 
   async save(): Promise<void> {

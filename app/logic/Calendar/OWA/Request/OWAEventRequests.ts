@@ -1,5 +1,20 @@
-import OWARequest from "../../../Mail/OWA/Request/OWARequest";
+import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 import type { OWAEvent } from "../OWAEvent";
+
+export function owaGetOccurrenceIdRequest(event: OWAEvent): OWARequest {
+  return new OWARequest("GetItem", {
+    __type: "GetItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+    },
+    ItemIds: [{
+      __type: "OccurrenceItemId:#Exchange",
+      RecurringMasterId: event.parentEvent.itemID,
+      InstanceIndex: event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
+    }],
+  });
+}
 
 export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetItem", {
@@ -34,6 +49,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "calendar:EnhancedLocation",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "calendar:IsCancelled",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:MyResponseType",
       }, {
         __type: "PropertyUri:#Exchange",
@@ -56,6 +74,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:RecurrenceId",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "calendar:DateTimeStamp",
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:IsOnlineMeeting",
@@ -91,6 +112,10 @@ export function owaFindEventsRequest(folderID: string, maxFetchCount: number): O
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
       BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:LastModifiedTime",
+      }],
     },
     ParentFolderIds: [{
       __type: "DistinguishedFolderId:#Exchange",
@@ -166,13 +191,17 @@ export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaCreateExclusionRequest(excludeEvent: OWAEvent, parentEvent: OWAEvent): OWARequest {
+  return owaCreateMultipleExclusionsRequest([excludeEvent], parentEvent);
+}
+
+export function owaCreateMultipleExclusionsRequest(exclusions: OWAEvent[], parentEvent: OWAEvent): OWARequest {
   return new OWARequest("DeleteItem", {
     __type: "DeleteItemRequest:#Exchange",
-    ItemIds: [{
+    ItemIds: exclusions.map(event => ({
       __type: "OccurrenceItemId:#Exchange",
       RecurringMasterId: parentEvent.itemID,
-      InstanceIndex: parentEvent.instances.indexOf(excludeEvent) + 1,
-    }],
+      InstanceIndex: parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
+    })),
     DeleteType: "MoveToDeletedItems",
     SendMeetingCancellations: "SendToAllAndSaveCopy",
   });

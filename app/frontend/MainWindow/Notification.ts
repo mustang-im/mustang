@@ -1,4 +1,5 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
+import { logError } from "../Util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Notification extends Observable {
@@ -40,6 +41,21 @@ export enum NotificationSeverity {
    * require action for the app to continue to function. */
   LoggedOut = "logged-out",
   Info = "info",
+}
+
+export function showNotificationToast(message: string, notifications: ArrayColl<Notification>) {
+  showNotification(message, NotificationSeverity.Info, 3, notifications);
+}
+export function showNotificationError(ex: Error, notifications: ArrayColl<Notification>) {
+  logError(ex);
+  showNotification(ex?.message ?? ex + "", NotificationSeverity.Error, 3, notifications);
+}
+function showNotification(message: string, severity: NotificationSeverity, closeAfterSec: number, notifications: ArrayColl<Notification>) {
+  let msg = new Notification(message, severity);
+  notifications.add(msg);
+  setTimeout(() => {
+    notifications.remove(msg);
+  }, closeAfterSec * 1000);
 }
 
 /**

@@ -30,7 +30,6 @@
   }
   .header {
     align-items: end;
-    margin-block-start: 8px;
     margin-inline-start: 4px;
   }
   .header-label {

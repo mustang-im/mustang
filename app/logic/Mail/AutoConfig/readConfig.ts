@@ -1,12 +1,27 @@
-import type { MailAccount, ConfigSource } from "../MailAccount";
-import { AuthMethod } from "../../Abstract/Account";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
+import { MailAccount, type ConfigSource } from "../MailAccount";
+import { Account, AuthMethod } from "../../Abstract/Account";
+import { TCPAccount, TLSSocketType } from "../../Abstract/TCPAccount";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";
+import type { Calendar } from "../../Calendar/Calendar";
+import type { Addressbook } from "../../Contacts/Addressbook";
+import type { FileSharingAccount } from "../../Files/FileSharingAccount";
+import type { ChatAccount } from "../../Chat/ChatAccount";
+import type { MeetAccount } from "../../Meet/MeetAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileSharingAccounts";
+import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
+import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
+import { SetupInfo } from "./SetupInfo";
+import { OWAAccount } from "../OWA/OWAAccount";
+import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
+import { OWAAuth } from "../../Auth/OWAAuth";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { logError } from "../../../frontend/Util/error";
 import { ensureArray, assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
@@ -31,7 +46,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      configs.push(readServer(iX, displayName, fullXML, source));
+      configs.push(readServer(iX, displayName, fullXML, source, newAccountForProtocol) as MailAccount);
     } catch (ex) {
       firstError = ex;
     }
@@ -42,16 +57,9 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   firstError = null;
 
   // Outgoing server
-  for (let oX of ensureArray(xml.$outgoingServer)) {
-    try {
-      outgoingConfigs.push(readServer(oX, displayName, fullXML, source));
-    } catch (ex) {
-      firstError = ex;
-    }
-  }
-  let imapConfigs = configs.filter(config => config.protocol == "imap" || config.protocol == "pop3");
+  let imapConfigs = configs.filterOnce(config => config.protocol == "imap" || config.protocol == "pop3");
   if (imapConfigs.hasItems) {
-    let outgoing = outgoingConfigs.first;
+    let outgoing = readFirstServer(xml.$outgoingServer, displayName, fullXML, source, newAccountForProtocol) as MailAccount;
     if (!outgoing) {
       throw firstError ?? new Error(`No working <outgoingServer> in autoconfig XML for ${forDomain} found`);
     }
@@ -62,14 +70,29 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
     }
   }
 
+  let calendar = readFirstServer(fullXML.$calendar, displayName, fullXML, source, newCalendarForProtocol) as Calendar;
+  let addressbook = readFirstServer(fullXML.$addressbook, displayName, fullXML, source, newAddressbookForProtocol) as Addressbook;
+  let fileShare = readFirstServer(fullXML.$fileShare, displayName, fullXML, source, newFileSharingAccountForProtocol) as any as FileSharingAccount;
+  let chat = readFirstServer(fullXML.$chatServer, displayName, fullXML, source, newChatAccountForProtocol) as any as ChatAccount;
+  let meet = readFirstServer(fullXML.$videoConference, displayName, fullXML, source, newMeetAccountForProtocol) as any as MeetAccount;
+  for (let config of configs) {
+    break; // TODO Fix calendarURL in CalDAV / CardDAV, and implement DB to save WebDAV accounts
+    let setup = config.setup ??= new SetupInfo();
+    setup.calendar = calendar;
+    setup.addressbook = addressbook;
+    setup.fileShare = fileShare;
+    setup.chat = chat;
+    setup.meet = meet;
+  }
+
   return configs;
 }
 
 /**
  * @param {JXON} xml <incomingServer> or <outgoingServer>
  */
-function readServer(xml: any, displayName: string, fullXML: any, source: ConfigSource): MailAccount {
-  let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "ews", "owa", "activesync", "graph", "exchange"], null);
+function readServer(xml: any, displayName: string, fullXML: any, source: ConfigSource, newAccount: (protocol: string) => Account): Account {
+  let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "ews", "owa", "activesync", "graph", "exchange", "caldav", "carddav", "webdav"], null);
   assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
 
   if (protocol == "exchange") { // Backwards compat
@@ -83,41 +106,40 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
     assert(xml.url, "Need URL for Exchange servers");
   }
 
-  let account = newAccountForProtocol(protocol);
+  let account = newAccount(protocol);
 
   account.name = displayName;
   account.url = sanitize.url(xml.url, null);
-  if (account.url) {
-    let url = new URL(account.url);
-    account.hostname = url.hostname;
-    account.port = url.port
-      ? sanitize.portTCP(url.port)
-      : url.protocol == "https:" ? 443 : url.protocol == "http:" ? 80 : null;
-    assert(account.port, "Need port number or known protocol in URL");
-  } else {
-    account.hostname = sanitize.hostname(xml.hostname);
-    account.port = sanitize.portTCP(xml.port);
-  }
   account.username = sanitize.string(xml.username); // may be a %VARIABLE%
   if (xml.password) {
     account.password = sanitize.string(xml.password);
   }
 
-  if (account.url) {
-    account.tls = account.url.startsWith("https:") ? TLSSocketType.TLS : account.url.startsWith("http:") ? TLSSocketType.Plain : null;
-  } else {
-    // Take first supported
-    account.tls = ensureArray(xml.$socketType).map(socketType => sanitize.translate(socketType, {
-      plain: TLSSocketType.Plain,
-      SSL: TLSSocketType.TLS,
-      STARTTLS: TLSSocketType.STARTTLS
-    }, null)).find(v => v !== null);
+  if (account instanceof TCPAccount) {
+    if (account.url) {
+      let url = new URL(account.url);
+      account.hostname = url.hostname;
+      account.port = url.port
+        ? sanitize.portTCP(url.port)
+        : url.protocol == "https:" ? 443 : url.protocol == "http:" ? 80 : null;
+      assert(account.port, "Need port number or known protocol in URL");
+      account.tls = account.url.startsWith("https:") ? TLSSocketType.TLS : account.url.startsWith("http:") ? TLSSocketType.Plain : null;
+    } else {
+      account.hostname = sanitize.hostname(xml.hostname);
+      account.port = sanitize.portTCP(xml.port);
+      // Take first supported
+      account.tls = ensureArray(xml.$socketType).map(socketType => sanitize.translate(socketType, {
+        plain: TLSSocketType.Plain,
+        SSL: TLSSocketType.TLS,
+        STARTTLS: TLSSocketType.STARTTLS
+      }, null)).find(v => v !== null);
+    }
+    assert(account.tls, "No supported <socketType> in autoconfig");
   }
-  assert(account.tls, "No supported <socketType> in autoconfig");
 
   let authMethods = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
     "password-cleartext": AuthMethod.Password,
-    "http-basic": AuthMethod.Password,
+    "basic": AuthMethod.Password,
     "OAuth2": AuthMethod.OAuth2,
     "password-encrypted": AuthMethod.CRAMMD5,
     "GSSAPI": AuthMethod.GSSAPI,
@@ -128,7 +150,7 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
     try {
       account.authMethod = authMethod;
       if (account.authMethod == AuthMethod.OAuth2) {
-        account.oAuth2 = getOAuth2Config(account, fullXML); // can throw
+        account.oAuth2 = getAuthConfig(account, fullXML); // can throw
       }
       break; // success -> use this auth method
     } catch (ex) {
@@ -138,14 +160,20 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
   }
   assert(account.authMethod, `No supported <authentication> method in autoconfig XML for ${displayName}\n\nGot authentication methods ${JSON.stringify(xml.$authentication, null, 2)}`);
 
-  account.source = source;
+  if (account instanceof MailAccount) {
+    account.source = source;
+  }
   return account;
 }
 
-function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
+function getAuthConfig(account: Account, autoConfigXML: any): WebBasedAuth {
+  if (account instanceof OWAAccount) {
+    return new OWAAuth(account);
+  }
   let oAuth2: OAuth2;
   // try built-in
-  let builtin = OAuth2URLs.find(a => a.hostnames.includes(account.hostname));
+  let hostname = account instanceof TCPAccount ? account.hostname : account.url ? new URL(account.url).hostname : null;
+  let builtin = OAuth2URLs.find(a => a.hostnames.includes(hostname));
   if (builtin) {
     oAuth2 = new OAuth2(account, builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret, builtin.doPKCE);
     oAuth2.setTokenURLPasswordAuth(builtin.tokenURLPasswordAuth);
@@ -168,4 +196,14 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
   }
   assert(oAuth2, "No suitable OAuth2 config found, neither in AutoConfig XML, nor built-in");
   return oAuth2;
+}
+
+function readFirstServer(serversX: any, displayName: string, fullXML: any, source: ConfigSource, newAccount: (protocol: string) => Account): Account {
+  for (let accX of ensureArray(serversX)) {
+    try {
+      return readServer(accX, displayName, fullXML, source, newAccount);
+    } catch (ex) {
+      logError(ex);
+    }
+  }
 }

@@ -12,11 +12,19 @@
   export let min: Date | null = null;
   export let max: Date | null = null;
   export let disabled = false;
+  /** Show the date this many days later (positive) or earlier (negative)
+   * than the `date` given. Works in both directions.
+   * This is used for `allDay` events, which in iCal and on 0:00 the next day,
+   * but we want to show the last day to the user, not the next day. */
+  export let deltaInDays: number | null = null;
+
   let value: string;
 
   $: updateValue(date);
   function updateValue(date: Date) {
-    value = toHTMLString(date);
+    let adjusted = new Date(date);
+    adjusted.setDate(date.getDate() + deltaInDays);
+    value = toHTMLString(adjusted);
   }
 
   function toHTMLString(date: Date | null) {
@@ -28,8 +36,8 @@
 
   function onChange() {
     let [fullYear, month, day] = value.split("-");
-    date.setFullYear(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
-    date = date;
+    date.setFullYear(parseInt(fullYear), parseInt(month) - 1, parseInt(day) - deltaInDays);
+    date = new Date(date);
   }
 </script>
 

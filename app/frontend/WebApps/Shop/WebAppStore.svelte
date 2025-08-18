@@ -18,8 +18,8 @@
 </hbox>
 
 <script lang="ts">
-  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
-  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import type { WebAppCategory } from "../../../logic/WebApps/WebAppCategory";
+  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../../logic/app";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
@@ -40,7 +40,8 @@
 
   onMount(async () => {
     await appStore.load();
-    selectedCategory = categories.find(cat => cat.fullID == "recommended");
+    let catID = appStore.myApps.hasItems ? "selectedApps" : "recommended";
+    selectedCategory = categories.find(cat => cat.fullID == catID);
   });
 
   function closeStore() {

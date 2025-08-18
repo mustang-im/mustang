@@ -16,6 +16,7 @@
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { newMeetAccountForProtocol } from "../../../logic/Meet/AccountsList/MeetAccounts";
   import M3Login from "./M3Login.svelte";
+  import LiveKitLogin from "./LiveKitLogin.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -33,12 +34,15 @@
 
   const protocols: ProtocolDescription[] = [
     { label: $t`${appName} video conference account`, protocolID: "m3" },
+    { label: $t`LiveKit video conference account`, protocolID: "livekit" },
   ];
 
   function onContinue() {
     config = newMeetAccountForProtocol(selectedProtocol);
     if (selectedProtocol == "m3") {
       showPage = M3Login;
+    } else if (selectedProtocol == "livekit") {
+      showPage = LiveKitLogin;
     } else {
       throw new NotReached();
     }

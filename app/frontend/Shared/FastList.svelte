@@ -135,13 +135,14 @@
         return;
       }
       await tick();
-      let contentRow = contentE.firstChild?.firstChild as HTMLElement;
+      let contentRow = contentE?.firstChild?.firstChild as HTMLElement;
+      if (!contentRow) {
+        return;
+      }
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
-      showRows = Math.min(items.length, Math.floor(availableHeight / rowHeight));
-      // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
-      showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+      showRows = Math.min(items.length, Math.ceil(availableHeight / rowHeight));
 
       let scrollHeight = items.length * rowHeight;
       scrollbarHidden = scrollHeight <= availableHeight;
@@ -224,16 +225,14 @@
     if (index >= scrollPos && index < scrollPos + showRows - 1) {
       return;
     }
-    scrollPos = Math.min(index, Math.max(0, items.length - showRows));
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   function onScrollWheel(event: WheelEvent) {
-    let scrollRows = 3; // How many rows to scroll each time
-    if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
-    } else if (event.deltaY < 0) {
-      scrollPos = Math.max(scrollPos - scrollRows, 0);
-    }
+    // How many rows to scroll each time, in either direction (+/-)
+    let scrollRows = Math.ceil(event.deltaY / (rowHeight || 20)); // 3 rows
+    scrollPos += scrollRows;
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   let scrollPosByScrollBar: NodeJS.Timeout = null;
@@ -246,10 +245,10 @@
       clearTimeout(scrollPosByScrollBar);
     }, 200);
 
-    scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
+    scrollPos = Math.ceil(scrollbarE.scrollTop / rowHeight);
   }
 
-  function onSelectElement(clickedItem, event: MouseEvent) {
+  function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
       let lastItem = clickedItem;
@@ -284,7 +283,7 @@
     if (selectedItems.isEmpty) {
       return;
     }
-    selectedItems.removeAll(selectedItems.filter(a => !items.includes(a)));
+    selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
       let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
       if (!newItem) {
@@ -319,7 +318,7 @@
   }
 
   const singleSelectionObserver = new SingleSelectionObserver<T>();
-  singleSelectionObserver.onSelectedItem = item => {
+  singleSelectionObserver.onSelectedItem = (item: T) => {
     selectedItem = item;
   };
 </script>

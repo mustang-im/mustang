@@ -4,7 +4,7 @@
   <ManualConfigURL bind:config bind:stepFull {isSetup} bind:this={el} />
 {/if}
 
-{#if $config.oAuth2 && $config.authMethod == AuthMethod.OAuth2 && stepFull}
+{#if $config.oAuth2 instanceof OAuth2 && $config.authMethod == AuthMethod.OAuth2 && stepFull}
   <OAuth2Manual {config} />
 {/if}
 
@@ -23,6 +23,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { AuthMethod } from "../../../../logic/Abstract/Account";
+  import { OAuth2 } from "../../../../logic/Auth/OAuth2";
   import ManualConfigURL from "./ManualConfigURL.svelte";
   import ManualConfigHost from "./ManualConfigHost.svelte";
   import OAuth2Manual from "./OAuth2Manual.svelte";

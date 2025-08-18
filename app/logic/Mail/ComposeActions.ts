@@ -1,14 +1,15 @@
 import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
-import { PersonUID } from "../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
-import { UserError, assert, type URLString } from "../util/util";
-import { getUILocale, gt } from "../../l10n/l10n";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { UserError, assert, type URLString, ensureArray } from "../util/util";
+import { getDateTimeFormatPref, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 
 /** Functions based on the email, which are either
@@ -23,9 +24,11 @@ export class ComposeActions {
 
   quotePrefixLine(): string {
     function getDate(date: Date) {
-      return date.toLocaleString(getUILocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+      return date.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
-    return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
+    let from = this.email.from.name || this.email.from.emailAddress;
+    let date = getDate(this.email.sent);
+    return `${from} wrote on ${date}:`;
   }
 
   generateMessageID(): void {
@@ -116,7 +119,7 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Date:</span> <span class="value">
-          ${this.email.sent.toLocaleString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
+          ${this.email.sent.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
         </span>
       </div>
       <div>
@@ -132,7 +135,7 @@ export class ComposeActions {
   }
 
   async forwardAsAttachment(): Promise<EMail> {
-    await this.email.loadAttachments();
+    await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     let a = new Attachment();
@@ -153,6 +156,17 @@ export class ComposeActions {
     redirect.html = this.email.html;
     redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
     return redirect;
+  }
+
+  async editAsNew(): Promise<EMail> {
+    await this.email.loadAttachments();
+    let clone = this.email.folder.account.newEMailFrom();
+    clone.to.addAll(this.email.to);
+    clone.cc.addAll(this.email.cc);
+    clone.subject = this.email.subject;
+    clone.html = this.email.html;
+    clone.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    return clone;
   }
 
   convertInlineAttachmentsURLs() {
@@ -198,6 +212,44 @@ export class ComposeActions {
 
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
+  }
+
+  /** Handles mailto: URLs.
+   * Takes the arguments given in the URL, checks them, and
+   * set them on this.email.
+   * @throws when the input is invalid */
+  populateFromMailtoURL(mailtoURL: URLString) {
+    let urlObj = new URL(mailtoURL);
+    let args = new URLSearchParams(urlObj.search);
+    let tos = ensureArray(urlObj.pathname.split(","));
+    for (let to of tos) {
+      this.email.to.add(findOrCreatePersonUID(sanitize.emailAddress(to), null));
+    }
+    let ccs = ensureArray(args.get("cc")?.split(","));
+    for (let cc of ccs) {
+      this.email.cc.add(findOrCreatePersonUID(sanitize.emailAddress(cc), null));
+    }
+    this.email.subject = sanitize.label(args.get("subject"), null);
+    this.email.text = sanitize.label(args.get("body"), null);
+    this.email.html; // Generate HTML from plaintext TODO doesn't work
+
+    /* Attachments
+      SECURITY DANGER The URL came come from the web, is untrusted, and may be an attack.
+      While we only attach the file into the composer and don't send it immediately,
+      a) the user might not check that it's the file he intended to send
+      b) simply *reading* the file might trigger OS actions, like printing (`LPT:`),
+          `/dev/`, `/proc/`, `/sys/` etc.
+      Therefore, not doing this for now.
+      Event if you do implement the checks, keep this warning comment.
+    for (let filepath of args.getAll("attach")) {
+      try {
+        sanitize.filename(filepath)
+        let file = new File(...);
+        this.email.attachments.add(Attachment.fromFile(file));
+      } catch (ex) {
+        console.error(ex);
+      }
+    }*/
   }
 
   /**

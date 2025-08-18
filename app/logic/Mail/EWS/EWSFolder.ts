@@ -2,7 +2,7 @@ import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
+import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, ensureArray, assert } from "../../util/util";

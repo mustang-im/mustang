@@ -2,42 +2,125 @@ import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
 import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
-import { UserChatMessage } from './Chat/Message';
-import { ChatPerson } from './Chat/Person';
+import { MeetAccount } from './Meet/MeetAccount';
+import { DeliveryStatus, UserChatMessage } from './Chat/Message';
 import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
+import { StreetAddress } from './Contacts/StreetAddress';
 import { Chat } from './Chat/Chat';
-import { Directory, File } from './Files/File';
+import { FileSharingAccount } from './Files/FileSharingAccount';
+import type { File } from './Files/File';
+import { Directory } from './Files/Directory';
 import { Calendar } from './Calendar/Calendar';
+import { Participant as CalendarParticipant } from './Calendar/Participant';
+import { InvitationResponse } from './Calendar/Invitation/InvitationStatus';
 import { Addressbook } from './Contacts/Addressbook';
-import { MeetAccount } from './Meet/MeetAccount';
 import { Event } from './Calendar/Event';
+import { EMail } from './Mail/EMail';
+import { ComposeActions } from './Mail/ComposeActions';
+import { MailIdentity } from './Mail/MailIdentity';
+import { FakeMeetAccount } from './Meet/FakeMeeting';
+import { DummyMailStorage } from './Mail/Store/DummyMailStorage';
+import { DummyChatStorage } from './Chat/SQL/DummyChatStorage';
+import { DummyCalendarStorage } from './Calendar/SQL/DummyCalendarStorage';
+import { DummyAddressbookStorage } from './Contacts/SQL/DummyAddressbookStorage';
+import { notifyChangedProperty } from './util/Observable';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
 
-export async function getTestObjects(): Promise<void> {
-  appGlobal.me = fakeChatPerson();
-  appGlobal.addressbooks.add(fakeAddressbook());
-  appGlobal.persons.addAll(fakePersons(50, appGlobal.addressbooks.first));
-  appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
-  appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
-  appGlobal.calendars.add(fakeCalendar(appGlobal.persons));
-  appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
+const realMailAccounts = new ArrayColl<MailAccount>();
+const realChatAccounts = new ArrayColl<ChatAccount>();
+const realMeetAccounts = new ArrayColl<MeetAccount>();
+const realAddressbooks = new ArrayColl<Addressbook>();
+const realCalendars = new ArrayColl<Calendar>();
+const realFileSharingAccounts = new ArrayColl<FileSharingAccount>();
+let realMe: Person;
+
+export async function testDataOn() {
+  realAddressbooks.replaceAll(appGlobal.addressbooks);
+  realMailAccounts.replaceAll(appGlobal.emailAccounts);
+  realChatAccounts.replaceAll(appGlobal.chatAccounts);
+  realMeetAccounts.replaceAll(appGlobal.meetAccounts);
+  realCalendars.replaceAll(appGlobal.calendars);
+  realFileSharingAccounts.replaceAll(appGlobal.fileSharingAccounts);
+
+  appGlobal.addressbooks.clear();
+  appGlobal.emailAccounts.clear();
+  appGlobal.chatAccounts.clear();
+  appGlobal.calendars.clear();
+  appGlobal.meetAccounts.clear();
+  appGlobal.fileSharingAccounts.clear();
+
+  realMe = appGlobal.me;
+  if (!appGlobal.me?.name) {
+    appGlobal.me = new FakeChatPerson();
+  }
+  let addressbook = new FakeAddressbook();
+  let persons = fakePersons(10, addressbook);
+  appGlobal.addressbooks.replaceAll([ addressbook ]);
+  appGlobal.emailAccounts.replaceAll([ new FakeMailAccount(persons, appGlobal.me) ]);
+  appGlobal.chatAccounts.replaceAll([ new FakeChatAccount(persons, appGlobal.me) ]);
+  appGlobal.calendars.replaceAll([ new FakeCalendar(persons) ]);
+  appGlobal.meetAccounts.replaceAll([ new FakeMeetAccount() ]);
+  appGlobal.fileSharingAccounts.replaceAll([new FakeFileSharingAccount()]);
+
+  await appGlobal.emailAccounts.first.login(false);
+  await appGlobal.chatAccounts.first.login(false);
 }
 
-export function fakeAddressbook(): Addressbook {
-  let addressbook = new Addressbook();
-  addressbook.name = faker.company.name();
-  addressbook.url = faker.internet.url();
-  addressbook.username = faker.internet.userName();
-  return addressbook;
+export async function testDataOff() {
+  appGlobal.addressbooks.clear();
+  appGlobal.emailAccounts.clear();
+  appGlobal.chatAccounts.clear();
+  appGlobal.calendars.clear();
+  appGlobal.meetAccounts.clear();
+  appGlobal.fileSharingAccounts.clear();
+
+  appGlobal.me = realMe;
+  appGlobal.addressbooks.replaceAll(realAddressbooks);
+  appGlobal.emailAccounts.replaceAll(realMailAccounts);
+  appGlobal.chatAccounts.replaceAll(realChatAccounts);
+  appGlobal.meetAccounts.replaceAll(realMeetAccounts);
+  appGlobal.calendars.replaceAll(realCalendars);
+  appGlobal.fileSharingAccounts.replaceAll(realFileSharingAccounts);
+
+  realAddressbooks.clear();
+  realMailAccounts.clear();
+  realChatAccounts.clear();
+  realMeetAccounts.clear();
+  realCalendars.clear();
+  realFileSharingAccounts.clear();
 }
 
-export function fakePersons(count = 50, addressbook?: Addressbook): Collection<Person> {
+export async function addTestDataToGlobal(): Promise<void> {
+  appGlobal.me = new FakeChatPerson();
+  let addressbook = new FakeAddressbook();
+  let persons = fakePersons(20, addressbook);
+  appGlobal.addressbooks.add(addressbook);
+  appGlobal.emailAccounts.add(new FakeMailAccount(persons, appGlobal.me));
+  appGlobal.chatAccounts.add(new FakeChatAccount(persons, appGlobal.me));
+  appGlobal.calendars.add(new FakeCalendar(persons));
+  appGlobal.meetAccounts.add(new FakeMeetAccount());
+  appGlobal.fileSharingAccounts.add(new FakeFileSharingAccount());
+  await appGlobal.emailAccounts.first.login(false);
+  await appGlobal.chatAccounts.first.login(false);
+}
+
+export class FakeAddressbook extends Addressbook {
+  constructor() {
+    super();
+    this.name = faker.company.name();
+    this.url = faker.internet.url();
+    this.username = faker.internet.username();
+    this.storage = new DummyAddressbookStorage();
+  }
+}
+
+export function fakePersons(count = 50, addressbook: Addressbook): Collection<Person> {
   let persons = new ArrayColl<Person>();
   for (let i = 1; i <= count; i++) {
-    let person = fakeChatPerson();
+    let person = new FakeChatPerson();
     person.addressbook = addressbook;
     persons.add(person);
   }
@@ -70,205 +153,369 @@ export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Ad
   return groups;
 }
 
-export function fakeChatPerson(): Person {
-  let person = new ChatPerson();
-  person.id = faker.string.uuid();
-  let male = Math.random() < 0.5;
-  person.firstName = faker.name.firstName(male ? "male" : "female");
-  person.lastName = faker.name.lastName();
-  person.name = person.firstName + " " + person.lastName;
-  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName).toLowerCase(), "work"));
-  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName).toLowerCase(), "home"));
-  person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
-  person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
-  person.chatAccounts.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
-  person.chatAccounts.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
-  person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
-  person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
-  person.groups.add(new ContactEntry(faker.company.name(), "Teams"));
-  let address = faker.location.streetAddress() + "\n" +
-    faker.location.zipCode() + " " +
-    faker.location.city();
-  person.streetAddresses.add(new ContactEntry(address, "home"));
-  person.picture = avatar(male);
-  person.company = faker.company.name();
-  person.department = faker.commerce.department();
-  person.position = faker.person.jobTitle();
-  return person;
+export class FakeChatPerson extends Person {
+  constructor() {
+    super();
+    this.id = faker.string.uuid();
+    let male = Math.random() < 0.5;
+    this.firstName = faker.person.firstName(male ? "male" : "female");
+    this.lastName = faker.person.lastName();
+    this.name = this.firstName + " " + this.lastName;
+    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "work"));
+    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "home"));
+    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
+    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
+    this.chatAccounts.add(new ContactEntry(this.phoneNumbers.first.value, "WhatsApp"));
+    this.chatAccounts.add(new ContactEntry(this.emailAddresses.first.value, "Teams"));
+    this.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
+    this.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
+    this.groups.add(new ContactEntry(faker.company.name(), "Teams"));
+    let address = new StreetAddress();
+    address.street = faker.location.streetAddress();
+    address.postalCode = faker.location.zipCode();
+    address.city = faker.location.city();
+    this.streetAddresses.add(new ContactEntry(address.toString(), "home"));
+    this.picture = avatar(male);
+    this.company = faker.company.name();
+    this.department = faker.commerce.department();
+    this.position = faker.person.jobTitle();
+  }
 }
 
-export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCount = 300): MailAccount {
-  let account = new MailAccount();
-  account.name = "Yahoo";
-  account.emailAddress = me.emailAddresses.first.value;
-  account.realname = me.name;
-  account.username = account.emailAddress;
-  account.password = faker.internet.password();
-  account.hostname = "imap." + faker.internet.domainName();
-  account.port = 993;
-  account.tls = 2;
-  me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
-  let meUID = new PersonUID(account.emailAddress, account.realname);
+export class FakeMailAccount extends MailAccount {
+  msgCount: number;
+  persons: Collection<Person>;
+  meUID: PersonUID;
+  @notifyChangedProperty
+  _isLoggedIn = false;
+  constructor(persons: Collection<Person>, me: Person, msgCount = 300) {
+    super();
+    this.name = "Yahoo Test";
+    this.emailAddress = me.emailAddresses.first.value ?? "You";
+    this.realname = me.name;
+    this.username = this.emailAddress;
+    this.password = faker.internet.password();
+    this.hostname = "imap." + faker.internet.domainName();
+    this.port = 993;
+    this.tls = 2;
+    this.identities.add(new FakeMailIdentity(this));
+    this.storage = new DummyMailStorage();
 
-  for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
-    let folder = account.newFolder();
-    folder.name = name;
-    folder.id = name.toLowerCase();
-    folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
-    account.rootFolders.push(folder);
+    me.emailAddresses.add(new ContactEntry(this.emailAddress, "Primary"));
+    this.meUID = new PersonUID(this.emailAddress, this.realname);
+    this.persons = persons;
+    this.msgCount = msgCount;
   }
-  let inbox = account.rootFolders.first;
-  inbox.specialFolder = SpecialFolder.Inbox;
+  async login() {
+    await this.listFolders();
+    this._isLoggedIn = true;
+  }
+  get isLoggedIn(): boolean {
+    return this._isLoggedIn;
+  }
+  async listFolders(): Promise<void> {
+    if (this.rootFolders.hasItems) {
+      return;
+    }
+    for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
+      let folder = this.newFolder();
+      folder.setFakeName(name);
+      this.rootFolders.push(folder);
+    }
+    let inbox = this.rootFolders.first as FakeFolder;
+    inbox.specialFolder = SpecialFolder.Inbox;
+    await inbox.listMessages();
+  }
+  newFolder(): FakeFolder {
+    return new FakeFolder(this);
+  }
 
-  let lastReadTime = new Date();
-  lastReadTime.setHours(lastReadTime.getHours() - 1);
-  let emailNr = 0;
-  for (let person of persons) {
-    let pUID = PersonUID.fromPerson(person);
-    for (let i = 1; i <= msgCount; i++) {
-      emailNr++;
-      let folder: Folder;
-      if (Math.random() < 0.99) {
-        folder = inbox;
-      } else {
-        let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
-        folder = account.rootFolders.getIndex(folderIndex) ?? inbox;
+  async send(email: EMail): Promise<void> {
+    let sentFolder = this.findFolder(acc => acc.specialFolder == SpecialFolder.Sent)!;
+    sentFolder.addMessage(email);
+  }
+}
+
+class FakeFolder extends Folder {
+  declare account: FakeMailAccount;
+  setFakeName(name: string) {
+    this.name = name;
+    this.id = name.toLowerCase();
+    this.specialFolder = this.name.toLowerCase() as SpecialFolder;
+  }
+  async listMessages(): Promise<Collection<EMail>> {
+    if (this.messages.hasItems) {
+      return this.messages;
+    }
+    let messages = new ArrayColl<FakeEMail>();
+    let lastReadTime = new Date();
+    lastReadTime.setHours(lastReadTime.getHours() - 1);
+    let emailNr = 0;
+    for (let person of this.account.persons) {
+      let pUID = PersonUID.fromPerson(person);
+      let msgCount = this.account.msgCount * (this.specialFolder == SpecialFolder.Inbox
+          ? 0.99
+          : 0.01);
+      this.countTotal = msgCount;
+      for (let i = 1; i <= msgCount; i++) {
+        emailNr++;
+        let msg = this.newEMail();
+        msg.setFake(person, pUID, this.account.meUID, lastReadTime, emailNr);
+        messages.add(msg);
       }
-      let msg = folder.newEMail();
-      msg.needToLoadBody = false;
-      msg.id = emailNr + '@' + account.emailAddress;
-      msg.sent = faker.date.past(0.1);
-      msg.received = new Date(msg.sent.getTime() + 500);
-      msg.size = Math.ceil(Math.random() * 2048 + 200);
-      msg.isRead = msg.received < lastReadTime;
-      msg.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
-      msg.outgoing = Math.random() < 0.4;
-      msg.contact = person;
-      msg.from = msg.outgoing ? meUID : pUID;
-      msg.to.add(msg.outgoing ? pUID : meUID);
-      for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
-        msg.to.add(fakeMailPerson());
+    }
+    this.messages.addAll(messages.sortBy(msg => msg.received));
+    return this.messages;
+  }
+  async getNewMessages(): Promise<Collection<EMail>> {
+    return this.messages;
+  }
+  newEMail(): FakeEMail {
+    return new FakeEMail(this);
+  }
+  async addMessage(message: EMail) {
+    this.messages.add(message);
+  }
+  async moveMessagesHere(messages: Collection<EMail>) {
+    let sourceFolder = messages.first.folder;
+    sourceFolder.messages.removeAll(messages);
+    this.messages.addAll(messages);
+  }
+  async copyMessagesHere(messages: Collection<EMail>) {
+    this.messages.addAll(messages);
+  }
+}
+
+class FakeEMail extends EMail {
+  setFake(person: Person, pUID: PersonUID, meUID: PersonUID, lastReadTime: Date, emailNr: number) {
+    this.needToLoadBody = false;
+    this.id = emailNr + '@' + this.folder.account.emailAddress;
+    this.sent = faker.date.past({ years: 0.1 });
+    this.received = new Date(this.sent.getTime() + 500);
+    this.size = Math.ceil(Math.random() * 2048 + 200);
+    this.isRead = this.received < lastReadTime;
+    this.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
+    this.outgoing = Math.random() < 0.4;
+    this.contact = person;
+    this.from = this.outgoing ? meUID : pUID;
+    this.to.add(this.outgoing ? pUID : meUID);
+    for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
+      this.to.add(new FakeMailPerson());
+    }
+    for (let i = Math.floor(Math.random() * 10); i > 0; i--) {
+      this.cc.add(new FakeMailPerson());
+    }
+    if (Math.random() < 0.2) {
+      this.bcc.add(new FakeMailPerson());
+    }
+    let paragraphs: string[] = [];
+    for (let iP = Math.floor(Math.random() * 7) + 1; iP > 0; iP--) {
+      let paragraph = faker.hacker.phrase().replace("!", ".");
+      for (let iS = Math.floor(Math.random() * 5); iS > 0; iS--) {
+        paragraph += " " + faker.hacker.phrase().replace("!", ".");
       }
-      for (let i = Math.floor(Math.random() * 10); i > 0; i--) {
-        msg.cc.add(fakeMailPerson());
-      }
-      if (Math.random() < 0.2) {
-        msg.bcc.add(fakeMailPerson());
-      }
-      let paragraphs = [];
-      for (let iP = Math.floor(Math.random() * 7) + 1; iP > 0; iP--) {
-        let paragraph = faker.hacker.phrase().replace("!", ".");
-        for (let iS = Math.floor(Math.random() * 5); iS > 0; iS--) {
-          paragraph += " " + faker.hacker.phrase().replace("!", ".");
-        }
-        paragraphs.push(paragraph);
-      }
-      msg.text = paragraphs.join("\n\n");
-      if (Math.random() > 0.3) {
-        msg.html = `<p>${paragraphs.join("</p><p>")}</p>`;
-      }
-      folder.messages.add(msg);
-      account.messages.set(person, msg);
+      paragraphs.push(paragraph);
+    }
+    this.text = paragraphs.join("\n\n");
+    if (Math.random() > 0.3) {
+      this.html = `<p>${paragraphs.join("</p><p>")}</p>`;
     }
   }
-  return account;
+  get compose() {
+    return new FakeComposeActions(this);
+  }
+  async download() {}
 }
 
-export function fakeMailPerson(): PersonUID {
-  return new PersonUID(faker.internet.email().toLowerCase(), faker.name.fullName());
+class FakeComposeActions extends ComposeActions {
+  declare email: FakeEMail;
+  async saveAsDraft(): Promise<void> {
+    this.email.sent = new Date();
+    await super.saveAsDraft();
+  }
+  async send() {
+    this.email.sent = new Date();
+    await this.email.identity.account.send(this.email);
+    await this.deleteDrafts();
+  }
 }
 
-export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCount = 300): ChatAccount {
-  let chatAccount = new ChatAccount();
-  chatAccount.name = "Test chat 1";
-  chatAccount.realname = me.name;
+export class FakeMailPerson extends PersonUID {
+  constructor() {
+    super(faker.internet.email().toLowerCase(), faker.person.fullName());
+  }
+}
 
-  for (let person of persons) {
-    let chat = new Chat(chatAccount);
-    chat.id = person.id + "-" + faker.string.uuid();
-    chat.contact = person;
-    chatAccount.chats.set(person, chat);
-    chatAccount.persons.add(person);
+class FakeMailIdentity extends MailIdentity {
+  constructor(account: FakeMailAccount) {
+    super(account);
+    this.emailAddress = account.emailAddress;
+    this.realname = appGlobal.me.name;
+  }
+}
 
-    let messages = chat.messages;
-    let lastTime = faker.date.past(0.1);
+export class FakeChatAccount extends ChatAccount {
+  me: Person;
+  msgCount: number;
+  constructor(persons: Collection<Person>, me: Person, msgCount = 20) {
+    super();
+    this.name = "Test chat 1";
+    this.realname = me.name;
+    this.msgCount = msgCount;
+    this.me = me;
+    this.persons.addAll(persons);
+    this.storage = new DummyChatStorage();
+  }
+  async login(interactive: boolean): Promise<void> {
+    await this.listChats();
+  }
+  async listChats(): Promise<void> {
+    if (this.chats.hasItems) {
+      return;
+    }
+    for (let person of this.persons) {
+      let chat = this.newChat() as FakeChat;
+      chat.id = person.id + "-" + faker.string.uuid();
+      chat.contact = person;
+      this.chats.set(person, chat);
+    }
+  }
+  newChat(): FakeChat {
+    return new FakeChat(this);
+  }
+}
+
+class FakeChat extends Chat {
+  constructor(account: FakeChatAccount) {
+    super(account);
+  }
+  async listMembers(): Promise<void> {
+  }
+  async listMessages(): Promise<void> {
+    if (this.messages.hasItems) {
+      return;
+    }
+    let lastTime = faker.date.past({ years: 0.1 });
+    let msgCount = (this.account as FakeChatAccount).msgCount;
     for (let i = 1; i <= msgCount; i++) {
-      let msg = new UserChatMessage(chat);
-      msg.id = faker.string.uuid();
-      msg.to = chat;
-      msg.contact = chat.contact;
-      msg.outgoing = Math.random() < 0.4;
-      if (Math.random() < 0.5) {
-        msg.sent = faker.date.future(0.000001, lastTime); // followup
-      } else {
-        msg.sent = faker.date.past(0.1);
-      }
-      msg.received = new Date(msg.sent.getTime() + 500);
-      msg.text = faker.hacker.phrase().replace("!", "");
-      msg.html = msg.text;
-      messages.add(msg);
+      let msg = this.newMessage();
+      msg.setFakeTime(lastTime);
+      this.messages.add(msg);
       lastTime = msg.sent;
     }
-    chat.lastMessage = messages.sortBy(msg => msg.sent).last;
+    this.lastMessage = this.messages.sortBy(msg => msg.sent).last;
   }
-  return chatAccount;
+  newMessage(): FakeChatMessage {
+    return new FakeChatMessage(this);
+  }
+
+  async sendMessage(message: UserChatMessage) {
+    message.deliveryStatus = DeliveryStatus.Sending;
+    this.messages.push(message);
+  }
 }
 
-export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Calendar {
-  let calendar = new Calendar();
-  calendar.name = faker.company.name();
-  for (let i = 1; i <= eventCount; i++) {
-    let event = new Event(calendar);
-    event.startTime = i < 5 ? faker.date.recent() : faker.date.future({ years: 0.2 });
-    let endTimeMax = new Date(event.startTime);
-    endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);
-    event.endTime = faker.date.between({ from: event.startTime, to: endTimeMax });
-    event.title = faker.company.buzzPhrase();
-    event.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
-    event.descriptionHTML = event.descriptionText.replace("\n", "<br>");
-    event.location = faker.datatype.boolean ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
+class FakeChatMessage extends UserChatMessage {
+  constructor(chat: FakeChat) {
+    super(chat);
+    this.id = faker.string.uuid();
+    this.to = chat;
+    this.contact = chat.contact;
+    this.outgoing = Math.random() < 0.4;
+    this.text = faker.hacker.phrase().replace("!", "");
+    this.html = this.text;
+  }
+  setFakeTime(lastTime: Date) {
+    let isFollowup = Math.random() < 0.5;
+    this.sent = isFollowup
+      ? faker.date.future({ years: 0.000001, refDate: lastTime })
+      : faker.date.past({ years: 0.1 });
+    this.received = new Date(this.sent.getTime() + 500);
+  }
+}
+
+export class FakeCalendar extends Calendar {
+  randomParticipants: Collection<CalendarParticipant>;
+  constructor(persons: Collection<Person>, eventCount = 50) {
+    super();
+    this.name = faker.company.name();
+    this.storage = new DummyCalendarStorage();
+
+    this.randomParticipants = new ArrayColl(persons.contents.map(person => {
+      let personUID = PersonUID.fromPerson(person);
+      return new CalendarParticipant(personUID.emailAddress, personUID.name, InvitationResponse.NoResponseReceived);
+    }));
+    for (let i = 1; i <= eventCount; i++) {
+      let event = this.newEvent();
+      event.setTime(i > 5);
+      this.events.add(event);
+    }
+  }
+  newEvent(parentEvent?: FakeEvent): FakeEvent {
+    return new FakeEvent(this, parentEvent);
+  }
+}
+
+
+
+class FakeEvent extends Event {
+  declare calendar: FakeCalendar;
+  constructor(calendar: FakeCalendar, parentEvent?: FakeEvent) {
+    super(calendar, parentEvent);
+    this.title = faker.company.buzzPhrase();
+    this.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
+    this.location = faker.datatype.boolean() ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
     let participantsCount = Math.random() * 5;
     for (let i = 1; i < participantsCount; i++) {
-      event.participants.add(fakeMailPerson());
+      let participant = this.calendar.randomParticipants.getIndex(Math.floor(Math.random() * this.calendar.randomParticipants.length));
+      this.participants.add(participant);
     }
-    calendar.events.add(event);
   }
-  return calendar;
+  setTime(future: boolean) {
+    this.startTime = future
+      ? faker.date.future({ years: 0.2 })
+      : faker.date.recent();
+    let endTimeMax = new Date(this.startTime);
+    endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);
+    this.endTime = faker.date.between({ from: this.startTime, to: endTimeMax });
+  }
 }
 
-export function fakeMeetAccount(): MeetAccount {
-  let account = new MeetAccount();
-  account.name = faker.company.name();
-  account.url = faker.internet.url();
-  account.username = faker.internet.userName();
-  return account;
+export class FakeFileSharingAccount extends FileSharingAccount {
+  constructor() {
+    super();
+    this.name = "G Drive";
+    let dirCount = Math.random() * 10;
+    let dirs: Directory[] = [];
+    for (let i = 0; i < dirCount; i++) {
+      let parentDir = this.newDirectory(faker.system.fileName({ extensionCount: 0 }));
+      dirs.push(fakeDir(parentDir));
+    }
+    this.rootDirs.addAll(dirs);
+  }
 }
 
-export function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
-  let directories = new ArrayColl<Directory>();
+export function fakeSharedDir(persons: Collection<Person>): Directory {
   let sharedDirectory = new Directory();
   sharedDirectory.name = "shared";
   sharedDirectory.id = "/shared";
   for (let person of persons) {
-    let personDirectory = new Directory();
-    personDirectory.name = person.name;
+    let personDirectory = sharedDirectory.newDirectory(person.name);
     personDirectory.sentToFrom = person;
     personDirectory.lastMod = faker.date.past();
-    personDirectory.setParent(sharedDirectory);
-    directories.add(personDirectory);
+    sharedDirectory.subDirs.add(personDirectory);
     let dirCount = 2 + Math.random() * 10;
     for (let i = 0; i < dirCount; i++) {
       fakeDir(personDirectory).sentToFrom = person;
     }
   }
-  return directories;
+  return sharedDirectory;
 }
 
 export function fakeDir(parentDir: Directory): Directory {
-  let directory = new Directory();
-  directory.name = unique(() => faker.system.fileName({ extensionCount: 0 }));
+  let name = unique(() => faker.system.fileName({ extensionCount: 0 }));
+  let directory = parentDir.newDirectory(name);
   directory.lastMod = faker.date.past();
-  directory.setParent(parentDir);
   let dirCount = Math.random() * 6;
   dirCount -= 4;
   for (let i = 0; i < dirCount; i++) {
@@ -278,18 +525,19 @@ export function fakeDir(parentDir: Directory): Directory {
   for (let i = 0; i < fileCount; i++) {
     fakeFile(directory);
   }
+  parentDir.subDirs.add(directory);
   return directory;
 }
 
 export function fakeFile(parentDir: Directory): File {
-  let file = new File();
-  file.name = unique(faker.system.commonFileName);
+  let name = unique(faker.system.commonFileName)
+  let file = parentDir.newFile(name);
   let parts = file.name.split(".");
-  file.ext = parts.pop();
+  file.ext = parts.pop()!;
   file.nameWithoutExt = parts.join(".");
-  file.length = faker.number.int({ max: 40000000 });
+  file.size = faker.number.int({ max: 40000000 });
   file.lastMod = faker.date.past();
-  file.setParent(parentDir);
+  parentDir.files.add(file);
   return file;
 }
 

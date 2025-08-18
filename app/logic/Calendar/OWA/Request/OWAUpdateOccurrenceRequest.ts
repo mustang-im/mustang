@@ -1,9 +1,9 @@
 import type { OWAEvent } from "../OWAEvent";
-import OWARequest from "../../../Mail/OWA/Request/OWARequest";
+import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 
 /** This is similar to the UpdateItem request,
  * but the format of the item id is different. */
-export default class OWAUpdateOccurrenceRequest extends OWARequest {
+export class OWAUpdateOccurrenceRequest extends OWARequest {
   Body: any = {
     __type: "UpdateItemRequest:#Exchange",
     ConflictResolution: "AlwaysOverwrite",
@@ -19,7 +19,7 @@ export default class OWAUpdateOccurrenceRequest extends OWARequest {
   constructor(event: OWAEvent, attributes?: { [key: string]: string | boolean }) {
     super("UpdateItem");
     this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.ItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1;
     Object.assign(this.Body, attributes);
   }
 
@@ -42,6 +42,6 @@ export default class OWAUpdateOccurrenceRequest extends OWARequest {
       };
       field.Item[key] = value;
     }
-    this.itemChange.Updates.push(field);
+    this.itemChange.Updates.unshift(field); // reverse order for Event time zone
   }
 }

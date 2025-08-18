@@ -4,7 +4,10 @@
     <Paper>
       <Scroll>
         <vbox flex class="editor">
-          <HTMLEditor bind:html={event.descriptionHTML} bind:editor />
+          <!-- TODO SECURITY Sanitize HTML first before passing it in here.
+            One option: A dedicated getter/setter for the editor that sanitizes on get, but doesn't trigger observers on set.
+            Binding `descriptionHTML` calls observers, which re-sets `html`, which force-kills the editor. #727 -->
+          <HTMLEditor bind:html={event.rawHTMLDangerous} bind:editor />
         </vbox>
       </Scroll>
     </Paper>

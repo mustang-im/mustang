@@ -1,5 +1,4 @@
 <hbox class="mail-start-page">
-  {$t`Start page`}
 </hbox>
 
 <script lang="ts">

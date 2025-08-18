@@ -1,0 +1,38 @@
+{
+  "name": "mustang",
+  "version": "0.9.3",
+  "description": "Mustang - Video conference, chat, mail, calendar, files, contacts",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "./build.sh",
+    "start-android": "cap run android",
+    "start-ios": "cap run ios",
+    "preview": "vite preview",
+    "setup:ios": "cd ios && ./setup-ios.sh"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/camera": "latest",
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "^7.2.0",
+    "@capacitor/splash-screen": "latest",
+    "capacitor-nodejs": "https://github.com/hampoelz/capacitor-nodejs/releases/download/v1.0.0-beta.7/capacitor-nodejs.tgz"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.1.2",
+    "vite": "^5.4.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mustang-im/mustang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mustang-im/mustang/issues"
+  },
+  "author": "Ben Bucksch and Mustang GmbH (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "homepage": "https://mustang.im",
+  "license": "EUPL-1.2",
+  "licenseText": "See LICENSE file at top level"
+}

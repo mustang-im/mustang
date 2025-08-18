@@ -1,4 +1,4 @@
-export default class OWADeletePersonaRequest {
+export class OWADeletePersonaRequest {
   /** Persona requests are wrapped in an additional object for some reason. */
   readonly request: any = {
     __type: "DeletePersonasRequest:#Exchange",

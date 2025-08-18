@@ -8,14 +8,16 @@
   <hbox class="top-row">
     <hbox class="direction">
       {#if $message.outgoing}
-        <OutgoingIcon size={16} />
+        <OutgoingIcon size={16} class="outgoing" />
+      {:else if $message.isReplied}
+        <ReplyIcon size={16} class="reply" />
       {/if}
     </hbox>
     <hbox class="contact">{contactName}</hbox>
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="tags">
-        <TagSelector tags={$tags} {message} canAdd={false} />
+        <TagSelector tags={$tags} object={message} canAdd={false} />
       </hbox>
     {/if}
     <hbox class="date">{getDateTimeString($message.sent)}</hbox>
@@ -59,7 +61,7 @@
         />
     </hbox>
     <hbox class="attachments">
-      {#if $attachments.hasItems}
+      {#if $message.hasVisibleAttachments}
         <AttachmentIcon size="14px" />
       {/if}
     </hbox>
@@ -101,13 +103,14 @@
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
+  import ReplyIcon from "lucide-svelte/icons/reply";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
@@ -121,7 +124,6 @@
 
   export let message: EMail;
 
-  $: attachments = message.attachments;
   $: tags = message.tags;
   $: contactName = personDisplayName($message.contact);
 
@@ -222,9 +224,13 @@
   .direction {
     align-items: center;
   }
-  .direction :global(svg) {
+  .direction :global(svg.outgoing) {
     stroke-width: 1px;
     color: darkred;
+  }
+  .direction :global(svg.reply) {
+    stroke-width: 1px;
+    color: grey;
   }
   .star :global(svg) {
     stroke-width: 1px;

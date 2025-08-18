@@ -1,66 +1,45 @@
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
-    <!-- svelte-ignore a11y-media-has-caption -->
-    <video bind:this={videoEl} muted />
+    <Video stream={$deviceStream?.cameraMicStream} muted={true} />
   </vbox>
   <hbox class="buttons">
+    <slot name="buttons-left" />
     <DeviceButton video={false} {devices}
-      bind:on={$micOn} bind:selectedId={$selectedMic} />
+      on={$micOnSetting.value}
+      selectedID={$selectedMicSetting.value}
+      stream={$deviceStream?.cameraMicStream}
+      on:changeOn={event => micOnSetting.value = event.detail}
+      on:changeDevice={event => selectedMicSetting.value = event.detail}
+      />
     <DeviceButton video={true} {devices}
-      bind:on={$cameraOn} bind:selectedId={$selectedCamera} />
+      on={$cameraOnSetting.value}
+      selectedID={$selectedCameraSetting.value}
+      on:changeOn={event => cameraOnSetting.value = event.detail}
+      on:changeDevice={event => selectedCameraSetting.value = event.detail}
+      />
+    <slot name="buttons-right" />
   </hbox>
 </vbox>
 
 <script lang="ts">
-  import { cameraOn, micOn, selectedCamera, selectedMic } from "./selectedDevices";
+  import { cameraOnSetting, micOnSetting, selectedCameraSetting, selectedMicSetting } from "./selectedDevices";
+  import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
+  import DeviceButton from "./DeviceButton.svelte";
+  import Video from "../View/Video/Video.svelte";
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
-  import DeviceButton from "./DeviceButton.svelte";
 
-  let cameraStream: MediaStream;
-  let videoEl: HTMLVideoElement;
   let devices: MediaDeviceInfo[];
 
-  // $: $cameraOn, $micOn, $selectedCamera, $selectedMic, () => catchErrors(restartCamMic);
-  $: restartCamMic($cameraOn, $micOn, $selectedCamera, $selectedMic);
-
-  async function restartCamMic(...dummy: any[]) {
-    console.log("restart camera");
-    await stopCamMic();
-    await startCamMic();
-  }
-
+  let deviceStream: LocalMediaDeviceStreams;
   async function startCamMic() {
-    if (!$cameraOn && !$micOn) {
-      return;
-    }
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: $cameraOn ? {
-        deviceId: $selectedCamera,
-      } : undefined,
-      audio: $micOn ? {
-        deviceId: $selectedMic,
-      } : undefined,
-    });
-    if (!cameraStream || !videoEl) {
-      return;
-    }
-    videoEl.srcObject = cameraStream;
-    await videoEl.play();
-
+    deviceStream ??= new LocalMediaDeviceStreams();
+    await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
     await getDevices();
   }
 
   async function stopCamMic() {
-    if (!cameraStream) {
-      return;
-    }
-    for (let track of cameraStream.getTracks()) {
-      track.stop();
-    }
-    videoEl.pause();
-    videoEl.srcObject = null;
-    cameraStream = null;
+    await deviceStream.setCameraMicOn(false, false);
   }
 
   async function getDevices() {
@@ -68,24 +47,26 @@
       return;
     }
     await tick();
+    // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
+
+  $: catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value));
 
   onMount(async () => catchErrors(startCamMic));
   onDestroy(async () => catchErrors(stopCamMic));
 </script>
 
 <style>
-  .self-video video {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 16/9;
-    object-fit: contain;
+  .self-video {
+    align-items: center;
+    justify-content: center;
   }
   .buttons {
     margin-block-start: -22px;
     justify-content: center;
+    z-index: 1;
   }
   .buttons :global(> *) {
     margin-inline-start: 4px;

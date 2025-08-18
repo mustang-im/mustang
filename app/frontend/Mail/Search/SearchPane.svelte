@@ -10,7 +10,6 @@
 
   <Scroll>
     <hbox class="term font-normal">
-      {$t`Search for`}
       <SearchField bind:searchTerm={$globalSearchTerm}
         placeholder={$t`Mail content or subject`}
         bind:this={searchFieldEl} />
@@ -105,6 +104,9 @@
     searchMessages = null;
     dispatchEvent("clear");
   }
+
+  // window title | search field | (x) button
+  $: if ($globalSearchTerm == null) dispatchEvent("clear");
 
   let searchFieldEl: SearchField;
   onMount(() => {

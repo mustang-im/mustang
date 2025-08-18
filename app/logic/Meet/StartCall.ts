@@ -4,7 +4,9 @@ import { Group } from "../Abstract/Group";
 import { MeetingParticipant } from "./Participant";
 import type { ChatAccount } from "../Chat/ChatAccount";
 import type { Chat } from "../Chat/Chat";
+import type { M3Account } from "./M3/M3Account";
 import { M3Conf } from "./M3/M3Conf";
+import type { LiveKitAccount } from "./LiveKit/LiveKitAccount";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./Matrix/MatrixVideoConf";
 import { appGlobal } from "../app";
@@ -18,7 +20,7 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
   callee.name = to.name;
   callee.picture = to.picture;
   call.participants.add(callee);
-  call.state = MeetingState.OutgoingCallPrepare;
+  call.state = MeetingState.OutgoingCallConfirm;
   appGlobal.meetings.add(call);
   return;
 
@@ -117,23 +119,12 @@ export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeti
 }
 
 /**
- * Whether this is a conference invitation URL that we support and can join.
- * Does only cheap syntax checks.
- * @see joinConferenceByURL();
- */
-export function isConferenceURL(url: URLString): boolean {
-  let urlParsed = new URL(url);
-  return urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/");
-}
-
-/**
  * The user received invitation URL out-of-band (using other communication methods)
  * from the conference organizer.
  * The URL should contain both the room and the ticket to permit joining.
  * @returns meeting
  *   `meeting.join()` was already called. You still need to `meeting.start()`.
  * @throws if the URL is not supported
- * @see isConferenceURL();
  */
 export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
   assert(url, "Need URL");
@@ -143,10 +134,12 @@ export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeet
   } catch (ex) {
     throw new UserError(gt`This is not a meeting URL`);
   }
-  if (urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/")) {
-    let conf = new M3Conf();
-    await conf.join(url);
-    return conf;
+  let account = appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
+  if (!account) {
+    // TODO Open `url` in embedded browser window, as fallback
+    throw new UserError(gt`This meeting URL is not supported`);
   }
-  throw new UserError(gt`This meeting URL is not supported`);
+  let conf = account.newMeeting();
+  await conf.join(url);
+  return conf;
 }

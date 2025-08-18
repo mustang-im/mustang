@@ -1,19 +1,20 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
-import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
-import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
+import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
 import type { OWACalendar } from "./OWACalendar";
-import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
-import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
-import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
-import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365OccurrenceRequest";
-import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
-import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
-import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
-import type { ArrayColl } from "svelte-collections";
+import { OWAOutgoingInvitation } from "./OWAOutgoingInvitation";
+import { OWACreateOffice365EventRequest } from "./Request/OWACreateOffice365EventRequest";
+import { OWAUpdateOffice365EventRequest } from "./Request/OWAUpdateOffice365EventRequest";
+import { OWAUpdateOccurrenceRequest } from "./Request/OWAUpdateOccurrenceRequest";
+import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice365OccurrenceRequest";
+import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
+import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
+import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { k1MinuteMS } from "../../../frontend/Util/date";
+import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
@@ -32,9 +33,9 @@ enum WeekOfMonth {
 };
 
 export class OWAEvent extends Event {
-  calendar: OWACalendar;
-  parentEvent: OWAEvent;
-  readonly instances: ArrayColl<OWAEvent | null | undefined>;
+  declare calendar: OWACalendar;
+  declare parentEvent: OWAEvent;
+  declare readonly exceptions: ArrayColl<OWAEvent>;
 
   get itemID(): string | null {
     return this.pID;
@@ -48,12 +49,18 @@ export class OWAEvent extends Event {
     this.calUID = sanitize.nonemptystring(json.UID, null);
     this.title = sanitize.nonemptystring(json.Subject, "");
     if (json.Body?.BodyType == "Text") {
-      this.descriptionText = sanitize.nonemptystring(json.Body.Value, "");
+      this.rawText = sanitize.nonemptystring(json.Body.Value, "");
+      this.rawHTMLDangerous = null;
     } else {
-      this.descriptionText = sanitize.nonemptystring(json.TextBody?.Value, "");
+      this.rawText = sanitize.nonemptystring(json.TextBody?.Value, "");
       if (json.Body?.BodyType == "HTML") {
-        this.descriptionHTML = sanitize.nonemptystring(json.Body.Value, "");
+        this.rawHTMLDangerous = sanitize.nonemptystring(json.Body.Value, "");
+      } else {
+        this.rawHTMLDangerous = null;
       }
+    }
+    if (json.DateTimeStamp) {
+      this.lastUpdateTime = sanitize.date(json.DateTimeStamp);
     }
     if (json.RecurrenceId) {
       this.recurrenceStartTime = sanitize.date(json.RecurrenceId);
@@ -72,55 +79,59 @@ export class OWAEvent extends Event {
     this.timezone = fromWindowsZone(json.StartTimeZoneId);
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
     if (json.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
-      this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
+      this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     if (json.ReminderIsSet) {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(json.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(json.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
     this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
     this.isOnline = sanitize.boolean(json.IsOnlineMeeting, false);
+    this.isCancelled = sanitize.boolean(json.IsCancelled, false);
+    let organizer: string | undefined;
     let participants: Participant[] = [];
+    if (json.Organizer && (json.RequiredAttendees || json.OptionalAttendees)) {
+      organizer = sanitize.emailAddress(json.Organizer.Mailbox.EmailAddress);
+      json.Organizer.ResponseType = "Organizer";
+      addParticipants([json.Organizer], participants);
+    }
     if (json.RequiredAttendees) {
-      addParticipants(json.RequiredAttendees, participants);
+      addParticipants(json.RequiredAttendees, participants, organizer);
     }
     if (json.OptionalAttendees) {
-      addParticipants(json.OptionalAttendees, participants);
+      addParticipants(json.OptionalAttendees, participants, organizer);
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
-      this.response = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
   }
 
-  protected newRecurrenceRule(json: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+  protected newRecurrenceRuleFromJSON(json: any): RecurrenceRule {
+    let masterDuration = this.duration;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(json.RecurrenceRange.NumberOfOccurrences, Infinity);
     let pattern = json.RecurrencePattern;
@@ -129,7 +140,11 @@ export class OWAEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingInvitation() {
+    return new OWAOutgoingInvitation(this);
   }
 
   async saveToServer() {
@@ -163,11 +178,19 @@ export class OWAEvent extends Event {
 
   async saveCalendarItem() {
     let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callOWA(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText ?? "" }, "item:Body");
+    request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.rawHTMLDangerous } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
+    if (!this.parentEvent) { // Exchange requires not to write the `Recurrence` prop for recurrence instances
+      request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
+    }
     if (this.calUID && !this.itemID && !this.parentEvent) {
       // This probably only makes sense when creating an event.
       // (And it's not even needed then as Exchange will auto-generate one.)
@@ -191,6 +214,13 @@ export class OWAEvent extends Event {
     if (this.calendar.account.isOffice365()) {
       request.addField("CalendarItem", "StartTimeZoneId", timezone, "calendar:StartTimeZoneId");
       request.addField("CalendarItem", "EndTimeZoneId", timezone, "calendar:EndTimeZoneId");
+      (request.Header as any).TimeZoneContext = {
+        __type: "TimeZoneContext:#Exchange",
+        TimeZoneDefinition: {
+          __type: "TimeZoneDefinitionType:#Exchange",
+          id: timezone,
+        }
+      };
     } else {
       request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:StartTimeZone");
       request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:EndTimeZone");
@@ -264,7 +294,7 @@ export class OWAEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   protected saveRule(rule: RecurrenceRule) {
@@ -285,7 +315,7 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       recurrence.RecurrencePattern.DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -295,18 +325,18 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      recurrence.RecurrencePattern.DayOfMonth = rule.startDate.getDate();
+      recurrence.RecurrencePattern.DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      recurrence.RecurrencePattern.Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      recurrence.RecurrencePattern.Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
-    recurrence.RecurrenceRange.StartDate = this.dateString(rule.startDate, true);
+    recurrence.RecurrenceRange.StartDate = this.dateString(rule.seriesStartTime, true);
     if (rule.count < Infinity) {
       recurrence.RecurrenceRange.__type = "NumberedRecurrence:#Exchange";
       recurrence.RecurrenceRange.NumberOfOccurrences = rule.count;
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.RecurrenceRange.__type = "EndDateRecurrence:#Exchange";
-      recurrence.RecurrenceRange.EndDate = this.dateString(rule.endDate, true);
+      recurrence.RecurrenceRange.EndDate = this.dateString(rule.seriesEndTime, true);
     }
     return recurrence;
   }
@@ -321,21 +351,61 @@ export class OWAEvent extends Event {
     }
   }
 
+  /** Returns a copy of the event as read from the server */
+  async fetchFromServer(): Promise<OWAEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let result = await this.calendar.account.callOWA(owaGetEventsRequest([this.itemID]));
+    let item = result.Items[0];
+    if (item.IsOnlineMeeting) {
+      let result = await this.calendar.account.callOWA(owaGetCalendarEventsRequest([this.itemID]));
+      item.OnlineMeetingJoinUrl = result.Items[0].OnlineMeetingJoinUrl;
+    }
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromJSON(item);
+    return event;
+  }
+
+  async makeExclusions(exclusions: OWAEvent[]) {
+    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(exclusions, this));
+    await super.makeExclusions(exclusions);
+  }
+
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
+    let itemID = this.itemID;
+    // Unfortunately this API won't take an OccurrenceItemId directly.
+    if (!itemID) {
+      // In case the invitation is for a single instance of a recurring meeting
+      assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
+      let request = owaGetOccurrenceIdRequest(this);
+      let response = await this.calendar.account.callOWA(request);
+      itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
+    }
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",
-      Id: this.itemID,
+      Id: itemID,
     });
     await this.calendar.account.callOWA(request);
+    try {
+      await this.calendar.getEvents([itemID], new ArrayColl<OWAEvent>(), this.parentEvent);
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") { // expected
+        await this.deleteLocally(); // OWA deleted the event from the server
+      } else {
+        throw ex;
+      }
+    }
   }
 }
 
 
-function addParticipants(attendees, participants: Participant[]) {
+function addParticipants(attendees, participants: Participant[], organizer?: string) {
   for (let attendee of attendees) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
+    if (emailAddress != organizer) {
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    }
   }
 }
 

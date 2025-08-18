@@ -1,8 +1,22 @@
 <hbox class="persons-toolbar">
-  <Scroll>
-    <AddressbookSelector bind:selectedAddressbook />
-  </Scroll>
+  <vbox class="dropdown">
+    <AccountDropDown
+      bind:selectedAccount={selectedAddressbook}
+      accounts={appGlobal.addressbooks}
+      showAllOption={true}
+      filterByWorkspace={true}
+      icon={AccountIcon}
+      />
+  </vbox>
+  <hbox flex />
   <hbox class="buttons">
+    <RoundButton
+      label={$t`Sync from server`}
+      icon={SyncIcon}
+      iconSize="12px" padding="4px" classes="sync small" border={false}
+      onClick={sync}
+      disabled={!$selectedAddressbook?.canSync}
+      />
     <RoundButton
       label={$t`New contact`}
       icon={NewContactIcon}
@@ -17,10 +31,13 @@
   import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "./Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import AddressbookSelector from "./AddressbookSelector.svelte";
+  import { appGlobal } from "../../logic/app";
+  import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
+  import SyncIcon from "lucide-svelte/icons/refresh-cw";
+  import AccountIcon from "lucide-svelte/icons/book-user";
+  import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
@@ -32,9 +49,14 @@
   function addPerson() {
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
     let person = selectedAddressbook.newPerson();
-    person.name = "New person";
+    person.name = "";
     persons.add(person);
     $selectedPerson = person;
+  }
+
+  async function sync() {
+    assert($selectedAddressbook?.canSync, "Cannot sync " + $selectedAddressbook.protocol);
+    await $selectedAddressbook.listContacts();
   }
 </script>
 
@@ -42,5 +64,25 @@
   .persons-toolbar {
     margin: 10px 12px 10px 16px;
     align-items: end;
+  }
+  .dropdown {
+    margin-block: auto; /* v-center */
+    margin-inline-start: 4px;
+  }
+  .dropdown :global(.icon) {
+    margin-inline-end: 4px;
+  }
+  .dropdown :global(.icon svg) {
+    width: 20px;
+    height: 20px;
+  }
+  .buttons {
+    align-items: end;
+  }
+  .buttons :global(.button) {
+    margin-left: 6px;
+  }
+  .buttons :global(.button.disabled) {
+    opacity: 10%;
   }
 </style>

@@ -1,12 +1,16 @@
 import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./Window/SettingsCategory";
+import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
+import { filesMustangApp } from "../Files/FilesMustangApp";
+import { myHarddrive } from "../../logic/Files/Harddrive/HarddriveAccount";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import GlobalWorkspaces from "./Global/Workspaces.svelte";
+import GlobalSystemIntegration from "./Global/SystemIntegration.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
 import MailRead from "./Mail/Read.svelte";
@@ -21,14 +25,14 @@ import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
-import Billing from "./About/Billing.svelte";
+import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
-import Test from "./About/Test.svelte";
 // #if [!WEBMAIL]
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
+import SetupFiles from "../Setup/Files/SetupFiles.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -43,7 +47,6 @@ import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
 import { ArrayColl } from "svelte-collections";
-import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { gt } from "../../l10n/l10n";
 
 export const settingsCategories = new ArrayColl<SettingsCategory>();
@@ -55,6 +58,7 @@ const globalSettings = new SettingsCategory("global", gt`General`, null, true);
 globalSettings.subCategories.addAll([
   new SettingsCategory("global-appearance", gt`Appearance`, GlobalAppearance),
   new SettingsCategory("global-workspaces", gt`Workspaces`, GlobalWorkspaces),
+  new SettingsCategory("global-system-integration", gt`System integration`, GlobalSystemIntegration)
 ]);
 settingsCategories.add(globalSettings);
 
@@ -120,7 +124,7 @@ settingsCategories.add(contactsSettings);
 // #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
 meetSettings.subCategories.addAll([
-  new SettingsCategory("meet-appearance", gt`Appearance`),
+  // new SettingsCategory("meet-appearance", gt`Appearance`),
   new SettingsCategory("meet-devices", gt`Devices`, Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
@@ -135,15 +139,27 @@ settingsCategories.add(meetSettings);
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 
+const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
+filesSettings.subCategories.addAll([
+]);
+filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
+// #if [!WEBMAIL]
+filesSettings.newAccountUI = SetupFiles;
+// #endif
+filesSettings.forApp = filesMustangApp;
+settingsCategories.add(filesSettings);
+
 const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
 appSettings.subCategories.addAll([
 ]);
 appSettings.forApp = webAppsMustangApp;
-settingsCategories.add(appSettings);
+// settingsCategories.add(appSettings);
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
-  new SettingsCategory("billing", gt`Billing`, Billing),
+  // #if [PROPRIETARY]
+  new SettingsCategory("license", gt`Billing`, License),
+  // #endif
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
 ]);
 settingsCategories.add(about);

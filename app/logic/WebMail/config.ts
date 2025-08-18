@@ -9,7 +9,6 @@ import type { Calendar } from '../Calendar/Calendar';
 import type { ChatAccount } from '../Chat/ChatAccount';
 import type { MeetAccount } from '../Meet/MeetAccount';
 import { appGlobal } from '../app';
-import { accountConfigWebMail } from '../build';
 import { readConfigFromXML } from '../Mail/AutoConfig/readConfig';
 import { assert } from '../util/util';
 

@@ -2,9 +2,9 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
-import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
-import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
-import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
+import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
+import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -55,7 +55,7 @@ function findOrCreatePerson(emailAddress: string, name:string): Person {
   if (person) {
     return person;
   }
-  person = new Person(appGlobal.collectedAddressbook);
+  person = appGlobal.collectedAddressbook.newPerson();
   person.name = name;
   person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
   return person;

@@ -1,0 +1,65 @@
+{
+  "name": "Fred Flintstone",
+  "firstName": "",
+  "lastName": "",
+  "picture": null,
+  "notes": "Our favorite test person",
+  "company": "ACME",
+  "department": "",
+  "position": "Father",
+  "popularity": 0,
+  "addressbookID": true,
+  "emailAddresses": [
+    {
+      "value": "fred@example.org",
+      "protocol": "mailto",
+      "purpose": "home",
+      "preference": 100
+    },
+    {
+      "value": "fred@example.com",
+      "protocol": "mailto",
+      "purpose": "work",
+      "preference": 100
+    },
+    {
+      "value": "fred@example.net",
+      "protocol": "mailto",
+      "purpose": "home",
+      "preference": 100
+    }
+  ],
+  "chatAccounts": [
+    {
+      "value": "fred:irc.eunet.net",
+      "protocol": "fred",
+      "purpose": "other",
+      "preference": 100
+    }
+  ],
+  "phoneNumbers": [
+    {
+      "value": "+1-800-1000000",
+      "protocol": "tel",
+      "purpose": "home",
+      "preference": 100
+    }
+  ],
+  "streetAddresses": [
+    {
+      "value": {
+        "instructions": null,
+        "street": "Steingasse 3",
+        "city": "Geröllheim / Bedrock",
+        "state": "",
+        "postalCode": "",
+        "country": ""
+      },
+      "protocol": null,
+      "purpose": "home",
+      "preference": 100
+    }
+  ],
+  "urls": [],
+  "custom": []
+}

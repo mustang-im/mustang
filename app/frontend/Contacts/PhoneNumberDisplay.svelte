@@ -1,5 +1,6 @@
 <hbox class="value">
-  <a href="tel:{value}">
+  <a href="tel:{value}"
+    on:click={event => event.stopPropagation()}>
     {value}
   </a>
 </hbox>

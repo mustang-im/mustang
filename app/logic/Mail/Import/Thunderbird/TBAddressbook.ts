@@ -1,6 +1,7 @@
 import { Addressbook } from "../../../Contacts/Addressbook";
 import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
+import { StreetAddress } from "../../../Contacts/StreetAddress";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { NotReached, UserError } from "../../../util/util";
@@ -29,7 +30,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       try {
         id = sanitize.alphanumdash(id);
         let personRows = rows.filter(row => row.cardID == id);
-        let person = this.readCard(id, personRows);
+        let person = this.readCard(id, personRows, ab);
         ab.persons.add(person);
       } catch (ex) {
         entryErrorCallback(ex);
@@ -42,7 +43,7 @@ export class ThunderbirdAddressbook extends Addressbook {
     return ab;
   }
 
-  protected static readCard(id: string, rows: any[]): Person {
+  protected static readCard(id: string, rows: any[], addressbook: Addressbook): Person {
     function getRow(name: string): string | null {
       return rows.find(row => row.name == name)?.value;
     }
@@ -57,7 +58,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       addTo.add(entry);
     }
 
-    let person = new Person();
+    let person = addressbook.newPerson();
     person.id = id;
     let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
 
@@ -111,12 +112,18 @@ export class ThunderbirdAddressbook extends Addressbook {
     addContact(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
 
     // Street addresses
-    function addStreetAddress(street: string, street2: string, postcode: string, city: string, state: string, country: string, purpose: string, preference: number) {
-      if (!(street || street2 || postcode || city || state || country)) {
+    function addStreetAddress(street: string, street2: string, postalCode: string, city: string, state: string, country: string, purpose: string, preference: number) {
+      if (!(street || street2 || postalCode || city || state || country)) {
         return;
       }
-      let address = `${street || ""}${street && street2 ? " - " : ""}${street2 || ""}\n${postcode || ""}\n${city || ""}\n${state || ""}\n${country || ""}`;
-      addContact(address, "address", purpose, preference, person.streetAddresses);
+      let address = new StreetAddress();
+      address.street = street;
+      address.instructions = street2;
+      address.city = city;
+      address.postalCode = postalCode;
+      address.state = state;
+      address.country = country;
+      addContact(address.toString(), "address", purpose, preference, person.streetAddresses);
     }
     addStreetAddress(
       getRow("WorkAddress"), getRow("WorkAddress2"),

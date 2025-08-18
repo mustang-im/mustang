@@ -5,6 +5,7 @@ import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
 // #endif
 // #if [!WEBMAIL]
+import { CalDAVCalendar } from '../CalDAV/CalDAVCalendar';
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
 // #else
 import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';
@@ -29,7 +30,13 @@ function _newCalendarForProtocol(protocol: string): Calendar {
   }
   // #if [!WEBMAIL || WEBMAIL=JMAP]
   if (protocol == "calendar-jmap") {
-    throw new NotImplemented("JMAP Calendar not implemented"); // return new JMAPCalendar();
+    throw new NotImplemented("JMAP Calendar not implemented");
+    // return new JMAPCalendar();
+  }
+  // #endif
+  // #if [!WEBMAIL]
+  if (protocol == "caldav") {
+    return new CalDAVCalendar();
   }
   // #endif
   // #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]

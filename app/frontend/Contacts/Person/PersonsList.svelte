@@ -1,5 +1,7 @@
 <vbox flex class="persons" {size} class:mobile={appGlobal.isMobile}>
-  <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
+  {#if showSearch}
+    <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
+  {/if}
   <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} {size} on:click>
@@ -27,6 +29,9 @@
   export let pictureSize = size == "large" ? 56 : appGlobal.isMobile ? 32 : 20;
   /** in/out */
   export let searchTerm: string | null = null;
+  /* Show or entirely remove the search field -- in */
+  export let showSearch = true;
+  /** focus the search field when this component loads -- in */
   export let doSearch = false;
 
   $: filteredPersons = searchTerm

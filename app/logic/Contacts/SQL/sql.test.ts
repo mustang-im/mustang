@@ -3,7 +3,7 @@ import { ContactEntry } from '../../Abstract/Person';
 import { SQLAddressbook } from './SQLAddressbook';
 import { SQLGroup } from './SQLGroup';
 import { SQLPerson } from './SQLPerson';
-import { fakeAddressbook, fakeChatPerson, fakeGroups, fakePersons } from '../../testData';
+import { FakeAddressbook, FakeChatPerson, fakeGroups, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { Collection } from 'svelte-collections';
@@ -14,8 +14,8 @@ test("Save and read contacts from SQL database", { timeout: 10000 }, async () =>
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
-  appGlobal.me = fakeChatPerson();
-  let originalAddressbook = fakeAddressbook();
+  appGlobal.me = new FakeChatPerson();
+  let originalAddressbook = new FakeAddressbook();
   expect(originalAddressbook).toBeDefined();
   fakePersons(50, originalAddressbook);
   fakeGroups(10, 15, originalAddressbook);
@@ -35,7 +35,7 @@ test("Save and read contacts from SQL database", { timeout: 10000 }, async () =>
   }
 
   // Clear
-  appGlobal.persons.clear();
+  originalAddressbook.persons.clear();
   appGlobal.addressbooks.clear();
 
   // Read

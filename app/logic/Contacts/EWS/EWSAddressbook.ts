@@ -9,6 +9,9 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
+  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  folderID: string;
+  canSync: boolean = true;
   readonly persons: ArrayColl<EWSPerson>;
   readonly groups: ArrayColl<EWSGroup>;
 
@@ -167,11 +170,11 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
           if (person) {
             person.fromXML(result.Items.Contact);
-            await person.save();
+            await person.saveLocally();
           } else {
             person = new EWSPerson(this);
             person.fromXML(result.Items.Contact);
-            await person.save();
+            await person.saveLocally();
             this.persons.add(person);
           }
         } catch (ex) {
@@ -181,7 +184,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  protected getPersonByItemID(id: string): EWSPerson | void {
+  protected getPersonByItemID(id: string): EWSPerson | undefined {
     return this.persons.find(p => p.itemID == id);
   }
 
@@ -214,11 +217,11 @@ export class EWSAddressbook extends Addressbook {
           let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
           if (group) {
             group.fromXML(result.Items.DistributionList);
-            await group.save();
+            await group.saveLocally();
           } else {
             group = new EWSGroup(this);
             group.fromXML(result.Items.DistributionList);
-            await group.save();
+            await group.saveLocally();
             this.groups.add(group);
           }
         } catch (ex) {
@@ -228,7 +231,17 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  protected getGroupByItemID(id: string): EWSGroup | void {
+  protected getGroupByItemID(id: string): EWSGroup | undefined {
     return this.groups.find(p => p.itemID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folderID = sanitize.string(json.folderID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folderID = this.folderID;
+    return json;
   }
 }

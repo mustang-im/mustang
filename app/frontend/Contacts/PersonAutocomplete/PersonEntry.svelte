@@ -1,14 +1,17 @@
 <hbox class="person"
   class:selected={popupOpen}
   class:no-pic={!$person.person?.picture}
+  title={person.name + "\n" + person.emailAddress}
   bind:this={popupAnchor}
   on:click={onPopupToggle}>
+  <slot name="before-avatar" />
   {#if $person.person?.picture}
     <PersonPicture person={$person.person} size={24} />
   {/if}
   <vbox flex class="right">
     <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
   </vbox>
+  <slot name="after-name" />
 </hbox>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
   <PersonPopup personUID={person}
@@ -16,6 +19,7 @@
     on:close={onPopupClose}
     {disabled}
     >
+    <slot name="person-popup-bottom" slot="bottom" personUID={person} />
     <slot name="person-popup-buttons" slot="buttons" personUID={person} />
   </PersonPopup>
 </Popup>

@@ -1,32 +1,67 @@
 import type { Event } from "../Event";
-import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation";
+import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
+import { assert } from "../../util/util";
 
-export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
-  if (!event || !method) {
-    return null;
-  }
+export function getICal(event: Event, method?: iCalMethod): string | null {
+  assert(event, "Need event");
   /* We have to special-case RRULE as it contains ";"s
    * which must not be escaped as normal text values would */
   const lines: (string | string[])[] = [];
   lines.push(["BEGIN", "VCALENDAR"]);
-  lines.push(["METHOD", method]);
+  if (method) {
+    lines.push(["METHOD", method]);
+  }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
   lines.push(["BEGIN", "VEVENT"]);
-  lines.push(["DTSTAMP", date2ical(new Date(), false)]);
+  lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
   }
   if (event.descriptionText) {
-    lines.push(["DESCRIPTION", event.descriptionText]);
+    if (event.hasHTML) {
+      // Plaintext, and HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
+      // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
+      // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
+    lines.push(["DESCRIPTION", "ALTREP", "data:text/html," + encodeURIComponent(event.descriptionHTML), event.descriptionText]);
+      // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
+      lines.push(["STYLED-DESCRIPTION", "VALUE", "TEXT", "FMTTYPE", "text/html", event.descriptionHTML]);
+      // HTML Outlook
+      lines.push(["X-ALT-DESC", "FMTTYPE", "text/html", event.descriptionHTML]);
+    } else {
+      // Plaintext
+      lines.push(["DESCRIPTION", event.descriptionText]);
+    }
   }
-  const dateParts = ["VALUE", event.allDay ? "DATE" : "DATE-TIME", "TZID", Intl.DateTimeFormat().resolvedOptions().timeZone];
-  lines.push(["DTSTART", ...dateParts, date2ical(event.startTime, event.allDay)]);
-  lines.push(["DTEND", ...dateParts, date2ical(event.endTime, event.allDay)]);
+  if (event.allDay) {
+    lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
+    lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
+    if (event.recurrenceStartTime) {
+      lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
+    }
+  } else {
+    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (timezone == "UTC") {
+      lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
+      lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
+      if (event.recurrenceStartTime) {
+        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", utc2ical(event.recurrenceStartTime)]);
+      }
+    } else {
+      lines.push(["DTSTART", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.startTime, timezone)]);
+      lines.push(["DTEND", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.endTime, timezone)]);
+      if (event.recurrenceStartTime) {
+        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.recurrenceStartTime, timezone)]);
+      }
+    }
+  }
   if (event.location) {
     lines.push(["LOCATION", event.location]);
+  }
+  if (event.isCancelled) {
+    lines.push(["STATUS", "CANCELLED"]);
   }
   let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
   if (organizer) {
@@ -52,8 +87,7 @@ export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod
   }
   lines.push(["END", "VEVENT"]);
   lines.push(["END", "VCALENDAR"]);
-  const content = lines.map(line2ical).join("");
-  return { method, content };
+  return lines.map(line2ical).join("");
 }
 
 function line2ical(line: string | string[]): string {
@@ -71,11 +105,18 @@ function line2ical(line: string | string[]): string {
   return text.match(/.{1,75}/gu).join("\r\n ") + "\r\n";
 }
 
-function date2ical(date: Date, allDay: boolean): string {
-  if (!allDay) {
-    return date.toISOString().replace(/-|:|\..../g, "");
-  }
+function utc2ical(date: Date): string {
+  return date.toISOString().replace(/-|:|\..../g, "");
+}
+
+function date2ical(date: Date): string {
   return String(date.getFullYear()) + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0");
+}
+
+function datetime2ical(date: Date, timeZone: string): string {
+  // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
+  // which we can easily convert into iCal format.
+  return date.toLocaleString("lt", { timeZone }).replace(" ", "T").replace(/-|:/g, "");
 }
 
 function escaped(s: string, quote: boolean): string {

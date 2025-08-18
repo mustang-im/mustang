@@ -1,18 +1,4 @@
-<hbox class="attachment">
-  {#if $attachments.hasItems}
-    <AttachmentIcon size="12px" />
-  {/if}
-</hbox>
-<hbox class="star button" class:starred={$message.isStarred}>
-  <Button
-    icon={StarIcon}
-    iconSize="16px"
-    iconOnly
-    label={$t`Remember this message`}
-    onClick={toggleStar}
-    plain
-    />
-</hbox>
+<!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
 <hbox class="unread-dot button" class:unread={!$message.isRead}>
   <Button
     icon={CircleIcon}
@@ -23,9 +9,16 @@
     plain
     />
 </hbox>
+<hbox class="attachment">
+  {#if $message.hasVisibleAttachments}
+    <AttachmentIcon size="12px" />
+  {/if}
+</hbox>
 <hbox class="direction">
   {#if $message.outgoing}
-    <OutgoingIcon size={16} />
+    <OutgoingIcon size={16} class="outgoing" />
+  {:else if $message.isReplied}
+    <ReplyIcon size={16} class="reply" />
   {/if}
 </hbox>
 <hbox class="correspondent"
@@ -40,10 +33,20 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{$message.subject}</hbox>
-<hbox class="tags">
+<hbox class="tags" class:tagged={$tags.hasItems}>
   {#if $tags.hasItems}
-    <TagSelector tags={$tags} {message} canAdd={false} />
+    <TagSelector tags={$tags} object={message} canAdd={false} />
   {/if}
+</hbox>
+<hbox class="star button" class:starred={$message.isStarred}>
+  <Button
+    icon={StarIcon}
+    iconSize="16px"
+    iconOnly
+    label={$t`Remember this message`}
+    onClick={toggleStar}
+    plain
+    />
 </hbox>
 <hbox class="date"
   class:unread={!$message.isRead}
@@ -102,12 +105,13 @@
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
   import MessageMenu from "../Message/MessageMenu.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
+  import ReplyIcon from "lucide-svelte/icons/reply";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
@@ -121,7 +125,6 @@
 
   export let message: EMail;
 
-  $: attachments = message.attachments;
   $: tags = message.tags;
   $: contactName = personDisplayName($message.contact);
 
@@ -155,18 +158,26 @@
   .correspondent,
   .subject,
   .date {
+    align-self: center;
     white-space: nowrap;
     font-weight: 300;
+    height: 100%;
+  }
+  .date {
+    justify-content: start;
+    min-width: 8em;
+    font-size: 12px !important;
+    font-family: Helvetica, Arial, sans-serif;
+    height: 19px; /* make up for smaller font size, minus padding (below), when selected */
+    max-height: 19px;
+    padding-block-start: 2px; /* vertical center */
   }
   .date,
   .buttons.hover {
     padding-inline-end: 16px;
   }
-  .date {
-    min-width: 8em;
-    justify-content: start;
-    font-size: 12px !important;
-    font-family: Helvetica, Arial, sans-serif;
+  .tags:not(.tagged) {
+    padding: 0px;
   }
   .correspondent.unread,
   .subject.unread,
@@ -187,13 +198,16 @@
     padding: 0px 4px 0px 0px;
     align-items: center;
   }
+  .unread-dot.button {
+    padding-inline-start: 8px;
+  }
   .attachment {
     width: 16px;
-    padding: 4px 0px 0px 8px;
+    padding: 4px 0px 0px 2px;
   }
   .direction {
     width: 16px;
-    padding: 0px 0px 0px 0px;
+    padding: 0px;
   }
 
   /* <copied to="VerticalMessageListItem.svelte"> */
@@ -212,9 +226,13 @@
   .direction {
     align-items: center;
   }
-  .direction :global(svg) {
+  .direction :global(svg.outgoing) {
     stroke-width: 1px;
     color: darkred;
+  }
+  .direction :global(svg.reply) {
+    stroke-width: 1px;
+    color: grey;
   }
   .star :global(svg) {
     stroke-width: 1px;

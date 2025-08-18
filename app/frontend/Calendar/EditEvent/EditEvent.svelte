@@ -1,5 +1,5 @@
 <vbox flex class="event-edit-window">
-  <DialogHeader {event} {repeatBox} />
+  <DialogHeader bind:event />
   <Scroll>
     <vbox class="columns" flex class:show-description={showDescription}>
       <vbox class="column1">
@@ -19,7 +19,7 @@
         </Section>
         {#if showRepeat}
           <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} bind:this={repeatBox}/>
+            <RepeatBox {event} bind:this={repeatBox} />
           </Section>
         {/if}
         {#if showReminder}
@@ -49,7 +49,7 @@
           </Section>
         {/if}
       </vbox>
-      <vbox class="column2" flex>
+      <vbox class="column2 description" flex>
         {#if showDescription}
           <Section label={$t`Description`} icon={DescriptionIcon} flex>
             <DescriptionBox {event} />
@@ -58,16 +58,12 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.response != InvitationResponse.Unknown && event.response != InvitationResponse.Organizer}
-    <hbox class="buttons">
-      <InvitationResponseButtons {event} />
-    </hbox>
-  {/if}
 </vbox>
 
 <script lang="ts">
-  import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
   import RepeatBox from './RepeatBox.svelte';
@@ -76,7 +72,6 @@
   import LocationBox from './LocationBox.svelte';
   import OnlineMeetingBox from './OnlineMeetingBox.svelte';
   import DescriptionBox from './DescriptionBox.svelte';
-  import InvitationResponseButtons from "./InvitationResponseButtons.svelte";
   import Section from "./Section.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   import DialogHeader from "./DialogHeader.svelte";
@@ -93,9 +88,9 @@
 
   export let event: Event;
 
-  $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
+  $: showRepeat = !!event.recurrenceRule || event.parentEvent && event.isNew;
   $: showReminder = !!$event.alarm;
-  $: showParticipants = $event.participants.hasItems || $event.response == InvitationResponse.Organizer;
+  $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
   $: showOnlineMeeting = $event.isOnline;
   $: showDescription = !!$event.descriptionHTML;
@@ -103,7 +98,7 @@
   let repeatBox: RepeatBox;
 
   function expandRepeat(): void {
-    event.recurrenceCase = RecurrenceCase.Master;
+    event.newRecurrenceRule(Frequency.Weekly);
   }
 
   const kDefaultReminderMins = 5;
@@ -112,7 +107,10 @@
   }
 
   function expandParticipants(): void {
-    event.response = InvitationResponse.Organizer;
+    if (event.myParticipation == InvitationResponse.Organizer) {
+      return;
+    }
+    event.createMeeting();
   }
 
   function expandLocation(): void {
@@ -130,19 +128,22 @@
 </script>
 
 <style>
+  .event-edit-window {
+    container-type: inline-size;
+  }
   .columns {
     padding: 12px 16px 4px 16px;
   }
-  @media screen and (min-width: 1000px) {
+  .description :global(.section > .icon) {
+    display: none;
+  }
+  @container (min-width: 1000px) {
     .columns.show-description {
       flex-direction: row;
     }
     .column2 {
       margin-block-start: -8px;
       margin-inline-start: 24px;
-    }
-    .column2 :global(.section > .icon) {
-      display: none;
     }
     /*.columns.show-description .column1 {
       order: 2;
@@ -154,10 +155,6 @@
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
-  }
-  .buttons {
-    align-items: center;
-    padding: 8px;
   }
   :global(.inline) {
     display: inline-flex !important;

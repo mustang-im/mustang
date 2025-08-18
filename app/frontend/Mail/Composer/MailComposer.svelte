@@ -12,23 +12,37 @@
         <Button
           label={$t`Discard`}
           icon={TrashIcon}
-          iconSize="15px"
+          iconSize="15px" iconOnly
           onClick={onDelete}
           />
         <Button
           label={$t`Save`}
           icon={CloseIcon}
-          iconSize="15px"
+          iconSize="15px" iconOnly
           onClick={onSave}
           />
+        <RoundButton
+          classes="send"
+          label={sendDisabledTooltip ?? $t`Send`}
+          icon={SendIcon}
+          iconSize="20px"
+          padding="6px"
+          filled
+          disabled={!mail.subject || $to.isEmpty}
+          onClick={onSend}
+          tabindex={2}
+          />
+        <!--
         <Button
           label={$t`Send`}
           tooltip={sendDisabledTooltip ?? $t`Send`}
           icon={SendIcon}
-          iconSize="15px"
+          iconSize="18px"
           onClick={onSend}
+          classes="filled"
           disabled={!mail.subject || $to.isEmpty}
           />
+        -->
       </hbox>
     </hbox>
     <grid class="recipients">
@@ -106,30 +120,15 @@
       <vbox flex class="editor-wrapper">
         <Paper>
           <Scroll>
+            <hbox class="subject">
+              <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} class="font-normal" />
+            </hbox>
             <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
               <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
             </vbox>
           </Scroll>
-          <hbox class="footer">
-            <hbox class="subject" flex>
-              <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} class="font-normal" />
-            </hbox>
-            <hbox class="buttons">
-              <RoundButton
-                classes="send"
-                label={sendDisabledTooltip ?? $t`Send`}
-                icon={SendIcon}
-                iconSize="20px"
-                padding="6px"
-                filled
-                disabled={!mail.subject || $to.isEmpty}
-                onClick={onSend}
-                tabindex={1}
-                />
-            </hbox>
-          </hbox>
         </Paper>
       </vbox>
       {#if showAttachments}
@@ -213,7 +212,7 @@
 
   let loading = false;
   async function loadText() {
-    if (!mail.isDraft) {
+    if (!mail.hasHTML) {
       return;
     }
     loading = true;
@@ -227,7 +226,7 @@
   }
 
   function setCursorDefault() {
-    if (mail.to.isEmpty && !mail.rawHTMLDangerous) {
+    if (mail.to.isEmpty) {
       return;
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
@@ -343,7 +342,7 @@
 
 <style>
   .mail-composer-window {
-    padding: 8px 16px;
+    padding: 8px 16px 0px 16px;
     background-color: var(--leftpane-bg);
     color: var(--leftpane-fg);
   }
@@ -397,29 +396,18 @@
     margin-block-start: 4px;
   }
   .attachments {
-    min-width: 120px;
-    max-width: 350px;
+    width: 300px;
     margin-inline-end: -12px;
   }
   .subject {
+    margin-block-start: 16px;
+    margin-block-end: 8px;
     margin-inline-start: 18px;
-    margin-inline-end: 8px;
-  }
-  .subject input {
-  }
-  .footer {
-    margin-block-start: 8px;
-    margin-block-end: 6px;
-  }
-  .footer .label {
-    margin: 0px 12px;
-    align-items: center;
+    margin-inline-end: 24px;
+    font-weight: bold;
   }
   .subject input {
     width: 100%;
-  }
-  .footer .buttons {
-    margin: 0px 8px;
   }
   .buttons :global(.send.disabled) {
     opacity: 30%;

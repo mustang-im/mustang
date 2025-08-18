@@ -40,6 +40,27 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
   });
 }
 
+export function stringFromDataURL(dataURL: URLString, mimetype: string): string | null {
+  console.log("altrep URL", dataURL);
+  if (!dataURL || typeof (dataURL) != "string" ||
+      dataURL.substring(0, "data:".length + mimetype.length).toLowerCase() != "data:text/html") {
+    return null;
+  }
+  // There might be `;charset=utf-8` in-between
+  let comma = dataURL.indexOf(",");
+  console.log("comma", comma);
+  if (comma < 1) {
+    return null;
+  }
+  let htmlEncoded = dataURL.substring(comma + 1);
+  console.log("html encoded", htmlEncoded);
+  if (!htmlEncoded) {
+    return null;
+  }
+  console.log("html decoded", decodeURIComponent(htmlEncoded));
+  return decodeURIComponent(htmlEncoded);
+}
+
 /**
  * Gets the OS using the userAgent string.
  * @returns os name

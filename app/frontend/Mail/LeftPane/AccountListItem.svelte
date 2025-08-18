@@ -23,8 +23,17 @@
       {#if $account.isLoggedIn}
         <GetMailButton folder={account.inbox} iconSize="18px" />
       {:else}
-        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} iconSize="20px" />
+        <Button
+          label={$t`Login`}
+          icon={DisconnectedIcon}
+          onClick={login}
+          iconSize="16px" plain iconOnly />
       {/if}
+      <Button
+        label={$t`Account settings`}
+        icon={SettingsIcon}
+        onClick={openSettings}
+        iconSize="16px" plain iconOnly />
     </hbox>
 </hbox>
 
@@ -42,6 +51,7 @@
   import MailIcon from '../../asset/icon/appBar/mail.svg?raw';
   import MailXIcon from '../../asset/icon/mail/mail-question.svg?raw';
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
+  import SettingsIcon from "lucide-svelte/icons/settings";
   import { t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
 
@@ -49,6 +59,11 @@
 
   async function login() {
     await account.login(true);
+  }
+
+  async function openSettings() {
+    const { openSettingsCategoryForAccount } = await import("../../Settings/Window/CategoriesUtils"); // break circular dependency
+    openSettingsCategoryForAccount(account);
   }
 
   let contextMenu: ContextMenu;

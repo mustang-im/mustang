@@ -1,6 +1,7 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { assert, type URLString } from "../../util/util";
+import { UserCancelled, assert, type URLString } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
+import { gt } from "../../../l10n/l10n";
 
 /**
  * Opens the OAuth2 login webpage in a dialog within the app main window,
@@ -25,9 +26,8 @@ export class OAuth2Embed extends OAuth2UI {
       this.failFunc = reject;
     });
   }
-  urlChanged(url: URLString) {
-    console.log("OAuth2 page change to", url);
-    if (this.oAuth2.isAuthDoneURL(url)) {
+  async urlChanged(url: URLString) {
+    if (await this.oAuth2.isAuthDoneURL(url)) {
       this.success(url);
     }
   }
@@ -42,6 +42,11 @@ export class OAuth2Embed extends OAuth2UI {
   failed(ex: Error) {
     assert(this.failFunc, "Need failFunc");
     this.failFunc(ex);
+    this.failFunc = null;
+    this.doneFunc = null;
+  }
+  abort() {
+    this.failFunc?.(new UserCancelled(gt`Login aborted`));
     this.failFunc = null;
     this.doneFunc = null;
   }

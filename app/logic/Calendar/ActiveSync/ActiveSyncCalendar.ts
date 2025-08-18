@@ -1,7 +1,9 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
+import { ActiveSyncIncomingInvitation } from "./ActiveSyncIncomingInvitation";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
+import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -14,15 +16,15 @@ const kHalfHour = 30 * 60 * 1000; // milliseconds
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   readonly events: ArrayColl<ActiveSyncEvent>;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
-  protected requestLock = new Lock();
+  protected readonly requestLock = new Lock();
+  /** ActiveSync ServerId for this calendar */
+  serverID: string;
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
-  }
-
-  get serverID() {
-    return new URL(this.url).searchParams.get("serverID");
   }
 
   async ping() {
@@ -31,6 +33,10 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
     return new ActiveSyncEvent(this, parentEvent);
+  }
+
+  getIncomingInvitationForEMail(message: ActiveSyncEMail) {
+    return new ActiveSyncIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -49,7 +55,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
         throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
       }
       let freebusy = result.Response.Recipient.Availability.MergedFreeBusy || "";
-      let availability = freebusy.split("").map((c, i) => ({
+      let availability = freebusy.split("").map((c: string, i: number) => ({
         from: new Date(from.getTime() + i * kHalfHour),
         to: new Date(from.getTime() + (i + 1) * kHalfHour),
         free: c == "0",
@@ -108,7 +114,8 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   async listEvents() {
-    if (!this.dbID) {
+    if (!this.dbID || !this.serverID) {
+      this.serverID ??= new URL(this.url).searchParams.get("serverID");
       await this.save();
     }
 
@@ -126,27 +133,26 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           let event = this.getEventByServerID(item.ServerId);
           if (event) {
             event.fromWBXML(item.ApplicationData);
-            await event.save();
+            await event.saveLocally();
           } else {
             event = this.newEvent();
             event.serverID = item.ServerId;
             event.fromWBXML(item.ApplicationData);
-            await event.save();
+            await event.saveLocally();
             this.events.add(event);
           }
           // Exceptions must be handled after the master event has been saved.
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
-              let occurrences = event.recurrenceRule.getOccurrencesByDate(fromCompact(exception.ExceptionStartTime));
-              let instance = event.instances.get(occurrences.length - 1);
-              if (instance) {
-                instance.fromWBXML(exception);
-                await instance.save();
+              let exceptionTime = fromCompact(exception.ExceptionStartTime);
+              let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
+              if (existing) {
+                existing.fromWBXML(exception);
+                await existing.saveLocally();
               } else {
-                instance = this.newEvent(event);
+                let instance = event.getOccurrenceByDate(exceptionTime) as ActiveSyncEvent;
                 instance.fromWBXML(exception);
-                await instance.save();
-                event.replaceInstance(occurrences.length - 1, instance);
+                await instance.saveLocally();
                 this.events.add(event);
               }
             }
@@ -160,17 +166,28 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           let event = this.getEventByServerID(item.ServerId);
           if (event) {
             this.events.remove(event);
-            this.events.removeAll(event.instances);
-            await event.deleteIt();
+            this.events.removeAll(event.exceptions);
+            await event.deleteLocally();
           }
         } catch (ex) {
           this.account.errorCallback(ex);
         }
       }
     });
+    this.account.addPingable(this);
   }
 
-  getEventByServerID(id: string): ActiveSyncEvent | void {
+  getEventByServerID(id: string): ActiveSyncEvent | undefined {
     return this.events.find(p => p.serverID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.serverID = sanitize.string(json.serverID, null);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.serverID = this.serverID;
+    return json;
   }
 }

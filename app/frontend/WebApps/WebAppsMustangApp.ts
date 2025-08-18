@@ -1,6 +1,5 @@
 import { MustangApp } from "../AppsBar/MustangApp";
-import { appGlobal } from "../../logic/app";
-import type WebAppListed from "../../logic/WebApps/WebAppListed";
+import type { WebAppListed } from "../../logic/WebApps/WebAppListed";
 import AppsApp from "./WebAppsApp.svelte";
 import appsLauncherIcon from '../asset/icon/appBar/appsLauncher.svg?raw';
 import { gt } from "../../l10n/l10n";
