@@ -11,7 +11,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { availableTags } from "../../../logic/Abstract/Tag";
   import { goTo } from "../../AppsBar/selectedApp";
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";

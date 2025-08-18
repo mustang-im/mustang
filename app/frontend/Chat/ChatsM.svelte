@@ -1,6 +1,6 @@
 <vbox flex class="pane">
   <Header bind:selectedAccount={$selectedAccount} {accounts} />
-  <PersonsList {chatRooms} bind:selectedChat={$selectedChat} {doSearch} />
+  <ChatRoomList {chatRooms} bind:selectedChat={$selectedChat} {doSearch} />
 </vbox>
 {#if $appGlobal.isMobile}
   <ChatsBarM />
@@ -13,7 +13,7 @@
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { appGlobal } from "../../logic/app";
   import Header from "./Header.svelte";
-  import PersonsList from "./PersonsList.svelte";
+  import ChatRoomList from "./ChatRoomList.svelte";
   import ChatsBarM from "./ChatsBarM.svelte";
   import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";

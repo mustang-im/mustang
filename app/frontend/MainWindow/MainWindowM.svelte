@@ -7,7 +7,7 @@
     <hbox />
   {:then}
     <Router primary={false}>
-      <NotificationBar />
+      <NotificationBar notifications={$notifications} />
       {#if sidebar}
         <SplitterHorizontal name="sidebar" initialBottomRatio={0.3}>
           <vbox flex class="sidebar" slot="top">
@@ -37,6 +37,7 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { selectedAccount } from "../Mail/Selected";
+  import { notifications } from "./Notification";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
@@ -45,9 +46,8 @@
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import { catchErrors, backgroundError, showError } from "../Util/error";
+  import { backgroundError, showError } from "../Util/error";
   import { assert } from "../../logic/util/util";
-  import { onMount } from "svelte";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
   import { appName } from "../../logic/build";
