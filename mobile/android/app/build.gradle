@@ -11,6 +11,7 @@ def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
+    ndkVersion '27.3.13750724'
     namespace "im.mustang.capa"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
