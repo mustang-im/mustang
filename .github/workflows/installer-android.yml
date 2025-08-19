@@ -65,4 +65,4 @@ jobs:
       with:
         name: mustang.aab
         path: |
-          mobile/android/app/build/outputs/bundle/release/app-release.apk
+          mobile/android/app/build/outputs/bundle/release/app-release.aab
