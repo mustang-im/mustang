@@ -26,6 +26,8 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '9.0.0'
 
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
@@ -44,13 +46,11 @@ jobs:
         mkdir -p ~/private_keys/
         echo '${{ secrets.KEYSTORE }}' | base64 --decode > ~/private_keys/key.jks
 
-    # ~/ or $HOME doesn't work in env:
-    - run: cd mobile; export KEYSTORE_PATH=$HOME/private_keys/key.jks; yarn build:android
-      env:
-        # KEYSTORE_PATH: $HOME/private_keys/key.jks
-        KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
-        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
-        KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
+    - run: |
+        cd mobile/android
+        echo -e "storePassword=${{ secrets.KEYSTORE_PASS }}\nkeyPassword=${{ secrets.KEYSTORE_ALIAS_PASS }}\nkeyAlias=${{ secrets.KEYSTORE_ALIAS }}\nstoreFile=$HOME/private_keys/key.jks" > keystore.properties
+
+    - run: cd mobile; yarn build:android:apk
 
     - name: Upload
       uses: actions/upload-artifact@v4
