@@ -1,6 +1,5 @@
 import './app.css';
 import MainWindow from './MainWindow/MainWindow.svelte';
-import MainWindowM from './MainWindow/MainWindowM.svelte';
 import { appName, appVersion, production } from '../logic/build';
 import { getLocalStorage } from './Util/LocalStorage';
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
@@ -17,7 +16,7 @@ if (production) {
   });
 }
 
-const app = new MainWindowM({
+const app = new MainWindow({
   target: document.getElementById('app'),
 });
 
