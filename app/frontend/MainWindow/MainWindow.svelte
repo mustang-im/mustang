@@ -13,18 +13,12 @@
     <vbox flex>
       <DemoBarTop />
       <NotificationBar notifications={$notifications} />
-      {#if !$selectedApp}
-        {$t`Loading apps...`}
-      {:else if sidebar}
-        <Splitter name="sidebar" initialRightRatio={0.25}>
-          <AppContent app={$selectedApp} slot="left"/>
-          <vbox flex class="sidebar" slot="right">
-            <svelte:component this={sidebar} />
-          </vbox>
-        </Splitter>
-      {:else}
-        <AppContent app={$selectedApp} />
-      {/if}
+      <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
+        <AppContent app={$selectedApp} slot="left"/>
+        <vbox flex class="sidebar" slot="right">
+          <svelte:component this={sidebar} />
+        </vbox>
+      </Splitter>
     </vbox>
   </hbox>
 </vbox>

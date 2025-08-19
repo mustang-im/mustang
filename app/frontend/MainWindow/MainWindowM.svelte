@@ -4,20 +4,16 @@
 
 <vbox flex class="main-window" dir={rtl} class:mobile={$appGlobal.isMobile}>
   {#await startup()}
-    <hbox />
+    <hbox>Loading...</hbox>
   {:then}
     <Router primary={false}>
       <NotificationBar notifications={$notifications} />
-      {#if sidebar}
-        <SplitterHorizontal name="sidebar" initialBottomRatio={0.3}>
-          <vbox flex class="sidebar" slot="top">
-            <svelte:component this={sidebar} />
-          </vbox>
-          <AppContentRoutes slot="bottom" />
-        </SplitterHorizontal>
-      {:else}
-        <AppContentRoutes />
-      {/if}
+      <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
+        <vbox flex class="sidebar" slot="top">
+          <svelte:component this={sidebar} />
+        </vbox>
+        <AppContentRoutes slot="bottom" />
+      </SplitterHorizontal>
     </Router>
   {:catch ex}
     {showError(ex)}
