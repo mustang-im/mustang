@@ -75,7 +75,7 @@ export class OWAAccount extends MailAccount {
     assert(!this.hasLoggedIn, "Only for use during login");
     let url = this.url + 'service.svc';
     let options = { headers: { Action: "FindFolder" } };
-    let bodyJSON = Object.assign({}, owaFindFoldersRequest());
+    let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
     let  response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
     if ([401, 440].includes(response.status)) {
       return false;
