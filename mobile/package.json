@@ -8,6 +8,7 @@
     "start:android": "cap run android",
     "start:ios": "cap run ios",
     "build": "./build.sh",
+    "build:android": "npm run build:android:apk && npm run build:android:aab",
     "build:android:apk": "cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
     "build:android:aab": "cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
