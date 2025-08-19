@@ -2,8 +2,7 @@ import { startupBackend, shutdownBackend } from './backend';
 
 async function startup(): Promise<void> {
   try {
-    console.log(`Node.js version: ${process.version}`);
-    console.log("backend starting");
+    console.log(`Backend starting with node.js ${process.version}`);
     await startupBackend();
   } catch (ex) {
     console.error(ex);
