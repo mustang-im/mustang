@@ -18,6 +18,7 @@ jobs:
       with:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 22.x
+        cache: 'yarn'
 
     - uses: actions/setup-java@v4
       with:
@@ -28,6 +29,13 @@ jobs:
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: '9.0.0'
+
+    - uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r27d
+        link-to-sdk: true
+        add-to-path: true
+        local-cache: true
 
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
