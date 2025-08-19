@@ -1,0 +1,61 @@
+name: Installers for Android
+
+on:
+  workflow_dispatch: # manually triggered
+  push:
+    tags: 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build installers for Android
+      uses: actions/setup-node@v3
+      with:
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: 22.x
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin' # See 'Supported distributions' for available options
+        java-version: '21'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - run: cd app/build; sh mustang-brand.sh
+    - run: cd app; yarn install
+    - run: cd lib; yarn install
+    - run: cd backend; yarn install
+    - run: cd mobile; yarn install
+    - run: cd mobile/backend; yarn install
+    - run: cd lib; yarn add bufferutil # explicitly include bufferutil otherwise it might not be included
+    - run: cd mobile; yarn build
+      env:
+        ANDROID_LIBNODE: "https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
+        NODE_OPTIONS: '--max-old-space-size=32768'
+        MOBILE_ARCH: 'android-arm64'
+
+    - run: |
+        mkdir -p ~/private_keys/
+        echo '${{ secrets.KEYSTORE }}' | base64 --decode > ~/private_keys/key.jks
+
+    # ~/ or $HOME doesn't work in env:
+    - run: cd mobile; export KEYSTORE_PATH=$HOME/private_keys/key.jks; yarn build:android
+      env:
+        # KEYSTORE_PATH: $HOME/private_keys/key.jks
+        KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installers Android
+        path: |
+          mobile/android/**/*.apk
+          mobile/android/**/*.aab

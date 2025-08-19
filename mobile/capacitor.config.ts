@@ -1,4 +1,4 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 import { env } from 'node:process';
 
 const config: CapacitorConfig = {
@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
   plugins: {
     CapacitorNodeJS: {
       nodeDir: "nodejs",
+      androidLibNode: "https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip",
     },
     SplashScreen: {
       "launchAutoHide": true
@@ -19,6 +20,7 @@ const config: CapacitorConfig = {
       keystorePassword: env.KEYSTORE_PASS,
       keystoreAlias: env.KEYSTORE_ALIAS,
       keystoreAliasPassword: env.KEYSTORE_ALIAS_PASS,
+      releaseType: "APK",
     }
   }
 }
