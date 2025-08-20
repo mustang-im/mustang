@@ -44,6 +44,21 @@ android {
             debuggable true
         }
     }
+    def appName = "mustang"
+    def version = android.defaultConfig.versionName
+
+    applicationVariants.all { variant ->
+        def buildType = variant.buildType.name
+
+        variant.outputs.all { output ->
+            def ext = output.outputFile.name.endsWith('.apk') ? '.apk' : '.aab'
+            if (buildType == 'release') {
+                outputFileName = "${appName}-${version}${ext}"
+            } else if (buildType == 'debug') {
+                outputFileName = "${appName}-${version}-debug${ext}"
+            }
+        }
+    }
 }
 
 repositories {

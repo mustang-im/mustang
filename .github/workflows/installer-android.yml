@@ -58,11 +58,11 @@ jobs:
       with:
         name: mustang.apk
         path: |
-          mobile/android/app/build/outputs/apk/release/app-release.apk
+          mobile/android/app/build/outputs/apk/release/*.apk
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
       with:
         name: mustang.aab
         path: |
-          mobile/android/app/build/outputs/bundle/release/app-release.aab
+          mobile/android/app/build/outputs/bundle/release/*.aab
