@@ -40,14 +40,15 @@ jobs:
         MOBILE_ARCH: 'android-arm64'
 
     - run: |
-        mkdir -p ~/private_keys/
-        echo '${{ secrets.KEYSTORE }}' | base64 --decode > ~/private_keys/key.jks
-
-    - run: |
-        cd mobile/android
-        echo -e "storePassword=${{ secrets.KEYSTORE_PASS }}\nkeyPassword=${{ secrets.KEYSTORE_ALIAS_PASS }}\nkeyAlias=${{ secrets.KEYSTORE_ALIAS }}\nstoreFile=$HOME/private_keys/key.jks" > keystore.properties
+        mkdir -p ${{ github.workspace }}//private_keys/
+        echo '${{ secrets.KEYSTORE }}' | base64 --decode > ${{ github.workspace }}/private_keys/key.jks
 
     - run: cd mobile; yarn build:android
+      env:
+        KEYSTORE_PATH: ${{ github.workspace }}/private_keys/key.jks
+        KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -61,4 +62,18 @@ jobs:
       with:
         name: mustang.aab
         path: |
+          mobile/android/app/build/outputs/bundle/release/*.aab
+
+    - name: Set version from package.json
+      run: |
+        cd mobile
+        VERSION=$(jq -r '.version' package.json)
+        echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
+    - name: Add to release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.APP_VERSION }}
+        files: |
+          mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab
