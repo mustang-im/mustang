@@ -14,7 +14,7 @@
   -->
 </SectionTitle>
 <vbox class="participants">
-  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
+  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`} type={Participant}>
     <hbox slot="person-pill-before-avatar" let:person={participant}>
       <ParticipantConfirmIcon {participant} />
     </hbox>
@@ -40,6 +40,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Participant } from "../../../logic/Calendar/Participant";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
