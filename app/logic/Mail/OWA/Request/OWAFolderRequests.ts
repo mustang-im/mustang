@@ -165,7 +165,7 @@ export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", fold
   });
 }
 
-export function owaFindFoldersRequest(deep?: true): OWARequest {
+export function owaFindFoldersRequest(deep: boolean): OWARequest {
   return new OWARequest("FindFolder", {
     __type: "FindFolderRequest:#Exchange",
     FolderShape: {
