@@ -13,10 +13,13 @@ export class CalendarMustangApp extends MustangApp {
   appURL = "/calendar";
 
   showEvent(event: Event) {
-    let edit = new CalendarEventMustangApp();
-    edit.title = derived(event, event => event.title ?? edit.name);
-    edit.windowParams = { event: event };
-    calendarMustangApp.subApps.add(edit);
+    let edit = calendarMustangApp.subApps.find(app => app.windowParams?.event == event);
+    if (!edit) {
+      edit = new CalendarEventMustangApp();
+      edit.title = derived(event, event => event.title ?? edit.name);
+      edit.windowParams = { event: event };
+      calendarMustangApp.subApps.add(edit);
+    }
     openApp(edit, edit.windowParams);
   }
 }
