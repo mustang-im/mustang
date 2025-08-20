@@ -26,9 +26,6 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-home-cache-includes: |
-          mobile/android/.gradle
 
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
@@ -36,7 +33,6 @@ jobs:
     - run: cd backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
-    - run: cd lib; yarn add bufferutil # explicitly include bufferutil otherwise it might not be included
     - run: cd mobile; yarn build
       env:
         ANDROID_LIBNODE: "https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
