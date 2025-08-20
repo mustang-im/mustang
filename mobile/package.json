@@ -12,7 +12,8 @@
     "build:android:apk": "cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
     "build:android:aab": "cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
-    "setup:ios": "cd ios && ./setup-ios.sh"
+    "setup:ios": "cd ios && ./setup-ios.sh",
+    "capacitor:update:before": "vite-node ./hooks/android/update-project.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -25,7 +26,8 @@
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
     "typescript": "^5.9.2",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "vite-node": "^3.2.4"
   },
   "repository": {
     "type": "git",
