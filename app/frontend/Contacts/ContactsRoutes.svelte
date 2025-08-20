@@ -23,9 +23,10 @@
   import ContactsAppD from "./ContactsAppD.svelte";
   import PersonsM from "./PersonsM.svelte";
   import PersonM from "./PersonM.svelte";
+  import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>

@@ -54,10 +54,10 @@
   import SetupRoutes from "../Setup/SetupRoutes.svelte";
   // #endif
   import OAuth2EmbeddedBrowser from "../Shared/Auth/OAuth2EmbeddedBrowser.svelte";
+  import { getParams } from "./selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: console.log("new location", $location.pathname, $location.hash, $location.state ?? "no state");
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>

@@ -31,9 +31,10 @@
   import PersonsM from "./PersonsM.svelte";
   import FilesM from "./FilesM.svelte";
   import UploadM from "./UploadM.svelte";
+  import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>

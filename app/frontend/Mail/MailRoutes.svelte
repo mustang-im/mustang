@@ -3,8 +3,7 @@
 </Route>
 {#if appGlobal.isMobile}
   <Route path="folder/:accountID/:folderID/message-list">
-    {params?.folder ? $selectedFolder = params.folder : null}
-    <MsgListM messages={params?.messages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+    <MsgListM messages={params?.messages ?? searchMessages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
   </Route>
   <Route path="message/:accountID/:folderID/:messageID/display">
     <MessageDisplay message={params?.message ?? $selectedMessage ?? requiredParam()} />
@@ -32,6 +31,7 @@
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { appGlobal } from "../../logic/app";
   import MailApp from "./MailApp.svelte";
   import MailComposer from "./Composer/MailComposer.svelte";
   import MsgListM from "./Vertical/MessageListM.svelte";
@@ -39,16 +39,15 @@
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
   import { showError } from "../Util/error";
-  import { requiredParam } from "../Util/route";
   import { ArrayColl } from "svelte-collections";
+  import { getParams } from "../AppsBar/selectedApp";
+  import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
-  import { appGlobal } from "../../logic/app";
 
-  $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
+  $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // ?? acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
-  $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 
   let searchMessages: ArrayColl<EMail> | null;
 

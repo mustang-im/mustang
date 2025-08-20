@@ -32,7 +32,8 @@ export function getSettingsCategoryForApp(app: MustangApp) {
 export function openSettingsCategoryForApp(app: MustangApp) {
   let cat = getSettingsCategoryForApp(app);
   selectedCategory.set(cat);
-  openApp(settingsMustangApp, { category: cat });
+  // openApp(settingsMustangApp, { category: cat });
+  openApp(settingsMustangApp, {});
 }
 
 export function openSettingsCategoryForAccount(account: Account) {

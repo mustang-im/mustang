@@ -24,9 +24,10 @@
   import ChatAppD from "./ChatAppD.svelte";
   import ChatsM from "./ChatsM.svelte";
   import ChatM from "./ChatM.svelte";
+  import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>

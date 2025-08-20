@@ -9,8 +9,9 @@
 <script lang="ts">
   import Main from "./Main.svelte";
   import CallHistory from "./Start/CallHistory.svelte";
+  import { getParams } from "../AppsBar/selectedApp";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>

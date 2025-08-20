@@ -8,9 +8,10 @@
 <script lang="ts">
   import CalendarApp from "./CalendarApp.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
+  import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
-  $: params = $location.state;
+  $: params = getParams($location.state);
 </script>
