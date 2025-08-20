@@ -14,9 +14,10 @@
   import FolderList from "./FolderList.svelte";
   import AccountsBarM from "./AccountsBarM.svelte";
   import AccountIcon from "lucide-svelte/icons/mail";
+  import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
-  import type { ArrayColl, Collection } from 'svelte-collections';
   import { sleep, assert } from "../../../logic/util/util";
+  import type { ArrayColl, Collection } from 'svelte-collections';
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */
@@ -27,7 +28,7 @@
   async function onFolderSelected() {
     await sleep(0.1); // wait for `<FolderList>` to set `selectedFolder`
     assert(selectedFolder, "Need folder");
-    goTo(`/mail/folder/${selectedFolder.account.id}/${selectedFolder.id}/message-list`, {
+    goTo(URLPart`/mail/folder/${selectedFolder.account.id}/${selectedFolder.id}/message-list`, {
       account: selectedFolder.account,
       folder: selectedFolder,
      });

@@ -4,6 +4,7 @@ import { appGlobal } from "../../app";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getBaseDomainFromHost } from "../../util/netUtil";
+import { URLPart } from "../../../frontend/Util/util";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
@@ -38,7 +39,7 @@ async function fetchConfigFromISPDB(domain: string, abort: AbortController) {
 async function fetchConfigFromISP(domain: string, emailAddress: string | null, abort: AbortController) {
   let url1 = `https://autoconfig.${domain}/mail/config-v1.1.xml`;
   if (emailAddress) {
-    url1 += `?emailaddress=${encodeURIComponent(emailAddress)}`;
+    url1 += URLPart`?emailaddress=${emailAddress}`;
   }
   let url2 = `https://${domain}/.well-known/autoconfig/mail/config-v1.1.xml`;
   let url3 = `http://autoconfig.${domain}/mail/config-v1.1.xml`; // TODO HTTP needed, given MX?

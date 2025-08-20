@@ -114,6 +114,7 @@
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { Swipe } from "../../Shared/Gesture";
+  import { URLPart } from "../../Util/util";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -123,7 +124,7 @@
     goTo("/mail/", {});
   }
   function goToMsgList() {
-    goTo(`/mail/folder/${message.folder.account.id}/${message.folder.id}/message-list`, {
+    goTo(URLPart`/mail/folder/${message.folder.account.id}/${message.folder.id}/message-list`, {
       account: message.folder.account,
       folder: message.folder,
     });

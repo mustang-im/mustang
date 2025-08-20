@@ -15,9 +15,10 @@
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import PersonsBarM from "./PersonsBarM.svelte";
-  import type { Collection } from "svelte-collections";
+  import { URLPart } from "../Util/util";
   import { catchErrors } from "../Util/error";
   import { assert, sleep } from "../../logic/util/util";
+  import type { Collection } from "svelte-collections";
 
   export let doSearch = false;
 
@@ -34,8 +35,7 @@
   async function onPersonSelected() {
     await sleep(0.1); // wait for `<PersonsList>` to set `$selectedPerson`
     assert($selectedPerson, "Need person");
-    const en = encodeURIComponent;
-    goTo(`/contacts/person/${en($selectedPerson.id)}/edit`, { person: $selectedPerson });
+    goTo(URLPart`/contacts/person/${$selectedPerson.id}/edit`, { person: $selectedPerson });
   }
 </script>
 

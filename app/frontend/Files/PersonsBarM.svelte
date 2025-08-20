@@ -24,14 +24,15 @@
 
 <script lang="ts">
   import { selectedPerson } from "../Contacts/Person/Selected";
+  import { goTo } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { URLPart } from "../Util/util";
 
   let isMenuOpen = false;
 
   function goToUpload() {
-    goTo(`${$selectedPerson.id}/upload`, { person: $selectedPerson });
+    goTo(URLPart`${$selectedPerson.id}/upload`, { person: $selectedPerson });
   }
 </script>

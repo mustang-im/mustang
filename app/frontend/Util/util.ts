@@ -61,6 +61,25 @@ export function stringFromDataURL(dataURL: URLString, mimetype: string): string 
   return decodeURIComponent(htmlEncoded);
 }
 
+/** Use as tagged template string:
+ * let id = "bar/buu";
+ * let name = "Fred Flintstone";
+ * URLPart`https://foo/?id=${id}&name=${name}`
+ * -> "https://foo/?id=bar%2Fbuu&name=Fred%20Flintstone"
+ *
+ * Warning: Do *not* escape parts that you want to keep literally in the URL.
+ * let baseURL = "https://foo/api"; // ":" and "/" would be escaped
+ * let pathname = "com/sub"; // "/" would be escaped
+ * URLPart`${baseURL}/${pathname}` // Wrong
+ * -> "https%3A%2F%2Ffoo%2Fapi/com%2Fsub"
+ */
+export function URLPart(literals: TemplateStringsArray, ...values: any[]) {
+  return literals.map((literal: string, i: number) => {
+    let value = values[i] == undefined ? "" : encodeURIComponent(values[i]);
+    return literal + value;
+  }).join("");
+}
+
 /**
  * Gets the OS using the userAgent string.
  * @returns os name

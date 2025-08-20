@@ -10,10 +10,11 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import { goTo } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import PersonsBarM from "./PersonsBarM.svelte";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { URLPart } from "../Util/util";
   import { catchErrors } from "../Util/error";
   import { assert, sleep } from "../../logic/util/util";
 
@@ -26,8 +27,7 @@
   async function onPersonSelected() {
     await sleep(0.1); // wait for `<PersonsList>` to set `$selectedPerson`
     assert($selectedPerson, "Need person");
-    const en = encodeURIComponent;
-    goTo(`/files/person/${en($selectedPerson.id)}/files`, { person: $selectedPerson });
+    goTo(URLPart`/files/person/${$selectedPerson.id}/files`, { person: $selectedPerson });
   }
 </script>
 

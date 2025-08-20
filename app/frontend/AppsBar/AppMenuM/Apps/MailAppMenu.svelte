@@ -16,10 +16,14 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import AccountIcon from "lucide-svelte/icons/inbox";
+  import { URLPart } from "../../../Util/util";
 
   function goToAccount(account: MailAccount) {
     $selectedAccount = account;
     $selectedFolder = account.inbox;
-    goTo(`/mail/folder/${account.id}/${account.inbox.id}/message-list`, { account, folder: account.inbox });
+    goTo(URLPart`/mail/folder/${account.id}/${account.inbox.id}/message-list`, {
+      account,
+      folder: account.inbox,
+    });
   }
 </script>

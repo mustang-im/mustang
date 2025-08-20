@@ -52,6 +52,7 @@
 
 <script lang="ts">
   import { selectedPerson } from "../Contacts/Person/Selected";
+  import { goTo } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
@@ -59,7 +60,7 @@
   import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { URLPart } from "../Util/util";
   import { t } from "../../l10n/l10n";
 
   let isMenuOpen = false;
@@ -73,6 +74,6 @@
   }
 
   function goToUpload() {
-    goTo(`/files/person/${$selectedPerson.id}/upload`, { person: $selectedPerson });
+    goTo(URLPart`/files/person/${$selectedPerson.id}/upload`, { person: $selectedPerson });
   }
 </script>

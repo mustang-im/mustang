@@ -35,12 +35,13 @@
 <script lang="ts">
   import { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedPerson } from "./Person/Selected";
+  import { goTo } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { URLPart } from "../Util/util";
   import { t } from "../../l10n/l10n";
 
   export let selectedAddressbook: Addressbook;
@@ -50,6 +51,6 @@
   function newContact() {
     let contact = selectedAddressbook.newPerson();
     $selectedPerson = contact;
-    goTo(`/contacts/person/${contact.id}/edit`, { person: contact });
+    goTo(URLPart`/contacts/person/${contact.id ?? "p"}/edit`, { person: contact });
   }
 </script>

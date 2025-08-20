@@ -19,6 +19,7 @@
   import TagsList from "../LeftPane/TagsList.svelte";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import MessageListBarM from "./MessageListBarM.svelte";
+  import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl } from 'svelte-collections';
@@ -32,8 +33,7 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    const en = encodeURIComponent;
-    goTo(`/mail/message/${en(selectedMessage.folder.account.id)}/${en(selectedMessage.folder.id)}/${en(selectedMessage.id)}/display`, {
+    goTo(URLPart`/mail/message/${selectedMessage.folder.account.id}/${selectedMessage.folder.id}/${selectedMessage.id}/display`, {
       account: selectedMessage.folder.account,
       folder: selectedMessage.folder,
       message: selectedMessage,
