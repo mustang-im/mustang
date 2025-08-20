@@ -27,6 +27,9 @@
     "frontend/**/*.js",
     "frontend/**/*.svelte"
   ],
+  "exclude": [
+    "frontend/**/vite.config.ts"
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
