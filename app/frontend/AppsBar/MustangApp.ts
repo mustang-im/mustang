@@ -1,3 +1,4 @@
+import type { PageParams } from "./selectedApp";
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 import type { URLString } from "../../logic/util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -17,7 +18,7 @@ export class MustangApp extends Observable {
   mainWindow: ComponentType<SvelteComponentTyped>;
   /** Parameters that will be passed to the main window in routes
    * as Svelte component properties */
-  windowParams: Record<string, any>;
+  windowParams: PageParams;
   /** Sidebar content that shows `showSidebar` is true.
    * This shows when *another* app is active.
    * This is *not* the sidebar of an app while the app itself is open. */

@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Account } from "../../../logic/Abstract/Account";
-  import { goTo } from "../selectedApp";
+  import { goTo, type PageParams } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AccountIcon from "lucide-svelte/icons/rabbit";
   import type { ComponentType } from 'svelte';
@@ -27,7 +27,7 @@
    * @param account
    * @returns e.g. "/mail/folder/account45/inbox/" */
   export let page: (account: Account) => string | null = null;
-  export let params: Record<string, any> = null;
+  export let params: PageParams = null;
   export let goToAccount = goToAccountDefault;
 
   function goToAccountDefault(account: Account) {
