@@ -6,13 +6,13 @@
     <FilesM person={params?.person ?? $selectedPerson ?? requiredParam()} />
   </Route>
   <Route path="search">
-    <PersonsM selectedPerson={params?.person ?? $selectedPerson ?? requiredParam()} doSearch={true} />
+    <PersonsM selectedPerson={params?.person ?? $selectedPerson} doSearch={true} />
   </Route>
   <Route path="file">
     <FileViewer file={params?.file ?? requiredParam()} />
   </Route>
   <Route path="/">
-    <PersonsM selectedPerson={params?.person ?? $selectedPerson ?? requiredParam()} />
+    <PersonsM selectedPerson={params?.person ?? $selectedPerson} />
   </Route>
 {:else}
   <Route path="file">

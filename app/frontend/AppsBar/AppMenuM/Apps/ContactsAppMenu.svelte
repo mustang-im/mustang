@@ -2,7 +2,7 @@
 <AccountButton account={appGlobal.addressbooks.get(0)} page={acc => `/contacts/account/${acc.id}/persons`} defaultIcon={AccountIcon} />
 <AppButton app={contactsMustangApp} page="/contacts/" />
 <CombinedButton icon1={contactsMustangApp.icon} icon2={SearchIcon} page="/contacts/search" />
-<CombinedButton icon1={contactsMustangApp.icon} icon2={PlusIcon} />
+<CombinedButton icon1={contactsMustangApp.icon} icon2={PlusIcon} onClick={onCreatePerson} />
 
 <script lang="ts">
   import { contactsMustangApp } from "../../../Contacts/ContactsMustangApp";
