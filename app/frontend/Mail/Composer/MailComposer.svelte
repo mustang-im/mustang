@@ -139,6 +139,9 @@
     </hbox>
   </vbox>
 </FileDropTarget>
+{#if $appGlobal.isMobile}
+  <ComposerBarM message={mail} />
+{/if}
 
 <FileSelector bind:this={fileSelector} />
 
@@ -161,6 +164,7 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import ComposerBarM from "./ComposerBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
