@@ -13,7 +13,7 @@ import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { OAuth2 } from "../../Auth/OAuth2";
@@ -71,6 +71,21 @@ export class OWAAccount extends MailAccount {
     return this.hasLoggedIn;
   }
 
+  async testLoggedIn(): Promise<boolean> {
+    assert(!this.hasLoggedIn, "Only for use during login");
+    let url = this.url + 'service.svc';
+    let options = { headers: { Action: "FindFolder" } };
+    let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
+    let  response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    if ([401, 440].includes(response.status)) {
+      return false;
+    }
+    if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
+      return false;
+    }
+    return true;
+  }
+
   async verifyLogin(): Promise<void> {
     await this.loginCommon(true);
   }
@@ -85,28 +100,22 @@ export class OWAAccount extends MailAccount {
         this.oAuth2 = new OWAAuth(this);
       }
       await this.oAuth2.login(interactive);
-      await this.listFolders();
-    } else {
-      try {
-        await this.listFolders();
-      } catch (ex) {
-        if (!/^HTTP (401|440)/.test(ex.message)) {
-          throw ex;
-        }
-        let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
-        if (!elements) {
-          throw new Error(gt`Could not find login form`);
-        }
-        let response = await OWALoginBackground.submitLoginForm(this.username, this.password, this.partition, elements);
-        let formURL = new URL(elements.url);
-        let responseURL = new URL(response.url);
-        if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
-          throw new LoginError(null, gt`Password incorrect`);
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} ${response.statusText}`);
-        }
-        await this.listFolders();
+    } else if (!await this.testLoggedIn()) {
+      let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
+      if (!elements) {
+        throw new Error(gt`Could not find login form`);
+      }
+      let response = await OWALoginBackground.submitLoginForm(this.username, this.password, this.partition, elements);
+      let formURL = new URL(elements.url);
+      let responseURL = new URL(response.url);
+      if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
+        throw new LoginError(null, gt`Password incorrect`);
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+      if (!await this.testLoggedIn()) {
+        throw new LoginError(`Login check failed`);
       }
     }
   }
@@ -116,6 +125,7 @@ export class OWAAccount extends MailAccount {
     await super.login(interactive);
     await this.loginCommon(interactive);
     this.hasLoggedIn = true;
+    await this.listFolders();
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books. Compare addressbook ID.
@@ -265,24 +275,7 @@ export class OWAAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     await this.throttle.throttle();
-    let lock = await this.semaphore.lock();
-    let sessionData: any;
-    try {
-      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, false);
-    } finally {
-      lock.release();
-    }
-    if (!sessionData) {
-      throw new Error("Authentication window was closed by user");
-    }
-    this.url = sessionData.owaURL ?? this.url;
-    let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
-    if (this.isThrottleError(result)) {
-      return await this.listFolders();
-    }
-    if (result.MessageText) {
-      throw new Error(result.MessageText);
-    }
+    let result = await this.callOWA(owaFindFoldersRequest(true));
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of result.RootFolder.Folders) {
