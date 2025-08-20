@@ -29,9 +29,9 @@
   </Route>
   // #endif
   <Route path="login/">
-    <OAuth2EmbeddedBrowser dialog={params.dialog} />
+    <OAuth2EmbeddedBrowser dialog={params?.dialog ?? requiredParam()} />
   </Route>
-  <Route path="/app-menu/">
+  <Route path="app-menu/">
     <AppMenu />
   </Route>
   <Route path="/">
@@ -54,8 +54,10 @@
   import SetupRoutes from "../Setup/SetupRoutes.svelte";
   // #endif
   import OAuth2EmbeddedBrowser from "../Shared/Auth/OAuth2EmbeddedBrowser.svelte";
+  import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();
+  $: console.log("new location", $location.pathname, $location.hash, $location.state ?? "no state");
   $: params = $location.state;
 </script>

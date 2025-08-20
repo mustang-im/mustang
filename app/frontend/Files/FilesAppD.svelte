@@ -39,7 +39,7 @@
   let listDirs: Collection<Directory>;
   /** If set, this file will be display on the right pane, full page
    * For viewing images and PDFs. Most other file types are not supported. */
-  let viewFile: File | null = null;
+  export let viewFile: File | null = null;
 
   let viewSetting = getLocalStorage("files.view", "table");
   $: view = $viewSetting.value;

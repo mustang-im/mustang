@@ -6,7 +6,7 @@ export class ContactsMustangApp extends MustangApp {
   id = "contacts";
   name = gt`People *=> or Persons - Short word, less than 10 characters`;
   icon = contactsIcon;
-  appURL = "/contacts/";
+  appURL = "/contacts";
 }
 
 export const contactsMustangApp = new ContactsMustangApp();

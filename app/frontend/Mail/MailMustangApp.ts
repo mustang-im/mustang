@@ -13,7 +13,7 @@ export class MailMustangApp extends MustangApp {
   id = "mail";
   name = gt`Mail`;
   icon = mailIcon;
-  appURL = "/mail/";
+  appURL = "/mail";
 
   writeMail(mail: EMail) {
     let composerApp = new WriteMailMustangApp();
@@ -40,14 +40,14 @@ export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
   name = gt`Compose`;
   icon = EditIcon;
-  appURL = "/mail/composer/";
+  appURL = "/mail/composer";
 }
 
 export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
   name = gt`Login`;
   icon = AuthIcon;
-  appURL = "/login/";
+  appURL = "/login";
 }
 
 const tabsObserver = {

@@ -1,4 +1,5 @@
 import { get, type Writable } from "svelte/store";
+import { useLocation, type NavigatorLocation } from "svelte-navigator";
 
 export function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
   if (get(obj)) {
@@ -20,4 +21,10 @@ export function ensureIDMatch<T extends { id: string }>(obj: T, idParam: string,
     // TODO return obj
   }
   return "";
+}
+
+export function requiredParam(): any {
+  let loc = useLocation();
+  let location = get(loc);
+  throw new Error(`Object missing for screen ${location.pathname}`);
 }

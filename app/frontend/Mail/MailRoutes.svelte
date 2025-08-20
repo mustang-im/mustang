@@ -1,19 +1,20 @@
-<Route path="/composer/">
+<Route path="composer">
   <MailComposer mail={params.mail} />
 </Route>
 {#if appGlobal.isMobile}
-  <Route path="/folder/:accountID/:folderID/message-list">
-    {ensureLoaded(selectedFolder, "/mail/")}
-    <MsgListM {messages} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  <Route path="folder/:accountID/:folderID/message-list">
+    {params?.folder ? $selectedFolder = params.folder : null}
+    <MsgListM messages={params?.messages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
   </Route>
-  <Route path="/message/:accountID/:folderID/:messageID/display">
-    {ensureLoaded(selectedMessage, "/mail/")}
-    <MessageDisplay message={$selectedMessage} />
+  <Route path="message/:accountID/:folderID/:messageID/display">
+    <MessageDisplay message={params?.message ?? $selectedMessage ?? requiredParam()} />
   </Route>
   <Route path="search">
     <SearchM />
   </Route>
   <Route path="/">
+    {params?.account ? $selectedAccount = params.account : null,
+     params?.folder ? $selectedFolder = params.folder : null, ""}
     <AccountsM {accounts} {folders} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} />
   </Route>
 {:else}
@@ -38,12 +39,12 @@
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
   import { showError } from "../Util/error";
-  import { ensureLoaded } from "../Util/route";
+  import { requiredParam } from "../Util/route";
   import { ArrayColl } from "svelte-collections";
   import { Route, useLocation } from "svelte-navigator";
   import { appGlobal } from "../../logic/app";
 
-  $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
+  $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
   $: location = useLocation();

@@ -6,7 +6,7 @@ export class ChatMustangApp extends MustangApp {
   id = "chat";
   name = gt`Chat`;
   icon = chatIcon;
-  appURL = "/chat/";
+  appURL = "/chat";
 }
 
 export const chatMustangApp = new ChatMustangApp();

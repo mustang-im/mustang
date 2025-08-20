@@ -10,7 +10,7 @@ export class CalendarMustangApp extends MustangApp {
   id = "calendar";
   name = gt`Calendar`;
   icon = CalendarIcon;
-  appURL = "/calendar/";
+  appURL = "/calendar";
 
   showEvent(event: Event) {
     let edit = new CalendarEventMustangApp();
@@ -25,7 +25,7 @@ export class CalendarEventMustangApp extends MustangApp {
   id = "calendar-event-show";
   name = gt`Event`;
   icon = EditIcon;
-  appURL = "/calendar/event/";
+  appURL = "/calendar/event";
 }
 
 export const calendarMustangApp = new CalendarMustangApp();

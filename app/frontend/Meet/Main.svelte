@@ -7,12 +7,14 @@
 {/if}
 
 <script lang="ts">
-  import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
+  import { MeetingState, type VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { appGlobal } from "../../logic/app";
   import InMeeting from "./InMeeting.svelte";
   import Calling from "./Start/Calling.svelte";
   import StartScreen from "./Start/StartScreen.svelte";
 
+  export let meetingFromRoute: VideoConfMeeting | null = null;
+
   $: meetings = appGlobal.meetings;
-  $: meeting = $meetings.first;
+  $: meeting = meetingFromRoute ?? $meetings.first;
 </script>

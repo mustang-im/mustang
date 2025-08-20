@@ -6,7 +6,7 @@ export class FilesMustangApp extends MustangApp {
   id = "files";
   name = gt`Files`;
   icon = fileShareIcon;
-  appURL = "/files/";
+  appURL = "/files";
 }
 
 export const filesMustangApp = new FilesMustangApp();

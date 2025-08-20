@@ -1,11 +1,9 @@
 {#if appGlobal.isMobile}
   <Route path="person/:personID/edit">
-    {ensureLoaded(selectedPerson, "/contacts/")}
-    <PersonM person={$selectedPerson} />
+    <PersonM person={params?.person ?? $selectedPerson ?? requiredParam()} />
   </Route>
   <Route path="account/:accountID/persons" let:params={urlParams}>
-    <!--{ensureIDMatch(params.addressbook, urlParams.accountID, id => appGlobal.addressbooks.find(ab => ab.id == id))}-->
-    <PersonsM selectedAddressbook={params.addressbook} />
+    <PersonsM selectedAddressbook={params?.addressbook ?? appGlobal.addressbooks.find(ab => ab.id == urlParams.accountID) ?? requiredParam()} />
   </Route>
   <Route path="search">
     <PersonsM doSearch={true} />
@@ -25,7 +23,7 @@
   import ContactsAppD from "./ContactsAppD.svelte";
   import PersonsM from "./PersonsM.svelte";
   import PersonM from "./PersonM.svelte";
-  import { ensureLoaded } from "../Util/route";
+  import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();

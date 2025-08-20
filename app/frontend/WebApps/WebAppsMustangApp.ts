@@ -8,7 +8,7 @@ export class WebAppsMustangApp extends MustangApp {
   id = "webapps";
   name = gt`Apps`;
   icon = appsLauncherIcon;
-  appURL = "/webapp/";
+  appURL = "/webapp";
   //subApps = appGlobal.webApps.myApps.map(app => new WebAppSubMustangApp(app));
 }
 
@@ -18,6 +18,7 @@ export class WebAppSubMustangApp extends MustangApp {
   constructor(webApp: WebAppListed) {
     super();
     this.id = webApp.id;
+    this.appURL = "/webapp/app/" + this.id;
     this.name = webApp.nameTranslated;
     this.icon = wrapPNGinSVG(webApp.icon);
   }

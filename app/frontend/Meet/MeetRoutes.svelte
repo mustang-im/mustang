@@ -2,11 +2,15 @@
   <CallHistory />
 </Route>
 <Route path="/">
-  <Main />
+  <!-- param is optional -->
+  <Main meetingFromRoute={params?.meeting} />
 </Route>
 
 <script lang="ts">
   import Main from "./Main.svelte";
   import CallHistory from "./Start/CallHistory.svelte";
-  import { Route } from "svelte-navigator";
+  import { Route, useLocation } from "svelte-navigator";
+
+  $: location = useLocation();
+  $: params = $location.state;
 </script>

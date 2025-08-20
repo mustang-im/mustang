@@ -6,7 +6,7 @@ export class SettingsMustangApp extends MustangApp {
   id = "settings";
   name = gt`Settings`;
   icon = SettingsIcon;
-  appURL = "/settings/";
+  appURL = "/settings";
 }
 
 export const settingsMustangApp = new SettingsMustangApp();
