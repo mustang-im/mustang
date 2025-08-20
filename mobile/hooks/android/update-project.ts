@@ -14,19 +14,19 @@ async function updateProjectSettings() {
   const version = packageJSON.version;
 
   // Update the applicationId in build.gradle
-  let gradleContent = await readFile(androidProjectFile, { encoding: 'utf-8' });
-  gradleContent = gradleContent.replace(/applicationId "[^"]+"/, `applicationId "${appId}"`);
+  let projectContent = await readFile(androidProjectFile, { encoding: 'utf-8' });
+  projectContent = projectContent.replace(/applicationId "[^"]+"/, `applicationId "${appId}"`);
 
   // Update the version in build.gradle
-  gradleContent = gradleContent.replace(/versionName "[^"]+"/, `versionName "${version}"`);
+  projectContent = projectContent.replace(/versionName "[^"]+"/, `versionName "${version}"`);
 
   // Update the namespace in build.gradle
-  gradleContent = gradleContent.replace(/namespace "[^"]+"/, `namespace "${appId}"`);
+  projectContent = projectContent.replace(/namespace "[^"]+"/, `namespace "${appId}"`);
 
   // Update the appName in build.gradle
-  gradleContent = gradleContent.replace(/def appName = "[^"]+"/, `def appName = "${appName}"`);
+  projectContent = projectContent.replace(/def appName = "[^"]+"/, `def appName = "${appName}"`);
 
-  await writeFile(androidProjectFile, gradleContent);
+  await writeFile(androidProjectFile, projectContent);
 }
 
 async function main() {
