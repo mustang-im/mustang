@@ -5,23 +5,29 @@
   "type": "module",
   "scripts": {
     "start": "vite",
+    "start:android": "cap run android",
+    "start:ios": "cap run ios",
     "build": "./build.sh",
-    "start-android": "cap run android",
-    "start-ios": "cap run ios",
+    "build:android": "npm run build:android:apk && npm run build:android:aab",
+    "build:android:apk": "cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
+    "build:android:aab": "cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
-    "setup:ios": "cd ios && ./setup-ios.sh"
+    "setup:ios": "cd ios && ./setup-ios.sh",
+    "capacitor:update:before": "vite-node ./hooks/android/update-project.ts"
   },
   "dependencies": {
-    "@capacitor/android": "^7.2.0",
-    "@capacitor/camera": "latest",
-    "@capacitor/core": "latest",
-    "@capacitor/ios": "^7.2.0",
-    "@capacitor/splash-screen": "latest",
-    "capacitor-nodejs": "https://github.com/hampoelz/capacitor-nodejs/releases/download/v1.0.0-beta.7/capacitor-nodejs.tgz"
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/camera": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "capacitor-nodejs": "https://github.com/mustang-im/capacitor-nodejs/releases/download/1.0.0-beta.10/capacitor-nodejs-v1.0.0-beta.10.tgz"
   },
   "devDependencies": {
-    "@capacitor/cli": "6.1.2",
-    "vite": "^5.4.2"
+    "@capacitor/cli": "^7.0.0",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.2",
+    "vite-node": "^3.2.4"
   },
   "repository": {
     "type": "git",

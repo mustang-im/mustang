@@ -16,10 +16,36 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            // You need to specify either an absolute path or include the
+            // keystore file in the same directory as the build.gradle file.
+            storeFile System.getenv("KEYSTORE_PATH") ? file(System.getenv("KEYSTORE_PATH")) : null
+            storePassword System.getenv("KEYSTORE_PASS")
+            keyAlias System.getenv("KEYSTORE_ALIAS")
+            keyPassword System.getenv("KEYSTORE_ALIAS_PASS")
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    def appName = "mustang"
+    def version = android.defaultConfig.versionName
+
+    applicationVariants.all { variant ->
+        def buildType = variant.buildType.name
+
+        variant.outputs.all { output ->
+            def ext = output.outputFile.name.endsWith('.apk') ? '.apk' : '.aab'
+            if (buildType == 'release') {
+                outputFileName = "${appName}-${version}${ext}"
+            } else if (buildType == 'debug') {
+                outputFileName = "${appName}-${version}-debug${ext}"
+            }
         }
     }
 }
