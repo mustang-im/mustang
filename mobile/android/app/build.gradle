@@ -20,7 +20,7 @@ android {
         release {
             // You need to specify either an absolute path or include the
             // keystore file in the same directory as the build.gradle file.
-            storeFile file(System.getenv("KEYSTORE_PATH"))
+            storeFile System.getenv("KEYSTORE_PATH") ? file(System.getenv("KEYSTORE_PATH")) : null
             storePassword System.getenv("KEYSTORE_PASS")
             keyAlias System.getenv("KEYSTORE_ALIAS")
             keyPassword System.getenv("KEYSTORE_ALIAS_PASS")
