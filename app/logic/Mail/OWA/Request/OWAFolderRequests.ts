@@ -165,6 +165,32 @@ export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", fold
   });
 }
 
+export function owaFindFoldersRequest(deep?: true): OWARequest {
+  return new OWARequest("FindFolder", {
+    __type: "FindFolderRequest:#Exchange",
+    FolderShape: {
+      BaseShape: "Default",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+          FieldURI: "folder:FolderClass",
+      }, {
+        __type: "PropertyUri:#Exchange",
+          FieldURI: "folder:ParentFolderId",
+      }, {
+        __type: "PropertyUri:#Exchange",
+          FieldURI: "folder:DistinguishedFolderId",
+      }],
+    },
+    Paging: null,
+    ParentFolderIds: [{
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: "msgfolderroot",
+    }],
+    ReturnParentFolder: true,
+    Traversal: deep ? "Deep" : "Shallow",
+  });
+}
+
 export function owaMoveEntireFolderRequest(sourceFolderID: string, newParentFolderId: string): OWARequest {
   return new OWARequest("MoveFolder", {
     __type: "MoveFolderRequest:#Exchange",
