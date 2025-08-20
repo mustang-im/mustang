@@ -4,7 +4,7 @@ import type { Addressbook } from '../Contacts/Addressbook';
 import { appGlobal } from '../app';
 import { Observable, notifyChangedProperty } from '../util/Observable';
 import { Lock } from '../util/Lock';
-import type { URLString } from '../util/util';
+import { randomID, type URLString } from '../util/util';
 
 export type Contact = Person | Group;
 
@@ -20,6 +20,7 @@ export class ContactBase extends Observable {
 
   constructor(addressbook: Addressbook | null = null) {
     super();
+    this.id = randomID();
     this.addressbook = addressbook;
   }
 

@@ -79,6 +79,6 @@
   function newContact() {
     let contact = selectedAddressbook.newPerson();
     $selectedPerson = contact;
-    goTo(URLPart`/contacts/person/${contact.id ?? "p"}/edit`, { person: contact });
+    goTo(URLPart`/contacts/person/${contact.id}/edit`, { person: contact });
   }
 </script>

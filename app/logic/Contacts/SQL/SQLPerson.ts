@@ -4,7 +4,7 @@ import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, randomID } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
@@ -112,7 +112,7 @@ export class SQLPerson {
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
     person.popularity = sanitize.integer(row.popularity, null);
-    person.id = sanitize.string(row.pID, null);
+    person.id = sanitize.string(row.pID, randomID());
     person.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);

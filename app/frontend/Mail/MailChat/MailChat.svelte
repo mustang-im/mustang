@@ -53,8 +53,8 @@
   import PaymentBar from "../../Shared/Empty.svelte";
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
+  import { randomID } from "../../../logic/util/util";
   import { Collection, mergeColls } from 'svelte-collections';
-  import { faker } from "@faker-js/faker";
 
   export let accounts: Collection<MailAccount>; /** in */
 
@@ -74,7 +74,7 @@
     constructor(person: PersonUID) {
       let account = personMessages.first?.folder.account ?? accounts.first;
       super(account);
-      this.id = faker.string.uuid();
+      this.id = randomID();
       this.contact = person;
       this.messages.addAll(personMessages);
       this.lastMessage = personMessages.last;

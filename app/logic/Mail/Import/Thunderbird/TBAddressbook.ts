@@ -4,7 +4,7 @@ import { ContactEntry, Person } from "../../../Abstract/Person";
 import { StreetAddress } from "../../../Contacts/StreetAddress";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { NotReached, UserError } from "../../../util/util";
+import { NotReached, UserError, randomID } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { type Database } from "../../../../../lib/rs-sqlite";
 
@@ -59,7 +59,7 @@ export class ThunderbirdAddressbook extends Addressbook {
     }
 
     let person = addressbook.newPerson();
-    person.id = id;
+    person.id = id ?? randomID();
     let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
 
     // Name
