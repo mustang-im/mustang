@@ -42,8 +42,8 @@ export class EWSAddressbook extends Addressbook {
           t$BaseShape: "IdOnly",
         },
         m$SyncFolderId: {
-          t$DistinguishedFolderId: {
-            Id: "contacts",
+          t$FolderId: {
+            Id: this.folderID,
           },
         },
         m$SyncState: this.syncState,
@@ -112,8 +112,8 @@ export class EWSAddressbook extends Addressbook {
           Offset: 0,
         },
         m$ParentFolderIds: {
-          t$DistinguishedFolderId: [{
-            Id: "contacts",
+          t$FolderId: [{
+            Id: this.folderID,
           }],
         },
         Traversal: "Shallow",

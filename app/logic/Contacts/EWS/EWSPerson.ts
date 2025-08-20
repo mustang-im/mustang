@@ -75,7 +75,7 @@ export class EWSPerson extends Person {
   }
 
   async saveToServer() {
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     request.addField("Contact", "Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");

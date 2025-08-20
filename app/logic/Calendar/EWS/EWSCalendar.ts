@@ -11,11 +11,13 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
-  folderID: string;
   declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
+  folderID: string;
+  /** Is this the default calendar that handles incoming invitations */
+  usedForInvitations: boolean = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -65,30 +67,22 @@ export class EWSCalendar extends Calendar {
       await this.save();
     }
 
-    /* Disabling tasks for now.
-    // syncState is base64-encoded so it's safe to split and join on comma
-    let [calendar, tasks] = this.syncState?.split(",") || [];
-    calendar = await this.syncFolder("calendar", calendar);
-    tasks = await this.syncFolder("tasks", tasks);
-    this.syncState = calendar + "," + tasks;
-    */
-    // Delete the next line when enabling tasks.
-    this.syncState = await this.syncFolder("calendar", this.syncState);
+    await this.syncFolder();
     await this.save();
   }
 
-  protected async syncFolder(folder: string, syncState: string | null): Promise<string> {
+  protected async syncFolder(): Promise<void> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
           t$BaseShape: "IdOnly",
         },
         m$SyncFolderId: {
-          t$DistinguishedFolderId: {
-            Id: folder,
+          t$FolderId: {
+            Id: this.folderID,
           },
         },
-        m$SyncState: syncState,
+        m$SyncState: this.syncState,
         m$MaxChangesReturned: kMaxCount,
       }
     };
@@ -126,10 +120,9 @@ export class EWSCalendar extends Calendar {
         }
       }
       await this.getEvents(eventIDs, events);
-      syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
-    return sanitize.string(syncState);
   }
 
   getEventByItemID(id: string): EWSEvent | undefined {
@@ -258,10 +251,12 @@ export class EWSCalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
+    this.usedForInvitations = sanitize.boolean(json.usedForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
+    json.usedForInvitations = this.usedForInvitations;
     return json;
   }
 }
