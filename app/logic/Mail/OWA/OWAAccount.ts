@@ -115,7 +115,7 @@ export class OWAAccount extends MailAccount {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
       }
       if (!await this.testLoggedIn()) {
-        throw new LoginError(`Login check failed`);
+        throw new LoginError(null, `Login check failed`);
       }
     }
   }
