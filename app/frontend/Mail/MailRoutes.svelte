@@ -1,5 +1,5 @@
-<Route path="composer">
-  <MailComposer mail={params.mail} />
+<Route path="compose">
+  <MailComposer mail={params?.mail ?? $selectedFolder.newEMail()} />
 </Route>
 {#if appGlobal.isMobile}
   <Route path="folder/:accountID/:folderID/message-list">

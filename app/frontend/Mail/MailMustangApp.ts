@@ -40,7 +40,7 @@ export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
   name = gt`Compose`;
   icon = EditIcon;
-  appURL = "/mail/composer";
+  appURL = "/mail/compose";
 }
 
 export class LoginDialogMustangApp extends MustangApp {
