@@ -32,17 +32,18 @@
 </hbox>
 
 <script lang="ts">
+  import { meetMustangApp } from "../MeetMustangApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import HomeIcon from "lucide-svelte/icons/home";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { openApp } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
 
   let isMenuOpen = false;
 
   function goToStart() {
-    goTo("/meet/", {});
+    openApp(meetMustangApp, {});
   }
 </script>

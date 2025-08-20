@@ -59,16 +59,17 @@
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
-  import { VideoStream } from "../../../logic/Meet/VideoStream";
-  import { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { LiveKitAccount } from "../../../logic/Meet/LiveKit/LiveKitAccount";
   import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
+  import { VideoStream } from "../../../logic/Meet/VideoStream";
+  import { MeetingParticipant } from "../../../logic/Meet/Participant";
   import { Event } from "../../../logic/Calendar/Event";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { isLicensed } from "../../../logic/util/LicenseClient";
   import { appGlobal } from "../../../logic/app";
-  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
+  import { getMeetAccount } from "../../../logic/Meet/AccountsList/MeetAccounts";
   import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import MeetingList from "./MeetingList.svelte";
   import StartBarM from "./StartBarM.svelte";
@@ -78,10 +79,10 @@
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
-  import { sleep, UserError } from "../../../logic/util/util";
+  import { sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { faker } from "@faker-js/faker";
 
@@ -94,16 +95,8 @@
   const upcomingMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime > now && event.startTime < maxUpcoming);
   const previousMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime < now && event.startTime > maxPrevious).reverse();
 
-  function getAccount(): MeetAccount {
-    let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
-    if (!account) {
-      throw new UserError(gt`Please configure a matching meeting account first`);
-    }
-    return account;
-  }
-
   async function startAdHocMeeting() {
-    let meeting = getAccount().newMeeting();
+    let meeting = getMeetAccount().newMeeting();
     await meeting.createNewConference();
     appGlobal.meetings.add(meeting);
   }
@@ -165,7 +158,7 @@
     </p>`;
 
     // TODO Figure out the best account to call this person
-    let meeting = getAccount().newMeeting();
+    let meeting = getMeetAccount().newMeeting();
     await meeting.createNewConference();
     meeting.state = MeetingState.OutgoingCallConfirm;
     meeting.event = event;

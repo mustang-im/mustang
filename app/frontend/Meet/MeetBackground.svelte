@@ -7,7 +7,7 @@
   $: meetings = appGlobal.meetings;
 
   /** Open sidebar, if meeting is ongoing */
-  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp;
+  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.href.startsWith("/meet");
 
   /** When a call comes in or is placed, open the meet app,
    * which will then open the Calling screen. */
