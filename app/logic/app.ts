@@ -9,6 +9,7 @@ import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { FileSharingAccount } from './Files/FileSharingAccount';
 import type { Workspace } from './Abstract/Workspace';
 import { WebApps } from './WebApps/WebApps';
+import { isMobile } from './build';
 import { Observable, notifyChangedProperty } from './util/Observable';
 import { ArrayColl, Collection, mergeColls } from 'svelte-collections';
 
@@ -34,7 +35,7 @@ class AppGlobal extends Observable {
   @notifyChangedProperty
   isSmall = false;
   @notifyChangedProperty
-  isMobile = false;
+  isMobile = isMobile;
 }
 
 export const appGlobal = new AppGlobal();

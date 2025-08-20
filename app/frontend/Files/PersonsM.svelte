@@ -27,7 +27,7 @@
     await sleep(0.1); // wait for `<PersonsList>` to set `$selectedPerson`
     assert($selectedPerson, "Need person");
     const en = encodeURIComponent;
-    goTo(`/files/person/${en($selectedPerson.id)}/files`);
+    goTo(`/files/person/${en($selectedPerson.id)}/files`, { person: $selectedPerson });
   }
 </script>
 

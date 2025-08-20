@@ -35,7 +35,7 @@
     $selectedAccount = appGlobal.emailAccounts.first;
     $selectedFolder = $selectedAccount.rootFolders.first;
     isLoading = false;
-    openApp(chatMustangApp);
+    openApp(chatMustangApp, {});
   }
 </script>
 

@@ -53,10 +53,10 @@
   let isMenuOpen = false;
 
   function goToPersons() {
-    goTo("/chat/");
+    goTo("/chat/", {});
   }
 
   function goToSearch() {
-    goTo("/chat/search");
+    goTo("/chat/search", {});
   }
 </script>

@@ -83,7 +83,7 @@
   }
 
   function onClose() {
-    openApp(mailMustangApp);
+    openApp(mailMustangApp, {});
   }
 
   function nextAccount() {

@@ -2,6 +2,7 @@
   <Splitter
     initialRightRatio={0.25}
     rightMinWidth={350}
+    hasRight={$selectedEvent && !appGlobal.isMobile}
     >
     <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
       <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
@@ -12,7 +13,7 @@
       </MainView>
     </vbox>
     <vbox flex class="sidebar" slot="right">
-      {#if $selectedEvent}
+      {#if $selectedEvent && !appGlobal.isMobile}
         <ShowEvent event={$selectedEvent} />
       {:else}
         <!--<TaskList />-->

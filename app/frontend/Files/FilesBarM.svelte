@@ -65,14 +65,14 @@
   let isMenuOpen = false;
 
   function goToPersons() {
-    goTo("/files/");
+    goTo("/files/", {});
   }
 
   function goToSearch() {
-    goTo("/files/search");
+    goTo("/files/search", {});
   }
 
   function goToUpload() {
-    goTo(`/files/person/${$selectedPerson.id}/upload`);
+    goTo(`/files/person/${$selectedPerson.id}/upload`, { person: $selectedPerson });
   }
 </script>

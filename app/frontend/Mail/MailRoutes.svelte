@@ -1,17 +1,26 @@
-<Route path="/folder/:accountID/:folderID/message-list">
-  {ensureLoaded(selectedFolder, "/mail/")}
-  <MsgListM {messages} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+<Route path="/composer/">
+  <MailComposer mail={params.mail} />
 </Route>
-<Route path="/message/:accountID/:folderID/:messageID/display">
-  {ensureLoaded(selectedMessage, "/mail/")}
-  <MessageDisplay message={$selectedMessage} />
-</Route>
-<Route path="search">
-  <SearchM />
-</Route>
-<Route path="/">
-  <AccountsM {accounts} {folders} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} />
-</Route>
+{#if appGlobal.isMobile}
+  <Route path="/folder/:accountID/:folderID/message-list">
+    {ensureLoaded(selectedFolder, "/mail/")}
+    <MsgListM {messages} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  </Route>
+  <Route path="/message/:accountID/:folderID/:messageID/display">
+    {ensureLoaded(selectedMessage, "/mail/")}
+    <MessageDisplay message={$selectedMessage} />
+  </Route>
+  <Route path="search">
+    <SearchM />
+  </Route>
+  <Route path="/">
+    <AccountsM {accounts} {folders} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} />
+  </Route>
+{:else}
+  <Route path="/">
+    <MailApp />
+  </Route>
+{/if}
 
 <script lang="ts">
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
@@ -22,18 +31,23 @@
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import MailApp from "./MailApp.svelte";
+  import MailComposer from "./Composer/MailComposer.svelte";
   import MsgListM from "./Vertical/MessageListM.svelte";
   import SearchM from "./Search/SearchM.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
   import { showError } from "../Util/error";
-  import { ensureLoaded } from "../Util/svelte";
+  import { ensureLoaded } from "../Util/route";
   import { ArrayColl } from "svelte-collections";
-  import { Route } from "svelte-navigator";
+  import { Route, useLocation } from "svelte-navigator";
+  import { appGlobal } from "../../logic/app";
 
   $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
+  $: location = useLocation();
+  $: params = $location.state;
 
   let searchMessages: ArrayColl<EMail> | null;
 

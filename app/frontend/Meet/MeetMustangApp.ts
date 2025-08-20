@@ -8,7 +8,7 @@ export class MeetMustangApp extends MustangApp {
   id = "meet";
   name = gt`Meet`;
   icon = meetIcon;
-  mainWindow = MeetApp;
+  appURL = "/meet/";
   sidebar = MeetSidebar;
 }
 

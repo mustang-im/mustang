@@ -322,7 +322,7 @@
     }
     doOnClose = [];
 
-    let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.mainWindowProperties.mail == mail);
+    let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
   }
 

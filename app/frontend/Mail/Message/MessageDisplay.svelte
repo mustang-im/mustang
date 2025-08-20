@@ -12,7 +12,7 @@
       <MessageBody {message} />
     </Paper>
   </vbox>
-  {#if $appGlobal.isSmall}
+  {#if $appGlobal.isMobile}
     <MessageDisplayBarM {message} />
   {/if}
 </vbox>

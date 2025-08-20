@@ -1,6 +1,6 @@
 <vbox class="app-bar">
   {#each $showApps.each as app}
-    <AppButton on:click={() => selectedApp = app} selected={selectedApp == app} classes={app.id}>
+    <AppButton on:click={() => onSelectApp(app)} selected={selectedApp == app} classes={app.id}>
       <AppIcon slot="icon" icon={app.icon} size="24px" />
       <hbox slot="label" class="label">
         {app.name}
@@ -17,6 +17,7 @@
 
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
+  import { openApp } from "./selectedApp";
   import type { Collection } from "svelte-collections";
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
@@ -28,6 +29,10 @@
   /* Which apps to show on the app bar
    * readonly */
   export let showApps: Collection<MustangApp>;
+
+  function onSelectApp(app: MustangApp) {
+    openApp(app, {});
+  }
 </script>
 
 <style>

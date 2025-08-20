@@ -33,7 +33,11 @@
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
     const en = encodeURIComponent;
-    goTo(`/mail/message/${en(selectedMessage.folder.account.id)}/${en(selectedMessage.folder.id)}/${en(selectedMessage.id)}/display`);
+    goTo(`/mail/message/${en(selectedMessage.folder.account.id)}/${en(selectedMessage.folder.id)}/${en(selectedMessage.id)}/display`, {
+      account: selectedMessage.folder.account,
+      folder: selectedMessage.folder,
+      message: selectedMessage,
+    });
   }
 </script>
 

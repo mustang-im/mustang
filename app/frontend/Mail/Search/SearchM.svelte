@@ -27,7 +27,11 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    goTo(`/mail/message/${selectedMessage.folder.account.id}/${selectedMessage.folder.id}/${selectedMessage.id}/display`);
+    goTo(`/mail/message/${selectedMessage.folder.account.id}/${selectedMessage.folder.id}/${selectedMessage.id}/display`, {
+      account: selectedMessage.folder.account,
+      folder: selectedMessage.folder,
+      message: selectedMessage,
+    });
   }
 </script>
 

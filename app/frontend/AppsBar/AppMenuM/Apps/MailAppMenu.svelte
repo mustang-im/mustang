@@ -20,6 +20,6 @@
   function goToAccount(account: MailAccount) {
     $selectedAccount = account;
     $selectedFolder = account.inbox;
-    goTo(`/mail/folder/${account.id}/${account.inbox.id}/message-list`);
+    goTo(`/mail/folder/${account.id}/${account.inbox.id}/message-list`, { account, folder: account.inbox });
   }
 </script>

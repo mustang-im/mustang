@@ -2,6 +2,7 @@
   <title>{ appName }</title>
 </svelte:head>
 <svelte:window
+  bind:outerWidth={windowWidth}
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
@@ -27,12 +28,14 @@
           </SplitterHorizontal>
         </Router>
       {:else if $selectedApp}
-        <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
-          <AppContent app={$selectedApp} slot="left"/>
-          <vbox flex class="sidebar" slot="right">
-            <svelte:component this={sidebar} />
-          </vbox>
-        </Splitter>
+        <Router primary={false}>
+          <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
+            <AppContentRoutes slot="left"/>
+            <vbox flex class="sidebar" slot="right">
+              <svelte:component this={sidebar} />
+            </vbox>
+          </Splitter>
+        </Router>
       {/if}
     </vbox>
   </hbox>
@@ -42,7 +45,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, openApp, goTo } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
@@ -57,9 +60,7 @@
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import { SetupMustangApp } from "../Setup/SetupMustangApp";
   import AppBar from "../AppsBar/AppBar.svelte";
-  import AppContent from "../AppsBar/AppContent.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
@@ -68,9 +69,6 @@
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
-  // #if [!WEBMAIL]
-  import InitialSetup from "../Setup/Import/InitialSetup.svelte";
-  // #endif
   import DemoBarLeft from "./DemoBarLeft.svelte";
   import DemoBarTop from "./DemoBarTop.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
@@ -81,9 +79,6 @@
   import { onMount } from "svelte";
   import { useDebounce } from "@svelteuidev/composables";
   import { Router } from "svelte-navigator";
-
-  appGlobal.isMobile = false;
-  appGlobal.isSmall = false;
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -115,13 +110,7 @@
 
   function setup() {
     // #if [!WEBMAIL]
-    if (appGlobal.isMobile) {
-      goTo("/setup/initial");
-    } else {
-      let setupApp = new SetupMustangApp();
-      setupApp.mainWindow = InitialSetup;
-      openApp(setupApp);
-    }
+    goTo("/setup/initial", {});
     // #endif
   }
 
@@ -133,6 +122,12 @@
     }
     assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
     appGlobal.remoteApp.setTheme(theme);
+  }
+
+  let windowWidth: number;
+  $: windowWidth, setSmall()
+  function setSmall() {
+    appGlobal.isSmall = windowWidth < 600;
   }
 
   function saveWindowSettings() {
@@ -167,7 +162,6 @@
   .main-window:not(.mobile) {
     border: 1px solid gray;
     min-width: 640px;
-    min-height: 100vh;
   }
   .sidebar {
     box-shadow: inset 1px 0px 5px 0px rgba(0, 0, 0, 10%);

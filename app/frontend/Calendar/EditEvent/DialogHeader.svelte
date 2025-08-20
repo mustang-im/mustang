@@ -310,12 +310,12 @@
 
   function onShrink() {
     $selectedEvent = event;
-    openApp(calendarMustangApp);
+    openApp(calendarMustangApp, { event });
   }
 
   function onClose() {
     event.finishEditing();
-    let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.mainWindowProperties.event == event);
+    let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
     calendarMustangApp.subApps.remove(me);
     if (!isFullWindow) {
       // Make sidebar disappear, see CalendarApp.svelte

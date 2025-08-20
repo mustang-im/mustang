@@ -27,13 +27,6 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
-// #if [!WEBMAIL]
-import SetupMail from "../Setup/Mail/SetupMail.svelte";
-import SetupChat from "../Setup/Chat/SetupChat.svelte";
-import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
-import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
-import SetupFiles from "../Setup/Files/SetupFiles.svelte";
-// #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
@@ -42,7 +35,6 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
-import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
@@ -72,7 +64,7 @@ mailSettings.subCategories.addAll([
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 // #if [!WEBMAIL]
-mailSettings.newAccountUI = SetupMail;
+mailSettings.newAccountURL = "/setup/mail";
 // #endif
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
@@ -89,7 +81,7 @@ chatSettings.subCategories.addAll([
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
 // #if [!WEBMAIL]
-chatSettings.newAccountUI = SetupChat;
+chatSettings.newAccountURL = "/setup/chat";
 // #endif
 chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
@@ -106,7 +98,7 @@ calendarSettings.subCategories.addAll([
 ]);
 calendarSettings.accounts = appGlobal.calendars;
 // #if [!WEBMAIL]
-calendarSettings.newAccountUI = SetupCalendar;
+calendarSettings.newAccountURL = "/setup/calendar";
 // #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
@@ -116,7 +108,7 @@ contactsSettings.subCategories.addAll([
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
 // #if [!WEBMAIL]
-contactsSettings.newAccountUI = SetupContacts;
+contactsSettings.newAccountURL = "/setup/contacts";
 // #endif
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
@@ -130,7 +122,7 @@ meetSettings.subCategories.addAll([
 meetSettings.accounts = appGlobal.meetAccounts;
 // #endif
 // #if [!WEBMAIL && PROPRIETARY]
-meetSettings.newAccountUI = SetupMeetAccount;
+meetSettings.newAccountURL = "/setup/meet";
 // #endif
 // #if [PROPRIETARY]
 meetSettings.forApp = meetMustangApp;
@@ -144,7 +136,7 @@ filesSettings.subCategories.addAll([
 ]);
 filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
 // #if [!WEBMAIL]
-filesSettings.newAccountUI = SetupFiles;
+filesSettings.newAccountURL = "/setup/files";
 // #endif
 filesSettings.forApp = filesMustangApp;
 settingsCategories.add(filesSettings);

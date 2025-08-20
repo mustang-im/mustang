@@ -18,7 +18,7 @@
   export let onClick = onOpen;
 
   function onOpen() {
-    goTo("/app-menu/");
+    goTo("/app-menu/", {});
   }
 </script>
 

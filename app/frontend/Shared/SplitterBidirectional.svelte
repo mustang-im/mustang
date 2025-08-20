@@ -1,23 +1,23 @@
 {#if horizontal}
   <SplitterHorizontal
-    bind:topMinWidth={firstMinWidth}
-    bind:bottomMinWidth={secondMinWidth}
-    bind:initialBottomRatio={initialSecondRatio}
-    bind:hasTop={hasFirst}
-    bind:hasBottom={hasSecond}
-    bind:name
+    topMinWidth={firstMinPx}
+    bottomMinWidth={secondMinPx}
+    initialBottomRatio={initialSecondRatio}
+    hasTop={hasFirst}
+    hasBottom={hasSecond}
+    {name}
     >
     <slot name="first" slot="top" />
     <slot name="second" slot="bottom" />
   </SplitterHorizontal>
 {:else}
   <Splitter
-    bind:leftMinWidth={firstMinWidth}
-    bind:rightMinWidth={secondMinWidth}
-    bind:initialRightRatio={initialSecondRatio}
-    bind:hasLeft={hasFirst}
-    bind:hasRight={hasSecond}
-    bind:name
+    leftMinWidth={firstMinPx}
+    rightMinWidth={secondMinPx}
+    initialRightRatio={initialSecondRatio}
+    hasLeft={hasFirst}
+    hasRight={hasSecond}
+    {name}
     >
     <slot name="first" slot="left" />
     <slot name="second" slot="right" />
@@ -31,10 +31,10 @@
   export let horizontal = true;
   /** Left pane cannot be made smaller than this
    * in px */
-  export let firstMinWidth = 30;
+  export let firstMinPx = 30;
   /** Right pane cannot be made smaller than this
    * in px */
-  export let secondMinWidth = 30;
+  export let secondMinPx = 30;
   /** Initial size of right pane compared to left pane */
   export let initialSecondRatio = 1;
   /** If false, will hide the left part and remove the splitter */

@@ -17,7 +17,7 @@
     if (meeting.state == MeetingState.OutgoingCallConfirm ||
         meeting.state == MeetingState.OutgoingCall ||
         meeting.state == MeetingState.IncomingCall) {
-      openApp(meetMustangApp);
+      openApp(meetMustangApp, { meeting });
     }
   }
 </script>

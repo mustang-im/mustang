@@ -60,7 +60,7 @@
   let isMenuOpen = false;
 
   function goToSearch() {
-    goTo("/mail/search");
+    goTo("/mail/search", {});
   }
 
   function newMail() {

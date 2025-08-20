@@ -20,7 +20,7 @@
 
   export let doSearch = false;
 
-  $: accounts = appGlobal.chatAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
+  $: accounts = appGlobal.chatAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
   $: chatRooms = $selectedAccount ? $selectedAccount.chats : mergeColls(accounts.map(a => a.chats));
 
   onMount(() => {

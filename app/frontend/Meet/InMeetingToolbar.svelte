@@ -3,7 +3,7 @@
     <RoundButton
       label={$t`Go back to meeting`}
       classes="back-to-meet"
-      on:click={() => openApp(meetMustangApp)}
+      on:click={() => openApp(meetMustangApp, { meeting })}
       icon={OpenToLeftIcon}
       iconSize="16px"
       border={false}

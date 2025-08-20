@@ -33,7 +33,7 @@
       showReset={step != Step.EmailAddress}
       showContinue={step != Step.Login}
       canCancel={true}
-      onCancel={onClose}
+      onCancel={() => onClose()}
       >
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
         <Button label={$t`Manual setup`} classes="secondary"
@@ -243,15 +243,15 @@
     }
     isSaving = true;
     await saveAndInitConfig(config, emailAddress, password);
-    onClose();
+    onClose(config);
   }
 
-  function onClose() {
+  function onClose(account?: MailAccount) {
     abort.abort();
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      openApp(mailMustangApp);
+      openApp(mailMustangApp, { account });
     }
   }
 </script>

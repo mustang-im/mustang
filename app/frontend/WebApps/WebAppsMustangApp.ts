@@ -8,7 +8,7 @@ export class WebAppsMustangApp extends MustangApp {
   id = "webapps";
   name = gt`Apps`;
   icon = appsLauncherIcon;
-  mainWindow = AppsApp;
+  appURL = "/webapp/";
   //subApps = appGlobal.webApps.myApps.map(app => new WebAppSubMustangApp(app));
 }
 

@@ -68,16 +68,16 @@
   let isMenuOpen = false;
 
   function goToPersons() {
-    goTo("/contacts/");
+    goTo("/contacts/", {});
   }
 
   function goToSearch() {
-    goTo("/contacts/search");
+    goTo("/contacts/search", {});
   }
 
   function newContact() {
     let contact = selectedAddressbook.newPerson();
     $selectedPerson = contact;
-    goTo(`/contacts/person/${contact.id}/edit`);
+    goTo(`/contacts/person/${contact.id}/edit`, { person: contact });
   }
 </script>

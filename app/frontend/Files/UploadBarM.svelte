@@ -82,11 +82,11 @@
   let isMenuOpen = false;
 
   function goToPerson() {
-    goTo(`/files/person/${person.id}/files`);
+    goTo(`/files/person/${person.id}/files`, { person });
   }
 
   function goToPersons() {
-    goTo("/files/");
+    goTo("/files/", {});
   }
 
   function uploadFile() {

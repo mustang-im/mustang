@@ -51,7 +51,7 @@
   }
 
   function onClose() {
-    openApp($selectedCategory?.forApp ?? mailMustangApp);
+    openApp($selectedCategory?.forApp ?? mailMustangApp, {});
   }
 </script>
 

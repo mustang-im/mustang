@@ -27,7 +27,12 @@
     $selectedFolder = message.folder;
     $selectedMessage = message;
     $selectedSearchTab = SearchView.Person;
-    openApp(mailMustangApp);
+    openApp(mailMustangApp, {
+      message: message,
+      folder: message.folder,
+      account: message.folder?.account,
+      tab: SearchView.Person,
+    });
     await tick();
     $selectedAccount = message.folder?.account;
     $selectedFolder = message.folder;

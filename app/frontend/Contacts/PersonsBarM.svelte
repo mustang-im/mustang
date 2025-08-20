@@ -50,6 +50,6 @@
   function newContact() {
     let contact = selectedAddressbook.newPerson();
     $selectedPerson = contact;
-    goTo(`/contacts/person/${contact.id}/edit`);
+    goTo(`/contacts/person/${contact.id}/edit`, { person: contact });
   }
 </script>

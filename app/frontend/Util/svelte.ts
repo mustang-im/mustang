@@ -13,10 +13,3 @@ export async function avoidLoop(func: () => void, state: { inSetter: boolean }) 
   await tick();
   state.inSetter = false;
 }
-
-export function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
-  if (get(obj)) {
-    return "";
-  }
-  window.location.href = fallbackURL;
-}

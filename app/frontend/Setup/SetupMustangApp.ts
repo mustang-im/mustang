@@ -6,6 +6,6 @@ export class SetupMustangApp extends MustangApp {
   id = "setup";
   name = gt`Setup`;
   icon = SettingsIcon;
-  mainWindow = null; // Need to set this when instantiating
+  appURL = "/setup/";
   onBack: () => void = null;
 }

@@ -66,15 +66,15 @@
   let isMenuOpen = false;
 
   function goToSearch() {
-    goTo("/calendar/search");
+    goTo("/calendar/search", {});
   }
 
   function goToTODO() {
-    goTo("/calendar/todo");
+    goTo("/calendar/todo", {});
   }
 
   function newEvent() {
     let event = $selectedCalendar.newEvent();
-    calendarMustangApp.editEvent(event);
+    calendarMustangApp.showEvent(event);
   }
 </script>

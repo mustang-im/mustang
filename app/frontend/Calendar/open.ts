@@ -9,5 +9,5 @@ export function openEventFromOtherApp(event: Event) {
   // if full screen: calendarMustangApp.editEvent(event);
   selectedDate.set(new Date(event.startTime));
   startDate.set(new Date(event.startTime));
-  openApp(calendarMustangApp);
+  openApp(calendarMustangApp, { event });
 }

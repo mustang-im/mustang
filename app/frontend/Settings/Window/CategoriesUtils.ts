@@ -32,7 +32,7 @@ export function getSettingsCategoryForApp(app: MustangApp) {
 export function openSettingsCategoryForApp(app: MustangApp) {
   let cat = getSettingsCategoryForApp(app);
   selectedCategory.set(cat);
-  openApp(settingsMustangApp);
+  openApp(settingsMustangApp, { category: cat });
 }
 
 export function openSettingsCategoryForAccount(account: Account) {
@@ -41,5 +41,5 @@ export function openSettingsCategoryForAccount(account: Account) {
   assert(cat, "Account not found in settings");
   selectedAccount.set(account);
   selectedCategory.set(cat);
-  openApp(settingsMustangApp);
+  openApp(settingsMustangApp, { category: cat, account: account });
 }

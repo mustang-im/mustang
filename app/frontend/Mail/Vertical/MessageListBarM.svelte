@@ -64,10 +64,10 @@
   let isMenuOpen = false;
 
   function goToAccounts() {
-    goTo("/mail/");
+    goTo("/mail/", {});
   }
   function goToSearch() {
-    goTo("/mail/search");
+    goTo("/mail/search", {});
   }
 
   function newMail() {

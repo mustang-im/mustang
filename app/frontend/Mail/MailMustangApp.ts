@@ -3,9 +3,6 @@ import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
 import { OAuth2Tab, oAuth2TabsOpen } from "../../logic/Auth/UI/OAuth2Tab";
 import { appGlobal } from "../../logic/app";
-import MailApp from "./MailApp.svelte";
-import MailComposer from "./Composer/MailComposer.svelte";
-import OAuth2EmbeddedBrowser from "../Shared/Auth/OAuth2EmbeddedBrowser.svelte";
 import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
 import AuthIcon from "lucide-svelte/icons/key-round";
@@ -16,27 +13,23 @@ export class MailMustangApp extends MustangApp {
   id = "mail";
   name = gt`Mail`;
   icon = mailIcon;
-  mainWindow = MailApp;
+  appURL = "/mail/";
 
   writeMail(mail: EMail) {
     let composerApp = new WriteMailMustangApp();
     composerApp.title = derived(mail, () => mail.subject ?? composerApp.name);
-    composerApp.mainWindowProperties = {
-      mail: mail,
-    };
+    composerApp.windowParams = { mail: mail };
     mailMustangApp.subApps.add(composerApp);
-    openApp(composerApp);
+    openApp(composerApp, composerApp.windowParams);
   }
 
   login(tab: OAuth2Tab): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
     let account = tab.oAuth2.account;
     loginApp.title = derived(account, () => gt`Login to ${account.name}`);
-    loginApp.mainWindowProperties = {
-      dialog: tab,
-    };
+    loginApp.windowParams = { dialog: tab };
     mailMustangApp.subApps.add(loginApp);
-    openApp(loginApp);
+    openApp(loginApp, loginApp.windowParams);
     return loginApp;
   }
 }
@@ -47,19 +40,20 @@ export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
   name = gt`Compose`;
   icon = EditIcon;
-  mainWindow = MailComposer;
+  appURL = "/mail/composer/";
 }
 
 export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
   name = gt`Login`;
   icon = AuthIcon;
-  mainWindow = OAuth2EmbeddedBrowser;
+  appURL = "/login/";
 }
 
 const tabsObserver = {
   added(tabs: OAuth2Tab[]) {
     for (let tab of tabs) {
+      // TODO simplify, using URLs? But remove correctly.
       tab.mustangApp = mailMustangApp.login(tab);
     }
   },

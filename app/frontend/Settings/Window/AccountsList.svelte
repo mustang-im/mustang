@@ -1,9 +1,9 @@
-{#if $accounts.hasItems || category.newAccountUI}
+{#if $accounts.hasItems || category.newAccountURL}
   <vbox class="accounts" app={category.id}>
     <hbox class="header font-smallest">
       {$t`Accounts`}
       <hbox flex />
-      {#if category.newAccountUI}
+      {#if category.newAccountURL}
         <RoundButton
           icon={AddIcon}
           iconSize="10px"
@@ -22,10 +22,9 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "./SettingsCategory";
-  import { openApp } from "../../AppsBar/selectedApp";
+  import { goTo } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
-  import { settingsMustangApp } from "./SettingsMustangApp";
   import AccountItem from "./AccountItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -38,16 +37,16 @@
   $: accounts = category.accounts;
 
   function onNewAccount() {
-    assert(category.newAccountUI, "Need newAccountUI");
+    assert(category.newAccountURL, "Need newAccountURL");
     let setupApp = new SetupMustangApp();
-    setupApp.mainWindow = category.newAccountUI;
-    setupApp.onBack = onReOpenThis;
-    openApp(setupApp);
+    let url = setupApp.appURL = category.newAccountURL;
+    setupApp.onBack = () => onReOpenThis();
+    goTo(url, {});
   }
 
   function onReOpenThis() {
     $selectedCategory = category;
-    openApp(settingsMustangApp);
+    goTo("settings/", { category });
   }
 </script>
 

@@ -1,4 +1,5 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
+import type { URLString } from "../../logic/util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType, SvelteComponentTyped } from "svelte";
 import { derived, type Readable } from "svelte/store";
@@ -11,13 +12,12 @@ export class MustangApp extends Observable {
   title: Readable<string> = derived(this, () => this.name);
   /** App icon, either as SVG string or as Svelte component */
   icon: string | ComponentType<SvelteComponentTyped>;
+  appURL: URLString;
   /** Main window content that shows when the user selected this app */
   mainWindow: ComponentType<SvelteComponentTyped>;
-  /** Parameters that will be passed to `mainWindow`
+  /** Parameters that will be passed to the main window in routes
    * as Svelte component properties */
-  mainWindowProperties: Record<string, any>;
-  /** Window header content that shows when the user selected this app */
-  windowHeader: ComponentType<SvelteComponentTyped> | null;
+  windowParams: Record<string, any>;
   /** Sidebar content that shows `showSidebar` is true.
    * This shows when *another* app is active.
    * This is *not* the sidebar of an app while the app itself is open. */

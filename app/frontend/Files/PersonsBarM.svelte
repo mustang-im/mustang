@@ -26,14 +26,12 @@
   import { selectedPerson } from "../Contacts/Person/Selected";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
-  import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import { goTo } from "../AppsBar/selectedApp";
-  import { t } from "../../l10n/l10n";
 
   let isMenuOpen = false;
 
   function goToUpload() {
-    goTo(`${$selectedPerson.id}/upload`);
+    goTo(`${$selectedPerson.id}/upload`, { person: $selectedPerson });
   }
 </script>

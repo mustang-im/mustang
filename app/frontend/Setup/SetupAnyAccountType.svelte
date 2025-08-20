@@ -2,23 +2,23 @@
 
 <hbox class="add-buttons">
   <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupMail))}
+    on:expand={() => catchErrors(() => startSetup("mail"))}
     label={$t`Add email address`} />
   <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupContacts))}
-    label={$t`Add address book`} />
-  <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupCalendar))}
-    label={$t`Add calendar`} />
-  <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupChat))}
+    on:expand={() => catchErrors(() => startSetup("chat"))}
     label={$t`Add chat account`} />
   <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupMeetAccount))}
+    on:expand={() => catchErrors(() => startSetup("contacts"))}
+    label={$t`Add address book`} />
+  <ExpanderButton
+    on:expand={() => catchErrors(() => startSetup("calendar"))}
+    label={$t`Add calendar`} />
+  <ExpanderButton
+    on:expand={() => catchErrors(() => startSetup("meet"))}
     label={$t`Add video conference account`} />
   <!--
   <ExpanderButton
-    on:expand={() => catchErrors(() => startSetup(SetupFileAccount))}
+    on:expand={() => catchErrors(() => startSetup("file"))}
     label={$t`Add file sharing`} />
   -->
 </hbox>
@@ -33,14 +33,8 @@
 <script lang="ts">
   import { SetupMustangApp } from "./SetupMustangApp";
   import { mailMustangApp } from "../Mail/MailMustangApp";
-  import { openApp } from "../AppsBar/selectedApp";
+  import { goTo, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import SetupMail from "./Mail/SetupMail.svelte";
-  import SetupContacts from "./Contacts/SetupContacts.svelte";
-  import SetupCalendar from "./Calendar/SetupCalendar.svelte";
-  import SetupChat from "./Chat/SetupChat.svelte";
-  import SetupMeetAccount from "./Meet/SetupMeetAccount.svelte";
-  import SetupAnyAccountTypeDialog from "./SetupAnyAccountTypeDialog.svelte";
   import ExpanderButton from "../Shared/ExpanderButton.svelte";
   import Header from "./Shared/Header.svelte";
   import Button from "../Shared/Button.svelte";
@@ -49,18 +43,18 @@
 
   export let onContinue: () => void = null;
 
-  async function startSetup(setupUI: ConstructorOfATypedSvelteComponent) {
+  async function startSetup(urlSuffix: string) {
     let setupApp = new SetupMustangApp();
-    setupApp.mainWindow = setupUI;
-    setupApp.onBack = () => startSetup(SetupAnyAccountTypeDialog);
-    openApp(setupApp);
+    let url = setupApp.appURL = "/setup/" + urlSuffix;
+    setupApp.onBack = () => startSetup("");
+    goTo(url, {});
   }
 
   function onClose() {
     if (onContinue) {
       onContinue();
     } else {
-      openApp(mailMustangApp);
+      openApp(mailMustangApp, {});
     }
   }
 </script>

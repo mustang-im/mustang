@@ -25,7 +25,7 @@ export class SettingsCategory extends Observable {
   /** mail, chat etc. accounts for this app/category */
   @notifyChangedProperty
   accounts: Collection<Account> = new ArrayColl<Account>();
-  newAccountUI: ComponentType<SvelteComponentTyped> | undefined;
+  newAccountURL: string | undefined;
   /** If `isMain && !isAccountSpecific`, can have the app that these settings are for */
   forApp: MustangApp;
 

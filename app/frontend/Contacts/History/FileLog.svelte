@@ -18,7 +18,7 @@
 
   async function onOpenFilesApp() {
     $selectedFile = file;
-    openApp(filesMustangApp);
+    openApp(filesMustangApp, { file });
   }
 
   async function onOpenExternal() {

@@ -120,10 +120,13 @@
   export let message: EMail;
 
   function goToAccounts() {
-    goTo("/mail/");
+    goTo("/mail/", {});
   }
   function goToMsgList() {
-    goTo(`/mail/folder/${message.folder.account.id}/${message.folder.id}/message-list`);
+    goTo(`/mail/folder/${message.folder.account.id}/${message.folder.id}/message-list`, {
+      account: message.folder.account,
+      folder: message.folder,
+    });
   }
   async function deleteMessage() {
     await message.deleteMessage();

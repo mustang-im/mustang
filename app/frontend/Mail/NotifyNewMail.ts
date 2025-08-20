@@ -135,7 +135,11 @@ async function openMessage(msg: EMail) {
     selectedMessage.set(msg);
     selectedFolder.set(msg.folder);
     selectedAccount.set(msg.folder?.account);
-    openApp(mailMustangApp);
+    openApp(mailMustangApp, {
+      message: msg,
+      folder: msg.folder,
+      account: msg.folder?.account,
+    });
     bringAppToFront();
   } catch (ex) {
     console.error(ex);

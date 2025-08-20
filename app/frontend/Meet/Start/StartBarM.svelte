@@ -57,7 +57,7 @@
   let isMenuOpen = false;
 
   function goToCallHistory() {
-    goTo("/meet/history");
+    goTo("/meet/history", {});
   }
 
   function newMeeting() {

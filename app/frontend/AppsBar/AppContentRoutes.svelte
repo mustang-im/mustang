@@ -3,19 +3,33 @@
     <MailAppRoutes />
   </Route>
   <Route path="chat/*">
-    <ChatApp />
+    <ChatRoutes />
   </Route>
   <Route path="contacts/*">
     <ContactsAppRoutes />
   </Route>
   <Route path="calendar/*">
-    <CalendarApp />
+    <CalendarRoutes />
   </Route>
   <Route path="files/*">
     <FilesAppRoutes />
   </Route>
   <Route path="meet/*">
     <MeetAppRoutes />
+  </Route>
+  <Route path="webapp/*">
+    <WebAppsRoutes />
+  </Route>
+  <Route path="settings/*">
+    <SettingsRoutes />
+  </Route>
+  // #if [!WEBMAIL]
+  <Route path="setup/*">
+    <SetupRoutes />
+  </Route>
+  // #endif
+  <Route path="login/">
+    <OAuth2EmbeddedBrowser dialog={params.dialog} />
   </Route>
   <Route path="/app-menu/">
     <AppMenu />
@@ -27,12 +41,21 @@
 </vbox>
 
 <script lang="ts">
-  import { Route } from "svelte-navigator";
-  import MailAppRoutes from "../Mail/MailAppRoutes.svelte";
-  import ChatApp from "../Chat/ChatApp.svelte";
-  import ContactsAppRoutes from "../Contacts/ContactsAppRoutes.svelte";
-  import CalendarApp from "../Calendar/CalendarApp.svelte";
-  import FilesAppRoutes from "../Files/FilesAppRoutes.svelte";
-  import MeetAppRoutes from "../Meet/MeetAppRoutes.svelte";
   import AppMenu from "./AppMenuM/AppMenu.svelte";
+  import MailAppRoutes from "../Mail/MailRoutes.svelte";
+  import ChatRoutes from "../Chat/ChatRoutes.svelte";
+  import ContactsAppRoutes from "../Contacts/ContactsRoutes.svelte";
+  import FilesAppRoutes from "../Files/FilesRoutes.svelte";
+  import CalendarRoutes from "../Calendar/CalendarRoutes.svelte";
+  import MeetAppRoutes from "../Meet/MeetRoutes.svelte";
+  import WebAppsRoutes from "../WebApps/WebAppsRoutes.svelte";
+  import SettingsRoutes from "../Settings/SettingsRoutes.svelte";
+  // #if [!WEBMAIL]
+  import SetupRoutes from "../Setup/SetupRoutes.svelte";
+  // #endif
+  import OAuth2EmbeddedBrowser from "../Shared/Auth/OAuth2EmbeddedBrowser.svelte";
+  import { Route, useLocation } from "svelte-navigator";
+
+  $: location = useLocation();
+  $: params = $location.state;
 </script>

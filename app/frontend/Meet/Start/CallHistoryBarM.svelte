@@ -43,6 +43,6 @@
   let isMenuOpen = false;
 
   function goToStart() {
-    goTo("/meet/");
+    goTo("/meet/", {});
   }
 </script>

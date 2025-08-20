@@ -60,12 +60,12 @@
   }
 
   function onNewAccount() {
-    let newAccountUI = settingsCategories.find(cat => cat.id == accountSettingsID).newAccountUI;
-    assert(newAccountUI, "newAccountUI for " + accountSettingsID + " not found");
+    let newAccountURL = settingsCategories.find(cat => cat.id == accountSettingsID).newAccountURL;
+    assert(newAccountURL, "newAccountUI for " + accountSettingsID + " not found");
     let setupApp = new SetupMustangApp();
-    setupApp.mainWindow = newAccountUI;
-    setupApp.onBack = onReOpenThis;
-    openApp(setupApp);
+    setupApp.appURL = newAccountURL;
+    setupApp.onBack = () => onReOpenThis();
+    openApp(setupApp, {});
   }
 
   function onReOpenThis() {
@@ -74,7 +74,7 @@
       .subCategories
       .find(cat => cat.id == "global-workspaces");
     $selectedCategory = workspacesSettings;
-    openApp(settingsMustangApp);
+    openApp(settingsMustangApp, {});
   }
 </script>
 
