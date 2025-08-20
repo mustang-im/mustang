@@ -18,7 +18,7 @@
       <Icon data={MailXIcon} size={iconSize} />
     </hbox>
   {/if}
-  <hbox class="label">{$account.name}</hbox>
+  <hbox class="label font-small">{$account.name}</hbox>
     <hbox flex class="buttons">
       {#if $account.isLoggedIn}
         <GetMailButton folder={account.inbox} iconSize="18px" />

@@ -39,9 +39,6 @@
   .account-list :global(.fast-list) {
     overflow: inherit;
   }
-  .account-list :global(.row hbox) {
-    font-size: 14px;
-  }
   .header {
     align-items: end;
     margin-block-start: 8px;

@@ -8,7 +8,7 @@
   <hbox class="icon">
     <FolderIcon {folder} size={$appGlobal.isMobile ? "20px" : "14px"} />
   </hbox>
-  <hbox class="label">
+  <hbox class="label font-small">
     {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Search}
       {$folder.name}
     {:else}
