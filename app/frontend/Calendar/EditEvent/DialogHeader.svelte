@@ -145,7 +145,7 @@
   import { Account } from "../../../logic/Abstract/Account";
   import { CalendarEventMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent, selectedCalendar } from "../selected";
-  import { openApp, selectedApp } from "../../AppsBar/selectedApp";
+  import { openApp, selectedApp, goBack } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
@@ -317,7 +317,9 @@
     event.finishEditing();
     let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
     calendarMustangApp.subApps.remove(me);
-    if (!isFullWindow) {
+    if (isFullWindow) {
+      goBack();
+    } else {
       // Make sidebar disappear, see CalendarApp.svelte
       $selectedEvent = null;
     }

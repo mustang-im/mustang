@@ -2,13 +2,15 @@
   <Splitter
     initialRightRatio={0.25}
     rightMinWidth={350}
-    hasRight={$selectedEvent && !appGlobal.isMobile}
+    hasRight={!appGlobal.isMobile}
     >
     <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
       <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-        {#if !$appGlobal.isMobile}
-          <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
-        {/if}
+        <hbox slot="top-left">
+          {#if !$appGlobal.isMobile}
+            <TitleBarLeft on:addEvent={() => catchErrors(addEvent)}  />
+          {/if}
+        </hbox>
         <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
       </MainView>
     </vbox>

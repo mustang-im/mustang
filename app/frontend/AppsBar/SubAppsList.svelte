@@ -3,7 +3,8 @@
     shown in the AppBar underneath the app button -->
   <hbox class="sub-app-bar" app={mainApp.id}>
     {#each $subApps.each as app}
-      <SubAppButton on:click={() => selectedApp = app} selected={selectedApp == app} {app}>
+      <SubAppButton selected={selectedApp == app} {app}
+        on:click={() => catchErrors(() => onSelectApp(app))}>
         <AppIcon slot="icon" icon={app.icon} size="16px" />
       </SubAppButton>
     {/each}
@@ -12,10 +13,11 @@
 
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
+  import { openApp } from "./selectedApp";
   import SubAppButton from "./SubAppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
-  import { CollectionObserver } from "svelte-collections";
   import { catchErrors } from "../Util/error";
+  import { CollectionObserver } from "svelte-collections";
   import { onDestroy, onMount } from "svelte";
 
   export let mainApp: MustangApp;
@@ -23,6 +25,10 @@
   export let selectedApp: MustangApp | null;
 
   $: subApps = $mainApp.subApps;
+
+  function onSelectApp(app: MustangApp) {
+    openApp(app, app.windowParams);
+  }
 
   // Unselect sub-app that has been removed
   class RemovalObserver extends CollectionObserver<MustangApp> {

@@ -2,10 +2,12 @@
   <ShowEvent event={params?.event ?? requiredParam()} />
 </Route>
 <Route path="/">
+  {params?.event ? $selectedEvent = params.event : null, ""}
   <CalendarApp />
 </Route>
 
 <script lang="ts">
+  import { selectedEvent } from "./selected";
   import CalendarApp from "./CalendarApp.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import { getParams } from "../AppsBar/selectedApp";

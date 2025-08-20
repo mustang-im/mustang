@@ -13,12 +13,11 @@ export class MustangApp extends Observable {
   title: Readable<string> = derived(this, () => this.name);
   /** App icon, either as SVG string or as Svelte component */
   icon: string | ComponentType<SvelteComponentTyped>;
-  appURL: URLString;
   /** Main window content that shows when the user selected this app */
-  mainWindow: ComponentType<SvelteComponentTyped>;
+  appURL: URLString;
   /** Parameters that will be passed to the main window in routes
    * as Svelte component properties */
-  windowParams: PageParams;
+  windowParams: PageParams = {};
   /** Sidebar content that shows `showSidebar` is true.
    * This shows when *another* app is active.
    * This is *not* the sidebar of an app while the app itself is open. */

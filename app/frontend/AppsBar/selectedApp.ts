@@ -28,6 +28,10 @@ export function goTo(pageURL: string, params: PageParams) {
   });
 }
 
+export function goBack() {
+  navigate(-1);
+}
+
 export function bringAppToFront() {
   window.focus();
   appGlobal.remoteApp.unminimizeMainWindow()
