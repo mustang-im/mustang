@@ -8,9 +8,9 @@ const __dirname = import.meta.dirname;
 async function updateProjectSettings() {
   if (process.env.CAPACITOR_PLATFORM_NAME != "android") return;
 
-  let appId = config.appId;
-  let appName = config.appName;
-  let version = packageJSON.version;
+  const appId = config.appId;
+  const appName = config.appName;
+  const version = packageJSON.version;
 
   // Update build.gradle
   let androidProjectFile = path.join(__dirname, "../../android/app/build.gradle");
