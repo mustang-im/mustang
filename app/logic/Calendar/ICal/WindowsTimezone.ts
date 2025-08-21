@@ -1,5 +1,5 @@
 /* WindowsToIANATimezone generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(select(.mapZone._territory == "001")) | map({(.mapZone._other): .mapZone._type}) | add' */
-/* IANAToWindowsTimezone generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(.mapZone._other as $other | .mapZone._type / " " | map({(.): $other})) | add | add' */
+/* IANAToWindowsTimezone generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(.mapZone._other as $other | .mapZone._type | rtrimstr(" ") / " " | map({(.): $other})) | add | add' */
 
 export const WindowsToIANATimezone = {
   "Afghanistan Standard Time": "Asia/Kabul",
@@ -143,7 +143,6 @@ export const WindowsToIANATimezone = {
   "Yukon Standard Time": "America/Whitehorse"
 };
 
-/* Generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(.mapZone._other as $other | .mapZone._type / " " | map({(.): $other})) | add | add' */
 export const IANAToWindowsTimezone = {
   "Asia/Kabul": "Afghanistan Standard Time",
   "America/Anchorage": "Alaskan Standard Time",
@@ -252,7 +251,6 @@ export const IANAToWindowsTimezone = {
   "America/Merida": "Central Standard Time (Mexico)",
   "America/Monterrey": "Central Standard Time (Mexico)",
   "America/Chihuahua": "Central Standard Time (Mexico)",
-  "": "Central Standard Time (Mexico)",
   "Pacific/Chatham": "Chatham Islands Standard Time",
   "Asia/Shanghai": "China Standard Time",
   "Asia/Hong_Kong": "China Standard Time",
