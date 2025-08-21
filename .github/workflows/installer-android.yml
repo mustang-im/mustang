@@ -70,7 +70,7 @@ jobs:
         VERSION=$(jq -r '.version' package.json)
         echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
 
-    - name: Add to release
+    - name: Upload to GitHub release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.APP_VERSION }}
