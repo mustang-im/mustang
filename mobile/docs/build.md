@@ -36,7 +36,7 @@ fails when there's no tag for the commit which fails when you manually trigger i
 
 ### Building with command line
 
-1. Install Android NDK and set `ANDROID_NDK_HOME` env
+1. Install Android NDK v27+ and set `ANDROID_NDK_HOME` env
 2. `cd app; yarn install`
 3. `cd lib; yarn install`
 4. `cd backend; yarn install`
@@ -44,4 +44,5 @@ fails when there's no tag for the commit which fails when you manually trigger i
 6. `cd mobile/backend; yarn install`
 7. `export MOBILE_ARCH=android-arm64`
 8. `cd mobile; yarn build`
-9. `cd mobile; yarn build:android`
+9. Set the envs `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEYSTORE_ALIAS`, `KEYSTORE_ALIAS_PASS`
+10. `cd mobile; yarn build:android`
