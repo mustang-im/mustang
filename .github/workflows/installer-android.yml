@@ -40,7 +40,7 @@ jobs:
         MOBILE_ARCH: 'android-arm64'
 
     - run: |
-        mkdir -p ${{ github.workspace }}//private_keys/
+        mkdir -p ${{ github.workspace }}/private_keys/
         echo '${{ secrets.KEYSTORE }}' | base64 --decode > ${{ github.workspace }}/private_keys/key.jks
 
     - run: cd mobile; yarn build:android
