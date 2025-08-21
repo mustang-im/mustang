@@ -387,7 +387,7 @@ export class Event extends Observable {
     this.syncState = json.syncState;
     this.isCancelled = sanitize.boolean(json.isCancelled, false);
     this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
-    this.lastMod = sanitize.date(json.lastMod, null);
+    this.lastMod = sanitize.date(json.lastMod, this.lastMod);
   }
   toExtraJSON(): any {
     let json: any = {};
