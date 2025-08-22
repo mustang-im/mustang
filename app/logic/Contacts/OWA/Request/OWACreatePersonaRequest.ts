@@ -14,14 +14,14 @@ export class OWACreatePersonaRequest {
       ParentFolderId: {
         __type: "TargetFolderId:#Exchange",
         BaseFolderId: {
-          __type: "DistinguishedFolderId:#Exchange",
-          Id: "contacts",
+          __type: "FolderId:#Exchange",
         },
       },
     },
   };
 
-  constructor(old: Record<string, string>, fields: Record<string, string>) {
+  constructor(folderID: string, old: Record<string, string>, fields: Record<string, string>) {
+    this.request.Body.ParentFolderId.BaseFolderId.Id = folderID;
     this.request.Body.PropertyUpdates = Object.keys(fields).filter(key => old[key] != fields[key]).map(key => ({
       __type: "PersonaPropertyUpdate:#Exchange",
       Path: {

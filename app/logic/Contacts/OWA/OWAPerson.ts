@@ -65,7 +65,7 @@ export class OWAPerson extends Person {
     if (Object.keys(fields).every(key => fields[key] == this.fields[key])) {
       return;
     }
-    let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.fields, fields);
+    let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
     let response = await this.addressbook.account.callOWA(request);
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);

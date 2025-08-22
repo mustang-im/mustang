@@ -118,7 +118,7 @@ export function owaFindEventsRequest(folderID: string, maxFetchCount: number): O
       }],
     },
     ParentFolderIds: [{
-      __type: "DistinguishedFolderId:#Exchange",
+      __type: "FolderId:#Exchange",
       Id: folderID,
     }],
     Traversal: "Shallow",

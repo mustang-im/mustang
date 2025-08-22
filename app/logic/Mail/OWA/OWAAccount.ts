@@ -156,14 +156,21 @@ export class OWAAccount extends MailAccount {
 
     // `listFolders()` will subscribe to new user-added calendars
 
-    // Link (until #155) or create the default address book.
-    // TODO: Support user-added address books. Compare addressbook ID.
-    let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
+    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-      addressbook.initFromMainAccount(this);
-      await addressbook.save();
-      appGlobal.addressbooks.add(addressbook);
+      let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+      for (let filter of response) {
+        // Exclude internal contacts folders.
+        if (filter.IsReadOnly || !filter.FolderId?.Id) {
+          continue;
+        }
+        let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+        addressbook.initFromMainAccount(this);
+        addressbook.name = `${this.name} ${filter.DisplayName}`;
+        addressbook.folderID = filter.FolderId.Id;
+        appGlobal.addressbooks.add(addressbook);
+        addressbook.save();
+      }
     }
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -327,6 +334,7 @@ export class OWAAccount extends MailAccount {
   async listFolders(): Promise<void> {
     await this.throttle.throttle();
     let result = await this.callOWA(owaFindFoldersRequest(true));
+    let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of result.RootFolder.Folders) {
@@ -344,26 +352,18 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (folder.FolderClass == "IPF.Appointment") {
-        // Link (until #155) or create the default calendar.
-        // TODO: Support user-added calendars. Compare FolderId.
-        // FolderClass is IPF.Appointment.Birthday for the Birthdays calendar
-        // Note: Only default calendar can handle meeting requests and responses
-        let isMainCalendar = folder.DistinguishedFolderId == "calendar";
-        if (isMainCalendar) {
-          let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
-          if (!calendar) {
-            calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-            calendar.initFromMainAccount(this);
-            if (!isMainCalendar) {
-              calendar.name = sanitize.nonemptylabel(folder.DisplayName);
-            }
-            calendar.folderID = folder.FolderId.Id;
-            await calendar.save();
-            appGlobal.calendars.add(calendar);
-          }
+      } else if (!haveCalendar && folder.FolderClass == "IPF.Appointment") {
+        let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+        calendar.initFromMainAccount(this);
+        if (folder.DistinguishedFolderId == "calendar") {
+          calendar.usedForInvitations = true;
+        } else {
+          calendar.name = `${this.name} ${folder.DisplayName}`;
         }
-      } // Addressbook FolderId currently handled in OWAAddressbook
+        calendar.folderID = folder.FolderId.Id;
+        appGlobal.calendars.add(calendar);
+        await calendar.save();
+      }
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {
@@ -475,6 +475,13 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetPeopleFiltersRequest {
+  /** This is an empty request, but it still needs an action. */
+  get action() {
+    return "GetPeopleFilters";
+  }
 }
 
 export const kMaxFetchCount = 50;
