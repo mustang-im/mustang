@@ -39,7 +39,6 @@ jobs:
     - run: cd mobile; yarn build
       env:
         MOBILE_ARCH: 'android-arm64'
-        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
 
     - run: |
         mkdir -p ${{ github.workspace }}/private_keys/
@@ -51,7 +50,6 @@ jobs:
         KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
         KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
         KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
-        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
