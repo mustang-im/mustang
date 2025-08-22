@@ -29,6 +29,20 @@ subprojects {
         if (project.hasProperty("android")) {
             project.android {
                 ndkVersion rootProject.ext.ndkVersion
+                externalNativeBuild {
+                    cmake {
+                        version rootProject.ext.cmakeVersion
+                    }
+                }
+            }
+            if (project?.android?.defaultConfig?.hasProperty("externalNativeBuild")) {
+                project.android.defaultConfig {
+                    externalNativeBuild {
+                        cmake {
+                            version rootProject.ext.cmakeVersion
+                        }
+                    }
+                }
             }
         }
     }
