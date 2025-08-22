@@ -36,7 +36,7 @@ jobs:
     - run: cd backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
-    - run: cd mobile; npx cap update android # To set UI to mobile before build
+    - run: cd mobile; yarn update:android  # To set UI to mobile before build
     - run: cd mobile; yarn build
       env:
         MOBILE_ARCH: 'android-arm64'
