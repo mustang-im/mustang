@@ -58,10 +58,7 @@ export class OWACalendar extends Calendar {
     }
 
     let events = new ArrayColl<OWAEvent>;
-    await this.listFolder("calendar", events);
-    /* Disabling tasks for now.
-    await this.listFolder("tasks", events);
-    */
+    await this.listFolder(events);
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
       await event.deleteLocally();
@@ -69,8 +66,8 @@ export class OWACalendar extends Calendar {
     this.events.replaceAll(events);
   }
 
-  protected async listFolder(folderID: string, events: ArrayColl<OWAEvent>) {
-    let request = owaFindEventsRequest(folderID, kMaxFetchCount);
+  protected async listFolder(events: ArrayColl<OWAEvent>) {
+    let request = owaFindEventsRequest(this.folderID, kMaxFetchCount);
     let result: any = { RootFolder: { IncludesLastItemInRange: false } };
     while (result?.RootFolder?.IncludesLastItemInRange === false) {
       result = await this.account.callOWA(request);

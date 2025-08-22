@@ -11,7 +11,10 @@ export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): 
     },
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
-      BaseFolderId: folderID,
+      BaseFolderId: {
+        __type: "FolderId:#Exchange",
+        Id: folderID,
+      },
     },
     PersonaShape: {
       __type: "PersonaResponseShape:#Exchange",
