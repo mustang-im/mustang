@@ -7,12 +7,11 @@
     "start": "vite",
     "start:android": "cap run android",
     "start:ios": "cap run ios",
-    "build": "npm run setup:ui && ./build.sh",
+    "build": "./build.sh",
     "build:android": "npm run build:android:apk && npm run build:android:aab",
     "build:android:apk": "cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
     "build:android:aab": "cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
-    "setup:ui": "vite-node ./hooks/common/mobile-ui.ts",
     "setup:ios": "cd ios && ./setup-ios.sh",
     "capacitor:update:before": "vite-node ./hooks/android/update-project.ts"
   },

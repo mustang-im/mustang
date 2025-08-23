@@ -9,4 +9,5 @@ dist/
 !build.sh
 NodeMobile.xcframework
 !setup-ios.sh
+!hooks/common/mobile-ui.sh
 backend/nodejs-assets
