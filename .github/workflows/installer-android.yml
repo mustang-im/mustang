@@ -43,7 +43,7 @@ jobs:
     - run: |
         mkdir -p ~/private_keys/
         echo '${{ secrets.KEYSTORE }}' | base64 --decode > ~/private_keys/key.jks
-        echo "KEYSTORE_PATH=~/private_keys/key.jks" >> $GITHUB_ENV
+        echo "KEYSTORE_PATH=$HOME/private_keys/key.jks" >> $GITHUB_ENV
 
     - run: cd mobile; yarn build:android
       env:
