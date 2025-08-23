@@ -19,3 +19,5 @@ async function main() {
     console.error(ex);
   }
 }
+
+main();
