@@ -1,5 +1,4 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import psl from "psl";
 
 export function getDomainForEmailAddress(emailAddress): string {
   // Do not throw, because this function is used in {UI code}
@@ -12,7 +11,12 @@ export function getDomainForEmailAddress(emailAddress): string {
  * and for "www2.static.amazon.co.uk" returns "amazon.co.uk"
  */
 export function getBaseDomainFromHost(hostname: string): string {
-  return psl.get(hostname);
+  // return psl.get(hostname);
+  let parts = 2;
+  if (hostname.endsWith("co.uk") || hostname.endsWith("com.au")) {
+    parts = 3;
+  }
+  return hostname.split(".").slice(-parts).join(".");
 }
 
 /**
