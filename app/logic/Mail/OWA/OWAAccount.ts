@@ -299,7 +299,7 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (["IPF.Appointment", "IPF.Appointment.Birthday"].includes(folder.FolderClass)) {
+      } else if (folder.FolderClass == "IPF.Appointment") {
         let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as OWACalendar | undefined;
         if (!calendar) {
           calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
