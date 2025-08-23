@@ -83,10 +83,6 @@ class Sanitize {
     return str;
   }
 
-  // International hostnames like уайлддк.орг need to pass
-  regexpHostname = /^[\p{Letter}\p{Number}\-\.%]*$/u;
-  regexpHostname_ASCII = /^[a-zA-Z0-9\-\.%]*$/;
-
   /**
    * DNS hostnames like foo.bar.example.com
    * Allow only letters, numbers, "-" and "."
@@ -97,17 +93,8 @@ class Sanitize {
    */
   hostname(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
-    try {
-      if (!this.regexpHostname.test(str)) {
-        return haveError("Hostname syntax", unchecked, fallback);
-      }
-    } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
-      if (!this.regexpHostname_ASCII.test(str)) {
-        return haveError("Hostname syntax", unchecked, fallback);
-      }
+    if (!/^[\p{Letter}\p{Number}\-\.%]*$/u.test(str)) {
+      return haveError("Hostname syntax", unchecked, fallback);
     }
     return str?.toLowerCase();
   }
@@ -134,7 +121,6 @@ class Sanitize {
 
   // EAI like ндрис@уайлддк.орг need to pass
   regexpEMailAddress = /^[\p{Letter}\p{Number}\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
-  regexpEMailAddress_ASCII = /^[a-zA-Z0-9\-+_\.]+@[a-zA-Z0-9\-\.]+\.(?:[a-zA-Z]+|xn--[a-z0-9]+)$/;
 
   /**
    * Email address foo@bar.com
@@ -144,17 +130,8 @@ class Sanitize {
       return haveError("Missing email address", unchecked, fallback);
     }
     let str = String(unchecked);
-    try {
-      if (!this.regexpEMailAddress.test(str)) {
-        return haveError("Not an email address", unchecked, fallback);
-      }
-    } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
-      if (!this.regexpEMailAddress_ASCII.test(str)) {
-        return haveError("Not an email address", unchecked, fallback);
-      }
+    if (!this.regexpEMailAddress.test(str)) {
+      return haveError("Not an email address", unchecked, fallback);
     }
     return str.toLowerCase();
     /*
@@ -167,23 +144,13 @@ class Sanitize {
     */
   }
 
-  regexpFilename = /[^\p{Letter}\p{Number}\.\-_ ]/gu;
-  regexpFilename_ASCII = /[^a-zA-Z0-9\.\-_ ]/g;
-
   /** Removes potentially dangerous parts of the file name, e.g.
    * \ / : . ' " ! ? * |
    * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
    * but there are many others. */
   filename(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
     let filename = this.nonemptystring(unchecked, fallback);
-    try {
-      filename = filename.replace(this.regexpFilename, "").trim();
-    } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
-      filename = filename.replace(this.regexpHostname_ASCII, "").trim();
-    }
+    filename = filename.replace(/[^\p{Letter}\p{Number}\.\-_ ]/gu, "").trim();
     if (!filename) {
       return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
     }
