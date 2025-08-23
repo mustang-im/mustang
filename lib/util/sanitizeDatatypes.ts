@@ -102,9 +102,6 @@ class Sanitize {
         return haveError("Hostname syntax", unchecked, fallback);
       }
     } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
       if (!this.regexpHostname_ASCII.test(str)) {
         return haveError("Hostname syntax", unchecked, fallback);
       }
@@ -149,9 +146,6 @@ class Sanitize {
         return haveError("Not an email address", unchecked, fallback);
       }
     } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
       if (!this.regexpEMailAddress_ASCII.test(str)) {
         return haveError("Not an email address", unchecked, fallback);
       }
@@ -179,9 +173,6 @@ class Sanitize {
     try {
       filename = filename.replace(this.regexpFilename, "").trim();
     } catch (ex) { // node.js mobile: No Unicode regexp support
-      if (!ex.message?.includes("Invalid regular expression")) {
-        throw ex;
-      }
       filename = filename.replace(this.regexpHostname_ASCII, "").trim();
     }
     if (!filename) {
