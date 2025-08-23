@@ -8,6 +8,7 @@
     {#if errorMessage}
       <ErrorMessage {errorMessage} {errorGravity}
         on:continue={clearError} />
+      {errorEx?.stack}
     {/if}
     {#if step == Step.FindConfig}
       <FindConfig bind:config bind:altConfigs {emailAddress} {password}
@@ -217,6 +218,7 @@
 
   let errorMessage: string | null = null;
   let errorGravity: ErrorGravity = ErrorGravity.OK;
+  let errorEx: Error | null = null;
 
   function showError(ex: Error | string) {
     if (typeof (ex) == "string") {
@@ -228,6 +230,7 @@
     console.error(ex);
     logError(ex);
     errorMessage = ex.message;
+    errorEx = ex;
     errorGravity = ErrorGravity.Error;
   }
 
