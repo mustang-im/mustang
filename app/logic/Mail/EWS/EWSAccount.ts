@@ -555,7 +555,7 @@ export class EWSAccount extends MailAccount {
       }
     }
     for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-      if (["IPF.Appointment", "IPF.Appointment.Birthday"].includes(folder.FolderClass)) {
+      if (folder.FolderClass == "IPF.Appointment") {
         let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as EWSCalendar | undefined;
         if (!calendar) {
           calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
