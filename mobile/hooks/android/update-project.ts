@@ -20,12 +20,6 @@ async function updateProjectSettings() {
   gradleContent = gradleContent.replace(/namespace "[^"]+"/, `namespace "${appId}"`);
   gradleContent = gradleContent.replace(/def appName = "[^"]+"/, `def appName = "${appName}"`);
   await writeFile(androidProjectFile, gradleContent);
-
-  // Update build.ts
-  let appConfigFile = path.join(__dirname, "../../../app/logic/build.ts");
-  let appConfigContent = await readFile(appConfigFile, { encoding: 'utf-8' });
-  appConfigContent = appConfigContent.replace(/ isMobile = false;/, ` isMobile = true;`);
-  await writeFile(appConfigFile, appConfigContent);
 }
 
 async function main() {
