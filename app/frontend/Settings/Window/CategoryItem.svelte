@@ -13,6 +13,7 @@
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
+  import { appGlobal } from "../../../logic/app";
 
   /** in */
   export let category: SettingsCategory;
@@ -21,7 +22,11 @@
   $: isSectionOpen = selected || category.subCategories.contains($selectedCategory) || category.accounts.contains($selectedAccount);
 
   function onSelect() {
-    $selectedCategory = category;
+    if (appGlobal.isMobile && (category.subCategories.hasItems || category.accounts.hasItems)) {
+      isSectionOpen = !isSectionOpen;
+    } else {
+      $selectedCategory = category;
+    }
     /*if (!category.parent.accounts.contains($selectedAccount)) {
       $selectedAccount = null;
     }*/
