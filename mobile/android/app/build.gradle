@@ -45,8 +45,8 @@ android {
             def ext = output.outputFile.name.endsWith('.apk') ? '.apk' : '.aab'
             if (buildType == 'release') {
                 outputFileName = "${appName}-${version}${ext}"
-            } else if (buildType == 'debug') {
-                outputFileName = "${appName}-${version}-debug${ext}"
+            }
+        }
 
         tasks.named("sign${variant.name.capitalize()}Bundle", FinalizeBundleTask) {
             if (variant.name == "release") {
