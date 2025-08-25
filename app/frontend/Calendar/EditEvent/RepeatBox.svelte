@@ -109,6 +109,11 @@
 
   $: $event.startTime, $event.duration, updateDateUI();
   function updateDateUI() {
+    // This should close the repeat box, but this update might run first.
+    if (frequency == Frequency.None) {
+      return;
+    }
+
     master.startEditing();
     master.startTime = event.startTime;
     master.duration = event.duration;
