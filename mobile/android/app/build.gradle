@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.FinalizeBundleTask
+
 apply plugin: 'com.android.application'
 
 android {
@@ -45,6 +47,12 @@ android {
                 outputFileName = "${appName}-${version}${ext}"
             } else if (buildType == 'debug') {
                 outputFileName = "${appName}-${version}-debug${ext}"
+
+        tasks.named("sign${variant.name.capitalize()}Bundle", FinalizeBundleTask) {
+            if (variant.name == "release") {
+                File file = finalBundleFile.asFile.get()
+                File finalFile = new File(file.parentFile, "${appName}-${version}.aab")
+                finalBundleFile.set(finalFile)
             }
         }
     }
