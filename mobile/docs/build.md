@@ -8,12 +8,11 @@
 3. `cd backend; yarn install`
 4. `cd mobile; yarn install`
 5. `cd mobile/backend; yarn install`
-6. `export MOBILE_ARCH=android-arm64`
-7. `cd mobile; yarn build`
-8. `cd mobile; npx cap sync android`
-9. `npx cap open android` in `/mobile`
-10. Wait for the project to be fully loaded and Gradle Sync to finish running
-11. Go to `Build > Generate Signed App Bundle or APK` and follow the steps
+6. `cd mobile; yarn build`
+7. `cd mobile; npx cap sync android`
+8. `npx cap open android` in `/mobile`
+9. Wait for the project to be fully loaded and Gradle Sync to finish running
+10. Go to `Build > Generate Signed App Bundle or APK` and follow the steps
 
 ### Building with CI
 
@@ -42,7 +41,6 @@ fails when there's no tag for the commit which fails when you manually trigger i
 4. `cd backend; yarn install`
 5. `cd mobile; yarn install`
 6. `cd mobile/backend; yarn install`
-7. `export MOBILE_ARCH=android-arm64`
-8. `cd mobile; yarn build`
-9. Set the envs `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEYSTORE_ALIAS`, `KEYSTORE_ALIAS_PASS`
-10. `cd mobile; yarn build:android`
+7. `cd mobile; yarn build`
+8. Set the envs `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEYSTORE_ALIAS`, `KEYSTORE_ALIAS_PASS`
+9. `cd mobile; yarn build:android`
