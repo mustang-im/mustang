@@ -36,7 +36,7 @@ fails when there's no tag for the commit which fails when you manually trigger i
 
 ### Building with command line
 
-1. Install Android NDK v27+ and set `ANDROID_NDK_HOME` env
+1. Install Android NDK v28+ and set `ANDROID_NDK_HOME` env e.g. `/usr/local/lib/android/sdk/ndk/28.2.13676358`
 2. `cd app; yarn install`
 3. `cd lib; yarn install`
 4. `cd backend; yarn install`

@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.FinalizeBundleTask
+
 apply plugin: 'com.android.application'
 
 android {
@@ -32,6 +34,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            debuggable true
+        }
     }
     def appName = "mustang"
     def version = android.defaultConfig.versionName
@@ -43,8 +48,14 @@ android {
             def ext = output.outputFile.name.endsWith('.apk') ? '.apk' : '.aab'
             if (buildType == 'release') {
                 outputFileName = "${appName}-${version}${ext}"
-            } else if (buildType == 'debug') {
-                outputFileName = "${appName}-${version}-debug${ext}"
+            }
+        }
+
+        tasks.named("sign${variant.name.capitalize()}Bundle", FinalizeBundleTask) {
+            if (variant.name == "release") {
+                File file = finalBundleFile.asFile.get()
+                File finalFile = new File(file.parentFile, "${appName}-${version}.aab")
+                finalBundleFile.set(finalFile)
             }
         }
     }
