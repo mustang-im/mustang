@@ -27,6 +27,9 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
 
+    - name: Set NDK to v28
+      run:  echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
+
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
