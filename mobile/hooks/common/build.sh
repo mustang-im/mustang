@@ -5,16 +5,16 @@ mkdir -p ../mobile/dist
 export NODE_OPTIONS="--max-old-space-size=32768"
 
 # Clear LIBNODE cache for release build
-release_found=false
+is_release=false
 
 for arg in "$@"; do
   if [[ "$arg" == "--release" ]]; then
-    release_found=true
+    is_release=true
     break
   fi
 done
 
-if "$release_found"; then
+if "$is_release"; then
   rm -rf backend/node_modules/prebuild-for-nodejs-mobile/android/libnode
   rm -rf node_modules/capacitor-nodejs/android/libnode
 fi
