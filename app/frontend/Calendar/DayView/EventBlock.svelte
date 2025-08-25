@@ -24,14 +24,15 @@
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeFormatPref } from "../../../l10n/l10n";
-  import { Collection } from "svelte-collections";
+  import type { ArrayColl } from "svelte-collections";
 
   export let event: Event;
   /** Time where the cell (not the event) starts */
   export let start: Date;
   /** Time where the cell (not the event) end */
   export let end: Date;
-  export let otherEvents: Collection<Event>;
+  /** event and all other events that happen in this time slot */
+  export let conflicts: ArrayColl<Event>;
 
   $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
@@ -41,7 +42,6 @@
   $: startPosInPercent = Math.max(0, ($event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
   $: heightInPercent = Math.min(100, ($event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
   /** Other events that run at the same time. Includes this event */
-  $: conflicts = otherEvents.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
   $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
   $: showTitle = showTime || conflicts.length > 1;
 

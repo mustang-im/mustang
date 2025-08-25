@@ -2,7 +2,7 @@
   {#if $displayEvents && !$displayEvents.isEmpty}
     {#each $displayEvents.each as event (event.id)}
       {#if event.startTime && event.endTime}
-        <EventBlock {event} {start} {end} otherEvents={events} />
+        <EventBlock {event} {start} {end} conflicts={displayEvents} />
       {/if}
     {/each}
   {/if}
@@ -16,13 +16,13 @@
   import EventBlock from "./EventBlock.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
-  import type { Collection } from "svelte-collections";
+  import type { ArrayColl, Collection } from "svelte-collections";
 
   export let start: Date;
   export let intervalInHours: number;
   export let events: Collection<Event>;
 
-  let displayEvents: Collection<Event>;
+  let displayEvents: ArrayColl<Event>;
   let end: Date;
   $: start, intervalInHours, setEnd();
   function setEnd() {
