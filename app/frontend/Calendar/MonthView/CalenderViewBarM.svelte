@@ -1,13 +1,13 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    <hbox class="todo">
+    <hbox class="todos">
       <Button
-        icon={TodoIcon}
+        icon={TODOsIcon}
         iconSize="24px"
         iconOnly
         label={$t`TODO`}
-        onClick={goToTODO}
+        onClick={goToTODOs}
         plain
         />
     </hbox>
@@ -59,7 +59,7 @@
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
-  import TodoIcon from "lucide-svelte/icons/list-checks";
+  import TODOsIcon from "lucide-svelte/icons/list-checks";
   import PlusIcon from "lucide-svelte/icons/plus";
   import { goTo } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
@@ -70,8 +70,8 @@
     goTo("/calendar/search", {});
   }
 
-  function goToTODO() {
-    goTo("/calendar/todo", {});
+  function goToTODOs() {
+    goTo("/calendar/todos", {});
   }
 
   function newEvent() {
