@@ -5,6 +5,8 @@ node_modules/
 .DS_Store
 .sourcemaps
 dist/
+android/app/release/
+android/app/debug/
 !backend/prebuild.sh
 !build.sh
 NodeMobile.xcframework
