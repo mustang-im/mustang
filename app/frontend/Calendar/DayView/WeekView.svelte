@@ -72,9 +72,7 @@
   $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    startTime.setMinutes(0, 0, 0);
     startTimes = [];
     for (let i = startHour; i < endHour; i += intervalHour) {
       startTime.setHours(i);
@@ -91,10 +89,7 @@
     if (showDays > 3) {
       startTime.setDate(startTime.getDate() - 1);
     }
-    startTime.setHours(startHour);
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    startTime.setHours(startHour, 0, 0, 0);
     let filterStart = new Date(startTime);
     days = [];
     for (let i = 0; i < showDays; i++) {
