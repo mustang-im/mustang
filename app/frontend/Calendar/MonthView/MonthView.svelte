@@ -18,7 +18,7 @@
         class:selected={day.getTime() == $selectedDate?.getTime()}
         >
         <DayLabel {day} />
-        <EventsLineCell start={day} {events} intervalInHours={24}
+        <EventsLineCell start={day} events={filteredEvents} intervalInHours={24}
           withMonthOnFirst={true} withMonthOnMonday={true} />
       </vbox>
     {/each}
@@ -42,6 +42,7 @@
 
   let days: Date[] = [];
   let weekDays: Date[] = [];
+  let filteredEvents: Collection<Event>;
   $: start, setDays();
   function setDays() {
     weekDays = getWeekDays(start);
@@ -52,11 +53,14 @@
       }
     }
     let startTime = weekDays[0]; // Always start with Monday
+    let filterStart = startTime.getTime();
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
+    let filterEnd = startTime.getTime();
+    filteredEvents = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
   }
 
   function onScrollWheel(event: WheelEvent) {

@@ -26,7 +26,7 @@
         {/each}
         {#each startTimes as start}
           <TimeLabel time={start} />
-          <TimeDayRow {days} time={start} {events} />
+          <TimeDayRow {days} time={start} events={visibleEvents} />
         {/each}
       </grid>
     </Scroll>
@@ -83,28 +83,24 @@
   }
 
   let days: Date[] = [];
+  let visibleEvents: Collection<Event>;
+  let allDayEvents: Collection<Event>;
   $: start, setDays();
   function setDays() {
     let startTime = new Date(start);
     if (showDays > 3) {
       startTime.setDate(startTime.getDate() - 1);
     }
-    startTime.setHours(startHour);
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    let filterStart = startTime.setHours(startHour, 0, 0, 0);
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
-      startTime.setDate(startTime.getDate() + 1)
+      startTime.setDate(startTime.getDate() + 1);
     }
-  }
-
-  let allDayEvents: Collection<Event>;
-  $: start, $events, setAllDayEvents();
-  function setAllDayEvents() {
-    let end = new Date(start.getTime() + showDays * k1DayMS);
-    allDayEvents = events.filterObservable(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
+    let filterEnd = startTime.getTime();
+    let filtered = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
+    visibleEvents = filtered.filterObservable(ev => !ev.allDay);
+    allDayEvents = filtered.filterObservable(ev => ev.allDay);
   }
 
   function goToToday() {
