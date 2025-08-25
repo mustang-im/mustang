@@ -1,9 +1,7 @@
 <vbox flex class="events" on:dblclick={addEvent}>
   {#if $displayEvents && !$displayEvents.isEmpty}
     {#each $displayEvents.each as event (event.id)}
-      {#if event.startTime && event.endTime}
-        <EventBlock {event} {start} {end} conflicts={displayEvents} />
-      {/if}
+      <EventBlock {event} {start} {end} conflicts={displayEvents} />
     {/each}
   {/if}
 </vbox>
@@ -28,7 +26,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start);
   }
 
   function addEvent() {

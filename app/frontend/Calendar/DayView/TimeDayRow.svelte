@@ -17,10 +17,7 @@
     startTimes = [];
     for (let day of days) {
       let startTime = new Date(day);
-      startTime.setHours(time.getHours());
-      startTime.setMinutes(0);
-      startTime.setSeconds(0);
-      startTime.setMilliseconds(0);
+      startTime.setHours(time.getHours(), 0, 0, 0);
       startTimes.push(startTime);
     }
   }
