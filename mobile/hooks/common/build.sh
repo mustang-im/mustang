@@ -15,7 +15,8 @@ for arg in "$@"; do
 done
 
 if "$release_found"; then
-  export NO_LIBNODE_CACHE=true
+  rm -rf backend/node_modules/prebuild-for-nodejs-mobile/android/libnode
+  rm -rf node_modules/capacitor-nodejs/android/libnode
 fi
 
 # Setup mobile UI
@@ -31,4 +32,3 @@ perl -p -i \
 npx cap copy
 
 unset NODE_OPTIONS
-unset NO_LIBNODE_CACHE
