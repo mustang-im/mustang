@@ -10,6 +10,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { setNewEventTime } from "../event";
   import { selectedCalendar } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
   import { appGlobal } from "../../../logic/app";
@@ -35,8 +36,7 @@
     $selectedCalendar ??= appGlobal.calendars.first;
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
-    event.startTime = new Date(start);
-    event.endTime = new Date(start);
+    setNewEventTime(event, true, start);
     calendarMustangApp.showEvent(event);
   }
 </script>

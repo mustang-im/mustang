@@ -18,11 +18,13 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { setNewEventTime } from "../event";
   import { selectedCalendar, selectedDate } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
-  import { k1HourMS } from "../../Util/date";
+  import { appGlobal } from "../../../logic/app";
   import EventLine from "./EventLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";
   import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
@@ -50,8 +52,8 @@
     $selectedCalendar ??= appGlobal.calendars.first;
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
-    event.startTime = new Date(start.getTime() + 10 * k1HourMS);
-    event.endTime = new Date(start.getTime() + 11 * k1HourMS);
+    let startTime = new Date(start.getTime() + 10 * k1HourMS);
+    setNewEventTime(event, true, startTime);
     calendarMustangApp.showEvent(event);
   }
 </script>

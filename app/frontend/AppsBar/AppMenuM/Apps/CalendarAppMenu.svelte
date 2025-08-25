@@ -5,6 +5,7 @@
 <CombinedButton icon1={calendarMustangApp.icon} icon2={PlusIcon} onClick={onCreateEvent} />
 
 <script lang="ts">
+  import { setNewEventTime } from "../../../Calendar/event";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
   import { selectedCalendar } from "../../../Calendar/selected";
   import { appGlobal } from "../../../../logic/app";
@@ -18,6 +19,7 @@
     let calendar = $selectedCalendar ?? appGlobal.calendars.first;
     assert(calendar, "Create a calendar first");
     let event = calendar.newEvent();
+    setNewEventTime(event, false, new Date());
     calendarMustangApp.showEvent(event);
   }
 </script>

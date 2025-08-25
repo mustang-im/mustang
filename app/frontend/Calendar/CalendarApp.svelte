@@ -32,7 +32,7 @@
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
-  import { getLocalStorage } from "../Util/LocalStorage";
+  import { setNewEventTime } from "./event";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
@@ -46,18 +46,11 @@
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
-  let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
-
   function addEvent() {
     $selectedCalendar ??= appGlobal.calendars.first;
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
-    event.startTime = new Date($selectedDate);
-    event.startTime.setMinutes(0);
-    event.startTime.setSeconds(0);
-    event.startTime.setMilliseconds(0);
-    event.endTime = new Date(event.startTime.getTime());
-    event.endTime.setMinutes(event.startTime.getMinutes() + defaultLengthInMinutes);
+    setNewEventTime(event, false, $selectedDate);
     calendarMustangApp.showEvent(event);
   }
 </script>

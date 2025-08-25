@@ -52,6 +52,7 @@
 
 <script lang="ts">
   import { selectedCalendar } from "../selected";
+  import { setNewEventTime } from "../event";
   import { calendarMustangApp } from "../CalendarMustangApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
@@ -75,6 +76,7 @@
 
   function newEvent() {
     let event = $selectedCalendar.newEvent();
+    setNewEventTime(event, false, new Date());
     calendarMustangApp.showEvent(event);
   }
 </script>
