@@ -37,10 +37,6 @@ jobs:
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
     - run: cd mobile; yarn build
-      env:
-        ANDROID_LIBNODE: "https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
-        ANDROID_SDK: --sdk35
-        MOBILE_ARCH: 'android-arm64'
 
     - run: |
         mkdir -p ${{ github.workspace }}//private_keys/
