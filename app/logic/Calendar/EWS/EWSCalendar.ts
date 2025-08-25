@@ -65,30 +65,22 @@ export class EWSCalendar extends Calendar {
       await this.save();
     }
 
-    /* Disabling tasks for now.
-    // syncState is base64-encoded so it's safe to split and join on comma
-    let [calendar, tasks] = this.syncState?.split(",") || [];
-    calendar = await this.syncFolder("calendar", calendar);
-    tasks = await this.syncFolder("tasks", tasks);
-    this.syncState = calendar + "," + tasks;
-    */
-    // Delete the next line when enabling tasks.
-    this.syncState = await this.syncFolder("calendar", this.syncState);
+    await this.syncFolder();
     await this.save();
   }
 
-  protected async syncFolder(folder: string, syncState: string | null): Promise<string> {
+  protected async syncFolder(): Promise<void> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
           t$BaseShape: "IdOnly",
         },
         m$SyncFolderId: {
-          t$DistinguishedFolderId: {
-            Id: folder,
+          t$FolderId: {
+            Id: this.folderID,
           },
         },
-        m$SyncState: syncState,
+        m$SyncState: this.syncState,
         m$MaxChangesReturned: kMaxCount,
       }
     };
@@ -126,10 +118,9 @@ export class EWSCalendar extends Calendar {
         }
       }
       await this.getEvents(eventIDs, events);
-      syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
-    return sanitize.string(syncState);
   }
 
   getEventByItemID(id: string): EWSEvent | undefined {
