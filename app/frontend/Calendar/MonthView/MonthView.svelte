@@ -53,13 +53,13 @@
       }
     }
     let startTime = weekDays[0]; // Always start with Monday
-    let filterStart = startTime.getTime();
+    let filterStart = new Date(startTime);
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
-    let filterEnd = startTime.getTime();
+    let filterEnd = startTime;
     filteredEvents = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
   }
 

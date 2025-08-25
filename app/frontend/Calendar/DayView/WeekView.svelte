@@ -91,13 +91,17 @@
     if (showDays > 3) {
       startTime.setDate(startTime.getDate() - 1);
     }
-    let filterStart = startTime.setHours(startHour, 0, 0, 0);
+    startTime.setHours(startHour);
+    startTime.setMinutes(0);
+    startTime.setSeconds(0);
+    startTime.setMilliseconds(0);
+    let filterStart = new Date(startTime);
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1);
     }
-    let filterEnd = startTime.getTime();
+    let filterEnd = startTime;
     let filtered = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
     visibleEvents = filtered.filterObservable(ev => !ev.allDay);
     allDayEvents = filtered.filterObservable(ev => ev.allDay);
