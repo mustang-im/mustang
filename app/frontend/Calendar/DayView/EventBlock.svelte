@@ -2,11 +2,11 @@
   title={eventAsText}
   style="
     top: {startPosInPercent}%;
-    left: {conflicts.indexOf(event) / conflicts.length * 100}%;
+    left: {displayEvents.indexOf(event) / displayEvents.length * 100}%;
     height: {heightInPercent}%;
-    width: {100 / conflicts.length}%;
+    width: {100 / displayEvents.length}%;
     --color: {event.color ?? event.calendar?.color}"
-  class:conflict={conflicts.length > 1}
+  class:conflict={displayEvents.length > 1}
   class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   {#if showTime}
@@ -31,7 +31,7 @@
   export let start: Date;
   /** Time where the cell (not the event) end */
   export let end: Date;
-  export let otherEvents: Collection<Event>;
+  export let displayEvents: Collection<Event>;
 
   $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
@@ -41,9 +41,8 @@
   $: startPosInPercent = Math.max(0, ($event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
   $: heightInPercent = Math.min(100, ($event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
   /** Other events that run at the same time. Includes this event */
-  $: conflicts = otherEvents.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
   $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
-  $: showTitle = showTime || conflicts.length > 1;
+  $: showTitle = showTime || displayEvents.length > 1;
 
   function onSelect(ev: MouseEvent) {
     ev.stopPropagation();

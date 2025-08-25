@@ -1,9 +1,7 @@
 <vbox flex class="events" on:dblclick={addEvent}>
   {#if $displayEvents && !$displayEvents.isEmpty}
     {#each $displayEvents.each as event (event.id)}
-      {#if event.startTime && event.endTime}
-        <EventBlock {event} {start} {end} otherEvents={events} />
-      {/if}
+      <EventBlock {event} {start} {end} {displayEvents} />
     {/each}
   {/if}
 </vbox>
