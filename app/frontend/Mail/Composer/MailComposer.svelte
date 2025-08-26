@@ -170,14 +170,15 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/save";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
-  import { tick } from "svelte";
   import { t, gt } from "../../../l10n/l10n";
+  import { tick } from "svelte";
+  import { navigate } from "svelte-navigator";
+  import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
 
@@ -328,6 +329,7 @@
 
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
+    navigate(-1);
   }
 
   let showCCForce = false;
