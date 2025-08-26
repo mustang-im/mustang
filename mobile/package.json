@@ -9,8 +9,8 @@
     "start:ios": "cap run ios",
     "build": "./hooks/common/build.sh",
     "build:android": "npm run build:android:apk && npm run build:android:aab",
-    "build:android:apk": "export MOBILE_ARCH=android-arm64;npm run build -- --release && cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
-    "build:android:aab": "export MOBILE_ARCH=android-arm64;npm run build -- --release && cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
+    "build:android:apk": "export MOBILE_ARCH=android-arm64; cap sync android && cd android && ./gradlew --configuration-cache assembleRelease",
+    "build:android:aab": "export MOBILE_ARCH=android-arm64; cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
     "setup:ios": "cd ios && ./setup-ios.sh",
     "capacitor:update:before": "vite-node ./hooks/android/update-project.ts"
