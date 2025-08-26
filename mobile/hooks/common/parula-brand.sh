@@ -6,7 +6,7 @@
 (cd ../app/build && ./parula-brand.sh)
 
 # Replace Android icons
-cp -R parula/android android/app/src/main/res
+cp -R parula/android/* android/app/src/main/res
 
 # Relace all appName in /mobile
 perl -p -i \
