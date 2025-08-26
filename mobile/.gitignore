@@ -9,6 +9,7 @@ android/app/release/
 android/app/debug/
 !backend/prebuild.sh
 !build.sh
+!parula-brand.sh
 NodeMobile.xcframework
 !setup-ios.sh
 backend/nodejs-assets
