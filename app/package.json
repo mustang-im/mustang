@@ -18,6 +18,7 @@
     "l10n:sync:translations": "cd l10n && crowdin pull"
   },
   "dependencies": {
+    "@capacitor/app": "^7.0.2",
     "@faker-js/faker": "^9.8.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/svelte": "^8.15.0",
