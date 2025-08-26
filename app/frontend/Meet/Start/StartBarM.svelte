@@ -24,7 +24,7 @@
         iconSize="24px"
         iconOnly
         label={$t`Start a meeting`}
-        onClick={newMeeting}
+        onClick={onCreateMeeting}
         disabled={!selectedAccount}
         plain
         />
@@ -43,13 +43,15 @@
 
 <script lang="ts">
   import { MeetAccount } from "../../../logic/Meet/MeetAccount";
+  import { startAdHocMeeting } from "./start";
+  import { meetMustangApp } from "../MeetMustangApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import HistoryIcon from "lucide-svelte/icons/history";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { goTo, openApp } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
 
   export let selectedAccount: MeetAccount;
@@ -60,6 +62,8 @@
     goTo("/meet/history", {});
   }
 
-  function newMeeting() {
+  async function onCreateMeeting() {
+    let meeting = await startAdHocMeeting();
+    openApp(meetMustangApp, { meeting });
   }
 </script>

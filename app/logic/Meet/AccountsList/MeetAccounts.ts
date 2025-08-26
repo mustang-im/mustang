@@ -6,9 +6,7 @@ import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 // #else
 import { DummyMeetStorage } from '../SQL/DummyMeetStorage';
 // #endif
-import { appGlobal } from '../../app';
-import { NotReached, UserError } from '../../util/util';
-import { gt } from '../../../l10n/l10n';
+import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newMeetAccountForProtocol(protocol: string): MeetAccount {
@@ -37,11 +35,3 @@ export async function readMeetAccounts(): Promise<Collection<MeetAccount>> {
   return await SQLMeetStorage.readMeetAccounts();
 }
 // #endif
-
-export function getMeetAccount(): MeetAccount {
-  let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
-  if (!account) {
-    throw new UserError(gt`Please configure a matching meeting account first`);
-  }
-  return account;
-}

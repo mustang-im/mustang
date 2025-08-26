@@ -6,8 +6,7 @@
 
 <script lang="ts">
   import { meetMustangApp } from "../../../Meet/MeetMustangApp";
-  import { getMeetAccount } from "../../../../logic/Meet/AccountsList/MeetAccounts";
-  import type { VideoConfMeeting } from "../../../../logic/Meet/VideoConfMeeting";
+  import { startAdHocMeeting } from "../../../Meet/Start/start";
   import { openApp } from "../../selectedApp";
   import { appGlobal } from "../../../../logic/app";
   import AccountButton from "../AccountButton.svelte";
@@ -16,29 +15,9 @@
   import HistoryIcon from "lucide-svelte/icons/history";
   import PlusIcon from "lucide-svelte/icons/plus-circle";
   import AccountIcon from "lucide-svelte/icons/video";
-  import { catchErrors } from "../../../Util/error";
 
   async function onCreateMeeting() {
-    let meeting: VideoConfMeeting;
-    if (appGlobal.meetAccounts.hasItems) {
-      meeting = await createMeeting();
-    } else {
-      // Wait for Meet start page to check the license and create the meeting account
-      let unsubscribe = appGlobal.meetAccounts.subscribe(() => catchErrors(async () => {
-        if (appGlobal.meetAccounts.hasItems) {
-          await createMeeting();
-          unsubscribe();
-        }
-      }));
-      setTimeout(unsubscribe, 3000);
-    }
+    let meeting = await startAdHocMeeting();
     openApp(meetMustangApp, { meeting });
-  }
-
-  async function createMeeting() {
-    let meeting = getMeetAccount().newMeeting();
-    await meeting.createNewConference();
-    appGlobal.meetings.add(meeting);
-    return meeting;
   }
 </script>
