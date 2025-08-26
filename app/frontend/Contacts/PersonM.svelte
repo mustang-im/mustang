@@ -1,18 +1,20 @@
 <vbox flex class="pane">
   {#if person && person instanceof Person}
     <Scroll>
-      <PersonDetails {person} />
+      <NameBox {person} />
+      <ContactBoxes {person} />
     </Scroll>
   {/if}
 </vbox>
 {#if $appGlobal.isMobile}
-  <PersonBarM selectedAddressbook={person?.addressbook} />
+  <PersonBarM {person} />
 {/if}
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
   import { appGlobal } from "../../logic/app";
-  import PersonDetails from "./PersonDetails.svelte";
+  import NameBox from "./NameBox.svelte";
+  import ContactBoxes from "./ContactBoxes.svelte";
   import PersonBarM from "./PersonBarM.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 

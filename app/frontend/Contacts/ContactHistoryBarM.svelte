@@ -1,7 +1,7 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    <hbox class="search">
+    <hbox class="persons">
       <Button
         icon={PersonsIcon}
         iconSize="24px"
@@ -13,13 +13,13 @@
     </hbox>
 
     <!-- left middle -->
-    <hbox class="search">
+    <hbox class="person">
       <Button
-        icon={SearchIcon}
+        icon={PersonIcon}
         iconSize="24px"
         iconOnly
-        label={$t`Search a person`}
-        onClick={goToSearch}
+        label={person.name}
+        onClick={goToPerson}
         plain
         />
     </hbox>
@@ -27,16 +27,7 @@
     <AppMenuButton />
 
     <!-- right middle -->
-    <hbox class="history">
-      <Button
-        icon={HistoryIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`Contact history`}
-        onClick={goToHistory}
-        plain
-        />
-    </hbox>
+    <hbox class="empty" />
 
     <!-- right -->
     <hbox class="menu button">
@@ -57,8 +48,7 @@
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PersonsIcon from "lucide-svelte/icons/users";
-  import SearchIcon from "lucide-svelte/icons/search";
-  import HistoryIcon from "lucide-svelte/icons/history";
+  import PersonIcon from "lucide-svelte/icons/user";
   import { URLPart } from "../Util/util";
   import { t } from "../../l10n/l10n";
 
@@ -70,11 +60,7 @@
     goTo("/contacts/", {});
   }
 
-  function goToSearch() {
-    goTo("/contacts/search", {});
-  }
-
-  function goToHistory() {
-    goTo(URLPart`/contacts/person/${person.id}/history`, { person });
+  function goToPerson() {
+    goTo(URLPart`/contacts/person/${person.id}/edit`, { person });
   }
 </script>
