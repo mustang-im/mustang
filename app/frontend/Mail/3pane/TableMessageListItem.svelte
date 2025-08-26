@@ -1,24 +1,25 @@
 <!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
-<hbox class="unread-dot button" class:unread={!$message.isRead}>
-  <Button
-    icon={CircleIcon}
-    iconSize="7px"
-    iconOnly
-    label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
-    onClick={toggleRead}
-    plain
-    />
-</hbox>
-<hbox class="attachment">
-  {#if $message.hasVisibleAttachments}
-    <AttachmentIcon size="12px" />
-  {/if}
-</hbox>
 <hbox class="direction">
   {#if $message.outgoing}
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
     <ReplyIcon size={16} class="reply" />
+  {:else}
+    <hbox class="unread-dot button" class:unread={!$message.isRead}>
+      <Button
+        icon={CircleIcon}
+        iconSize="7px"
+        iconOnly
+        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
+        onClick={toggleRead}
+        plain
+        />
+    </hbox>
+  {/if}
+</hbox>
+<hbox class="attachment">
+  {#if $message.hasVisibleAttachments}
+    <AttachmentIcon size="12px" />
   {/if}
 </hbox>
 <hbox class="correspondent"
@@ -198,9 +199,6 @@
     padding: 0px 4px 0px 0px;
     align-items: center;
   }
-  .unread-dot.button {
-    padding-inline-start: 8px;
-  }
   .attachment {
     width: 16px;
     padding: 4px 0px 0px 2px;
@@ -234,8 +232,18 @@
     stroke-width: 1px;
     color: grey;
   }
+  :global(.row.selected) .direction :global(svg.reply) {
+    color: var(--selected-fg);
+  }
   .star :global(svg) {
     stroke-width: 1px;
+  }
+  .direction {
+    padding-inline-start: 8px;
+  }
+  .direction :global(.outgoing) {
+    margin-inline-start: 0px;
+    transform: translateX(3px);
   }
   .buttons.hover :global(svg),
   .unread-dot :global(svg) {
