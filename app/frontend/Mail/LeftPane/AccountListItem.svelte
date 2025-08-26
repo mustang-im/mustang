@@ -21,7 +21,7 @@
   <hbox class="label font-small">{$account.name}</hbox>
     <hbox flex class="buttons">
       {#if $account.isLoggedIn}
-        <GetMailButton folder={account.inbox} iconSize="18px" />
+        <GetMailButton folder={account.inbox} iconSize="14px" />
       {:else}
         <Button
           label={$t`Login`}
@@ -115,6 +115,6 @@
     border: none;
   }
   .buttons :global(.get-mail button) {
-    padding: 3px;
+    padding: 2px;
   }
 </style>
