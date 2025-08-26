@@ -1,27 +1,22 @@
 <hbox class="fast-list"
-  on:wheel={event => onScrollWheel(event)}
+  on:scroll={onScrollThrottled}
   on:keydown={event => onKey(event)}
   tabindex={0}
   bind:this={listE}>
-  <grid style="grid-template-columns: {columns};">
-    <div class="header" bind:this={headerE}>
-      <slot name="header" />
-    </div>
-    <div class="content" bind:this={contentE}>
-      {#each showItems as item}
-        <div class="row" on:click={event => onSelectElement(item, event)} class:selected={$selectedItems.includes(item)}>
-          <slot name="row" {item} />
-        </div>
-      {/each}
-    </div>
-  </grid>
-  <div class="scrollbar"
-    on:scroll={onScrollBar}
-    class:hidden={scrollbarHidden}
-    style="top: {headerHeight}px; height: calc(100% - {headerHeight}px);"
-    bind:this={scrollbarE}>
-    <div class="scrollbar-content" style="height: {$items.length * rowHeight}px" />
-  </div>
+  <vbox class="canvas" style="height: {heightY}px;">
+    <grid style="grid-template-columns: {columns}; top: {startPosY}px;">
+      <div class="header" bind:this={headerE}>
+        <slot name="header" />
+      </div>
+      <div class="content" bind:this={contentE}>
+        {#each showItems as item}
+          <div class="row" on:click={event => onSelectElement(item, event)} class:selected={$selectedItems.includes(item)}>
+            <slot name="row" {item} />
+          </div>
+        {/each}
+      </div>
+    </grid>
+  </vbox>
 </hbox>
 
 <script lang="ts">
@@ -56,7 +51,7 @@
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
   import { onMount, tick } from "svelte";
-  import debounce from "lodash/debounce";
+  import throttle from "lodash/throttle";
 
   type T = $$Generic;
 
@@ -100,29 +95,40 @@
   let listE: HTMLDivElement;
   let headerE: HTMLDivElement;
   let contentE: HTMLDivElement;
-  /** A dummy element that displays only a scrollbar. */
-  let scrollbarE: HTMLDivElement;
-  let scrollbarHidden = true;
 
-  $: headerHeight = headerE?.firstChild?.offsetHeight ?? 0;
+  $: headerHeight = headerE?.firstChild?.offsetHeight ?? 10;
 
   /**
    * Height of the DOM elements for a single row.
    * {integer} in px
    */
-  let rowHeight = 0;
+  let rowHeight = 10;
 
   /**
    * First visible row
    * {integer} index position in entries
    */
-  let scrollPos = 0;
+  let startPos = 0;
 
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
-  $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+  $: showItems = $items.getIndexRange(startPos, showRows) as T[];
+
+  /**
+   * Number of pixels *above* the first visible row
+   * {integer} px
+   */
+  let startPosY = 0;
+
+  /**
+   * Number of pixels of all rows, including invisible ones.
+   * {integer} px
+   */
+  $: heightY = $items.length * rowHeight + headerHeight || 100;
 
   $: $items.hasItems && listE && updateSize();
+
+  //$: console.log("items", $items.length, "header height", headerHeight, "rowHeight", rowHeight, "heightY", heightY, "startPosY", startPosY, "startPos", startPos);
 
   /**
    * Call this when either the number of entries changes,
@@ -139,13 +145,12 @@
       if (!contentRow) {
         return;
       }
+      //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight);
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
       showRows = Math.min(items.length, Math.ceil(availableHeight / rowHeight));
-
-      let scrollHeight = items.length * rowHeight;
-      scrollbarHidden = scrollHeight <= availableHeight;
+      //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight, "rowheight", rowHeight, "available", availableHeight, " showrows", showRows);
     } catch (ex) {
       console.error(ex);
     }
@@ -157,8 +162,8 @@
       selectedItems.add(selectedItem);
     }
 
-    const updateSizeDebounced = debounce(updateSize, 30);
-    const resizeObserver = new ResizeObserver(updateSizeDebounced);
+    const updateSizeThrottled = throttle(updateSize, 30);
+    const resizeObserver = new ResizeObserver(updateSizeThrottled);
     resizeObserver.observe(listE);
     return () => resizeObserver.unobserve(listE);
   });
@@ -222,31 +227,22 @@
   }
 
   function scrollIntoView(index: number) {
-    if (index >= scrollPos && index < scrollPos + showRows - 1) {
-      return;
+    if (index >= startPos && index < startPos + showRows - 1) {
+      return; // already in view
     }
-    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
+    startPos = Math.min(Math.max(startPos, 0), items.length - showRows);
   }
 
-  function onScrollWheel(event: WheelEvent) {
-    // How many rows to scroll each time, in either direction (+/-)
-    let scrollRows = Math.ceil(event.deltaY / (rowHeight || 20)); // 3 rows
-    scrollPos += scrollRows;
-    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
+
+  const onScrollThrottled = throttle(onScroll, 10);
+  function onScroll() {
+    let topY = listE.scrollTop - headerHeight;
+    let startPosCalc = Math.floor(topY / rowHeight);
+    startPos = Math.min(Math.max(startPosCalc, 0), items.length - showRows);
+    //console.log("startpos", startPos, "top y", topY, "scrolltop", listE.scrollTop, "rowheight", rowHeight);
   }
 
-  let scrollPosByScrollBar: NodeJS.Timeout = null;
-  $: scrollbarE && !scrollPosByScrollBar ? scrollbarE.scrollTop = scrollPos * rowHeight : null;
-
-  async function onScrollBar(_event: Event) {
-    clearTimeout(scrollPosByScrollBar);
-    scrollPosByScrollBar = setTimeout(() => {
-      scrollPosByScrollBar = null;
-      clearTimeout(scrollPosByScrollBar);
-    }, 200);
-
-    scrollPos = Math.ceil(scrollbarE.scrollTop / rowHeight);
-  }
+  $: startPosY = Math.floor(startPos * rowHeight + headerHeight);
 
   function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
@@ -327,11 +323,15 @@
   .fast-list {
     position: relative;
     flex: 1 0 0;
-    overflow: hidden;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
   grid {
     width: 100%;
     height: min-content;
+    position: absolute;
+    top: 0px; /* overridden by scrolling code */
+    left: 0px;
   }
   .header {
     display: contents;
@@ -348,25 +348,6 @@
   .row :global(> *) {
     overflow: hidden;
     padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
-  }
-  .scrollbar {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    position: absolute;
-    right: 0px;
-    width: 10px;
-    /* top: and height: set in style="" */
-  }
-  .scrollbar::-webkit-scrollbar-thumb {
-    min-height: 60px;
-  }
-  /* .scrollbar :dir(rtl) Doesn't work */
-  :global([dir="rtl"]) .scrollbar {
-    left: 0px;
-    right: unset;
-  }
-  .hidden {
-    display: none;
   }
   /* 3D style
   .header :global(> *) {
