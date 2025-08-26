@@ -1,4 +1,4 @@
-// #if [!WEBMAIL]
+// #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden {partition} />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->

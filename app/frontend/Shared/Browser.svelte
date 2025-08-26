@@ -20,7 +20,11 @@
   </hbox>
 {/if}
 
+// #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url} {title} {partition} />
+// #else
+<iframe bind:this={webviewE} src={url} {title} />
+// #endif
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
