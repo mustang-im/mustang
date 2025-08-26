@@ -176,18 +176,21 @@
   .folder-header {
     align-items: center;
     justify-content: center;
-    height: 20px;
+    max-height: 20px;
     padding-block-start: 2px;
     padding-block-end: 2px;
     padding-inline-start: 4px;
     padding-inline-end: 4px;
     color: var(--leftbar-fg);
     background-color: var(--leftbar-bg);
-    overflow: auto;
+    overflow: hidden;
   }
   .folder-header.mobile {
     height: 40px;
     font-size: 16px;
+  }
+  .folder-header :global(button:hover) {
+    z-index: 1;
   }
   .folder-header :global(.get-mail button) {
     height: 20px;
