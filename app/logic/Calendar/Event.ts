@@ -281,6 +281,15 @@ export class Event extends Observable {
     this.duration = days * k1DayS;
   }
 
+  /** @param term search term, in lower case */
+  matchesSearch(term: string): boolean {
+    return this.title?.toLowerCase().includes(term) ||
+      this.hasDescription && this.descriptionText?.toLowerCase().includes(term) ||
+      this.participants.some(person =>
+        person.name?.toLowerCase().includes(term) ||
+        person.emailAddress?.includes(term));
+  }
+
   get recurrenceRule(): RecurrenceRule | null {
     return this._recurrenceRule!;
   }

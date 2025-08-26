@@ -1,8 +1,8 @@
 {#if dateInterval == 0 || $globalSearchTerm}
-  <ListView {events}>
+  <ListViewWithSearch {events}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
-  </ListView>
+  </ListViewWithSearch>
 {:else if dateInterval == 1}
   <WeekView bind:start {events} showDays={1}>
     <slot name="top-left" slot="top-left" />
@@ -42,7 +42,7 @@
   import WeekView from "./DayView/WeekView.svelte";
   import MonthView from "./MonthView/MonthView.svelte";
   import DualView from "./DualView.svelte";
-  import ListView from "./ListView/ListView.svelte";
+  import ListViewWithSearch from "./ListView/ListViewWithSearch.svelte";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;
