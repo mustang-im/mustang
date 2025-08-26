@@ -39,10 +39,7 @@
     </hbox>
 
     <!-- right -->
-    <hbox class="menu button">
-      <ButtonMenu bind:isMenuOpen>
-      </ButtonMenu>
-    </hbox>
+    <hbox class="empty" />
   </AppBarM>
 </hbox>
 

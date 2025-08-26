@@ -21,13 +21,7 @@
     <hbox class="empty" />
 
     <!-- right -->
-    <hbox class="menu button">
-      <ButtonMenu bind:isMenuOpen>
-        <!--
-        <MailMenu {selectedAccount} {selectedFolder} />
-        -->
-      </ButtonMenu>
-    </hbox>
+    <hbox class="empty" />
   </AppBarM>
 </hbox>
 
