@@ -2,7 +2,7 @@
   {#if $displayEvents && !$displayEvents.isEmpty}
     {#each $displayEvents.each as event (event.id)}
       {#if event.startTime && event.endTime}
-        <EventBlock {event} {start} {end} otherEvents={events} />
+        <EventBlock {event} {start} {end} conflicts={displayEvents} />
       {/if}
     {/each}
   {/if}
