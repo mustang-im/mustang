@@ -5,7 +5,7 @@ import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, blobToBase64, ensureArray, assert } from "../../util/util";
+import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export const kMaxCount = 50;

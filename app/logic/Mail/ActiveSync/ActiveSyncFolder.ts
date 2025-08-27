@@ -4,7 +4,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount"
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { ensureArray, assert, NotImplemented, NotSupported } from "../../util/util";
+import { ensureArray, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
