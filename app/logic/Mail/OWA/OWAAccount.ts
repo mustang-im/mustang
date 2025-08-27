@@ -316,6 +316,7 @@ export class OWAAccount extends MailAccount {
         calendar.icon ??= this.icon; // Migration, remove later
         calendar.color ??= this.color;
         await calendar.save();
+        calendar.isInvitationCalendar = Folder.DistinguishedFolderId == "calendar";
       }
     }
     // Iterate from deepest to shallowest

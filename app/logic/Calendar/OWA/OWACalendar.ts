@@ -13,11 +13,13 @@ import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
-  folderID: string;
   readonly events: ArrayColl<OWAEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
+  folderID: string;
+  /** Is this the default calendar that handles incoming invitations */
+  isInvitationCalendar: boolean = false;
   listEventsOnce = new RunOnce(() => this.listEventsSlow());
 
   get account(): OWAAccount {
