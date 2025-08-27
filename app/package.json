@@ -60,7 +60,6 @@
     "psl": "https://github.com/lupomontero/psl",
     "stanza": "^12.21.0",
     "svelte-collections": "^1.2.12",
-    "svelte-gestures": "=1.5.2",
     "svelte-icon": "^2.0.0",
     "svelte-navigator": "^3.2.2",
     "timezone-picker-svelte": "^1.0.2",
@@ -70,6 +69,7 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@composi/gestures": "^1.0.9",
     "@crowdin/cli": "^4.0.0",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",

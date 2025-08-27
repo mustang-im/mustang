@@ -1,6 +1,6 @@
 <hbox class="buttons"
-  on:touchstart={ev => swipe.touchStart(ev)}
-  on:touchend={ev => swipe.touchEnd(ev)}
+  on:swipeleft={onPreviousMessage}
+  on:swiperight={onNextMessage}
   >
   <AppBarM>
     <!-- left -->
@@ -113,7 +113,6 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
-  import { Swipe } from "../../Shared/Gesture";
   import { URLPart } from "../../Util/util";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
@@ -131,26 +130,26 @@
   }
   async function deleteMessage() {
     await message.deleteMessage();
-    onNextMessage();
+    loadOtherMessage();
   }
   async function markAsSpam() {
     await message.treatSpam(true);
-    onNextMessage();
+    loadOtherMessage();
   }
   async function editDraft() {
     await message.loadMIME();
     mailMustangApp.writeMail(message);
   }
 
-  function onNextMessage() {
+  function loadOtherMessage() {
     message = message.nextMessage();
+  }
+  function onNextMessage() {
+    message = message.nextMessage(false);
   }
   function onPreviousMessage() {
     message = message.nextMessage(true);
   }
-  let swipe = new Swipe();
-  swipe.onLeft = onPreviousMessage;
-  swipe.onRight = onNextMessage;
 
   let isMenuOpen = false;
   let printE: Print;
@@ -164,17 +163,4 @@
   function onPopupClose() {
     popupOpen = false;
   }
-
-  /*
-  use:swipe={{ minSwipeDistance: 50 }}
-  on:swipe={(ev) => onSwipe(ev.detail.direction)}
-  import { swipe } from "svelte-gestures";
-    function onSwipe(direction: "top" | "right" | "bottom" | "left") {
-    if (direction == "left") {
-      onPreviousMessage();
-    } else if (direction == "right") {
-      onNextMessage();
-    }
-  }
-  */
 </script>

@@ -1,7 +1,7 @@
 <vbox class="message-header"
   class:outgoing={$message.outgoing}
-  on:touchstart={ev => swipe.touchStart(ev)}
-  on:touchend={ev => swipe.touchEnd(ev)}
+  on:swipeleft={onPreviousMessage}
+  on:swiperight={onNextMessage}
   >
   <hbox>
     {#if $message.contact instanceof Person && $message.contact.picture}
@@ -100,7 +100,6 @@
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
-  import { Swipe } from "../../Shared/Gesture";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
@@ -151,14 +150,11 @@
   }
 
   function onNextMessage() {
-    message = message.nextMessage();
+    message = message.nextMessage(false);
   }
   function onPreviousMessage() {
     message = message.nextMessage(true);
   }
-  let swipe = new Swipe();
-  swipe.onLeft = onPreviousMessage;
-  swipe.onRight = onNextMessage;
 </script>
 
 <style>

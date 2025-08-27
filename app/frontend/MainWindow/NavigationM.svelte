@@ -1,9 +1,12 @@
 <hbox bind:this={eventTargetE} />
 
 <script lang="ts">
-  import { App } from "@capacitor/app";
-  import { navigate } from "svelte-navigator";
   import { showError } from "../Util/error";
+  import { App } from "@capacitor/app";
+  import { gestures } from "@composi/gestures";
+  import { navigate } from "svelte-navigator";
+
+  gestures();
 
   App.addListener("backButton", ({canGoBack}) => {
     if (canGoBack) {

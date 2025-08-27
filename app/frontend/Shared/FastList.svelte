@@ -233,7 +233,6 @@
     startPos = Math.min(Math.max(startPos, 0), items.length - showRows);
   }
 
-
   const onScrollThrottled = throttle(onScroll, 10);
   function onScroll() {
     let topY = listE.scrollTop - headerHeight;
