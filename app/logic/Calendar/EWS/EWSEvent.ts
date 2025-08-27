@@ -267,7 +267,7 @@ export class EWSEvent extends Event {
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
-      pattern.t$DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
+      pattern.t$DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
       pattern.t$FirstDayOfWeek = Weekday[rule.first];
