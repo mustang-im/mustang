@@ -106,8 +106,6 @@ async function decompress(source: string, destination: string) {
 }
 
 async function main() {
-  if (process.env.CAPACITOR_PLATFORM_NAME != "android") return;
-
   try {
     await Promise.all([
       updateProjectSettings(),
