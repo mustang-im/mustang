@@ -127,23 +127,29 @@ export class OWAAccount extends MailAccount {
     this.hasLoggedIn = true;
     await this.listFolders();
 
-    // Link (until #155) or create the default address book.
-    // TODO: Support user-added address books. Compare addressbook ID.
-    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook | null;
-    console.log("found the OWA AB again", addressbook?.name);
-    if (!addressbook) {
-      addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-      addressbook.url = this.url;
-      addressbook.username = this.username;
-      addressbook.workspace = this.workspace;
-      addressbook.icon = this.icon;
-      addressbook.color = this.color;
-      addressbook.mainAccount = this;
-      appGlobal.addressbooks.add(addressbook);
+    let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+    for (let filter of response) {
+      if (filter.IsReadOnly) {
+        continue;
+      }
+      let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == filter.FolderId.Id) as OWAAddressbook | undefined;
+      if (!addressbook) {
+        addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+        addressbook.name = `${this.name} ${filter.DisplayName}`;
+        addressbook.url = this.url;
+        addressbook.username = this.username;
+        addressbook.workspace = this.workspace;
+        addressbook.icon = this.icon;
+        addressbook.color = this.color;
+        addressbook.folderID = filter.FolderId.Id;
+        addressbook.mainAccount = this;
+        appGlobal.addressbooks.add(addressbook);
+      }
+      addressbook.icon ??= this.icon; // Migration, remove later
+      addressbook.color ??= this.color;
+      addressbook.save();
+      await addressbook.listContacts();
     }
-    addressbook.icon ??= this.icon; // Migration, remove later
-    addressbook.color ??= this.color;
-    await addressbook.listContacts();
 
     for (let calendar of appGlobal.calendars) {
       if (calendar.mainAccount == this) {
@@ -294,29 +300,24 @@ export class OWAAccount extends MailAccount {
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
       } else if (folder.FolderClass == "IPF.Appointment") {
-        // Link (until #155) or create the default calendar.
-        // TODO: Support user-added calendars. Compare FolderId.
-        // FolderClass is IPF.Appointment.Birthday for the Birthdays calendar
-        // N.B. Only default calendar can handle meeting requests and responses
-        if (folder.DistinguishedFolderId == "calendar") {
-          let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
-          if (!calendar) {
-            calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-            calendar.name = this.name;
-            calendar.url = this.url;
-            calendar.username = this.username;
-            calendar.workspace = this.workspace;
-            calendar.icon = this.icon;
-            calendar.color = this.color;
-            calendar.mainAccount = this;
-            appGlobal.calendars.add(calendar);
-          }
-          calendar.icon ??= this.icon; // Migration, remove later
-          calendar.color ??= this.color;
-          calendar.folderID ??= folder.FolderId.Id;
-          await calendar.save();
+        let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as OWACalendar | undefined;
+        if (!calendar) {
+          calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+          calendar.name = `${this.name} ${folder.DisplayName}`;
+          calendar.url = this.url;
+          calendar.username = this.username;
+          calendar.workspace = this.workspace;
+          calendar.icon = this.icon;
+          calendar.color = this.color;
+          calendar.folderID = folder.FolderId.Id;
+          calendar.mainAccount = this;
+          appGlobal.calendars.add(calendar);
         }
-      } // Addressbook FolderId currently handled in OWAAddressbook
+        calendar.icon ??= this.icon; // Migration, remove later
+        calendar.color ??= this.color;
+        await calendar.save();
+        calendar.isInvitationCalendar = Folder.DistinguishedFolderId == "calendar";
+      }
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {
@@ -429,6 +430,13 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetPeopleFiltersRequest {
+  /** This is an empty request, but it still needs an action. */
+  get action() {
+    return "GetPeopleFilters";
+  }
 }
 
 export const kMaxFetchCount = 50;
