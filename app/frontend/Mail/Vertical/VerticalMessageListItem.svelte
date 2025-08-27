@@ -3,6 +3,8 @@
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   on:click
+  on:swiperight={deleteMessage}
+  on:swipeleft={markAsSpam}
   bind:this={popupAnchor}
   >
   <hbox class="top-row">
