@@ -1,4 +1,14 @@
-<vbox flex class="message-list-pane">
+<vbox flex class="message-list-pane"
+  on:swipedown={() => catchErrors(onCheckMail)}>
+  {#if checkingMail || loggingIn}
+    <hbox class="mail-check">
+      {#if checkingMail}
+        <FetchingIcon size="32xp" />
+      {:else if loggingIn}
+        <LoginIcon size="32xp" />
+      {/if}
+    </hbox>
+  {/if}
   <FolderHeader folder={selectedFolder} {searchMessages} />
   <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages on:click={() => catchErrors(goToMessage)} />
   {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder) && availableTags.hasItems}
@@ -12,13 +22,15 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
+  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { goTo } from "../../AppsBar/selectedApp";
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
   import TagsList from "../LeftPane/TagsList.svelte";
-  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import MessageListBarM from "./MessageListBarM.svelte";
+  import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
+  import LoginIcon from "lucide-svelte/icons/key-round";
   import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
@@ -39,6 +51,20 @@
       message: selectedMessage,
     });
   }
+
+  let checkingMail = false;
+  let loggingIn = false;
+  async function onCheckMail() {
+    loggingIn = true;
+    let account = selectedFolder.account;
+    if (!account.isLoggedIn) {
+      await account.login(true);
+    }
+    loggingIn = false;
+    checkingMail = true;
+    await selectedFolder.getNewMessages();
+    checkingMail = false;
+  }
 </script>
 
 <style>
@@ -49,5 +75,8 @@
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
+  }
+  .mail-check {
+    height: 32px;
   }
 </style>
