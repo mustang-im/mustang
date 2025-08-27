@@ -76,19 +76,19 @@ export class XMPPAccount extends ChatAccount {
     //let allRooms = await this.client.getRooms();
     //Promise.all(allRooms.map(room => this.getNewGroupChat(room)));
   }
-  async getNewGroupRoom(jid: string): Promise<XMPPChat> {
+  async getNewGroupRoom(jid: string): Promise<XMPPChat | null> {
     if (this.chats.find(chat => chat.id == jid)) {
-      return;
+      return null;
     }
     let chatRoom = new XMPPGroupChat(this, jid);
     await chatRoom.init();
     await chatRoom.listMembers();
     return chatRoom;
   }
-  async getNew1to1Chat(jid: string): Promise<XMPPChat> {
+  async getNew1to1Chat(jid: string): Promise<XMPPChat | null> {
     jid = getJID(jid);
     if (this.chats.find(chat => chat.id == jid)) {
-      return;
+      return null;
     }
     let chatRoom = new XMPP1to1Chat(this, jid);
     await chatRoom.getLastMessage();

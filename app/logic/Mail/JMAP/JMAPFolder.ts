@@ -71,7 +71,7 @@ export class JMAPFolder extends Folder {
     if (!this.account.syncState.has("Email")) {
       return await this.listAllMessages();
     }
-    return; // TODO folder sync is per account, not per folder
+    return new ArrayColl(); // TODO folder sync is per account, not per folder
 
     let { newMessages, removedMessages, updatedMessages } = await this.fetchChangedMessages();
     this.messages.removeAll(removedMessages);

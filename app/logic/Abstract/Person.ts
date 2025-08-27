@@ -159,8 +159,7 @@ export class Person extends ContactBase {
     await other.deleteIt();
   }
 
-  /** Person class needs to match account class, so need to clone.
- * @returns the new Person object */
+  /** Person class needs to match account class, so need to clone. */
   async moveToAddressbook(newAddressbook: Addressbook): Promise<void> {
     if (this.addressbook == newAddressbook || !newAddressbook) {
       return;

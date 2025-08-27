@@ -161,7 +161,7 @@ export class GraphAccount extends MailAccount {
     let nextURL = (firstResults as any).nextURL;
     while (nextURL) {
       if (i++ > 30000) { // loop protection
-        return;
+        return [];
       }
       // nextURL already includes the $select. And ky searchParams would overwrite the skip token.
       let nextResults = await this.graphGet<T>(nextURL);

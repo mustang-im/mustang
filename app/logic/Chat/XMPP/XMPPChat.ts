@@ -22,17 +22,17 @@ export class XMPPChat extends Chat {
     this.account.chats.set(this.contact, this);
   }
 
-  addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage {
+  addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage | null {
     let jid = getJID(json.id);
     if (!jid || this.messages.find(msg => msg.id == jid)) {
-      return;
+      return null;
     }
     let msg = new XMPPChatMessage(this);
     try {
       msg.fromStanzaJS(json, wrapper);
     } catch (ex) {
       logError(ex);
-      return;
+      return null;
     }
     this.messages.add(msg);
     if (isLast) {

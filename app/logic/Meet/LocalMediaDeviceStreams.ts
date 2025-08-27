@@ -134,7 +134,7 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     assert(this.cameraMicStream, gt`Unable to share your screen`);
     return this.screenStream;
   }
-  protected async stopScreenShare(): Promise<MediaStream> {
+  protected async stopScreenShare(): Promise<void> {
     if (!this.screenStream) {
       return;
     }

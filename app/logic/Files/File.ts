@@ -57,7 +57,7 @@ export class File extends FileOrDirectory {
     }
   }
 
-  async getURL(): Promise<URLString> {
+  async getURL(): Promise<URLString | null> {
     if (this.url) {
       return this.url;
     } else if (this.filepathLocal) {
@@ -66,13 +66,15 @@ export class File extends FileOrDirectory {
       let lock = await this.dataURLLock.lock();
       if (wasLocked) {
         lock.release();
-        return;
+        return null;
       }
       try {
         return this.url = await blobToDataURL(this.contents);
       } finally {
         lock.release();
       }
+    } else {
+      return null;
     }
   }
 
