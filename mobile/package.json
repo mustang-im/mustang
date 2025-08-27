@@ -14,7 +14,7 @@
     "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew --configuration-cache :app:bundleRelease",
     "preview": "vite preview",
     "setup:ios": "cd ios && ./setup-ios.sh",
-    "capacitor:update:before": "vite-node ./hooks/android/update-project.ts"
+    "capacitor:update:before": "node --experimental-strip-types ./hooks/android/update-project.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -30,8 +30,7 @@
     "@capacitor/cli": "^7.0.0",
     "@tsconfig/node22": "^22.0.2",
     "typescript": "^5.9.2",
-    "vite": "^5.4.2",
-    "vite-node": "^3.2.4"
+    "vite": "^5.4.2"
   },
   "repository": {
     "type": "git",
