@@ -92,7 +92,7 @@
   </hbox>
 </hbox>
 <Popup bind:popupOpen popupAnchor={popupAnchorE} placement="bottom" boundaryElSel=".message-list-pane">
-  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
+  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={message} />
 </Popup>
 
 <Print {message} bind:this={printE} />

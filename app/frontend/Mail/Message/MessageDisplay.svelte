@@ -13,7 +13,7 @@
     </Paper>
   </vbox>
   {#if $appGlobal.isMobile}
-    <MessageDisplayBarM {message} />
+    <MessageDisplayBarM bind:message />
   {/if}
 </vbox>
 

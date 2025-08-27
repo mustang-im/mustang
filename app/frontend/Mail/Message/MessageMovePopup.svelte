@@ -103,6 +103,8 @@
   const dispatch = createEventDispatcher<{ close: void }>();
 
   export let messages: Collection<EMail>;
+  /** out */
+  export let selectedMessage: EMail;
 
   let sourceFolder = messages.first.folder;
   let selectedFolder = sourceFolder;
@@ -119,12 +121,14 @@
     for (let message of messages) {
       await message.deleteMessage();
     }
+    goToNextMessage();
   }
   async function onSpam() {
     onClose();
     for (let message of messages) {
       await message.treatSpam();
     }
+    goToNextMessage();
   }
 
   async function onArchive() {
@@ -132,14 +136,28 @@
     for (let message of messages) {
       await message.moveToArchive();
     }
+    goToNextMessage();
   }
   async function onMoveTo(folder: Folder) {
     onClose();
     await folder.moveMessagesHere(messages);
+    goToNextMessage();
   }
   async function onCopyTo(folder: Folder) {
     onClose();
     await folder.copyMessagesHere(messages);
+  }
+
+  function goToNextMessage() {
+    let last: EMail = null;
+    while (selectedMessage && messages.contains(selectedMessage) && last != selectedMessage) {
+      last = selectedMessage;
+      selectedMessage = selectedMessage.nextMessage(); // fails, because it's already been removed from the folder
+    }
+    selectedMessage ??=
+      last.folder.messages.filterOnce(msg => !msg.isRead).last ??
+      last.folder.messages.last ??
+      messages.first; // selectedMessage must not be null
   }
 </script>
 

@@ -92,9 +92,9 @@
 </ContextMenu>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-end" boundaryElSel=".message-list-pane">
   {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
-    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} />
+    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} bind:selectedMessage={message} />
   {:else}
-    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
+    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={message} />
   {/if}
 </Popup>
 

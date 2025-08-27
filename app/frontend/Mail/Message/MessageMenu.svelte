@@ -110,9 +110,15 @@
 
   async function deleteMessage() {
     await message.deleteMessage();
+    goToNextMessage();
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+    goToNextMessage();
+  }
+
+  function goToNextMessage() {
+    message = message.nextMessage();
   }
 
   async function print() {

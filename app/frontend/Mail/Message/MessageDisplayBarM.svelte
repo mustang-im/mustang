@@ -83,13 +83,13 @@
     <!-- right -->
     <hbox class="menu button">
       <ButtonMenu bind:isMenuOpen>
-        <MessageMenu {message} {printE} />
+        <MessageMenu bind:message {printE} />
       </ButtonMenu>
     </hbox>
   </AppBarM>
 </hbox>
 <Popup bind:popupOpen popupAnchor={popupAnchorE} placement="bottom" boundaryElSel=".message-list-pane">
-  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
+  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={message} />
 </Popup>
 
 <Print {message} bind:this={printE} />
@@ -131,9 +131,11 @@
   }
   async function deleteMessage() {
     await message.deleteMessage();
+    onNextMessage();
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+    onNextMessage();
   }
   async function editDraft() {
     await message.loadMIME();
