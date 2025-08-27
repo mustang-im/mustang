@@ -73,7 +73,7 @@ async function getTemplate() {
  * Updates the Capacitor bridge Java file
  *
  * 1. Creates the the directory structure based on the application ID e.g. `/im/mustang/capa`
- * 2. Copies the MainActivity.java for the \@capacitor/cli to the application ID based directory
+ * 2. Copies the MainActivity.java from \@capacitor/cli to the application ID based directory
  * 3. Changes the package name to the appID
  *
  * This is a very important file used by the main process without
