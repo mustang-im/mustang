@@ -26,6 +26,7 @@
             </vbox>
             <AppContentRoutes slot="bottom" />
           </SplitterHorizontal>
+          <NavigationM />
         </Router>
       {:else if $selectedApp}
         <Router primary={false}>
@@ -64,6 +65,7 @@
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
+  import NavigationM from "./NavigationM.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
