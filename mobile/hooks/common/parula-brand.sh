@@ -13,3 +13,8 @@ perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   -e "s|"Mustang"|"Parula"|;" \
   ./capacitor.config.ts
+
+# Relace all appID in /mobile/backend
+perl -p -i \
+  -e "s|im.mustang.capa|com.beonex.parula|;" \
+  ./backend/backend.ts
