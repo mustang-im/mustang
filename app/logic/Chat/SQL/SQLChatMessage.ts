@@ -150,7 +150,7 @@ export class SQLChatMessage {
       FROM message
       WHERE chatID = ${chat.dbID}
       `) as any;
-    let newMsgs = new ArrayColl<Message>();
+    let newMsgs = new ArrayColl<ChatMessage>();
     for (let row of rows) {
       try {
         let msg = chat.messages.find(msg => msg.dbID == row.id);

@@ -188,7 +188,7 @@ export class OWAFolder extends Folder {
     if (!id) {
       return undefined;
     }
-    return this.messages.find((m: OWAEMail) => m.itemID == id) as OWAEMail | undefined;
+    return this.messages.find((m): m is OWAEMail => (m as OWAEMail).itemID == id);
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {

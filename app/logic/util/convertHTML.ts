@@ -89,7 +89,7 @@ function urlAttribute(url: URLString, includeExternal = false) {
   return "";
 }
 
-function addStyles(output, styles) {
+function addStyles(output: string[], styles: CSSStyleDeclaration) {
   for (let style of [...styles].reverse()) {
     if (styles[style]) {
       styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
@@ -98,43 +98,36 @@ function addStyles(output, styles) {
   }
 };
 
-function addCSSRules(output, cssRules = []) {
+function addCSSRules(output: string[], cssRules: CSSRuleList) {
   for (let rule of [...cssRules].reverse()) {
-    switch (rule.type) {
-      case CSSRule.STYLE_RULE:
-        output.push(`${rule.selectorText} {`);
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
-        output.push('}\n');
-        break;
-      case CSSRule.MEDIA_RULE:
-        output.push(`@media ${rule.media.mediaText} {`);
-        addCSSRules(output, rule?.cssRules);
-        output.push('}\n');
-        break;
-      case CSSRule.FONT_FACE_RULE:
-        output.push('@font-face {');
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
-        output.push('}\n');
-        break;
-      case CSSRule.KEYFRAMES_RULE:
-        output.push(`@keyframes ${rule.name} {`);
-        for (let frame of [...rule.cssRules].reverse()) {
-          if (frame.type === CSSRule.KEYFRAME_RULE && frame.keyText) {
-            output.push(`${frame.keyText} {`);
-            if (frame.style) {
-              addStyles(output, frame.style);
-            }
-            output.push('}\n');
+    if (rule instanceof CSSStyleRule) {
+      output.push(`${rule.selectorText} {`);
+      if (rule.style) {
+        addStyles(output, rule.style);
+      }
+      output.push('}\n');
+    } else if (rule instanceof CSSMediaRule) {
+      output.push(`@media ${rule.media.mediaText} {`);
+      addCSSRules(output, rule.cssRules);
+      output.push('}\n');
+    } else if (rule instanceof CSSFontFaceRule) {
+      output.push('@font-face {');
+      if (rule.style) {
+        addStyles(output, rule.style);
+      }
+      output.push('}\n');
+    } else if (rule instanceof CSSKeyframesRule) {
+      output.push(`@keyframes ${rule.name} {`);
+      for (let frame of [...rule.cssRules].reverse()) {
+        if (frame instanceof CSSKeyframeRule && frame.keyText) {
+          output.push(`${frame.keyText} {`);
+          if (frame.style) {
+            addStyles(output, frame.style);
           }
+          output.push('}\n');
         }
-        output.push('}\n');
-        break;
-      default:
-        break;
+      }
+      output.push('}\n');
     }
   }
 };
@@ -147,7 +140,7 @@ if (!DOMPurify.addHook) { // for unit tests only. TODO Load it in vitests as wel
 
 DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'style') {
-    const output = [];
+    const output: string[] = [];
     addCSSRules(output, (node as HTMLStyleElement)?.sheet?.cssRules);
     node.textContent = output.join("\n");
   }

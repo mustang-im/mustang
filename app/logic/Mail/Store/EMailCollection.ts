@@ -5,10 +5,10 @@ import type { Folder } from '../Folder';
 
 export class EMailCollection<T extends EMail> extends SortedCollection<T> {
   folder: Folder;
-  sortFunc: (a: T, b: T) => number;
+  sortFunc: (a: EMail, b: EMail) => number;
 
   constructor(folder: Folder) {
-    let sortFunc = (a: T, b: T) => compareValues(b.sent, a.sent); // inverted = newest first
+    let sortFunc = (a: EMail, b: EMail) => compareValues(b.sent, a.sent); // inverted = newest first
     /* Normally, a `SortedCollection` is simply a sorted /copy/ of the source collection.
      * Here, we don't use a source collection, but add the items directly to the
      * `SortedCollection`, using `.add()` and `.remove()`. The `SortedCollection`

@@ -70,7 +70,7 @@ export class SavedSearchFolder extends Folder {
 
   async deleteIt() {
     let disableDelete = this.disableDelete();
-    assert(!disableDelete, disableDelete ?? "Cannot delete");
+    assert(!disableDelete, disableDelete || "Cannot delete");
     savedSearchFolders.remove(this);
     saveSavedSearches();
   }

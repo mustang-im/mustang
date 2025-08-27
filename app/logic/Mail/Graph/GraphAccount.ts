@@ -82,7 +82,7 @@ export class GraphAccount extends MailAccount {
     await calendar.listEvents();
     */
 
-    let chatAccount = appGlobal.chatAccounts.find((calendar: GraphChatAccount) => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username) as GraphChatAccount | undefined;
+    let chatAccount = appGlobal.chatAccounts.find((calendar): calendar is GraphChatAccount => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username);
     if (!chatAccount) {
       chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
       chatAccount.name = this.name;

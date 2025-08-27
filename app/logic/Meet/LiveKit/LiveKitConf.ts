@@ -192,7 +192,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.state = MeetingState.Ongoing;
 
     this.room.localParticipant.registerRpcMethod("handUp", async (data: RpcInvocationData) => {
-      let remoteParticipant = this.participants.find((p: LiveKitRemoteParticipant) => p.rp.identity == data.callerIdentity);
+      let remoteParticipant = this.participants.find((p): p is LiveKitRemoteParticipant => (p as LiveKitRemoteParticipant).rp.identity == data.callerIdentity);
       assert(remoteParticipant, "LiveKit: Remote participant not found");
       let up = sanitize.translate(data.payload, { "up": true, "down": false });
       console.log(remoteParticipant.name, "has put hand", up ? "up" : "down");
