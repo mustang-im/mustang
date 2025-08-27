@@ -267,6 +267,9 @@
     background-color: var(--main-bg);
     color: var(--main-fg);
   }
+  :global(.mobile) .page-box {
+    padding: 12px 24px;
+  }
   .page-box[step="8"] {
     max-width: 90%;
   }

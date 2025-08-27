@@ -49,6 +49,9 @@
     background-color: var(--main-bg);
     color: var(--main-fg);
   }
+  :global(.mobile) .page-box {
+    padding: 12px 24px;
+  }
   .setup-contacts-window :global(input) {
     font-size: 16px;
   }
