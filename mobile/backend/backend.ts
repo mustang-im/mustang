@@ -438,7 +438,7 @@ function directory(type: string): string {
 }
 
 // workaround: @capacitor/app App.getInfo().id has some code not getting bundled
-const appID = "com.beonex.parula";
+const appID = "im.mustang.capa";
 let configDir: string;
 /**
  * Get the user config directory on disk.
