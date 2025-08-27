@@ -22,7 +22,7 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
   call.participants.add(callee);
   call.state = MeetingState.OutgoingCallConfirm;
   appGlobal.meetings.add(call);
-  return;
+  return call;
 
   let haveChat = getExistingChat(to);
   if (!haveChat) {

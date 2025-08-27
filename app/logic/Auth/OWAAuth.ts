@@ -31,7 +31,7 @@ export class OWAAuth extends WebBasedAuth {
   async login(interactive: boolean): Promise<string> {
     assert(this.account, "Need to set account first");
     if (this.isLoggedIn) {
-      return;
+      return "";
     }
     if (!interactive) {
       throw new OAuth2LoginNeeded();

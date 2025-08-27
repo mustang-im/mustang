@@ -54,9 +54,8 @@ export class Group extends ContactBase {
     // nothing to do for local groups
   }
 
-  /** Group class needs to match account class, so need to clone.
-   * @returns the new Group object */
-  async moveToAddressbook(newAddressbook: Addressbook): Promise<Group> {
+  /** Group class needs to match account class, so need to clone. */
+  async moveToAddressbook(newAddressbook: Addressbook): Promise<void> {
     if (this.addressbook == newAddressbook || !newAddressbook) {
       return;
     }
@@ -66,7 +65,7 @@ export class Group extends ContactBase {
       this.addressbook = newAddressbook;
       newAddressbook.groups.add(this);
       await this.save();
-      return this;
+      return;
     }
     Object.assign(newGroup, this);
     newGroup.addressbook = newAddressbook;
@@ -74,6 +73,5 @@ export class Group extends ContactBase {
     newAddressbook.groups.add(newGroup);
     await this.deleteIt();
     await newGroup.save();
-    return newGroup;
   }
 }

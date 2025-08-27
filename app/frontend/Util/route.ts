@@ -1,12 +1,14 @@
 import { get, type Writable } from "svelte/store";
 import { useLocation, type NavigatorLocation } from "svelte-navigator";
 
+/* Fix inconsistent return before re-enabling this function.
 export function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
   if (get(obj)) {
     return "";
   }
   window.location.href = fallbackURL;
 }
+*/
 
 export function ensureIDMatch<T extends { id: string }>(obj: T, idParam: string, findObjectByID: (id: string) => T): string {
   if (obj) {

@@ -10,6 +10,7 @@
     /**
      * Extra type checking that's not turned on by default.
      */
+    "noImplicitReturns": true,
     "noImplicitThis": true,
     /**
      * Typecheck JS in `.svelte` and `.js` files by default.

@@ -289,6 +289,7 @@ export class EMail extends Message {
         return attachment;
       } catch (ex) {
         this.folder.account.errorCallback(ex);
+        return null;
       }
     }).filter(attachment => !!attachment));
 

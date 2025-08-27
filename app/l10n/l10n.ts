@@ -207,15 +207,17 @@ export function translateString(descriptor: MessageDescriptor, values: FormatVal
     // which returns undefined
     return formatter.format(message, values);
   } catch (ex) {
-    // Fallback to parsing the defualt message
-    // if the default message was not used to parse
-    if (message != descriptor.defaultMessage) try {
-      return formatter.format(message, values);
+  }
+  // Fallback to parsing the default message
+  // if the default message was not used to parse
+  if (message != descriptor.defaultMessage) {
+    try {
+      return formatter.format(descriptor.defaultMessage, values);
     } catch (ex) {
-      // Fallback to unparsed message if the previous messages failed
-      return message;
     }
   }
+  // Fallback to unparsed message if the previous messages failed
+  return message;
 }
 
 export interface MessageDescriptor {
