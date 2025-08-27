@@ -20,7 +20,6 @@ const version = packageJSON.version;
 
 // Update build.gradle
 async function updateProjectSettings() {
-  if (process.env.CAPACITOR_PLATFORM_NAME != "android") return;
 
   let androidProjectFile = path.join(__dirname, "../../android/app/build.gradle");
   let gradleContent = await readFile(androidProjectFile, { encoding: 'utf-8' });
