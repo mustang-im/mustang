@@ -31,11 +31,34 @@ async function updateProjectSettings() {
   await writeFile(androidProjectFile, gradleContent);
 }
 
+const mainDir = path.join(__dirname, "../../android/app/src/main");
+let templateDir: string;
+async function updateTemplateBasedFiles() {
+  await getTemplate();
+  await Promise.all([
+    updateMainActivityPackage(),
+    updateStringsXML(),
+  ]);
+}
+
+// Get template
+async function getTemplate() {
+  let cliPackage = import.meta.resolve("@capacitor/cli").split(":")[1];
+  let templatePath = path.join(cliPackage, "../../assets");
+  let templateZip = path.resolve(templatePath, "android-template.tar.gz");
+  templateDir = path.join(templatePath, "android-template");
+
+  if (existsSync(templateDir)) {
+    await rm(templateDir, { recursive: true });
+  }
+  await mkdir(templateDir);
+  await decompress(templateZip, templateDir);
+}
+
 // Update the package in the MainActivity java file
 async function updateMainActivityPackage() {
 
   let domainPath = appId?.split('.').join('/');
-  let mainDir = "android/app/src/main";
 
   // Make the package source path to the new plugin Java file
   let newJavaPath = path.resolve(mainDir, `java/${domainPath}`);
@@ -44,16 +67,7 @@ async function updateMainActivityPackage() {
     await mkdir(newJavaPath,  { recursive: true });
   }
 
-  let cliPackage = import.meta.resolve("@capacitor/cli").split(":")[1];
-  let templatePath = path.join(cliPackage, "../../assets");
-  let templateZip = path.resolve(templatePath, "android-template.tar.gz");
-  let templateDir = path.join(templatePath, "android-template");
   let mainActivityFile = path.resolve(templateDir, "app/src/main/java/com/getcapacitor/myapp/MainActivity.java");
-
-  if (!existsSync(templateDir)) {
-    await mkdir(templateDir);
-  }
-  await decompress(templateZip, templateDir);
 
   let activityPath = path.resolve(newJavaPath, 'MainActivity.java');
   await rm(path.join(mainDir, "java"), { recursive: true });
@@ -63,6 +77,20 @@ async function updateMainActivityPackage() {
 
   activityContent = activityContent.replace(/package ([^;]*)/, `package ${appId}`);
   await writeFile(activityPath, activityContent, { encoding: 'utf-8' });
+}
+
+// Update the settings in res/values/strings.xml
+async function updateStringsXML() {
+  let stringFile = path.resolve(templateDir, "app/src/main/res/values/strings.xml");
+  let stringsPath = path.resolve(mainDir, 'res/values/strings.xml');
+
+  await cp(stringFile, stringsPath, { recursive: true });
+
+  let stringsContent = await readFile(stringsPath, { encoding: 'utf-8' });
+  stringsContent = stringsContent.replace(/com.getcapacitor.myapp/g, appId);
+  stringsContent = stringsContent.replace(/My App/g, appName);
+
+  await writeFile(stringsPath, stringsContent);
 }
 
 async function decompress(source: string, destination: string) {
@@ -82,7 +110,7 @@ async function main() {
   try {
     await Promise.all([
       updateProjectSettings(),
-      updateMainActivityPackage(),
+      updateTemplateBasedFiles(),
     ]);
   } catch (ex) {
     console.error(ex);
