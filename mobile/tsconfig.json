@@ -1,8 +1,0 @@
-{
-  "extends": "@tsconfig/node22/tsconfig.json",
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true,
-    "declaration": true
-  }
-}

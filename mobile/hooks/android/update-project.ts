@@ -43,8 +43,9 @@ async function updateTemplateBasedFiles() {
 
 // Get template
 async function getTemplate() {
-  let cliPackage = import.meta.resolve("@capacitor/cli").split(":")[1];
-  let templatePath = path.join(cliPackage, "../../assets");
+  // vite-node doesn't support import.meta.resolve
+  let cliPackage = path.join(__dirname, "../../node_modules/@capacitor/cli");
+  let templatePath = path.join(cliPackage, "./assets");
   let templateZip = path.resolve(templatePath, "android-template.tar.gz");
   templateDir = path.join(templatePath, "android-template");
 
