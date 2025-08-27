@@ -16,8 +16,6 @@ import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotif
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import type { OAuth2 } from "../../Auth/OAuth2";
-import { OAuth2UIMethod } from "../../Auth/UI/OAuth2UIMethod";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";

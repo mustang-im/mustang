@@ -1,10 +1,7 @@
 import { WebBasedAuth } from "./WebBasedAuth";
-import type { OAuth2UIMethod } from "./UI/OAuth2UIMethod";
-import type { OAuth2 } from "./OAuth2";
 import { OAuth2LoginNeeded } from "./OAuth2Error";
 import { OAuth2Tab } from "./UI/OAuth2Tab";
 import type { OWAAccount } from "../Mail/OWA/OWAAccount";
-import { owaFindFoldersRequest } from "../Mail/OWA/Request/OWAFolderRequests";
 import { appGlobal } from "../app";
 import { assert, NotReached, type URLString } from "../util/util";
 

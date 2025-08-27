@@ -5,7 +5,7 @@ import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { Lock } from "../util/Lock";
-import { assert, AbstractFunction, NotImplemented } from "../util/util";
+import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
 export class Folder extends Observable implements TreeItem<Folder> {

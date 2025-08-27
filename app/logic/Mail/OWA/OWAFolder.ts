@@ -11,7 +11,7 @@ import {
   owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
 } from "./Request/OWAFolderRequests";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
+import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";

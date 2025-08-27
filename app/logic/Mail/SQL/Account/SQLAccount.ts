@@ -1,5 +1,4 @@
 import type { Account } from "../../../Abstract/Account";
-import { MailAccount } from "../../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { passwordDecrypt, passwordEncrypt } from "../../../Auth/passwordEncrypt";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";

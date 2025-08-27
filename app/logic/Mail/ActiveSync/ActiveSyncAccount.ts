@@ -18,7 +18,7 @@ import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
-import { ensureArray, assert, NotSupported, sleep } from "../../util/util";
+import { ensureArray, assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
