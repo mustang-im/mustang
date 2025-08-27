@@ -316,7 +316,7 @@ export class OWAEvent extends Event {
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
-      recurrence.RecurrencePattern.DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
+      recurrence.RecurrencePattern.DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
       recurrence.RecurrencePattern.FirstDayOfWeek = Weekday[rule.first];
