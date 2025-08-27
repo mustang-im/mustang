@@ -185,7 +185,11 @@ export class Folder extends Observable implements TreeItem<Folder> {
     let disableSubfolders = this.disableSubfolders();
     assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
     // TODO Check sub sub folders
-    folder.parent.subFolders.remove(folder);
+    if (folder.parent) {
+      folder.parent.subFolders.remove(folder);
+    } else {
+      folder.account.rootFolders.remove(folder);
+    }
     folder.parent = this;
     this.subFolders.add(folder);
   }
