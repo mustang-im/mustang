@@ -1,4 +1,4 @@
-name: Installers for Android
+name: Parula Installers for Android
 
 on:
   workflow_dispatch: # manually triggered
@@ -30,7 +30,7 @@ jobs:
     - name: Set NDK to v28
       run:  echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
 
-    - run: cd app/build; sh mustang-brand.sh
+    - run: cd mobile; sh hooks/common/parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
     - run: cd backend; yarn install
@@ -52,14 +52,14 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: mustang.apk
+        name: parula.apk
         path: |
           mobile/android/app/build/outputs/apk/release/*.apk
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
       with:
-        name: mustang.aab
+        name: parula.aab
         path: |
           mobile/android/app/build/outputs/bundle/release/*.aab
 
