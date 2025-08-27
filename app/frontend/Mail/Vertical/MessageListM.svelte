@@ -2,9 +2,9 @@
   <FolderHeader folder={selectedFolder} {searchMessages} />
   <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages on:click={() => catchErrors(goToMessage)} />
   {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder) && availableTags.hasItems}
-    <TagsList folder={selectedFolder} bind:searchMessages />
+    <TagsList folder={selectedFolder} bind:searchMessages showStaticLabel={false} />
   {/if}
-  <FolderFooter folder={selectedFolder} bind:searchMessages />
+  <FolderFooter folder={selectedFolder} bind:searchMessages showGetMail={false} />
   <MessageListBarM folder={selectedFolder} />
 </vbox>
 

@@ -1,7 +1,7 @@
 <!-- Appears below the msg list -->
  {#if folder}
-  <hbox class="folder-header font-smallest" class:mobile={$appGlobal.isMobile}>
-    {#if $account?.isLoggedIn}
+  <hbox class="folder-header font-smallest">
+    {#if showGetMail && $account?.isLoggedIn}
       <GetMailButton {folder} />
     {/if}
     <hbox class="buttons">
@@ -55,7 +55,7 @@
       <hbox class="msg-count">
         {#if searchMessages}
           {#if $searchMessages.hasItems}
-            {$t`${$searchMessages.length} search results`}
+            {$t`${$searchMessages.length} of ${$messages.length}`}
           {:else}
             {$t`No search results`}
           {/if}
@@ -64,8 +64,7 @@
             {#if $messages.length == 0}
               {$t`Loading...`}
             {:else}
-              {$t`${$folder.countUnread} unread *=> number of messages that have not been read yet`},
-              {$t`${$messages.length} shown *=> number of messages displayed`}
+              {$t`${$folder.countUnread} unread of ${$messages.length} *=> number of messages that have not been read`}
             {/if}
           {:else}
             {$t`Empty folder`}
@@ -94,6 +93,7 @@
 
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null; /** out */
+  export let showGetMail = true;
 
   $: account = folder?.account;
   $: messages = folder?.messages;
@@ -181,13 +181,17 @@
     padding-block-end: 2px;
     padding-inline-start: 4px;
     padding-inline-end: 4px;
-    color: var(--leftbar-fg);
-    background-color: var(--leftbar-bg);
     overflow: hidden;
   }
-  .folder-header.mobile {
-    height: 40px;
+  :global(.mobile) .folder-header {
+    height: 32px;
+    max-height: 32px;
     font-size: 16px;
+  }
+  .folder-header :global(button) {
+    background-color: unset;
+    color: unset;
+    margin-inline-end: 4px;
   }
   .folder-header :global(button:hover) {
     z-index: 1;
@@ -198,6 +202,13 @@
     border: none;
     margin-inline-end: 8px;
   }
+  :global(.mobile) .folder-header :global(.get-mail button) {
+    height: 32px;
+    width: 32px;
+  }
+  .folder-header :global(.star button svg) {
+    stroke-width: 1.5px;
+  }
   .folder-header :global(.search) {
     height: 18px;
     margin-inline-start: 8px;
@@ -205,19 +216,21 @@
   .folder-header :global(input[type="search"]) {
     height: 18px;
   }
-  .folder-header.mobile :global(.search),
-  .folder-header.mobile :global(input[type="search"]) {
+  :global(.mobile) .folder-header :global(.search),
+  :global(.mobile) .folder-header :global(input[type="search"]) {
     height: 32px;
     font-size: 16px;
   }
   .msg-count {
+    align-items: center;
     padding-inline-start: 4px;
     padding-inline-end: 8px;
+    opacity: 70%;
   }
   .star.starred :global(svg) {
     fill: orange;
   }
-  .unread-dot {
+  .unread-dot.button {
     margin-inline: -4px;
   }
   .unread-dot.unread :global(svg) {

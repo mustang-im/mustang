@@ -1,5 +1,7 @@
 <vbox class="tags">
-  <hbox class="header font-smallest">{$t`Tags`}</hbox>
+  {#if showStaticLabel}
+    <hbox class="header font-smallest">{$t`Tags`}</hbox>
+  {/if}
   <vbox class="list">
     <TagSelector tags={availableTags} {selectedTags} canAdd={false}
       on:select={() => catchErrors(onSelect)}
@@ -23,6 +25,7 @@
   export let selectedTags = new SetColl<Tag>();
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null = null;
+  export let showStaticLabel = true;
 
   $: folder, onSelect();
 
@@ -49,12 +52,16 @@
   .tags :global(.row hbox) {
     font-size: 14px;
   }
+  :global(.mobile) .list :global(.tag) {
+    padding: 4px 12px;
+  }
   .header {
     padding-inline-start: 10px !important;
     color: grey;
   }
   .list {
     margin-block-start: 8px;
-    margin-inline-start: 10px;
+    margin-block-end: 2px;
+    margin-inline-start: 6px;
   }
 </style>
