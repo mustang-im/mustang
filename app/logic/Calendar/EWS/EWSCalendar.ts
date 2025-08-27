@@ -11,11 +11,13 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
-  folderID: string;
   readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
+  folderID: string;
+  /** Is this the default calendar that handles incoming invitations */
+  isInvitationCalendar: boolean = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;

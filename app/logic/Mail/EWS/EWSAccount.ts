@@ -572,6 +572,7 @@ export class EWSAccount extends MailAccount {
         calendar.icon ??= this.icon; // Migration, remove later
         calendar.color ??= this.color;
         await calendar.save();
+        calendar.isInvitationCalendar = Folder.DistinguishedFolderId == "calendar";
       }
     }
   }
