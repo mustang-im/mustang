@@ -135,7 +135,7 @@ export class OWAAccount extends MailAccount {
       let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == filter.FolderId.Id) as OWAAddressbook | undefined;
       if (!addressbook) {
         addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-        addressbook.name = `${filter.DisplayName} @ ${this.name}`;
+        addressbook.name = `${this.name} ${filter.DisplayName}`;
         addressbook.url = this.url;
         addressbook.username = this.username;
         addressbook.workspace = this.workspace;
@@ -303,7 +303,7 @@ export class OWAAccount extends MailAccount {
         let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as OWACalendar | undefined;
         if (!calendar) {
           calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-          calendar.name = `${folder.DisplayName} @ ${this.name}`;
+          calendar.name = `${this.name} ${folder.DisplayName}`;
           calendar.url = this.url;
           calendar.username = this.username;
           calendar.workspace = this.workspace;
