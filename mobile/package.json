@@ -29,6 +29,7 @@
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
     "@tsconfig/node22": "^22.0.2",
+    "tar": "^7.4.3",
     "typescript": "^5.9.2",
     "vite": "^5.4.2"
   },
