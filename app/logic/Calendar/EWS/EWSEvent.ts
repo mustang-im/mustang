@@ -27,7 +27,7 @@ enum WeekOfMonth {
   'Last' = 5,
 };
 
-const RecurrenceType = {
+const RecurrenceType: Record<string, string> = {
   RelativeYearlyRecurrence: Frequency.Yearly,
   AbsoluteYearlyRecurrence: Frequency.Yearly,
   RelativeMonthlyRecurrence: Frequency.Monthly,
@@ -438,7 +438,7 @@ function addParticipants(attendees, participants: Participant[], organizer?: str
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[Number(day)])) : null;
 }
 
 class EWSUpdateOccurrenceRequest {

@@ -410,7 +410,7 @@ function addParticipants(attendees, participants: Participant[], organizer?: str
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[Number(day)])) : null;
 }
 
 function fromWindowsZone(zone): string | null {

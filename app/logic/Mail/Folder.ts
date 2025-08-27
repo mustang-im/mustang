@@ -309,7 +309,7 @@ export const specialFolderOrder = [
   SpecialFolder.Normal,
 ];
 
-export const specialFolderNames = {};
+export const specialFolderNames: Record<string, string> = {};
 specialFolderNames[SpecialFolder.Inbox] = gt`Inbox`;
 specialFolderNames[SpecialFolder.Sent] = gt`Sent`;
 specialFolderNames[SpecialFolder.Drafts] = gt`Drafts`;

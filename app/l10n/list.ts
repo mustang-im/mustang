@@ -42,7 +42,7 @@ import tr from './locales/tr/messages.json';
 
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
-export const languageMessages = {
+export const languageMessages: Record<string, Record<string, string>> = {
   en: en,
   de: de,
   fr: fr,
@@ -141,7 +141,7 @@ export const localeNames = {
 
 /** key: locale code from navigator.language, in lower case
  * value: our lang code, from the above lists. */
-export const localeMapping = {
+export const localeMapping: Record<string, string> = {
   "en-gb": "en-GB",
   "en-ie": "en-GB",
   "en-au": "en-GB",

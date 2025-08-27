@@ -1,5 +1,3 @@
-import type { JsonRequest } from "./EWSAccount";
-
 export function XML2JSON(aNode: Element): Json {
   if (!aNode.children.length && !aNode.attributes.length) {
     return aNode.textContent;
@@ -24,7 +22,7 @@ export function XML2JSON(aNode: Element): Json {
   return result;
 }
 
-export function JSON2XML(aJSON: JsonRequest, aParent: Element, aNS: string, aTag: string): void {
+export function JSON2XML(aJSON: Json, aParent: Element, aNS: string, aTag: string): void {
   if (aJSON == null) {
     return;
   }

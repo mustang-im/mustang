@@ -1,4 +1,5 @@
 export class OWARequest {
+  [Symbol.toStringTag]: string;
   readonly __type: string;
   readonly Header = {
     __type: "JsonRequestHeaders:#Exchange",

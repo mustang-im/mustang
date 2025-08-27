@@ -114,7 +114,7 @@ export class JMAPAccount extends MailAccount {
    *   If a call returns multiple results, only the last result of that call is returned. */
   async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
     let responses = await this.makeCalls(calls);
-    let results = {};
+    let results: Record<string, any> = {};
     for (let response of responses) {
       results[response[2]] = response[1];
     }

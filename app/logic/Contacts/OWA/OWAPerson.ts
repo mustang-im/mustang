@@ -116,14 +116,18 @@ export class OWAPerson extends Person {
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   state: "State",
   postalCode: "PostalCode",
   country: "Country",
 };
-const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
+const PhysicalAddressPurposes: Record<string, string> = {
+  Business: "work",
+  Home: "home",
+  Other: "other",
+};
 const PhoneMapping: [string, string, string, string?][] = [
   ["work", "tel", "BusinessPhoneNumbers", "BusinessPhoneNumbers2"],
   ["home", "tel", "HomePhones", "HomePhones2"],

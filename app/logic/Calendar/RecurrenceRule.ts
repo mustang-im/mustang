@@ -139,7 +139,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
-    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
+    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("="))) as Record<string, string>;
     if (!Object.values(Frequency).includes(frequency)) {
       throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
     }
@@ -164,13 +164,13 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         data.week = sanitize.integer(byday[0]);
         byday = byday.split(byday[0]).join("");
       }
-      data.weekdays = byday.split(",").map(day => iCalWeekday[day]);
+      data.weekdays = byday.split(",").map(day => iCalWeekday[Number(day)]);
       for (let day of data.weekdays) {
         sanitize.integer(day);
       }
     }
     if (first) {
-      data.first = sanitize.integer(iCalWeekday[first]);
+      data.first = sanitize.integer(iCalWeekday[Number(first)]);
     }
     return new RecurrenceRule(data);
   }
