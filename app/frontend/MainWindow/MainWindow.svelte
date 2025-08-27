@@ -152,7 +152,8 @@
       return;
     }
     let urlObj = new URL(url); // throws
-    let urlEvent = new Event("url-" + urlObj.protocol.replace(":", "")); // e.g. "url-mailto"
+    let protocol = urlObj.protocol.replace(":", "");
+    let urlEvent = new Event("url-" + protocol); // e.g. "url-mailto"
     (urlEvent as any).url = url;
     targetE.dispatchEvent(urlEvent);
     event.stopPropagation();
