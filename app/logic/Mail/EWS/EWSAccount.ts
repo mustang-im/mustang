@@ -539,7 +539,7 @@ export class EWSAccount extends MailAccount {
         let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folder.FolderId.Id) as EWSAddressbook | undefined;
         if (!addressbook) {
           addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.name = `${folder.DisplayName} @ ${this.name}`;
+          addressbook.name = `${this.name} ${folder.DisplayName}`;
           addressbook.url = this.url;
           addressbook.username = this.username;
           addressbook.workspace = this.workspace;
@@ -559,7 +559,7 @@ export class EWSAccount extends MailAccount {
         let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as EWSCalendar | undefined;
         if (!calendar) {
           calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.name = `${folder.DisplayName} @ ${this.name}`;
+          calendar.name = `${this.name} ${folder.DisplayName}`;
           calendar.url = this.url;
           calendar.username = this.username;
           calendar.workspace = this.workspace;
