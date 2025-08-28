@@ -92,6 +92,10 @@
    * select the items which was in their place in the list. */
   export let ensureSelection = true;
 
+  /** Whether the list is scrolled all the way to the top
+   * out only */
+  export let isAtTop = false;
+
   let listE: HTMLDivElement;
   let headerE: HTMLDivElement;
   let contentE: HTMLDivElement;
@@ -242,6 +246,7 @@
   }
 
   $: startPosY = Math.floor(startPos * rowHeight + headerHeight);
+  $: isAtTop = startPos == 0;
 
   function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range

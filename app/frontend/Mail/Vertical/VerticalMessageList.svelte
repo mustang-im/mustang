@@ -5,6 +5,7 @@
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
+    bind:isAtTop
     columns="auto">
     <svelte:fragment slot="header">
     </svelte:fragment>
@@ -24,6 +25,8 @@
   export let messages: Collection<EMail>;
   export let selectedMessage: EMail;
   export let selectedMessages: ArrayColl<EMail>;
+  /** From FastList. out only */
+  export let isAtTop: boolean;
 
   $: sortedMessages = messages instanceof EMailCollection
     ? messages

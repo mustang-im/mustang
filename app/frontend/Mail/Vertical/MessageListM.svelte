@@ -10,7 +10,8 @@
     </hbox>
   {/if}
   <FolderHeader folder={selectedFolder} {searchMessages} />
-  <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages on:click={() => catchErrors(goToMessage)} />
+  <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages bind:isAtTop
+    on:click={() => catchErrors(goToMessage)} />
   {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder) && availableTags.hasItems}
     <TagsList folder={selectedFolder} bind:searchMessages showStaticLabel={false} />
   {/if}
@@ -54,7 +55,12 @@
 
   let checkingMail = false;
   let loggingIn = false;
+  /** From FastList. read only */
+  let isAtTop: boolean;
   async function onCheckMail() {
+    if (!isAtTop) {
+      return;
+    }
     loggingIn = true;
     let account = selectedFolder.account;
     if (!account.isLoggedIn) {
