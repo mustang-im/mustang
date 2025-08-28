@@ -5,6 +5,7 @@ import { appGlobal } from "../../../app";
 import sql from "../../../../../lib/rs-sqlite/index";
 import { PersonUID } from "../../../Abstract/PersonUID";
 import { sleep } from "../../../util/util";
+import { getConfigDir, getFilesDir } from "../../../util/backend-wrapper";
 
 export async function migrateToAccountsDB(): Promise<void> {
   let rows: any[];
@@ -30,8 +31,8 @@ export async function migrateToAccountsDB(): Promise<void> {
   if (localStorage.getItem("migrate.sql1") == "cancel") {
     return;
   }
-  let configDir = await appGlobal.remoteApp.getConfigDir();
-  let filesDir = await appGlobal.remoteApp.getFilesDir();
+  let configDir = await getConfigDir();
+  let filesDir = await getFilesDir();
   if (contacts?.length || events?.length) {
     let homeDir = await appGlobal.remoteApp.directory("home");
     let contactsDBFile = await appGlobal.remoteApp.path.join(homeDir, "contacts.db");
