@@ -224,9 +224,9 @@ export class ActiveSyncEMail extends EMail {
 }
 
 function setPersons(targetList: ArrayColl<PersonUID>, addresses: string): void {
-  let list = parseAddressList(addresses);
+  let list = parseAddressList(addresses) as ParsedMailbox[];
   if (!list) {
     return;
   }
-  targetList.replaceAll(list.map((mailbox: ParsedMailbox) => findOrCreatePersonUID(mailbox.address, mailbox.name)));
+  targetList.replaceAll(list.map(mailbox => findOrCreatePersonUID(mailbox.address, mailbox.name)));
 }

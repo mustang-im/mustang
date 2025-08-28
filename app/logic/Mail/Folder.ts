@@ -183,7 +183,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     assert(folder != this, "Cannot move a folder into itself. Neither physics nor logic allow that. We would run into a circle and run and run and run...");
     assert(this.subFolders.contains(folder), "This folder is *already* a subfolder of the target folder");
     let disableSubfolders = this.disableSubfolders();
-    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
+    assert(!disableSubfolders, disableSubfolders || "This folder cannot have subfolders");
     // TODO Check sub sub folders
     if (folder.parent) {
       folder.parent.subFolders.remove(folder);
@@ -197,7 +197,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   /** @see MailAccount.createToplevelFolder() */
   async createSubFolder(name: string): Promise<Folder> {
     let disableSubfolders = this.disableSubfolders();
-    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
+    assert(!disableSubfolders, disableSubfolders || "This folder cannot have subfolders");
     let folder = this.account.newFolder();
     folder.name = name;
     folder.parent = this;
@@ -207,7 +207,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   async rename(newName: string): Promise<void> {
     let disabled = this.disableRename();
-    assert(!disabled, disabled);
+    assert(!disabled, disabled || "Cannot rename");
     this.name = newName;
   }
 
@@ -218,7 +218,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
     let disableDelete = this.disableDelete();
-    assert(!disableDelete, disableDelete ?? "Cannot delete");
+    assert(!disableDelete, disableDelete || "Cannot delete");
     await this.deleteItLocally();
     await this.deleteItOnServer();
   }

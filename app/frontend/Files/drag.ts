@@ -38,9 +38,9 @@ export async function onDropFile(event: DragEvent, folder: Directory) {
     assert(messages.every(msg => fileIDs.includes(msg.id)), gt`Drag&drop failed: Selected file IDs don't match the drag data`);
   }
   if (event.ctrlKey || event.metaKey) {
-    await folder.copyFilesHere(new ArrayColl(messages));
+    await folder.copyFilesHere(new ArrayColl(messages as File[]));
   } else {
-    await folder.moveFilesHere(new ArrayColl(messages));
+    await folder.moveFilesHere(new ArrayColl(messages as File[]));
   }
 }
 
