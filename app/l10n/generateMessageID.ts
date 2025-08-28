@@ -9,14 +9,14 @@ const UNIT_SEPARATOR = '\u001F';
 /**
  * @param {string} msg
  */
-export function generateMessageID(msg, context = '') {
+export function generateMessageID(msg: string, context = '') {
   return hexToBase64(sha256(msg + UNIT_SEPARATOR + (context || ''))).slice(0, 6);
 }
 
 /**
  * @param {string} hexStr
  */
-function hexToBase64(hexStr) {
+function hexToBase64(hexStr: string) {
   let base64 = '';
   for (let i = 0; i < hexStr.length; i++) {
     base64 += !((i - 1) & 1)

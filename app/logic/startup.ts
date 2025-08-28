@@ -49,7 +49,7 @@ export async function getStartObjects(): Promise<void> {
  *   Called later on, if there are errors on processing server responses,
  *   e.g. the account being logged out, malformed data etc..
  */
-export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
+export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex: Error) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {

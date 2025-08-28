@@ -14,14 +14,14 @@ export async function sleep(seconds: number): Promise<void> {
   });
 }
 
-export function arrayRemove(array, item) {
+export function arrayRemove<T>(array: T[], item: T) {
   let pos = array.indexOf(item);
   if (pos > -1) {
     array.splice(pos, 1);
   }
 }
 
-export function arrayRemoveAll(array, item) {
+export function arrayRemoveAll<T>(array: T[], item: T) {
   let pos = -1;
   while ((pos = array.indexOf(item, pos)) != -1) {
     array.splice(pos, 1);

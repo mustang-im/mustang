@@ -209,7 +209,7 @@ class Sanitize {
    * @return {Date}
    */
   date(unchecked: Date | string | number | null, fallback: Date | null | Symbol = throwErrors): Date {
-    function newDate(val) {
+    function newDate(val: string | number | Date) {
       let date = new Date(val);
       if (isNaN(date.getTime())) {
         return haveError("Invalid date", unchecked, fallback);

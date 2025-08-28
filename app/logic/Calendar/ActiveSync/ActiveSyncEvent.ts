@@ -32,7 +32,7 @@ export class ActiveSyncEvent extends Event {
     this.pID = val;
   }
 
-  fromWBXML(wbxmljs) {
+  fromWBXML(wbxmljs: Record<string, any>) {
     this.calUID = sanitize.nonemptystring(wbxmljs.UID, null);
     this.title = sanitize.nonemptystring(wbxmljs.Subject, "");
     if (wbxmljs.Body?.Type == "2") {
@@ -105,7 +105,7 @@ export class ActiveSyncEvent extends Event {
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
-  toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
+  toFields(exceptions: { Exception: any } | { Exception: any }[] = []): any {
     return {
       ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
       Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
@@ -280,18 +280,18 @@ export function fromCompact(date: string): Date {
   return new Date(date.replace(/-|:|\..../g, "").replace(/(..)(..T..)(..)/, "-$1-$2:$3:"));
 }
 
-function getTimeZoneActiveSync(timezone): string {
+function getTimeZoneActiveSync(timezone: string | null): string {
   timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone;
   timezone = IANAToWindowsTimezone[timezone] || "UTC";
   let unicode = new Uint16Array(86);
   let pos = 2;
   for (let c of timezone) {
-    unicode[pos++] = c.charCodeAt();
+    unicode[pos++] = c.charCodeAt(0);
   }
   return btoa(String.fromCharCode(...new Uint8Array(unicode.buffer)));
 }
 
-function fromActiveSyncZone(zone): string | null {
+function fromActiveSyncZone(zone: string | null): string | null {
   if (!zone) {
     return null;
   }

@@ -48,7 +48,7 @@ export class EWSEvent extends Event {
     this.pID = val;
   }
 
-  fromXML(xmljs) {
+  fromXML(xmljs: Record<string, any>) {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.calUID = sanitize.nonemptystring(xmljs.UID, null);
     this.title = sanitize.nonemptystring(xmljs.Subject, "");
@@ -428,7 +428,7 @@ export class EWSEvent extends Event {
   }
 }
 
-function addParticipants(attendees, participants: Participant[], organizer?: string) {
+function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: string }, ResponseType: string }[], participants: Participant[], organizer?: string) {
   for (let attendee of ensureArray(attendees)) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
@@ -481,6 +481,6 @@ class EWSUpdateOccurrenceRequest {
   }
 }
 
-function fromWindowsZone(zone): string | null {
+function fromWindowsZone(zone: string | null): string | null {
   return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }

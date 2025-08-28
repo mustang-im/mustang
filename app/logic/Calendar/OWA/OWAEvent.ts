@@ -400,7 +400,7 @@ export class OWAEvent extends Event {
 }
 
 
-function addParticipants(attendees, participants: Participant[], organizer?: string) {
+function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: string }, ResponseType: string }[], participants: Participant[], organizer?: string) {
   for (let attendee of attendees) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
@@ -413,6 +413,6 @@ function extractWeekdays(daysOfWeek: string): Weekday[] | null {
   return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
 }
 
-function fromWindowsZone(zone): string | null {
+function fromWindowsZone(zone: string | null): string | null {
   return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }

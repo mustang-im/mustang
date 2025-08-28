@@ -53,7 +53,7 @@ export class EWSEMail extends EMail {
     await this.saveCompleteMessage();
   }
 
-  fromXML(xmljs) {
+  fromXML(xmljs: Record<string, any>) {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.id = sanitize.nonemptystring(xmljs.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(xmljs.Subject, "");
@@ -81,7 +81,7 @@ export class EWSEMail extends EMail {
   /** Get body and attachments from Exchange.
    * This is an alternative to parsing MIME.
    * @see EWSFolder GetItem server call. */
-  bodyAndAttachmentsFromXML(xmljs) {
+  bodyAndAttachmentsFromXML(xmljs: Record<string, any>) {
     assert(this.itemID == xmljs.ItemId.Id, "EWS EMail ItemID doesn't match");
     if (xmljs.Body?.BodyType == "Text") {
       this.text = sanitize.nonemptystring(xmljs.Body.Value, "");
@@ -107,7 +107,7 @@ export class EWSEMail extends EMail {
     }
   }
 
-  setFlags(xmljs) {
+  setFlags(xmljs: Record<string, any>) {
     this.isRead = sanitize.boolean(xmljs.IsRead);
     this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
     this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;

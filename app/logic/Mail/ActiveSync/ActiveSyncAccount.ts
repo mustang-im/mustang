@@ -64,11 +64,11 @@ export class ActiveSyncAccount extends MailAccount {
    * Currently storing the folder sync key, protocol version and policy key
    * (if any) in local storage. Should this migrate to configJSON?
    */
-  getStorageItem(key) {
+  getStorageItem(key: string) {
     return localStorage.getItem(`mail.${this.id}.${key}`);
   }
 
-  setStorageItem(key, value) {
+  setStorageItem(key: string, value: string) {
     localStorage.setItem(`mail.${this.id}.${key}`, value);
   }
 

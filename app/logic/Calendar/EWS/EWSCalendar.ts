@@ -177,7 +177,7 @@ export class EWSCalendar extends Calendar {
     }
   }
 
-  async getEvents(eventIDs, events: EWSEvent[], parentEvent?: EWSEvent) {
+  async getEvents(eventIDs: { Id: string }[], events: EWSEvent[], parentEvent?: EWSEvent) {
     if (!eventIDs.length) {
       return;
     }
