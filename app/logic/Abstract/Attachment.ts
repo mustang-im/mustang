@@ -2,7 +2,7 @@ import { File as FileEntry } from "../Files/File";
 import { openOSAppForFile, openOSFolder } from "../util/backend-wrapper";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
-import { NotImplemented, type URLString } from "../util/util";
+import { NotImplemented, assert, type URLString } from "../util/util";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -71,6 +71,7 @@ export class Attachment extends Observable {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
+    assert(this.filepathLocal, "Attachment hasn't been downloaded yet");
     await openOSAppForFile(this.filepathLocal, this.mimeType);
   }
   /** Open the native file manager with the folder
