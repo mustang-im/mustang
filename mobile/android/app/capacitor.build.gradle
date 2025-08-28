@@ -11,6 +11,7 @@ apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':capacitor-app')
     implementation project(':capacitor-camera')
+    implementation project(':capacitor-file-viewer')
     implementation project(':capacitor-splash-screen')
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
     implementation project(':capacitor-nodejs')

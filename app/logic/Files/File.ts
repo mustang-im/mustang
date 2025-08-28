@@ -1,5 +1,5 @@
 import { FileOrDirectory } from "./FileOrDirectory";
-import { appGlobal } from "../app";
+import { openOSAppForFile } from "../util/backend-wrapper";
 import { Lock } from "../util/Lock";
 import { notifyChangedProperty } from "../util/Observable";
 import { NotImplemented, blobToDataURL, type URLString } from "../util/util";
@@ -80,6 +80,6 @@ export class File extends FileOrDirectory {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
-    await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
+    await openOSAppForFile(this.filepathLocal, this.mimetype);
   }
 }
