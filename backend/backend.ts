@@ -340,7 +340,7 @@ function openExternalURL(url: string) {
   shell.openExternal(url);
 }
 
-function openFileInNativeApp(filePath: string) {
+function openFileInNativeApp(filePath: string, mimeType: string) {
   shell.openPath(filePath);
 }
 

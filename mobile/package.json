@@ -16,6 +16,7 @@
     "setup:ios": "cd ios && ./setup-ios.sh"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "^7.0.1",
     "@capacitor/android": "^7.0.0",
     "@capacitor/app": "^7.0.2",
     "@capacitor/camera": "^7.0.0",

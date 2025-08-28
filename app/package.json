@@ -18,6 +18,7 @@
     "l10n:sync:translations": "cd l10n && crowdin pull"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "^7.0.1",
     "@capacitor/app": "^7.0.2",
     "@capacitor/core": "^7.0.0",
     "@faker-js/faker": "^9.8.0",

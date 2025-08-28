@@ -279,7 +279,7 @@ function setTheme(theme: "system" | "light" | "dark") { // TODO
 function openExternalURL(url: string) { // TODO
 }
 
-function openFileInNativeApp(filePath: string) { // TODO
+function openFileInNativeApp(filePath: string, mimeType: string) { // TODO
 }
 
 function showFileInFolder(filePath: string) { // TODO
