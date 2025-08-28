@@ -138,7 +138,7 @@ export class EWSPerson extends Person {
   }
 }
 
-const PhysicalAddressElements: Recrod<string, string> = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   postalCode: "PostalCode",

@@ -404,7 +404,7 @@ function addParticipants(attendees, participants: Participant[], organizer?: str
   for (let attendee of attendees) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
-      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }
 }
