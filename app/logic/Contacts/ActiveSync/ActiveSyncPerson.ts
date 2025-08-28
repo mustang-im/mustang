@@ -123,7 +123,7 @@ export class ActiveSyncPerson extends Person {
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   postalCode: "PostalCode",
@@ -137,12 +137,11 @@ const PhoneMapping: [string, string, number][] = [
   ["work", "fax", 1],
   ["mobile", "tel", 1],
 ];
-
-enum ContactElements {
-  home = "Home",
-  work = "Business",
-  other = "Other",
-  mobile = "Mobile",
-  tel = "Phone",
-  fax = "Fax",
+const ContactElements: Record<string, string> = {
+  home: "Home",
+  work: "Business",
+  other: "Other",
+  mobile: "Mobile",
+  tel: "Phone",
+  fax: "Fax",
 };

@@ -72,7 +72,7 @@ export async function readMailAccounts(): Promise<Collection<MailAccount>> {
 }
 // #endif
 
-const kProtocolLabel = {
+const kProtocolLabel: Record<string, string> = {
   // Displayed to user, but do not translate (technical term)
   "imap": "IMAP",
   "smtp": "SMTP",

@@ -5,7 +5,7 @@ export class ActiveSyncError extends Error {
   type: string;
   code: string;
   constructor(aCommand: string, aStatus: string, account: Account) {
-    let msg = globalMessages[aStatus] || messages[aCommand]?.[aStatus] || `ActiveSync ${aCommand} status ${aStatus}`;
+    let msg = globalMessages[Number(aStatus)] || messages[aCommand]?.[Number(aStatus)] || `ActiveSync ${aCommand} status ${aStatus}`;
     if (account) {
       msg = account.name + ": " + msg;
     }

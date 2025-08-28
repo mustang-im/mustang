@@ -1,7 +1,7 @@
 /* WindowsToIANATimezone generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(select(.mapZone._territory == "001")) | map({(.mapZone._other): .mapZone._type}) | add' */
 /* IANAToWindowsTimezone generated from curl -s https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(.mapZone._other as $other | .mapZone._type | rtrimstr(" ") / " " | map({(.): $other})) | add | add' */
 
-export const WindowsToIANATimezone = {
+export const WindowsToIANATimezone: Record<string, string> = {
   "Afghanistan Standard Time": "Asia/Kabul",
   "Alaskan Standard Time": "America/Anchorage",
   "Aleutian Standard Time": "America/Adak",
@@ -143,7 +143,7 @@ export const WindowsToIANATimezone = {
   "Yukon Standard Time": "America/Whitehorse"
 };
 
-export const IANAToWindowsTimezone = {
+export const IANAToWindowsTimezone: Record<string, string> = {
   "Asia/Kabul": "Afghanistan Standard Time",
   "America/Anchorage": "Alaskan Standard Time",
   "America/Juneau": "Alaskan Standard Time",
