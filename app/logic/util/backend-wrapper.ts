@@ -49,6 +49,7 @@ let filesDir: string;
  * - Linux: /home/USER/.mustang/
  * - Windows: C:\Users\USER\AppData\Mustang\
  * - Mac OS: /Users/USER/Library/Mustang
+ * - Android: /storage/emulated/USER/Documents/im.mustang.capa/
  */
 export async function getFilesDir(): Promise<string> {
   // #if [MOBILE]
