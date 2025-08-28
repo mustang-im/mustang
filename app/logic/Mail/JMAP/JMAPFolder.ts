@@ -532,21 +532,21 @@ export class JMAPFolder extends Folder {
   disableDelete(): string | false {
     return super.disableDelete() ??
       this.myRights.mayDelete
-      ? gt(`You cannot delete this folder, because the server forbids it.`)
+      ? gt`You cannot delete this folder, because the server forbids it.`
       : null;
   }
 
   disableRename(): string | false {
     return super.disableRename() ??
       this.myRights.mayRename
-      ? gt(`You cannot rename this folder, because the server forbids it.`)
+      ? gt`You cannot rename this folder, because the server forbids it.`
       : null;
   }
 
   disableSubfolders(): string | false {
     return super.disableSubfolders() ??
       this.myRights.mayCreateChild
-      ? gt(`You cannot create subfolders of this folder, because the server forbids it.`)
+      ? gt`You cannot create subfolders of this folder, because the server forbids it.`
       : null;
   }
 

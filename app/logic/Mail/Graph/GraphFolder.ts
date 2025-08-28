@@ -398,19 +398,19 @@ export class GraphFolder extends Folder {
 
   disableDelete(): string | false {
     return super.disableDelete()
-      ? gt(`You cannot delete this folder, because the server forbids it.`)
+      ? gt`You cannot delete this folder, because the server forbids it.`
       : null;
   }
 
   disableRename(): string | false {
     return super.disableRename()
-      ? gt(`You cannot rename this folder, because the server forbids it.`)
+      ? gt`You cannot rename this folder, because the server forbids it.`
       : null;
   }
 
   disableSubfolders(): string | false {
     return super.disableSubfolders()
-      ? gt(`You cannot create subfolders of this folder, because the server forbids it.`)
+      ? gt`You cannot create subfolders of this folder, because the server forbids it.`
       : null;
   }
 
