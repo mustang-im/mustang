@@ -171,14 +171,12 @@ export class ComposeActions {
 
   convertInlineAttachmentsURLs() {
     let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous, "text/html");
-    console.log("in HTML", html, this.email.rawHTMLDangerous);
     for (let node of html.querySelectorAll("img[src]")) {
       let img = node as HTMLImageElement;
       // img.src = this.convertBlobURLToCIDURL(img.src);
       img.src = this.convertDataURLToCIDURL(img.src);
     }
     this.email.rawHTMLDangerous = html.documentElement.outerHTML;
-    console.log("out HTML", html, this.email.rawHTMLDangerous);
   }
 
   protected convertDataURLToCIDURL(url: URLString): URLString {
