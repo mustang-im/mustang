@@ -29,8 +29,10 @@ const version = packageJSON.version;
  * for the output name
  * - namespace: should be the same as applicationId
  * - appName: the name used for the output file, this needs to be changed for our Parula branding
+ *
+ * These are settings used to build the Android app.
  */
-async function updateProjectSettings() {
+async function updateBuildGradle() {
 
   let androidProjectFile = path.join(__dirname, "../../android/app/build.gradle");
   let gradleContent = await readFile(androidProjectFile, { encoding: 'utf-8' });
@@ -140,7 +142,7 @@ async function decompress(source: string, destination: string) {
 async function main() {
   try {
     await Promise.all([
-      updateProjectSettings(),
+      updateBuildGradle(),
       updateTemplateBasedFiles(),
     ]);
   } catch (ex) {
