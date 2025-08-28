@@ -2,6 +2,9 @@
 
 export NODE_OPTIONS="--max-old-space-size=32768"
 
+# Update Android settings
+npx vite-node ./hooks/android/update-project.ts
+
 # Setup mobile UI
 perl -p -i \
   -e "s|isMobile = false;$|isMobile = true;|;" \

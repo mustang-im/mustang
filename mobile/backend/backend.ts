@@ -437,6 +437,8 @@ function directory(type: string): string {
   return os.homedir();
 }
 
+// workaround: @capacitor/app App.getInfo().id has some code not getting bundled
+const appID = "im.mustang.capa";
 let configDir: string;
 /**
  * Get the user config directory on disk.
@@ -456,7 +458,7 @@ function getConfigDir(): string {
   }
   let homeDir: string = os.homedir();
   if (os.platform() == "android") {
-    configDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+    configDir = path.join(homeDir, "data", appID, "config");
   } else {
     configDir = homeDir;
   }
@@ -485,7 +487,7 @@ function getFilesDir(): string {
   }
   let homeDir: string = os.homedir();
   if (os.platform() == "android") {
-    filesDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+    filesDir = path.join(homeDir, "data", appID, "config");
   } else {
     filesDir = homeDir;
   }
