@@ -164,8 +164,8 @@ export class EWSAccount extends MailAccount {
     return new XMLSerializer().serializeToString(xml);
   }
 
-  checkResponse(aResponse, aRequest: JsonRequest): Json {
-    let responseXML = aResponse.responseXML;
+  checkResponse(aResponse: Record<string, any>, aRequest: JsonRequest): Json {
+    let responseXML = aResponse.responseXML as XMLDocument;
     if (!responseXML) {
       throw new EWSError(aResponse, aRequest);
     }
@@ -310,7 +310,7 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  async callStream(request: Json, responseCallback) {
+  async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
     let lastAttempt;
     do {
       try {
@@ -404,7 +404,7 @@ export class EWSAccount extends MailAccount {
     }).catch(this.errorCallback);
   }
 
-  async processNotification(notification) {
+  async processNotification(notification: Record<string, any>) {
     let hierarchyChanged = false;
     let folderIDs = new Set<string>();
     for (let copiedEvent of ensureArray(notification.CopiedEvent)) {

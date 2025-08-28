@@ -115,7 +115,7 @@ export class EWSFolder extends Folder {
     }
   }
 
-  protected async forEachSyncChange(changes: any[], eachCallback, isDirectList: boolean): Promise<any[]> {
+  protected async forEachSyncChange(changes: any[], eachCallback: (email: EWSEMail, change: any) => Promise<void>, isDirectList: boolean): Promise<any[]> {
     let newEMails: any[] = [];
     for (let change of ensureArray(changes)) {
       if (!isDirectList) {

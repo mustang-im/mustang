@@ -1,7 +1,7 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import psl from "psl";
 
-export function getDomainForEmailAddress(emailAddress): string {
+export function getDomainForEmailAddress(emailAddress: string): string {
   // Do not throw, because this function is used in {UI code}
   return sanitize.hostname(emailAddress.split("@").pop(), "unknown");
 }

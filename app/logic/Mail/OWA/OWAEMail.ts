@@ -33,7 +33,7 @@ export class OWAEMail extends EMail {
     await this.saveCompleteMessage();
   }
 
-  fromJSON(json) {
+  fromJSON(json: Record<string, any>) {
     this.itemID = sanitize.nonemptystring(json.ItemId.Id);
     this.id = sanitize.nonemptystring(json.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(json.Subject, "");
@@ -58,7 +58,7 @@ export class OWAEMail extends EMail {
     this.invitationMessage = ExchangeScheduling[json.ItemClass] || InvitationMessage.None;
   }
 
-  setFlags(json) {
+  setFlags(json: Record<string, any>) {
     this.isRead = sanitize.boolean(json.IsRead);
     // don't know how to get new or replied status
     this.isStarred = json.Flag?.FlagStatus == "Flagged";
@@ -166,7 +166,7 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
+function setPersons(targetList: ArrayColl<PersonUID>, mailboxes?: { EmailAddress: string, Name: string }[]): void {
   if (!mailboxes) {
     return;
   }

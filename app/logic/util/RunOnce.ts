@@ -8,7 +8,7 @@ export class RunOnce {
   func: () => void;
   running: boolean = false;
 
-  constructor(func) {
+  constructor(func: () => void) {
     this.func = func;
   }
 

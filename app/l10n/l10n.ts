@@ -126,7 +126,7 @@ export const t = derived(locale, () => gt);
 
 /** Used in .ts modules, e.g.
  * gt`Hello World!` or gt`Hello ${username}!` */
-export function gt(descriptor, ...args) {
+export function gt(descriptor: readonly string[], ...args: any[]) {
   let str: string = "";
   str = descriptor[0];
   args.forEach((_arg, i) => {

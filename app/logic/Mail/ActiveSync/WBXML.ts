@@ -40,7 +40,7 @@ const kTags = [
  *
  * Note: This function does not handle WBXML attributes, which we don't use.
  */
-export function request2WBXML(aRequest): Promise<ArrayBuffer> {
+export function request2WBXML(aRequest: object): Promise<ArrayBuffer> {
   let wbxml = [Uint8Array.of(kWBXMLVersion, kDTD, kUTF8, 0)];
   let currentPage = 0x00;
   let J2W = aJSON => {

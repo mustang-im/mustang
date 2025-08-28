@@ -35,7 +35,7 @@ export async function buildContextMenu(context: ContextInfo, win: any): Promise<
   context.isLink = !!context.linkURL;
 
   let menuItems = new ArrayColl<MenuItem>();
-  function add(id: string, label, icon: string, action: Function, disabled: boolean = false) {
+  function add(id: string, label: string, icon: string, action: Function, disabled: boolean = false) {
     let menuItem = new MenuItem(id, label, icon, () => action(context, win));
     menuItem.disabled = disabled;
     menuItems.add(menuItem);

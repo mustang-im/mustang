@@ -159,7 +159,7 @@ class OWAGetNotesForPersonaRequest {
     MaxBytesToFetch: 512000,
   };
 
-  constructor(id) {
+  constructor(id: string) {
     this.getNotesForPersonaRequest.PersonaId = id;
   }
 
@@ -188,7 +188,7 @@ class OWAGetGroupInfoRequest {
     ResultSet: 2,
   };
 
-  constructor(id) {
+  constructor(id: string) {
     this.getGroupInfoRequest.ItemId.Id = id;
   }
 
