@@ -20,11 +20,7 @@
   </hbox>
 {/if}
 
-// #if [!WEBMAIL && !MOBILE]
-<webview bind:this={webviewE} src={url} {title} {partition} />
-// #else
-<iframe bind:this={webviewE} src={url} {title} />
-// #endif
+<WebView {url} {title} {sessionID} autoSize />
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
@@ -34,6 +30,7 @@
   import type { URLString } from '../../logic/util/util';
   import { Loader } from '@svelteuidev/core';
   import { t } from '../../l10n/l10n';
+  import WebView from './WebView.svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -48,8 +45,6 @@
   export let sessionID: string;
   export let withURLbar = true;
   export let autofill: string;
-
-  $: partition = sessionID ? "persist:" + sessionID : undefined;
 
   function getDomain(url: URLString) {
     if (!url) {
