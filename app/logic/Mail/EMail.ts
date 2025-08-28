@@ -164,7 +164,7 @@ export class EMail extends Message {
     let account = this.folder.account;
     let archive = account.getSpecialFolder(SpecialFolder.Archive);
     if (!archive) {
-      archive = await account.inbox.createSubFolder(gt(`Archive`));
+      archive = await account.inbox.createSubFolder(gt`Archive`);
       archive.specialFolder = SpecialFolder.Archive; // TODO set on server
     }
     archive.moveMessageHere(this);
