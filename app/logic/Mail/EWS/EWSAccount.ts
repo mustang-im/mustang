@@ -470,12 +470,12 @@ export class EWSAccount extends MailAccount {
           await mailFolder.updateChangedMessages();
           continue;
         }
-        let addressbook = appGlobal.addressbooks.filterOnce((addressbook): addressbook is EWSAddressbook => addressbook.mainAccount == this).find(addressbook => addressbook.folderID == folderID);
+        let addressbook = appGlobal.addressbooks.find((addressbook): addressbook is EWSAddressbook => addressbook.mainAccount == this && (addressbook as EWSAddressbook).folderID == folderID);
         if (addressbook) {
           await addressbook.listContacts();
           continue;
         }
-        let calendar = appGlobal.calendars.filterOnce((calendar): calendar is EWSCalendar => calendar.mainAccount == this).find(calendar => calendar.folderID == folderID);
+        let calendar = appGlobal.calendars.find((calendar): calendar is EWSCalendar => calendar.mainAccount == this && (calendar as EWSCalendar).folderID == folderID);
         if (calendar) {
           await calendar.listEvents();
           continue;

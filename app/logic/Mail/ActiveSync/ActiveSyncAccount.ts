@@ -448,7 +448,7 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let calendar = appGlobal.calendars.filterOnce((calendar): calendar is ActiveSyncCalendar => calendar.mainAccount == this).find(calendar => (calendar.url == url.toString() || calendar.serverID == change.ServerId));
+            let calendar = appGlobal.calendars.find((calendar): calendar is ActiveSyncCalendar => calendar.mainAccount == this && (calendar.url == url.toString() || (calendar as ActiveSyncCalendar).serverID == change.ServerId));
             console.log("found the ActS cal again", calendar?.name);
             if (calendar) {
               calendar.name = change.DisplayName;
@@ -470,7 +470,7 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Contacts:
           case FolderType.UserContacts:
-            let addressbook = appGlobal.addressbooks.filterOnce((addressbook): addressbook is ActiveSyncAddressbook => addressbook.mainAccount == this).find(addressbook => (addressbook.url == url.toString() || addressbook.serverID == change.ServerId));
+            let addressbook = appGlobal.addressbooks.find((addressbook): addressbook is ActiveSyncAddressbook => addressbook.mainAccount == this && (addressbook.url == url.toString() || (addressbook as ActiveSyncAddressbook).serverID == change.ServerId));
             console.log("found the ActS AB again", addressbook?.name);
             if (addressbook) {
               addressbook.name = change.DisplayName;
@@ -505,12 +505,12 @@ export class ActiveSyncAccount extends MailAccount {
           }
           let url = new URL(this.url);
           url.searchParams.set("serverID", deletion.ServerId);
-          let addressbook = appGlobal.addressbooks.filterOnce((addressbook): addressbook is ActiveSyncAddressbook => addressbook.mainAccount == this).find(addressbook => (addressbook.url == url.toString() || addressbook.serverID == deletion.ServerId));
+          let addressbook = appGlobal.addressbooks.find((addressbook): addressbook is ActiveSyncAddressbook => addressbook.mainAccount == this && (addressbook.url == url.toString() || (addressbook as ActiveSyncAddressbook).serverID == deletion.ServerId));
           if (addressbook) {
             this.removePingable(addressbook);
             addressbook.deleteIt();
           }
-          let calendar = appGlobal.calendars.filterOnce((calendar): calendar is ActiveSyncCalendar => calendar.mainAccount == this).find(calendar => (calendar.url == url.toString() || calendar.serverID == deletion.ServerId));
+          let calendar = appGlobal.calendars.find((calendar): calendar is ActiveSyncCalendar => calendar.mainAccount == this && (calendar.url == url.toString() || (calendar as ActiveSyncCalendar).serverID == deletion.ServerId));
           if (calendar) {
             this.removePingable(calendar);
             calendar.deleteIt();
