@@ -356,6 +356,9 @@
     overflow: hidden;
     padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
   }
+  .fast-list::-webkit-scrollbar-thumb {
+    min-height: 60px;
+  }
   /* 3D style
   .header :global(> *) {
     border-top: 1px solid white;
