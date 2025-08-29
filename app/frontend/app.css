@@ -350,11 +350,11 @@ a:hover {
   color: var(--selected-fg);
 }
 
-.fast-list .row:not(.selected):hover > * {
+.main-window:not(.mobile) .fast-list .row:not(.selected):hover > * {
   background-color: var(--hover-bg);
   color: var(--hover-fg);
 }
-.fast-list .row.selected:hover > * {
+.main-window:not(.mobile) .fast-list .row.selected:hover > * {
   background-color: var(--selected-hover-bg);
   color: var(--selected-hover-fg);
 }
