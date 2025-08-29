@@ -20,8 +20,10 @@ let configDir: string;
  */
 export async function getConfigDir(): Promise<string> {
   // #if [MOBILE]
-  let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.Library });
-  configDir ??= uriResult.uri.replace("file://", "");
+  if (!configDir) {
+    let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.Library });
+    configDir = uriResult.uri.replace("file://", "");
+  }
   // #else
   configDir ??= await appGlobal.remoteApp.getConfigDir();
   // #endif
@@ -44,8 +46,10 @@ let filesDir: string;
  */
 export async function getFilesDir(): Promise<string> {
   // #if [MOBILE]
-  let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.External });
-  filesDir ??= uriResult.uri.replace("file://", "");
+  if (!filesDir) {
+    let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.External });
+    filesDir = uriResult.uri.replace("file://", "");
+  }
   // #else
   filesDir ??= await appGlobal.remoteApp.getFilesDir();
   // #endif
