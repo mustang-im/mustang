@@ -1,7 +1,7 @@
+import { appGlobal } from "../app";
+import type { Database } from "../../../lib/rs-sqlite";
 // #if [MOBILE]
 import { Directory, Filesystem } from "@capacitor/filesystem";
-// #else
-import { appGlobal } from "../app";
 // #endif
 
 let configDir: string;
@@ -50,4 +50,13 @@ export async function getFilesDir(): Promise<string> {
   filesDir ??= await appGlobal.remoteApp.getFilesDir();
   // #endif
   return filesDir;
+}
+
+export async function getSQLiteDatabase(filename: string, options?: any): Promise<Database> {
+  // #if [MOBILE]
+  if (!filename.startsWith("/")) {
+    filename = await appGlobal.remoteApp.path.join(await getConfigDir(), filename);
+  }
+  // #endif
+  return await appGlobal.remoteApp.getSQLiteDatabase(filename, options);
 }
