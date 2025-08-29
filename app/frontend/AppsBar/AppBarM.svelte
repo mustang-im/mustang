@@ -14,9 +14,6 @@
     z-index: 4;
     justify-content: center;
   }
-  .app-bar :global(svg) {
-    stroke: var(--appbar-fg);
-  }
   .app-bar > :global(*) {
     flex: 1 0 0;
     justify-content: center;
@@ -25,8 +22,10 @@
     width: 48px;
     margin-inline-start: 2px;
   }
-  .app-bar :global(svg) {
+  .app-bar :global(> * > button svg),
+  .app-bar :global(.menu-button svg) {
     stroke-width: 1.3px;
+    stroke: var(--appbar-fg);
   }
   .app-bar :global(.empty) {
     width: 48px;
