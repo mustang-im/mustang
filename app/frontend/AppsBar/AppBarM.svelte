@@ -21,7 +21,7 @@
     flex: 1 0 0;
     justify-content: center;
   }
-  .app-bar :global(button) {
+  .app-bar > * > :global(button) {
     width: 48px;
     margin-inline-start: 2px;
   }
