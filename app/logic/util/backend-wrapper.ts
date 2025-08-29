@@ -1,16 +1,7 @@
 // #if [MOBILE]
 import { Directory, Filesystem } from "@capacitor/filesystem";
-import { App } from "@capacitor/app";
 // #else
 import { appGlobal } from "../app";
-// #endif
-
-// #if [MOBILE]
-let appID: string;
-async function getAppID() {
-  appID ??= (await App.getInfo()).id;
-  return appID;
-}
 // #endif
 
 let configDir: string;
@@ -49,11 +40,11 @@ let filesDir: string;
  * - Linux: /home/USER/.mustang/
  * - Windows: C:\Users\USER\AppData\Mustang\
  * - Mac OS: /Users/USER/Library/Mustang
- * - Android: /storage/emulated/USER/Documents/im.mustang.capa/
+ * - Android: /storage/emulated/0/Android/data/im.mustang.capa/files/
  */
 export async function getFilesDir(): Promise<string> {
   // #if [MOBILE]
-  let uriResult = await Filesystem.getUri({ path: `/${await getAppID()}`, directory: Directory.External });
+  let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.External });
   filesDir ??= uriResult.uri.replace("file://", "");
   // #else
   filesDir ??= await appGlobal.remoteApp.getFilesDir();
