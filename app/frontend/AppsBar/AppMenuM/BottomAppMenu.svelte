@@ -6,7 +6,7 @@
 
 <style>
   .bottom {
-    height: 40px;
+    height: 44px;
     width: 48px;
     border-bottom-left-radius: 24px;
     border-bottom-right-radius: 24px;

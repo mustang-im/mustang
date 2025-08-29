@@ -13,8 +13,8 @@
 
 <style>
   .settings {
-    margin-bottom: -32px;
-    height: 32px;
+    margin-bottom: -44px;
+    height: 44px;
     z-index: 1;
   }
   .settings :global(.app-button) {
