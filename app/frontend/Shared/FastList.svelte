@@ -9,8 +9,11 @@
         <slot name="header" />
       </div>
       <div class="content" bind:this={contentE}>
-        {#each showItems as item}
-          <div class="row" on:click={event => onSelectElement(item, event)} class:selected={$selectedItems.includes(item)}>
+        {#each showItems as item, i}
+          <div class="row"
+            class:selected={$selectedItems.includes(item)}
+            class:odd={(startPos + i) % 2 == 1}
+            on:click={event => onSelectElement(item, event)}>
             <slot name="row" {item} />
           </div>
         {/each}
