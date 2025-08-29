@@ -62,6 +62,10 @@
     font-weight: 300;
     height: 20px; /* avoid line break */
   }
+  :global(.mobile) .label {
+    height: 40px;
+    align-items: center;
+  }
   .count {
     background-color: #ff000099;
     color: white;
