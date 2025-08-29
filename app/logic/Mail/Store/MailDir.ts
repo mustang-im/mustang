@@ -5,6 +5,7 @@ import type { Folder } from "../Folder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
+import { getFilesDir } from "../../util/backend-wrapper";
 
 /** Save all emails of a mail folder in a folder in the local disk filesystem.
  * Each email is saved as original RFC822 MIME message, one file per email.
@@ -65,7 +66,7 @@ export class MailDir implements MailContentStorage {
   haveDirs = new SetColl<string>(); // Check dir only once per app session
 
   async getFolderDir(folder: Folder): Promise<string> {
-    this.filesDir = this.filesDir ?? await appGlobal.remoteApp.getFilesDir();
+    this.filesDir = this.filesDir ?? await getFilesDir();
     let dir = `${this.filesDir}/backup/email/individual/${sanitize.filename(folder.account.emailAddress.replace("@", "-"))}-${sanitize.filename(folder.account.id)}`;
     if (folder.parent) {
       dir += `/${sanitize.filename(folder.parent.path, "unknownFolder")}`;
