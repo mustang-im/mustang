@@ -53,7 +53,7 @@ let filesDir: string;
  */
 export async function getFilesDir(): Promise<string> {
   // #if [MOBILE]
-  let uriResult = await Filesystem.getUri({ path: `/${await getAppID()}`, directory: Directory.Documents });
+  let uriResult = await Filesystem.getUri({ path: `/${await getAppID()}`, directory: Directory.External });
   filesDir ??= uriResult.uri.replace("file://", "");
   // #else
   filesDir ??= await appGlobal.remoteApp.getFilesDir();
