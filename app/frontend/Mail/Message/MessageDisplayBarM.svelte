@@ -60,6 +60,7 @@
     <hbox class="menu button">
       <ButtonMenu bind:isMenuOpen>
         <MessageMenu bind:message {printE} />
+        <DisplayModeSwitcher />
       </ButtonMenu>
     </hbox>
   </AppBarM>
@@ -78,6 +79,7 @@
   import MessageMenu from "./MessageMenu.svelte";
   import MessageMovePopup from "./MessageMovePopup.svelte";
   import Print from "./MessagePrint.svelte";
+  import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
@@ -140,3 +142,10 @@
     popupOpen = false;
   }
 </script>
+
+<style>
+  .menu :global(.island) {
+    color: black;
+    justify-content: center;
+  }
+</style>
