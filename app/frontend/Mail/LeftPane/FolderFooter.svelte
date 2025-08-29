@@ -64,7 +64,9 @@
             {#if $messages.length == 0}
               {$t`Loading...`}
             {:else}
-              {$t`${$folder.countUnread} unread of ${$messages.length} *=> number of messages that have not been read`}
+              {#if !appGlobal.isSmall}
+                {$t`${$folder.countUnread} unread of ${$messages.length} *=> number of messages that have not been read`}
+              {/if}
             {/if}
           {:else}
             {$t`Empty folder`}
