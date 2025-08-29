@@ -4,31 +4,7 @@
   >
   <AppBarM>
     <!-- left -->
-    <hbox class="accounts">
-      <Button
-        icon={message?.folder?.account?.icon ?? InboxIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`Select account or folder`}
-        onClick={goToAccounts}
-        plain
-        />
-    </hbox>
-
-    <!-- left middle -->
-    <hbox class="msglist" specialfolder={message.folder.specialFolder}>
-      <Button
-        label={$t`Show messages in folder ${message.folder.name}`}
-        onClick={goToMsgList}
-        icon={ListIcon}
-        iconSize="24px"
-        iconOnly
-        plain
-        />
-    </hbox>
-
-    <!-- left center extra -->
-    <hbox class="spam extra">
+    <hbox class="spam">
       <Button
         icon={SpamIcon}
         iconSize="24px"
@@ -40,10 +16,8 @@
         />
     </hbox>
 
-    <AppMenuButton />
-
-    <!-- right center extra -->
-    <hbox class="trash extra">
+    <!-- left middle -->
+    <hbox class="trash">
       <Button
         icon={TrashIcon}
         iconSize="24px"
@@ -54,6 +28,8 @@
         plain
         />
     </hbox>
+
+    <AppMenuButton />
 
     <!-- right middle -->
     {#if message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts }
