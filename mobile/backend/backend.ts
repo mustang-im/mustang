@@ -7,6 +7,7 @@ import Zip from "adm-zip";
 import ky from 'ky';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -314,6 +315,10 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
+}
+
+function createWebDAVClient(options: any) {
+  return new DAVClient(options);
 }
 
 function newAdmZIP(filepath: string) {
