@@ -491,7 +491,10 @@ export class EMail extends Message {
     if (typeof (previous) == "boolean") {
       previous ? --i : ++i;
     }
-    return this.folder.messages.getIndex(i);
+    return this.folder.messages.getIndex(i) ??
+      this.folder.messages.first ??
+      this.folder.account.inbox.messages.first ??
+      this.folder.newEMail();
   }
 
   get compose(): ComposeActions {

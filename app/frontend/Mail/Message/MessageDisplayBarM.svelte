@@ -108,19 +108,19 @@
   }
   async function deleteMessage() {
     await message.deleteMessage();
-    loadOtherMessage();
+    loadOther();
   }
   async function markAsSpam() {
     await message.treatSpam(true);
-    loadOtherMessage();
+    loadOther();
   }
   async function editDraft() {
     await message.loadMIME();
     mailMustangApp.writeMail(message);
   }
 
-  function loadOtherMessage() {
-    message = message.nextMessage();
+  function loadOther() {
+    goToMsgList();
   }
   function onNextMessage() {
     message = message.nextMessage(false);
