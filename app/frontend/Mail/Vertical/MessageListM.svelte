@@ -1,15 +1,7 @@
 <vbox flex class="message-list-pane"
   on:swipedown={() => catchErrors(onCheckMail)}>
-  {#if checkingMail || loggingIn}
-    <hbox class="mail-check">
-      {#if checkingMail}
-        <FetchingIcon size="32xp" />
-      {:else if loggingIn}
-        <LoginIcon size="32xp" />
-      {/if}
-    </hbox>
-  {/if}
   <FolderHeader folder={selectedFolder} {searchMessages} />
+  <FetchingM folder={selectedFolder} bind:this={fetching} />
   <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages bind:isAtTop
     on:click={() => catchErrors(goToMessage)} />
   {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder) && availableTags.hasItems}
@@ -30,8 +22,7 @@
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
   import TagsList from "../LeftPane/TagsList.svelte";
   import MessageListBarM from "./MessageListBarM.svelte";
-  import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
-  import LoginIcon from "lucide-svelte/icons/key-round";
+  import FetchingM from "./FetchingM.svelte";
   import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
@@ -53,23 +44,14 @@
     });
   }
 
-  let checkingMail = false;
-  let loggingIn = false;
   /** From FastList. read only */
   let isAtTop: boolean;
+  let fetching: FetchingM;
   async function onCheckMail() {
     if (!isAtTop) {
       return;
     }
-    loggingIn = true;
-    let account = selectedFolder.account;
-    if (!account.isLoggedIn) {
-      await account.login(true);
-    }
-    loggingIn = false;
-    checkingMail = true;
-    await selectedFolder.getNewMessages();
-    checkingMail = false;
+    await fetching.onCheckMail();
   }
 </script>
 
@@ -81,8 +63,5 @@
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
-  }
-  .mail-check {
-    height: 32px;
   }
 </style>
