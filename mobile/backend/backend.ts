@@ -77,6 +77,7 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    createWebDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
