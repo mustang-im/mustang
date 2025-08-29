@@ -1,5 +1,5 @@
 <!-- Appears above the msg list -->
-{#if account && !$account?.isLoggedIn || searchMessages}
+{#if account && !$account?.isLoggedIn || searchMessages || appGlobal.isMobile}
   <hbox class="folder-header font-smallest">
     <hbox flex />
     {#if account && !$account?.isLoggedIn}
@@ -11,6 +11,10 @@
     {/if}
     {#if searchMessages}
       {$t`Search results`}
+    {:else if appGlobal.isMobile && folder}
+      <hbox class="folder-name font-normal">
+        {folder.name}
+      </hbox>
     {/if}
     <hbox flex />
   </hbox>
@@ -23,6 +27,7 @@
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import { t } from '../../../l10n/l10n';
   import type { ArrayColl } from 'svelte-collections';
+  import { appGlobal } from '../../../logic/app';
 
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null; /** in */
@@ -48,5 +53,8 @@
   }
   .folder-header :global(button) {
     margin-inline-end: 12px;
+  }
+  .folder-name {
+    opacity: 70%;
   }
 </style>
