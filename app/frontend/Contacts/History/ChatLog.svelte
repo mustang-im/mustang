@@ -1,4 +1,4 @@
-<vbox>
+<vbox on:click={() => catchErrors(onOpen)}>
   {#if message.subject}
     <div class="subject">
       {message.subject}
@@ -11,8 +11,13 @@
 
 <script lang="ts">
   import type { ChatMessage } from "../../../logic/Chat/Message";
+  import { catchErrors } from "../../Util/error";
 
   export let message: ChatMessage;
+
+  function onOpen() {
+    // openChatFromOtherApp(message.chat); // TODO message.chat doesn't exist
+  }
 </script>
 
 <style>

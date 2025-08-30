@@ -1,6 +1,6 @@
 <vbox class="file" flex
   title={(file.name ?? "") + "\n" + fileSize(file.size)}
-  on:click={() => catchErrors(onOpenExternal)}>
+  on:click={() => catchErrors(onOpen)}>
   <div class="name">
     {file.name?.substring(0, 200) ?? ""}
   </div>
@@ -8,21 +8,18 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { selectedFile } from "../../Files/selected";
-  import { openApp } from "../../AppsBar/selectedApp";
-  import { filesMustangApp } from "../../Files/FilesMustangApp";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
+  import { openFileFromOtherApp } from "../../Files/open";
 
   export let file: File;
 
-  async function onOpenFilesApp() {
-    $selectedFile = file;
-    openApp(filesMustangApp, { file });
+  async function onOpen() {
+    await file.openOSApp();
   }
 
-  async function onOpenExternal() {
-    await file.openOSApp();
+  async function onOpenPreview() {
+    openFileFromOtherApp(file);
   }
 </script>
 

@@ -11,44 +11,14 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { selectedAccount, selectedFolder, selectedMessage, selectedSearchTab } from "../../Mail/Selected";
-  import { appGlobal } from "../../../logic/app";
+  import { openMailFromOtherApp } from "../../Mail/open";
   import { SearchView } from "../../Mail/LeftPane/SearchSwitcher.svelte";
-  import { goTo, openApp } from "../../AppsBar/selectedApp";
-  import { mailMustangApp } from "../../Mail/MailMustangApp";
-  import { URLPart } from "../../Util/util";
-  import { assert } from "../../../logic/util/util";
   import { catchErrors } from "../../Util/error";
-  import { tick } from "svelte";
 
   export let message: EMail;
 
   async function onOpen() {
-    assert(message.folder?.account, "no account for email");
-    $selectedAccount = message.folder?.account;
-    $selectedFolder = message.folder;
-    $selectedMessage = message;
-    $selectedSearchTab = SearchView.Person;
-    if (appGlobal.isMobile) { // TODO unify
-    goTo(URLPart`/mail/message/${message.folder.account.id}/${message.folder.id}/${message.id}/display`, {
-        message: message,
-        folder: message.folder,
-        account: message.folder?.account,
-        tab: SearchView.Person,
-      });
-    } else {
-      openApp(mailMustangApp, {
-        message: message,
-        folder: message.folder,
-        account: message.folder?.account,
-        tab: SearchView.Person,
-      });
-    }
-    await tick();
-    $selectedAccount = message.folder?.account;
-    $selectedFolder = message.folder;
-    $selectedMessage = message;
-    $selectedSearchTab = SearchView.Person;
+    openMailFromOtherApp(message, SearchView.Person);
   }
 </script>
 
