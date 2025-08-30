@@ -1,6 +1,6 @@
 <vbox class="results" flex>
   {#if searchMessages}
-    <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages on:click={() => catchErrors(goToMessage)} />
+    <VerticalMessageList messages={searchMessages} bind:selectedMessage bind:selectedMessages on:click={() => catchErrors(goToMessage)} />
     <FolderFooter folder={null} bind:searchMessages />
   {/if}
 </vbox>
@@ -19,7 +19,6 @@
 
   export let searchMessages: ArrayColl<EMail> | null = null;
 
-  let messages = new ArrayColl<EMail>();
   let selectedMessage: EMail;
   let selectedMessages: ArrayColl<EMail>;
 
