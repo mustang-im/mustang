@@ -34,7 +34,7 @@
   function goToAccount(account: MailAccount) {
     $selectedAccount = account;
     $selectedFolder = account.inbox;
-    goTo(URLPart`/mail/folder/${account.id}/${account.inbox.id}/message-list`, {
+    goTo(URLPart`/mail/folder/${account.id}/${account.inbox.id ?? "noid"}/message-list`, {
       account,
       folder: account.inbox,
     });

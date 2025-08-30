@@ -28,7 +28,7 @@
   async function onFolderSelected() {
     await sleep(0.1); // wait for `<FolderList>` to set `selectedFolder`
     assert(selectedFolder, "Need folder");
-    goTo(URLPart`/mail/folder/${selectedFolder.account.id}/${selectedFolder.id}/message-list`, {
+    goTo(URLPart`/mail/folder/${selectedFolder.account.id}/${selectedFolder.id ?? "noid"}/message-list`, {
       account: selectedFolder.account,
       folder: selectedFolder,
      });
