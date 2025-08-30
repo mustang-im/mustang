@@ -1,4 +1,4 @@
-<hbox class="app-menu-button">
+<hbox class="app-menu-button" on:swipeup={onOpen}>
   <RoundButton
     icon={logo}
     iconSize="32px"
