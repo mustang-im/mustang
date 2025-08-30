@@ -26,7 +26,7 @@
   export let selectedMessage: EMail;
   export let selectedMessages: ArrayColl<EMail>;
   /** From FastList. out only */
-  export let isAtTop: boolean;
+  export let isAtTop: boolean = false;
 
   $: sortedMessages = messages instanceof EMailCollection
     ? messages
