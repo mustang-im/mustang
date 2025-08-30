@@ -3,8 +3,8 @@
     <PersonPicture person={$selectedPerson} placeholder="icon" size={24} slot="icon" />
   </BasicButton>
   <CombinedButton
-    icon1={HistoryIcon}
-    icon2={$selectedPerson.picture ?? PersonIcon}
+    icon1={$selectedPerson.picture ?? contactsIcon}
+    icon2={HistoryIcon}
     page={URLPart`/contacts/person/${$selectedPerson.id}/history`}
     params={{ person: $selectedPerson }} />
 {:else}
@@ -27,9 +27,8 @@
   import PersonPicture from "../../../Contacts/Person/PersonPicture.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PlusIcon from "lucide-svelte/icons/plus-circle";
-  import PersonIcon from "lucide-svelte/icons/user";
+  import contactsIcon from '../../../asset/icon/appBar/contacts.svg?raw';
   import HistoryIcon from "lucide-svelte/icons/history";
-  import { catchErrors } from "../../../Util/error";
   import { URLPart } from "../../../Util/util";
   import { assert } from "../../../../logic/util/util";
 
