@@ -13,20 +13,6 @@
     </hbox>
 
     <!-- left middle -->
-    <hbox class="search">
-      <Button
-        icon={SearchIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`Search a person`}
-        onClick={goToSearch}
-        plain
-        />
-    </hbox>
-
-    <AppMenuButton />
-
-    <!-- right middle -->
     <hbox class="history">
       <Button
         icon={HistoryIcon}
@@ -37,6 +23,11 @@
         plain
         />
     </hbox>
+
+    <AppMenuButton />
+
+    <!-- right middle -->
+    <hbox class="empty" />
 
     <!-- right -->
     <hbox class="empty" />

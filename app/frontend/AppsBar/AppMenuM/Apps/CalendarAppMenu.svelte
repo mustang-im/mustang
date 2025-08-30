@@ -1,4 +1,12 @@
-<hbox class="empty" />
+{#if $selectedPerson}
+  <CombinedButton
+    icon1={calendarMustangApp.icon}
+    icon2={$selectedPerson.picture ?? PersonIcon}
+    page="/calendar/person"
+    params={{ person: $selectedPerson}} />
+{:else}
+  <hbox class="empty" />
+{/if}
 <RoundButton
   label={$t`TODO`}
     icon={TODOsIcon}
@@ -12,12 +20,14 @@
   import { setNewEventTime } from "../../../Calendar/event";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
   import { selectedCalendar } from "../../../Calendar/selected";
+  import { selectedPerson } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
   import { goTo } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
+  import PersonIcon from "lucide-svelte/icons/user";
   import PlusIcon from "lucide-svelte/icons/plus-circle";
   import TODOsIcon from "lucide-svelte/icons/list-checks";
   import { assert } from "../../../../logic/util/util";

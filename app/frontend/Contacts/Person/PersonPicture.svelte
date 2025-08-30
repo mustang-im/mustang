@@ -6,18 +6,24 @@
       title={$t`Picture of ${person.name}`}
       alt=""
       />
-  {:else if allowPlaceholder}
+  {:else if placeholder == "slot"}
+    <slot name="placeholder" />
+  {:else if placeholder == "icon"}
+    <Icon data={contactsIcon} size="{size}px" />
+  {:else if placeholder == "empty"}
     <hbox class="placeholder" />
   {/if}
 </vbox>
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
+  import contactsIcon from '../../asset/icon/appBar/contacts.svg?raw';
+  import Icon from "../../Shared/Icon.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let person: PersonOrGroup;
   export let size = 48;
-  export let allowPlaceholder = false;
+  export let placeholder: "none" | "empty" | "icon" | "slot" = "none";
 </script>
 
 <style>

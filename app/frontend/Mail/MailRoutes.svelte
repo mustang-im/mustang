@@ -8,6 +8,9 @@
   <Route path="message/:accountID/:folderID/:messageID/display">
     <MessageDisplay message={params?.message ?? $selectedMessage ?? requiredParam()} />
   </Route>
+  <Route path="person">
+    <SearchResultsM searchMessages={params.searchMessages ?? requiredParam()} />
+  </Route>
   <Route path="search">
     <SearchM />
   </Route>
@@ -36,6 +39,7 @@
   import MailComposer from "./Composer/MailComposer.svelte";
   import MsgListM from "./Vertical/MessageListM.svelte";
   import SearchM from "./Search/SearchM.svelte";
+  import SearchResultsM from "./Search/SearchResultsM.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
   import { showError } from "../Util/error";

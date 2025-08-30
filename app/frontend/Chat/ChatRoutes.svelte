@@ -1,9 +1,12 @@
 {#if appGlobal.isMobile}
+  <Route path="chat">
+    <ChatM chat={params?.chat ?? $selectedChat} />
+  </Route>
   <Route path="person/:personID">
-    <ChatM chat={params?.chat ?? $selectedChat ?? requiredParam()} slot="right" />
+    <ChatM chat={findChatForPerson(params?.person)} />
   </Route>
   <Route path="account/:accountID/persons" let:params={urlParams}>
-    {$selectedAccount = params?.chatAccount ?? appGlobal.addressbooks.find(ab => ab.id == urlParams.accountID) ?? requiredParam(), ""}
+    {$selectedAccount = params?.chatAccount ?? appGlobal.chatAccounts.find(ab => ab.id == urlParams.accountID) ?? requiredParam(), ""}
     <ChatsM />
   </Route>
   <Route path="search">
@@ -19,6 +22,8 @@
 {/if}
 
 <script lang="ts">
+  import { Chat } from "../../logic/Chat/Chat";
+  import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedChat } from "./selected";
   import { appGlobal } from "../../logic/app";
   import ChatAppD from "./ChatAppD.svelte";
@@ -30,4 +35,18 @@
 
   $: location = useLocation();
   $: params = getParams($location.state);
+
+  function findChatForPerson(person: Person): Chat | null {
+    if (!person) {
+      return null;
+    }
+    for (let account of appGlobal.chatAccounts) {
+      for (let chat of account.chats) {
+        if (chat.contact == person) { // TODO ChatPerson != Person. chat.contact as PersonUID? Use contact.matchesPerson() ?
+          return chat;
+        }
+      }
+    }
+    return null;
+  }
 </script>

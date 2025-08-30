@@ -67,7 +67,7 @@ export async function testIncoming(person: Person) {
   appGlobal.meetings.add(meeting);
 }
 
-export async function callSelected(person: Person) {
+export async function callSelected(person: Person): Promise<VideoConfMeeting> {
   let callee = new MeetingParticipant();
   callee.name = person.name;
   callee.picture = person.picture;
@@ -98,6 +98,7 @@ export async function callSelected(person: Person) {
   self.isMe = true;
   meeting.videos.add(self);
   // meeting.myParticipant.role = ParticipantRole.Moderator;
+  return meeting;
 }
 
 export async function joinByURL(url: URLString) {

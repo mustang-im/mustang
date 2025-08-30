@@ -2,7 +2,7 @@
   <hbox flex class="main-left" slot="content" language={getUILocale()}>
     <hbox flex>
       {#if person.picture}
-        <PersonPicture {person} size={64} allowPlaceholder={true} />
+        <PersonPicture {person} size={64} placeholder="empty" />
       {:else}
         <hbox class="no-avatar" />
       {/if}

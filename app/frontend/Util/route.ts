@@ -28,5 +28,6 @@ export function ensureIDMatch<T extends { id: string }>(obj: T, idParam: string,
 export function requiredParam(): any {
   let loc = useLocation();
   let location = get(loc);
+  alert(`Object missing for screen ${location.pathname}`);
   throw new Error(`Object missing for screen ${location.pathname}`);
 }

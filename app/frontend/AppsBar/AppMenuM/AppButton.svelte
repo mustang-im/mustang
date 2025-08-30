@@ -15,7 +15,7 @@
 
   function onClick(event: Event) {
     event.stopPropagation();
-    goTo(page);
+    goTo(page, {});
   }
 </script>
 

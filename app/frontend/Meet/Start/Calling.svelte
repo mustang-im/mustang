@@ -115,6 +115,9 @@
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
   <audio src="/sound/ringtone1.mp3" loop autoplay />
 {/if}
+{#if $appGlobal.isMobile}
+  <StartBarM selectedAccount={appGlobal.meetAccounts.first} />
+{/if}
 
 
 <script lang="ts">
@@ -124,6 +127,7 @@
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import GroupPicture from "../../Contacts/Person/GroupPicture.svelte";
   import DeviceSetup from "../Setup/DeviceSetup.svelte";
+  import StartBarM from "./StartBarM.svelte";
   import CallIcon from "lucide-svelte/icons/phone-call";
   import HangUpIcon from "lucide-svelte/icons/phone";
   import XIcon from "lucide-svelte/icons/x";

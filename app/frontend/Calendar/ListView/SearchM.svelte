@@ -19,6 +19,13 @@
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
 
+  export let searchTerm: string;
+
+  $: searchTerm && setSearchTerm()
+  function setSearchTerm() {
+    $globalSearchTerm = searchTerm;
+  }
+
   let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
   $: filteredEvents = $globalSearchTerm
     ? events.filterObservable(event => event.matchesSearch($globalSearchTerm))

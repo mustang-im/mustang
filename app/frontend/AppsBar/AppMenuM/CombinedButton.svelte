@@ -26,9 +26,10 @@
   export let icon2: ConstructorOfATypedSvelteComponent | string;
   export let onClick = onClickPage;
   export let page: string | null = null;
+  export let params = {};
 
   function onClickPage() {
-    goTo(page, {});
+    goTo(page, params);
   }
 </script>
 
