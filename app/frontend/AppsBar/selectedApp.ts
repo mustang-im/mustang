@@ -21,7 +21,7 @@ export function openApp(app: MustangApp, params: PageParams) {
 
 export function goTo(pageURL: string, params: PageParams) {
   let replace = pageURL == window.location.pathname;
-  console.log("Go to", pageURL, replace ? "replace" : "add", "from", window.location.pathname, "with params", params);
+  console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.pathname, "with params", params);
   navigate(pageURL, {
     replace,
     state: addParams(params),
