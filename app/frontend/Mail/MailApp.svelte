@@ -51,6 +51,7 @@
     }
   }
 
+  // TODO Duplicated in MessageHeader.svelte
   $: $selectedMessage && selectPerson($selectedMessage)
   function selectPerson(message: EMail) {
     if (view == "chat") {

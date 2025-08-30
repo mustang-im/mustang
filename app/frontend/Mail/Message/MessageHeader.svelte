@@ -134,6 +134,7 @@
     clearTimeout(readTimeout);
   });
 
+  // TODO Duplicated in MailApp.svelte
   $: selectPerson(message?.contact);
   function selectPerson(contact: PersonOrGroup | PersonUID) {
     if (contact instanceof PersonUID) {
