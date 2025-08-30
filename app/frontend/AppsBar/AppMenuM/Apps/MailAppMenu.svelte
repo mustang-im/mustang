@@ -6,30 +6,34 @@
 {:else}
   <hbox class="empty" />
 {/if}
-<AccountButton account={appGlobal.emailAccounts.get(0)} {goToAccount} defaultIcon={AccountIcon} />
-<AppButton app={mailMustangApp} page="/mail/" />
+<BasicButton
+  icon={FolderIcon}
+  label={$t`Folders`}
+  onClick={() => goTo("/mail", {})} />
+<AppButton app={mailMustangApp} page={URLPart`/mail/folder/${allAccountsAccount.id}/${allAccountsAccount.inbox.id ?? "noid"}/message-list`} />
 <CombinedButton icon1={mailMustangApp.icon} icon2={SearchIcon} page="/mail/search" />
 <CombinedButton icon1={mailMustangApp.icon} icon2={PencilIcon} page="/mail/compose" />
 
 <script lang="ts">
+  import { EMail } from "../../../../logic/Mail/EMail";
   import { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import { Person } from "../../../../logic/Abstract/Person";
   import { newSearchEMail } from "../../../../logic/Mail/Store/setStorage";
   import { selectedAccount, selectedFolder } from "../../../Mail/Selected";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { allAccountsAccount } from "../../../../logic/Mail/AccountsList/ShowAccounts";
   import { goTo } from "../../selectedApp";
-  import { appGlobal } from "../../../../logic/app";
-  import AccountButton from "../AccountButton.svelte";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
   import PencilIcon from "lucide-svelte/icons/pencil";
-  import AccountIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/inbox";
   import { URLPart } from "../../../Util/util";
-  import { ArrayColl, mergeColl, mergeColls } from "svelte-collections";
-  import { EMail } from "../../../../logic/Mail/EMail";
+  import { ArrayColl, mergeColl } from "svelte-collections";
+  import { t } from "../../../../l10n/l10n";
 
   function goToAccount(account: MailAccount) {
     $selectedAccount = account;
