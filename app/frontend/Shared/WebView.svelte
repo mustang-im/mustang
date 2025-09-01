@@ -32,6 +32,7 @@
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
+  import { openExternalURL } from "../../logic/util/backend-wrapper";
   const dispatch = createEventDispatcher();
 
   /**
@@ -163,7 +164,7 @@
       let modifiers = event.modifiers.map(m => m.toLowerCase());
       let isLeft = ["left", "leftbuttondown"].some(left => modifiers.some(mod => mod == left));
       if (isLeft && event.type == "mouseDown") {
-        await appGlobal.remoteApp.openExternalURL(url);
+        await openExternalURL(url);
       }
     });
   }

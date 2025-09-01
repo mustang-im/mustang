@@ -1,5 +1,5 @@
 import { OAuth2Localhost } from "./OAuth2Localhost";
-import { appGlobal } from "../../app";
+import { openExternalURL } from "../../util/backend-wrapper";
 import type { URLString } from "../../util/util";
 
 /**
@@ -7,6 +7,6 @@ import type { URLString } from "../../util/util";
  */
 export class OAuth2SystemBrowser extends OAuth2Localhost {
   loginURLCallback = async (url: URLString) => {
-    await appGlobal.remoteApp.openExternalURL(url);
+    await openExternalURL(url);
   }
 }
