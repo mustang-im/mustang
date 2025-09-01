@@ -7,6 +7,7 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { NotReached, UserError, randomID } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { type Database } from "../../../../../lib/rs-sqlite";
+import { getSQLiteDatabase } from "../../../util/backend-wrapper";
 
 export class ThunderbirdAddressbook extends Addressbook {
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
@@ -197,6 +198,6 @@ export class ThunderbirdAddressbook extends Addressbook {
 
   static async getDatabase(profile: ThunderbirdProfile, dbFilename: string): Promise<Database> {
     let filePath = await appGlobal.remoteApp.path.join(profile.path, dbFilename);
-    return await appGlobal.remoteApp.getSQLiteDatabase(filePath, { readonly: true, timeout: 200 });
+    return await getSQLiteDatabase(filePath, { readonly: true, timeout: 200 });
   }
 }
