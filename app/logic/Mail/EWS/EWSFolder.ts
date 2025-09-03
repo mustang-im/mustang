@@ -356,7 +356,7 @@ export class EWSFolder extends Folder {
     if (!id) {
       return undefined;
     }
-    return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
+    return this.messages.find((m): m is EWSEMail => (m as EWSEMail).itemID == id);
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {

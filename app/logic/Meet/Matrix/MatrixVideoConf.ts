@@ -4,7 +4,7 @@ import { MeetingParticipant } from "../Participant";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
-import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
+import { CallEvent, type EmittedEvents, type MatrixCall, type MatrixClient } from "matrix-js-sdk";
 import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
 
 export class MatrixVideoConf extends VideoConfMeeting {
@@ -28,13 +28,13 @@ export class MatrixVideoConf extends VideoConfMeeting {
     this.mediaDeviceStreams = new LocalMediaDeviceStreams();
     this.client = client;
     this._call = call;
-    this._call.on("error", ex => this.errorCallback(ex));
-    this._call.on("hangup", () => this.endCallback());
+    this._call.on(CallEvent.Error, ex => this.errorCallback(ex));
+    this._call.on(CallEvent.Hangup, () => this.endCallback());
   }
 
   async start() {
     await super.start();
-    this._call.on("feeds_changed", (feeds) => {
+    this._call.on(CallEvent.FeedsChanged, (feeds) => {
       for (let feed of feeds) {
         if (feed.isLocal()) {
           let self = new VideoStream(feed.stream);
@@ -93,7 +93,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    * This `listenForCalls()` function should normally be called only once in the lifetime of the app.
    */
   static listenForCalls(client: MatrixClient, incomingCallCallback: (MatrixVideoConf) => Promise<void>) {
-    client.on("Call.incoming", (call: MatrixCall) => {
+    client.on("Call.incoming" as EmittedEvents, (call: MatrixCall) => {
       console.log("Incoming call", call.roomId, call);
       let conf = new MatrixVideoConf(client, call);
       incomingCallCallback(conf);

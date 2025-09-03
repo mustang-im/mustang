@@ -2,6 +2,7 @@ import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
+import type { EMailCollection } from "../Store/EMailCollection";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -12,6 +13,7 @@ import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
+  messages: EMailCollection<IMAPEMail>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
   readonly deletions = new Set<number>();
@@ -130,14 +132,14 @@ export class IMAPFolder extends Folder {
     let allUIDs = await this.fetchUIDList({ all: true });
 
     // Delete messages that are no longer on the server @see checkDeletedMessages()
-    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => !allUIDs.includes(msg.uid));
+    let deletedMsgs = this.messages.filter(msg => !allUIDs.includes(msg.uid));
     this.messages.removeAll(deletedMsgs);
     for (let deletedMsg of deletedMsgs) {
       await deletedMsg.deleteMessageLocally();
     }
 
     // Fetch new msgs
-    let localUIDs = new ArrayColl(this.messages.contents.map((msg: IMAPEMail) => msg.uid));
+    let localUIDs = new ArrayColl(this.messages.contents.map(msg => msg.uid));
     let newUIDs = allUIDs.subtract(localUIDs).sortBy(uid => -uid);
     let newMsgs = new ArrayColl<IMAPEMail>();
     //console.log("Folder", this.account.name, this.name, "has", allUIDs.length, "msgs,", localUIDs.length, "local msgs,", newUIDs.length, "new");
@@ -351,15 +353,15 @@ export class IMAPFolder extends Folder {
   }
 
   getEMailByUID(uid: number): IMAPEMail {
-    return this.messages.find((m: IMAPEMail) => m.uid == uid) as IMAPEMail;
+    return this.messages.find(m => m.uid == uid);
   }
 
   /** @returns UID of newest message known locally */
   protected getHighestUID(): number {
     let highest = 1;
     for (let msg of this.messages) {
-      if ((msg as IMAPEMail).uid > highest) {
-        highest = (msg as IMAPEMail).uid;
+      if (msg.uid > highest) {
+        highest = msg.uid;
       }
     }
     return highest;
@@ -372,8 +374,8 @@ export class IMAPFolder extends Folder {
     recently.setDate(recently.getDate() - kDaysPast);
     return this.messages
       .filter(msg => msg.received.getTime() > recently.getTime()) // last n days
-      .sortBy((msg: IMAPEMail) => msg.uid)
-      .first as IMAPEMail; // oldest
+      .sortBy(msg => msg.uid)
+      .first; // oldest
   }
 
   /** Save partial headers of newly discovered emails.
@@ -447,9 +449,9 @@ export class IMAPFolder extends Folder {
    *   Optional. By default, checks entire folder (may be slow!)
    */
   async checkDeletedMessages(fromUID: number = 1) {
-    let localMsgs = this.messages.contents.filter((msg: IMAPEMail) => msg.uid >= fromUID);
+    let localMsgs = this.messages.contents.filter(msg => msg.uid >= fromUID);
     let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.getHighestUID() });
-    let deletedMsgs = localMsgs.filter((msg: IMAPEMail) => !serverUIDs.includes(msg.uid));
+    let deletedMsgs = localMsgs.filter(msg => !serverUIDs.includes(msg.uid));
 
     this.messages.removeAll(deletedMsgs);
     for (let deletedMsg of deletedMsgs) {
@@ -504,7 +506,7 @@ export class IMAPFolder extends Folder {
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
-    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => startUID < msg.uid && msg.uid < endUID);
+    let deletedMsgs = this.messages.filter(msg => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
       //console.log(`Deleted msg ${deletedMsg.subject}`);
       await deletedMsg.deleteMessageLocally();
@@ -553,7 +555,7 @@ export class IMAPFolder extends Folder {
     /*
     assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
     let newFolder = await this.createSubFolder(folder.name);
-    await newFolder.moveMessagesHere(folder.messages as any as Collection<IMAPEMail>);
+    await newFolder.moveMessagesHere(folder.messages);
     await folder.deleteIt();
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */

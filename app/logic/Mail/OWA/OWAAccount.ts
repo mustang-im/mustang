@@ -382,12 +382,12 @@ export class OWAAccount extends MailAccount {
 
   protected handleHierarchyNotification(notification: any) {
     try {
-      let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.mainAccount == this && addressbook.folderID == notification.folderId) as OWAAddressbook | null;
+      let addressbook = appGlobal.addressbooks.find((addressbook): addressbook is OWAAddressbook => addressbook.mainAccount == this && (addressbook as OWAAddressbook).folderID == notification.folderId);
       if (addressbook) {
         addressbook.listContacts().catch(this.errorCallback);
         return;
       }
-      let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.mainAccount == this && calendar.folderID == notification.folderId) as OWACalendar | null;
+      let calendar = appGlobal.calendars.find((calendar): calendar is OWACalendar => calendar.mainAccount == this && (calendar as OWACalendar).folderID == notification.folderId);
       if (calendar) {
         calendar.listEvents().catch(this.errorCallback);
         return;
