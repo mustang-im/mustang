@@ -109,7 +109,8 @@
 
   $: $event.startTime, $event.duration, updateDateUI();
   function updateDateUI() {
-    // This should close the repeat box, but this update might run first.
+    // Setting the frequency to None should close the repeat box,
+    // but Svelte might decide to run this function again first.
     if (frequency == Frequency.None) {
       return;
     }
