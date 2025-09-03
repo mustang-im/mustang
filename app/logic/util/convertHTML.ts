@@ -100,34 +100,48 @@ function addStyles(output: string[], styles: CSSStyleDeclaration) {
 
 function addCSSRules(output: string[], cssRules: CSSRuleList) {
   for (let rule of [...cssRules].reverse()) {
-    if (rule instanceof CSSStyleRule) {
-      output.push(`${rule.selectorText} {`);
-      if (rule.style) {
-        addStyles(output, rule.style);
-      }
-      output.push('}\n');
-    } else if (rule instanceof CSSMediaRule) {
-      output.push(`@media ${rule.media.mediaText} {`);
-      addCSSRules(output, rule.cssRules);
-      output.push('}\n');
-    } else if (rule instanceof CSSFontFaceRule) {
-      output.push('@font-face {');
-      if (rule.style) {
-        addStyles(output, rule.style);
-      }
-      output.push('}\n');
-    } else if (rule instanceof CSSKeyframesRule) {
-      output.push(`@keyframes ${rule.name} {`);
-      for (let frame of [...rule.cssRules].reverse()) {
-        if (frame instanceof CSSKeyframeRule && frame.keyText) {
-          output.push(`${frame.keyText} {`);
-          if (frame.style) {
-            addStyles(output, frame.style);
-          }
-          output.push('}\n');
+    switch (rule.type) {
+      case CSSRule.STYLE_RULE:
+        let styleRule = rule as CSSStyleRule;
+        output.push(`${styleRule.selectorText} {`);
+        if (styleRule.style) {
+          addStyles(output, styleRule.style);
         }
-      }
-      output.push('}\n');
+        output.push('}\n');
+        break;
+      case CSSRule.MEDIA_RULE:
+        let mediaRule = rule as CSSMediaRule;
+        output.push(`@media ${mediaRule.media.mediaText} {`);
+        addCSSRules(output, mediaRule?.cssRules);
+        output.push('}\n');
+        break;
+      case CSSRule.FONT_FACE_RULE:
+        let fontFaceRule = rule as CSSFontFaceRule;
+        output.push('@font-face {');
+        if (fontFaceRule.style) {
+          addStyles(output, fontFaceRule.style);
+        }
+        output.push('}\n');
+        break;
+      case CSSRule.KEYFRAMES_RULE:
+        let keyframesRule = rule as CSSKeyframesRule;
+        output.push(`@keyframes ${keyframesRule.name} {`);
+        for (let frame of [...keyframesRule.cssRules].reverse()) {
+          if (frame.type === CSSRule.KEYFRAME_RULE) {
+            let keyframeRule = frame as CSSKeyframeRule;
+            if (keyframeRule.keyText) {
+              output.push(`${keyframeRule.keyText} {`);
+              if (keyframeRule.style) {
+                addStyles(output, keyframeRule.style);
+              }
+              output.push('}\n');
+            }
+          }
+        }
+        output.push('}\n');
+        break;
+      default:
+        break;
     }
   }
 };
