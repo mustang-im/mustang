@@ -35,7 +35,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     return new ActiveSyncEvent(this, parentEvent);
   }
 
-  getIncomingInvitationForEMail(message: ActiveSyncEMail) {
+  getIncomingInvitationForEMail(message: ActiveSyncEMail): ActiveSyncIncomingInvitation {
     return new ActiveSyncIncomingInvitation(this, message);
   }
 

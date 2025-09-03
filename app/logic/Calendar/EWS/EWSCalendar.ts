@@ -25,7 +25,7 @@ export class EWSCalendar extends Calendar {
     return new EWSEvent(this, parentEvent);
   }
 
-  getIncomingInvitationForEMail(message: EWSEMail) {
+  getIncomingInvitationForEMail(message: EWSEMail): EWSIncomingInvitation {
     return new EWSIncomingInvitation(this, message);
   }
 

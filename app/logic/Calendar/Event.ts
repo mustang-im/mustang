@@ -407,7 +407,7 @@ export class Event extends Observable {
     return json;
   }
 
-  get outgoingInvitation() {
+  get outgoingInvitation(): OutgoingInvitation {
     return new OutgoingInvitation(this);
   }
 

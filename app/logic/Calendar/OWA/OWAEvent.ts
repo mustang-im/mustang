@@ -143,7 +143,7 @@ export class OWAEvent extends Event {
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
-  get outgoingInvitation() {
+  get outgoingInvitation(): OWAOutgoingInvitation {
     return new OWAOutgoingInvitation(this);
   }
 
