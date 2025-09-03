@@ -80,9 +80,12 @@ export class ActiveSyncAccount extends MailAccount {
     await ensureLicensed();
     await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
-      let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-      this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      if (!this.oAuth2) {
+        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
+        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      }
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
