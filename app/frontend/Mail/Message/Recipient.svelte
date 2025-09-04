@@ -31,7 +31,7 @@
   {#each appGlobal.addressbooks.each as addressbook}
     <MenuItem
       label={$t`Add to ${addressbook.name}`}
-      onClick={() => addToAddressbook(addressbook)} />
+      onClick={() => catchErrors(() => addToAddressbook(addressbook))} />
   {/each}
 
   <MenuLabel label={$t`Other actions`} />
@@ -74,9 +74,11 @@
     isPopupOpen = true;
   }
 
-  function addToAddressbook(addressbook: Addressbook) {
+  async function addToAddressbook(addressbook: Addressbook) {
     let person = recipient.createPerson();
     addressbook.persons.add(person);
+    person.addressbook = addressbook;
+    await person.save();
     recipient = recipient;
   }
 
