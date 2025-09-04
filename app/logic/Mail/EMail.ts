@@ -373,21 +373,32 @@ export class EMail extends Message {
     }
   }
 
+  private loadBodyLock = new Lock();
   async loadBody() {
-    if (!this._rawHTML && !this._text) {
-      if (this.dbID) {
-        await this.storage.readMessageBody(this);
-      }
-      if (!this._rawHTML && !this._text) {
-        await this.download();
-      }
+    let lock = await this.loadBodyLock.lock();
+    if (lock.wasWaiting) {
+      lock.release();
+      return;
     }
 
-    let html = this.html;
-    if (html?.includes("cid:")) {
-      this._sanitizedHTML = await addCID(html, this);
+    try {
+      if (!this._rawHTML && !this._text) {
+        if (this.dbID) {
+          await this.storage.readMessageBody(this);
+        }
+        if (!this._rawHTML && !this._text) {
+          await this.download();
+        }
+      }
+
+      let html = this.html;
+      if (html?.includes("cid:")) {
+        this._sanitizedHTML = await addCID(html, this);
+      }
+      this.needToLoadBody = false; // triggers reload
+    } finally {
+      lock.release();
     }
-    this.needToLoadBody = false; // triggers reload
   }
 
   get html(): string {
