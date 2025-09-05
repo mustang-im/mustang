@@ -31,7 +31,7 @@
   {#each appGlobal.addressbooks.each as addressbook}
     <MenuItem
       label={$t`Add to ${addressbook.name}`}
-      onClick={() => catchErrors(() => addToAddressbook(addressbook))} />
+      onClick={() => addToAddressbook(addressbook)} />
   {/each}
 
   <MenuLabel label={$t`Other actions`} />
