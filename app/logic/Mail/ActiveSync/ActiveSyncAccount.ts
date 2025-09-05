@@ -153,7 +153,7 @@ export class ActiveSyncAccount extends MailAccount {
   /**
    * Performs an OPTIONS request to check the server's ActiveSync version.
    */
-  async verifyLogin() {
+  async verifyLogin(): Promise<void> {
     let options: any = {
       throwHttpErrors: false,
       headers: {
@@ -199,6 +199,7 @@ export class ActiveSyncAccount extends MailAccount {
         this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         await repeat();
+        return;
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
           "Unsupported authentication protocol(s): " + response.WWWAuthenticate);

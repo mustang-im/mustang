@@ -135,7 +135,7 @@ export class ActiveSyncEvent extends Event {
     };
   }
 
-  get outgoingInvitation(): ActiveSyncOutgoingInvitation {
+  get outgoingInvitation() {
     return new ActiveSyncOutgoingInvitation(this);
   }
 

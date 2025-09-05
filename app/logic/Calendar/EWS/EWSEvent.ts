@@ -146,7 +146,7 @@ export class EWSEvent extends Event {
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
-  get outgoingInvitation(): EWSOutgoingInvitation {
+  get outgoingInvitation() {
     return new EWSOutgoingInvitation(this);
   }
 

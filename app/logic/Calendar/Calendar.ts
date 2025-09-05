@@ -39,7 +39,7 @@ export class Calendar extends Account {
   protected invalidateRecurringCache() {
   }
 
-  getIncomingInvitationForEMail(message: EMail): ICalIncomingInvitation {
+  getIncomingInvitationForEMail(message: EMail) {
     return new ICalIncomingInvitation(this, message);
   }
 

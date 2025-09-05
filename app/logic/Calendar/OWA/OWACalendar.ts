@@ -28,7 +28,7 @@ export class OWACalendar extends Calendar {
     return new OWAEvent(this, parentEvent);
   }
 
-  getIncomingInvitationForEMail(message: OWAEMail): OWAIncomingInvitation {
+  getIncomingInvitationForEMail(message: OWAEMail) {
     return new OWAIncomingInvitation(this, message);
   }
 
