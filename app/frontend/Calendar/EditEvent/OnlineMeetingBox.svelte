@@ -33,7 +33,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openExternalURL } from "../../../logic/util/backend-wrapper";
+  import { openExternalURL } from "../../../logic/util/os-integration";
   import Button from "../../Shared/Button.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";

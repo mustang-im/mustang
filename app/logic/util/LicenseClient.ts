@@ -37,7 +37,7 @@ import { appGlobal } from "../app";
 import { logError } from "../../frontend/Util/error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
-import { openExternalURL } from "./backend-wrapper";
+import { openExternalURL } from "./os-integration";
 
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
 // cat license.pem.pub, and append the part between "-----" after "base64,"

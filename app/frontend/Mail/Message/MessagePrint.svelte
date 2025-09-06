@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { openExternalURL } from "../../../logic/util/backend-wrapper";
+  import { openExternalURL } from "../../../logic/util/os-integration";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import { sleep, NotImplemented } from "../../../logic/util/util";
   import { tick } from "svelte";

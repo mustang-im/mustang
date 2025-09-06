@@ -95,7 +95,7 @@
 <script lang="ts">
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
-  import { openExternalURL } from "../../../logic/util/backend-wrapper";
+  import { openExternalURL } from "../../../logic/util/os-integration";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "../EditEvent/PersonAvailability.svelte";
   import ParticipantConfirmText from "../EditEvent/ParticipantConfirmText.svelte";

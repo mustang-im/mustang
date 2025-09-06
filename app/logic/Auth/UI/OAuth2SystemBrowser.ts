@@ -1,5 +1,5 @@
 import { OAuth2Localhost } from "./OAuth2Localhost";
-import { openExternalURL } from "../../util/backend-wrapper";
+import { openExternalURL } from "../../util/os-integration";
 import type { URLString } from "../../util/util";
 
 /**

@@ -32,7 +32,7 @@
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
-  import { openExternalURL } from "../../logic/util/backend-wrapper";
+  import { openExternalURL } from "../../logic/util/os-integration";
   const dispatch = createEventDispatcher();
 
   /**
