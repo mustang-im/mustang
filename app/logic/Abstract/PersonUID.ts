@@ -38,7 +38,7 @@ export class PersonUID extends Observable {
     return this.person = findPerson(this.emailAddress);
   }
 
-  createPerson(addressbook?: Addressbook) {
+  createPerson(addressbook: Addressbook) {
     this.person = this.findPerson();
     if (this.person) {
       return this.person;
