@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { appGlobal } from "../../../logic/app";
+  import { openExternalURL } from "../../../logic/util/os-integration";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import { sleep, NotImplemented } from "../../../logic/util/util";
   import { tick } from "svelte";
@@ -45,7 +45,7 @@
     }
     alert($t`Save the trees!`);
     const kVideoURL = "https://youtube.com/embed/jEI-0PjE3-g?start=22";
-    await appGlobal.remoteApp.openExternalURL(kVideoURL);
+    await openExternalURL(kVideoURL);
   }
 
   let gotWebView: (webview: any) => void;

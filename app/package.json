@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@capacitor/app": "^7.0.2",
+    "@capacitor/browser": "^7.0.2",
     "@capacitor/core": "^7.0.0",
     "@faker-js/faker": "^9.8.0",
     "@popperjs/core": "^2.11.8",

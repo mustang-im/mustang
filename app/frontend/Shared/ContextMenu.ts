@@ -3,6 +3,7 @@ import { blobToDataURL, NotImplemented, type URLString } from "../../logic/util/
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../../logic/app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { openExternalURL } from "../../logic/util/os-integration";
 
 /**
  * Handles the Electron `<webview>` `"context-menu"` event.
@@ -266,7 +267,7 @@ async function copyToClipboard(text: string | Object) {
 }
 
 async function openBrowser(url: URLString) {
-  await appGlobal.remoteApp.openExternalURL(url);
+  await openExternalURL(url);
 }
 
 async function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
