@@ -76,9 +76,7 @@
 
   async function addToAddressbook(addressbook: Addressbook) {
     let person = recipient.createPerson();
-    addressbook.persons.add(person);
-    person.addressbook = addressbook;
-    await person.save();
+    await person.moveToAddressbook(addressbook);
     recipient = recipient;
   }
 
