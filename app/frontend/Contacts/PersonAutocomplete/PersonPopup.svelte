@@ -119,7 +119,7 @@
     }
     personUID ??= new PersonUID();
     personUID.emailAddress ??= kDummyPerson.emailAddress;
-    person = personUID.createPerson();
+    person = personUID.createPerson(appGlobal.collectedAddressbook);
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
     isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;
   }
