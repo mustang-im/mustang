@@ -130,7 +130,7 @@
     dispatch("close");
   }
   async function onSave() {
-    person ??= personUID.createPerson();
+    person ??= personUID.createPerson(appGlobal.personalAddressbook);
     person.name = personUID.name;
     contactEntry.value = personUID.emailAddress;
     if (!person.addressbook) {
@@ -141,7 +141,7 @@
   }
   function onEditPerson() {
     onClose();
-    openUIFor(personUID.createPerson());
+    openUIFor(personUID.createPerson(appGlobal.personalAddressbook));
   }
   function onRemovePerson() {
     console.log("remove contact");
