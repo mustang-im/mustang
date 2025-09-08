@@ -1,6 +1,6 @@
 import type { PersonOrGroup } from "../../frontend/Contacts/Person/PersonOrGroup";
 import { Group } from "./Group";
-import { Addressbook } from "../Contacts/Addressbook";
+import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
