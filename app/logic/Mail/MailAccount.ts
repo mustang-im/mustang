@@ -238,6 +238,6 @@ export interface MailContentStorage {
 
 export enum DeleteStrategy {
   DeleteImmediately = 1,
-  Flag = 1,
+  Flag = 2,
   MoveToTrash = 3,
 }
