@@ -13,7 +13,7 @@ export function getDateTimeString(date: Date): string {
   if (!date) {
     return "";
   }
-  let dateDetails: Intl.DateTimeOptions;
+  let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
@@ -37,11 +37,11 @@ export function getDateTimeString(date: Date): string {
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date, fullDate: Intl.DateTimeOptions = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
+export function getDateString(date: Date, fullDate: Intl.DateTimeFormatOptions = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
   if (!date) {
     return "";
   }
-  let dateDetails: Intl.DateTimeOptions;
+  let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
