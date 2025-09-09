@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export ANDROID_LIBNODE="https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
+export IOS_LIBNODE="https://github.com/mustang-im/nodejs-mobile/releases/download/v24.5.0/nodejs-mobile-v24.5.0-ios.zip"
 export ANDROID_SDK="--sdk35"
 
 cd node_modules;
