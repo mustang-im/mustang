@@ -46,6 +46,7 @@ export class PersonUID extends Observable {
     this.person = addressbook.newPerson();
     this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
     this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
+    addressbook.persons.add(this.person);
     return this.person;
   }
 
