@@ -19,7 +19,7 @@
         on:addPerson
         on:addPerson={(event) => onAddPerson(event.detail)}
         skipPersons={$persons}
-        {placeholder} {tabindex} {autofocus}
+        {placeholder} {tabindex} {autofocus} {type}
         bind:this={autocompleteEl}
         >
         <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
@@ -43,6 +43,7 @@
   export let tabindex = null;
   export let autofocus = false;
   export let disabled = false;
+  export let type: new (string, string) => PersonUID;
 
   //$: console.log("persons", persons.contents);
 
