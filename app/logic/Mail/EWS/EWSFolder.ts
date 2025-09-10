@@ -4,9 +4,11 @@ import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
-import { ArrayColl, Collection } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
 
@@ -514,6 +516,171 @@ export class EWSFolder extends Folder {
 
   disableChangeSpecial(): string | false {
     return "You cannot change Exchange special folders.";
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return new ArrayColl(result.Folders.Folder.PermissionSet.Permissions.Permission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    let request = {
+      m$UpdateFolder: {
+        m$FolderChanges: {
+          t$FolderChange: {
+            t$FolderId: {
+              Id: this.id,
+            },
+            t$Updates: {
+              t$SetFolderField: {
+                t$FieldURI: {
+                  FieldURI: "folder:PermissionSet",
+                },
+                t$Folder: {
+                  t$PermissionSet: {
+                    t$Permissions: {
+                      t$Permission: permissions.contents.map(permission => permission.toEWSFolderPermission()),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    await this.account.callEWS(request);
+  }
+}
+
+export enum ExchangePermissions {
+  None,
+  // Convenience values to declare the actual permissions
+  Create = 1 << 0,
+  Read = 1 << 1,
+  Subfolders = 1 << 2,
+  WriteOwn = 1 << 3,
+  WriteAll = 1 << 4,
+  // Actual permission values
+  Contributor = Create,
+  Reviewer = Read,
+  NoneditingAuthor = Create | Read,
+  Author = Create | Read | WriteOwn,
+  PublishingAuthor = Create | Read | Subfolders | WriteOwn,
+  Editor = Create | Read | WriteAll,
+  PublishingEditor = Create | Read | Subfolders | WriteAll,
+  Owner = Create | Read | Subfolders | WriteOwn | WriteAll,
+  // Calendar permission values
+  FreeBusyTimeOnly = 1 << 5,
+  FreeBusyTimeAndSubjectAndLocation = 1 << 6,
+}
+
+export class ExchangePermission extends PersonUID {
+  exchangePermissions: ExchangePermissions;
+  distinguishedUser?: string;
+
+  constructor(emailAddress: string, name: string, exchangePermissions: ExchangePermissions = ExchangePermissions.None, distinguishedUser?: "Anonymous" | "Default") {
+    super(emailAddress, name);
+    this.exchangePermissions = exchangePermissions;
+    this.distinguishedUser = distinguishedUser;
+  }
+
+  static fromExchange(permission: any, emailAddress: string) {
+    let name;
+    let distinguishedUser = permission.UserId.DistinguishedUser as "Anonymous" | "Default" | undefined;
+    switch (distinguishedUser) {
+    case "Anonymous":
+      emailAddress = "*@*";
+      name = gt`Anonymous`;
+      break;
+    case "Default":
+      emailAddress = emailAddress.replace(/.*@/, "*@");
+      name = gt`All other users`;
+      break;
+    default:
+      emailAddress = sanitize.emailAddress(permission.UserId.PrimarySmtpAddress, null);
+      name = sanitize.string(permission.UserId.DisplayName, null);
+      break;
+    }
+    let exchangePermssions = sanitize.translate(permission.PermissionLevel || permission.CalendarPermissionLevel, ExchangePermissions, undefined) as ExchangePermissions;
+    return new ExchangePermission(emailAddress, name, exchangePermssions, distinguishedUser);
+  }
+
+  toEWSFolderPermission() {
+    return this.distinguishedUser ? {
+      t$UserId: {
+        t$DistinguishedUser: this.distinguishedUser,
+      },
+      t$PermissionLevel: ExchangePermissions[this.exchangePermissions],
+    } : {
+      t$UserId: {
+        t$PrimarySmtpAddress: this.emailAddress,
+      },
+      t$PermissionLevel: ExchangePermissions[this.exchangePermissions],
+    };
+  }
+
+  toEWSCalendarPermission() {
+    return this.distinguishedUser ? {
+      t$UserId: {
+        t$DistinguishedUser: this.distinguishedUser,
+      },
+      t$CalendarPermissionLevel: ExchangePermissions[this.exchangePermissions],
+    } : {
+      t$UserId: {
+        t$PrimarySmtpAddress: this.emailAddress,
+      },
+      t$CalendarPermissionLevel: ExchangePermissions[this.exchangePermissions],
+    };
+  }
+
+  toOWAFolderPermission() {
+    return this.distinguishedUser ? {
+      __type: "Permission:#Exchange",
+      UserId: {
+        DistinguishedUser: this.distinguishedUser,
+      },
+      PermissionLevel: ExchangePermissions[this.exchangePermissions],
+    } : {
+      __type: "Permission:#Exchange",
+      UserId: {
+        PrimarySmtpAddress: this.emailAddress,
+      },
+      PermissionLevel: ExchangePermissions[this.exchangePermissions],
+    };
+  }
+
+  toOWACalendarPermission() {
+    return this.distinguishedUser ? {
+      __type: "CalendarPermission:#Exchange",
+      UserId: {
+        DistinguishedUser: this.distinguishedUser,
+      },
+      CalendarPermissionLevel: ExchangePermissions[this.exchangePermissions],
+    } : {
+      __type: "CalendarPermission:#Exchange",
+      UserId: {
+        PrimarySmtpAddress: this.emailAddress,
+      },
+      CalendarPermissionLevel: ExchangePermissions[this.exchangePermissions],
+    };
   }
 }
 

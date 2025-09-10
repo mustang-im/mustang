@@ -48,18 +48,38 @@
       onClick={onMarkAllRead}
       />
   </hbox>
+  <hbox/>
+
+  {#if permissions}
+    <label for="permissions">{$t`Folder permissions`}</label>
+    <PersonsAutocomplete persons={permissions} placeholder={$t`Add permission`} {onAddPerson} {onRemovePerson}>
+      <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
+        {person.emailAddress}
+      </hbox>
+      <FolderExchangePermissions slot="person-popup-bottom" let:person {person}/>
+    </PersonsAutocomplete>
+    <Button label={$t`Save Permissions`} onClick={onSavePermissions}/>
+  {/if}
 </grid>
 
 <script lang="ts">
+  import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
   import type { Folder } from "../../../../logic/Mail/Folder";
+  import { EWSFolder, ExchangePermission } from "../../../../logic/Mail/EWS/EWSFolder";
+  import { OWAFolder } from "../../../../logic/Mail/OWA/OWAFolder";
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import PersonsAutocomplete from "../../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import FolderExchangePermissions from "./FolderExchangePermissions.svelte";
+  import { showError } from '../../../Util/error';
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
   import { EMail } from "../../../../logic/Mail/EMail";
-  import { Collection } from "svelte-collections";
+  import type { ArrayColl, Collection } from "svelte-collections";
 
   export let folder: Folder;
+  let previousFolder: Folder;
+  let permissions: ArrayColl<ExchangePermission> | undefined;
 
   $: init($folder);
 
@@ -70,8 +90,20 @@
   $: disableRename = $folder.disableRename();
 
   let folderName: string;
-  function init(_dummy: any) {
+  async function init(_dummy: any) {
+    if (folder == previousFolder) {
+      return;
+    }
+    previousFolder = folder;
     folderName = folder.name;
+    permissions = undefined;
+    if (folder instanceof EWSFolder || folder instanceof OWAFolder) {
+      try {
+        permissions = await folder.getPermissions();
+      } catch (ex) {
+        showError(ex);
+      }
+    }
   }
   async function onNameChange() {
     assert(folderName, $t`Name cannot be empty`);
@@ -114,6 +146,20 @@
 
   async function save() {
     await folder.save();
+  }
+
+  function onAddPerson(person: PersonUID) {
+    permissions.add(new ExchangePermission(person.emailAddress, person.name));
+  }
+
+  function onRemovePerson(person: ExchangePermission) {
+    if (!person.emailAddress.startsWith("*@")) {
+      permissions.remove(person);
+    }
+  }
+
+  async function onSavePermissions() {
+    await folder.setPermissions(permissions);
   }
 </script>
 
