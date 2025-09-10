@@ -2,10 +2,11 @@ import { Addressbook } from "../Addressbook";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
@@ -233,6 +234,57 @@ export class EWSAddressbook extends Addressbook {
 
   protected getGroupByItemID(id: string): EWSGroup | undefined {
     return this.groups.find(p => p.itemID == id);
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.folderID,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return new ArrayColl(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    let request = {
+      m$UpdateFolder: {
+        m$FolderChanges: {
+          t$FolderChange: {
+            t$FolderId: {
+              Id: this.folderID,
+            },
+            t$Updates: {
+              t$SetFolderField: {
+                t$FieldURI: {
+                  FieldURI: "folder:PermissionSet",
+                },
+                t$ContactsFolder: {
+                  t$PermissionSet: {
+                    t$Permissions: {
+                      t$Permission: permissions.contents.map(permission => permission.toEWSFolderPermission()),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    await this.account.callEWS(request);
   }
 
   fromConfigJSON(json: any) {

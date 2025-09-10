@@ -3,9 +3,11 @@ import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
 import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
@@ -136,6 +138,15 @@ export class OWACalendar extends Calendar {
         this.events.add(event);
       }
     }
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return new ArrayColl(result.Folders[0].PermissionSet.CalendarPermissions.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    await this.account.callOWA(owaSetCalendarPermissionsRequest(this.folderID, permissions.contents));
   }
 
   fromConfigJSON(json: any) {
