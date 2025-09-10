@@ -14,7 +14,7 @@
   -->
 </SectionTitle>
 <vbox class="participants">
-  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
+  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`} {onAddPerson}>
     <hbox slot="person-pill-before-avatar" let:person={participant}>
       <ParticipantConfirmIcon {participant} />
     </hbox>
@@ -39,7 +39,10 @@
 </vbox>
 
 <script lang="ts">
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Participant } from "../../../logic/Calendar/Participant";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
@@ -51,6 +54,11 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+
+  function onAddPerson(person: PersonUID) {
+    let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
+    event.participants.add(participant);
+  }
 </script>
 
 <style>

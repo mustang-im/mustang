@@ -1,6 +1,6 @@
 <hbox flex class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
-    onChange={person => catchErrors(() => onAddPerson(person))}
+    onChange={person => catchErrors(() => addPerson(person))}
     searchFunction={search}
     delay={100}
     minCharactersToSearch={2}
@@ -42,13 +42,13 @@
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
-  const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
   export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
+  export let onAddPerson: (person: PersonUID) => void | Promise<void>;
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     if (!inputStr || inputStr.length < 2) {
@@ -82,13 +82,13 @@
 
   let topEl: HTMLDivElement;
   $: inputEl = topEl?.querySelector("input");
-  async function onAddPerson(person: PersonUID) {
+  async function addPerson(person: PersonUID) {
     if (!person) {
       return;
     }
     typedText = "";
     (person as any).openPopup = person.name == person.emailAddress;
-    dispatch('addPerson', person);
+    await onAddPerson(person);
 
     // Clear, to allow user to enter the next person
     await tick();
@@ -115,7 +115,7 @@
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
-    onAddPerson(personUID);
+    addPerson(personUID);
     return personUID;
   }
 
