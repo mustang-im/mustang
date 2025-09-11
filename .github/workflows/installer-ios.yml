@@ -1,0 +1,7 @@
+name: Installers for iOS
+
+on:
+  workflow_dispatch: # manually triggered
+  push:
+    tags: 'v*'
+
