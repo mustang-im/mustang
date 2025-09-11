@@ -14,15 +14,15 @@
   -->
 </SectionTitle>
 <vbox class="participants">
-  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
+  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`} {onAddPerson}>
+    <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
+      {person.emailAddress}
+    </hbox>
     <hbox slot="person-pill-before-avatar" let:person={participant}>
       <ParticipantConfirmIcon {participant} />
     </hbox>
     <hbox slot="person-popup-bottom" let:person={participant}>
       <ParticipantConfirmText {participant} />
-    </hbox>
-    <hbox slot="result-bottom-row" let:person>
-      <PersonAvailability {person} />
     </hbox>
   </PersonsAutocomplete>
 </vbox>
@@ -40,6 +40,8 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Participant } from "../../../logic/Calendar/Participant";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
@@ -51,6 +53,11 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+
+  function onAddPerson(person: PersonUID) {
+    let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
+    event.participants.add(participant);
+  }
 </script>
 
 <style>

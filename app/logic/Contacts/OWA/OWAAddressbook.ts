@@ -2,10 +2,12 @@ import { Addressbook } from "../Addressbook";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
 import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
@@ -39,8 +41,11 @@ export class OWAAddressbook extends Addressbook {
       this.groups.clear();
       return;
     }
+    if (this.folderID == `${{}}`) { // Temporary workaround for bug in #780
+      this.folderID = null;
+    }
     let newFolderID = !this.folderID; // Temporary until support for multiple address books
-    this.folderID ??= contacts.FolderId;
+    this.folderID ??= contacts.FolderId.Id;
     if (!this.name) {
       this.name = contacts.DisplayName;
     }
@@ -132,6 +137,15 @@ export class OWAAddressbook extends Addressbook {
 
   getGroupByPersonaID(id: string): OWAGroup | undefined {
     return this.groups.find(p => p.personaID == id);
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return new ArrayColl(result.Folders[0].PermissionSet.Permissions.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    await this.account.callOWA(owaSetFolderPermissionsRequest(this.folderID, permissions.contents));
   }
 
   fromConfigJSON(json: any) {

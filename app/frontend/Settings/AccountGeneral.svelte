@@ -38,6 +38,14 @@
       </grid>
     </vbox>
   </HeaderGroupBox>
+
+  {#if account instanceof EWSAddressbook || account instanceof OWAAddressbook}
+    <AccountExchangeAddressbook {account}/>
+  {/if}
+
+  {#if account instanceof EWSCalendar || account instanceof OWACalendar}
+    <AccountExchangeCalendar {account}/>
+  {/if}
 </vbox>
 
 <!-- <copied to="WorkspaceBlock.svelte" /> -->
@@ -56,11 +64,17 @@
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
   import { MeetAccount } from "../../logic/Meet/MeetAccount";
+  import { EWSAddressbook } from "../../logic/Contacts/EWS/EWSAddressbook";
+  import { EWSCalendar } from "../../logic/Calendar/EWS/EWSCalendar";
+  import { OWAAddressbook } from "../../logic/Contacts/OWA/OWAAddressbook";
+  import { OWACalendar } from "../../logic/Calendar/OWA/OWACalendar";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
   import { catchErrors } from "../Util/error";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import AccountExchangeAddressbook from "./AccountExchangeAddressbook.svelte";
+  import AccountExchangeCalendar from "./AccountExchangeCalendar.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../l10n/l10n";

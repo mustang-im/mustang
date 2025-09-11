@@ -7,15 +7,21 @@
   {#if account instanceof IMAPAccount}
     <ServerIMAPAdvanced {account} />
   {/if}
+
+  {#if account instanceof EWSAccount}
+    <ServerEWSAdvanced {account}/>
+  {/if}
 </vbox>
 
 <script lang="ts">
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
+  import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../Manual/ManualConfig.svelte";
   import ServerIMAPAdvanced from "./ServerIMAPAdvanced.svelte";
+  import ServerEWSAdvanced from "./ServerEWSAdvanced.svelte";
   import { t } from "../../../../l10n/l10n";
 
   export let account: Account;
