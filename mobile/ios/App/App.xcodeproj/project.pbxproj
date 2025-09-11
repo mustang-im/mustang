@@ -23,6 +23,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		BF793BB42E73746B0093044E /* Copy Node Native Modules */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			name = "Copy Node Native Modules";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DD0EE6352DD26626002B679D /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -55,28 +65,42 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BF6AD6482E202E4100999418 /* Exceptions for "nodejs-project" folder in "App" target */ = {
+		BF793BB32E73745C0093044E /* Exceptions for "nodejs-project" folder in "App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				build/better_sqlite3.node,
-				"prebuilds/ios-arm64-simulator/bufferutil.node",
+				"prebuilds/ios-arm64/bufferutil.node",
 			);
 			target = 504EC3031FED79650016851F /* App */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		BF793BB62E7374720093044E /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				build/better_sqlite3.node = (CodeSignOnCopy, );
+				"prebuilds/ios-arm64/bufferutil.node" = (CodeSignOnCopy, );
+			};
+			buildPhase = BF793BB42E73746B0093044E /* Copy Node Native Modules */;
+			membershipExceptions = (
+				build/better_sqlite3.node,
+				"prebuilds/ios-arm64/bufferutil.node",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = libTests;
 			sourceTree = "<group>";
 		};
 		DD0EE6372DD26C52002B679D /* nodejs-project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BF6AD6482E202E4100999418 /* Exceptions for "nodejs-project" folder in "App" target */,
+				BF793BB32E73745C0093044E /* Exceptions for "nodejs-project" folder in "App" target */,
+				BF793BB62E7374720093044E /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */,
 			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
@@ -165,6 +189,7 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
+				BF793BB42E73746B0093044E /* Copy Node Native Modules */,
 			);
 			buildRules = (
 			);
@@ -255,8 +280,12 @@
 			);
 			inputFileListPaths = (
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -427,6 +456,7 @@
 					"$(PROJECT_DIR)/App/nodejs-project/build",
 					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator/bufferutil.node",
 					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64",
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
@@ -460,6 +490,7 @@
 					"$(PROJECT_DIR)/App/nodejs-project/build",
 					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator/bufferutil.node",
 					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64-simulator",
+					"$(PROJECT_DIR)/App/nodejs-project/prebuilds/ios-arm64",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = im.mustang.capa;
