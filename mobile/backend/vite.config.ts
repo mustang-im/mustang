@@ -14,7 +14,7 @@ export default defineConfig(({}) => {
   return {
     ssr: { noExternal: true },
     build: {
-      target: 'node18',
+      target: 'node24',
       lib: {
         name: 'index',
         formats: ['es'],
