@@ -189,6 +189,7 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
+				BF793BB82E7375D80093044E /* Code Sign Node Native Modules */,
 				BF793BB42E73746B0093044E /* Copy Node Native Modules */,
 			);
 			buildRules = (
@@ -291,6 +292,24 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		BF793BB82E7375D80093044E /* Code Sign Node Native Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Code Sign Node Native Modules";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nfind \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\" -name '*.node' -exec codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" {} \\;\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
