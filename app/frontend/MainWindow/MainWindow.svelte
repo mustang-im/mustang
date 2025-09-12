@@ -81,6 +81,9 @@
   import { onMount } from "svelte";
   import { useDebounce } from "@svelteuidev/composables";
   import { Router } from "svelte-navigator";
+  // #if [MOBILE]
+  import { SplashScreen } from '@capacitor/splash-screen';
+  // #endif
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -95,6 +98,9 @@
     loadMustangApps();
     $selectedApp = mailMustangApp;
     changeTheme($themeSetting.value);
+    // #if [MOBILE]
+    await SplashScreen.hide();
+    // #endif
     await startup();
   }
 
