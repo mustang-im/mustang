@@ -99,7 +99,7 @@
     $selectedApp = mailMustangApp;
     changeTheme($themeSetting.value);
     // #if [MOBILE]
-    await SplashScreen.hide();
+    SplashScreen.hide();
     // #endif
     await startup();
   }
