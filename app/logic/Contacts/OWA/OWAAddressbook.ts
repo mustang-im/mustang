@@ -39,8 +39,11 @@ export class OWAAddressbook extends Addressbook {
       this.groups.clear();
       return;
     }
+    if (this.folderID == `${{}}`) { // Temporary workaround for corrupt IDs
+      this.folderID = null;
+    }
     let newFolderID = !this.folderID; // Temporary until support for multiple address books
-    this.folderID ??= contacts.FolderId;
+    this.folderID ??= contacts.FolderId.Id;
     if (!this.name) {
       this.name = contacts.DisplayName;
     }
