@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
       androidArchitectures: ["arm64"],
     },
     SplashScreen: {
-      launchAutoHide: false,
+      launchAutoHide: true,
     },
     EdgeToEdge: {
       backgroundColor: "#494558", // --appbar-bg, see app.css
