@@ -23,16 +23,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		BF793BB42E73746B0093044E /* Copy Node Native Modules */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-			);
-			name = "Copy Node Native Modules";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DD0EE6352DD26626002B679D /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -69,26 +59,12 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				build/better_sqlite3.node,
+				"prebuilds/ios-arm64-simulator/bufferutil.node",
 				"prebuilds/ios-arm64/bufferutil.node",
 			);
 			target = 504EC3031FED79650016851F /* App */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		BF793BB62E7374720093044E /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				build/better_sqlite3.node = (CodeSignOnCopy, );
-				"prebuilds/ios-arm64/bufferutil.node" = (CodeSignOnCopy, );
-			};
-			buildPhase = BF793BB42E73746B0093044E /* Copy Node Native Modules */;
-			membershipExceptions = (
-				build/better_sqlite3.node,
-				"prebuilds/ios-arm64/bufferutil.node",
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
@@ -100,7 +76,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BF793BB32E73745C0093044E /* Exceptions for "nodejs-project" folder in "App" target */,
-				BF793BB62E7374720093044E /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */,
 			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
@@ -190,7 +165,7 @@
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
 				BF793BB82E7375D80093044E /* Code Sign Node Native Modules */,
-				BF793BB42E73746B0093044E /* Copy Node Native Modules */,
+				BF793C212E73953C0093044E /* Copy Node Native Modules */,
 			);
 			buildRules = (
 			);
@@ -309,7 +284,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nfind \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\" -name '*.node' -exec codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" {} \\;\n";
+			shellScript = "find \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\" -name '*.node' -exec codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" {} \\;\n";
+		};
+		BF793C212E73953C0093044E /* Copy Node Native Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Node Native Modules";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SRC_DIR=\"${SRCROOT}/App/nodejs-project\"\n\nDEST_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\nmkdir -p \"$DEST_DIR\"\n\nfind \"$SRC_DIR\" -name '*.node' -exec cp --parents {} \"$DEST_DIR\" \\;\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
