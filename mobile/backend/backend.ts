@@ -63,7 +63,7 @@ async function createSharedAppObject() {
     addEventListenerWebContents,
     getWebContents,
     writeTextToClipboard,
-    openExternalURL,
+    // openExternalURL,
     openFileInNativeApp,
     showFileInFolder,
     restartApp,

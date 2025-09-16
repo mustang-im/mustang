@@ -119,7 +119,7 @@
     }
     personUID ??= new PersonUID();
     personUID.emailAddress ??= kDummyPerson.emailAddress;
-    person = personUID.createPerson();
+    person = personUID.createPerson(appGlobal.collectedAddressbook);
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
     isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;
   }
@@ -130,7 +130,7 @@
     dispatch("close");
   }
   async function onSave() {
-    person ??= personUID.createPerson();
+    person ??= personUID.createPerson(appGlobal.personalAddressbook);
     person.name = personUID.name;
     contactEntry.value = personUID.emailAddress;
     if (!person.addressbook) {
@@ -141,7 +141,7 @@
   }
   function onEditPerson() {
     onClose();
-    openUIFor(personUID.createPerson());
+    openUIFor(personUID.createPerson(appGlobal.personalAddressbook));
   }
   function onRemovePerson() {
     console.log("remove contact");

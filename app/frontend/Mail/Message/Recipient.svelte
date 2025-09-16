@@ -74,9 +74,9 @@
     isPopupOpen = true;
   }
 
-  function addToAddressbook(addressbook: Addressbook) {
-    let person = recipient.createPerson();
-    addressbook.persons.add(person);
+  async function addToAddressbook(addressbook: Addressbook) {
+    let person = recipient.createPerson(addressbook);
+    await person.save();
     recipient = recipient;
   }
 

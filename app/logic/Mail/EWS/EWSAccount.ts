@@ -293,7 +293,7 @@ export class EWSAccount extends MailAccount {
       } else if (this.authMethod == AuthMethod.Unknown) {
         if (/\bBasic\b/.test(response.WWWAuthenticate)) {
           this.authMethod = AuthMethod.Password;
-        } else if (/\NTLM\b/.test(response.WWWAuthenticate)) {
+        } else if (/\bNTLM\b/.test(response.WWWAuthenticate)) {
           this.authMethod = AuthMethod.NTLM;
         } else {
           throw this.fatalError = new ConnectError(null,
