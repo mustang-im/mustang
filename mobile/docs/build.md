@@ -64,6 +64,8 @@ fails when there's no tag for the commit which fails when you manually trigger i
 
 #### Troubleshooting
 
+- You may need to wait a little bit after opening the project to select device and build because Xcode needs to index the files
+in the project.
 - For debug builds if there's no Development Team ID you may need to open Xcode, go to Settings > Apple Accounts and login.
 Then go to the file explorer in the Xcode project and click on the Project, then Target > Signings and Capabilities and
 select a Development Team.
