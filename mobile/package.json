@@ -17,18 +17,18 @@
     "setup:ios": "bash ./hooks/ios/setup.sh"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/app": "^7.1.0",
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.2",
     "@capacitor/browser": "^7.0.2",
-    "@capacitor/camera": "^7.0.2",
-    "@capacitor/core": "^7.4.3",
-    "@capacitor/ios": "^7.4.3",
+    "@capacitor/camera": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
     "@capacitor/splash-screen": "^7.0.3",
     "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3",
     "capacitor-nodejs": "https://github.com/mustang-im/capacitor-nodejs/releases/download/1.0.0-beta.10/capacitor-nodejs-v1.0.0-beta.10.tgz"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "^7.0.0",
     "tar": "^7.4.3",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
