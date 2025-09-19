@@ -128,7 +128,10 @@ class NodeJS {
         }
     }
 
+    private external fun stopNode()
     fun stop() {
+        if (!isStarted) return
+        stopNode()
         nodeScope.cancel()
         isStarted = false
     }
