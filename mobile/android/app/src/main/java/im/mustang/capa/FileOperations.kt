@@ -2,10 +2,8 @@ package im.mustang.capa
 
 import android.content.res.AssetManager
 import com.getcapacitor.Logger
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FileReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -16,7 +14,7 @@ object FileOperations {
         return file.exists()
     }
 
-    fun combinePath(vararg paths: String?): String {
+    fun combinePath(vararg paths: String): String {
         var file = File(paths[0])
 
         for (index in 1..<paths.size) {
@@ -24,43 +22,6 @@ object FileOperations {
         }
 
         return file.path
-    }
-
-    fun combineEnv(vararg variables: String?): String {
-        val builder = StringBuilder()
-
-        for (index in variables.indices) {
-            val variable: String? = variables[index]
-
-            if (variable == null || variable.isEmpty()) {
-                continue
-            }
-
-            builder.append(variable)
-            if (index < variables.size - 1) {
-                builder.append(":")
-            }
-        }
-
-        return builder.toString()
-    }
-
-    @Throws(IOException::class)
-    fun readFileFromPath(path: String): String {
-        val file = File(path)
-
-        val builder = StringBuilder()
-        val reader = BufferedReader(FileReader(file))
-
-        var line: String?
-        while ((reader.readLine().also { line = it }) != null) {
-            builder.append(line)
-            builder.append("\n")
-        }
-
-        reader.close()
-
-        return builder.toString()
     }
 
     fun createDir(dirPath: String): Boolean {
@@ -82,7 +43,7 @@ object FileOperations {
 
         if (files != null) {
             for (file in files) {
-                success = if (file.isDirectory()) {
+                success = if (file.isDirectory) {
                     success and deleteDir(file)
                 } else {
                     success and file.delete()
@@ -122,7 +83,7 @@ object FileOperations {
             return success
         } catch (e: IOException) {
             Logger.error(
-                TAG,
+                Constants.TAG,
                 "Failed to copy assets from '$assetPath'.",
                 e
             )
@@ -148,7 +109,7 @@ object FileOperations {
             return true
         } catch (e: Exception) {
             Logger.error(
-                TAG,
+                Constants.TAG,
                 "Failed to copy the asset '$assetPath' to '$destinationPath'.",
                 e
             )
