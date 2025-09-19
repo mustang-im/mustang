@@ -8,15 +8,17 @@ import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.IOException
 
-const val TAG = "NodeJS-Mobile"
+
+object Constants {
+    const val TAG = "NodeJS-Mobile"
+    const val PREFS_APP_UPDATED_TIME = "AppUpdateTime"
+    const val PROJECT_DIR = "nodejs"
+    const val PROJECT_MAIN_FILE = "index.mjs"
+}
 
 class NodeJS {
     companion object {
@@ -31,24 +33,23 @@ class NodeJS {
 
     constructor(context: Context) {
         this.context = context
-        this.preferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
+        this.preferences = context.getSharedPreferences(Constants.TAG, Context.MODE_PRIVATE)
 
         try {
             this.packageInfo =
                 context.packageManager.getPackageInfo(context.packageName, 0)
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(
-                TAG,
+                Constants.TAG,
                 "Failed to get the application's package information.",
                 e
             )
         }
     }
-    private val PREFS_APP_UPDATED_TIME: String = "AppUpdateTime"
-    private val projectDir = "nodejs"
     private external fun startNode(args: Array<String>)
 
     private val nodeScope = CoroutineScope(Dispatchers.IO)
+
     private var isStarted = false
 
     fun start() {
@@ -56,74 +57,37 @@ class NodeJS {
 
         isStarted = true
 
-        nodeScope.launch(Dispatchers.IO) {
+        nodeScope.launch {
             val filesPath = context.filesDir.absolutePath
-            var projectMainPath: String
-            val mainFile = "index.mjs"
 
             val basePath = FileOperations.combinePath(filesPath, "public")
             val projectPath = FileOperations.combinePath(basePath, "nodejs")
-            val dataPath = FileOperations.combinePath(basePath, "data")
 
             val copyNodeProjectSuccess =
-                copyNodeProjectFromAPK(projectDir, projectPath)
+                copyNodeProjectFromAPK(Constants.PROJECT_DIR, projectPath)
             if (!copyNodeProjectSuccess) {
-                Log.e(TAG, "Unable to copy the Node.js project from APK.")
+                Log.e(Constants.TAG, "Unable to copy the Node.js project from APK.")
                 cancel()
             }
 
             if (!FileOperations.existsPath(projectPath)) {
-                Log.e(TAG, "Unable to access the Node.js project. (No such directory)")
+                Log.e(Constants.TAG, "Unable to access the Node.js project. (No such directory)")
                 cancel()
             }
 
-            val createDataDirSuccess = FileOperations.createDir(dataPath)
-            if (!createDataDirSuccess) {
-                Log.d(
-                    TAG,
-                    "Unable to create a directory for persistent data storage."
-                )
-            }
-
-            val projectPackageJsonPath = FileOperations.combinePath(projectPath, "package.json")
-
-            var projectMainFile = "index.mjs"
-            if (mainFile != null && !mainFile.isEmpty()) {
-                projectMainFile = mainFile
-            } else if (FileOperations.existsPath(projectPackageJsonPath)) {
-                try {
-                    val projectPackageJsonData =
-                        FileOperations.readFileFromPath(projectPackageJsonPath)
-                    val projectPackageJson = JSONObject(projectPackageJsonData)
-                    val projectPackageJsonMainFile = projectPackageJson.getString("main")
-
-                    if (!projectPackageJsonMainFile.isEmpty()) {
-                        projectMainFile = projectPackageJsonMainFile
-                    }
-                } catch (e: JSONException) {
-                    Log.e(TAG, 
-                        "Failed to read the package.json file of the Node.js project.",
-                        e
-                    )
-                    cancel()
-                } catch (e: IOException) {
-                    Log.e(TAG, 
-                        "Failed to read the package.json file of the Node.js project.",
-                        e
-                    )
-                    cancel()
-                }
-            }
-
-            projectMainPath = FileOperations.combinePath(projectPath, projectMainFile)
+            val projectMainPath = FileOperations.combinePath(projectPath, Constants.PROJECT_MAIN_FILE)
 
             if (!FileOperations.existsPath(projectMainPath)) {
-                Log.e(TAG, "Unable to access main script of the Node.js project. (No such file) $projectMainPath")
+                Log.e(Constants.TAG, "Unable to access main script of the Node.js project. (No such file) $projectMainPath")
                 cancel()
             }
 
             withContext(Dispatchers.Default) {
-                startNode(arrayOf("node", projectMainPath))
+                try {
+                    startNode(arrayOf("node", projectMainPath))
+                } catch (e: Throwable) {
+                    Log.e(Constants.TAG, "Error starting Node.js", e)
+                }
             }
         }
     }
@@ -137,7 +101,7 @@ class NodeJS {
     }
 
     private fun copyNodeProjectFromAPK(
-        projectDir: String?,
+        projectDir: String,
         projectPath: String,
     ): Boolean {
         val nodeAssetDir = FileOperations.combinePath("public", projectDir)
@@ -155,7 +119,7 @@ class NodeJS {
     private val isAppUpdated: Boolean
         get() {
             val previousLastUpdateTime =
-                preferences.getLong(TAG, 0)
+                preferences.getLong(Constants.TAG, 0)
             val lastUpdateTime = packageInfo.lastUpdateTime
             return lastUpdateTime != previousLastUpdateTime
         }
@@ -163,7 +127,7 @@ class NodeJS {
     private fun saveAppUpdateTime() {
         val lastUpdateTime = packageInfo.lastUpdateTime
         preferences.edit {
-            putLong(PREFS_APP_UPDATED_TIME, lastUpdateTime)
+            putLong(Constants.PREFS_APP_UPDATED_TIME, lastUpdateTime)
         }
     }
 }
