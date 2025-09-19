@@ -1,9 +1,14 @@
 package im.mustang.capa
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,13 +26,37 @@ class NodeJS {
         }
     }
     private val context: Context
+    private val preferences: SharedPreferences
+    private lateinit var packageInfo: PackageInfo
+
     constructor(context: Context) {
         this.context = context
+        this.preferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
+
+        try {
+            this.packageInfo =
+                context.packageManager.getPackageInfo(context.packageName, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.e(
+                TAG,
+                "Failed to get the application's package information.",
+                e
+            )
+        }
     }
+    private val PREFS_APP_UPDATED_TIME: String = "AppUpdateTime"
     private val projectDir = "nodejs"
     private external fun startNode(args: Array<String>)
+
+    private val nodeScope = CoroutineScope(Dispatchers.IO)
+    private var isStarted = false
+
     fun start() {
-        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
+        if (isStarted) return
+
+        isStarted = true
+
+        nodeScope.launch(Dispatchers.IO) {
             val filesPath = context.filesDir.absolutePath
             var projectMainPath: String
             val mainFile = "index.mjs"
@@ -98,6 +127,12 @@ class NodeJS {
             }
         }
     }
+
+    fun stop() {
+        nodeScope.cancel()
+        isStarted = false
+    }
+
     private fun copyNodeProjectFromAPK(
         projectDir: String?,
         projectPath: String,
@@ -106,11 +141,26 @@ class NodeJS {
         val assetManager = context.assets
 
         var success = true
-        if (FileOperations.existsPath(projectPath)) {
+        if (FileOperations.existsPath(projectPath) && this.isAppUpdated) {
             success = FileOperations.deleteDir(projectPath)
         }
         success = success and FileOperations.copyAssetDir(assetManager, nodeAssetDir, projectPath)
 
+        saveAppUpdateTime()
         return success
+    }
+    private val isAppUpdated: Boolean
+        get() {
+            val previousLastUpdateTime =
+                preferences.getLong(TAG, 0)
+            val lastUpdateTime = packageInfo.lastUpdateTime
+            return lastUpdateTime != previousLastUpdateTime
+        }
+
+    private fun saveAppUpdateTime() {
+        val lastUpdateTime = packageInfo.lastUpdateTime
+        preferences.edit {
+            putLong(PREFS_APP_UPDATED_TIME, lastUpdateTime)
+        }
     }
 }
