@@ -619,6 +619,68 @@ export class EWSAccount extends MailAccount {
     folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
     return folder;
   }
+
+  async addSharedAddressbook(person: PersonUID) {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "Default",
+        },
+        m$FolderIds: {
+          t$DistinguishedFolderId: {
+            Id: "contacts",
+            t$Mailbox: {
+              t$EmailAddress: person.emailAddress,
+            },
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(request);
+    let folder = result.Folders.ContactsFolder;
+    let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
+    addressbook.name = `${person.name} ${folder.DisplayName}`;
+    addressbook.url = this.url;
+    addressbook.username = person.emailAddress;
+    addressbook.workspace = this.workspace;
+    addressbook.icon = this.icon;
+    addressbook.color = this.color;
+    addressbook.folderID = folder.FolderId.Id;
+    addressbook.mainAccount = this;
+    appGlobal.addressbooks.add(addressbook);
+    await addressbook.listContacts();
+  }
+
+  async addSharedCalendar(person: PersonUID) {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "Default",
+        },
+        m$FolderIds: {
+          t$DistinguishedFolderId: {
+            Id: "calendar",
+            t$Mailbox: {
+              t$EmailAddress: person.emailAddress,
+            },
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(request);
+    let folder = result.Folders.CalendarFolder;
+    let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+    calendar.name = `${person.name} ${folder.DisplayName}`;
+    calendar.url = this.url;
+    calendar.username = person.emailAddress;
+    calendar.workspace = this.workspace;
+    calendar.icon = this.icon;
+    calendar.color = this.color;
+    calendar.folderID = folder.FolderId.Id;
+    calendar.mainAccount = this;
+    appGlobal.calendars.add(calendar);
+    await calendar.listEvents();
+  }
 }
 
 
