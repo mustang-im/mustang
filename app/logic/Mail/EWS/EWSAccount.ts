@@ -535,52 +535,44 @@ export class EWSAccount extends MailAccount {
       }
     }
     for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-      // Link (until #155) or create the default address book.
-      // TODO: Support user-added address books. Compare FolderId.
-      // FolderClass will be IPF.Contacts but some internal folders exist
-      if (folder.DistinguishedFolderId == "contacts") {
-        let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook | null;
+      if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
+        let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folder.FolderId.Id) as EWSAddressbook | undefined;
         if (!addressbook) {
           addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.name = this.name;
+          addressbook.name = `${this.name} ${folder.DisplayName}`;
           addressbook.url = this.url;
           addressbook.username = this.username;
           addressbook.workspace = this.workspace;
           addressbook.icon = this.icon;
           addressbook.color = this.color;
+          addressbook.folderID = folder.FolderId.Id;
           addressbook.mainAccount = this;
           appGlobal.addressbooks.add(addressbook);
         }
         addressbook.icon ??= this.icon; // Migration, remove later
         addressbook.color ??= this.color;
-        addressbook.folderID ??= folder.FolderId.Id;
         await addressbook.save();
       }
     }
     for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-      // Link (until #155) or create the default calendar.
-      // TODO: Support user-added calendars. Compare FolderId.
-      // N.B. Only default calendar can handle meeting requests and responses
-      // FolderClass will be IPF.Appointment except for Birthdays calendar
-      // which is IPF.Appointment.Birthdays
-      // Holidays calendar is read-only but it's hard to tell from the API...
-      if (folder.DistinguishedFolderId == "calendar") {
-        let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar | null;
+      if (folder.FolderClass == "IPF.Appointment") {
+        let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.mainAccount == this && calendar.folderID == folder.FolderId.Id) as EWSCalendar | undefined;
         if (!calendar) {
           calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.name = this.name;
+          calendar.name = `${this.name} ${folder.DisplayName}`;
           calendar.url = this.url;
           calendar.username = this.username;
           calendar.workspace = this.workspace;
           calendar.icon = this.icon;
           calendar.color = this.color;
+          calendar.folderID = folder.FolderId.Id;
           calendar.mainAccount = this;
           appGlobal.calendars.add(calendar);
         }
         calendar.icon ??= this.icon; // Migration, remove later
         calendar.color ??= this.color;
-        calendar.folderID ??= folder.FolderId.Id;
         await calendar.save();
+        calendar.isInvitationCalendar = folder.DistinguishedFolderId == "calendar";
       }
     }
   }
