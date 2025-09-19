@@ -171,7 +171,7 @@ int startNode(int argc, char** argv) {
     // Worker threads. When no `MultiIsolatePlatform` instance is present,
     // Worker threads are disabled.
     std::unique_ptr<MultiIsolatePlatform> platform =
-            MultiIsolatePlatform::Create(4);
+            MultiIsolatePlatform::Create(0);
     V8::InitializePlatform(platform.get());
     V8::Initialize();
 
