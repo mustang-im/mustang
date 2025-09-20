@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,15 +50,12 @@ class NodeJS {
     private external fun startNode(args: Array<String>)
 
     private val nodeScope = CoroutineScope(Dispatchers.IO)
-
-    private var isStarted = false
+    private var job: Job? = null
 
     fun start() {
-        if (isStarted) return
+        if (job != null) return
 
-        isStarted = true
-
-        nodeScope.launch {
+        job = nodeScope.launch {
             val filesPath = context.filesDir.absolutePath
 
             val basePath = FileOperations.combinePath(filesPath, "public")
@@ -84,6 +82,7 @@ class NodeJS {
 
             withContext(Dispatchers.Default) {
                 try {
+                    Log.d(Constants.TAG, "Starting Node.js...")
                     startNode(arrayOf("node", projectMainPath))
                 } catch (e: Throwable) {
                     Log.e(Constants.TAG, "Error starting Node.js", e)
@@ -95,7 +94,8 @@ class NodeJS {
     private external fun stopNode()
     fun stop() {
         stopNode()
-        nodeScope.cancel()
+        job?.cancel()
+        job = null
     }
 
     private fun copyNodeProjectFromAPK(

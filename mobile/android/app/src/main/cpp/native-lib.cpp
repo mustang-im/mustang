@@ -93,7 +93,7 @@ int start_redirecting_stdout_stderr() {
     return 0;
 }
 
-static Environment* nodeEnv;
+static Environment* nodeEnv = nullptr;
 
 int RunNodeInstance(MultiIsolatePlatform* platform,
                     const std::vector<std::string>& args,
@@ -171,7 +171,7 @@ int startNode(int argc, char** argv) {
     // Worker threads. When no `MultiIsolatePlatform` instance is present,
     // Worker threads are disabled.
     std::unique_ptr<MultiIsolatePlatform> platform =
-            MultiIsolatePlatform::Create(0);
+            MultiIsolatePlatform::Create(4);
     V8::InitializePlatform(platform.get());
     V8::Initialize();
 
@@ -245,4 +245,8 @@ Java_im_mustang_capa_NodeJS_stopNode(
         JNIEnv *env,
         jobject /* this */) {
     node::Stop(nodeEnv);
+    V8::Dispose();
+    V8::DisposePlatform();
+    node::TearDownOncePerProcess();
+    nodeEnv = nullptr;
 }
