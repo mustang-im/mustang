@@ -28,6 +28,7 @@ class NodeJS {
             System.loadLibrary("node")
         }
     }
+
     private val context: Context
     private val preferences: SharedPreferences
     private lateinit var packageInfo: PackageInfo
@@ -47,6 +48,7 @@ class NodeJS {
             )
         }
     }
+
     private external fun startNode(args: Array<String>)
 
     private val nodeScope = CoroutineScope(Dispatchers.IO)
@@ -62,7 +64,7 @@ class NodeJS {
             val projectPath = FileOperations.combinePath(basePath, "nodejs")
 
             val copyNodeProjectSuccess =
-                copyNodeProjectFromAPK(Constants.PROJECT_DIR, projectPath)
+                copyNodeProjectFromAPK(projectPath)
             if (!copyNodeProjectSuccess) {
                 Log.e(Constants.TAG, "Unable to copy the Node.js project from APK.")
                 cancel()
@@ -73,10 +75,14 @@ class NodeJS {
                 cancel()
             }
 
-            val projectMainPath = FileOperations.combinePath(projectPath, Constants.PROJECT_MAIN_FILE)
+            val projectMainPath =
+                FileOperations.combinePath(projectPath, Constants.PROJECT_MAIN_FILE)
 
             if (!FileOperations.existsPath(projectMainPath)) {
-                Log.e(Constants.TAG, "Unable to access main script of the Node.js project. (No such file) $projectMainPath")
+                Log.e(
+                    Constants.TAG,
+                    "Unable to access main script of the Node.js project. (No such file) $projectMainPath"
+                )
                 cancel()
             }
 
@@ -99,10 +105,9 @@ class NodeJS {
     }
 
     private fun copyNodeProjectFromAPK(
-        projectDir: String,
         projectPath: String,
     ): Boolean {
-        val nodeAssetDir = FileOperations.combinePath("public", projectDir)
+        val nodeAssetDir = FileOperations.combinePath("public", Constants.PROJECT_DIR)
         val assetManager = context.assets
 
         var success = true
@@ -114,6 +119,7 @@ class NodeJS {
         saveAppUpdateTime()
         return success
     }
+
     private val isAppUpdated: Boolean
         get() {
             val previousLastUpdateTime =
