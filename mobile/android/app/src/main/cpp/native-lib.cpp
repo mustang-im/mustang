@@ -45,12 +45,12 @@ pthread_t thread_stdout;
 pthread_t thread_stderr;
 const char *ADBTAG = "NodeJS-Mobile";
 
-void *thread_stderr_func(void*) {
+void *thread_stderr_func(void *) {
     ssize_t redirect_size;
     char buf[2048];
-    while((redirect_size = read(pipe_stderr[0], buf, sizeof buf - 1)) > 0) {
+    while ((redirect_size = read(pipe_stderr[0], buf, sizeof buf - 1)) > 0) {
         //__android_log will add a new line anyway.
-        if(buf[redirect_size - 1] == '\n')
+        if (buf[redirect_size - 1] == '\n')
             --redirect_size;
         buf[redirect_size] = 0;
         __android_log_write(ANDROID_LOG_ERROR, ADBTAG, buf);
@@ -58,12 +58,12 @@ void *thread_stderr_func(void*) {
     return 0;
 }
 
-void *thread_stdout_func(void*) {
+void *thread_stdout_func(void *) {
     ssize_t redirect_size;
     char buf[2048];
-    while((redirect_size = read(pipe_stdout[0], buf, sizeof buf - 1)) > 0) {
+    while ((redirect_size = read(pipe_stdout[0], buf, sizeof buf - 1)) > 0) {
         //__android_log will add a new line anyway.
-        if(buf[redirect_size - 1] == '\n')
+        if (buf[redirect_size - 1] == '\n')
             --redirect_size;
         buf[redirect_size] = 0;
         __android_log_write(ANDROID_LOG_INFO, ADBTAG, buf);
@@ -82,22 +82,22 @@ int start_redirecting_stdout_stderr() {
     pipe(pipe_stderr);
     dup2(pipe_stderr[1], STDERR_FILENO);
 
-    if(pthread_create(&thread_stdout, 0, thread_stdout_func, 0) == -1)
+    if (pthread_create(&thread_stdout, 0, thread_stdout_func, 0) == -1)
         return -1;
     pthread_detach(thread_stdout);
 
-    if(pthread_create(&thread_stderr, 0, thread_stderr_func, 0) == -1)
+    if (pthread_create(&thread_stderr, 0, thread_stderr_func, 0) == -1)
         return -1;
     pthread_detach(thread_stderr);
 
     return 0;
 }
 
-static Environment* nodeEnv = nullptr;
+static Environment *nodeEnv = nullptr;
 
-int RunNodeInstance(MultiIsolatePlatform* platform,
-                    const std::vector<std::string>& args,
-                    const std::vector<std::string>& exec_args) {
+int RunNodeInstance(MultiIsolatePlatform *platform,
+                    const std::vector<std::string> &args,
+                    const std::vector<std::string> &exec_args) {
     int exit_code = 0;
 
     // Setup up a libuv event loop, v8::Isolate, and Node.js Environment.
@@ -105,12 +105,12 @@ int RunNodeInstance(MultiIsolatePlatform* platform,
     std::unique_ptr<CommonEnvironmentSetup> setup =
             CommonEnvironmentSetup::Create(platform, &errors, args, exec_args);
     if (!setup) {
-        for (const std::string& err : errors)
+        for (const std::string &err: errors)
             fprintf(stderr, "%s: %s\n", args[0].c_str(), err.c_str());
         return 1;
     }
 
-    Isolate* isolate = setup->isolate();
+    Isolate *isolate = setup->isolate();
     nodeEnv = setup->env();
 
     {
@@ -149,7 +149,7 @@ int RunNodeInstance(MultiIsolatePlatform* platform,
     return exit_code;
 }
 
-int startNode(int argc, char** argv) {
+int startNode(int argc, char **argv) {
     argv = uv_setup_args(argc, argv);
     std::vector<std::string> args(argv, argv + argc);
     // Parse Node.js CLI options, and print any errors that have occurred while
@@ -160,7 +160,7 @@ int startNode(int argc, char** argv) {
                     node::ProcessInitializationFlags::kNoInitializeNodeV8Platform
             });
 
-    for (const std::string& error : result->errors())
+    for (const std::string &error: result->errors())
         fprintf(stderr, "%s: %s\n", args[0].c_str(), error.c_str());
     if (result->early_return() != 0) {
         return result->exit_code();
@@ -198,24 +198,25 @@ Java_im_mustang_capa_NodeJS_startNode(
 
     //Compute byte size need for all arguments in contiguous memory.
     int c_arguments_size = 0;
-    for (int i = 0; i < argument_count ; i++) {
-        c_arguments_size += strlen(env->GetStringUTFChars((jstring)env->GetObjectArrayElement(arguments, i), 0));
+    for (int i = 0; i < argument_count; i++) {
+        c_arguments_size += strlen(
+                env->GetStringUTFChars((jstring) env->GetObjectArrayElement(arguments, i), 0));
         c_arguments_size++; // for '\0'
     }
 
     //Stores arguments in contiguous memory.
-    char* args_buffer = (char*) calloc(c_arguments_size, sizeof(char));
+    char *args_buffer = (char *) calloc(c_arguments_size, sizeof(char));
 
     //argv to pass into node.
-    char* argv[argument_count];
+    char *argv[argument_count];
 
     //To iterate through the expected start position of each argument in args_buffer.
-    char* current_args_position = args_buffer;
+    char *current_args_position = args_buffer;
 
     //Populate the args_buffer and argv.
-    for (int i = 0; i < argument_count ; i++)
-    {
-        const char* current_argument = env->GetStringUTFChars((jstring)env->GetObjectArrayElement(arguments, i), 0);
+    for (int i = 0; i < argument_count; i++) {
+        const char *current_argument = env->GetStringUTFChars(
+                (jstring) env->GetObjectArrayElement(arguments, i), 0);
 
         //Copy current argument to its expected position in args_buffer
         strncpy(current_args_position, current_argument, strlen(current_argument));
@@ -228,8 +229,9 @@ Java_im_mustang_capa_NodeJS_startNode(
     }
 
     //Start threads to show stdout and stderr in logcat.
-    if (start_redirecting_stdout_stderr()==-1) {
-        __android_log_write(ANDROID_LOG_ERROR, ADBTAG, "Couldn't start redirecting stdout and stderr to logcat.");
+    if (start_redirecting_stdout_stderr() == -1) {
+        __android_log_write(ANDROID_LOG_ERROR, ADBTAG,
+                            "Couldn't start redirecting stdout and stderr to logcat.");
     }
 
     //Start node, with argc and argv.
