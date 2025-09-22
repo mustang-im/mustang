@@ -149,6 +149,26 @@ int RunNodeInstance(MultiIsolatePlatform *platform,
     return exit_code;
 }
 
+// Keep global platform pointer
+std::unique_ptr<MultiIsolatePlatform> g_platform;
+
+void InitializeV8PlatformOnce() {
+    if (!g_platform) {
+        g_platform = MultiIsolatePlatform::Create(
+                2);  // Use fewer threads (2 instead of 4) to reduce overhead
+        V8::InitializePlatform(g_platform.get());
+        V8::Initialize();
+    }
+}
+
+void DisposeV8PlatformOnce() {
+    if (g_platform) {
+        V8::Dispose();
+        V8::DisposePlatform();
+        g_platform.reset();
+    }
+}
+
 int startNode(int argc, char **argv) {
     argv = uv_setup_args(argc, argv);
     std::vector<std::string> args(argv, argv + argc);
@@ -166,23 +186,14 @@ int startNode(int argc, char **argv) {
         return result->exit_code();
     }
 
-    // Create a v8::Platform instance. `MultiIsolatePlatform::Create()` is a way
-    // to create a v8::Platform instance that Node.js can use when creating
-    // Worker threads. When no `MultiIsolatePlatform` instance is present,
-    // Worker threads are disabled.
-    std::unique_ptr<MultiIsolatePlatform> platform =
-            MultiIsolatePlatform::Create(4);
-    V8::InitializePlatform(platform.get());
-    V8::Initialize();
+    InitializeV8PlatformOnce();
 
     // See below for the contents of this function.
     int ret = RunNodeInstance(
-            platform.get(), result->args(), result->exec_args());
+            g_platform.get(), result->args(), result->exec_args());
 
-    V8::Dispose();
-    V8::DisposePlatform();
+    DisposeV8PlatformOnce();
 
-    node::TearDownOncePerProcess();
     return ret;
 }
 
@@ -215,17 +226,12 @@ Java_im_mustang_capa_NodeJS_startNode(
 
     //Populate the args_buffer and argv.
     for (int i = 0; i < argument_count; i++) {
-        const char *current_argument = env->GetStringUTFChars(
-                (jstring) env->GetObjectArrayElement(arguments, i), 0);
-
-        //Copy current argument to its expected position in args_buffer
-        strncpy(current_args_position, current_argument, strlen(current_argument));
-
-        //Save current argument start position in argv
+        jstring arg_jstr = (jstring) env->GetObjectArrayElement(arguments, i);
+        jsize arg_len = env->GetStringUTFLength(arg_jstr);
+        env->GetStringUTFRegion(arg_jstr, 0, arg_len, current_args_position);
         argv[i] = current_args_position;
-
-        //Increment to the next argument's expected position.
-        current_args_position += strlen(current_args_position) + 1;
+        current_args_position += arg_len + 1;
+        env->DeleteLocalRef(arg_jstr);
     }
 
     //Start threads to show stdout and stderr in logcat.
@@ -247,8 +253,6 @@ Java_im_mustang_capa_NodeJS_stopNode(
         JNIEnv *env,
         jobject /* this */) {
     node::Stop(nodeEnv);
-    V8::Dispose();
-    V8::DisposePlatform();
-    node::TearDownOncePerProcess();
+    DisposeV8PlatformOnce();
     nodeEnv = nullptr;
 }
