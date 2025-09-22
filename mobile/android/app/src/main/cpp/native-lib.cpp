@@ -132,7 +132,7 @@ int RunNodeInstance(MultiIsolatePlatform *platform,
         // instead of the internal-only `require` function.
         MaybeLocal<Value> loadenv_ret = node::LoadEnvironment(
                 nodeEnv,
-                "(async () => { await import(process.argv[1]); })().catch(e => { console.error(e); process.exit(1); });");
+                "import(process.argv[1]).catch(e => { console.error(e); process.exit(1); });");
 
 
         if (loadenv_ret.IsEmpty())  // There has been a JS exception.
