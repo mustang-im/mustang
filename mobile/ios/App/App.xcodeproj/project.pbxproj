@@ -65,7 +65,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BFB3ED872E8365080007C670 /* Exceptions for "nodejs-project" folder in "App" target */ = {
+		BFB3EDFD2E8369ED0007C670 /* Exceptions for "nodejs-project" folder in "App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				build/better_sqlite3.node,
@@ -76,21 +76,6 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		BFB3ED852E8364B00007C670 /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				build/better_sqlite3.node = (CodeSignOnCopy, );
-				"prebuilds/ios-arm64/bufferutil.node" = (CodeSignOnCopy, );
-			};
-			buildPhase = BFB3ED832E8364A90007C670 /* Copy Node Native Modules */;
-			membershipExceptions = (
-				build/better_sqlite3.node,
-				"prebuilds/ios-arm64/bufferutil.node",
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -100,8 +85,7 @@
 		DD0EE6372DD26C52002B679D /* nodejs-project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BFB3ED872E8365080007C670 /* Exceptions for "nodejs-project" folder in "App" target */,
-				BFB3ED852E8364B00007C670 /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */,
+				BFB3EDFD2E8369ED0007C670 /* Exceptions for "nodejs-project" folder in "App" target */,
 			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
