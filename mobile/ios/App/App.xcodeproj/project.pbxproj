@@ -60,6 +60,7 @@
 			membershipExceptions = (
 				build/better_sqlite3.node,
 				"prebuilds/ios-arm64/bufferutil.node",
+				"prebuilds/ios-arm64-simulator/bufferutil.node",
 			);
 			target = 504EC3031FED79650016851F /* App */;
 		};
