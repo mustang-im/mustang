@@ -76,6 +76,21 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		BFA9F1FE2E847EA600A9E37F /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				build/better_sqlite3.node = (CodeSignOnCopy, );
+				"prebuilds/ios-arm64/bufferutil.node" = (CodeSignOnCopy, );
+			};
+			buildPhase = BFB3ED832E8364A90007C670 /* Copy Node Native Modules */;
+			membershipExceptions = (
+				build/better_sqlite3.node,
+				"prebuilds/ios-arm64/bufferutil.node",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -86,6 +101,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BFB3EDFD2E8369ED0007C670 /* Exceptions for "nodejs-project" folder in "App" target */,
+				BFA9F1FE2E847EA600A9E37F /* Exceptions for "nodejs-project" folder in "Copy Node Native Modules" phase from "App" target */,
 			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
@@ -294,7 +310,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "find \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\" -name '*.node' -exec codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" {} \\;\n";
+			shellScript = "bash ../../hooks/ios/xcode-codesign.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
