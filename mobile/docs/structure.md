@@ -9,6 +9,9 @@ The app config directory and files directory should be in `/data/data/im.mustang
 
 ### iOS
 
+#### Libnode
+The variable for libnode is set in `hooks/common/variables.sh` and used in `hooks/ios/setup.sh` and `backend/prebuild.sh`.
+
 #### Node Native
 
 Node native modules should not be included in the Frameworks section of `App/Target` setting in Xcode.
@@ -19,7 +22,7 @@ Node native modules should not be included in the Frameworks section of `App/Tar
 
 #### Fetch
 
-`fetch()` requires WASM which is not supported on iOS. That's why `node-fetch` is used to replace it.
+`fetch()` requires WASM which is not supported on iOS. That's why `node-fetch` is used to replace it. In Node.js v24+ `fetch()` is available natively.
 
 #### WASM
 
