@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
-mkdir -p ./resources
-cd ./resources
+source ./hooks/common/variables.sh
+
+mkdir -p ./ios/App/resources
+cd ./ios/App/resources
 
 # Gets the latest release download URL from GitHub API
 # DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" \
 #   | jq -r '.assets[] | select(.name | test("ios.*\\.zip")) | .browser_download_url')
 
-DOWNLOAD_URL="https://github.com/mustang-im/nodejs-mobile/releases/download/v24.5.0/nodejs-mobile-v24.5.0-ios.zip"
+DOWNLOAD_URL="$IOS_LIBNODE"
 TMP_ZIP_FILE="tmp.zip"
 
 # Download the file

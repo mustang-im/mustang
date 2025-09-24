@@ -13,4 +13,5 @@ android/app/debug/
 NodeMobile.xcframework
 !setup.sh
 !xcode-codesign.sh
+!variables.sh
 backend/nodejs-assets
