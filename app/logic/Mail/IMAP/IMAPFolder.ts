@@ -9,6 +9,7 @@ import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -635,5 +636,64 @@ export class IMAPFolder extends Folder {
 
   newEMail(): IMAPEMail {
     return new IMAPEMail(this);
+  }
+
+  async getPermissions(): Promise<ArrayColl<IMAPPermission> | undefined> {
+    if (!await this.account.hasCapability("ACL")) {
+      return undefined;
+    }
+    let conn = await this.account.connection();
+    let attributes: Array<{ type: string, value: string }>;
+    let permissions = new ArrayColl<IMAPPermission>();
+    await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    for (let i = 0; i < attributes.length; i += 2) {
+      let name = attributes[i].value;
+      let rights = attributes[i + 1].value;
+      let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
+      permissions.add(new IMAPPermission(emailAddress, name, rights));
+    }
+    return permissions;
+  }
+
+  async setPermission(permission: IMAPPermission, right: keyof typeof IMAPACL) {
+    let conn = await this.account.connection();
+    await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: permission[IMAPACL[right]] ? "+" + right : "-" + right }]);
+  }
+
+  async removePermission(permission: PersonUID) {
+    let conn = await this.account.connection();
+    await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+  }
+}
+
+export enum IMAPACL {
+  l = "lookup",
+  r = "read",
+  s = "seen",
+  w = "write",
+  i = "create",
+  k = "subfolder",
+  x = "remove",
+  t = "delete",
+  e = "expunge",
+  a = "owner",
+}
+
+export class IMAPPermission extends PersonUID {
+  lookup: boolean;
+  read: boolean;
+  seen: boolean;
+  write: boolean;
+  create: boolean;
+  subfolder: boolean;
+  remove: boolean;
+  delete: boolean;
+  expunge: boolean;
+  owner: boolean;
+  constructor(emailAddress: string, name: string, rights: string = "") {
+    super(emailAddress, name);
+    for (let right of "lrswikxtea") {
+      this[IMAPACL[right]] = rights.includes(right);
+    }
   }
 }
