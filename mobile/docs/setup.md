@@ -14,5 +14,5 @@
 ### iOS
 
 1. Run `yarn setup:ios`
-4. Set `$ export MOBILE_ARCH=[architecture]`, archicture can be `ios-arm64-simulator`, `ios-arm64`, `ios-x64`
-5. Run `yarn build`
+2. Set `$ export MOBILE_ARCH=[architecture]`, archicture can be `ios-arm64-simulator`, `ios-arm64`, `ios-x64`
+3. Run `yarn build`
