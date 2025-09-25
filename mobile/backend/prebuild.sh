@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-export ANDROID_LIBNODE="https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
-export ANDROID_SDK="--sdk35"
+source ../hooks/common/variables.sh
+export ANDROID_LIBNODE
+export ANDROID_SDK="--sdk$ANDROID_SDK"
 
 cd node_modules;
 (cd better-sqlite3 && npx prebuild-for-nodejs-mobile $MOBILE_ARCH $ANDROID_SDK) &&
