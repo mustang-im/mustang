@@ -93,7 +93,9 @@ int start_redirecting_stdout_stderr() {
     return 0;
 }
 
-static Environment *nodeEnv = nullptr;
+void ExternalStopFunction(node::Environment* nodeEnv) {
+    node::Stop(nodeEnv);
+}
 
 int RunNodeInstance(MultiIsolatePlatform *platform,
                     const std::vector<std::string> &args,
@@ -111,7 +113,7 @@ int RunNodeInstance(MultiIsolatePlatform *platform,
     }
 
     Isolate *isolate = setup->isolate();
-    nodeEnv = setup->env();
+    node::Environment* nodeEnv = setup->env();
 
     {
         Locker locker(isolate);
@@ -143,11 +145,12 @@ int RunNodeInstance(MultiIsolatePlatform *platform,
         // node::Stop() can be used to explicitly stop the event loop and keep
         // further JavaScript from running. It can be called from any thread,
         // and will act like worker.terminate() if called from another thread.
-        node::Stop(nodeEnv);
+        ExternalStopFunction(nodeEnv);
     }
 
     return exit_code;
 }
+
 
 // Keep global platform pointer
 std::unique_ptr<MultiIsolatePlatform> g_platform;
@@ -195,6 +198,13 @@ int startNode(int argc, char **argv) {
     DisposeV8PlatformOnce();
 
     return ret;
+}
+
+extern "C" void JNICALL
+Java_im_mustang_capa_NodeJS_initializeV8(
+        JNIEnv *env,
+        jobject /* this */) {
+    InitializeV8PlatformOnce();
 }
 
 //node's libUV requires all arguments being on contiguous memory.
@@ -253,6 +263,12 @@ Java_im_mustang_capa_NodeJS_stopNode(
         JNIEnv *env,
         jobject /* this */) {
     node::Stop(nodeEnv);
-    DisposeV8PlatformOnce();
     nodeEnv = nullptr;
+}
+
+extern "C" void JNICALL
+Java_im_mustang_capa_NodeJS_disposeV8(
+        JNIEnv *env,
+        jobject /* this */) {
+    DisposeV8PlatformOnce();
 }
