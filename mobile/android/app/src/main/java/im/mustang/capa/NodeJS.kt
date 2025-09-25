@@ -1,3 +1,7 @@
+// From <https://github.com/hampoelz/Capacitor-NodeJS/blob/main/android/src/main/java/net/hampoelz/capacitor/nodejs/CapacitorNodeJS.java>
+// Copyright (c) 2023 Rene Hampölz
+// MIT License (MIT)
+
 package im.mustang.capa
 
 import android.content.Context
