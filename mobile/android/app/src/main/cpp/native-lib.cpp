@@ -14,6 +14,9 @@
 //      }
 //    }
 
+// From <https://nodejs.org/api/embedding.html> example
+// From <https://nodejs-mobile.github.io/docs/guide/guide-android/building-complex> example
+
 #include <jni.h>
 #include <string>
 #include <cstdlib>
