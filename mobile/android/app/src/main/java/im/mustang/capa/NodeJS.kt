@@ -53,10 +53,13 @@ class NodeJS {
         }
     }
 
-    private external fun startNode(args: Array<String>)
+    private external fun runNodeEnv(args: Array<String>): Long
+    private external fun spinNodeEventLoop(envPtr: Long)
 
     private val nodeScope = CoroutineScope(Dispatchers.Default)
     private var job: Job? = null
+
+    private var nativeNodeEnvPtr: Long = 0
 
     private external fun initializeV8()
 
@@ -116,17 +119,18 @@ class NodeJS {
 
             try {
                 Log.d(Constants.TAG, "Starting Node.js...")
-                startNode(arrayOf("node", projectMainPath))
+                nativeNodeEnvPtr = runNodeEnv(arrayOf("node", projectMainPath))
+                spinNodeEventLoop(nativeNodeEnvPtr)
             } catch (e: Throwable) {
                 Log.e(Constants.TAG, "Error starting Node.js", e)
             }
         }
     }
 
-    private external fun stopNode()
+    private external fun stopNode(envPtr: Long)
     fun stop() {
         try {
-            stopNode()
+            stopNode(nativeNodeEnvPtr)
             disposeV8()
             job?.cancel()
             job = null
