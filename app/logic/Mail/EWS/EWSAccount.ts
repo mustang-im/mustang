@@ -9,6 +9,7 @@ import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -33,6 +34,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
+  folder: "msgfolderroot" | "inbox" | null;
 
   constructor() {
     super();
@@ -44,10 +46,16 @@ export class EWSAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
+    if (this.mainAccount) {
+      return this.mainAccount.isLoggedIn;
+    }
     return this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn;
   }
 
   async verifyLogin(): Promise<void> {
+    if (this.mainAccount) {
+      throw new NotReached();
+    }
     await this.loginCommon(true);
   }
 
@@ -66,6 +74,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    if (this.mainAccount) {
+      await this.mainAccount.login(interactive);
+      return;
+    }
     await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
     await super.login(interactive);
     await this.loginCommon(interactive);
@@ -86,6 +98,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
+    if (this.mainAccount) {
+      await this.mainAccount.logout();
+      return;
+    }
     await this.oAuth2?.logout();
   }
 
@@ -250,6 +266,9 @@ export class EWSAccount extends MailAccount {
    * @returns XML2JSON = XML as JSON. What the server returned.
    */
   async callEWS(aRequest: JsonRequest, options?: any): Promise<any> {
+    if (this.mainAccount) {
+      return await (this.mainAccount as EWSAccount).callEWS(aRequest, options);
+    }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -522,15 +541,49 @@ export class EWSAccount extends MailAccount {
           },
         },
         m$ParentFolderIds: {
-          t$DistinguishedFolderId: [{
+          t$DistinguishedFolderId: this.folder ? {
+            Id: this.folder,
+            t$Mailbox: {
+              t$EmailAddress: this.username,
+            },
+          } : {
             Id: "msgfolderroot",
-          }],
+          },
         },
       },
     };
     let result = await this.callEWS(query);
+    let folders = ensureArray(result.RootFolder.Folders.Folder);
     this.folderMap.clear();
-    for (let folder of result.RootFolder.Folders.Folder) {
+    if (this.folder == "inbox") {
+      let request = {
+        m$GetFolder: {
+          m$FolderShape: {
+            t$BaseShape: "Default",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "folder:FolderClass",
+              }, {
+                FieldURI: "folder:ParentFolderId",
+              }, {
+                FieldURI: "folder:DistinguishedFolderId",
+              }],
+            },
+          },
+          m$FolderIds: {
+            t$DistinguishedFolderId: {
+              Id: "inbox",
+              t$Mailbox: {
+                t$EmailAddress: this.username,
+              },
+            },
+          },
+        },
+      };
+      let response = await this.callEWS(request);
+      folders.unshift(response.Folders.Folder);
+    }
+    for (let folder of folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
@@ -552,6 +605,9 @@ export class EWSAccount extends MailAccount {
       if (!this.folderMap.has(folder.id)) {
         await folder.deleteItLocally();
       }
+    }
+    if (this.folder) {
+      return; // Don't automatically add shared addressbook or calendar.
     }
     for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
       if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
@@ -602,10 +658,18 @@ export class EWSAccount extends MailAccount {
   }
 
   async createToplevelFolder(name: string): Promise<EWSFolder> {
+    if (this.folder == "inbox") {
+      throw new Error(gt`You only have access to the Inbox of these shared folders`);
+    }
     let request = {
       m$CreateFolder: {
         m$ParentFolderId: {
-          t$DistinguishedFolderId: {
+          t$DistinguishedFolderId: this.folder ? {
+            Id: "msgfolderroot",
+            t$Mailbox: {
+              t$EmailAddress: this.username,
+            },
+          } : {
             Id: "msgfolderroot",
           },
         },
@@ -623,7 +687,61 @@ export class EWSAccount extends MailAccount {
     return folder;
   }
 
+  async findNamedFolders(person: PersonUID, names: string[]): Promise<string[]> {
+    if (this.mainAccount) {
+      throw new NotReached();
+    }
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:DistinguishedFolderId",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$DistinguishedFolderId: names.map(name => ({
+            Id: name,
+            t$Mailbox: {
+              t$EmailAddress: person.emailAddress,
+            },
+          })),
+        },
+      },
+    };
+    try {
+      let result = await this.callEWS(request);
+      return result.filter(folder => folder.ResponseClass == "Success").map(folder => getEWSItem(folder.Folders).DistinguishedFolderId);
+    } catch (ex) {
+      return [];
+    }
+  }
+
+  async addSharedFolders(person: PersonUID, folder: "msgfolderroot" | "inbox") {
+    if (this.mainAccount) {
+      throw new NotReached();
+    }
+    let account = newAccountForProtocol("ews") as EWSAccount;
+    account.name = person.name;
+    account.url = this.url;
+    account.username = person.emailAddress;
+    account.emailAddress = person.emailAddress;
+    account.workspace = this.workspace;
+    account.icon = this.icon;
+    account.color = this.color;
+    account.folder = folder;
+    account.mainAccount = this;
+    account.save();
+    appGlobal.emailAccounts.add(account);
+    await account.listFolders();
+  }
+
   async addSharedAddressbook(person: PersonUID) {
+    if (this.mainAccount) {
+      throw new NotReached();
+    }
     let request = {
       m$GetFolder: {
         m$FolderShape: {
@@ -655,6 +773,9 @@ export class EWSAccount extends MailAccount {
   }
 
   async addSharedCalendar(person: PersonUID) {
+    if (this.mainAccount) {
+      throw new NotReached();
+    }
     let request = {
       m$GetFolder: {
         m$FolderShape: {
@@ -683,6 +804,17 @@ export class EWSAccount extends MailAccount {
     calendar.mainAccount = this;
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.folder = sanitize.enum(json.folder, ["msgfolderroot", "inbox"], null);
+  }
+
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.folder = this.folder;
+    return json;
   }
 }
 
