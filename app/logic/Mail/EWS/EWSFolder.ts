@@ -362,6 +362,15 @@ export class EWSFolder extends Folder {
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
+  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+    // We can copy messages to and from shared folders for the main account.
+    let mainAccount = this.account.mainAccount || this.account;
+    if (messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount)) {
+      return false;
+    }
+    return await super.moveOrCopyMessages(action, messages);
+  }
+
   async moveMessagesHere(messages: Collection<EMail>) {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
