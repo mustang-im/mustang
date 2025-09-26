@@ -91,12 +91,14 @@ export class EWSAccount extends MailAccount {
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.mainAccount == this) {
         addressbook.listContacts()
+          .then(() => addressbook.username != this.username && this.streamNotifications((addressbook as EWSAddressbook).folderID))
           .catch(this.errorCallback);
       }
     }
     for (let calendar of appGlobal.calendars) {
       if (calendar.mainAccount == this) {
         calendar.listEvents()
+          .then(() => calendar.username != this.username && this.streamNotifications((calendar as EWSCalendar).folderID))
           .catch(this.errorCallback);
       }
     }
@@ -386,8 +388,29 @@ export class EWSAccount extends MailAccount {
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
-  async streamNotifications() {
-    let subscribe = {
+  async streamNotifications(folderID?: string) {
+    let subscribe = folderID
+    ? {
+      m$Subscribe: {
+        m$StreamingSubscriptionRequest: {
+          t$FolderIds: {
+            t$FolderId: {
+              Id: folderID,
+            },
+          },
+          t$EventTypes: {
+            t$EventType: [
+              "CopiedEvent",
+              "CreatedEvent",
+              "DeletedEvent",
+              "ModifiedEvent",
+              "MovedEvent",
+            ],
+          },
+        },
+      },
+    }
+    : {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
           t$EventTypes: {
@@ -649,6 +672,7 @@ export class EWSAccount extends MailAccount {
     addressbook.mainAccount = this;
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
+    await this.streamNotifications(folder.FolderId.Id);
   }
 
   async addSharedCalendar(person: PersonUID) {
@@ -680,6 +704,7 @@ export class EWSAccount extends MailAccount {
     calendar.mainAccount = this;
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
+    await this.streamNotifications(folder.FolderId.Id);
   }
 }
 
