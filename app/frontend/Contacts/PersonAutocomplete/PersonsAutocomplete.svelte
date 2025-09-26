@@ -41,11 +41,23 @@
   export let tabindex = null;
   export let autofocus = false;
   export let disabled = false;
-  export let onAddPerson: (person: PersonUID) => void | Promise<void> = function(person) { persons.add(person); };
-  export let onRemovePerson: (person: PersonUID) => void | Promise<void> = function(person) { persons.remove(person); };
+  export let onAddPerson: (person: PersonUID) => void | Promise<void> = onAddPersonDefault;
+  export let onRemovePerson: (person: PersonUID) => void | Promise<void> = onRemovePersonDefault;
 
   //$: console.log("persons", persons.contents);
 
+  function onAddPersonDefault(person: PersonUID) {
+    if (!person || persons.contains(person)) {
+      return;
+    }
+    persons.add(person);
+  }
+  function onRemovePersonDefault(person: PersonUID) {
+    if (!person) {
+      return;
+    }
+    persons.remove(person);
+  }
   let autocompleteEl: PersonAutocomplete;
   function onFocusNext() {
     autocompleteEl?.focus();
