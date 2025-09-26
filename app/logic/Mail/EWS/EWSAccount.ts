@@ -367,8 +367,27 @@ export class EWSAccount extends MailAccount {
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
-  async streamNotifications() {
-    let subscribe = {
+  async streamNotifications(folderID?: string) {
+    let subscribe = folderID ? {
+      m$Subscribe: {
+        m$StreamingSubscriptionRequest: {
+          t$FolderIds: {
+            t$FolderId: {
+              Id: folderID,
+            },
+          },
+          t$EventTypes: {
+            t$EventType: [
+              "CopiedEvent",
+              "CreatedEvent",
+              "DeletedEvent",
+              "ModifiedEvent",
+              "MovedEvent",
+            ],
+          },
+        },
+      },
+    } : {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
           t$EventTypes: {
