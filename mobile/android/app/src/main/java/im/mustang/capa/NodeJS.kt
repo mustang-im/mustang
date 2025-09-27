@@ -53,27 +53,10 @@ class NodeJS {
         }
     }
 
-    private external fun runNodeEnv(args: Array<String>): Long
-    private external fun spinNodeEventLoop(envPtr: Long)
+    private external fun startNode(args: Array<String>): Int
 
     private val nodeScope = CoroutineScope(Dispatchers.Default)
     private var job: Job? = null
-
-    private var nativeNodeEnvPtr: Long = 0
-
-    private external fun initializeV8()
-
-    private fun create() {
-        try {
-            initializeV8()
-        } catch (e: Throwable) {
-            Log.e(
-                Constants.TAG,
-                "Error while initializing V8",
-                e
-            )
-        }
-    }
 
     fun start() {
         if (job != null) return
@@ -113,44 +96,25 @@ class NodeJS {
                 return@async projectMainPath
             }.await()
 
-            async {
-                create()
-            }.await()
-
             try {
                 Log.d(Constants.TAG, "Starting Node.js...")
-                nativeNodeEnvPtr = runNodeEnv(arrayOf("node", projectMainPath))
-                spinNodeEventLoop(nativeNodeEnvPtr)
+                startNode(arrayOf("node", projectMainPath))
             } catch (e: Throwable) {
                 Log.e(Constants.TAG, "Error starting Node.js", e)
             }
         }
     }
 
-    private external fun stopNode(envPtr: Long)
+    private external fun stopNode()
     fun stop() {
         try {
-            stopNode(nativeNodeEnvPtr)
-            disposeV8()
+            stopNode()
             job?.cancel()
             job = null
         } catch (e: Throwable) {
             Log.e(
                 Constants.TAG,
                 "Error stopping Node.js",
-                e
-            )
-        }
-    }
-
-    private external fun disposeV8()
-    fun destroy() {
-        try {
-            disposeV8()
-        } catch (e: Throwable) {
-            Log.e(
-                Constants.TAG,
-                "Error disposing V8",
                 e
             )
         }
