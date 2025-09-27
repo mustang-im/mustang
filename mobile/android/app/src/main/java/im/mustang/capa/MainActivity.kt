@@ -23,13 +23,8 @@ class MainActivity : BridgeActivity() {
         super.onStart()
     }
 
-    override fun onStop() {
-        super.onStop()
-        this.nodeJS.stop()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        this.nodeJS.destroy()
+        this.nodeJS.stop()
     }
 }

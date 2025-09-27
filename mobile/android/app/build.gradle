@@ -3,6 +3,12 @@ import com.android.build.gradle.internal.tasks.FinalizeBundleTask
 apply plugin: 'com.android.application'
 
 android {
+    externalNativeBuild {
+        cmake {
+            path file('CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
     namespace "im.mustang.capa"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -19,7 +25,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                cppFlags ''
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
