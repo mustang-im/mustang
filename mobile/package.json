@@ -13,7 +13,8 @@
     "build:android:apk": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew assembleRelease",
     "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew :app:bundleRelease",
     "preview": "vite preview",
-    "setup:ios": "cd ios && ./setup-ios.sh"
+    "setup:ios": "cd ios && ./setup-ios.sh",
+    "setup:android": "bash ./hooks/android/setup.sh"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
