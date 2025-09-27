@@ -18,11 +18,6 @@ class MainActivity : BridgeActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onStart() {
-        this.nodeJS.start()
-        super.onStart()
-    }
-
     override fun onDestroy() {
         this.nodeJS.stop()
         super.onDestroy()
