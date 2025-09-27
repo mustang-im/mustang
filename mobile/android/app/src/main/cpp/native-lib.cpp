@@ -222,4 +222,6 @@ Java_im_mustang_capa_NodeJS_stopNode(JNIEnv *env, jobject thiz) {
     V8::DisposePlatform();
     node::TearDownOncePerProcess();
     nodeEnv = nullptr;
+    pthread_detach(thread_stdout);
+    pthread_detach(thread_stderr);
 }
