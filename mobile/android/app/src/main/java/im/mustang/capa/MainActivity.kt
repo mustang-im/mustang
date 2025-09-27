@@ -24,7 +24,7 @@ class MainActivity : BridgeActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         this.nodeJS.stop()
+        super.onDestroy()
     }
 }
