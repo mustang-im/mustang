@@ -134,7 +134,10 @@ int RunNodeProcess(int argc, char **argv) {
     std::shared_ptr<node::InitializationResult> result =
             node::InitializeOncePerProcess(args, {
                     node::ProcessInitializationFlags::kNoInitializeV8,
-                    node::ProcessInitializationFlags::kNoInitializeNodeV8Platform
+                    node::ProcessInitializationFlags::kNoInitializeNodeV8Platform,
+                    node::ProcessInitializationFlags::kDisableNodeOptionsEnv,
+                    node::ProcessInitializationFlags::kNoParseGlobalDebugVariables,
+                    node::ProcessInitializationFlags::kNoPrintHelpOrVersionOutput
             });
 
     for (const std::string &error: result->errors())
