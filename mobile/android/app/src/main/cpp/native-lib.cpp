@@ -1,4 +1,7 @@
-// From <>
+// A combination of
+// <https://github.com/nodejs-mobile/nodejs-mobile-samples/blob/master/android/native-gradle-node-folder/app/src/main/cpp/native-lib.cpp>
+// and
+// <https://nodejs.org/api/embedding.html>
 
 #include <jni.h>
 #include <string>
