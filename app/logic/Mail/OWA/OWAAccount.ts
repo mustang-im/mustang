@@ -8,6 +8,7 @@ import type { OWANotifications } from "./Notification/OWANotifications";
 import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotifications";
 import { OWAOffice365Notifications } from "./Notification/OWAOffice365Notifications";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { OWAGAL } from "../../Contacts/OWA/OWAGAL";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
@@ -124,6 +125,8 @@ export class OWAAccount extends MailAccount {
     await this.loginCommon(interactive);
     this.hasLoggedIn = true;
     await this.listFolders();
+
+    appGlobal.addresslists.add(new OWAGAL(this));
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books. Compare addressbook ID.

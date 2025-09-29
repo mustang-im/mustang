@@ -17,6 +17,7 @@ class AppGlobal extends Observable {
   readonly emailAccounts = new ArrayColl<MailAccount>();
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly addressbooks = new ArrayColl<Addressbook>();
+  readonly addresslists = new ArrayColl<Addressbook>(); // search-only
   readonly calendars = new ArrayColl<Calendar>();
   readonly calendarEvents = mergeColls(this.calendars.map(cal => cal.eventsWithRecurrences)).sortBy(ev => ev.startTime);
   readonly meetAccounts = new ArrayColl<MeetAccount>();

@@ -18,7 +18,8 @@ export class ActiveSyncPerson extends Person {
   fromWBXML(wbxmljs: any) {
     this.firstName = sanitize.nonemptystring(wbxmljs.FirstName, "");
     this.lastName = sanitize.nonemptystring(wbxmljs.LastName, "");
-    this.name = this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName;
+    // DisplayName only exists for GAL search results
+    this.name = sanitize.nonemptystring(wbxmljs.DisplayName, this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName);
     this.emailAddresses.replaceAll([wbxmljs.Email1Address, wbxmljs.Email2Address, wbxmljs.Email3Address].filter(Boolean).map(address => new ContactEntry((parseOneAddress(address) as ParsedMailbox).address, "work", "mailto")));
     this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, count]) => ["", "2"].slice(0, count).map(index => wbxmljs[`${ContactElements[purpose]}${index}${ContactElements[protocol]}Number`]).filter(Boolean).map(value => new ContactEntry(value, purpose, protocol))));
     this.chatAccounts.replaceAll([wbxmljs.IMAddress, wbxmljs.IMAddress2, wbxmljs.IMAddress3].filter(Boolean).map(address => new ContactEntry(address, "other")));

@@ -7,6 +7,7 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
+import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
@@ -69,6 +70,8 @@ export class EWSAccount extends MailAccount {
     await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
     await super.login(interactive);
     await this.loginCommon(interactive);
+
+    appGlobal.addresslists.add(new EWSGAL(this));
 
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.mainAccount == this) {

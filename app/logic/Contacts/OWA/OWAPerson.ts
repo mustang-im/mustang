@@ -18,7 +18,7 @@ export class OWAPerson extends Person {
   }
 
   fromJSON(json: any): OWAPerson {
-    this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
+    this.personaID = sanitize.nonemptystring(json.PersonaId?.Id);
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.firstName = sanitize.nonemptystring(json.GivenName, "");
     this.lastName = sanitize.nonemptystring(json.Surname, "");
