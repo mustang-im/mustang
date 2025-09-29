@@ -13,7 +13,7 @@ import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
@@ -259,7 +259,7 @@ export class OWAAccount extends MailAccount {
     await this.callOWA(request);
   }
 
-  async callOWA(aRequest: any): Promise<any> {
+  async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
     if (!this.hasLoggedIn) {
       throw new LoginError(null, "Please login");
     }
@@ -270,9 +270,9 @@ export class OWAAccount extends MailAccount {
         Action: aRequest.action,
         Authorization: this.authorizationHeader,
         "Content-Type": "application/json",
-        "x-anchormailbox": this.emailAddress,
+        "x-anchormailbox": mailbox || this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
-        "x-owa-explicitlogonuser": this.emailAddress,
+        "x-owa-explicitlogonuser": mailbox || this.emailAddress,
       },
       method: "POST",
     };
@@ -464,6 +464,30 @@ export class OWAAccount extends MailAccount {
     } catch (ex) {
       this.errorCallback(ex);
     }
+  }
+
+  async addSharedAddressbook(person: PersonUID) {
+    let result = await this.callOWA(owaSharedFolderRequest("contacts", person.emailAddress));
+    let folder = result.Folders[0];
+    let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+    addressbook.initFromMainAccount(this);
+    addressbook.name = `${person.name} ${folder.DisplayName}`;
+    addressbook.username = person.emailAddress;
+    addressbook.folderID = folder.FolderId.Id;
+    appGlobal.addressbooks.add(addressbook);
+    await addressbook.listContacts();
+  }
+
+  async addSharedCalendar(person: PersonUID) {
+    let result = await this.callOWA(owaSharedFolderRequest("calendar", person.emailAddress));
+    let folder = result.Folders[0];
+    let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+    calendar.initFromMainAccount(this);
+    calendar.name = `${person.name} ${folder.DisplayName}`;
+    calendar.username = person.emailAddress;
+    calendar.folderID = folder.FolderId.Id;
+    appGlobal.calendars.add(calendar);
+    await calendar.listEvents();
   }
 }
 

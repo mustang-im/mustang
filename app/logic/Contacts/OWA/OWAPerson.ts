@@ -66,7 +66,7 @@ export class OWAPerson extends Person {
       return;
     }
     let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
-    let response = await this.addressbook.account.callOWA(request);
+    let response = await this.addressbook.callOWA(request);
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
     this.fields = fields;
@@ -111,7 +111,7 @@ export class OWAPerson extends Person {
 
   async deleteFromServer() {
     let request = new OWADeletePersonaRequest(this.personaID);
-    await this.addressbook.account.callOWA(request);
+    await this.addressbook.callOWA(request);
     this.addressbook.persons.remove(this);
   }
 }
