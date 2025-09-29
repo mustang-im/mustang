@@ -270,6 +270,23 @@ export function owaRenameFolderRequest(name: string, folderID: string): OWAReque
   });
 }
 
+export function owaSharedFolderRequest(distinguishedID: string, emailAddress: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "Default",
+    },
+    FolderIds: [{
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: distinguishedID,
+      Mailbox: {
+        EmailAddress: emailAddress,
+      },
+    }],
+  });
+}
+
 export function owaFolderCountsRequest(folderID: string): OWARequest {
   return new OWARequest("GetFolder", {
     __type: "GetFolderRequest:#Exchange",

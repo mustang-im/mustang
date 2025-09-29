@@ -38,6 +38,34 @@
       </grid>
     </vbox>
   </HeaderGroupBox>
+
+  {#if account instanceof OWAAddressbook && account.username == account.mainAccount.username}
+    <HeaderGroupBox>
+      <hbox slot="header">OWA {$t`Addressbook - Sharing`}</hbox>
+      {#each sharedAccounts.contents as addressbook}
+        <hbox>{addressbook.name}</hbox>
+      {:else}
+        <hbox>{$t`No shared addressbooks.`}</hbox>
+      {/each}
+      <hbox>
+        <PersonAutocomplete {skipPersons} placeholder={$t`Add shared addressbook`} on:addPerson={(event) => onAddAddressbook(event.detail)}/>
+      </hbox>
+    </HeaderGroupBox>
+  {/if}
+
+  {#if account instanceof OWACalendar && account.username == account.mainAccount.username}
+    <HeaderGroupBox>
+      <hbox slot="header">OWA {$t`Calendar - Sharing`}</hbox>
+      {#each sharedAccounts.contents as calendar}
+        <hbox>{calendar.name}</hbox>
+      {:else}
+        <hbox>{$t`No shared calendars.`}</hbox>
+      {/each}
+      <hbox>
+        <PersonAutocomplete {skipPersons} placeholder={$t`Add shared calendar`} on:addPerson={(event) => onAddCalendar(event.detail)}/>
+      </hbox>
+    </HeaderGroupBox>
+  {/if}
 </vbox>
 
 <!-- <copied to="WorkspaceBlock.svelte" /> -->
@@ -48,7 +76,7 @@
 </datalist>
 
 <script lang="ts">
-  import type { Account } from "../../logic/Abstract/Account";
+  import { type Account, getAllAccounts } from "../../logic/Abstract/Account";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
   import { selectedCategory } from "./Window/selected";
   import { settingsCategories } from "./SettingsCategories";
@@ -56,9 +84,14 @@
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
   import { MeetAccount } from "../../logic/Meet/MeetAccount";
+  import type { OWAAccount } from "../../logic/Mail/OWA/OWAAccount";
+  import { OWAAddressbook } from "../../logic/Contacts/OWA/OWAAddressbook";
+  import { OWACalendar } from "../../logic/Calendar/OWA/OWACalendar";
+  import { PersonUID } from "../../logic/Abstract/PersonUID";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors, showError } from "../Util/error";
+  import PersonAutocomplete from "../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -66,6 +99,8 @@
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
+  $: sharedAccounts = getAllAccounts().filter(other => other.protocol == account.protocol && other.mainAccount == account.mainAccount && other.username != account.username);
+  $: skipPersons = sharedAccounts.map(account => new PersonUID(account.username));
 
   const onChange = useDebounce(() => catchErrors(onSave), 500);
   async function onSave() {
@@ -85,6 +120,22 @@
       $selectedFolder = $selectedAccount?.inbox;
       $selectedMessage = null;
       $selectedMessages.clear();
+    }
+  }
+
+  async function onAddAddressbook(person: PersonUID) {
+    try {
+      await (account.mainAccount as OWAAccount).addSharedAddressbook(person);
+    } catch (ex) {
+      showError(ex);
+    }
+  }
+
+  async function onAddCalendar(person: PersonUID) {
+    try {
+      await (account.mainAccount as OWAAccount).addSharedCalendar(person);
+    } catch (ex) {
+      showError(ex);
     }
   }
 </script>
