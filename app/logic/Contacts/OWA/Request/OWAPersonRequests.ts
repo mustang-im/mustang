@@ -1,5 +1,31 @@
 import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
 
+export function owaFindGALPersonsRequest(searchTerm: string): OWARequest {
+  return new OWARequest("FindPeople", {
+    __type: "FindPeopleRequest:#Exchange",
+    IndexedPageItemView: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
+      MaxEntriesReturned: 100,
+    },
+    ParentFolderId: {
+      __type: "TargetFolderId:#Exchange",
+      BaseFolderId: {
+        __type: "DistinguishedFolderId:#Exchange",
+        Id: "directory",
+      },
+    },
+    PersonaShape: {
+      __type: "PersonaResponseShape:#Exchange",
+      BaseShape: "Default",
+    },
+    QueryString: searchTerm,
+    SearchPeopleSuggestionIndex: false,
+    ShouldResolveOneOffEmailAddress: false,
+  });
+}
+
 export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindPeople", {
     __type: "FindPeopleRequest:#Exchange",
