@@ -25,6 +25,7 @@ export class IMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
   protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  connectionLock = new MapColl<ImapFlow, Lock>();
   throttle = new Throttle(50, 1);
 
   constructor() {
@@ -135,6 +136,7 @@ export class IMAPAccount extends MailAccount {
         }
       }
       this.connections.set(purpose, connection);
+      this.connectionLock.set(connection, new Lock());
       if (purpose == ConnectionPurpose.Main) {
         this.notifyObservers();
       }
@@ -205,11 +207,14 @@ export class IMAPAccount extends MailAccount {
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
+
+    assert(connection, "Reconnect: Connection unknown");
     try {
-      await connection?.close();
+      await connection.close();
     } catch (ex) {
       // Sometimes gives "Connection not available". Do nothing.
     }
+    this.connectionLock.delete(connection);
 
     let purpose = this.connections.getKeyForValue(connection);
     assert(purpose, "Connection purpose unknown");
@@ -237,13 +242,20 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     // listTree() doesn't return the message count and is not well-implemented
-    let foldersInfo = await (await this.connection()).list({
-      statusQuery: {
-        messages: true, // Total msg count
-        recent: true, // \Recent msg count
-        unseen: true, // Unseen msg count
-      },
-    });
+    let conn = await this.connection();
+    let lock = await this.connectionLock.get(conn).lock();
+    let foldersInfo;
+    try {
+      foldersInfo = await conn.list({
+        statusQuery: {
+          messages: true, // Total msg count
+          recent: true, // \Recent msg count
+          unseen: true, // Unseen msg count
+        },
+      });
+    } finally {
+      lock?.release();
+    }
     // console.log("folders", foldersFlat);
     let currentFolders = new ArrayColl<IMAPFolder>();
     let subFoldersInfo = foldersInfo.filter(folderInfo => folderInfo.parentPath == "");
@@ -320,7 +332,13 @@ export class IMAPAccount extends MailAccount {
   async logout(alsoOAuth2 = true): Promise<void> {
     this.stopPolling();
     for (let purpose of connectionPurposes) {
-      await this.connections.get(purpose)?.logout();
+      let conn = await this.connections.get(purpose);
+      if (!conn) {
+        continue;
+      }
+      conn.logout();
+      this.connections.delete(purpose);
+      this.connectionLock.delete(conn);
     }
     if (this.oAuth2 && alsoOAuth2) {
       await this.oAuth2.logout();
