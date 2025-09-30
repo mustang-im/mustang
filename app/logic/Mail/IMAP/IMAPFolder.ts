@@ -3,6 +3,7 @@ import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import type { Locked } from "../../util/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -57,12 +58,14 @@ export class IMAPFolder extends Folder {
   }
 
   async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
-    let lock;
+    let lockMailbox;
+    let lock: Locked;
     try {
       let conn = connection ?? await this.account.connection(false, purpose);
       try {
         if (doLock) {
-          lock = await conn.getMailboxLock(this.path);
+          lock = await this.account.connectionLock.get(conn).lock();
+          lockMailbox = await conn.getMailboxLock(this.path);
         } else if (conn.mailbox.path == this.path) {
           // already open
         } else {
@@ -73,7 +76,8 @@ export class IMAPFolder extends Folder {
         if (ex.code == "NoConnection") {
           conn = await this.account.reconnect(conn);
           if (doLock) {
-            lock = await conn.getMailboxLock(this.path);
+            lock = await this.account.connectionLock.get(conn).lock();
+            lockMailbox = await conn.getMailboxLock(this.path);
           } else {
             await conn.mailboxOpen(this.path);
           }
@@ -93,6 +97,7 @@ export class IMAPFolder extends Folder {
       }
     } finally {
       lock?.release();
+      lockMailbox?.release();
     }
   }
 
