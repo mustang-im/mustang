@@ -14,6 +14,8 @@ export class EWSAddressbook extends Addressbook {
   canSync: boolean = true;
   readonly persons: ArrayColl<EWSPerson>;
   readonly groups: ArrayColl<EWSGroup>;
+  /** If this is a shared calendar, should we subscribe to its notifications? */
+  needsStreamingSubscription: boolean = true;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -31,7 +33,14 @@ export class EWSAddressbook extends Addressbook {
       await this.save();
     }
 
-    return this.updateChangedContacts();
+    await this.updateChangedContacts();
+
+    if (this.needsStreamingSubscription) {
+      this.needsStreamingSubscription = false;
+      if (this.username != this.account.username) {
+        await this.account.streamNotifications(this.folderID);
+      }
+    }
   }
 
   // Uses the sync state to get just the contats that changed since last time.

@@ -18,6 +18,8 @@ export class EWSCalendar extends Calendar {
   folderID: string;
   /** Is this the default calendar that handles incoming invitations */
   isInvitationCalendar: boolean = false;
+  /** If this is a shared calendar, should we subscribe to its notifications? */
+  needsStreamingSubscription: boolean = true;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -69,6 +71,13 @@ export class EWSCalendar extends Calendar {
 
     await this.syncFolder();
     await this.save();
+
+    if (this.needsStreamingSubscription) {
+      this.needsStreamingSubscription = false;
+      if (this.username != this.account.username) {
+        await this.account.streamNotifications(this.folderID);
+      }
+    }
   }
 
   protected async syncFolder(): Promise<void> {
