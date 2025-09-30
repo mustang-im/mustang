@@ -165,7 +165,7 @@ export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", fold
   });
 }
 
-export function owaFindFoldersRequest(deep: boolean): OWARequest {
+export function owaFindFoldersRequest(deep: boolean, folder?: string | null, username?: string): OWARequest {
   return new OWARequest("FindFolder", {
     __type: "FindFolderRequest:#Exchange",
     FolderShape: {
@@ -182,7 +182,13 @@ export function owaFindFoldersRequest(deep: boolean): OWARequest {
       }],
     },
     Paging: null,
-    ParentFolderIds: [{
+    ParentFolderIds: [folder ? {
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: folder,
+      Mailbox: {
+        EmailAddress: username,
+      },
+    } : {
       __type: "DistinguishedFolderId:#Exchange",
       Id: "msgfolderroot",
     }],
@@ -228,12 +234,18 @@ export function owaCreateNewSubFolderRequest(name: string, parentFolderID: strin
   });
 }
 
-export function owaCreateNewTopLevelFolderRequest(name: string): OWARequest {
+export function owaCreateNewTopLevelFolderRequest(name: string, username: string | null): OWARequest {
   return new OWARequest("CreateFolder", {
     __type: "CreateFolderRequest:#Exchange",
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
-      BaseFolderId: {
+      BaseFolderId: username ? {
+        __type: "DistinguishedFolderId:#Exchange",
+        Id: "msgfolderroot",
+        Mailbox: {
+          EmailAddress: username,
+        },
+      } : {
         __type: "DistinguishedFolderId:#Exchange",
         Id: "msgfolderroot",
       },
@@ -267,6 +279,33 @@ export function owaRenameFolderRequest(name: string, folderID: string): OWAReque
         },
       }],
     }],
+  });
+}
+
+export function owaSharedFolderRequest(distinguishedIDs: string[], emailAddress: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "Default",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:FolderClass",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:ParentFolderId",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:DistinguishedFolderId",
+      }],
+    },
+    FolderIds: distinguishedIDs.map(distinguishedID => ({
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: distinguishedID,
+      Mailbox: {
+        EmailAddress: emailAddress,
+      },
+    })),
   });
 }
 
