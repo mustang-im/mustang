@@ -39,6 +39,24 @@
     </vbox>
   </HeaderGroupBox>
 
+  {#if account instanceof OWAAccount && !account.mainAccount}
+    <HeaderGroupBox>
+      <hbox slot="header">OWA {$t`Folders - Sharing`}</hbox>
+      {#each sharedAccounts.contents as mailAccount}
+        <hbox>{mailAccount.name}</hbox>
+      {:else}
+        <hbox>{$t`No shared folders.`}</hbox>
+      {/each}
+      <hbox>
+        <PersonAutocomplete {skipPersons} placeholder={$t`Add shared folders`} on:addPerson={(event) => checkForShares(event.detail)}/>
+        <Button disabled={shareAccountDisabled} label={$t`Add shared account`} on:click={() => onAddSharedFolders(sharedPerson, "msgfolderroot")}/>
+        <Button disabled={shareInboxDisabled} label={$t`Add shared inbox`} on:click={() => onAddSharedFolders(sharedPerson, "inbox")}/>
+        <Button disabled={shareAddressbookDisabled} label={$t`Add shared addressbook`} on:click={() => onAddAddressbook(sharedPerson)}/>
+        <Button disabled={shareCalendarDisabled} label={$t`Add shared calendar`} on:click={() => onAddCalendar(sharedPerson)}/>
+      </hbox>
+    </HeaderGroupBox>
+  {/if}
+
   {#if account instanceof OWAAddressbook && account.username == account.mainAccount.username}
     <HeaderGroupBox>
       <hbox slot="header">OWA {$t`Addressbook - Sharing`}</hbox>
@@ -84,7 +102,7 @@
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
   import { MeetAccount } from "../../logic/Meet/MeetAccount";
-  import type { OWAAccount } from "../../logic/Mail/OWA/OWAAccount";
+  import { OWAAccount } from "../../logic/Mail/OWA/OWAAccount";
   import { OWAAddressbook } from "../../logic/Contacts/OWA/OWAAddressbook";
   import { OWACalendar } from "../../logic/Calendar/OWA/OWACalendar";
   import { PersonUID } from "../../logic/Abstract/PersonUID";
@@ -94,12 +112,19 @@
   import PersonAutocomplete from "../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
-  $: sharedAccounts = getAllAccounts().filter(other => other.protocol == account.protocol && other.mainAccount == account.mainAccount && other.username != account.username);
+  $: sharedAccounts = getAllAccounts().filter(other => other.protocol == account.protocol && other.mainAccount == (account.mainAccount || account) && other.username != account.username);
+  let sharedPerson: PersonUID = null;
+  let shareAccountDisabled: boolean | string = false;
+  let shareInboxDisabled: boolean | string = false;
+  let shareAddressbookDisabled: boolean | string = false;
+  let shareCalendarDisabled: boolean | string = false;
+  $: account, (sharedPerson = null), (shareAccountDisabled = shareInboxDisabled = shareAddressbookDisabled = shareCalendarDisabled = $t`Please enter the email address of the shared account`);
   $: skipPersons = sharedAccounts.map(account => new PersonUID(account.username));
 
   const onChange = useDebounce(() => catchErrors(onSave), 500);
@@ -123,9 +148,53 @@
     }
   }
 
+  async function checkForShares(person: PersonUID) {
+    sharedPerson = person;
+    let shares = await (account as OWAAccount).findNamedFolders(sharedPerson, ["msgfolderroot", "inbox", "contacts", "calendar"]);
+    if (!shares.includes("msgfolderroot")) {
+      shareAccountDisabled = await $t`The root folder is inaccessible`;
+    } else if (account.dependentAccounts().find(other => other.protocol == 'ews' && other.username == sharedPerson.emailAddress)) {
+      shareAccountDisabled = await $t`This account has already been shared`;
+    } else {
+      shareAccountDisabled = false;
+    }
+    if (!shares.includes("inbox")) {
+      shareInboxDisabled = await $t`The inbox is inaccessible`;
+    } else if (account.dependentAccounts().find(other => other.protocol == 'ews' && other.username == sharedPerson.emailAddress)) {
+      shareInboxDisabled = await $t`This inbox has already been shared`;
+    } else {
+      shareInboxDisabled = false;
+    }
+    if (!shares.includes("contacts")) {
+      shareAddressbookDisabled = await $t`The addressbook is inaccessible`;
+    } else if (account.dependentAccounts().find(other => other.protocol == 'addressbook-ews' && other.username == sharedPerson.emailAddress)) {
+      shareAddressbookDisabled = await $t`This addressbook has already been shared`;
+    } else {
+      shareAddressbookDisabled = false;
+    }
+    if (!shares.includes("calendar")) {
+      shareCalendarDisabled = await $t`The calendar is inaccessible`;
+    } else if (account.dependentAccounts().find(other => other.protocol == 'calendar-ews' && other.username == sharedPerson.emailAddress)) {
+      shareCalendarDisabled = await $t`This calendar has already been shared`;
+    } else {
+      shareCalendarDisabled = false;
+    }
+  }
+
+  async function onAddSharedFolders(person: PersonUID, folder: "msgfolderroot" | "inbox") {
+    try {
+      await (account as OWAAccount).addSharedFolders(person, folder);
+      shareAccountDisabled = shareInboxDisabled = folder == "inbox" ? await $t`This inbox has already been shared` : await $t`This account has already been shared`;
+    } catch (ex) {
+      showError(ex);
+    }
+  }
+
   async function onAddAddressbook(person: PersonUID) {
     try {
-      await (account.mainAccount as OWAAccount).addSharedAddressbook(person);
+      let mainAccount = (account.mainAccount || account) as OWAAccount;
+      await mainAccount.addSharedAddressbook(person);
+      shareAddressbookDisabled = await $t`This addressbook has already been shared`;
     } catch (ex) {
       showError(ex);
     }
@@ -133,7 +202,9 @@
 
   async function onAddCalendar(person: PersonUID) {
     try {
-      await (account.mainAccount as OWAAccount).addSharedCalendar(person);
+      let mainAccount = (account.mainAccount || account) as OWAAccount;
+      await mainAccount.addSharedCalendar(person);
+      shareCalendarDisabled = await $t`This calendar has already been shared`;
     } catch (ex) {
       showError(ex);
     }
