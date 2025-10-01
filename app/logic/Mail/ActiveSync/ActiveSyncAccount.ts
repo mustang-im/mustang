@@ -6,7 +6,8 @@ import type { Folder } from "../Folder";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { ActiveSyncGAL } from "../../Contacts/ActiveSync/ActiveSyncGAL";
 import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
@@ -105,6 +106,8 @@ export class ActiveSyncAccount extends MailAccount {
     }
 
     await this.listFolders();
+
+    appGlobal.addresslists.add(new ActiveSyncGAL(this));
 
     // `listFolders` will subscribe to new user-added address books and calendars
     for (let account of this.dependentAccounts()) {
