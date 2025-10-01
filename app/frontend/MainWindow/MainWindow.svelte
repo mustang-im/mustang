@@ -46,7 +46,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
@@ -96,7 +96,7 @@
 
   async function onLoad() {
     loadMustangApps();
-    $selectedApp = mailMustangApp;
+    openApp(mailMustangApp, {});
     changeTheme($themeSetting.value);
     // #if [MOBILE]
     SplashScreen.hide();
