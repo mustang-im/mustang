@@ -36,7 +36,6 @@ jobs:
     - run: cd backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
-    - run: cd mobile; yarn build
 
     - run: |
         mkdir -p ${{ github.workspace }}/private_keys/

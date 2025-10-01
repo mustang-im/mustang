@@ -3,6 +3,12 @@ import com.android.build.gradle.internal.tasks.FinalizeBundleTask
 apply plugin: 'com.android.application'
 
 android {
+    externalNativeBuild {
+        cmake {
+            path file('CMakeLists.txt')
+            version rootProject.ext.cmakeVersion
+        }
+    }
     namespace "im.mustang.capa"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -16,6 +22,15 @@ android {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        ndk {
+            abiFilters "arm64-v8a"
         }
     }
     signingConfigs {
@@ -74,9 +89,12 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    implementation "androidx.core:core-ktx:$androidxCoreKtxVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 apply from: 'capacitor.build.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 try {
     def servicesJSON = file('google-services.json')
