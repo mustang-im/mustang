@@ -24,6 +24,25 @@ export class Addressbook extends Account {
   async listContacts() {
   }
 
+  quickSearch(searchTerm: string, fullSearch: boolean = false): Collection<Person> {
+    if (!fullSearch) {
+      return this.persons.filterOnce(p =>
+        p.name?.toLowerCase().includes(searchTerm) ||
+        p.emailAddresses.some(e => e.value.toLowerCase().includes(searchTerm)));
+    }
+    return this.persons.filter(p =>
+      p.name?.toLowerCase().includes(searchTerm) ||
+      p.emailAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+      p.phoneNumbers.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+      p.chatAccounts.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+      p.streetAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+      p.notes?.toLowerCase().includes(searchTerm));
+  }
+
+  quickSearchAsync(searchTerm: string, results: ArrayColl<Person>) {
+    results.addAll(this.quickSearch(searchTerm));
+  }
+
   async save(): Promise<void> {
     await this.storage?.saveAddressbook(this);
   }

@@ -22,6 +22,7 @@
   import SearchField from "../../Shared/SearchField.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import { t } from "../../../l10n/l10n";
+  import { mergeColls } from "svelte-collections";
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
@@ -34,17 +35,7 @@
   /** focus the search field when this component loads -- in */
   export let doSearch = false;
 
-  $: filteredPersons = searchTerm
-    ? persons.filter(p =>
-      p.name?.toLowerCase().includes(searchTerm) ||
-      p instanceof Person && (
-        p.emailAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
-        p.phoneNumbers.some(e => e.value.toLowerCase().includes(searchTerm)) ||
-        p.chatAccounts.some(e => e.value.toLowerCase().includes(searchTerm)) ||
-        p.streetAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
-        p.notes?.toLowerCase().includes(searchTerm))
-    )
-    : persons;
+  $: filteredPersons = searchTerm ? mergeColls(appGlobal.addressbooks.merge(appGlobal.addresslists).map(ab => ab.quickSearch(searchTerm, true))) : persons;
 
   $: searchTerm && adaptSelected();
   function adaptSelected() {

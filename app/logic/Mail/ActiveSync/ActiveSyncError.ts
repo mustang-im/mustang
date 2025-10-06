@@ -165,6 +165,12 @@ const messages: Record<string, Record<number, string>> = {
     5: "Invalid parameters",
     6: "Retryable server error",
   },
+  Search: {
+    2: "Invalid parameters",
+    3: "Tenporary server error",
+    10: "Request timed out",
+    11: "Folder hierarchy resync required",
+  },
   Settings: {
     2: "Protocol error",
     3: "Access is deined",
