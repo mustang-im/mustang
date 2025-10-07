@@ -41,6 +41,92 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
   });
 }
 
+export function owaSearchMsgsInFolderRequest(folderID: string, isStarred: boolean, isUnread: boolean, searchTerm: string): OWARequest {
+  let items: any[] = [];
+  if (isStarred) {
+    items.push({
+      __type: "IsEqualTo:#Exchange",
+      Item: {
+        __type: "ExtendedPropertyUri:#Exchange",
+        PropertyTag: "0x1090",
+        PropertyType: "Integer",
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value: 2,
+        },
+      },
+    });
+  }
+  if (isUnread) {
+    items.push({
+      __type: "IsEqualTo:#Exchange",
+      Item: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "message:IsRead",
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value: false,
+        },
+      },
+    });
+  }
+  if (searchTerm) {
+    items.push({
+      __type: "Or:#Exchange",
+      Items: ["item:Subject", "message:From", "message:ToRecipients", "item:Body"].map(FieldURI => ({
+        __type: "Contains:#Exchange",
+        Item: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI,
+        },
+        Constant: {
+          __type: "Constant:#Exchange",
+          Value: searchTerm,
+        },
+        ContainmentMode: "Substring",
+        ContainmentComparison: "IgnoreCase",
+      })),
+    });
+  }
+  return new OWARequest("FindItem", {
+    __type: "FindItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+    },
+    ParentFolderIds: [{
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    }],
+    Traversal: "Shallow",
+    Restriction: {
+      Item: items.length == 1 ? items[0] : {
+        __type: "And:#Exchange",
+        Items: items,
+      },
+    },
+    SortOrder: [{
+      __type: "SortResults:#Exchange",
+      Order: "Descending",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
+      },
+    }],
+    Paging: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
+    },
+  });
+}
+
 export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest {
   return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
