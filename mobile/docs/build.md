@@ -61,11 +61,8 @@ fails when there's no tag for the commit which fails when you manually trigger i
 11. Create a secret with the value from step 10 and the name `IOS_CERTIFICATE`
 12. Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created in step 1
 13. Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
-14. Do `base64 -i <file.mobileprovision> -o _` and get the value
-15. Create a secret with the value from step 14 and the name `IOS_PROVISION_PROFILE`
-16. Create a secret with `IOS_PROVISION_PROFILE_NAME` with the name of the provisioning profile you created in step 3
-17. Create a secret with `IOS_PROVISION_PROFILE_PASSWORD` with a random password
-18. Start the workflow by mannually triggering it or pushing with a tag
-19. The `tag_name` is retrieved from `mobile/package.json`. This was done because the release step
-fails when there's no tag for the commit which fails when you manually trigger it.
-20. The build artifacts will be available in the workflow run summary.
+14. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
+15. Start the workflow by mannually triggering it or pushing with a tag
+16. The `tag_name` is retrieved from `mobile/package.json`.
+    (The release step fails when there's no tag for the commit, but we want to also manually trigger it.)
+17. The build artifacts will be available in the workflow run summary.
