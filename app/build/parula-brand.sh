@@ -30,5 +30,20 @@ perl -p -i \
   -e "s|mustang-mail|parula|g;" \
   -e "s|mustang|parula|g;" \
   ../../e2/electron-builder.yml
+
+perl -p -i \
+  -e "s|im.mustang.capa|com.beonex.parula|;" \
+  -e "s|"Mustang"|"Parula"|;" \
+  ../../mobile/capacitor.config.ts
+
+perl -p -i \
+  -e "s|im.mustang.capa|com.beonex.parula|;" \
+  ../../mobile/backend/backend.ts
+
+perl -p -i \
+  -e "s|im.mustang.mail|app.parula.mail|;" \
+  ../../mobile/ios/App/App.xcodeproj/project.pbxproj
+
 perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
+perl -MFile::Copy -e "copy('../../mobile/parula/ios/apple-dist.mobileprovision', '../../mobile/ios/apple-dist.mobileprovision')"
