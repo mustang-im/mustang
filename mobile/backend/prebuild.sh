@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ../hooks/common/variables.sh
+source ../hooks/ios/variables.sh
 export ANDROID_LIBNODE="https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip"
 export ANDROID_SDK="--sdk35"
 export IOS_LIBNODE

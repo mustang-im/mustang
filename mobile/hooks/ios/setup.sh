@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ./hooks/common/variables.sh
+source ./hooks/ios/variables.sh
 
 mkdir -p ./ios/App/resources
 cd ./ios/App/resources
