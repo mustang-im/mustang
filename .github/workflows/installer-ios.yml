@@ -61,7 +61,7 @@ jobs:
       - run: cd mobile/backend; yarn install
       - run: cd mobile; yarn build:ios:release
         env:
-          IOS_OWNER_NAME: ${{ secrets.IOS_OWNER_NAME }}
+          IOS_CERTIFICATE_OWNER_NAME: ${{ secrets.IOS_CERTIFICATE_OWNER_NAME }}
           IOS_PROVISION_PROFILE_NAME: ${{ secrets.IOS_PROVISION_PROFILE_NAME }}
 
       - name: Upload IPA
