@@ -10,7 +10,7 @@ cd ./ios/App/resources
 #   | jq -r '.assets[] | select(.name | test("ios.*\\.zip")) | .browser_download_url')
 
 DOWNLOAD_URL="$IOS_LIBNODE"
-TMP_ZIP_FILE="tmp.zip"
+TMP_ZIP_FILE="libnode-download.zip"
 
 # Download the file
 echo "Downloading $DOWNLOAD_URL"
