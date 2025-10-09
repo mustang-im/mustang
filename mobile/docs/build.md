@@ -51,7 +51,7 @@ fails when there's no tag for the commit which fails when you manually trigger i
 1. Setup a create a Code Signing Certificate https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Create-a-new-code-signing-identity
 2. Export the Code Signing Certificate as a `.p12` file https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Export-your-signing-identity-to-share-with-a-team-member
 3. Create an App Store Connect provisioning profile https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile
-4. Download the provisioning profile https://help.apple.com/xcode/mac/current/#/deva899b4fe5
+4. Download the provisioning profile https://help.apple.com/xcode/mac/current/#/deva899b4fe5 https://developer.apple.com/account/resources/profiles/add
 5. Go to the repository
 6. Go to the setting tab
 7. Go Secrets and variables > Actions
