@@ -18,3 +18,15 @@ perl -p -i \
 perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   ./backend/backend.ts
+
+export IOS_PROVISION_PROFILE_NAME="Parula"
+export IOS_CERTIFICATE_OWNER_NAME="app.parula.mail"
+
+# Install iOS provisioning profile
+if [ -f "ios/build/apple-dist.mobileprovision" ]; then
+    mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+    cp ios/build/apple-dist-parula.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+    echo "Installed Parula provisioning profile"
+else
+    echo "Warning: apple-dist.mobileprovision not found in ios/build/"
+fi
