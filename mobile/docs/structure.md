@@ -20,10 +20,6 @@ Node native modules should not be included in the Frameworks section of `App/Tar
 
 `console.log` are printed to the debug console in Xcode therefore you must you Xcode to see it. Even the frontend `console.log` are printed to the debug console in Xcode.
 
-#### Fetch
-
-`fetch()` requires WASM which is not supported on iOS. That's why `node-fetch` is used to replace it. In Node.js v24+ `fetch()` is available natively.
-
 #### WASM
 
 > On iOS, WASM is unsupported because it requires Just-in-time (JIT) interpretation, which is forbidden by Apple's App Store guidelines.
