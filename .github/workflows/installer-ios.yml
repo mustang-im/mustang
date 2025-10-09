@@ -61,8 +61,8 @@ jobs:
       - run: cd mobile/backend; yarn install
       - run: cd mobile; yarn build:ios:release
         env:
-          IOS_CERTIFICATE_NAME: ${{ secrets.IOS_CERTIFICATE_NAME }}
-          IOS_PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+          IOS_OWNER_NAME: ${{ secrets.IOS_OWNER_NAME }}
+          IOS_PROVISION_PROFILE_NAME: ${{ secrets.IOS_PROVISION_PROFILE_NAME }}
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
