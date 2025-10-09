@@ -11,5 +11,7 @@ android/app/debug/
 !build.sh
 !parula-brand.sh
 NodeMobile.xcframework
-!setup-ios.sh
+!setup.sh
+!xcode-codesign.sh
+!variables.sh
 backend/nodejs-assets
