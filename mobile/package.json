@@ -12,7 +12,7 @@
     "build:android": "npm run build:android:apk && npm run build:android:aab",
     "build:android:apk": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew assembleRelease",
     "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew :app:bundleRelease",
-    "build:ios:release": "export MOBILE_ARCH=ios-arm64; (cd ios && bash ./build/build.sh) && cap sync ios && cap build ios --xcode-signing-style=manual --xcode-signing-certificate=$IOS_CERTIFICATE_OWNER_NAME --xcode-provisioning-profile=$IOS_PROVISION_PROFILE_NAME",
+    "build:ios:release": "export MOBILE_ARCH=ios-arm64; (cd ios && bash ./build/build.sh) && cap sync ios && cap build ios --xcode-signing-style=manual --xcode-team-id=$IOS_TEAM_ID --xcode-signing-certificate=$IOS_CERTIFICATE_OWNER_NAME --xcode-provisioning-profile=$IOS_PROVISION_PROFILE_NAME",
     "build:ios": "export MOBILE_ARCH=ios-arm64; (cd ios && bash ./build/build.sh) && cap sync ios && cap build ios",
     "preview": "vite preview",
     "setup:ios": "bash ./hooks/ios/setup.sh"
