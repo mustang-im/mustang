@@ -6,7 +6,7 @@ on:
     tags: 'v*'
 
 env:
-  XCODE_VERSION: 26
+  XCODE_VERSION: '26.0'
 
 jobs:
   build:
