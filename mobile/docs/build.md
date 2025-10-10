@@ -66,3 +66,35 @@ fails when there's no tag for the commit which fails when you manually trigger i
 16. The `tag_name` is retrieved from `mobile/package.json`.
     (The release step fails when there's no tag for the commit, but we want to also manually trigger it.)
 17. The build artifacts will be available in the workflow run summary.
+## iOS
+
+### Building with Xcode
+1. `cd app; yarn install`
+2. `cd lib; yarn install`
+3. `cd backend; yarn install`
+4. `cd mobile; yarn install`
+5. `cd mobile/backend; yarn install`
+6. `export MOBILE_ARCH=ios-arm64`
+7. `cd mobile; yarn build`
+8. `cd mobile; yarn setup:ios`
+9. `cd mobile; npx cap sync ios`
+10. `npx cap open ios` in `/mobile`
+11. Select `Any iOS Device (arm64)` at the top bar under the menu
+12. Click `[Product]` > `[Archive]`
+13. Go to `~//Library/Developer/Xcode/Archives` to find the Archive
+
+#### Troubleshooting
+
+- You may need to wait about 10 minutes after opening the project to select device and build because Xcode needs to index the files
+in the project.
+- For debug builds if there's no Development Team ID you may need to open Xcode, go to Settings > Apple Accounts and login.
+Then go to the file explorer in the Xcode project and click on the Project, then Target > Signings and Capabilities and
+select a Development Team.
+
+### Building with command line
+1. `cd app; yarn install`
+2. `cd lib; yarn install`
+3. `cd backend; yarn install`
+4. `cd mobile; yarn install`
+5. `cd mobile/backend; yarn install`
+6. `cd mobile; yarn build:ios`

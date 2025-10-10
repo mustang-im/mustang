@@ -13,8 +13,9 @@
     "build:android:apk": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew assembleRelease",
     "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew :app:bundleRelease",
     "build:ios:release": "export MOBILE_ARCH=ios-arm64; bash ./ios/build/build.sh && cap sync ios && cap build ios --xcode-signing-style=manual --xcode-signing-certificate=$IOS_CERTIFICATE_OWNER_NAME --xcode-provisioning-profile=$IOS_PROVISION_PROFILE_NAME",
+    "build:ios": "export MOBILE_ARCH=ios-arm64; npm run build && cap sync ios && cap build ios",
     "preview": "vite preview",
-    "setup:ios": "cd ios && ./setup-ios.sh"
+    "setup:ios": "bash ./hooks/ios/setup.sh"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
