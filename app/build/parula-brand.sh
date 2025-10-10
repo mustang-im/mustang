@@ -43,6 +43,7 @@ perl -p -i \
 perl -p -i \
   -e "s|im.mustang.mail|app.parula.mail|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
+perl -e '$ENV{"IOS_PROVISION_PROFILE_NAME"} = "Parula";'
 
 perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"

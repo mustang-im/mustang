@@ -8,3 +8,4 @@ perl -p -i \
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../e2/package.json
+perl -e '$ENV{"IOS_PROVISION_PROFILE_NAME"} = "Mustang Mail";'
