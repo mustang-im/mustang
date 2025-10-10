@@ -45,6 +45,27 @@ fails when there's no tag for the commit which fails when you manually trigger i
 8. Set the envs `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEYSTORE_ALIAS`, `KEYSTORE_ALIAS_PASS`
 9. `cd mobile; yarn build:android`
 
+### iOS
+
+### Building with CI
+1. Setup a create a Code Signing Certificate https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Create-a-new-code-signing-identity
+2. Export the Code Signing Certificate as a `.p12` file https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Export-your-signing-identity-to-share-with-a-team-member
+3. Create an App Store Connect provisioning profile https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile
+4. Download the provisioning profile https://help.apple.com/xcode/mac/current/#/deva899b4fe5 https://developer.apple.com/account/resources/profiles/add
+5. Go to the repository
+6. Go to the setting tab
+7. Go Secrets and variables > Actions
+8. Go to Repository secrets
+9. Click New repository secret
+10. Do `base64 -i <file.p12> -o _` and get the value
+11. Create a secret with the value from step 10 and the name `IOS_CERTIFICATE`
+12. Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created in step 1
+13. Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
+14. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
+15. Start the workflow by mannually triggering it or pushing with a tag
+16. The `tag_name` is retrieved from `mobile/package.json`.
+    (The release step fails when there's no tag for the commit, but we want to also manually trigger it.)
+17. The build artifacts will be available in the workflow run summary.
 ## iOS
 
 ### Building with Xcode
