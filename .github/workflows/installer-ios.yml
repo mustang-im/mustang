@@ -5,9 +5,6 @@ on:
   push:
     tags: 'v*'
 
-env:
-  XCODE_VERSION: '26.0'
-
 jobs:
   build:
     runs-on: macos-26
@@ -20,8 +17,6 @@ jobs:
         with:
           # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
           node-version: 24.x
-
-      - run: xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Install the Apple certificate and provisioning profile
         env:
