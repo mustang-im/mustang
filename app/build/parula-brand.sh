@@ -41,11 +41,14 @@ perl -p -i \
   ../../mobile/backend/backend.ts
 
 perl -p -i \
+  -e "s|Mustang|Parula|;" \
   -e "s|im.mustang.mail|app.parula.mail|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
-# Github env variables need to written to GITHUB_ENV
-perl -e 'open(my $fh, ">>", $ENV{"GITHUB_ENV"}) or die $!; print $fh "IOS_PROVISION_PROFILE_NAME=Parula\n"; close $fh;'
-perl -e 'open(my $fh, ">>", $ENV{"GITHUB_ENV"}) or die $!; print $fh "IOS_TEAM_ID=2QD8MW9GBW\n"; close $fh;'
+
+perl -p -i \
+  -e "s|Mustang|Parula|;" \
+  -e "s|im.mustang.mail|app.parula.mail|;" \
+  ../../mobile/ios/archive.plist
 
 perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
