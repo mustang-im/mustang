@@ -11,4 +11,4 @@ else
     echo "Warning: apple-dist.mobileprovision not found in mobile/ios"
 fi
 
-cd ../ && ./hooks/ios/setup.sh && ./hooks/common/build.sh
+cd ../ && bash ./hooks/ios/setup.sh && bash ./hooks/common/build.sh
