@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
+# Run from /mobile
+
 source ./hooks/ios/variables.sh
+
+# Check if libnode already exists
+if [ -f "./ios/App/resources/NodeMobile.xcframework" ]; then
+    echo "libnode already exists, skipping download."
+    exit 0
+fi
 
 mkdir -p ./ios/App/resources
 cd ./ios/App/resources
