@@ -12,3 +12,11 @@ else
 fi
 
 cd ../ && bash ./hooks/ios/setup.sh && bash ./hooks/common/build.sh
+
+npx cap sync ios
+
+# Build the project
+xcodebuild -workspace './ios/App/App.xcworkspace' -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive
+
+# Export the archive
+xcodebuild archive -archivePath App.xcarchive -exportArchive -exportOptionsPlist ./archive.plist -exportPath output -allowProvisioningUpdates
