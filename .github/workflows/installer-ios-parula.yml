@@ -1,4 +1,4 @@
-name: Installers for iOS
+name: Parula Installers for iOS
 
 on:
   workflow_dispatch: # manually triggered
