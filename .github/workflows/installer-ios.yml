@@ -72,10 +72,10 @@ jobs:
           files: |
             mobile/output/**.ipa
 
-      - name: 'Upload app to TestFlight'
+      - name: Upload app to TestFlight
         uses: apple-actions/upload-testflight-build@v3
         with:
-          app-path: 'mobile/output/**.ipa'
+          app-path: mobile/output/**.ipa
           issuer-id: ${{ secrets.IOS_APPSTORE_API_ISSUER }}
           api-key-id: ${{ secrets.IOS_APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.IOS_APPSTORE_API_KEY }}
