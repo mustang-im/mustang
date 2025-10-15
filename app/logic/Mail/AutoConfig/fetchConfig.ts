@@ -12,8 +12,8 @@ export async function fetchConfig(domain: string, emailAddress: string, abort: A
   domain = sanitize.hostname(domain);
 
   let priorityOrder = new PriorityAbortable(abort, [
-    fetchConfigFromISP(domain, emailAddress, abort),
     fetchConfigFromISPDB(domain, abort),
+    fetchConfigFromISP(domain, emailAddress, abort),
     fetchConfigForMX(domain, abort),
   ]);
   try {
