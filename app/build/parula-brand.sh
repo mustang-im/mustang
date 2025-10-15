@@ -52,4 +52,5 @@ perl -p -i \
 
 perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
+perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../mobile/assets/icon.png')"
 perl -MFile::Copy -e "copy('../../mobile/parula/ios/apple-dist.mobileprovision', '../../mobile/ios/apple-dist.mobileprovision')"

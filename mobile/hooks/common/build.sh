@@ -17,4 +17,6 @@ perl -p -i \
 (cd backend && npm run build) &&
 npx cap copy
 
+npx @capacitor/assets generate
+
 unset NODE_OPTIONS
