@@ -29,6 +29,7 @@
     "capacitor-nodejs": "https://github.com/mustang-im/capacitor-nodejs/releases/download/1.0.0-beta.10/capacitor-nodejs-v1.0.0-beta.10.tgz"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.0.0",
     "tar": "^7.4.3",
     "typescript": "^5.9.2",
