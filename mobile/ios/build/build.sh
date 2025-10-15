@@ -20,3 +20,8 @@ xcodebuild -workspace './ios/App/App.xcworkspace' -scheme App -destination gener
 
 # Export the archive
 xcodebuild archive -archivePath App.xcarchive -exportArchive -exportOptionsPlist ./ios/archive.plist -exportPath output -allowProvisioningUpdates
+
+cd mobile
+APP_NAME=$(node -p "require('./capacitor.config.ts').default.appName")
+VERSION=$(node -p "require('./package.json').version")
+mv output/${APP_NAME}.ipa output/${APP_NAME}-${VERSION}.ipa
