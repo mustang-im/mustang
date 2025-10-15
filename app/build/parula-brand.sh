@@ -47,6 +47,10 @@ perl -p -i \
 
 perl -p -i \
   -e "s|Mustang|Parula|;" \
+  ../../mobile/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
+
+perl -p -i \
+  -e "s|Mustang|Parula|;" \
   -e "s|im.mustang.mail|app.parula.mail|;" \
   ../../mobile/ios/archive.plist
 
