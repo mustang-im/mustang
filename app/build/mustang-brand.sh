@@ -11,4 +11,4 @@ perl -p -i \
 
 # Mobile Icons
 perl -MFile::Path -e "mkpath('../../mobile/assets')"
-perl -MFile::Copy -e "copy('../../e2/build/icon.png', '../../mobile/assets/icon.png')"
+perl -MFile::Copy -e "copy('../../e2/build/icon.svg', '../../mobile/assets/icon.svg')"
