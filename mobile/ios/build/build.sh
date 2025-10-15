@@ -22,6 +22,6 @@ xcodebuild -workspace './ios/App/App.xcworkspace' -scheme App -destination gener
 xcodebuild archive -archivePath App.xcarchive -exportArchive -exportOptionsPlist ./ios/archive.plist -exportPath output -allowProvisioningUpdates
 
 cd mobile
-APP_NAME=$(grep "appName:" capacitor.config.ts | head -1 | sed -E "s/.*appName:\s*['\"](.+)['\"],?/\1/")
-VERSION=$(grep "version:" package.json | head -1 | sed -E "s/.*version:\s*['\"](.+)['\"],?/\1/")
+APP_NAME=$(grep "appName:" capacitor.config.ts | head -1 | sed -E "s/.*appName:\s*[\"']([^\"']+)[\"'],?.*/\1/")
+VERSION=$(grep "\"version\":" package.json | head -1 | sed -E "s/.*\"version\":\s*[\"']([^\"']+)[\"'],?.*/\1/")
 mv output/${APP_NAME}.ipa output/${APP_NAME}_${VERSION}.ipa
