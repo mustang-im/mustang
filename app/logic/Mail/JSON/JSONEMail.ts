@@ -2,7 +2,7 @@ import type { EMail } from "../EMail";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName } from "../../Abstract/Tag";
-import { appGlobal } from "../../app";
+import { getFilesDir } from "../../../logic/util/backend-wrapper";
 import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
@@ -10,7 +10,7 @@ import type { ArrayColl } from "svelte-collections";
 export class JSONEMail {
   static filesDir: string | null = null;
   static async init() {
-    this.filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    this.filesDir ??= await getFilesDir();
   }
 
   /**

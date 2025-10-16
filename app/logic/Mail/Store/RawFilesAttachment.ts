@@ -5,6 +5,7 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import { appGlobal } from "../../app";
 import { fileExtensionForMIMEType, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { getFilesDir } from "../../util/backend-wrapper";
 
 let filesDir: string = null;
 
@@ -84,7 +85,7 @@ export class RawFilesAttachment implements MailContentStorage {
   }
 
   static async getDirPath(email: EMail): Promise<string> {
-    filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    filesDir ??= await getFilesDir();
     return `${filesDir}/files/email/${sanitize.filename(email.from?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson")}/${email.dbID}-${sanitize.filename(email.baseSubject.substring(0, 30), "unknownSubject")}`;
   }
 }
