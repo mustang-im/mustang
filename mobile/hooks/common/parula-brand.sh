@@ -2,9 +2,6 @@
 
 # Run from /mobile
 
-# Replace name in all apps
-(cd ../app/build && ./parula-brand.sh)
-
 # Replace Android icons
 cp -R parula/android/* android/app/src/main/res
 

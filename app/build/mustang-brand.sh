@@ -8,3 +8,7 @@ perl -p -i \
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../e2/package.json
+
+# Mobile Icons
+perl -MFile::Path -e "mkpath('../../mobile/assets')"
+perl -MFile::Copy -e "copy('../../e2/build/icon.svg', '../../mobile/assets/icon.svg')"
