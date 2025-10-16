@@ -16,7 +16,7 @@ let configDir: string;
  * - Linux: /home/USER/.mustang/
  * - Windows: C:\Users\USER\AppData\Mustang\
  * - Mac OS: /Users/USER/Library/Application Support/Mustang
- * - Android: /data/user/USER/im.mustang.capa/files/
+ * - Android: /data/user/0/im.mustang.capa/files/
  */
 export async function getConfigDir(): Promise<string> {
   // #if [MOBILE]
