@@ -515,6 +515,90 @@ export class EWSFolder extends Folder {
   disableChangeSpecial(): string | false {
     return "You cannot change Exchange special folders.";
   }
+
+  async searchMessages(isStarred: boolean, isUnread: boolean, searchTerm: string): Promise<ArrayColl<EWSEMail>> {
+    let results = new ArrayColl<EWSEMail>();
+    if (!searchTerm || searchTerm.length > 1) {
+      let starredRestriction = {
+        t$IsEqualTo: {
+          t$ExtendedFieldURI: {
+            PropertyTag: "0x1090",
+            PropertyType: "Integer",
+          },
+          t$FieldURIOrConstant: {
+            t$Constant: {
+              Value: 2,
+            },
+          },
+        }
+      };
+      let unreadRestriction = {
+        t$IsEqualTo: {
+          t$FieldURI: {
+            FieldURI: "message:IsRead",
+          },
+          t$FieldURIOrConstant: {
+            t$Constant: {
+              Value: false,
+            },
+          },
+        }
+      };
+      let termRestriction = {
+        t$Or: {
+          t$Contains: ["item:Subject", "message:From", "message:ToRecipients", "item:Body"].map(FieldURI => ({
+            t$FieldURI: {
+              FieldURI,
+            },
+            t$Constant: {
+              Value: searchTerm,
+            },
+            ContainmentMode: "Substring",
+            ContainmentComparison: "IgnoreCase",
+          })),
+        },
+      };
+      let restriction =
+        isStarred && isUnread ? { t$And: Object.assign({ t$IsEqualTo: [starredRestriction.t$IsEqualTo, unreadRestriction.t$IsEqualTo] }, searchTerm ? termRestriction : undefined) } :
+        (isStarred || isUnread) && searchTerm ? { t$And: Object.assign({}, isStarred ? starredRestriction : unreadRestriction, termRestriction) } :
+        isStarred ? starredRestriction : isUnread ? unreadRestriction : termRestriction;
+      let query = {
+        m$FindItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+          },
+          m$IndexedPageItemView: {
+            BasePoint: "Beginning",
+            Offset: 0,
+          },
+          m$Restriction: restriction,
+          m$SortOrder: {
+            t$FieldOrder: {
+              t$FieldURI: {
+                FieldURI: "item:DateTimeSent",
+              },
+              Order: "Descending",
+            },
+          },
+          m$ParentFolderIds: {
+            t$FolderId: {
+              Id: this.id,
+            },
+          },
+          Traversal: "Shallow",
+        },
+      };
+      let response = await this.account.callEWS(query);
+      let messages = getEWSItems(response?.RootFolder?.Items || {});
+      for (let message of messages) {
+        let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+        if (email) {
+          results.add(email);
+        }
+      }
+    }
+    return results;
+  }
 }
 
 /**
@@ -531,6 +615,6 @@ export function getEWSItem(item: any): any {
 
 /** @see getEWSItem()
  * This function is a convenience for a multiple items. */
-function getEWSItems(items: any[]): any[] {
+export function getEWSItems(items: Record<string, any | any[]>): any[] {
   return Object.values(items).flat();
 }

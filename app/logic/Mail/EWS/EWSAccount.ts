@@ -2,7 +2,9 @@ import { MailAccount } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import { EWSFolder, getEWSItem } from "./EWSFolder";
+import type { SearchEMail } from "../Store/SearchEMail";
+import { EWSFolder, getEWSItem, getEWSItems } from "./EWSFolder";
+import type { EWSEMail } from "./EWSEMail";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -24,6 +26,7 @@ import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -611,8 +614,118 @@ export class EWSAccount extends MailAccount {
     folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
     return folder;
   }
+
+  canSearchOnServer(search: SearchEMail): boolean {
+    return this.isLoggedIn && !(search.isOutgoing != null || search.includesPerson || search.threadID || search.isReplied != null || search.hasAttachmentMIMETypes.hasItems);
+  }
+
+  async startSearch(search: SearchEMail): Promise<ArrayColl<EMail>> {
+    if (!this.canSearchOnServer(search)) {
+      return super.startSearch(search);
+    }
+    let folders = (search.folder ? [search.folder] : this.getAllFolders().contents) as EWSFolder[];
+    let results = new ArrayColl<EWSEMail>();
+    let t$Or = [];
+    let t$Not = [];
+    let t$Contains = [];
+    let t$IsEqualTo = [];
+    let t$IsLessThanOrEqualTo = [];
+    let t$IsGreaterThanOrEqualTo = [];
+    let tags = [];
+    for (let tag of search.tags) {
+      appendComparison(tags, "item:Categories", tag.name);
+    }
+    if (tags.length > 1) {
+      t$Or.push({ t$IsEqualTo: tags });
+    } else if (tags.length) {
+      t$IsEqualTo.push(tags);
+    }
+    appendComparison(t$IsGreaterThanOrEqualTo, "item:DateTimeSent", search.sentDateMin);
+    appendComparison(t$IsLessThanOrEqualTo, "item:DateTimeSent", search.sentDateMax);
+    appendComparison(t$IsGreaterThanOrEqualTo, "item:Size", search.sizeMin);
+    appendComparison(t$IsLessThanOrEqualTo, "item:Size", search.sizeMax);
+    appendComparison(t$IsEqualTo, "message:InternetMessageId", search.messageID);
+    appendComparison(t$IsEqualTo, "item:HasAttachments", search.hasAttachment);
+    appendComparison(t$IsEqualTo, "message:IsRead", search.isRead);
+    if (search.isStarred != null) {
+      let starred = {
+        t$ExtendedFieldURI: {
+          PropertyTag: "0x1090",
+          PropertyType: "Integer",
+        },
+        t$FieldURIOrConstant: {
+          t$Constant: {
+            Value: 2,
+          },
+        },
+      };
+      if (search.isStarred) {
+        t$IsEqualTo.push(starred);
+      } else {
+        t$Not.push({ t$IsEqualTo: starred });
+      }
+    }
+    if (search.bodyText) {
+      t$Contains.push({
+        t$FieldURI: {
+          FieldURI: "item:Body",
+        },
+        t$Constant: {
+          Value: search.bodyText,
+        },
+        ContainmentMode: "Substring",
+        ContainmentComparison: "IgnoreCase",
+      });
+    }
+    let t$And = { t$Or, t$Not, t$Contains, t$IsEqualTo, t$IsLessThanOrEqualTo, t$IsGreaterThanOrEqualTo };
+    let length = getEWSItems(t$And).length;
+    // The schema says an `And` is allowed to have only one condition,
+    // but why bother wrapping a single condition in an `And`?
+    let m$Restriction = length > 1 ? { t$And } : length ? t$And : null;
+    let query = {
+      m$FindItem: {
+        m$ItemShape: {
+          t$BaseShape: "IdOnly",
+        },
+        m$IndexedPageItemView: {
+          BasePoint: "Beginning",
+          Offset: 0,
+        },
+        m$Restriction,
+        m$SortOrder: {
+          t$FieldOrder: {
+            t$FieldURI: {
+              FieldURI: "item:DateTimeSent",
+            },
+            Order: "Descending",
+          },
+        },
+        m$ParentFolderIds: {
+          t$FolderId: folders.map(folder => ({ Id: folder.id })),
+        },
+        Traversal: "Shallow",
+      },
+    };
+    let responses = ensureArray(await this.callEWS(query));
+    for (let i = 0; i < responses.length; i++) {
+      let messages = getEWSItems(responses[i]?.RootFolder?.Items || {});
+      for (let message of messages) {
+        let email = folders[i].getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+        if (email) {
+          results.add(email);
+        }
+      }
+    }
+    return results;
+  }
 }
 
+function appendComparison(array: any[], FieldURI: string, Value: any) {
+  // don't try to match null, zero or the empty string, but false is OK
+  if (Value || Value === false) {
+    array.push({ t$FieldURI: { FieldURI }, t$FieldURIOrConstant: { t$Constant: { Value } } });
+  }
+}
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 

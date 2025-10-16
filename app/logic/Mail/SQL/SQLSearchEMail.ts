@@ -19,6 +19,19 @@ export class SQLSearchEMail extends SearchEMail {
     if (this.hasAttachmentMIMETypes?.hasItems) {
       this.hasAttachment = true;
     }
+
+    let account = this.account ?? this.folder?.account;
+    if (account?.canSearchOnServer(this)) {
+      return account.startSearch(this);
+    } else if (!account && appGlobal.emailAccounts.contents.some(account => account.canSearchOnServer(this))) {
+      // Run all the searches in parallel
+      let results = new ArrayColl<EMail>();
+      for (let result of await Promise.all(appGlobal.emailAccounts.contents.map(account => account.startSearch(this)))) {
+        results.addAll(result);
+      }
+      results.sortBy(email => email.sent);
+      return results;
+    }
     // TODO 1:n relations attachments and recipients
 
     // Search matching emails directly in the SQL database

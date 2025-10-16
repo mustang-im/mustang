@@ -1,5 +1,6 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
+import type { SearchEMail } from "../../Store/SearchEMail";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
@@ -37,6 +38,205 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
       BasePoint: "Beginning",
       Offset: 0,
       MaxEntriesReturned: maxFetchCount,
+    },
+  });
+}
+
+function appendComparison(array: any[], type: string, FieldURI: string, Value: any) {
+  if (Value || Value === false) {
+    array.push({
+      __type: type + ":#Exchange",
+      Item: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI,
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value,
+        },
+      },
+    });
+  }
+}
+
+export function owaSearchMsgsInFoldersRequest(folders: string[], search: SearchEMail) {
+  let items: any[] = [];
+  let tags = [];
+  for (let tag of search.tags) {
+    appendComparison(tags, "IsEqualTo", "item:Categories", tag.name);
+  }
+  if (tags.length > 1) {
+    items.push({
+      __type: "Or:#Exchange",
+      Items: tags,
+    });
+  } else if (tags.length) {
+    items.push(tags[0]);
+  }
+  appendComparison(items, "IsGreaterThanOrEqualTo", "item:DateTimeSent", search.sentDateMin);
+  appendComparison(items, "IsLessThanOrEqualTo", "item:DateTimeSent", search.sentDateMax);
+  appendComparison(items, "IsGreaterThanOrEqualTo", "item:Size", search.sizeMin);
+  appendComparison(items, "IsLessThanOrEqualTo", "item:Size", search.sizeMax);
+  appendComparison(items, "IsEqualTo", "message:InternetMessageId", search.messageID);
+  appendComparison(items, "IsEqualTo", "item:HasAttachments", search.hasAttachment);
+  appendComparison(items, "IsEqualTo", "message:IsRead", search.isRead);
+  if (search.isStarred != null) {
+    let starred = {
+      __type: "IsEqualTo:#Exchange",
+      Item: {
+        __type: "ExtendedPropertyUri:#Exchange",
+        PropertyTag: "0x1090",
+        PropertyType: "Integer",
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value: 2,
+        },
+      },
+    };
+    if (search.isStarred) {
+      items.push(starred);
+    } else {
+      items.push({
+        __type: "Not:#Exchange",
+        Item: starred,
+      });
+    }
+  }
+  if (search.bodyText) {
+    items.push({
+      __type: "Contains:#Exchange",
+      Item: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Body",
+      },
+      Constant: {
+        __type: "Constant:#Exchange",
+        Value: search.bodyText,
+      },
+      ContainmentMode: "Substring",
+      ContainmentComparison: "IgnoreCase",
+    });
+  }
+  return new OWARequest("FindItem", {
+    __type: "FindItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+    },
+    ParentFolderIds: folders.map(Id => ({
+      __type: "FolderId:#Exchange",
+      Id,
+    })),
+    Traversal: "Shallow",
+    Restriction: items.length ? {
+      Item: items.length == 1 ? items[0] : {
+        __type: "And:#Exchange",
+        Items: items,
+      },
+    } : undefined,
+    SortOrder: [{
+      __type: "SortResults:#Exchange",
+      Order: "Descending",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
+      },
+    }],
+    Paging: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
+    },
+  });
+}
+
+export function owaSearchMsgsInFolderRequest(folderID: string, isStarred: boolean, isUnread: boolean, searchTerm: string): OWARequest {
+  let items: any[] = [];
+  if (isStarred) {
+    items.push({
+      __type: "IsEqualTo:#Exchange",
+      Item: {
+        __type: "ExtendedPropertyUri:#Exchange",
+        PropertyTag: "0x1090",
+        PropertyType: "Integer",
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value: 2,
+        },
+      },
+    });
+  }
+  if (isUnread) {
+    items.push({
+      __type: "IsEqualTo:#Exchange",
+      Item: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "message:IsRead",
+      },
+      FieldURIOrConstant: {
+        __type: "FieldURIOrConstantType:#Exchange",
+        Item: {
+          __type: "Constant:#Exchange",
+          Value: false,
+        },
+      },
+    });
+  }
+  if (searchTerm) {
+    items.push({
+      __type: "Or:#Exchange",
+      Items: ["item:Subject", "message:From", "message:ToRecipients", "item:Body"].map(FieldURI => ({
+        __type: "Contains:#Exchange",
+        Item: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI,
+        },
+        Constant: {
+          __type: "Constant:#Exchange",
+          Value: searchTerm,
+        },
+        ContainmentMode: "Substring",
+        ContainmentComparison: "IgnoreCase",
+      })),
+    });
+  }
+  return new OWARequest("FindItem", {
+    __type: "FindItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+    },
+    ParentFolderIds: [{
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    }],
+    Traversal: "Shallow",
+    Restriction: {
+      Item: items.length == 1 ? items[0] : {
+        __type: "And:#Exchange",
+        Items: items,
+      },
+    },
+    SortOrder: [{
+      __type: "SortResults:#Exchange",
+      Order: "Descending",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
+      },
+    }],
+    Paging: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
     },
   });
 }

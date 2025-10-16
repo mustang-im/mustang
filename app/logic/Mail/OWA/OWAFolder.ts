@@ -8,7 +8,8 @@ import {
   owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,
   owaFolderCountsRequest, owaFolderMarkAllMsgsReadRequest,
   owaGetNewMsgHeadersRequest, owaMoveEntireFolderRequest,
-  owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
+  owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest,
+  owaSearchMsgsInFolderRequest,
 } from "./Request/OWAFolderRequests";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
@@ -261,5 +262,21 @@ export class OWAFolder extends Folder {
 
   disableChangeSpecial(): string | false {
     return gt`You cannot change special folders on the Exchange server`;
+  }
+
+  async searchMessages(isStarred: boolean, isUnread: boolean, searchTerm: string): Promise<ArrayColl<OWAEMail>> {
+    let results = new ArrayColl<OWAEMail>();
+    if (!searchTerm || searchTerm.length > 1) {
+      let response = await this.account.callOWA(owaSearchMsgsInFolderRequest(this.id, isStarred, isUnread, searchTerm));
+      if (response?.RootFolder?.Items?.length) {
+        for (let message of response.RootFolder.Items) {
+          let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+          if (email) {
+            results.add(email);
+          }
+        }
+      }
+    }
+    return results;
   }
 }

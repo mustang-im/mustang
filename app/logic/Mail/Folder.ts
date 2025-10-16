@@ -281,6 +281,21 @@ export class Folder extends Observable implements TreeItem<Folder> {
   newEMail(): EMail {
     return new EMail(this);
   }
+
+  async searchMessages(isStarred: boolean, isUnread: boolean, searchTerm: string): Promise<ArrayColl<EMail>> {
+    return this.messages.filterOnce(msg =>
+      (!isStarred || msg.isStarred === true) &&
+      (!isUnread || msg.isRead === false) &&
+      (!searchTerm || (searchTerm.length > 1 && (
+        msg.subject?.toLowerCase().includes(searchTerm) ||
+        msg.contact?.name?.toLowerCase().includes(searchTerm) ||
+        msg.from?.name?.toLowerCase().includes(searchTerm) ||
+        msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
+        msg.to?.some(to =>
+          to.name?.toLowerCase().includes(searchTerm) ||
+          to.emailAddress?.toLowerCase().includes(searchTerm)) ||
+        msg.text?.toLowerCase().includes(searchTerm))))) as ArrayColl<EMail>;
+  }
 }
 
 export enum SpecialFolder {
