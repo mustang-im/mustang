@@ -2,7 +2,9 @@ import { MailAccount } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
+import type { SearchEMail } from "../Store/SearchEMail";
 import { OWAFolder } from "./OWAFolder";
+import type { OWAEMail } from "./OWAEMail";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
 import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotifications";
@@ -13,7 +15,7 @@ import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSearchMsgsInFoldersRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
@@ -27,6 +29,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -416,6 +419,34 @@ export class OWAAccount extends MailAccount {
     } catch (ex) {
       this.errorCallback(ex);
     }
+  }
+
+  canSearchOnServer(search: SearchEMail): boolean {
+    return this.isLoggedIn && !(search.isOutgoing != null || search.includesPerson || search.threadID || search.isReplied != null || search.hasAttachmentMIMETypes.hasItems);
+  }
+
+  async startSearch(search: SearchEMail): Promise<ArrayColl<EMail>> {
+    if (!this.canSearchOnServer(search)) {
+      return super.startSearch(search);
+    }
+    let folders = (search.folder ? [search.folder] : this.getAllFolders().contents) as OWAFolder[];
+    let results = new ArrayColl<OWAEMail>();
+    let responses = await this.callOWA(owaSearchMsgsInFoldersRequest(folders.map(folder => folder.id), search));
+    // callOWA normally only expects one response message,
+    // so undo the optimisation it makes in that case.
+    if (!responses.ResponseMessages) {
+      responses = { ResponseMessages: { Items: [responses] } };
+    }
+    for (let i = 0; i < responses.ResponseMessages.Items.length; i++) {
+      let messages = responses.ResponseMessages.Items[i].RootFolder.Items;
+      for (let message of messages) {
+        let email = folders[i].getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+        if (email) {
+          results.add(email);
+        }
+      }
+    }
+    return results;
   }
 }
 

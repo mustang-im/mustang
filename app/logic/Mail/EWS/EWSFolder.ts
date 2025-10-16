@@ -615,6 +615,6 @@ export function getEWSItem(item: any): any {
 
 /** @see getEWSItem()
  * This function is a convenience for a multiple items. */
-function getEWSItems(items: any[]): any[] {
+export function getEWSItems(items: Record<string, any | any[]>): any[] {
   return Object.values(items).flat();
 }

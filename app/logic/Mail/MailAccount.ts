@@ -3,6 +3,7 @@ import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
+import type { SearchEMail } from "./Store/SearchEMail";
 import { ContactEntry } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
@@ -130,6 +131,16 @@ export class MailAccount extends TCPAccount {
       return this.getSpecialFolder(SpecialFolder.Sent);
     }
     return this.rootFolders.first;
+  }
+
+  canSearchOnServer(search: SearchEMail): boolean {
+    return false;
+  }
+
+  startSearch(search: SearchEMail): Promise<ArrayColl<EMail>> {
+    search = search.clone();
+    search.account = this;
+    return search.startSearch();
   }
 
   fromConfigJSON(json: any) {
