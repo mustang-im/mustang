@@ -54,6 +54,12 @@
   label={$t`Show source`}
   tooltip={$t`Show the on-the-wire format of this message`}
   icon={SourceIcon} />
+<MenuItem
+  onClick={showDOMInspector}
+  label={$t`Show DOM`}
+  tooltip={$t`Show HTML email in the DOM Inspector of the Developer Tools`}
+  icon={SourceIcon} />
+<hbox bind:this={domE} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -128,6 +134,14 @@
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");
     setting.value = setting.value == "source" ? "html" : "source";
+  }
+  let domE: HTMLDivElement;
+  function showDOMInspector() {
+    let setting = getLocalStorage("mail.contentRendering", "html");
+    setting.value = "html";
+    let messageE = domE.ownerDocument.querySelector(".message-body");
+    let webviewE = messageE.querySelector("webview") as HTMLIFrameElement as any;
+    webviewE.openDevTools();
   }
   function translate() {
     throw new NotImplemented();
