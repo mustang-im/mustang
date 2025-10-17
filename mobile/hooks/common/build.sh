@@ -17,7 +17,4 @@ perl -p -i \
 (cd backend && npm run build) &&
 npx cap copy
 
-npx @capacitor/assets generate --android
-npx @capacitor/assets generate --ios
-
 unset NODE_OPTIONS
