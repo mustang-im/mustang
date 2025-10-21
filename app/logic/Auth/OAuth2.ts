@@ -275,7 +275,7 @@ export class OAuth2 extends WebBasedAuth {
   /** Helper for auth Done URL */
   async isAuthDoneURL(url: URLString): Promise<boolean> {
     let urlParams = Object.fromEntries(new URL(url).searchParams);
-    console.log("OAuth2 page change to", url, "doneURL is", this.authDoneURL, "matches", this.authDoneURL == url,
+    console.log("OAuth2 page change to", url, "doneURL is", this.authDoneURL, "matches", url.startsWith(this.authDoneURL),
       "is auth done", url.startsWith(this.authDoneURL) && this.verificationToken && urlParams.state == this.verificationToken);
     return url.startsWith(this.authDoneURL) &&
       this.verificationToken && urlParams.state == this.verificationToken;
