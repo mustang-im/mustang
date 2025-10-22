@@ -9,7 +9,7 @@ import type { MailIdentity } from "./MailIdentity";
 import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
-import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
+import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";

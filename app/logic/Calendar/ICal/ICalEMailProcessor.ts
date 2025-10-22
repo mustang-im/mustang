@@ -2,7 +2,7 @@ import { ICalParser } from "./ICalParser";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
-import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
+import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProcessor";
 import { convertICalParserToEvent } from "./ICalToEvent";
 
 export class ICalEMailProcessor extends EMailProcessor {
