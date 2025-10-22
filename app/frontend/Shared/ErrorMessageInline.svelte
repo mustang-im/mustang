@@ -1,12 +1,27 @@
-<div class="error">
-  {console.error(ex), logError(ex), ""}
-  {ex.message ?? ex + ""}
-</div>
+<hbox>
+  <div class="error">
+    {console.error(ex), logError(ex), ""}
+    {ex.message ?? ex + ""}
+  </div>
+  {#if withCloseButton}
+    <RoundButton
+      icon={CloseIcon}
+      iconSize="16px" classes="plain small" border={false}
+      on:click={onClose} />
+  {/if}
+</hbox>
 
 <script lang="ts">
   import { logError } from "../Util/error";
+  import RoundButton from "./RoundButton.svelte";
+  import CloseIcon from "lucide-svelte/icons/x";
 
-  export let ex: Error;
+  export let ex: Error | null;
+  export let withCloseButton: boolean = false;
+
+  function onClose() {
+    ex = null;
+  }
 </script>
 
 <style>

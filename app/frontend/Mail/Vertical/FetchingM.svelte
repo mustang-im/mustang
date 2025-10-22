@@ -7,16 +7,19 @@
     {/if}
   </hbox>
 {/if}
+<ErrorMessageInline {ex} withCloseButton />
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
   import LoginIcon from "lucide-svelte/icons/key-round";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
 
   export let folder: Folder;
 
   let checkingMail = false;
   let loggingIn = false;
+  let ex: Error | null = null;
   export async function onCheckMail() {
     try {
       loggingIn = true;
@@ -27,6 +30,8 @@
       loggingIn = false;
       checkingMail = true;
       await folder.getNewMessages();
+    } catch (exA) {
+      ex = exA;
     } finally {
       loggingIn = false;
       checkingMail = false;
