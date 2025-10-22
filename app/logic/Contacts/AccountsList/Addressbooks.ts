@@ -1,4 +1,7 @@
 import { Addressbook } from '../Addressbook';
+// #if [!WEBMAIL || WEBMAIL=JMAP]
+import { JMAPAddressbook } from '../JMAP/JMAPAddressbook';
+// #endif
 // #if [!WEBMAIL && PROPRIETARY]
 import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
@@ -10,7 +13,7 @@ import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #else
 import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
 // #endif
-import { NotReached, NotImplemented } from '../../util/util';
+import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -30,8 +33,7 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
   }
   // #if [!WEBMAIL || WEBMAIL=JMAP]
   if (protocol == "addressbook-jmap") {
-    throw new NotImplemented("JMAP Addressbook not implemented");
-    // return new JMAPAddressbook();
+    return new JMAPAddressbook();
   }
   // #endif
   // #if [!WEBMAIL]
