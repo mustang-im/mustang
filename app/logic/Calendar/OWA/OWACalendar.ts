@@ -15,7 +15,7 @@ export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
-  readonly events: ArrayColl<OWAEvent>;
+  declare readonly events: ArrayColl<OWAEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
   listEventsOnce = new RunOnce(() => this.listEventsSlow());

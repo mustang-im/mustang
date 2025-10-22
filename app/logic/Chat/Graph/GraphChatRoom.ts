@@ -10,7 +10,7 @@ import { Group } from "../../Abstract/Group";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class GraphChatRoom extends Chat {
-  account: GraphChatAccount;
+  declare account: GraphChatAccount;
   info: TGraphChat;
   lastReadTime: Date;
   constructor(account: GraphChatAccount) {

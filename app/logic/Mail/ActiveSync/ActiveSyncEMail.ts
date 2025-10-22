@@ -21,7 +21,7 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 export class ActiveSyncEMail extends EMail {
-  folder: ActiveSyncFolder;
+  declare folder: ActiveSyncFolder;
 
   get serverID(): string | null {
     return this.pID as string | null;

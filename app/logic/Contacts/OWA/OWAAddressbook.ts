@@ -12,8 +12,8 @@ export class OWAAddressbook extends Addressbook {
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
   canSync: boolean = true;
-  readonly persons: ArrayColl<OWAPerson>;
-  readonly groups: ArrayColl<OWAGroup>;
+  declare readonly persons: ArrayColl<OWAPerson>;
+  declare readonly groups: ArrayColl<OWAGroup>;
   listContactsOnce = new RunOnce(() => this.listContactsSlow());
 
   get account(): OWAAccount {

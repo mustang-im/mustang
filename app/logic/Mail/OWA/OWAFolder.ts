@@ -10,6 +10,7 @@ import {
   owaGetNewMsgHeadersRequest, owaMoveEntireFolderRequest,
   owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
 } from "./Request/OWAFolderRequests";
+import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -17,7 +18,9 @@ import { ArrayColl, Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 export class OWAFolder extends Folder {
-  account: OWAAccount;
+  declare account: OWAAccount;
+  declare readonly messages: EMailCollection<OWAEMail>;
+  declare readonly subFolders: ArrayColl<OWAFolder>;
   // Whether a folder scan or notification changed the counts
   dirty: boolean = false;
 

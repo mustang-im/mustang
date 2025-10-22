@@ -12,8 +12,8 @@ export class EWSAddressbook extends Addressbook {
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
   canSync: boolean = true;
-  readonly persons: ArrayColl<EWSPerson>;
-  readonly groups: ArrayColl<EWSGroup>;
+  declare readonly persons: ArrayColl<EWSPerson>;
+  declare readonly groups: ArrayColl<EWSGroup>;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;

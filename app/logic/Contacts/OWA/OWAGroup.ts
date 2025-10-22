@@ -7,7 +7,7 @@ import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
 
 export class OWAGroup extends Group {
-  addressbook: OWAAddressbook | null;
+  declare addressbook: OWAAddressbook | null;
 
   get personaID() {
     return this.id;

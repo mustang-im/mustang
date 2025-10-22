@@ -7,10 +7,10 @@ import { ContactBase } from "../../Abstract/Contact";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { JXT } from "stanza";
-import { Message, Forward } from "stanza/protocol";
+import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends Chat {
-  account: XMPPAccount;
+  declare account: XMPPAccount;
   lastMessage: XMPPChatMessage;
   constructor(account: XMPPAccount, jid: string) {
     super(account);

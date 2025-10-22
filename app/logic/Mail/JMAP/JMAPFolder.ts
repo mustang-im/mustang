@@ -13,8 +13,9 @@ import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
 
 export class JMAPFolder extends Folder {
-  account: JMAPAccount;
-  readonly messages: EMailCollection<JMAPEMail>;
+  declare account: JMAPAccount;
+  declare readonly messages: EMailCollection<JMAPEMail>;
+  declare readonly subFolders: ArrayColl<JMAPFolder>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];

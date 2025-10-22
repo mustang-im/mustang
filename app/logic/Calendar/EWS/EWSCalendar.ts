@@ -13,7 +13,7 @@ export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
-  readonly events: ArrayColl<EWSEvent>;
+  declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
 

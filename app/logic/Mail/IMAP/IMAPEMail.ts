@@ -11,7 +11,7 @@ import { gt } from "../../../l10n/l10n";
 import { ConnectionPurpose } from "./IMAPAccount";
 
 export class IMAPEMail extends EMail {
-  folder: IMAPFolder;
+  declare folder: IMAPFolder;
   /** From IMAP server */
   seq: number | null = null;
   flagsChanging = false;

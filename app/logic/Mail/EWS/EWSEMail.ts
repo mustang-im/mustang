@@ -22,7 +22,7 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 export class EWSEMail extends EMail {
-  folder: EWSFolder;
+  declare folder: EWSFolder;
 
   get itemID(): string | null {
     return this.pID as string | null;

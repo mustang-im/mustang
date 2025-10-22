@@ -7,7 +7,7 @@ import { mergeColls, mergeColl, Collection, ArrayColl } from "svelte-collections
 import { gt } from "../../../l10n/l10n";
 
 export class AllFolders extends Folder {
-  account: AllAccounts;
+  declare account: AllAccounts;
   /** `this` folder shows the sum of all messages in these `folders` */
   _folders: Collection<Folder>;
 

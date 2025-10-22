@@ -10,7 +10,7 @@ import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class EWSGroup extends Group {
-  addressbook: EWSAddressbook | null;
+  declare addressbook: EWSAddressbook | null;
 
   get itemID() {
     return this.id;

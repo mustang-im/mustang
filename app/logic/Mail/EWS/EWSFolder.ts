@@ -3,6 +3,7 @@ import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
+import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
@@ -11,7 +12,9 @@ import { ArrayColl, Collection } from "svelte-collections";
 export const kMaxCount = 50;
 
 export class EWSFolder extends Folder {
-  account: EWSAccount;
+  declare account: EWSAccount;
+  declare readonly messages: EMailCollection<EWSEMail>;
+  declare readonly subFolders: ArrayColl<EWSFolder>;
 
   newEMail(): EWSEMail {
     return new EWSEMail(this);

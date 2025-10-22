@@ -7,7 +7,7 @@ import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class OWAPerson extends Person {
-  addressbook: OWAAddressbook | null;
+  declare addressbook: OWAAddressbook | null;
   fields: Record<string, string> = this.toFields();
 
   get personaID() {

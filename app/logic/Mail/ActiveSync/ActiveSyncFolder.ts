@@ -30,8 +30,9 @@ export enum FolderType {
 }
 
 export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
-  account: ActiveSyncAccount;
-  messages: EMailCollection<ActiveSyncEMail>;
+  declare account: ActiveSyncAccount;
+  declare readonly messages: EMailCollection<ActiveSyncEMail>;
+  declare readonly subFolders: ArrayColl<ActiveSyncFolder>;
   readonly folderClass = "Email";
 
   get serverID() {

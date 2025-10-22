@@ -2,6 +2,8 @@ import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
+import type { EMailCollection } from "../Store/EMailCollection";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { Locked } from "../../util/Lock";
 import { assert } from "../../util/util";
@@ -9,10 +11,11 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
-import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class IMAPFolder extends Folder {
-  account: IMAPAccount;
+  declare account: IMAPAccount;
+  declare readonly messages: EMailCollection<IMAPEMail>;
+  declare readonly subFolders: ArrayColl<IMAPFolder>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
   readonly deletions = new Set<number>();

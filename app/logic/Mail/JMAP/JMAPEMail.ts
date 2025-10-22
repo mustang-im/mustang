@@ -14,7 +14,7 @@ import type { ArrayColl, Collection } from "svelte-collections";
 
 export class JMAPEMail extends EMail {
   pID: string | null = null;
-  folder: JMAPFolder;
+  declare folder: JMAPFolder;
   mimeBlobId: string | null = null; // TODO Save in DB
   protected flagsChanging = false;
 

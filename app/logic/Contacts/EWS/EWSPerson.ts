@@ -8,7 +8,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 
 export class EWSPerson extends Person {
-  addressbook: EWSAddressbook | null;
+  declare addressbook: EWSAddressbook | null;
 
   get itemID() {
     return this.id;

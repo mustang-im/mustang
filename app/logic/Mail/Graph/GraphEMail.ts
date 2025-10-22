@@ -15,7 +15,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 
 export class GraphEMail extends EMail {
   pID: string | null = null;
-  folder: GraphFolder;
+  declare folder: GraphFolder;
   protected flagsChanging = false;
 
   constructor(folder: GraphFolder) {

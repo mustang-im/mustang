@@ -6,7 +6,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 
 export class ActiveSyncPerson extends Person {
-  addressbook: ActiveSyncAddressbook | null;
+  declare addressbook: ActiveSyncAddressbook | null;
 
   get serverID() {
     return this.id;

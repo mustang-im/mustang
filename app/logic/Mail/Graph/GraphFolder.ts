@@ -12,8 +12,9 @@ import { ArrayColl, Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 export class GraphFolder extends Folder {
-  account: GraphAccount;
-  readonly messages: EMailCollection<GraphEMail>;
+  declare account: GraphAccount;
+  declare readonly messages: EMailCollection<GraphEMail>;
+  declare readonly subFolders: ArrayColl<GraphFolder>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   protected poller: ReturnType<typeof setInterval>;

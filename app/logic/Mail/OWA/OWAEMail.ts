@@ -15,7 +15,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { Collection, ArrayColl } from "svelte-collections";
 
 export class OWAEMail extends EMail {
-  folder: OWAFolder;
+  declare folder: OWAFolder;
 
   get itemID(): string | null {
     return this.pID as string | null;

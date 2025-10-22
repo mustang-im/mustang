@@ -15,7 +15,7 @@ const kHalfHour = 30 * 60 * 1000; // milliseconds
 
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
-  readonly events: ArrayColl<ActiveSyncEvent>;
+  declare readonly events: ArrayColl<ActiveSyncEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";

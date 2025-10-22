@@ -3,7 +3,7 @@ import type { MatrixAccount } from "./MatrixAccount";
 import { DeliveryStatus, UserChatMessage } from "../Message";
 
 export class MatrixChatRoom extends Chat {
-  account: MatrixAccount;
+  declare account: MatrixAccount;
   constructor(account: MatrixAccount) {
     super();
     this.account = account;
