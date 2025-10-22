@@ -14,6 +14,7 @@ export class EMailProcessor {
   }
 
   static hookup() {
+    console.log("hookup", this.name);
     if (EMailProcessorList.processors.some(p => p instanceof this)) {
       return;
     }

@@ -37,6 +37,17 @@ class Sanitize {
     return i;
   }
 
+  float(unchecked: number | string | null, fallback: number | null | Symbol = throwErrors): number {
+    if (typeof (unchecked) == "number") {
+      return unchecked;
+    }
+    let r = parseFloat(unchecked);
+    if (isNaN(r)) {
+      return haveError("No number", unchecked, fallback);
+    }
+    return r;
+  }
+
   boolean(unchecked: boolean | string | number | null, fallback: boolean | null | Symbol = throwErrors): boolean {
     if (typeof (unchecked) == "boolean") {
       return unchecked;

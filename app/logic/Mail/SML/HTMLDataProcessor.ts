@@ -1,4 +1,4 @@
-import { EMailProcessor } from "../EMailProcessor";
+import { EMailProcessor, ProcessingStartOn } from "../EMailProcessor";
 import type { EMail } from "../EMail";
 import { getDomainForEmailAddress } from "../../util/netUtil";
 import { assert } from "../../util/util";
@@ -14,12 +14,14 @@ import { assert } from "../../util/util";
  * c) is efficient
  */
 export abstract class HTMLDataProcessor extends EMailProcessor {
+  runOn = ProcessingStartOn.Parse;
   /** Only process emails that come from these domains.
    * You must set this to an array in your subclass.
    * E.g. `["amazon.com", "amazon.de"]`, or
    * `["*"]` for all domains. */
   abstract fromDomains: string[];
   async process(email: EMail): Promise<void> {
+    console.log("checking email", email.subject);
     if (!email.hasHTML) {
       return;
     }
@@ -31,11 +33,13 @@ export abstract class HTMLDataProcessor extends EMailProcessor {
       }
     }
 
-    /* Cache DOM, in case we need to be running 50 processors in a row
+    /* Cache DOM, in case we need to be running 50 processors in a row.
+      But all processors run in parallel, so this caching code won't work.
     let emailPrivate = email as any;
     let dom = emailPrivate._dom ?? (emailPrivate._dom = new DOMParser(...)) */
+
     let dom = new DOMParser().parseFromString(email.html, "text/html");
-    await this.processDOM(dom);
+    await this.processDOM(dom, email);
   }
-  abstract processDOM(dom: Document): Promise<void>;
+  abstract processDOM(doc: Document, email: EMail): Promise<void>;
 }
