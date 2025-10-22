@@ -221,6 +221,7 @@ export class EMail extends Message {
     } else {
       await this.loadMIME();
     }
+    // indirectly calls @see `ICalEMailProcessor.process()`
   }
 
   async parseMIME() {

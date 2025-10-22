@@ -17,7 +17,7 @@ import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
-import { appGlobal } from '../../app';
+import { dataProcessorsHookup } from '../SML/DataProcessors';
 import { NotReached, NotSupported } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
@@ -92,3 +92,6 @@ export function listMailProtocols(): string[] {
 export function labelForMailProtocol(protocol: string): string {
   return kProtocolLabel[protocol] ?? protocol.toUpperCase();
 }
+
+// TODO Find better spot to call this
+dataProcessorsHookup();

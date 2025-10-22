@@ -9,7 +9,7 @@ export class EMailProcessorList {
 
 export class EMailProcessor {
   runOn: ProcessingStartOn;
-  process(email: EMail, mime: PostalMime) {
+  async process(email: EMail, mime: PostalMime): Promise<void> {
     throw new AbstractFunction();
   }
 
@@ -24,6 +24,7 @@ export class EMailProcessor {
   }
 }
 
+/** For now, only Parse is supported */
 export enum ProcessingStartOn {
   Parse = 1,
   BeforeSpamFilter = 2,
