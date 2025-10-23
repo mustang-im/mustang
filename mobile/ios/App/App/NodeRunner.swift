@@ -38,10 +38,21 @@ import NodeMobile
                     print("❌ NodeRunner: could not find index.mjs in nodejs-project")
                     return
                 }
+            
+                let overrideDLOpenScript = "override-dlopen-paths-preload.js"
+                // —— attempt to find override-dlopen-paths-preload.js ——
+                guard let overrideDLOpenPath = Bundle.main.path(
+                        forResource: "override-dlopen-paths-preload",
+                        ofType: "js",
+                        inDirectory: "nodejs-project"
+                      ) else {
+                    print("❌ NodeRunner: could not find override-dlopen-paths-preload.js in nodejs-project")
+                    return
+                }
 
 
             // Prepare argv: ["node", "<full-path-to-index.mjs>"]
-            let args = ["node", scriptPath]
+            let args = ["node", "-r", overrideDLOpenPath, scriptPath]
             let argc = Int32(args.count)
             let argv = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: Int(argc))
             for (i, arg) in args.enumerated() {
