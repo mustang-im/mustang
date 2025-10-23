@@ -8,10 +8,10 @@
     <slot name="top-right" />
   </hbox>
   <grid flex class="month"
-    on:swipeleft={onPreviousMonth}
-    on:swiperight={onNextMonth}
-    on:swipeup={onPreviousMonth}
-    on:swipedown={onNextMonth}
+    on:swipeleft={onNextMonth}
+    on:swiperight={onPreviousMonth}
+    on:swipeup={onNextMonth}
+    on:swipedown={onPreviousMonth}
     >
     {#each weekDays as day}
       <hbox class="weekday">
