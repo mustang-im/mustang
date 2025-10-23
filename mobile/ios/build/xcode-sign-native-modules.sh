@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-node ../build/ios-create-plists-and-dlopen-override.js ../App/App/nodejs-project
+NODEJS_PROJECT_DIR="$( cd "$CODESIGNING_FOLDER_PATH" && cd nodejs-project && pwd )"
+
+node ../build/ios-create-plists-and-dlopen-override.js "$NODEJS_PROJECT_DIR"
 
 # Embed every resulting .framework in the application and delete them afterwards.
 embed_framework()
