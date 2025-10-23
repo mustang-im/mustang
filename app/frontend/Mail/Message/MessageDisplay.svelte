@@ -2,7 +2,7 @@
   on:keydown={event => catchErrors(() => onKeyOnList(event))}
   tabindex={0}
   >
-  <MessageHeader {message} />
+  <MessageHeader bind:message />
   <MessageAttachments {message} />
   {#if $message.event || $message.invitationMessage}
     <InvitationInMail {message} />
