@@ -156,7 +156,7 @@
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
-      showRows = Math.min(items.length, Math.ceil(availableHeight / rowHeight));
+      showRows = Math.ceil(availableHeight / rowHeight);
       //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight, "rowheight", rowHeight, "available", availableHeight, " showrows", showRows);
     } catch (ex) {
       console.error(ex);
@@ -234,17 +234,20 @@
   }
 
   function scrollIntoView(index: number) {
-    if (index >= startPos && index < startPos + showRows - 1) {
-      return; // already in view
+    let indexMinY = index * rowHeight + headerHeight;
+    let indexMaxY = indexMinY + rowHeight - listE.clientHeight;
+    if (indexMinY < listE.scrollTop) {
+      listE.scrollTop = indexMinY;
+    } else if (indexMaxY > listE.scrollTop) {
+      listE.scrollTop = indexMaxY;
     }
-    startPos = Math.min(Math.max(startPos, 0), items.length - showRows);
   }
 
   const onScrollThrottled = throttle(onScroll, 10);
   function onScroll() {
     let topY = listE.scrollTop - headerHeight;
     let startPosCalc = Math.floor(topY / rowHeight);
-    startPos = Math.min(Math.max(startPosCalc, 0), items.length - showRows);
+    startPos = Math.max(Math.min(startPosCalc, items.length - showRows), 0);
     //console.log("startpos", startPos, "top y", topY, "scrolltop", listE.scrollTop, "rowheight", rowHeight);
   }
 
