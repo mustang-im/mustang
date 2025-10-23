@@ -12,10 +12,11 @@
 
   export let app: MustangApp
   export let page: string;
+  export let params = {};
 
   function onClick(event: Event) {
     event.stopPropagation();
-    goTo(page, {});
+    goTo(page, params);
   }
 </script>
 

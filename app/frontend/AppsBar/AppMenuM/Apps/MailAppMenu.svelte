@@ -10,7 +10,15 @@
   icon={FolderIcon}
   label={$t`Folders`}
   onClick={() => goTo("/mail", {})} />
-<AppButton app={mailMustangApp} page={URLPart`/mail/folder/${allAccountsAccount.id}/${allAccountsAccount.inbox.id ?? "noid"}/message-list`} />
+<AppButton
+  app={mailMustangApp}
+  page={URLPart`/mail/folder/${allAccountsAccount.id}/${allAccountsAccount.inbox.id ?? "noid"}/message-list`}
+  params={{
+    messages: allAccountsAccount.inbox.messages,
+    folder: allAccountsAccount.inbox,
+    account: allAccountsAccount,
+  }}
+  />
 <CombinedButton icon1={mailMustangApp.icon} icon2={SearchIcon} page="/mail/search" />
 <CombinedButton icon1={mailMustangApp.icon} icon2={PencilIcon} page="/mail/compose" />
 
