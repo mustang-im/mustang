@@ -211,6 +211,7 @@ export class ContactEntry extends Observable {
   /** Lower is more preferred */
   @notifyChangedProperty
   preference: number = ContactEntry.defaultPreference;
+  json: any;
 
   constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference: number = ContactEntry.defaultPreference) {
     super();

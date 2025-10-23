@@ -1,83 +1,87 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
-import { StreetAddress } from '../StreetAddress';
 import type { JMAPAddressbook } from './JMAPAddressbook';
+import type { TJSContact, TPrivateOrWork } from './JSContactTypes';
+import type { StreetAddress } from '../StreetAddress';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { ensureArray } from '../../util/util';
 
 export class JMAPPerson extends Person {
   declare addressbook: JMAPAddressbook | null;
 
-  get itemID() {
+  get uid() {
     return this.id;
   }
-  set itemID(val) {
+  set uid(val) {
     this.id = val;
   }
-
-  fromJMAP(jmap: any) {
-    /*
-    this.itemID = sanitize.nonemptystring(jmap.ItemId.Id);
-    this.name = sanitize.nonemptystring(jmap.DisplayName, "");
-    this.firstName = sanitize.nonemptystring(jmap.GivenName, "");
-    this.lastName = sanitize.nonemptystring(jmap.Surname, "");
-    if (jmap.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(jmap.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "work", "mailto")));
-    }
-    if (jmap.PhoneNumbers?.Entry) {
-      for (let entry of ensureArray(jmap.PhoneNumbers.Entry)) {
-        let value = sanitize.nonemptystring(entry.Value, null);
-        switch (value && entry.Key) { // Key may have other unsupported values
-        case "HomePhone":
-        case "HomePhone2":
-          this.phoneNumbers.add(new ContactEntry(value, "home", "tel"));
-          break;
-        case "BusinessPhone":
-        case "BusinessPhone2":
-          this.phoneNumbers.add(new ContactEntry(value, "work", "tel"));
-          break;
-        case "HomeFax":
-          this.phoneNumbers.add(new ContactEntry(value, "home", "fax"));
-          break;
-        case "BusinessFax":
-          this.phoneNumbers.add(new ContactEntry(value, "work", "fax"));
-          break;
-        case "OtherFax":
-          this.phoneNumbers.add(new ContactEntry(value, "other", "fax"));
-          break;
-        case "MobilePhone":
-          this.phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
-          break;
-        }
-      }
-    }
-    if (jmap.ImAddresses?.Entry) {
-      this.chatAccounts.replaceAll(ensureArray(jmap.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
-    }
-    if (jmap.PhysicalAddresses?.Entry) {
-      this.streetAddresses.replaceAll(ensureArray(jmap.PhysicalAddresses.Entry).map(entry =>
-        new ContactEntry(JMAPPerson.jmapToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
-    }
-    this.notes = sanitize.nonemptystring(jmap.Body?.Value, "");
-    this.company = sanitize.nonemptystring(jmap.CompanyName, "");
-    this.department = sanitize.nonemptystring(jmap.Department, "");
-    this.position = sanitize.nonemptystring(jmap.JobTitle, "");
-    */
+  get account() {
+    return this.addressbook.account;
   }
 
-  protected static jmapToStreetAddress(entry: any): StreetAddress {
-    /*
-    let streetAddress = new StreetAddress();
-    for (let ourProp in PhysicalAddressElements) {
-      let jmapProp = PhysicalAddressElements[ourProp];
-      streetAddress[ourProp] = sanitize.nonemptystring(entry[jmapProp], null);
+  fromJMAP(jmap: TJSContact) {
+    this.uid = sanitize.nonemptystring(jmap.uid);
+    this.name = sanitize.nonemptystring(jmap.name.full, "");
+    if (!jmap.name.full && jmap.name.components) {
+      let nameConcat = ensureArray(jmap.name.components)
+        .map(c => sanitize.string(c.value))
+        .join(sanitize.string(jmap.name.defaultSeparator));
+      this.name = sanitize.nonemptystring(nameConcat, "");
     }
-    return streetAddress;
-    */
+    this.firstName = sanitize.nonemptystring(jmap.name.components.find(c => c.kind == "given").value, "");
+    this.lastName = sanitize.nonemptystring(jmap.name.components.find(c => c.kind == "surname").value, "");
+
+    this.emailAddresses.replaceAll(Object.values(jmap.emails).map(e => new ContactEntry(
+      sanitize.emailAddress(e.address),
+      JMAPPerson.contextToHome(e.contexts),
+      "mailto",
+      sanitize.integerRange(e.pref, 0, 100))));
+    this.phoneNumbers.replaceAll(Object.values(jmap.phones).map(p => new ContactEntry(
+      sanitize.nonemptystring(p.number),
+      JMAPPerson.contextToHome(p.contexts),
+      JMAPPerson.phoneFeature(p.features),
+      sanitize.integerRange(p.pref, 0, 100))));
+    this.chatAccounts.replaceAll(Object.values(jmap.onlineServices).map(o => new ContactEntry(
+      sanitize.nonemptystring(o.uri, sanitize.nonemptystring(o.user)),
+      JMAPPerson.contextToHome(o.contexts),
+      o.service,
+      sanitize.integerRange(o.pref, 0, 100))));
+    //this.streetAddresses.replaceAll(Object.values(jmap.addresses).map(a => new ContactEntry(
+
+    this.notes = sanitize.nonemptystring(Object.values(jmap.notes)[0]?.note, "");
+    this.company = sanitize.nonemptystring(Object.values(jmap.organizations)[0]?.name, "");
+    this.department = sanitize.nonemptystring(Object.values(Object.values(jmap.organizations)[0]?.units)[0]?.name, "");
+    this.position = sanitize.nonemptystring(Object.values(jmap.titles)[0]?.name, "");
   }
+
+  protected static contextToHome(contexts: TPrivateOrWork): string | null {
+    return contexts?.private
+      ? "home"
+      : contexts?.work
+        ? "work"
+        : null;
+  }
+
+  protected static phoneFeature(features: Record<"voice" | "mobile" | "main-number" | "fax" | "pager" | "text" | "textphone" | "video", true>): string | null {
+    let first = Object.keys(features)[0];
+    return first == "voice" ? "tel" : first;
+  }
+
 
   async saveToServer() {
+    await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      update: {
+        [this.uid]: {
+          // TODO, example: [`keywords/${name}`]: set ? true : null,
+        },
+      },
+    });
   }
 
   async deleteFromServer() {
+    await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      destroy: [this.uid],
+    });
   }
 }

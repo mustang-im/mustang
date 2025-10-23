@@ -93,17 +93,19 @@ export interface TJMAPFolder {
   unreadEmails: number,
   totalThreads: number,
   unreadThreads: number,
-  myRights: {
-    mayAddItems: boolean,
-    mayRename: boolean,
-    maySubmit: boolean,
-    mayDelete: boolean,
-    maySetKeywords: boolean,
-    mayRemoveItems: boolean,
-    mayCreateChild: boolean,
-    maySetSeen: boolean,
-    mayReadItems: boolean,
-  },
+  myRights: TJMAPFolderRights,
+}
+
+export interface TJMAPFolderRights {
+  mayAddItems: boolean,
+  mayRename: boolean,
+  maySubmit: boolean,
+  mayDelete: boolean,
+  maySetKeywords: boolean,
+  mayRemoveItems: boolean,
+  mayCreateChild: boolean,
+  maySetSeen: boolean,
+  mayReadItems: boolean,
 }
 
 /** <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1> */

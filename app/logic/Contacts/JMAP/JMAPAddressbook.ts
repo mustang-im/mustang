@@ -2,6 +2,7 @@ import { Addressbook } from "../Addressbook";
 import { JMAPPerson } from "./JMAPPerson";
 import { JMAPGroup } from "./JMAPGroup";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
+import type { TJMAPAddressbook } from "./JMAPContactTypes";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -22,6 +23,11 @@ export class JMAPAddressbook extends Addressbook {
     return new JMAPGroup(this);
   }
 
+  fromJMAP(jmap: TJMAPAddressbook) {
+    this.id = sanitize.nonemptystring(jmap.id);
+    this.name = sanitize.nonemptystring(jmap.name);
+  }
+
   async listContacts() {
     if (!this.dbID) {
       await this.save();
@@ -38,7 +44,7 @@ export class JMAPAddressbook extends Addressbook {
   }
 
   protected getPersonByItemID(id: string): JMAPPerson | undefined {
-    return this.persons.find(p => p.itemID == id);
+    return this.persons.find(p => p.uid == id);
   }
 
   async listGroups(groups: any[]) {
