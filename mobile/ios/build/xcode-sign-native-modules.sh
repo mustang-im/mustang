@@ -1,4 +1,5 @@
-$(which node) ../build/ios-create-plists-and-dlopen-override.js ../App/App/nodejs-project
+#!/usr/bin/env bash
+node ../build/ios-create-plists-and-dlopen-override.js ../App/App/nodejs-project
 
 # Embed every resulting .framework in the application and delete them afterwards.
 embed_framework()

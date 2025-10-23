@@ -55,13 +55,13 @@ export default defineConfig(({}) => {
           },
           {
             src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node${isIOS ? '/better_sqlite3' : ''}`,
-            dest: `${projectDir}/build`,
-            rename: isIOS ? 'better_sqlite3.node' : undefined,
+            dest: `${projectDir}/build${isIOS ? '/better_sqlite3.node' : ''}`,
+            rename: isIOS ? 'better_sqlite3' : undefined,
           },
           {
             src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node${isIOS ? '/bufferutil' : ''}`,
-            dest: `${projectDir}/prebuilds/${arch}`,
-            rename: isIOS ? 'bufferutil.node' : undefined,
+            dest: `${projectDir}/prebuilds/${arch}${isIOS ? '/bufferutil.node' : ''}`,
+            rename: isIOS ? 'bufferutil' : undefined,
           },
         ]
       }),
