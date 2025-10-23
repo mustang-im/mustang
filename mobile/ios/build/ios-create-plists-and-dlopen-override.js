@@ -112,7 +112,7 @@ export function visitEveryFramework(projectPath) {
     frameworkOverrideContents.push(
       {
         originalpath: currentFramework.originalRelativePath.split(path.sep),
-        newpath: ['..', '..', 'Frameworks', currentFramework.newFrameworkName+'.framework', currentFramework.newFrameworkName]
+        newpath: ['..', 'Frameworks', currentFramework.newFrameworkName+'.framework', currentFramework.newFrameworkName]
       }
     );
   }
