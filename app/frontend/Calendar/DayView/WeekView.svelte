@@ -9,7 +9,10 @@
   </hbox>
   <vbox flex bind:offsetHeight={visibleHeight}>
     <Scroll bind:this={scrollE}>
-      <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;">
+      <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;"
+        on:swipeleft={onNextDay}
+        on:swiperight={onPreviousDay}
+        >
         <hbox class="top-left header" />
         {#each days as day}
           <vbox class="day-header header">
@@ -104,6 +107,18 @@
 
   function goToToday() {
     start = getToday();
+  }
+
+  function onNextDay() {
+    let pageDays = showDays == 7 ? 7 : 1;
+    start.setDate(start.getDate() + pageDays);
+    start = start;
+  }
+
+  function onPreviousDay() {
+    let pageDays = showDays == 7 ? 7 : 1;
+    start.setDate(start.getDate() - pageDays);
+    start = start;
   }
 </script>
 

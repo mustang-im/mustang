@@ -7,7 +7,12 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <grid flex class="month">
+  <grid flex class="month"
+    on:swipeleft={onNextMonth}
+    on:swiperight={onPreviousMonth}
+    on:swipeup={onNextMonth}
+    on:swipedown={onPreviousMonth}
+    >
     {#each weekDays as day}
       <hbox class="weekday">
         {day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "short" })}
@@ -68,6 +73,17 @@
     start.setDate(start.getDate() + showDays * upDown);
     start = start;
   }
+
+  // <copied from="DateRange.svelte">
+  function onNextMonth() {
+    start.setDate(start.getDate() + (showDays == 35 ? 42 : showDays));
+    start = start;
+  }
+  function onPreviousMonth() {
+    start.setDate(start.getDate() - (showDays == 35 ? 28 : showDays));
+    start = start;
+  }
+  // </copied>
 </script>
 
 <style>

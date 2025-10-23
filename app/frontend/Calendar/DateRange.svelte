@@ -13,6 +13,7 @@
   export let date = new Date(); /* in/out */
   export let dateInterval: number; /* in */
 
+  // <copied to="MonthView.svelte">
   function pageNext() {
     // Advance months by 42 days just to be sure, e.g. for March 2025
     // MonthView.setDays will then rewind as necessary.
@@ -25,6 +26,7 @@
     date.setDate(date.getDate() - (dateInterval == 35 ? 28 : dateInterval));
     date = date;
   }
+  // </copied>
 
   function monthYear(date): string {
     // Show the month that covers most of the current date range.
