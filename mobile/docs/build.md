@@ -62,10 +62,17 @@ fails when there's no tag for the commit which fails when you manually trigger i
 12. Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created in step 1
 13. Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
 14. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
-15. Start the workflow by mannually triggering it or pushing with a tag
-16. The `tag_name` is retrieved from `mobile/package.json`.
+15. Go to App Store Connect > Users and Access > Keys https://appstoreconnect.apple.com/
+16. Create a new API key with "App Manager" or "Developer" role
+17. Download the .p8 key file
+18. Create a secret with the value from step 17 and the name `IOS_APPSTORE_API_KEY`
+19. Create a secret with the key ID from step 16 and the name `IOS_APPSTORE_API_KEY_ID`
+20. Create a secret with the issuer ID from step 15 and the name `IOS_APPSTORE_API_ISSUER`
+21. Start the workflow by mannually triggering it or pushing with a tag
+22. The `tag_name` is retrieved from `mobile/package.json`.
     (The release step fails when there's no tag for the commit, but we want to also manually trigger it.)
-17. The build artifacts will be available in the workflow run summary.
+23. The build artifacts will be available in the workflow run summary.
+
 ## iOS
 
 ### Building with Xcode
