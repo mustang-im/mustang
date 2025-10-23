@@ -37,11 +37,9 @@ export class ComposeActions {
     this.email.messageID = crypto.randomUUID() + "@" + hostname;
   }
 
-  protected _reply(): EMail {
+  /** New unrelated message from the same identity and folder */
+  newMailFromSameIdentity(): EMail {
     let original = this.email;
-    original.markReplied()
-      .catch(original.folder.account.errorCallback);
-
     let account = original.folder.account;
     let reply = account.newEMailFrom();
     reply.compose.generateMessageID();
@@ -56,6 +54,15 @@ export class ComposeActions {
     reply.folder = original.folder?.specialFolder == SpecialFolder.Normal
       ? original.folder
       : account.getSpecialFolder(SpecialFolder.Sent);
+    return reply;
+  }
+
+  protected _reply(): EMail {
+    let reply = this.newMailFromSameIdentity();
+
+    let original = this.email;
+    original.markReplied()
+      .catch(original.folder.account.errorCallback);
 
     reply.subject = "Re: " + original.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = original.messageID;
@@ -77,13 +84,17 @@ export class ComposeActions {
     return reply;
   }
 
-  replyToAuthor(): EMail {
-    let reply = this._reply();
+  protected _addFromAsRecipient(reply: EMail) {
     let to = this.email.replyTo ?? this.email.from;
     if (findIdentityForEMailAddress(to.emailAddress) && this.email.to.first) {
       to = this.email.to.first;
     }
     reply.to.add(to);
+  }
+
+  replyToAuthor(): EMail {
+    let reply = this._reply();
+    this._addFromAsRecipient(reply);
     return reply;
   }
 
@@ -92,6 +103,14 @@ export class ComposeActions {
     reply.to.addAll(this.email.to.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
     reply.cc.addAll(this.email.cc.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
     return reply;
+  }
+
+  newToAll(): EMail {
+    let mail = this.newMailFromSameIdentity();
+    this._addFromAsRecipient(mail);
+    mail.to.addAll(this.email.to.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != mail.to.first));
+    mail.cc.addAll(this.email.cc.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != mail.to.first));
+    return mail;
   }
 
   async forward(): Promise<EMail> {
