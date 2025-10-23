@@ -3,6 +3,8 @@
 </Route>
 {#if appGlobal.isMobile}
   <Route path="folder/:accountID/:folderID/message-list">
+    {$selectedFolder = params.folder ?? $selectedFolder,
+     $selectedAccount = params.account ?? $selectedAccount, ""}
     <MsgListM messages={params?.messages ?? searchMessages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
   </Route>
   <Route path="message/:accountID/:folderID/:messageID/display">
