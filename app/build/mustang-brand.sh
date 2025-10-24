@@ -10,7 +10,7 @@ perl -p -i \
   ../../e2/package.json
 
 perl -p -i \
-  -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\"|;" \
+  -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\";|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
 # Mobile Icons
