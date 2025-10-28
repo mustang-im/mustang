@@ -67,17 +67,17 @@
     align-items: center;
   }
   .count {
-    background-color: #ff000099;
-    color: white;
-    border-radius: 20px;
-    border: 1px solid var(--border);
     justify-content: center;
     align-items: center;
-    font-weight: bold;
-    max-height: 1.3em;
-    min-width: calc(1.4em - 8px);
+    border-radius: 20px;
+    /*border: 1px solid var(--border); -- too high */
+    max-height: 20px;
+    min-width: 12px;
     padding-inline: 4px;
     margin-inline-end: 8px;
+    background-color: #ff000099;
+    color: white;
+    font-weight: bold;
   }
   .folder:hover .count {
     display: none;
