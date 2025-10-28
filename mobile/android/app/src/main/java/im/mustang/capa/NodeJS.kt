@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.edit
+import com.getcapacitor.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,8 +29,10 @@ object Constants {
 class NodeJS {
     companion object {
         init {
+            Log.d(Constants.TAG, "Starting to load native libraries...")
             System.loadLibrary("native-lib")
             System.loadLibrary("node")
+            Log.d(Constants.TAG, "Native libraries loaded.")
         }
     }
 
@@ -97,7 +100,7 @@ class NodeJS {
             }.await()
 
             try {
-                Log.d(Constants.TAG, "Starting Node.js...")
+                Log.d(Constants.TAG, "Starting Node.js from JAVA...")
                 startNode(arrayOf("node", projectMainPath))
             } catch (e: Throwable) {
                 Log.e(Constants.TAG, "Error starting Node.js", e)
