@@ -251,7 +251,7 @@
     //console.log("startpos", startPos, "top y", topY, "scrolltop", listE.scrollTop, "rowheight", rowHeight);
   }
 
-  $: startPosY = Math.floor(startPos * rowHeight + headerHeight);
+  $: startPosY = Math.floor(startPos * rowHeight);
   $: isAtTop = startPos == 0;
 
   function onSelectElement(clickedItem: T, event: MouseEvent) {
