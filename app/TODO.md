@@ -1,8 +1,7 @@
 # Bugs
-* Mail download after biff
-* IMAP Message download race condition
+* IMAP Message download race condition (see IMAPEmail)
 * License client
-  * "No account found"
+  * "No account set up yet" (see below)
   * Video conf finds no license
   * Video conf should allow to buy license
   * Add purchase in client UI
@@ -10,6 +9,17 @@
   * Size msg list
   * Composer
   * Debug messages in UI
+
+error.ts:46 AccountMissingError: No account set up yet
+    at fetchTicketUnqueued (LicenseClient.ts:217:11)
+    at fetchTicket (LicenseClient.ts:192:23)
+    at nextPoll (LicenseClient.ts:172:13)
+logError	@	error.ts:46
+startup.ts:128 NoValidLicense: Neil EWS: No valid software license for this professional feature
+    at ensureLicensed (http://localhost:5454/logic/util/LicenseClient.ts:91:11)
+    at async EWSAccount.login (http://localhost:5454/logic/Mail/EWS/EWSAccount.ts:61:5)
+    at async emailAccountLogin (http://localhost:5454/logic/startup.ts:72:3)
+(anonymous)	@	startup.ts:1
 
 # Release
 * Polish based on feedback

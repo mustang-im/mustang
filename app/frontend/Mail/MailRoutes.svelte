@@ -66,7 +66,8 @@
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
-      await folder.listMessages();
+      let newMessages = await folder.listMessages();
+      await folder.downloadMessages(newMessages);
     } catch (ex) {
       if (ex.authFail) {
         // await folder.account.login(true);
