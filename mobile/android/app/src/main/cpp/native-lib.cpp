@@ -213,7 +213,7 @@ Java_im_mustang_capa_NodeJS_startNode(
                             "Couldn't start redirecting stdout and stderr to logcat.");
     }
 
-    printf("Starting Node.js from C++")
+    printf("Starting Node.js from C++");
     //Start node, with argc and argv.
     return jint(RunNodeProcess(argument_count, argv));
 
