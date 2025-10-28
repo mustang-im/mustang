@@ -41,6 +41,7 @@ export class LiveKitConf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
+    await ensureLicensed();
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.state = MeetingState.Init;
@@ -126,7 +127,6 @@ export class LiveKitConf extends VideoConfMeeting {
 
   /** @returns participant token */
   protected async createMyParticipant(): Promise<string> {
-    await ensureLicensed();
     let myName = appGlobal.me.name;
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
