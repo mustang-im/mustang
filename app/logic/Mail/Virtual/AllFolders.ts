@@ -38,7 +38,13 @@ export class AllFolders extends Folder {
 
   async getNewMessages(): Promise<Collection<EMail>> {
     let results = await Promise.all(this._folders.contents.map(folder =>
-      folder.downloadAllMessages()));
+      folder.getNewMessages()));
+    return mergeColl(...results);
+  }
+
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    let results = await Promise.all(this._folders.contents.map(folder =>
+      folder.downloadMessages(emails.filterOnce(email => email.folder == folder))));
     return mergeColl(...results);
   }
 

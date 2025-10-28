@@ -35,7 +35,16 @@ export class SavedSearchFolder extends Folder {
     return messages;
   }
 
-  async downloadAllMessages() {
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    return new ArrayColl<EMail>();
+    /* Uses .Display connection.
+      Also, search creates new emails, so it always downloads all, every time.
+    await Promise.all(emails.contents.map(email =>
+      email.download()));
+    return emails;*/
+  }
+
+  async downloadAllMessages(): Promise<Collection<EMail>> {
     return new ArrayColl<EMail>();
   }
 
