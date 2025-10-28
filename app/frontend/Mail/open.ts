@@ -8,7 +8,7 @@ import { URLPart } from "../Util/util";
 import { assert } from "../../logic/util/util";
 import { tick } from "svelte";
 
-export async function openMailFromOtherApp(message: EMail, tab?: SearchView) {
+export async function openEMailMessage(message: EMail, tab?: SearchView) {
   assert(message.folder?.account, "no account for email");
   selectedAccount.set(message.folder?.account);
   selectedFolder.set(message.folder);
