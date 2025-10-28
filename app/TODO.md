@@ -1,3 +1,16 @@
+# Bugs
+* Mail download after biff
+* IMAP Message download race condition
+* License client
+  * "No account found"
+  * Video conf finds no license
+  * Video conf should allow to buy license
+  * Add purchase in client UI
+* Mobile
+  * Size msg list
+  * Composer
+  * Debug messages in UI
+
 # Release
 * Polish based on feedback
 * License notification bar

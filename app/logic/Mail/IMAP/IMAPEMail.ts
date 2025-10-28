@@ -54,7 +54,7 @@ export class IMAPEMail extends EMail {
       return;
     }
     this.fromFlow(msgInfo);
-    this.mime ??= msgInfo.source; // Temp HACK
+    this.mime ??= msgInfo.source; // Temp HACK when `downloadComplete` == true, but mime is not there
     await this.parseMIME();
     await this.saveCompleteMessage();
   }
