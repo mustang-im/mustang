@@ -85,7 +85,7 @@
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
-  import InboxIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/folder";
   import ListIcon from "lucide-svelte/icons/list";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
