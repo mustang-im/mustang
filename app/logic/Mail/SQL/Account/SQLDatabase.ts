@@ -2,7 +2,6 @@ import { appGlobal } from "../../../app";
 import sql, { type Database } from "../../../../../lib/rs-sqlite/index";
 import { accountsDatabaseSchema } from "./createDatabase";
 import { migrateToAccountsDB } from "./SQLAccountsMigrate";
-import { getSQLiteDatabase } from "../../../util/backend-wrapper";
 
 let accountsDatabase: Database;
 
@@ -16,7 +15,8 @@ export async function getDatabase(): Promise<Database> {
     return accountsDatabase;
   }
   await migrateToAccountsDB();
-  accountsDatabase = await getSQLiteDatabase("account.db");
+  const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
+  accountsDatabase = await getDatabase("account.db");
   await accountsDatabase.migrate(accountsDatabaseSchema);
   await accountsDatabase.pragma('foreign_keys = true');
   await accountsDatabase.pragma('journal_mode = DELETE');
@@ -29,7 +29,8 @@ export async function getDatabase(): Promise<Database> {
  * until the process is shut down.
  */
 export async function makeTestDatabase(): Promise<Database> {
-  accountsDatabase = await getSQLiteDatabase("test-account.db");
+  const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
+  accountsDatabase = await getDatabase("test-account.db");
   await deleteDatabase();
   await accountsDatabase.migrate(accountsDatabaseSchema);
   await accountsDatabase.pragma('foreign_keys = true');
