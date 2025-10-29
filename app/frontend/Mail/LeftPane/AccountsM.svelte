@@ -1,7 +1,22 @@
 <vbox flex class="accounts-pane">
   <FolderList {folders} bind:selectedFolder bind:selectedFolders on:click={() => catchErrors(onFolderSelected)} />
-  <vbox class="accounts">
-    <AccountSelectorRound {accounts} bind:selectedAccount iconDefault={AccountIcon} iconSize="32px" />
+  <header class="accounts-header font-small">
+    {$t`Accounts`}
+  </header>
+  {#if accounts.hasItems}
+    <vbox class="accounts">
+      <AccountSelectorRound {accounts} bind:selectedAccount iconDefault={AccountIcon} iconSize="32px" />
+    </vbox>
+  {:else if $selectedWorkspace}
+    <div class="warning no-accounts font-small">
+      {$t`No accounts in workspace ${$selectedWorkspace.name}`}
+    </div>
+  {/if}
+  <header class="workspaces-header font-small">
+    {$t`Workspaces`}
+  </header>
+  <vbox class="workspaces">
+    <WorkspaceSelector bind:selectedWorkspace={$selectedWorkspace} iconSize="48px" />
   </vbox>
   <AccountsBarM {selectedAccount} {selectedFolder} />
 </vbox>
@@ -10,14 +25,17 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { type Folder } from "../../../logic/Mail/Folder";
   import { goTo } from "../../AppsBar/selectedApp";
+  import { selectedWorkspace } from "../../MainWindow/Selected";
   import AccountSelectorRound from "../../Shared/AccountSelectorRound.svelte";
   import FolderList from "./FolderList.svelte";
   import AccountsBarM from "./AccountsBarM.svelte";
+  import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import AccountIcon from "lucide-svelte/icons/mail";
   import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl, Collection } from 'svelte-collections';
+  import { t } from "../../../l10n/l10n";
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */
@@ -47,11 +65,29 @@
     margin-block-start: -4px;
   }
 
+  header {
+    margin-inline-start: 18px;
+    color: grey;
+    /*text-align: center;*/
+  }
+  .accounts-header {
+    margin-block-start: 6px;
+  }
   .accounts {
     align-items: center;
-    margin-block: 20px;
+    margin-block: 12px;
   }
   .accounts :global(.account) {
     margin-inline-end: 12px;
+  }
+  .warning.no-accounts {
+    text-align: center;
+    color: grey;
+    height: 110px;
+  }
+  .workspaces {
+    align-items: center;
+    margin-inline-start: 18px;
+    margin-block-end: 12px;
   }
 </style>
