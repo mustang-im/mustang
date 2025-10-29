@@ -7,7 +7,9 @@
   on:swipeleft={markAsSpam}
   bind:this={popupAnchor}
   >
-  <hbox class="top-row">
+  <hbox class="top-row"
+    style="border-color: {message.folder.account.color};"
+    >
     <hbox class="direction">
       {#if $message.outgoing}
         <OutgoingIcon size={16} class="outgoing" />
@@ -15,14 +17,34 @@
         <ReplyIcon size={16} class="reply" />
       {/if}
     </hbox>
-    <hbox class="contact">{contactName}</hbox>
+    <hbox class="contact font-small">{contactName}</hbox>
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="tags">
         <TagSelector tags={$tags} object={message} canAdd={false} />
       </hbox>
     {/if}
-    <hbox class="date">{getDateTimeString($message.sent)}</hbox>
+    <hbox class="star button" class:starred={$message.isStarred}>
+      <Button
+        icon={StarIcon}
+        iconSize="16px"
+        iconOnly
+        label={$t`Remember this message`}
+        onClick={toggleStar}
+        plain
+        />
+    </hbox>
+    <hbox class="date font-smallest">{getDateTimeString($message.sent)}</hbox>
+    <hbox class="unread-dot button" class:unread={!$message.isRead}>
+      <Button
+        icon={CircleIcon}
+        iconSize="7px"
+        iconOnly
+        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
+        onClick={toggleRead}
+        plain
+        />
+    </hbox>
     <!--
     <hbox class="buttons hover">
       <hbox class="spam button">
@@ -49,43 +71,27 @@
     </hbox>
     -->
   </hbox>
-  <hbox class="bottom-row">
-    <hbox class="subject">{$message.subject}</hbox>
+  <hbox class="bottom-row"
+    style="border-color: {message.folder.account.color};"
+    >
+    <hbox class="subject font-small">{$message.subject}</hbox>
     <hbox flex />
-    <hbox class="move button">
-      <Button
-        icon={FolderActionsIcon}
-        iconSize="16px"
-        iconOnly
-        label={$t`Move, tag, or delete`}
-        onClick={onPopupToggle}
-        plain
-        />
-    </hbox>
+    {#if !isMobile}
+      <hbox class="move button">
+        <Button
+          icon={FolderActionsIcon}
+          iconSize="16px"
+          iconOnly
+          label={$t`Move, tag, or delete`}
+          onClick={onPopupToggle}
+          plain
+          />
+      </hbox>
+    {/if}
     <hbox class="attachments">
       {#if $message.hasVisibleAttachments}
         <AttachmentIcon size="14px" />
       {/if}
-    </hbox>
-    <hbox class="star button" class:starred={$message.isStarred}>
-      <Button
-        icon={StarIcon}
-        iconSize="16px"
-        iconOnly
-        label={$t`Remember this message`}
-        onClick={toggleStar}
-        plain
-        />
-    </hbox>
-    <hbox class="unread-dot button" class:unread={!$message.isRead}>
-      <Button
-        icon={CircleIcon}
-        iconSize="7px"
-        iconOnly
-        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
-        onClick={toggleRead}
-        plain
-        />
     </hbox>
   </hbox>
 </vbox>
@@ -119,6 +125,7 @@
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import { isMobile } from "../../../logic/build";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
@@ -157,7 +164,7 @@
 
 <style>
   .message {
-    padding: 4px 8px !important;
+    padding: 12px 18px 12px 18px !important;
     justify-content: baseline;
     align-items: baseline;
   }
@@ -165,10 +172,11 @@
   .bottom-row {
     width: 100%;
     overflow: hidden;
+    padding-inline-start: 10px;
+    border-left: 3px solid;
   }
   .top-row {
     height: 1.5em;
-    margin-block-end: -1px;
   }
   .bottom-row {
     height: 1.3em;
@@ -187,12 +195,21 @@
   }
   .date {
     min-width: 8em;
-    justify-content: start;
-    font-size: 12px !important;
+    justify-content: end;
     font-family: Helvetica, Arial, sans-serif;
+    padding-top: 2px; /** HACK Fix vertical alignment */
   }
   .subject {
     line-height: 1.3;
+  }
+  .star {
+    margin-inline-end: 8px;
+  }
+  .attachments {
+    align-self: center;
+    justify-self: center;
+    opacity: 60%;
+    width: 16px;
   }
   /*
   :global(.row:not(:hover)) .buttons.hover {
