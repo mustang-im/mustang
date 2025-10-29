@@ -14,7 +14,7 @@
 <vbox class="workspace font-small">
   <ExpandSection>
     <hbox class="expander font-small" slot="header">{$t`Workspace`}</hbox>
-    <WorkspaceSelector {config} horizontal={true} />
+    <WorkspaceSelector bind:selectedWorkspace={config.workspace} horizontal={true} />
   </ExpandSection>
 </vbox>
 
