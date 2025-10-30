@@ -1,8 +1,9 @@
 import { ArrayColl } from "svelte-collections";
+import { assert } from "./util";
 
 export class LogObserver {
-  private _originalLog?;
-  readonly logHistory = new ArrayColl<string>();
+  private _originalLog?: (...args: any[]) => void;
+  readonly _logHistory = new ArrayColl<string>();
 
   constructor(originalLog?: (...args: any[]) => void) {
     if (!originalLog) return;
@@ -11,6 +12,7 @@ export class LogObserver {
 
   set originalLog(originalLog: (...args: any[]) => void) {
     this._originalLog = originalLog;
+    this.logHistory.clear();
     originalLog = function(...args: any[]) {
       this.logHistory.push(args);
 
@@ -18,7 +20,12 @@ export class LogObserver {
     };
   }
 
-  get originalLog(): (...args: any[]) => void {
+  get originalLog(): ((...args: any[]) => void) | undefined {
     return this._originalLog;
+  }
+
+  get logHistory(): ArrayColl<string> {
+    assert(!!this._originalLog, "originalLog is not set");
+    return this._logHistory;
   }
 }
