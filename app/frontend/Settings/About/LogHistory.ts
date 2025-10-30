@@ -1,6 +1,6 @@
 import { ArrayColl } from "svelte-collections";
 
-export const logHistory = new ArrayColl<string>();
+export const logHistory = new ArrayColl<any[]>();
 
 const originalLog = console.log;
 const originalError = console.error;
