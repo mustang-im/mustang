@@ -60,8 +60,8 @@ async function createSharedAppObject() {
     restartApp,
     setTheme,
     openMenu,
-    getConfigDir,
-    getFilesDir,
+    // getConfigDir,
+    // getFilesDir,
     // openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
@@ -287,9 +287,6 @@ function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string, options: any): Database {
-  if (!filename.startsWith("/")) {
-    filename = path.join(getConfigDir(), filename);
-  }
   return new Database(filename, options);
 }
 

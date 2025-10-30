@@ -9,6 +9,7 @@ import { assert } from "../../util/util";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
 import { Buffer } from "buffer";
 import type Zip from "adm-zip";
+import { getFilesDir } from "../../util/backend-wrapper";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
@@ -136,7 +137,7 @@ export class MailZIP implements MailContentStorage {
   haveDirs = new SetColl<string>(); // Check dir only once per app session
 
   async getFolderZIPFilePath(folder: Folder): Promise<string> {
-    this.filesDir = this.filesDir ?? await appGlobal.remoteApp.getFilesDir();
+    this.filesDir = this.filesDir ?? await getFilesDir();
     let dir = `${this.filesDir}/backup/email/${sanitize.filename(folder.account.emailAddress.replace("@", "-"))}-${sanitize.filename(folder.account.id)}`;
     if (folder.parent) {
       dir += `/${sanitize.filename(folder.parent.fullPath, "unknownFolder")}`;
