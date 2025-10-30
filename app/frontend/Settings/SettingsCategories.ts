@@ -27,6 +27,7 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
+import Debug from "./About/Debug.svelte";
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
@@ -153,5 +154,6 @@ about.subCategories.addAll([
   new SettingsCategory("license", gt`Billing`, License),
   // #endif
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
+  new SettingsCategory("debug", gt`Debug`, Debug),
 ]);
 settingsCategories.add(about);

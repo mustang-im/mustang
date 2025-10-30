@@ -26,6 +26,7 @@
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl } from 'svelte-collections';
+  import { openEMailMessage } from "../open";
 
   export let messages: ArrayColl<EMail>; /** in */
   export let searchMessages: ArrayColl<EMail> | null; /** out */
