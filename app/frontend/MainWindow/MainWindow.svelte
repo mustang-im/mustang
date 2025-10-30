@@ -44,6 +44,7 @@
 <MeetBackground />
 <MailInBackground />
 <WebAppsInBackground />
+<DebugInBackground />
 
 <script lang="ts">
   import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
@@ -71,6 +72,7 @@
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
+  import DebugInBackground from "../Settings/About/DebugInBackground.svelte";
   import DemoBarLeft from "./DemoBarLeft.svelte";
   import DemoBarTop from "./DemoBarTop.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
