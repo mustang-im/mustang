@@ -1,5 +1,22 @@
 <vbox class="app-menu" on:click={onClose} flex>
-  <grid>
+  <hbox class="top">
+    <vbox class="left" flex>
+      <!--<WorkspaceDropDown />-->
+    </vbox>
+    <vbox class="center" flex>
+      <hbox class="date font-small">
+        {getFormattedDateString(new Date(), { weekday: "short", day: "2-digit", month: "short" })}
+      </hbox>
+      <hbox class="time">
+        {getTimeString(new Date())}
+      </hbox>
+    </vbox>
+    <vbox class="right" flex />
+  </hbox>
+  <hbox flex />
+  <!--<RecentPersons />-->
+  <hbox flex />
+  <grid class="apps">
     <!-- each app must add exactly 5 elements -->
     <TopAppMenu />
     <!--<WebAppsAppMenu />-->
@@ -15,6 +32,7 @@
 <AppMenuBarM />
 
 <script lang="ts">
+  import { getDateString, getFormattedDateString, getTimeString } from "../../Util/date";
   import TopAppMenu from "./TopAppMenu.svelte";
   import WebAppsAppMenu from "./Apps/WebAppsAppMenu.svelte";
   import FilesAppMenu from "./Apps/FilesAppMenu.svelte";
@@ -25,6 +43,7 @@
   import ContactsAppMenu from "./Apps/ContactsAppMenu.svelte";
   import BottomAppMenu from "./BottomAppMenu.svelte";
   import AppMenuBarM from "./AppMenuBarM.svelte";
+  import RecentPersons from "./RecentPersons.svelte";
   import { navigate } from "svelte-navigator";
 
   function onClose() {
@@ -35,7 +54,6 @@
 <style>
   .app-menu {
     align-items: center;
-    justify-content: end;
   }
   grid {
     grid-template-columns: auto auto auto auto auto;
@@ -60,5 +78,18 @@
   }
   .app-menu :global(.app-button.contacts) {
     padding-block-end: 0px;
+  }
+
+  .top .center {
+    align-items: center;
+  }
+  .time {
+    font-size: 30px;
+    font-weight: 500;
+  }
+  .date {
+    opacity: 50%;
+    width: max-content;
+    margin-block-start: 32px;
   }
 </style>

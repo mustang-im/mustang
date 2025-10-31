@@ -56,6 +56,13 @@ export function getDateString(date: Date, fullDate: Intl.DateTimeFormatOptions =
   return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
 }
 
+export function getFormattedDateString(date: Date, dateDetails: Intl.DateTimeFormatOptions): string {
+  if (!date) {
+    return "";
+  }
+  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
+}
+
 /** @returns Time, e.g. "15:23" */
 export function getTimeString(date: Date): string {
   if (!date) {

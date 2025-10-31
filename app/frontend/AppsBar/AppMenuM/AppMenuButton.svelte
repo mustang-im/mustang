@@ -17,8 +17,7 @@
 
   export let onClick = onOpen;
 
-  $: app = window.location.pathname.split("/")[1] || "none";
-  $: console.log(window.location.pathname.split("/"));
+  $: app = window.location.pathname.split("/")[1] || "none"; // "mail", "meet", "webapps", etc.
 
   function onOpen() {
     goTo("/app-menu/", {});
