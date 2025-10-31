@@ -5,7 +5,12 @@
   <Route path="folder/:accountID/:folderID/message-list">
     {$selectedFolder = params.folder ?? $selectedFolder,
      $selectedAccount = params.account ?? $selectedAccount, ""}
-    <MsgListM messages={params?.messages ?? searchMessages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+    <MsgListM
+      messages={searchMessages ?? params?.messages ?? $selectedFolder?.messages ?? requiredParam()}
+      bind:searchMessages
+      bind:selectedFolder={$selectedFolder}
+      bind:selectedMessage={$selectedMessage}
+      bind:selectedMessages={$selectedMessages} />
   </Route>
   <Route path="message/:accountID/:folderID/:messageID/display">
     <MessageDisplay message={params?.message ?? $selectedMessage ?? requiredParam()} />
@@ -19,7 +24,11 @@
   <Route path="/">
     {params?.account ? $selectedAccount = params.account : null,
      params?.folder ? $selectedFolder = params.folder : null, ""}
-    <AccountsM {accounts} {folders} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} />
+    <AccountsM
+      {accounts}
+      {folders}
+      bind:selectedAccount={$selectedAccount}
+      bind:selectedFolder={$selectedFolder} />
   </Route>
 {:else}
   <Route path="/">
@@ -44,7 +53,6 @@
   import SearchResultsM from "./Search/SearchResultsM.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
-  import { showError } from "../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
