@@ -167,7 +167,7 @@
     position: relative;
   }
   :global(.mobile) .message {
-    padding: 12px 12px 12px 18px !important;
+    padding: 8px 12px 8px 12px !important;
   }
   .message::before {
     position: absolute;
@@ -177,11 +177,15 @@
     border-left: 3px solid var(--account-color);
     border-radius: 10px;
   }
+  :global(.mobile) .message::before {
+    top: 18%;
+    height: 64%;
+  }
   .top-row,
   .bottom-row {
     width: 100%;
     overflow: hidden;
-    padding-inline-start: 10px;
+    padding-inline-start: 14px;
   }
   .top-row {
     height: 1.5em;
