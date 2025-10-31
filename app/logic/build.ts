@@ -4,6 +4,6 @@ export const production = false;
 export const appVersion: string = '0.9.8-dev';
 export const appName: string = 'Mustang';
 export const siteRoot: string = 'https://mustang.im';
-export const isMobile = false;
+export const isMobile = true;
 export const webMail = false;
 export const includeProprietary = true;

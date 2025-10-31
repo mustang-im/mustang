@@ -19,14 +19,7 @@ let configDir: string;
  * - Android: /data/user/0/im.mustang.capa/files/
  */
 export async function getConfigDir(): Promise<string> {
-  // #if [MOBILE]
-  if (!configDir) {
-    let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.Library });
-    configDir = uriResult.uri.replace("file://", "");
-  }
-  // #else
   configDir ??= await appGlobal.remoteApp.getConfigDir();
-  // #endif
   return configDir;
 }
 
@@ -45,22 +38,10 @@ let filesDir: string;
  * - Android: /storage/emulated/0/Android/data/im.mustang.capa/files/
  */
 export async function getFilesDir(): Promise<string> {
-  // #if [MOBILE]
-  if (!filesDir) {
-    let uriResult = await Filesystem.getUri({ path: "/", directory: Directory.External });
-    filesDir = uriResult.uri.replace("file://", "");
-  }
-  // #else
   filesDir ??= await appGlobal.remoteApp.getFilesDir();
-  // #endif
   return filesDir;
 }
 
 export async function getSQLiteDatabase(filename: string, options?: any): Promise<Database> {
-  // #if [MOBILE]
-  if (!filename.startsWith("/")) {
-    filename = await appGlobal.remoteApp.path.join(await getConfigDir(), filename);
-  }
-  // #endif
   return await appGlobal.remoteApp.getSQLiteDatabase(filename, options);
 }
