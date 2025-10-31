@@ -27,8 +27,8 @@
       <hbox class="unread-dot button" class:unread={isShowUnread}>
         <RoundButton
           icon={CircleIcon}
-          iconSize={$appGlobal.isMobile ? "18px" : "7px"}
-          padding={$appGlobal.isMobile ? "11px" : "12px"}
+          iconSize={$appGlobal.isMobile ? "18px" : "10px"}
+          padding={$appGlobal.isMobile ? "11px" : "8px"}
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
           border={false}
