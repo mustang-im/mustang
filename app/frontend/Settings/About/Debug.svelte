@@ -16,6 +16,10 @@
     try {
       const seen = new WeakSet();
       return JSON.stringify(obj, (key, value) => {
+        // Skip properties that start with underscore
+        if (key && key.startsWith("_")) {
+          return undefined;
+        }
         if (typeof value === "object" && value !== null) {
           // Handle special object types
           if (value instanceof Error) {
