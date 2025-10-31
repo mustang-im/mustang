@@ -9,7 +9,20 @@
     <img src={config.icon} width="24px" height="24px" alt="" />
   {/if}
 </hbox>
-<hbox class="subtitle font-small">{$t`How do you want to call the account ${config.emailAddress}?`}</hbox>
+<div class="subtitle font-small">
+  <span class="label">{$t`Account name`}</span>
+  <span>{$t`How do you want to call the account ${config.emailAddress}?`}</span>
+</div>
+
+{#if appGlobal.emailAccounts.isEmpty}
+  <hbox class="realname">
+    <input type="text" bind:value={config.realname} autofocus />
+  </hbox>
+  <hbox class="subtitle font-small">
+    <span class="label">{$t`Your name`}</span>
+    <span>{$t`How you appear to others`}</span>
+  </hbox>
+{/if}
 
 <vbox class="workspace font-small">
   <ExpandSection>
@@ -44,6 +57,10 @@
   .subtitle {
     font-weight: 300;
   }
+  .subtitle .label {
+    font-weight: 400;
+    margin-inline-end: 0.5em;
+  }
   input {
     font-size: 20px !important;
     margin-block-start: 32px;
@@ -55,5 +72,6 @@
   }
   .workspace .expander {
     margin-block-end: 4px;
+    font-weight: 400;
   }
 </style>
