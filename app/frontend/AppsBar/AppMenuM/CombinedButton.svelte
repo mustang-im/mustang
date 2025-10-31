@@ -1,26 +1,21 @@
-<RoundButton
-  onClick={onClick}
-  classes="plain"
-  border={false}
-  padding="32px"
-  >
+<BasicButton {onClick} {page} {params}>
   <hbox class="stack" slot="icon">
     <Stack>
       <hbox class="icon1" flex>
         <AppIcon icon={icon1} size="24px" />
       </hbox>
       <hbox class="icon2" flex>
-        <AppIcon icon={icon2} size="24px" />
+        <AppIcon icon={icon2} size="18px" />
       </hbox>
     </Stack>
   </hbox>
-</RoundButton>
+</BasicButton>
 
 <script lang="ts">
   import { goTo } from "../selectedApp";
   import Stack from "../../Shared/Stack.svelte";
   import AppIcon from "../AppIcon.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
+  import BasicButton from "./BasicButton.svelte";
 
   export let icon1: ConstructorOfATypedSvelteComponent | string;
   export let icon2: ConstructorOfATypedSvelteComponent | string;
@@ -35,8 +30,8 @@
 
 <style>
   .stack :global(.stack) {
-    width: 40px;
-    height: 40px;
+    width: 24px;
+    height: 24px;
   }
   .icon1 {
     align-items: center;

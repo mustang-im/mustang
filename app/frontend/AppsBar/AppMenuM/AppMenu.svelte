@@ -40,31 +40,24 @@
   grid {
     grid-template-columns: auto auto auto auto auto;
     align-items: center;
+    justify-items: center;
     margin-block-end: 12px;
+
+    width: 100%;
+    max-width: 500px;
   }
-  grid :global(hbox) {
+  grid :global(hbox),
+  grid :global(> button) {
     align-items: center;
     justify-content: center;
   }
-  grid :global(.button),
-  grid :global(.empty) {
-    height: 32px;
-    margin-inline: 12px;
-  }
-  grid :global(.empty) {
-    width: 50px;
-  }
   grid :global(.button) {
-    width: 32px;
     box-shadow: -1px 0px 1px 0px rgba(22, 12, 39, 15%); /* #160C27 */
   }
-  grid :global(.app-column) {
-    margin-inline: 12px;
+  grid :global(.center-bar) {
+    padding-block: 18px;
+    padding-inline: 16px;
   }
-  /*grid :global(.app-column .contacts) {
-    padding-block-end: 0px;
-    height: 32px;
-  }*/
   .app-menu :global(.app-button.contacts) {
     padding-block-end: 0px;
   }

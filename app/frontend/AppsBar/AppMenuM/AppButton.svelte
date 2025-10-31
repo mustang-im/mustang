@@ -1,5 +1,5 @@
-<hbox class="app-button app-column {app.id}">
-  <AppButton on:click={onClick} classes={app.id}>
+<hbox class="app-button-wrapper {app.id}">
+  <AppButton on:click={onClick} classes="center-bar {app.id}" padding={false}>
     <AppIcon slot="icon" icon={app.icon} size="28px" />
   </AppButton>
 </hbox>
@@ -21,8 +21,7 @@
 </script>
 
 <style>
-  .app-button :global(.app-button) {
-    padding: 18px;
+  .app-button-wrapper :global(.app-button) {
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
   }

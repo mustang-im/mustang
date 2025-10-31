@@ -28,7 +28,7 @@
 
 <style>
   .avatar {
-    margin: 7px 12px;
+    /*margin: 7px 12px; -- Breaks mobile app menu, bottom left button, when a contact is selected */
     clip-path: circle();
   }
   .placeholder {

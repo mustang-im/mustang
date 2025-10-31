@@ -1,11 +1,7 @@
 {#if account}
   <hbox class="account-button">
-    <RoundButton
+    <BasicButton
       icon={account.icon ?? defaultIcon}
-      iconSize="24px"
-      classes="plain"
-      border={false}
-      padding="24px"
       onClick={() => goToAccount(account)}
       />
     </hbox>
@@ -16,7 +12,7 @@
 <script lang="ts">
   import { Account } from "../../../logic/Abstract/Account";
   import { goTo, type PageParams } from "../selectedApp";
-  import RoundButton from "../../Shared/RoundButton.svelte";
+  import BasicButton from "./BasicButton.svelte";
   import AccountIcon from "lucide-svelte/icons/rabbit";
   import type { ComponentType } from 'svelte';
 

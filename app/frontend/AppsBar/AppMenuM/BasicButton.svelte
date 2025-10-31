@@ -2,7 +2,7 @@
   {label} {icon} {onClick}
   classes="plain {classes}"
   iconSize="24px"
-  padding="24px"
+  padding="12px"
   border={false}>
   <slot name="icon" slot="icon" />
 </RoundButton>

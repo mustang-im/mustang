@@ -8,7 +8,9 @@
     page={URLPart`/contacts/person/${$selectedPerson.id}/history`}
     params={{ person: $selectedPerson }} />
 {:else}
-  <hbox class="empty" />
+  <hbox class="dummy">
+    <BasicButton icon={HistoryIcon} /> <!-- let entire column occupy the normal width, for page alignment -->
+  </hbox>
   <hbox class="empty" />
 {/if}
 <!--<AccountButton account={appGlobal.addressbooks.get(0)} page={acc => `/contacts/account/${acc.id}/persons`} defaultIcon={AccountIcon} />-->
@@ -40,3 +42,9 @@
     goTo(URLPart`/contacts/person/${contact.id}/edit`, { person: contact });
   }
 </script>
+
+<style>
+  .dummy {
+    visibility: hidden;
+  }
+</style>
