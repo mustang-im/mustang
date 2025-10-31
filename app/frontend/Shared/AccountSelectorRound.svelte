@@ -1,4 +1,4 @@
-<hbox class="accounts">
+<hbox class="accounts" class:large>
   {#if showAllOption}
     <vbox class="account" title={$t`All`}
       on:click={() => onSelect(null)}
@@ -18,6 +18,7 @@
   {#each $accounts.each as acc}
     <vbox class="account" title={acc.name}
       on:click={() => onSelect(acc)}
+      style="--account-color: {acc.color}"
       >
       <hbox>
         <RoundButton
@@ -25,6 +26,7 @@
           selected={acc == selectedAccount}
           onClick={() => onSelect(acc)}
           icon={acc.icon ?? iconDefault}
+          classes={acc.icon ? "has-logo" : "default-icon"}
           {iconSize}
           border={false}
         />
@@ -51,6 +53,7 @@
   export let selectedAccount: Account;
   export let iconDefault: ComponentType | string;
   export let iconSize: string = undefined;
+  export let large = false;
 
   function onSelect(acc: Account) {
     selectedAccount = acc;
@@ -74,6 +77,19 @@
     margin-inline-end: 6px;
     width: 48px;
   }
+  .large .account {
+    width: 60px;
+    padding: 8px;
+  }
+  .account :global(svg) {
+    stroke-width: 1.4px;
+  }
+  .account :global(button.default-icon svg) {
+    color: var(--account-color);
+  }
+  /*.large .account :global(button) {
+    border: 2px solid var(--account-color) !important;
+  }*/
   .name {
     text-align: center;
     overflow: hidden;

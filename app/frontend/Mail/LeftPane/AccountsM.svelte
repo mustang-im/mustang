@@ -1,7 +1,7 @@
 <vbox flex class="accounts-pane">
   <FolderList {folders} bind:selectedFolder bind:selectedFolders on:click={() => catchErrors(onFolderSelected)} />
   <vbox class="accounts">
-    <AccountSelectorRound {accounts} bind:selectedAccount iconDefault={AccountIcon} iconSize="32px" />
+    <AccountSelectorRound {accounts} bind:selectedAccount iconDefault={AccountIcon} iconSize="32px" large />
   </vbox>
   <AccountsBarM {selectedAccount} {selectedFolder} />
 </vbox>
