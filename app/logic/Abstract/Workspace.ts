@@ -1,9 +1,9 @@
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import WorkIcon from "lucide-svelte/icons/briefcase";
-import PrivateIcon from "lucide-svelte/icons/book-heart";
-import OtherIcon from "lucide-svelte/icons/shapes";
+import WorkIcon from "lucide-svelte/icons/briefcase-business";
+import PrivateIcon from "lucide-svelte/icons/armchair";
+import OtherIcon from "lucide-svelte/icons/circle";
 import { gt } from "../../l10n/l10n";
 
 export class Workspace extends Observable {
@@ -20,7 +20,7 @@ export class Workspace extends Observable {
     this.id = name;
     this.name = name;
     this.color = color ?? randomAccountColor();
-    this.icon = icon;
+    this.icon = icon ?? defaultWorkspaceIcon;
   }
 }
 
@@ -42,7 +42,8 @@ export async function loadWorkspaces() {
   for (let workspaceJSON of json) {
     let name = sanitize.label(workspaceJSON.name);
     let color = sanitize.string(workspaceJSON.color, randomAccountColor());
-    let workspace = new Workspace(name, color, null);
+    let icon = sanitize.string(workspaceJSON.icon, defaultWorkspaceIcon);
+    let workspace = new Workspace(name, color, icon);
     appGlobal.workspaces.add(workspace);
   }
   if (appGlobal.workspaces.isEmpty) {
@@ -54,6 +55,7 @@ export async function saveWorkspaces() {
   let json = appGlobal.workspaces.contents.map(tag => ({
     name: tag.name,
     color: tag.color,
+    icon: tag.icon,
   }));
   localStorage.setItem("workspaces", JSON.stringify(json));
 }
@@ -63,6 +65,8 @@ let defaultWorkspaces = [
   new Workspace(gt`Private`, "lightgreen", PrivateIcon),
   new Workspace(gt`Other`, "lightyellow", OtherIcon),
 ];
+
+export let defaultWorkspaceIcon = OtherIcon;
 
 export let accountColors = [
   "#F6CC41", // yellow
