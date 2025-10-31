@@ -57,12 +57,12 @@
 
   let searchMessages: ArrayColl<EMail> | null;
 
-  $: loadFolder($selectedFolder).catch(showError);
+  $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
+    if (!folder) {
+      return;
+    }
     try {
-      if (!folder) {
-        return;
-      }
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
@@ -73,7 +73,7 @@
         // await folder.account.login(true);
         // await folder.listMessages();
       } else {
-        showError(ex);
+        folder.account.errorCallback(ex);
       }
     }
   }
