@@ -32,6 +32,7 @@ export class SavedSearchFolder extends Folder {
     let messages = await this.search.startSearch();
     this.messages.clear();
     this.messages.addAll(messages);
+    this.countTotal = this.messages.length;
     return messages;
   }
 

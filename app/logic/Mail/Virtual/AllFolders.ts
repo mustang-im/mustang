@@ -21,6 +21,9 @@ export class AllFolders extends Folder {
   set folders(val: Collection<Folder>) {
     this._folders = val;
     (this as any).messages = mergeColls(this.folders.map(folder => folder.messages));
+    this.messages.subscribe(() => {
+      this.countTotal = this.messages.length;
+    });
   }
 
   followSpecialFolder(specialFolder: SpecialFolder) {
