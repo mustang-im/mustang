@@ -14,12 +14,13 @@
 <vbox class="workspace font-small">
   <ExpandSection>
     <hbox class="expander font-small" slot="header">{$t`Workspace`}</hbox>
-    <WorkspaceSelector {config} horizontal={true} />
+    <WorkspaceSelector bind:selectedWorkspace={config.workspace} horizontal={true} />
   </ExpandSection>
 </vbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { appGlobal } from "../../../logic/app";
   import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
@@ -27,6 +28,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let config: MailAccount;
+
+  config.workspace ??= appGlobal.workspaces.last;
 </script>
 
 <style>
