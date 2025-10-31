@@ -40,7 +40,10 @@
 <style>
   .app-bar {
     width: 64px;
-    background-color: var(--appbar-bg);
+    /*background-color: var(--appbar-bg); /**/
+    background-color: rgba(var(--appbar-bg-rgb), 95%); /**/
+    /*background-color: rgba(60, 57, 73, 90%); /**/
+    /*background-color: rgba(var(--windowheader-bg-rgb), 80%); /**/
     color: var(--appbar-fg);
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     padding-block-start: 8px;

@@ -15,7 +15,7 @@
       <DemoBarLeft />
       <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     {/if}
-    <vbox flex>
+    <vbox class="content" flex>
       <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
@@ -171,6 +171,9 @@
   .main-window:not(.mobile) {
     border: 1px solid gray;
     min-width: 640px;
+  }
+  .content {
+    background-color: var(--bg);
   }
   .sidebar {
     box-shadow: inset 1px 0px 5px 0px rgba(0, 0, 0, 10%);

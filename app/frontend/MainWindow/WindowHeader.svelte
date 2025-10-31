@@ -81,7 +81,7 @@
 
 <style>
   .window-header {
-    background-color: var(--windowheader-bg);
+    background-color: rgba(var(--windowheader-bg-rgb), 95%);
     color: var(--windowheader-fg);
   }
   .app-logo {
@@ -123,15 +123,13 @@
     border: none;
   }
   .window-header :global(.search:not(.has-search)) {
-    background-color: var(--windowheader-bg);
-    /*background-color: rgb(255, 255, 255, 10%);
-    background-blend-mode: multiply;*/
+    background-color: rgb(var(--windowheader-bg-rgb), 10%);
   }
   .window-header :global(.search :has(input:focus)) {
     background-color: var(--inverted-bg);
   }
   .window-header :global(.search:not(.has-search) input) {
-    background-color: transparent;
+    background-color: var(--inverted-bg);
     color: var(--inverted-fg);
   }
 

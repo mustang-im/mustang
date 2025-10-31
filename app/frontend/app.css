@@ -35,10 +35,11 @@
   --leftbar-fg: #160C27;
   --headerbar-bg: #EEEEEE;
   --headerbar-fg: #160C27;
+  --windowheader-bg-rgb: 22, 12, 39;
   --windowheader-bg: #160C27;
   --windowheader-fg: white;
-  /* #142862, #213547 */
-  --appbar-bg: #494558;
+  --appbar-bg-rgb: 73, 69, 88;
+  --appbar-bg: #494558; /* alternatives: #142862, #213547 */
   --appbar-fg: white;
   --border: #E1E2E5; /* #3A3A3B */
   --outstanding-bg: #888888;
@@ -61,7 +62,7 @@
   --chat-bubble-outgoing-fg: inherit;
 
   color: var(--fg);
-  background-color: var(--bg);
+  background-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -82,10 +83,12 @@
     --main-pattern-fg: #C1C1C2;
     --leftbar-bg: #1B1A1E;
     --leftbar-fg: #C1C1C2;
-    --windowheader-bg: #202022;
+    --windowheader-bg-rgb: 32, 32, 34;
+    --windowheader-bg: #202022
     --windowheader-fg: #C1C1C2;
     --headerbar-bg: #202022;
     --headerbar-fg: #C1C1C2;
+    --appbar-bg-rgb: 44, 41, 48;
     --appbar-bg: #2C2930;
     --appbar-fg: white;
     --border: #3A3A3B;
@@ -109,7 +112,7 @@
     --chat-bubble-outgoing-fg: #CCCCCC;
 
     color: var(--fg);
-    background-color: var(--bg);
+    background-color: transparent;
   }
 }
 

@@ -20,6 +20,7 @@ function createWindow(): void {
       titleBarStyle: process.platform == 'darwin' ? 'hiddenInset' : 'customButtonsOnHover',
       titleBarOverlay: true,
       frame: false,
+      transparent: true,
       ...(process.platform === 'linux' ? { icon } : {}),
       webPreferences: {
         preload: join(import.meta.dirname, '../preload/index.mjs'),
