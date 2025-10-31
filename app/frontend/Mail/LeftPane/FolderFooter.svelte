@@ -50,29 +50,9 @@
         </hbox>
       {/if}
       <hbox flex />
-    {:else}
+    {:else if !appGlobal.isMobile}
       <hbox flex />
-      <hbox class="msg-count">
-        {#if searchMessages}
-          {#if $searchMessages.hasItems}
-            {$t`${$searchMessages.length} of ${$messages.length}`}
-          {:else}
-            {$t`No search results`}
-          {/if}
-        {:else}
-          {#if $folder.countTotal > 0}
-            {#if $messages.length == 0}
-              {$t`Loading...`}
-            {:else}
-              {#if !appGlobal.isSmall}
-                {$t`${$folder.countUnread} unread of ${$messages.length} *=> number of messages that have not been read`}
-              {/if}
-            {/if}
-          {:else}
-            {$t`Empty folder`}
-          {/if}
-        {/if}
-      </hbox>
+      <FolderMsgCount {folder} {searchMessages} />
     {/if}
     <hbox flex />
   </hbox>
@@ -83,6 +63,7 @@
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
   import { appGlobal } from '../../../logic/app';
+  import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
   import RoundButton from '../../Shared/RoundButton.svelte';
