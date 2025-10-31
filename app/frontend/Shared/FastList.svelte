@@ -4,15 +4,15 @@
   tabindex={0}
   bind:this={listE}>
   <vbox class="canvas" style="height: {heightY}px;">
-    <grid style="grid-template-columns: {columns}; top: {startPosY}px;">
+    <grid style="grid-template-columns: {columns}; top: {renderStartPosY}px;">
       <div class="header" bind:this={headerE}>
         <slot name="header" />
       </div>
       <div class="content" bind:this={contentE}>
-        {#each showItems as item, i}
+        {#each renderItems as item, i}
           <div class="row"
             class:selected={$selectedItems.includes(item)}
-            class:odd={(startPos + i) % 2 == 1}
+            class:odd={(renderStartPos + i) % 2 == 1}
             on:click={event => onSelectElement(item, event)}>
             <slot name="row" {item} />
           </div>
@@ -111,21 +111,27 @@
    */
   let rowHeight = 10;
 
-  /**
-   * First visible row
-   * {integer} index position in entries
-   */
-  let startPos = 0;
+  /** First visible row
+   * Set by `onScroll()`
+   * {integer} index position in entries */
+  let showStartPos = 0;
 
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
-  $: showItems = $items.getIndexRange(startPos, showRows) as T[];
 
-  /**
-   * Number of pixels *above* the first visible row
-   * {integer} px
-   */
-  let startPosY = 0;
+  /** How many invisible rows to create DOM cells for. Avoids empty lines while scrolling.
+   * 1 = 100% overdraw in each direction, i.e.
+   * renders 3 times as many rows as are visible: 100% above, and 100% below. */
+  const overdrawFactor = 1;
+
+  /** First row to create DOM cells for.
+   * {integer} index position in entries */
+  $: renderStartPos = Math.max(showStartPos - showRows * overdrawFactor, 0);
+  $: renderItems = $items.getIndexRange(renderStartPos, showRows + showRows * overdrawFactor * 2) as T[];
+  /** Number of pixels *above* the first rendered row
+   * {integer} px */
+  $: renderStartPosY = Math.max(Math.floor(renderStartPos * rowHeight), 0);
+  $: isAtTop = showStartPos == 0;
 
   /**
    * Number of pixels of all rows, including invisible ones.
@@ -247,12 +253,9 @@
   function onScroll() {
     let topY = listE.scrollTop - headerHeight;
     let startPosCalc = Math.floor(topY / rowHeight);
-    startPos = Math.max(Math.min(startPosCalc, items.length - showRows), 0);
-    //console.log("startpos", startPos, "top y", topY, "scrolltop", listE.scrollTop, "rowheight", rowHeight);
+    showStartPos = Math.max(Math.min(startPosCalc, items.length - showRows), 0);
+    //console.log("startpos", showStartPos, "top y", topY, "scrolltop", listE.scrollTop, "rowheight", rowHeight);
   }
-
-  $: startPosY = Math.floor(startPos * rowHeight);
-  $: isAtTop = startPos == 0;
 
   function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
