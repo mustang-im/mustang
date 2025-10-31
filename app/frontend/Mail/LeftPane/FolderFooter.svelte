@@ -5,6 +5,16 @@
       <GetMailButton {folder} />
     {/if}
     <hbox class="buttons">
+      <hbox class="attachment button" class:on={isShowAttachments}>
+        <RoundButton
+          icon={AttachmentIcon}
+          iconSize={$appGlobal.isMobile ? "20px" : "14px"}
+          label={$t`Show only messages with attachments`}
+          onClick={toggleAttachments}
+          selected={isShowAttachments}
+          border={false}
+          />
+      </hbox>
       <hbox class="star button" class:starred={isShowStarred}>
         <RoundButton
           icon={StarIcon}
@@ -70,6 +80,7 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { catchErrors } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
@@ -79,7 +90,6 @@
   export let showGetMail = true;
 
   $: account = folder?.account;
-  $: messages = folder?.messages;
 
   $: folder && catchErrors(startSearch);
 
@@ -108,15 +118,22 @@
     await startSearch();
   }
 
+  let isShowAttachments = false;
+  async function toggleAttachments() {
+    isShowAttachments = !isShowAttachments;
+    await startSearch();
+  }
+
   /** Filters the folder.messages array */
   async function startSearch() {
-    if (!isShowStarred && !isShowUnread && !searchTerm) {
+    if (!isShowStarred && !isShowUnread && !isShowAttachments && !searchTerm) {
       searchMessages = null;
       return;
     }
     searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
+      (!isShowAttachments || msg.hasVisibleAttachments === true) &&
       (!searchTerm || searchTerm.length > 1) &&
       (!searchTerm ||
         msg.subject?.toLowerCase().includes(searchTerm) ||
@@ -209,6 +226,9 @@
     padding-inline-start: 4px;
     padding-inline-end: 8px;
     opacity: 70%;
+  }
+  .attachment:not(.on) {
+    opacity: 80%;
   }
   .star.starred :global(svg) {
     fill: orange;
