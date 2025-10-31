@@ -1,6 +1,7 @@
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  style="--account-color: {$message.folder.account.color};"
   on:contextmenu={contextMenu.onContextMenu}
   on:click
   on:swiperight={deleteMessage}
@@ -15,14 +16,24 @@
         <ReplyIcon size={16} class="reply" />
       {/if}
     </hbox>
-    <hbox class="contact">{contactName}</hbox>
+    <hbox class="contact font-small">{contactName}</hbox>
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="tags">
         <TagSelector tags={$tags} object={message} canAdd={false} />
       </hbox>
     {/if}
-    <hbox class="date">{getDateTimeString($message.sent)}</hbox>
+    <hbox class="date font-smallest">{getDateTimeString($message.sent)}</hbox>
+    <hbox class="unread-dot button" class:unread={!$message.isRead}>
+      <Button
+        icon={CircleIcon}
+        iconSize="7px"
+        iconOnly
+        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
+        onClick={toggleRead}
+        plain
+        />
+    </hbox>
     <!--
     <hbox class="buttons hover">
       <hbox class="spam button">
@@ -50,23 +61,20 @@
     -->
   </hbox>
   <hbox class="bottom-row">
-    <hbox class="subject">{$message.subject}</hbox>
+    <hbox class="subject font-small">{$message.subject}</hbox>
     <hbox flex />
-    <hbox class="move button">
-      <Button
-        icon={FolderActionsIcon}
-        iconSize="16px"
-        iconOnly
-        label={$t`Move, tag, or delete`}
-        onClick={onPopupToggle}
-        plain
-        />
-    </hbox>
-    <hbox class="attachments">
-      {#if $message.hasVisibleAttachments}
-        <AttachmentIcon size="14px" />
-      {/if}
-    </hbox>
+    {#if !isMobile}
+      <hbox class="move button">
+        <Button
+          icon={FolderActionsIcon}
+          iconSize="16px"
+          iconOnly
+          label={$t`Move, tag, or delete`}
+          onClick={onPopupToggle}
+          plain
+          />
+      </hbox>
+    {/if}
     <hbox class="star button" class:starred={$message.isStarred}>
       <Button
         icon={StarIcon}
@@ -77,15 +85,10 @@
         plain
         />
     </hbox>
-    <hbox class="unread-dot button" class:unread={!$message.isRead}>
-      <Button
-        icon={CircleIcon}
-        iconSize="7px"
-        iconOnly
-        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
-        onClick={toggleRead}
-        plain
-        />
+    <hbox class="attachments">
+      {#if $message.hasVisibleAttachments}
+        <AttachmentIcon size="14px" />
+      {/if}
     </hbox>
   </hbox>
 </vbox>
@@ -119,6 +122,7 @@
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import { isMobile } from "../../../logic/build";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
@@ -157,18 +161,30 @@
 
 <style>
   .message {
-    padding: 4px 8px !important;
+    padding: 4px 12px 4px 8px !important;
     justify-content: baseline;
     align-items: baseline;
+    position: relative;
+  }
+  :global(.mobile) .message {
+    padding: 12px 12px 12px 18px !important;
+  }
+  .message::before {
+    position: absolute;
+    top: 18%;
+    content: "";
+    height: 64%;
+    border-left: 3px solid var(--account-color);
+    border-radius: 10px;
   }
   .top-row,
   .bottom-row {
     width: 100%;
     overflow: hidden;
+    padding-inline-start: 10px;
   }
   .top-row {
     height: 1.5em;
-    margin-block-end: -1px;
   }
   .bottom-row {
     height: 1.3em;
@@ -187,12 +203,23 @@
   }
   .date {
     min-width: 8em;
-    justify-content: start;
-    font-size: 12px !important;
+    justify-content: end;
     font-family: Helvetica, Arial, sans-serif;
+    padding-top: 2px; /** HACK Fix vertical alignment */
   }
   .subject {
     line-height: 1.3;
+  }
+  .attachments {
+    align-self: center;
+    justify-self: center;
+    opacity: 60%;
+  }
+  .star {
+    margin-inline-end: 1px; /* for alignment with unread button */
+  }
+  .attachments :global(> *) {
+    margin-inline-end: 3px; /* for alignment with unread button */
   }
   /*
   :global(.row:not(:hover)) .buttons.hover {
@@ -245,7 +272,7 @@
   :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
-  :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
+  :global(.row:not(:hover)) .star:not(.starred) {
     display: none;
   }
   :global(.row:not(:hover)) .unread-dot:not(.unread) :global(svg) {
