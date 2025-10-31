@@ -1,5 +1,5 @@
 <!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
-<hbox class="direction">
+<hbox class="direction" style="--account-color: {$message.folder.account.color}" class:read={$message.isRead}>
   {#if $message.outgoing}
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
@@ -156,6 +156,15 @@
 </script>
 
 <style>
+  .direction:before {
+    content: "";
+    top: 10%;
+    height: 80%;
+    border-left: 3px solid var(--account-color);
+    border-radius: 10px;
+    margin-inline-end: 2px;
+    opacity: 80%;
+  }
   .correspondent,
   .subject,
   .date {
@@ -204,7 +213,6 @@
     padding: 4px 0px 0px 2px;
   }
   .direction {
-    width: 16px;
     padding: 0px;
   }
 
@@ -244,6 +252,9 @@
   .direction :global(.outgoing) {
     margin-inline-start: 0px;
     transform: translateX(3px);
+  }
+  .unread-dot {
+    height: 100%;
   }
   .buttons.hover :global(svg),
   .unread-dot :global(svg) {
