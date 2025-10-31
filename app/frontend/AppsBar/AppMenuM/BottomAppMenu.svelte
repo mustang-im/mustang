@@ -6,11 +6,12 @@
 
 <style>
   .bottom {
-    height: 44px;
-    width: 48px;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
+    margin-block-start: -8px;
+    padding: 18px;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
+    z-index: -1;
   }
 </style>

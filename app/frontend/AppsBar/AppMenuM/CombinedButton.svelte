@@ -2,7 +2,7 @@
   onClick={onClick}
   classes="plain"
   border={false}
-  padding="24px"
+  padding="32px"
   >
   <hbox class="stack" slot="icon">
     <Stack>

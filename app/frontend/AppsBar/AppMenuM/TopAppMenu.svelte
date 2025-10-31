@@ -19,9 +19,9 @@
 
 <style>
   .logo {
-    padding: 12px;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    padding: 18px;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
   }

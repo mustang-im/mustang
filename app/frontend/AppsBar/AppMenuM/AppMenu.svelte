@@ -9,7 +9,6 @@
     <ChatAppMenu />
     <MailAppMenu />
     <ContactsAppMenu />
-    <SettingsAppMenu />
     <BottomAppMenu />
   </grid>
 </vbox>
@@ -24,7 +23,6 @@
   import ChatAppMenu from "./Apps/ChatAppMenu.svelte";
   import MailAppMenu from "./Apps/MailAppMenu.svelte";
   import ContactsAppMenu from "./Apps/ContactsAppMenu.svelte";
-  import SettingsAppMenu from "./SettingsAppMenu.svelte";
   import BottomAppMenu from "./BottomAppMenu.svelte";
   import AppMenuBarM from "./AppMenuBarM.svelte";
   import { navigate } from "svelte-navigator";
@@ -63,4 +61,7 @@
     padding-block-end: 0px;
     height: 32px;
   }*/
+  .app-menu :global(.app-button.contacts) {
+    padding-block-end: 0px;
+  }
 </style>

@@ -1,6 +1,6 @@
-<hbox class="app-button app-column">
+<hbox class="app-button app-column {app.id}">
   <AppButton on:click={onClick} classes={app.id}>
-    <AppIcon slot="icon" icon={app.icon} size="24px" />
+    <AppIcon slot="icon" icon={app.icon} size="28px" />
   </AppButton>
 </hbox>
 
@@ -22,7 +22,7 @@
 
 <style>
   .app-button :global(.app-button) {
-    padding: 12px;
+    padding: 18px;
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
   }
