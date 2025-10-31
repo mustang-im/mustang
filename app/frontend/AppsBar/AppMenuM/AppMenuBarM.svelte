@@ -1,32 +1,46 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    <AppButton app={calendarMustangApp} page="/calendar/" />
+    <hbox class="settings">
+      <Button
+        icon={settingsMustangApp.icon}
+        iconSize="24px"
+        iconOnly
+        label={settingsMustangApp.name}
+        onClick={() => goTo("/settings/")}
+        plain
+        />
+    </hbox>
 
     <!-- left middle -->
-    <AppButton app={contactsMustangApp} page="/contacts/" />
+    <hbox class="empty" />
 
     <AppMenuButton onClick={onClose} />
 
     <!-- right middle -->
-    <AppButton app={mailMustangApp} page="/mail/" />
+    <hbox class="empty" />
 
     <!-- right -->
-    <AppButton app={chatMustangApp} page="/chat/" />
+    <hbox class="empty" />
   </AppBarM>
 </hbox>
 
 <script lang="ts">
-  import { calendarMustangApp } from "../../Calendar/CalendarMustangApp";
-  import { contactsMustangApp } from "../../Contacts/ContactsMustangApp";
-  import { mailMustangApp } from "../../Mail/MailMustangApp";
-  import { chatMustangApp } from "../../Chat/ChatMustangApp";
+  import { settingsMustangApp } from "../../Settings/Window/SettingsMustangApp";
+  import { goTo } from "../selectedApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
-  import AppButton from "./AppButton.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
+  import Button from "../../Shared/Button.svelte";
   import { navigate } from "svelte-navigator";
+  import { t } from "../../../l10n/l10n";
 
   function onClose() {
     navigate(-1);
   }
 </script>
+
+<style>
+  .settings :global(button svg) {
+    stroke-width: 2px;
+  }
+</style>

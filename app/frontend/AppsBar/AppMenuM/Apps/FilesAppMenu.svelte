@@ -29,7 +29,7 @@
   import BasicButton from "../BasicButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
-  import PlusIcon from "lucide-svelte/icons/plus-circle";
+  import PlusIcon from "lucide-svelte/icons/plus";
   import AccountIcon from "lucide-svelte/icons/folder-open";
   import { URLPart } from "../../../Util/util";
 </script>
