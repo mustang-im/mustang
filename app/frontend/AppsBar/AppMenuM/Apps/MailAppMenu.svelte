@@ -19,8 +19,8 @@
     account: allAccountsAccount,
   }}
   />
-<CombinedButton icon1={mailMustangApp.icon} icon2={SearchIcon} page="/mail/search" />
-<CombinedButton icon1={mailMustangApp.icon} icon2={PencilIcon} page="/mail/compose" />
+<BasicButton icon={SearchIcon} page="/mail/search" />
+<BasicButton icon={PencilIcon} page="/mail/compose" />
 
 <script lang="ts">
   import { EMail } from "../../../../logic/Mail/EMail";
@@ -38,7 +38,7 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
   import PencilIcon from "lucide-svelte/icons/pencil";
-  import FolderIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/folder-open";
   import { URLPart } from "../../../Util/util";
   import { ArrayColl, mergeColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";

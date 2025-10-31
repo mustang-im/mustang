@@ -12,9 +12,9 @@
 
 <AppButton app={filesMustangApp} page="/files/" />
 
-<CombinedButton icon1={filesMustangApp.icon} icon2={SearchIcon} page="/files/search" />
+<BasicButton icon={SearchIcon} page="/files/search" />
 {#if $selectedPerson}
-  <CombinedButton icon1={filesMustangApp.icon} icon2={PlusIcon} page={`/files/person/${$selectedPerson?.id}/upload`} />
+  <BasicButton icon={PlusIcon} page={`/files/person/${$selectedPerson?.id}/upload`} />
 {:else}
   <hbox class="empty" />
 {/if}
@@ -26,6 +26,7 @@
   import AccountButton from "../AccountButton.svelte";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
   import PlusIcon from "lucide-svelte/icons/plus-circle";

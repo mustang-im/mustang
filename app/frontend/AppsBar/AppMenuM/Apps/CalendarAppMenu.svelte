@@ -7,14 +7,10 @@
 {:else}
   <hbox class="empty" />
 {/if}
-<RoundButton
-  label={$t`TODO`}
-    icon={TODOsIcon}
-  onClick={goToTODOs}
-  padding="24px" classes="plain" border={false} />
+<BasicButton label={$t`TODO`} icon={TODOsIcon} onClick={goToTODOs} />
 <AppButton app={calendarMustangApp} page="/calendar/" />
-<CombinedButton icon1={calendarMustangApp.icon} icon2={SearchIcon} page="/calendar/search" />
-<CombinedButton icon1={calendarMustangApp.icon} icon2={PlusIcon} onClick={onCreateEvent} />
+<BasicButton icon={SearchIcon} page="/calendar/search" />
+<BasicButton icon={PlusIcon} onClick={onCreateEvent} />
 
 <script lang="ts">
   import { setNewEventTime } from "../../../Calendar/event";
@@ -25,11 +21,12 @@
   import { goTo } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
-  import PlusIcon from "lucide-svelte/icons/plus-circle";
-  import TODOsIcon from "lucide-svelte/icons/list-checks";
+  import PlusIcon from "lucide-svelte/icons/plus";
+  import TODOsIcon from "lucide-svelte/icons/square-check-big";
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
 

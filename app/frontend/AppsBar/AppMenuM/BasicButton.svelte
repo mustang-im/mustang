@@ -8,11 +8,19 @@
 </RoundButton>
 
 <script lang="ts">
+  import { goTo } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import type { ComponentType } from "svelte";
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
-  export let onClick: (event: Event) => void = null;
+  export let onClick = onClickPage;
+  export let page: string | null = null;
+  export let params = {};
+
   export let classes = "";
+
+  function onClickPage() {
+    goTo(page, params);
+  }
 </script>
