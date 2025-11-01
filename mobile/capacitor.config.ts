@@ -17,6 +17,7 @@ const config: CapacitorConfig = {
       backgroundColor: "#494558", // --appbar-bg, see app.css
     },
   },
+  backgroundColor: "#00000000",
 }
 
 export default config;
