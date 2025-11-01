@@ -13,6 +13,7 @@
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     z-index: 4;
     justify-content: center;
+    margin-bottom: 48px;
   }
   .app-bar > :global(*) {
     flex: 1 0 0;
