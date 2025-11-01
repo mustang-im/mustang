@@ -70,5 +70,6 @@
   }
   .persons.mobile :global(.search) {
     order: 1;
+    margin-block-start: 8px;
   }
 </style>

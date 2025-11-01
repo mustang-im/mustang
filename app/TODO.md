@@ -5,8 +5,8 @@
   * Video conf should allow to buy license
   * Add purchase in client UI
 * Mobile
-  * Size msg list
   * Composer
+  * Contacts Person page
   * Debug messages in UI
 
 # Release

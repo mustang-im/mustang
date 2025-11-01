@@ -5,6 +5,7 @@
     on:input={onInput}
     on:keydown={onKeyPress}
     placeholder={placeholder ?? $t`Search`}
+    class="font-normal"
     bind:this={inputEl}
     {autofocus}
     spellcheck={false} />
@@ -84,6 +85,9 @@
     border-radius: 100px;
     background-color: inherit;
     color: inherit;
+  }
+  :global(.mobile) input[type="search"] {
+    height: 40px;
   }
   input::placeholder {
     color: #808080;
