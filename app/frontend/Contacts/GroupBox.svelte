@@ -32,4 +32,14 @@
     color: var(--main-fg);
     padding: 8px 16px 10px 20px;
   }
+  :global(.mobile) .group {
+    border: none;
+  }
+  :global(.mobile) .header {
+    background-color: transparent;
+  }
+  :global(.mobile) .content {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
 </style>

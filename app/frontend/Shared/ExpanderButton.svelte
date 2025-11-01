@@ -1,8 +1,8 @@
 {#if !expanded}
   <hbox class="expander-button {classes}">
     <Button plain onClick={onExpand} tooltip={label}>
-      <hbox class="content" slot="label">
-        {#if typeof(icon) == "string" }
+      <hbox class="content {fontSize}" slot="label">
+        {#if typeof(icon) == "string"}
           <hbox class="icon">
             <Icon data={icon} size={iconSize} />
           </hbox>
@@ -13,8 +13,8 @@
         {:else}
           <slot name="icon" />
         {/if}
-        {label}
-        <AddIcon size="16px" />
+        <hbox class="label">{label}</hbox>
+        <AddIcon size={iconSize} />
       </hbox>
     </Button>
   </hbox>
@@ -26,6 +26,7 @@
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { ComponentType } from "svelte";
   import { createEventDispatcher } from 'svelte';
+  import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
 
   /** A button with label that you can click to expand some entire
@@ -36,8 +37,10 @@
   export let expanded = false;
   export let label: string;
   export let icon: ComponentType | string | null = null;
-  export let iconSize = "20px";
+  export let iconSize = appGlobal.isMobile ? "24px" : "16px";
   export let classes = "";
+
+  $: fontSize = appGlobal.isMobile ? "font-normal" : "font-small";
 
   function onExpand() {
     expanded = true;
@@ -46,7 +49,9 @@
 </script>
 
 <style>
-  .expander-button {
+  :global(.mobile) .content {
+    border-radius: 12px;
+    padding: 8px 12px !important;
   }
   .content {
     align-items: center;
@@ -70,5 +75,9 @@
   .icon {
     margin-inline-start: 0px;
     margin-inline-end: 8px;
+  }
+  :global(.mobile) .label {
+    border-radius: 100px;
+    padding: 0px 6px;
   }
 </style>

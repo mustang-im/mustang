@@ -1,9 +1,9 @@
-<vbox class="boxes">
+<vbox class="boxes {fontSize}">
   {#if showEmail}
     <GroupBox classes="email">
       <svelte:fragment slot="header">
         <Icon data={MailIcon} size="16px" />
-        <h3 class="font-small">{$t`Mail`}</h3>
+        <h3>{$t`Mail`}</h3>
         <hbox flex class="header actions">
           <Button
             on:click={addEmail}
@@ -33,7 +33,7 @@
     <GroupBox classes="chat">
       <svelte:fragment slot="header">
         <Icon data={ChatIcon} size="16px" />
-        <h3 class="font-small">{$t`Chat`}</h3>
+        <h3>{$t`Chat`}</h3>
         <hbox flex class="header actions">
           <Button
             on:click={addChatAccount}
@@ -60,7 +60,7 @@
         <hbox class="phone">
           <Icon data={PhoneIcon} size="16px" />
         </hbox>
-        <h3 class="font-small">{$t`Phone numbers`}</h3>
+        <h3>{$t`Phone numbers`}</h3>
         <hbox flex class="header actions">
           <Button
             on:click={addPhoneNumber}
@@ -87,7 +87,7 @@
         <hbox class="url">
           <WebsiteIcon size="16px" />
         </hbox>
-        <h3 class="font-small">{$t`Website`}</h3>
+        <h3>{$t`Website`}</h3>
         <hbox flex class="header actions">
           <Button
             on:click={addURL}
@@ -112,7 +112,7 @@
     <GroupBox classes="street-addresses">
       <svelte:fragment slot="header">
         <StreetIcon size="16px" />
-        <h3 class="font-small">{$t`Street address`}</h3>
+        <h3>{$t`Street address`}</h3>
         <hbox flex class="header actions">
           <Button
             on:click={addStreetAddress}
@@ -137,7 +137,7 @@
     <GroupBox classes="categories">
       <svelte:fragment slot="header">
         <Icon data={ContactsIcon} size="16px" />
-        <h3 class="font-small">{$t`Groups`}</h3>
+        <h3>{$t`Groups`}</h3>
         <hbox flex class="header actions">
           <!--
           <Button
@@ -163,7 +163,7 @@
   <GroupBox classes="preferences">
     <svelte:fragment slot="header">
       <Icon data={ChatIcon} size="16px" />
-      <h3 class="font-small">Preferences</h3>
+      <h3>Preferences</h3>
     </svelte:fragment>
     <vbox class="preferred" slot="content">
       <hbox>Preferred communication tool</hbox>
@@ -178,19 +178,19 @@
   <vbox class="expanders">
     <ExpanderButtons>
       <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
-        label={$t`Mail`} icon={MailIcon} iconSize="16px" classes="mail" />
+        label={$t`Mail`} icon={MailIcon} classes="mail" />
       <ExpanderButton bind:expanded={showChat} on:expand={addChatAccount}
-        label={$t`Chat`} icon={ChatIcon} iconSize="16px" classes="chat" />
+        label={$t`Chat`} icon={ChatIcon} classes="chat" />
       <ExpanderButton bind:expanded={showPhone} on:expand={addPhoneNumber}
-        label={$t`Phone`} icon={PhoneIcon} iconSize="16px" classes="phone" />
+        label={$t`Phone`} icon={PhoneIcon} classes="phone" />
       <ExpanderButton bind:expanded={showStreet} on:expand={addStreetAddress}
-        label={$t`Street address`} icon={StreetIcon} iconSize="16px" classes="street" />
+        label={$t`Street address`} icon={StreetIcon} classes="street" />
       <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
-        label={$t`Website`} icon={WebsiteIcon} iconSize="16px" classes="website" />
+        label={$t`Website`} icon={WebsiteIcon} classes="website" />
       <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
-        label="Groups" icon={GroupIcon} iconSize="16px" classes="group" />-->
+        label="Groups" icon={GroupIcon} classes="group" />-->
       <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
-        label={$t`Notes`} icon={NotesIcon} iconSize="16px" classes="notes" />
+        label={$t`Notes`} icon={NotesIcon} classes="notes" />
     </ExpanderButtons>
   </vbox>
 
@@ -235,6 +235,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
+  import { appGlobal } from "../../logic/app";
 
   export let person: Person;
 
@@ -295,6 +296,8 @@
       showError(ex);
     }
   }
+
+  $: fontSize = appGlobal.isMobile ? "font-normal" : "font-small";
 </script>
 
 <style>
@@ -305,8 +308,12 @@
     margin-inline-start: 10px;
     margin-block-start: 0px;
     margin-block-end: 0px;
-    font-size: 14px;
     vertical-align: middle;
+    font-size: 14px;
+  }
+  :global(.mobile) .boxes :global(h3) {
+    font-size: 16px;
+    font-weight: 500;
   }
   .boxes :global(grid.items) {
     display: grid;

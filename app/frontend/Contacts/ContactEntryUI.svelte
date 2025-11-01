@@ -1,17 +1,17 @@
 {#if isEditing}
-  <hbox class="purpose edit font-small">
+  <hbox class="purpose edit">
     <select bind:value={entry.purpose}>
       {#each Object.entries(purposes) as p }
         <option value={p[0]}>{p[1]}</option>
       {/each}
     </select>
   </hbox>
-  <hbox class="value edit font-small"
+  <hbox class="value edit"
     bind:this={inputWrapperEl}
     tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
     <slot name="edit" />
   </hbox>
-  <hbox class="actions font-small">
+  <hbox class="actions">
     <Button
       on:click={stopEditing}
       icon={OKIcon}
@@ -24,13 +24,13 @@
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  <hbox class="purpose display font-small" on:click={startEditing}>
+  <hbox class="purpose display" on:click={startEditing}>
     {displayPurpose(entry.purpose)}
   </hbox>
-  <hbox class="value font-small" on:click={startEditing}>
+  <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>
-  <hbox class="actions contact-entry font-small">
+  <hbox class="actions contact-entry">
     {#if copied}
       <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
     {/if}
