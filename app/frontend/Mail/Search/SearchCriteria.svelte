@@ -61,7 +61,7 @@
        5. `hasPerson = false` ->
        6. PersonsList disappears ->
        7. User cannot correct search -->
-      <PersonsList persons={availablePersons} bind:selected={search.includesPerson} showSearch={false} size="small" />
+      <PersonsList persons={availablePersons} bind:selected={search.includesPerson} showSearch={false} />
     </vbox>
   {/if}
   <Checkbox bind:checked={hasTag} allowFalse={false} allowIndetermined={true}

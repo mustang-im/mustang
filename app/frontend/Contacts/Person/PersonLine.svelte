@@ -1,8 +1,8 @@
-<hbox flex class="person" class:selected={isSelected} {size} on:click>
+<hbox flex class="person" class:selected={isSelected} on:click>
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
-      <hbox flex class="name font-small">{$person.name}</hbox>
+      <hbox flex class="name {fontClass}">{$person.name}</hbox>
       <slot name="top-right" {person} />
     </hbox>
     <hbox class="second-row">
@@ -13,12 +13,14 @@
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
+  import { appGlobal } from "../../../logic/app";
   import PersonPicture from "./PersonPicture.svelte";
 
   export let person: PersonOrGroup;
   export let isSelected = false;
   export let pictureSize: number;
-  export let size: "large" | "small" = "large";
+
+  $: fontClass = appGlobal.isMobile ? "font-normal" : "font-small";
 </script>
 
 <style>
@@ -30,21 +32,24 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .first-row {
-    height: 1.3em; /* prevent line breaks */
-  }
-  .second-row:first-child {
-    max-height: 1.3em;
+  .person :global(.avatar) {
+    margin: 2px 14px;
   }
   .main {
     justify-content: center;
     margin-block-start: 0px;
-    padding: 10px 16px 10px 4px;
-  }
-  .person[size="small"] .main {
     padding: 1px 20px 0px 0px;
   }
-  .person[size="small"] :global(.avatar) {
-    margin: 2px 14px;
+  :global(.mobile) .main {
+    min-height: 44px;
+  }
+  .first-row {
+    height: 1.3em; /* prevent line breaks */
+  }
+  .name {
+    align-items: center;
+  }
+  .second-row:first-child {
+    max-height: 1.3em;
   }
 </style>

@@ -9,7 +9,7 @@
       <hbox flex class="spacer" />
       <WriteButton account={$selectedAccount} />
     </hbox>
-    <PersonsList {persons} bind:selected={selectedPerson} size="small" />
+    <PersonsList {persons} bind:selected={selectedPerson} />
     <ViewSwitcher />
   </vbox>
   <vbox class="right-pane" slot="right">

@@ -1,5 +1,5 @@
 <vbox flex class="pane">
-  <PersonsList {persons} bind:selected={selectedPerson} size="small"
+  <PersonsList {persons} bind:selected={selectedPerson}
     {doSearch}
     on:click={() => catchErrors(onPersonSelected)}
     />

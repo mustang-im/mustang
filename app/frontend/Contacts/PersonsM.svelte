@@ -1,6 +1,6 @@
 <vbox flex class="pane">
   <PersonsToolbar {persons} bind:selectedAddressbook />
-  <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} {doSearch} on:click={() => catchErrors(onPersonSelected)} />
+  <PersonsList {persons} bind:selected={$selectedPerson} bind:searchTerm={$globalSearchTerm} {doSearch} on:click={() => catchErrors(onPersonSelected)} />
 </vbox>
 {#if $appGlobal.isMobile}
   <PersonsBarM {selectedAddressbook} />

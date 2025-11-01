@@ -1,10 +1,10 @@
-<vbox flex class="persons" {size} class:mobile={appGlobal.isMobile}>
+<vbox flex class="persons" class:mobile={appGlobal.isMobile}>
   {#if showSearch}
     <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
   {/if}
   <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
-      <PersonLine {person} isSelected={person == selected} {pictureSize} {size} on:click>
+      <PersonLine {person} isSelected={person == selected} {pictureSize} on:click>
         <slot name="top-right" slot="top-right" {person} />
         <slot name="second-row" slot="second-row" {person} />
       </PersonLine>
@@ -25,8 +25,7 @@
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
-  export let size: "large" | "small" = "large";
-  export let pictureSize = size == "large" ? 56 : appGlobal.isMobile ? 32 : 20;
+  export let pictureSize = appGlobal.isMobile ? 32 : 20;
   /** in/out */
   export let searchTerm: string | null = null;
   /* Show or entirely remove the search field -- in */

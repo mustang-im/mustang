@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
-    <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} />
+    <PersonsList {persons} bind:selected={$selectedPerson} bind:searchTerm={$globalSearchTerm} />
   </vbox>
   <vbox flex class="right-pane background-pattern" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}

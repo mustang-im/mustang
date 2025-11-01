@@ -2,7 +2,7 @@
   {#await filterPersons()}
     <hbox class="progress">{$t`Searching...`}</hbox>
   {:then}
-  <PersonsList {persons} bind:selected={$selectedPerson} size="small" />
+  <PersonsList {persons} bind:selected={$selectedPerson} />
   {:catch ex}
     <ErrorMessageInline {ex} />
   {/await}
