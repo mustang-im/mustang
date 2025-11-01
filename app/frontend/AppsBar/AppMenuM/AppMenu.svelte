@@ -52,6 +52,9 @@
 </script>
 
 <style>
+  :global(.content) {
+    background-color: transparent !important;
+  }
   .app-menu {
     align-items: center;
   }
@@ -71,6 +74,8 @@
   }
   grid :global(.button) {
     box-shadow: -1px 0px 1px 0px rgba(22, 12, 39, 15%); /* #160C27 */
+    background-color: var(--bg);
+    color: var(--fg);
   }
   grid :global(.center-bar) {
     padding-block: 18px;
