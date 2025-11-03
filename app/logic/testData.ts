@@ -270,6 +270,12 @@ class FakeFolder extends Folder {
   async getNewMessages(): Promise<Collection<EMail>> {
     return this.messages;
   }
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    return new ArrayColl<EMail>();
+  }
+  async downloadAllMessages(): Promise<Collection<EMail>> {
+    return new ArrayColl<EMail>();
+  }
   newEMail(): FakeEMail {
     return new FakeEMail(this);
   }
