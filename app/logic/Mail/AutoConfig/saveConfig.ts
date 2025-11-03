@@ -36,7 +36,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   fillConfig(config, emailAddress, password);
 
   let identity = new MailIdentity(config);
-  identity.realname = config.realname;
+  identity.realname = config.realname ?? nameFromEmailAddress(emailAddress);
   identity.emailAddress = config.emailAddress;
   config.identities.add(identity);
 
