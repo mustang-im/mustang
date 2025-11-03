@@ -14,8 +14,9 @@
     "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew :app:bundleRelease",
     "build:ios:release": "export MOBILE_ARCH=ios-arm64; cd ios && bash ./build/build.sh",
     "build:ios": "export MOBILE_ARCH=ios-arm64; (cd ios && bash ./build/build.sh) && cap sync ios && cap build ios",
-    "preview": "vite preview",
-    "setup:ios": "bash ./hooks/ios/setup.sh"
+    "setup:ios": "bash ./hooks/ios/setup.sh",
+    "setup:android": "bash ./hooks/android/setup.sh",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -26,8 +27,7 @@
     "@capacitor/filesystem": "^7.1.4",
     "@capacitor/ios": "^7.0.0",
     "@capacitor/splash-screen": "^7.0.3",
-    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3",
-    "capacitor-nodejs": "https://github.com/mustang-im/capacitor-nodejs/releases/download/1.0.0-beta.10/capacitor-nodejs-v1.0.0-beta.10.tgz"
+    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",

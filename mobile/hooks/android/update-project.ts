@@ -48,7 +48,6 @@ let templateDir: string;
 async function updateTemplateBasedFiles() {
   await getTemplate();
   await Promise.all([
-    updateMainActivityFile(),
     updateStringsXML(),
   ]);
 }
