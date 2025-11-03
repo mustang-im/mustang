@@ -101,6 +101,8 @@
   .label {
     margin-inline-start: 6px;
     font-weight: 300;
+    max-height: 1.3em;
+    max-width: calc(100% - 90px); /* HACK */
   }
   .account:not(:hover) .buttons {
     display: none;
