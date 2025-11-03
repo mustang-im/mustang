@@ -39,6 +39,7 @@
     justify-content: center;
     margin-block-start: 0px;
     padding: 1px 20px 0px 0px;
+    max-width: 70%; /* HACK */
   }
   :global(.mobile) .main {
     min-height: 44px;
@@ -48,6 +49,8 @@
   }
   .name {
     align-items: center;
+    white-space: nowrap;
+    max-height: 1.3em;
   }
   .second-row:first-child {
     max-height: 1.3em;
