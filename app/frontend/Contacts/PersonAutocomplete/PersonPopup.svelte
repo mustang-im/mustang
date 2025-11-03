@@ -80,9 +80,8 @@
 <script lang="ts">
   import { kDummyPerson, PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { ContactEntry, Person } from "../../../logic/Abstract/Person";
-  import { openUIFor } from "../../AppsBar/changeTo";
+  import { openPersonFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
-  import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -141,7 +140,7 @@
   }
   function onEditPerson() {
     onClose();
-    openUIFor(personUID.createPerson(appGlobal.personalAddressbook));
+    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook));
   }
   function onRemovePerson() {
     console.log("remove contact");

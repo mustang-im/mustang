@@ -44,7 +44,7 @@
   import { type PersonUID, findPersonsWithName, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { ContactEntry, Person } from "../../../logic/Abstract/Person";
   import { Addressbook } from "../../../logic/Contacts/Addressbook";
-  import { openUIFor } from "../../AppsBar/changeTo";
+  import { openPersonFromOtherApp } from "../../Contacts/open";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appGlobal } from "../../../logic/app";
   import Menu from "../../Shared/Menu/Menu.svelte";
@@ -64,7 +64,7 @@
     event.stopPropagation();
     let person = recipient.findPerson(); // based on email address
     if (person) {
-      openUIFor(person);
+      openPersonFromOtherApp(person);
       return;
     }
     if (recipient.isProxyAddress) {
