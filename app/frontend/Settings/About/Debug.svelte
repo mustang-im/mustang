@@ -2,7 +2,7 @@
   <h1>{$t`Debug`}</h1>
   <div class="log-history selectable" bind:this={logHistoryEl}>
     {#each $logHistory.each as log, i}
-      <div>{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
+      <div>{i}: {ensureArray(log).map(v => safeStringify(v)).join(" ")}</div>
     {/each}
   </div>
   <vbox class="buttons">
@@ -20,6 +20,7 @@
 <script lang="ts">
   import Button from "../../Shared/Button.svelte";
   import { logHistory } from "../../../logic/util/logHistory";
+  import { ensureArray } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   function safeStringify(obj: any): string {
