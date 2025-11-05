@@ -1,4 +1,4 @@
-<video class="background-video" autoplay loop muted poster={fallbackPicURL} bind:this={videoEl}>
+<video class="background-video" autoplay loop muted playsinline poster={fallbackPicURL} bind:this={videoEl}>
   <source src={videoURL} type="video/mp4">
 </video>
 <vbox class="button">
