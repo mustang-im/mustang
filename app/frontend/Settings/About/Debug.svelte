@@ -1,11 +1,11 @@
 <vbox>
   <h1>Debug</h1>
-  <button on:click={() => logHistory.clear()}>Clear log history</button>
   <div class="log-history">
     {#each $logHistory.each as log, i}
       <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
+  <button on:click={() => logHistory.clear()}>Clear log history</button>
 </vbox>
 
 <script lang="ts">
