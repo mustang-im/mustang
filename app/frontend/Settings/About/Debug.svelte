@@ -1,11 +1,11 @@
 <vbox>
-  <h1>Debug</h1>
+  <h1>{$t`Debug`}</h1>
   <div class="log-history" bind:this={logHistoryEl}>
     {#each $logHistory.each as log, i}
       <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
-  <button on:click={() => logHistory.clear()}>Clear log history</button>
+  <button on:click={() => logHistory.clear()}>{$t`Clear log history`}</button>
   <button on:click={() => catchErrors(copyLogHistory)}>{$t`Copy to clipboard`}</button>
 </vbox>
 

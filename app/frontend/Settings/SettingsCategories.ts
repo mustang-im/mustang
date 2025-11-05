@@ -159,5 +159,5 @@ about.subCategories.addAll([
 settingsCategories.add(about);
 
 if (!production) {
-  about.subCategories.add(new SettingsCategory("debug", "Debug", Debug));
+  about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
 }
