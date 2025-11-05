@@ -1,4 +1,4 @@
-{#if account?.needsLicense()}
+{#if !account || account?.needsLicense()}
   <vbox class="payment-bar">
     {#await getLicense()}
       <!-- Checking license... -->
@@ -32,7 +32,10 @@
   import NeverPaid from "./NeverPaid.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
 
-  export let account: Account;
+  /** If given, the bar shows only if this account needs a license.
+   * If not passed, the bar always shows. */
+  export let account: Account | null = null;
+
   let license: Ticket = new BadTicket();
   let owlLicense: Ticket | null = null;
   let wasValid = false; // to detect that the license was just purchased
@@ -56,4 +59,7 @@
   /*.payment-bar {
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
   }*/
+  .payment-bar :global(.message) {
+    margin-inline-end: 12px;
+  }
 </style>
