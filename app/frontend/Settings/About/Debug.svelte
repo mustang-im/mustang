@@ -1,15 +1,17 @@
 <vbox>
   <h1>Debug</h1>
-  <div class="log-history">
+  <div class="log-history" bind:this={logHistoryEl}>
     {#each $logHistory.each as log, i}
       <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
   <button on:click={() => logHistory.clear()}>Clear log history</button>
+  <button on:click={copyLogHistory}>{$t`Copy to clipboard`}</button>
 </vbox>
 
 <script lang="ts">
   import { logHistory } from "../../../logic/util/logHistory";
+  import { t } from "../../../l10n/l10n";
 
   function safeStringify(obj: any): string {
     try {
@@ -42,6 +44,11 @@
         return "[Object]";
       }
     }
+  }
+
+  let logHistoryEl: HTMLDivElement;
+  function copyLogHistory() {
+    navigator.clipboard.writeText(logHistoryEl.innerText);
   }
 </script>
 
