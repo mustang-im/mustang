@@ -41,6 +41,7 @@ import Devices from "./Meet/Devices.svelte";
 // #endif
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../l10n/l10n";
+import { production } from "../../logic/build";
 
 export const settingsCategories = new ArrayColl<SettingsCategory>();
 export const accountSettings = new ArrayColl<AccSetting>();
@@ -154,6 +155,9 @@ about.subCategories.addAll([
   new SettingsCategory("license", gt`Billing`, License),
   // #endif
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
-  new SettingsCategory("debug", gt`Debug`, Debug),
 ]);
 settingsCategories.add(about);
+
+if (!production) {
+  about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
+}
