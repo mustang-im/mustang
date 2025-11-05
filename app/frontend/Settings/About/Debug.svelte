@@ -27,10 +27,10 @@
       const seen = new WeakSet();
       return JSON.stringify(obj, (key, value) => {
         if (key && key.startsWith("_")) {
-          return undefined;
+          return "";
         }
         if (value == null) { // or undefined
-          return;
+          return "";
         } else if (typeof value === "object") {
           if (value instanceof Error) {
             return value.toString();
