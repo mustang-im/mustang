@@ -28,7 +28,7 @@
       const seen = new WeakSet();
       return JSON.stringify(obj, (key, value) => {
         if (key && key.startsWith("_")) {
-          return "";
+          return undefined;
         }
         if (value == null) { // or undefined
           return "";
