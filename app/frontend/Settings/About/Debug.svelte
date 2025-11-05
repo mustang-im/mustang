@@ -3,7 +3,7 @@
   <button on:click={() => logHistory.clear()}>Clear log history</button>
   <div class="log-history">
     {#each $logHistory.each as log, i}
-      <div>{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
+      <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
 </vbox>
