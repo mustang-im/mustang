@@ -2,7 +2,7 @@
   <h1>{$t`Debug`}</h1>
   <div class="log-history selectable" bind:this={logHistoryEl}>
     {#each $logHistory.each as log, i}
-      <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
+      <div>{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
   <vbox class="buttons">
