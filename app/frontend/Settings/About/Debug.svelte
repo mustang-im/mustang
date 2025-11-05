@@ -9,7 +9,7 @@
 </vbox>
 
 <script lang="ts">
-  import { logHistory } from "./LogHistory";
+  import { logHistory } from "../../../logic/util/logHistory";
 
   function safeStringify(obj: any): string {
     try {
