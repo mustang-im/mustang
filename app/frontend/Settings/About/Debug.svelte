@@ -5,11 +5,20 @@
       <div class="selectable">{i}: {log.map((v) => typeof v === "object" && v !== null ? safeStringify(v) : String(v)).join(" ")}</div>
     {/each}
   </div>
-  <button on:click={() => logHistory.clear()}>{$t`Clear log history`}</button>
-  <button on:click={() => catchErrors(copyLogHistory)}>{$t`Copy to clipboard`}</button>
+  <vbox class="buttons">
+    <Button
+      label={$t`Clear log history`}
+      onClick={() => logHistory.clear()}
+    />
+    <Button
+      label={$t`Copy to clipboard`}
+      onClick={copyLogHistory}
+    />
+    </vbox>
 </vbox>
 
 <script lang="ts">
+  import Button from "../../Shared/Button.svelte";
   import { logHistory } from "../../../logic/util/logHistory";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
@@ -59,5 +68,9 @@
   .log-history {
     max-height: 500px;
     overflow-y: auto;
+  }
+  .buttons {
+    margin-block-start: 16px;
+    gap: 8px;
   }
 </style>
