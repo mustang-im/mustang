@@ -20,7 +20,6 @@
 <script lang="ts">
   import Button from "../../Shared/Button.svelte";
   import { logHistory } from "../../../logic/util/logHistory";
-  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   function safeStringify(obj: any): string {
