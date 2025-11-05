@@ -11,17 +11,14 @@
 <script lang="ts">
   import { logHistory } from "./LogHistory";
 
-  // Safe JSON stringifier that handles circular references
   function safeStringify(obj: any): string {
     try {
       const seen = new WeakSet();
       return JSON.stringify(obj, (key, value) => {
-        // Skip properties that start with underscore
         if (key && key.startsWith("_")) {
           return undefined;
         }
         if (typeof value === "object" && value !== null) {
-          // Handle special object types
           if (value instanceof Error) {
             return value.toString();
           }
@@ -31,7 +28,6 @@
           if (value instanceof Node) {
             return `[${value.nodeName || "Node"}]`;
           }
-          // Check for circular references
           if (seen.has(value)) {
             return "[Circular]";
           }
@@ -40,7 +36,6 @@
         return value;
       });
     } catch (error) {
-      // Fallback if JSON.stringify still fails
       try {
         return String(obj);
       } catch {
