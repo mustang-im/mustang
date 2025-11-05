@@ -63,6 +63,7 @@ export class LiveKitConf extends VideoConfMeeting {
       key: this.encryptionKey ?? "",
     });*/
     assert(this.invitationURL, "The invitation token has to be created together with the meeting, or in the join URL");
+    await ensureLicensed();
     let urlObj = new URL(this.invitationURL);
     // add/replace key= and name= after #
     let anchor = new URLSearchParams(urlObj.hash?.substring(1));

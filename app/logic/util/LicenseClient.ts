@@ -387,13 +387,16 @@ const kGetLicenseURL = siteRoot;
 /** Called from [Bug] button in license bar and in settings page,
  * and on first run */
 export async function openPurchasePage(paidCallback?: (license: Ticket) => void, mode: "welcome" | "purchase" = "purchase") {
-  let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
-  let pageURL = kGetLicenseURL + "?" + new URLSearchParams({
-    email: primaryIdentity.emailAddress,
-    name: primaryIdentity.realname,
+  let params = {
     lang: getUILocale(),
     goal: mode,
-  }) + "#" + mode;
+  } as any;
+  let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
+  if (primaryIdentity) {
+    params.email = primaryIdentity?.emailAddress;
+    params.name = primaryIdentity?.realname;
+  }
+  let pageURL = kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
   console.log("Opening payment page in browser", pageURL);
   await openExternalURL(pageURL);
   startPolling(paidCallback);

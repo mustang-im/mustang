@@ -1,5 +1,6 @@
 # Bugs
 * IMAP Message download race condition (see IMAPEmail)
+* Event doesn't save online meeting link
 * License client
   * Video conf finds no license
   * Video conf should allow to buy license
