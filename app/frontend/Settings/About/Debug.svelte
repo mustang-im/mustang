@@ -6,11 +6,12 @@
     {/each}
   </div>
   <button on:click={() => logHistory.clear()}>Clear log history</button>
-  <button on:click={copyLogHistory}>{$t`Copy to clipboard`}</button>
+  <button on:click={() => catchErrors(copyLogHistory)}>{$t`Copy to clipboard`}</button>
 </vbox>
 
 <script lang="ts">
   import { logHistory } from "../../../logic/util/logHistory";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   function safeStringify(obj: any): string {
@@ -47,7 +48,7 @@
   }
 
   let logHistoryEl: HTMLDivElement;
-  function copyLogHistory() {
+  async function copyLogHistory() {
     navigator.clipboard.writeText(logHistoryEl.innerText);
   }
 </script>
