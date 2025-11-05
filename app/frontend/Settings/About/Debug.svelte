@@ -21,7 +21,9 @@
         if (key && key.startsWith("_")) {
           return undefined;
         }
-        if (typeof value === "object" && value !== null) {
+        if (value == null) { // or undefined
+          return;
+        } else if (typeof value === "object") {
           if (value instanceof Error) {
             return value.toString();
           }
