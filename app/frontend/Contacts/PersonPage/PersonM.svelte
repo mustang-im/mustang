@@ -11,12 +11,12 @@
 {/if}
 
 <script lang="ts">
-  import { Person } from "../../logic/Abstract/Person";
-  import { appGlobal } from "../../logic/app";
+  import { Person } from "../../../logic/Abstract/Person";
+  import { appGlobal } from "../../../logic/app";
   import NameBox from "./NameBox.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
   import PersonBarM from "./PersonBarM.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let person: Person;
 </script>

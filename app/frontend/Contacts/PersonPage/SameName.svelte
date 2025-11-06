@@ -35,18 +35,18 @@
 {/if}
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
-  import { appGlobal } from "../../logic/app";
+  import type { Person } from "../../../logic/Abstract/Person";
+  import { appGlobal } from "../../../logic/app";
   import GroupBox from "./GroupBox.svelte";
-  import PersonPicture from "./Person/PersonPicture.svelte";
-  import Button from "../Shared/Button.svelte";
-  import Icon from "../Shared/Icon.svelte";
+  import PersonPicture from "../Person/PersonPicture.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import Icon from "../../Shared/Icon.svelte";
   import MergeIcon from "lucide-svelte/icons/combine";
   import PersonsIcon from "lucide-svelte/icons/users";
   import AccountIcon from "lucide-svelte/icons/book-user";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let person: Person;
 

@@ -19,7 +19,7 @@
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "./Person/PersonsList.svelte";
-  import PersonDetails from "./PersonDetails.svelte";
+  import PersonDetails from "./PersonPage/PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";

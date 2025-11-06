@@ -44,8 +44,8 @@
 </vbox>
 
 <script lang="ts">
-  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
-  import { t } from "../../l10n/l10n";
+  import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
+  import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";
 
   export let value: string; /* in/out */

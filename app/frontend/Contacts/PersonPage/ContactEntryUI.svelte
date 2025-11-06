@@ -50,17 +50,17 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import type { ContactEntry } from "../../logic/Abstract/Person";
-  import { selectedContactEntry } from "./Person/Selected";
-  import Button from "../Shared/Button.svelte";
+  import type { ContactEntry } from "../../../logic/Abstract/Person";
+  import { selectedContactEntry } from "../Person/Selected";
+  import Button from "../../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
   import OKIcon from "lucide-svelte/icons/check";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { onKeyEnter } from "../Util/util";
-  import { sleep } from "../../logic/util/util";
+  import { onKeyEnter } from "../../Util/util";
+  import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, tick } from 'svelte';
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;

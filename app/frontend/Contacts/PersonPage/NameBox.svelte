@@ -108,20 +108,20 @@
 </GroupBox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
-  import { startVideoCall } from "../../logic/Meet/StartCall";
+  import type { Person } from "../../../logic/Abstract/Person";
+  import { startVideoCall } from "../../../logic/Meet/StartCall";
   import EditableSimpleText from "./EditableSimpleText.svelte";
   import GroupBox from "./GroupBox.svelte";
   import PersonMenu from "./PersonMenu.svelte";
-  import PersonPicture from "./Person/PersonPicture.svelte";
-  import AddressbookChanger from "./AddressbookChanger.svelte";
-  import RoundButton from "../Shared/RoundButton.svelte";
-  import MailIcon from '../asset/icon/appBar/mail.svg?raw';
-  import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
-  import CameraIcon from '../asset/icon/appBar/meet.svg?raw';
-  import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
-  import { showError } from "../Util/error";
-  import { getUILocale, t } from "../../l10n/l10n";
+  import PersonPicture from "../Person/PersonPicture.svelte";
+  import AddressbookChanger from "../AddressbookChanger.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import MailIcon from '../../asset/icon/appBar/mail.svg?raw';
+  import ChatIcon from '../../asset/icon/appBar/chat.svg?raw';
+  import CameraIcon from '../../asset/icon/appBar/meet.svg?raw';
+  import CallIcon from '../../asset/icon/meet/callVoice.svg?raw';
+  import { showError } from "../../Util/error";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let person: Person;
 

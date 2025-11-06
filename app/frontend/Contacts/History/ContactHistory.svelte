@@ -32,7 +32,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { searchLog, type LogEntry } from "../../../logic/Contacts/History/History";
   import LogBox from "./LogBox.svelte";
-  import GroupBox from "../GroupBox.svelte";
+  import GroupBox from "../PersonPage/GroupBox.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import Button from "../../Shared/Button.svelte";
   import ShowMoreIcon from "lucide-svelte/icons/chevron-down";

@@ -25,7 +25,7 @@
   import { appGlobal } from "../../logic/app";
   import ContactsAppD from "./ContactsAppD.svelte";
   import PersonsM from "./PersonsM.svelte";
-  import PersonM from "./PersonM.svelte";
+  import PersonM from "./PersonPage/PersonM.svelte";
   import ContactHistoryM from "./ContactHistoryM.svelte";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";

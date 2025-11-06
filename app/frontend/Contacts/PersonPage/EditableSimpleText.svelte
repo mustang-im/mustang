@@ -25,12 +25,12 @@
 {/if}
 
 <script lang="ts">
-  import Button from "../Shared/Button.svelte";
+  import Button from "../../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";
-  import { onKeyEnter } from "../Util/util";
+  import { onKeyEnter } from "../../Util/util";
   import { createEventDispatcher, tick } from 'svelte';
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher();
 
   /** in/out */

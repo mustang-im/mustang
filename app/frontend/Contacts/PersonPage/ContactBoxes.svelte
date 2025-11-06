@@ -206,9 +206,10 @@
 </vbox>
 
 <script lang="ts">
-  import { ContactEntry, type Person } from "../../logic/Abstract/Person";
-  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
-  import { selectedContactEntry } from "./Person/Selected";
+  import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
+  import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
+  import { selectedContactEntry } from "../Person/Selected";
+  import { appGlobal } from "../../../logic/app";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
@@ -220,22 +221,21 @@
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import SameName from "./SameName.svelte";
-  import ExpanderButtons from "../Shared/ExpanderButtons.svelte";
-  import ExpanderButton from "../Shared/ExpanderButton.svelte";
-  import Button from "../Shared/Button.svelte";
+  import ExpanderButtons from "../../Shared/ExpanderButtons.svelte";
+  import ExpanderButton from "../../Shared/ExpanderButton.svelte";
+  import Button from "../../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
-  import MailIcon from '../asset/icon/appBar/mail.svg?raw';
-  import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
-  import ContactsIcon from '../asset/icon/appBar/contacts.svg?raw';
-  import PhoneIcon from '../asset/icon/meet/call.svg?raw';
+  import MailIcon from '../../asset/icon/appBar/mail.svg?raw';
+  import ChatIcon from '../../asset/icon/appBar/chat.svg?raw';
+  import ContactsIcon from '../../asset/icon/appBar/contacts.svg?raw';
+  import PhoneIcon from '../../asset/icon/meet/call.svg?raw';
   import StreetIcon from "lucide-svelte/icons/house";
   import WebsiteIcon from "lucide-svelte/icons/globe";
   import GroupIcon from "lucide-svelte/icons/users-round";
   import NotesIcon from "lucide-svelte/icons/notebook-pen";
   import AddIcon from "lucide-svelte/icons/plus";
-  import { showError } from "../Util/error";
-  import { t } from "../../l10n/l10n";
-  import { appGlobal } from "../../logic/app";
+  import { showError } from "../../Util/error";
+  import { t } from "../../../l10n/l10n";
 
   export let person: Person;
 

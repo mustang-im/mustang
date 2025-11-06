@@ -14,7 +14,7 @@
 </vbox>
 
 <script lang="ts">
-  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
+  import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
 
   export let value: string;
 

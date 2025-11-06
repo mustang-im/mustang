@@ -35,17 +35,17 @@
 </hbox>
 
 <script lang="ts">
-  import { Person } from "../../logic/Abstract/Person";
-  import { goTo } from "../AppsBar/selectedApp";
-  import AppBarM from "../AppsBar/AppBarM.svelte";
-  import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
-  import Button from "../Shared/Button.svelte";
-  import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
+  import { Person } from "../../../logic/Abstract/Person";
+  import { goTo } from "../../AppsBar/selectedApp";
+  import AppBarM from "../../AppsBar/AppBarM.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
   import HistoryIcon from "lucide-svelte/icons/history";
-  import { URLPart } from "../Util/util";
-  import { t } from "../../l10n/l10n";
+  import { URLPart } from "../../Util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let person: Person;
 

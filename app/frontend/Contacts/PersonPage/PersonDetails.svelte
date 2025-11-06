@@ -10,12 +10,12 @@
 </vbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
+  import type { Person } from "../../../logic/Abstract/Person";
   import NameBox from "./NameBox.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
-  import ContactHistory from "./History/ContactHistory.svelte";
-  import Splitter from "../Shared/Splitter.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import ContactHistory from "../History/ContactHistory.svelte";
+  import Splitter from "../../Shared/Splitter.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let person: Person;
 </script>
