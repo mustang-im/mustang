@@ -341,7 +341,7 @@
   }
   grid {
     width: 100%;
-    height: min-content;
+    height: auto;
     position: absolute;
     top: 0px; /* overridden by scrolling code */
     left: 0px;
