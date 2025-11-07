@@ -5,7 +5,6 @@
   "main": "./index.ts",
   "type": "module",
   "scripts": {
-    "prebuild": "./prebuild.sh",
     "build": "vite build"
   },
   "dependencies": {
