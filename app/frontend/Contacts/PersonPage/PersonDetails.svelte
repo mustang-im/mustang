@@ -1,9 +1,9 @@
 <vbox flex class="person-page font-small">
-  <NameBox {person} />
+  <NameBox {person} bind:isEditingName />
 
   <Splitter initialRightRatio={1} name="contact-history">
     <Scroll hideHorizontalScrollbar={true} slot="left">
-      <ContactBoxes {person} />
+      <ContactBoxes {person} bind:isEditingContacts showExpanders={true} />
     </Scroll>
     <ContactHistory {person} slot="right" />
   </Splitter>
@@ -18,6 +18,9 @@
   import Scroll from "../../Shared/Scroll.svelte";
 
   export let person: Person;
+
+  let isEditingName = false;
+  let isEditingContacts = false;
 </script>
 
 <style>

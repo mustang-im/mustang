@@ -11,12 +11,14 @@
     tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
     <slot name="edit" />
   </hbox>
-  <hbox class="actions">
-    <Button
-      on:click={stopEditing}
-      icon={OKIcon}
-      iconOnly plain iconSize="14px"
-      label={$t`Finish editing and save`} />
+  <hbox class="actions edit">
+    {#if !appGlobal.isMobile}
+      <Button
+        on:click={stopEditing}
+        icon={OKIcon}
+        iconOnly plain iconSize="14px"
+        label={$t`Finish editing and save`} />
+    {/if}
     <Button
       on:click={remove}
       icon={DeleteIcon}
@@ -30,28 +32,31 @@
   <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>
-  <hbox class="actions contact-entry">
-    {#if copied}
-      <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
-    {/if}
-    <slot name="actions" />
-    <Button
-      on:click={copyValue}
-      icon={CopyIcon}
-      iconOnly plain iconSize="14px"
-      label={$t`Copy info to clipboard`} />
-    <Button
-      on:click={startEditing}
-      icon={PencilIcon}
-      iconOnly plain iconSize="14px"
-      label={$t`Edit`} />
-  </hbox>
+  {#if !appGlobal.isMobile}
+    <hbox class="actions contact-entry">
+      {#if copied}
+        <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
+      {/if}
+      <slot name="actions display" />
+      <Button
+        on:click={copyValue}
+        icon={CopyIcon}
+        iconOnly plain iconSize="14px"
+        label={$t`Copy info to clipboard`} />
+      <Button
+        on:click={startEditing}
+        icon={PencilIcon}
+        iconOnly plain iconSize="14px"
+        label={$t`Edit`} />
+    </hbox>
+  {/if}
 {/if}
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
   import type { ContactEntry } from "../../../logic/Abstract/Person";
   import { selectedContactEntry } from "../Person/Selected";
+  import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
@@ -126,6 +131,11 @@
     color: grey;
     font-style: italic;
   }
+  .purpose.edit,
+  .actions.edit {
+    padding-block-start: 5px;
+  }
+
 
   .actions {
     align-items: center;

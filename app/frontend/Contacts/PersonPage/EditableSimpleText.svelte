@@ -2,29 +2,34 @@
   <input type="text" bind:value bind:this={inputEl}
     {placeholder}
     on:keydown={event => onKeyEnter(event, onEnter)}>
-  <hbox class="actions">
-    <Button
-      on:click={stopEditing}
-      icon={OKIcon}
-      iconOnly plain iconSize="14px"
-      classes="save"
-      label={$t`Finish editing and save`} />
-  </hbox>
+  {#if !appGlobal.isMobile}
+    <hbox class="actions">
+      <Button
+        on:click={stopEditing}
+        icon={OKIcon}
+        iconOnly plain iconSize="14px"
+        classes="save"
+        label={$t`Finish editing and save`} />
+    </hbox>
+  {/if}
 {:else}
   <div class="value" on:dblclick={startEditing}>
     {value}
   </div>
-  <hbox class="actions value">
-    <Button
-      on:click={startEditing}
-      icon={PencilIcon}
-      iconOnly plain iconSize="12px"
-      classes="edit"
-      label={$t`Edit`} />
-  </hbox>
+  {#if !appGlobal.isMobile}
+    <hbox class="actions value">
+      <Button
+        on:click={startEditing}
+        icon={PencilIcon}
+        iconOnly plain iconSize="12px"
+        classes="edit"
+        label={$t`Edit`} />
+    </hbox>
+  {/if}
 {/if}
 
 <script lang="ts">
+  import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";

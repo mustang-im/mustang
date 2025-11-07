@@ -175,24 +175,26 @@
 
   <SameName bind:person />
 
-  <vbox class="expanders">
-    <ExpanderButtons>
-      <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
-        label={$t`Mail`} icon={MailIcon} classes="mail" />
-      <ExpanderButton bind:expanded={showChat} on:expand={addChatAccount}
-        label={$t`Chat`} icon={ChatIcon} classes="chat" />
-      <ExpanderButton bind:expanded={showPhone} on:expand={addPhoneNumber}
-        label={$t`Phone`} icon={PhoneIcon} classes="phone" />
-      <ExpanderButton bind:expanded={showStreet} on:expand={addStreetAddress}
-        label={$t`Street address`} icon={StreetIcon} classes="street" />
-      <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
-        label={$t`Website`} icon={WebsiteIcon} classes="website" />
-      <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
-        label="Groups" icon={GroupIcon} classes="group" />-->
-      <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
-        label={$t`Notes`} icon={NotesIcon} classes="notes" />
-    </ExpanderButtons>
-  </vbox>
+  {#if showExpanders}
+    <vbox class="expanders">
+      <ExpanderButtons>
+        <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
+          label={$t`Mail`} icon={MailIcon} classes="mail" />
+        <ExpanderButton bind:expanded={showChat} on:expand={addChatAccount}
+          label={$t`Chat`} icon={ChatIcon} classes="chat" />
+        <ExpanderButton bind:expanded={showPhone} on:expand={addPhoneNumber}
+          label={$t`Phone`} icon={PhoneIcon} classes="phone" />
+        <ExpanderButton bind:expanded={showStreet} on:expand={addStreetAddress}
+          label={$t`Street address`} icon={StreetIcon} classes="street" />
+        <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
+          label={$t`Website`} icon={WebsiteIcon} classes="website" />
+        <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
+          label="Groups" icon={GroupIcon} classes="group" />-->
+        <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
+          label={$t`Notes`} icon={NotesIcon} classes="notes" />
+      </ExpanderButtons>
+    </vbox>
+  {/if}
 
   {#if showNotes}
     <vbox flex class="notes">
@@ -200,6 +202,7 @@
         bind:value={person.notes}
         placeholder={$t`Personal notes`}
         autofocus={person.notes == " "}
+        readonly={!isEditingContacts}
         class="font-small" />
     </vbox>
   {/if}
@@ -238,6 +241,9 @@
   import { t } from "../../../l10n/l10n";
 
   export let person: Person;
+  /** in/out */
+  export let isEditingContacts: boolean;
+  export let showExpanders: boolean;
 
   $: emailAddresses = person.emailAddresses;
   $: phoneNumbers = person.phoneNumbers;
@@ -246,7 +252,6 @@
   $: urls = person.urls;
   $: groups = person.groups;
 
-  let isEditingContacts: boolean;
   $: showEmail = $emailAddresses.hasItems;
   $: showChat = $chatAccounts.hasItems;
   $: showPhone = $phoneNumbers.hasItems;
@@ -287,6 +292,7 @@
   }
   function addNotes() {
     person.notes = " ";
+    isEditingContacts = true;
   }
 
   async function save() {

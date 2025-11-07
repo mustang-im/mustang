@@ -1,31 +1,38 @@
-<vbox flex class="pane">
+<vbox flex class="person-page">
   {#if person && person instanceof Person}
     <Scroll>
-      <NameBox {person} />
-      <ContactBoxes {person} />
+      <NameBoxM {person} bind:isEditingName={isEditing} />
+      <ContactBoxes {person} bind:isEditingContacts={isEditing} showExpanders={isEditing} />
     </Scroll>
   {/if}
 </vbox>
 {#if $appGlobal.isMobile}
-  <PersonBarM {person} />
+  <PersonBarM {person} bind:isEditing />
 {/if}
 
 <script lang="ts">
   import { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
-  import NameBox from "./NameBox.svelte";
+  import NameBoxM from "./NameBoxM.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
   import PersonBarM from "./PersonBarM.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
 
   export let person: Person;
+
+  let isEditing = false;
 </script>
 
 <style>
-  .pane {
+  .person-page {
     background: url(../asset/background-repeat.png) repeat;
     background-color: var(--main-pattern-bg);
     background-blend-mode: soft-light;
     color: var(--main-pattern-fg);
+    padding: 8px;
+  }
+  .person-page :global(input),
+  .person-page :global(textarea) {
+    font-size: 18px;
   }
 </style>
