@@ -25,7 +25,8 @@
     "ws": "^8.16.0"
   },
   "resolutions": {
-    "**/iconv-lite": "^0.6.3"
+    "**/iconv-lite": "^0.6.3",
+    "**/rollup": "4.52.5"
   },
   "devDependencies": {
     "@rollup/plugin-esm-shim": "^0.1.8",
