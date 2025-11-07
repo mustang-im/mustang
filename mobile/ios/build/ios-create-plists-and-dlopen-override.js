@@ -10,9 +10,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export function visitEveryFramework(projectPath) {
-  var foundFrameworks = [];
-  var countInvalidFrameworks = 0;
-  var countValidFrameworks = 0;
+  let foundFrameworks = [];
+  let countInvalidFrameworks = 0;
+  let countValidFrameworks = 0;
   function recursivelyFindFrameworks(currentPath) {
     let currentFiles = fs.readdirSync(currentPath);
     for (let i = 0; i < currentFiles.length; i++) {
@@ -104,7 +104,7 @@ export function visitEveryFramework(projectPath) {
     });
   }
 
-  var frameworkOverrideContents = [];
+  let frameworkOverrideContents = [];
   for (let i = 0; i < foundFrameworks.length; i++) {
     // Generate the contents of a JSON file for overriding dlopen calls at runtime.
     let currentFramework = foundFrameworks[i];

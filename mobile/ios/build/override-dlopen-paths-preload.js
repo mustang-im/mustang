@@ -7,12 +7,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-var substitutionDataFile = path.join(__dirname, 'override-dlopen-paths-data.json');
+const substitutionDataFile = path.join(__dirname, 'override-dlopen-paths-data.json');
 // If the json file exists, override dlopen to load the specified framework paths instead.
 if (fs.existsSync(substitutionDataFile)) {
-  var pathSubstitutionData = JSON.parse(fs.readFileSync(substitutionDataFile, 'utf8'));
+  const pathSubstitutionData = JSON.parse(fs.readFileSync(substitutionDataFile, 'utf8'));
 
-  var pathSubstitutionDictionary = {};
+  const pathSubstitutionDictionary = {};
   // Build a dictionary to convert paths at runtime, taking current sandboxed paths into account.
   for (let i = 0; i < pathSubstitutionData.length; i++) {
     pathSubstitutionDictionary[
@@ -20,7 +20,7 @@ if (fs.existsSync(substitutionDataFile)) {
     ] = path.normalize(path.join.apply(null, [__dirname].concat(pathSubstitutionData[i].newpath)));
   }
 
-  var old_dlopen = process.dlopen;
+  const old_dlopen = process.dlopen;
   // Override process.dlopen
   process.dlopen = function(_module, _filename) {
     if (pathSubstitutionDictionary[path.normalize(_filename)]) {
