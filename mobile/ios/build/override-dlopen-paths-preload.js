@@ -1,4 +1,11 @@
-// From: <https://github.com/nodejs-mobile/nodejs-mobile-cordova/blob/6cd38b0abc86f0acdbc3e899b36937abf906b119/install/helper-scripts/override-dlopen-paths-preload.js>
+/**
+ * This was imported from
+ * https://github.com/nodejs-mobile/nodejs-mobile-cordova/blob/6cd38b0abc86f0acdbc3e899b36937abf906b119/install/helper-scripts/override-dlopen-paths-preload.js
+ * and modified
+ *
+ * MIT license
+ * Copyright (c) 2018 Janea Systems, Inc. and Contributors
+ */
 
 import fs from 'fs';
 import path from 'path';
