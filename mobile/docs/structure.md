@@ -14,7 +14,14 @@ The variable for libnode is set in `hooks/common/variables.sh` and used in `hook
 
 #### Node Native
 
-Node native modules should not be included in the Frameworks section of `App/Target` setting in Xcode. Node native modules need to be converted to frameworks and embedded into the app using the script `ios/build/xcode-embed-node-native.sh` which should be run in Xcode because it needs the environment variables set in Xcode. If the frameworks are not embedded in the app, the app will not be accepted by the App Store or TestFlight. However, when you embed the frameworks the path and the file name changes so you need to override the dlopen calls at runtime to load the correct framework. The `override-dlopen-paths-preload.js` script is used to override the dlopen calls at runtime to load the correct framework.
+Node native modules should not be included in the Frameworks section of `App/Target` setting in Xcode.
+Node native modules need to be converted to frameworks and embedded into the app using
+the script `ios/build/xcode-embed-node-native.sh`, which should be run in Xcode, because it
+needs the environment variables set in Xcode. If the frameworks are not embedded in the app,
+the app will not be accepted by the App Store or TestFlight. However, once you embed the
+frameworks, the path and the file name will change, so you need to override the `dlopen()` calls
+at runtime to load the correct framework. The `override-dlopen-paths-preload.js` script is used
+for that.
 
 The `ios/build/xcode-embed-node-native.sh` script does:
 
