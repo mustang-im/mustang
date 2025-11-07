@@ -54,14 +54,8 @@ export default defineConfig(({}) => {
             rename: 'package.json',
           },
           {
-            src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node${isIOS ? '/better_sqlite3' : ''}`,
-            dest: `${projectDir}/build`,
-            rename: isIOS ? 'better_sqlite3.node' : undefined,
-          },
-          {
-            src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node${isIOS ? '/bufferutil' : ''}`,
-            dest: `${projectDir}/prebuilds/${arch}`,
-            rename: isIOS ? 'bufferutil.node' : undefined,
+            src: 'node_modules',
+            dest: '../../dist/nodejs',
           },
         ]
       }),
