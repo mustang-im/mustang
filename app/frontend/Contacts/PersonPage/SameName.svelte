@@ -5,7 +5,9 @@
       <h3>{$t`Persons with the same name`}</h3>
     </svelte:fragment>
     <vbox class="merge" slot="content">
-      <hbox class="intro">{$t`If these are the same person, you can merge these contacts into this contact`}</hbox>
+      {#if isEditing}
+        <hbox class="intro">{$t`If these are the same person, you can merge these contacts into this contact`}</hbox>
+      {/if}
       <grid class="other-person">
         {#each $sameName.each as other}
           <hbox on:click={() => catchErrors(() => openPerson(other))} class="linked-object">
@@ -18,15 +20,19 @@
           <hbox class="addressbook-icon"
             style="color: {other.addressbook?.color ?? "black"}"
             title={other.addressbook?.name}>
-            {#if typeof (other.addressbook?.icon) == "string"}
-              <Icon data={other.addressbook.icon} />
-            {:else}
-              <AccountIcon />
+            {#if isEditing}
+              {#if typeof (other.addressbook?.icon) == "string"}
+                <Icon data={other.addressbook.icon} />
+              {:else}
+                <AccountIcon />
+              {/if}
             {/if}
           </hbox>
           <hbox class="addressbook">{other.addressbook?.name}</hbox>
           <hbox class="buttons">
-            <Button label={$t`Merge`} iconOnly icon={MergeIcon} plain onClick={() => merge(other)} />
+            {#if isEditing}
+              <Button label={$t`Merge`} iconOnly icon={MergeIcon} plain onClick={() => merge(other)} />
+            {/if}
           </hbox>
         {/each}
       </grid>
@@ -49,6 +55,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let person: Person;
+  export let isEditing = false;
 
   let sameName = new ArrayColl<Person>();
   $: findSameName(person);

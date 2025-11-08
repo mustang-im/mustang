@@ -1,5 +1,5 @@
 <vbox class="main font-normal" language={getUILocale()} flex>
-  <hbox class="avatar-row" flex>
+  <hbox class="top-button-row" flex>
     <hbox class="top-left buttons" flex>
       {#if isIOS}
         <RoundButton
@@ -8,19 +8,14 @@
           onClick={() => navigate(-1)}
           classes="back" />
       {/if}
-      {#if isEditingName}
+      {#if isEditing}
         <hbox class="addressbook-edit">
           <AddressbookChanger {person} withLabel={true} />
         </hbox>
       {/if}
     </hbox>
-    <vbox class="avatar" class:no-avatar={!person.picture}>
-      {#if person.picture || isEditingName}
-        <PersonPicture {person} size={person.picture ? 64 : 32} placeholder="icon" />
-      {/if}
-    </vbox>
     <hbox class="top-right buttons" flex>
-      {#if isEditingName}
+      {#if isEditing}
         <Button
           icon={SaveIcon}
           label={$t`Save`}
@@ -41,14 +36,19 @@
       {/if}
     </hbox>
   </hbox>
+  <vbox class="avatar-row" class:has-avatar={person.picture}>
+    {#if person.picture || isEditing}
+      <PersonPicture {person} size={person.picture ? 64 : 32} placeholder="icon" />
+    {/if}
+  </vbox>
   <vbox class="main-info" flex>
-    {#if isEditingName}
+    {#if isEditing}
       <GroupBox>
         <vbox class="names-edit-box" slot="content">
           <hbox class="name">
             <EditableSimpleText bind:value={person.name}
               on:save={onSaveWithCatch}
-              bind:isEditing={isEditingName}
+              bind:isEditing={isEditing}
               isName={true}
               placeholder={$t`First name Last name`} />
           </hbox>
@@ -56,14 +56,14 @@
             <EditableSimpleText
               bind:value={person.firstName}
               on:save={onSaveWithCatch}
-              bind:isEditing={isEditingName}
+              bind:isEditing={isEditing}
               placeholder={$t`First name`} />
           </hbox>
           <hbox class="names lastname">
             <EditableSimpleText
               bind:value={person.lastName}
               on:save={onSaveWithCatch}
-              bind:isEditing={isEditingName}
+              bind:isEditing={isEditing}
               placeholder={$t`Last name`} />
           </hbox>
         </vbox>
@@ -72,21 +72,21 @@
       <hbox class="name center">
         <EditableSimpleText bind:value={person.name}
           on:save={onSaveWithCatch}
-          bind:isEditing={isEditingName}
+          bind:isEditing={isEditing}
           isName={true}
           placeholder={$t`First name Last name`} />
       </hbox>
     {/if}
   </vbox>
-  {#if !isEditingName}
+  {#if !isEditing}
     <hbox class="center" flex>
       <CallButtons {person} />
     </hbox>
   {/if}
 </vbox>
 {#if showCompany || showCompanyEdit}
-    <CompanyBox {person} isEditing={isEditingName} />
-{:else if isEditingName}
+    <CompanyBox {person} isEditing={isEditing} />
+{:else if isEditing}
   <hbox class="company-expander">
     <ExpanderButtons>
       <ExpanderButton bind:expanded={showCompanyEdit}
@@ -118,18 +118,18 @@
 
   export let person: Person;
   /** in/out */
-  export let isEditingName: boolean;
+  export let isEditing: boolean;
 
   $: showCompany = $person.company || $person.position || $person.department ? true : false;
   let showCompanyEdit = false;
-  $: !isEditingName && (showCompanyEdit = false);
-  let isIOS = true;
+  $: !isEditing && (showCompanyEdit = false);
+  let isIOS = false;
 
   function onEdit() {
-    isEditingName = true;
+    isEditing = true;
   }
   async function onSave() {
-    isEditingName = false;
+    isEditing = false;
     await person.save();
   }
   async function onSaveWithCatch() {
@@ -142,12 +142,16 @@
 </script>
 
 <style>
-  .avatar.no-avatar {
-    margin-block-start: 72px;
+  .top-button-row {
+    flex-wrap: wrap;
   }
   .buttons {
     align-items: start;
     margin: 12px 12px;
+    flex-wrap: wrap;
+  }
+  .buttons :global(button .label) {
+    white-space: nowrap; /** TODO Move to `<Button>`? */
   }
   .top-left {
     justify-content: start;
@@ -172,6 +176,15 @@
   .top-right :global(.account-selector .icon) {
     width: 20px;
     height: 20px;
+  }
+  .avatar-row {
+    align-items: center;
+  }
+  .avatar-row:not(.has-avatar) {
+    margin-block-start: 24px;
+  }
+  .avatar-row.has-avatar {
+    margin-block-start: -12px;
   }
   .main-info {
     justify-content: center;

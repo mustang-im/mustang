@@ -15,7 +15,7 @@
       <grid class="items" slot="content">
         {#each $emailAddresses.each as entry}
           <ContactEntryUI {entry} coll={emailAddresses}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
             <a href="mailto:{entry.value}" slot="actions">
@@ -45,7 +45,7 @@
       <grid class="items" slot="content">
         {#each $chatAccounts.each as entry}
           <ContactEntryUI {entry} coll={chatAccounts}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
@@ -72,7 +72,7 @@
       <grid class="items" slot="content">
         {#each $phoneNumbers.each as entry}
           <ContactEntryUI {entry} coll={phoneNumbers}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -99,7 +99,7 @@
       <grid class="items" slot="content">
         {#each $urls.each as entry}
           <ContactEntryUI {entry} coll={urls}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <URLDisplay slot="display" value={entry.value} />
             <URLEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -124,7 +124,7 @@
       <grid class="items" slot="content">
         {#each $streetAddresses.each as entry}
           <ContactEntryUI {entry} coll={streetAddresses}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <StreetAddressDisplay slot="display" value={entry.value} />
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -151,7 +151,7 @@
       <grid class="items" slot="content">
         {#each $groups.each as entry}
           <ContactEntryUI {entry} coll={groups}
-            on:save={save} bind:isEditing={isEditingContacts}>
+            on:save={save} bind:isEditing={isEditing}>
             <hbox slot="display">{entry.value}</hbox>
           </ContactEntryUI>
         {/each}
@@ -173,7 +173,7 @@
   </GroupBox>
   -->
 
-  <SameName bind:person />
+  <SameName bind:person {isEditing} />
 
   {#if showExpanders}
     <vbox class="expanders">
@@ -202,7 +202,7 @@
         bind:value={person.notes}
         placeholder={$t`Personal notes`}
         autofocus={person.notes == " "}
-        readonly={!isEditingContacts}
+        readonly={!isEditing}
         class="font-small" />
     </vbox>
   {/if}
@@ -242,7 +242,7 @@
 
   export let person: Person;
   /** in/out */
-  export let isEditingContacts: boolean;
+  export let isEditing: boolean;
   export let showExpanders: boolean;
 
   $: emailAddresses = person.emailAddresses;
@@ -263,36 +263,36 @@
   function addEmail() {
     let entry = new ContactEntry("", "work");
     person.emailAddresses.push(entry);
-    isEditingContacts = true;
+    isEditing = true;
     $selectedContactEntry = entry;
   }
   function addChatAccount() {
     let entry = new ContactEntry("", "work");
     person.chatAccounts.push(entry);
-    isEditingContacts = true;
+    isEditing = true;
     $selectedContactEntry = entry;
   }
   function addPhoneNumber() {
     let entry = new ContactEntry("", "work");
     person.phoneNumbers.push(entry);
-    isEditingContacts = true;
+    isEditing = true;
     $selectedContactEntry = entry;
   }
   function addStreetAddress() {
     let entry = new ContactEntry(new StreetAddress().toString(), "work");
     person.streetAddresses.push(entry);
-    isEditingContacts = true;
+    isEditing = true;
     $selectedContactEntry = entry;
   }
   function addURL() {
     let entry = new ContactEntry("", "work");
     person.urls.push(entry);
-    isEditingContacts = true;
+    isEditing = true;
     $selectedContactEntry = entry;
   }
   function addNotes() {
     person.notes = " ";
-    isEditingContacts = true;
+    isEditing = true;
   }
 
   async function save() {
@@ -366,6 +366,9 @@
   }
   .expanders {
     margin-block-start: 12px;
+  }
+  :global(.mobile) .expanders {
+    margin-block-start: 24px;
   }
   .expanders :global(.content) {
     padding: 4px 8px 4px 4px;

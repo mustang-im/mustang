@@ -1,9 +1,9 @@
 <vbox flex class="person-page font-small">
-  <NameBox {person} bind:isEditingName />
+  <NameBox {person} bind:isEditing={isEditingName} />
 
   <Splitter initialRightRatio={1} name="contact-history">
     <Scroll hideHorizontalScrollbar={true} slot="left">
-      <ContactBoxes {person} bind:isEditingContacts showExpanders={true} />
+      <ContactBoxes {person} bind:isEditing={isEditingContacts} showExpanders={true} />
     </Scroll>
     <ContactHistory {person} slot="right" />
   </Splitter>

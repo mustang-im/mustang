@@ -1,8 +1,8 @@
 <vbox flex class="person-page">
   {#if person && person instanceof Person}
     <Scroll>
-      <NameBoxM {person} bind:isEditingName={isEditing} />
-      <ContactBoxes {person} bind:isEditingContacts={isEditing} showExpanders={isEditing} />
+      <NameBoxM {person} bind:isEditing={isEditing} />
+      <ContactBoxes {person} bind:isEditing={isEditing} showExpanders={isEditing} />
     </Scroll>
   {/if}
 </vbox>

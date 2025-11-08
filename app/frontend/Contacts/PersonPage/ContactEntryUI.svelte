@@ -32,8 +32,8 @@
   <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>
-  {#if !appGlobal.isMobile}
-    <hbox class="actions contact-entry">
+  <hbox class="actions contact-entry">
+    {#if !appGlobal.isMobile}
       {#if copied}
         <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
       {/if}
@@ -48,8 +48,9 @@
         icon={PencilIcon}
         iconOnly plain iconSize="14px"
         label={$t`Edit`} />
-    </hbox>
-  {/if}
+    <!-- else mobile: Keep the <hbox>, so that the <grid> doesn't break -->
+    {/if}
+  </hbox>
 {/if}
 
 <script lang="ts">

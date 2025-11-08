@@ -10,51 +10,51 @@
         <hbox class="name">
           <EditableSimpleText bind:value={person.name}
             on:save={save}
-            bind:isEditing={isEditingName}
+            bind:isEditing={isEditing}
             isName={true}
             placeholder={$t`First name Last name`} />
         </hbox>
-        {#if isEditingName}
+        {#if isEditing}
           <hbox class="names firstname">
             <EditableSimpleText
               bind:value={person.firstName}
               on:save={save}
-              bind:isEditing={isEditingName}
+              bind:isEditing={isEditing}
               placeholder={$t`First name`} />
           </hbox>
           <hbox class="names lastname">
             <EditableSimpleText
               bind:value={person.lastName}
               on:save={save}
-              bind:isEditing={isEditingName}
+              bind:isEditing={isEditing}
               placeholder={$t`Last name`} />
           </hbox>
         {/if}
         <vbox class="job-company">
-          {#if $person.position || isEditingName}
+          {#if $person.position || isEditing}
             <hbox class="position">
               <EditableSimpleText
                 bind:value={person.position}
                 on:save={save}
-                bind:isEditing={isEditingName}
+                bind:isEditing={isEditing}
                 placeholder={$t`Position`} />
             </hbox>
           {/if}
-          {#if $person.department || isEditingName}
+          {#if $person.department || isEditing}
             <hbox class="department">
               <EditableSimpleText
                 bind:value={person.department}
                 on:save={save}
-                bind:isEditing={isEditingName}
+                bind:isEditing={isEditing}
                 placeholder={$t`Department`} />
             </hbox>
           {/if}
-          {#if $person.company || isEditingName}
+          {#if $person.company || isEditing}
             <hbox class="company">
               <EditableSimpleText
                 bind:value={person.company}
                 on:save={save}
-                bind:isEditing={isEditingName}
+                bind:isEditing={isEditing}
                 placeholder={$t`Company`} />
             </hbox>
           {/if}
@@ -87,7 +87,7 @@
 
   export let person: Person;
   /** in/out */
-  export let isEditingName: boolean;
+  export let isEditing: boolean;
 
   async function save() {
     try {
