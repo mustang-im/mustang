@@ -1,4 +1,7 @@
-<WebView {html} {headHTML} allowServerCalls={allowExternalImages} title={$t`Text`} on:webview />
+<WebView {html} {headHTML} title={$t`Text`}
+   allowServerCalls={allowExternalImages}
+   autoSize
+   on:webview />
 
 <script lang="ts">
   import cssContent from "./content.css?inline";

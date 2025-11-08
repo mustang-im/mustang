@@ -240,7 +240,7 @@
     const observer = new ResizeObserver((entries) => {
       const el = entries[0];
       if (maxWidthVal.endsWith("%")) {
-        maxWidth = el.contentRect.width * (parseInt(maxWidthVal)/100);
+        maxWidth = el.contentRect.width * (parseInt(maxWidthVal) / 100);
       } else {
         maxWidth = parseInt(maxWidthVal);
       }
@@ -249,7 +249,7 @@
   }
 
   function parentWithMaxWidth(el: HTMLElement) {
-    while (el.parentElement &&
+    while (el &&
       getComputedStyle(el).maxWidth == "none") {
       el = el.parentElement;
     }
@@ -261,6 +261,7 @@
   webview, iframe {
     flex: 1 0 0;
     width: 100%;
+    max-width: 100%;
     height: auto;
   }
   iframe {

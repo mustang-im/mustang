@@ -1,18 +1,15 @@
 <hbox style="justify-content: center">{$t`The threaded view does not yet work as intended.`}</hbox>
-<Scroll>
-  <vbox class="messages background-pattern">
-    {#each $threadMessages.each as message, i}
-      <MailMessage {message} previousMessage={threadMessages.getIndex(i - 1)} />
-    {/each}
-  </vbox>
-  <vbox class="rest background-pattern" flex />
-</Scroll>
+<vbox class="messages background-pattern">
+  {#each $threadMessages.each as message, i}
+    <MailMessage {message} previousMessage={threadMessages.getIndex(i - 1)} />
+  {/each}
+</vbox>
+<vbox class="rest background-pattern" flex />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import MailMessage from "../MailChat/MailMessage.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
   import { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";

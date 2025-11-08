@@ -2,16 +2,18 @@
   on:keydown={event => catchErrors(() => onKeyOnList(event))}
   tabindex={0}
   >
-  <MessageHeader bind:message />
-  <MessageAttachments {message} />
-  {#if $message.event || $message.invitationMessage}
-    <InvitationInMail {message} />
-  {/if}
-  <vbox class="body" flex>
-    <Paper>
-      <MessageBody {message} />
-    </Paper>
-  </vbox>
+  <Scroll>
+    <MessageHeader bind:message />
+    <MessageAttachments {message} />
+    {#if $message.event || $message.invitationMessage}
+      <InvitationInMail {message} />
+    {/if}
+    <vbox class="body" flex>
+      <Paper>
+        <MessageBody {message} />
+      </Paper>
+    </vbox>
+  </Scroll>
   {#if $appGlobal.isMobile}
     <MessageDisplayBarM bind:message />
   {/if}
@@ -27,6 +29,7 @@
   import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
   import MessageDisplayBarM from "./MessageDisplayBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
