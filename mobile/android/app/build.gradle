@@ -36,15 +36,75 @@ android {
         }
     }
     def appName = "mustang"
+
+    // Configure ABI splits for APKs (universal build for AAB)
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'arm64-v8a', 'x86_64'
+            universalApk true
+        }
+    }
+
+    // Note: The plugin now detects splits.abi and will not set ndk.abiFilters when splits are enabled
+
+    def appName = "Mustang"
     def version = android.defaultConfig.versionName
 
     applicationVariants.all { variant ->
         def buildType = variant.buildType.name
 
         variant.outputs.all { output ->
-            def ext = output.outputFile.name.endsWith('.apk') ? '.apk' : '.aab'
-            if (buildType == 'release') {
-                outputFileName = "${appName}-${version}${ext}"
+            // Handle APK naming with architecture
+            if (output.outputFile.name.endsWith('.apk')) {
+                // Get the ABI from the output file name or variant
+                def abi = ""
+                // For split APKs, the ABI is typically in the output file path or variant name
+                if (output.outputFile.name.contains('-')) {
+                    // Try to extract ABI from output file name
+                    def fileName = output.outputFile.name
+                    if (fileName.contains('arm64-v8a')) {
+                        abi = 'arm64-v8a'
+                    } else if (fileName.contains('x86_64')) {
+                        abi = 'x86_64'
+                    } else if (fileName.contains('armeabi-v7a')) {
+                        abi = 'armeabi-v7a'
+                    } else if (fileName.contains('x86')) {
+                        abi = 'x86'
+                    }
+                }
+
+                // If ABI not found in filename, try to get from variant filters
+                if (!abi && output.getFilters() != null) {
+                    output.getFilters().each { filter ->
+                        if (filter.filterType.toString() == 'ABI') {
+                            abi = filter.identifier
+                        }
+                    }
+                }
+
+                // Fallback: try to extract from variant name
+                if (!abi) {
+                    def variantName = variant.name.toLowerCase()
+                    if (variantName.contains('arm64')) {
+                        abi = 'arm64-v8a'
+                    } else if (variantName.contains('x86')) {
+                        abi = 'x86_64'
+                    }
+                }
+
+                if (abi) {
+                    outputFileName = "${appName}-${version}-${abi}.apk"
+                } else {
+                    // Fallback if ABI cannot be determined
+                    outputFileName = "${appName}-${version}.apk"
+                }
+            } else {
+                // Handle AAB naming (no architecture in name, universal build)
+                if (buildType == 'release') {
+                    outputFileName = "${appName}-${version}.aab"
+                }
             }
         }
 
