@@ -1,9 +1,12 @@
 {#if isEditing}
   <hbox class="purpose edit">
     <select bind:value={entry.purpose}>
-      {#each Object.entries(purposes) as p }
+      {#each Object.entries(suggestedPurposes) as p }
         <option value={p[0]}>{p[1]}</option>
       {/each}
+      {#if !entry.purpose || !suggestedPurposes[entry.purpose]}
+        <option value={entry.purpose}>{hiddenPurposes[entry.purpose] ?? entry.purpose}</option>
+      {/if}
     </select>
   </hbox>
   <hbox class="value edit"
@@ -110,15 +113,23 @@
     dispatch("save");
   }
 
-  const purposes = {
+  /** Contains the Purpose values that we want to show to the user for him to select from */
+  const suggestedPurposes = {
     "work": $t`Work *=> Business address or phone number`,
     "home": $t`Home *=> Private address or phone number`,
     "mobile": $t`Mobile *=> Cell phone number`,
     "other": $t`Other *=> Email address or phone number that is not home or work`,
   }
 
+  /** Contains the Purpose values that the application might set, but we don't want the user to select these. */
+  const hiddenPurposes = {
+    "primary": $t`Primary *=> Most important email address for that person`,
+    "collected": $t`Collected *=> Email address that was automatically added to the contacts`,
+    null: $t`Select purpose *=> Select what this email address is for`,
+  }
+
   function displayPurpose(purpose: string) {
-    return purposes[purpose] || purpose;
+    return suggestedPurposes[purpose] ?? hiddenPurposes[purpose] ?? purpose;
   }
 </script>
 
@@ -132,8 +143,8 @@
     color: grey;
     font-style: italic;
   }
-  .purpose.edit,
-  .actions.edit {
+  :global(.mobile) .purpose.edit,
+  :global(.mobile) .actions.edit {
     padding-block-start: 5px;
   }
 
