@@ -44,7 +44,6 @@ perl -p -i \
   -e "s|Mustang|Parula|;" \
   -e "s|im.mustang.mail|app.parula.mail|;" \
   -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\";|;" \
-  -e "s|CURRENT_PROJECT_VERSION = .*|CURRENT_PROJECT_VERSION = \"$VERSION\";|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
 perl -p -i \

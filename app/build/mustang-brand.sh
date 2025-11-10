@@ -11,7 +11,6 @@ perl -p -i \
 
 perl -p -i \
   -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\";|;" \
-  -e "s|CURRENT_PROJECT_VERSION = .*|CURRENT_PROJECT_VERSION = \"$VERSION\";|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
 # Mobile Icons
