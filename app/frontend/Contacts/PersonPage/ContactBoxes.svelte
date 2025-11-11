@@ -317,4 +317,10 @@
   .expanders :global(.content) {
     padding: 4px 8px 4px 4px;
   }
+  .expanders :global(.icon) {
+    color: var(--icon-primary);
+  }
+  .expanders :global(.icon svg) {
+    stroke-width: 1.4px;
+  }
 </style>
