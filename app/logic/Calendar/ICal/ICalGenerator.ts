@@ -60,6 +60,10 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.location) {
     lines.push(["LOCATION", event.location]);
   }
+  if (event.isOnline) {
+    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    lines.push(["CONFERENCE", event.onlineMeetingURL]);
+  }
   if (event.isCancelled) {
     lines.push(["STATUS", "CANCELLED"]);
   }

@@ -83,6 +83,11 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   if (vevent.entries.location) {
     event.location = vevent.entries.location[0].value;
   }
+  if (vevent.entries.conference) {
+    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    event.isOnline = true;
+    event.onlineMeetingURL = vevent.entries.conference[0].value;
+  }
   if (vevent.entries.status?.[0].value == "CANCELLED") {
     event.isCancelled = true;
   }
