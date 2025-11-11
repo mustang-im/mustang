@@ -46,6 +46,7 @@
       <GroupBox headerName="">
         <vbox class="names-edit-box" slot="content">
           <hbox class="name">
+            <hbox class="label font-small">{$t`Full name`}</hbox>
             <EditableSimpleText bind:value={person.name}
               on:save={onSaveWithCatch}
               bind:isEditing={isEditing}
@@ -53,6 +54,7 @@
               placeholder={$t`First name Last name`} />
           </hbox>
           <hbox class="names firstname">
+            <hbox class="label font-small">{$t`First name`}</hbox>
             <EditableSimpleText
               bind:value={person.firstName}
               on:save={onSaveWithCatch}
@@ -60,6 +62,7 @@
               placeholder={$t`First name`} />
           </hbox>
           <hbox class="names lastname">
+            <hbox class="label font-small">{$t`Last name`}</hbox>
             <EditableSimpleText
               bind:value={person.lastName}
               on:save={onSaveWithCatch}
@@ -69,7 +72,7 @@
         </vbox>
       </GroupBox>
     {:else}
-      <hbox class="name center">
+      <hbox class="name center font-small">
         <EditableSimpleText bind:value={person.name}
           on:save={onSaveWithCatch}
           bind:isEditing={isEditing}
@@ -193,6 +196,13 @@
   .center {
     justify-content: center;
   }
+  .label {
+    white-space: nowrap;
+    align-items: end;
+    margin-inline-end: 18px;
+    font-weight: normal;
+    opacity: 50%;
+  }
   .name :global(.value) {
     font-size: 32px;
   }
@@ -200,6 +210,10 @@
   .name :global(input) {
     font-weight: bold;
     color: inherit;
+  }
+  .names :global(input:not(:focus)) {
+    opacity: 50%;
+    border-bottom-width: 1px;
   }
   .names-edit-box {
     margin-inline-end: 8px;

@@ -83,8 +83,7 @@
   }
 
   input {
-    border: none;
-    border-bottom: 2px solid var(--input-focus);
+    border-bottom-width: 2px;
     /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
     margin-block-start: 9px;
   }

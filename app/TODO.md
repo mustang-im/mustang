@@ -8,6 +8,8 @@
 * Mobile
   * Composer
   * Contacts Person page
+    * Star
+    * Align name labels in grid
   * Debug messages in UI
 
 # Release

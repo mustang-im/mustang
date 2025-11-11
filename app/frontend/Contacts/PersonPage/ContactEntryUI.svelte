@@ -166,6 +166,11 @@
   .value {
     margin-block: 4px;
   }
+  :global(.mobile) .purpose,
+  :global(.mobile) .protocol,
+  :global(.mobile) .value {
+    margin-block: 8px;
+  }
 
   .purpose,
   .protocol {
@@ -204,8 +209,7 @@
     min-height: 1.2em;
   }
   .value.edit :global(input) {
-    border: none;
-    border-bottom: 2px solid var(--input-focus);
+    border-bottom-width: 2px;
     /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
   }
   .value.edit :global(input:focus) {

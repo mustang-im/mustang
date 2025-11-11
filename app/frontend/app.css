@@ -234,6 +234,7 @@ input[type="email"],
 input[type="url"],
 input[type="date"],
 input[type="time"],
+input[type="tel"],
 input[type="search"],
 input[type="text"] {
   background-color: var(--input-bg);
