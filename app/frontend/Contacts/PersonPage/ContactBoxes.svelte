@@ -113,7 +113,7 @@
   <SameName bind:person {isEditing} />
 
   {#if showExpanders}
-    <vbox class="expanders">
+    <vbox class="expanders font-small">
       <ExpanderButtons>
         <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
           label={$t`Mail`} icon={MailIcon} classes="mail" />

@@ -1,7 +1,7 @@
 {#if !expanded}
   <hbox class="expander-button {classes}">
     <Button plain onClick={onExpand} tooltip={label}>
-      <hbox class="content {fontSize}" slot="label">
+      <hbox class="content font-small" slot="label">
         {#if typeof(icon) == "string"}
           <hbox class="icon">
             <Icon data={icon} size={iconSize} />
@@ -37,10 +37,8 @@
   export let expanded = false;
   export let label: string;
   export let icon: ComponentType | string | null = null;
-  export let iconSize = appGlobal.isMobile ? "24px" : "16px";
+  export let iconSize = "16px";
   export let classes = "";
-
-  $: fontSize = appGlobal.isMobile ? "font-normal" : "font-small";
 
   function onExpand() {
     expanded = true;
@@ -78,6 +76,6 @@
   }
   :global(.mobile) .label {
     border-radius: 100px;
-    padding: 0px 6px;
+    padding: 0px 2px;
   }
 </style>
