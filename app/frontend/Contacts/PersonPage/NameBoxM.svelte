@@ -92,7 +92,7 @@
 {:else if isEditing}
   <hbox class="company-expander">
     <ExpanderButtons>
-      <ExpanderButton bind:expanded={showCompanyEdit}
+      <ExpanderButton bind:expanded={showCompanyEdit} addIconSize="18px"
         label={$t`Company`} icon={CompanyIcon} classes="company" />
     </ExpanderButtons>
   </hbox>

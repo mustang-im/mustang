@@ -14,7 +14,9 @@
           <slot name="icon" />
         {/if}
         <hbox class="label">{label}</hbox>
-        <AddIcon size={iconSize} />
+        <hbox class="add">
+          <AddIcon size={addIconSize} />
+        </hbox>
       </hbox>
     </Button>
   </hbox>
@@ -26,7 +28,6 @@
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { ComponentType } from "svelte";
   import { createEventDispatcher } from 'svelte';
-  import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
 
   /** A button with label that you can click to expand some entire
@@ -38,6 +39,7 @@
   export let label: string;
   export let icon: ComponentType | string | null = null;
   export let iconSize = "16px";
+  export let addIconSize = iconSize;
   export let classes = "";
 
   function onExpand() {
@@ -49,7 +51,7 @@
 <style>
   :global(.mobile) .content {
     border-radius: 12px;
-    padding: 8px 12px !important;
+    padding: 6px 12px !important;
   }
   .content {
     align-items: center;
@@ -60,7 +62,7 @@
     padding: 2px 6px 2px 4px;
   }
   .content :global(svg) {
-    margin-inline-start: 8px;
+    margin-inline-start: 2px;
     stroke-width: 1px;
   }
   .expander-button :global(button:hover:not(.disabled)) {
@@ -76,6 +78,8 @@
   }
   :global(.mobile) .label {
     border-radius: 100px;
-    padding: 0px 2px;
+  }
+  .add {
+    margin-inline-start: 6px;
   }
 </style>

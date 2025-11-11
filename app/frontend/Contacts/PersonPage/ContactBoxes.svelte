@@ -116,19 +116,19 @@
     <vbox class="expanders font-small">
       <ExpanderButtons>
         <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
-          label={$t`Mail`} icon={MailIcon} classes="mail" />
+          label={$t`Mail`} icon={MailIcon} classes="mail" addIconSize="18px" />
         <ExpanderButton bind:expanded={showChat} on:expand={addChatAccount}
-          label={$t`Chat`} icon={ChatIcon} classes="chat" />
+          label={$t`Chat`} icon={ChatIcon} classes="chat" addIconSize="18px" />
         <ExpanderButton bind:expanded={showPhone} on:expand={addPhoneNumber}
-          label={$t`Phone`} icon={PhoneIcon} classes="phone" />
+          label={$t`Phone`} icon={PhoneIcon} classes="phone" addIconSize="18px" />
         <ExpanderButton bind:expanded={showStreet} on:expand={addStreetAddress}
-          label={$t`Street address`} icon={StreetIcon} classes="street" />
+          label={$t`Street address`} icon={StreetIcon} classes="street" addIconSize="18px" />
         <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
-          label={$t`Website`} icon={WebsiteIcon} classes="website" />
+          label={$t`Website`} icon={WebsiteIcon} classes="website" addIconSize="18px" />
         <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
-          label="Groups" icon={GroupIcon} classes="group" />-->
+          label="Groups" icon={GroupIcon} classes="group" addIconSize="18px" />-->
         <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
-          label={$t`Notes`} icon={NotesIcon} classes="notes" />
+          label={$t`Notes`} icon={NotesIcon} classes="notes" addIconSize="18px" />
       </ExpanderButtons>
     </vbox>
   {/if}
