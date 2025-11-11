@@ -6,7 +6,10 @@
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
-<vbox flex class="main-window" dir={rtl} class:mobile={$appGlobal.isMobile}>
+<vbox flex class="main-window"
+  dir={rtl}
+  class:mobile={$appGlobal.isMobile}
+  class:desktop={!$appGlobal.isMobile}>
   {#if !appGlobal.isMobile}
     <WindowHeader selectedApp={$selectedApp} />
   {/if}

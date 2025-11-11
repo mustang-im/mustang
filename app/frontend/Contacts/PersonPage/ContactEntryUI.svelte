@@ -190,7 +190,7 @@
     height: 24px;
     margin-right: 8px;
   }
-  :global(.group:not(:hover)) .actions {
+  :global(.desktop) :global(.group:not(:hover)) .actions {
     visibility: hidden;
   }
   .actions :global(button) {
