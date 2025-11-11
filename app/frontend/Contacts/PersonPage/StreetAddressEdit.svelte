@@ -65,4 +65,7 @@
 </script>
 
 <style>
+  :global(.mobile) input {
+    margin-block: 8px;
+  }
 </style>
