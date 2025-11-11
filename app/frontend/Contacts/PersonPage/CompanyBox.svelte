@@ -1,9 +1,6 @@
 <vbox class="box" flex>
-  <GroupBox>
-      <svelte:fragment slot="header">
-        <CompanyIcon size="16px" />
-        <h3>{$t`Company`}</h3>
-      </svelte:fragment>
+  <GroupBox headerName={$t`Company`}>
+    <CompanyIcon size="16px" slot="icon" />
     <vbox class="company" slot="content">
       {#if $person.position || isEditing}
         <hbox class="position">

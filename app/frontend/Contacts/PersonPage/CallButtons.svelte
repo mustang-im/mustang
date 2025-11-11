@@ -56,8 +56,8 @@
 </script>
 
 <style>
-  .call-buttons :global(> *) {
-    margin-inline-end: 10px;
+  .call-buttons {
+    gap: 10px;
   }
   .preferred {
     margin-block-start: 8px;

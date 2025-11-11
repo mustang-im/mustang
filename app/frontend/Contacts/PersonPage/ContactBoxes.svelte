@@ -1,17 +1,8 @@
 <vbox class="boxes {fontSize}">
   {#if showEmail}
-    <GroupBox classes="email">
-      <svelte:fragment slot="header">
-        <Icon data={MailIcon} size="16px" />
-        <h3>{$t`Mail`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addEmail}
-            icon={AddIcon}
-            label={$t`Add mail address`}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="email" headerName={$t`Mail`}
+      {isEditing} addFunc={addEmail} addLabel={$t`Add mail address`}>
+      <Icon data={MailIcon} size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $emailAddresses.each as entry}
           <ContactEntryUI {entry} coll={emailAddresses}
@@ -30,18 +21,9 @@
   {/if}
 
   {#if showChat}
-    <GroupBox classes="chat">
-      <svelte:fragment slot="header">
-        <Icon data={ChatIcon} size="16px" />
-        <h3>{$t`Chat`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addChatAccount}
-            icon={AddIcon}
-            label={$t`Add chat contact`}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="chat" headerName={$t`Chat`}
+      {isEditing} addFunc={addChatAccount} addLabel={$t`Add chat contact`}>
+      <Icon data={ChatIcon} size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $chatAccounts.each as entry}
           <ContactEntryUI {entry} coll={chatAccounts}
@@ -56,20 +38,9 @@
   {/if}
 
   {#if showPhone}
-    <GroupBox classes="phone">
-      <svelte:fragment slot="header">
-        <hbox class="phone">
-          <Icon data={PhoneIcon} size="16px" />
-        </hbox>
-        <h3>{$t`Phone numbers`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addPhoneNumber}
-            icon={AddIcon}
-            label={$t`Add phone number`}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="phone" headerName={$t`Phone numbers`}
+      {isEditing} addFunc={addPhoneNumber} addLabel={$t`Add phone number`}>
+      <Icon data={PhoneIcon} size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $phoneNumbers.each as entry}
           <ContactEntryUI {entry} coll={phoneNumbers}
@@ -83,20 +54,9 @@
   {/if}
 
   {#if showURLs}
-    <GroupBox classes="url">
-      <svelte:fragment slot="header">
-        <hbox class="url">
-          <WebsiteIcon size="16px" />
-        </hbox>
-        <h3>{$t`Website`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addURL}
-            icon={AddIcon}
-            label={$t`Add website link`}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="url" headerName={$t`Website`}
+      {isEditing} addFunc={addURL} addLabel={$t`Add website link`}>
+      <WebsiteIcon size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $urls.each as entry}
           <ContactEntryUI {entry} coll={urls}
@@ -110,18 +70,9 @@
   {/if}
 
   {#if showStreet}
-    <GroupBox classes="street-addresses">
-      <svelte:fragment slot="header">
-        <StreetIcon size="16px" />
-        <h3>{$t`Street address`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addStreetAddress}
-            label={$t`Add street address`}
-            icon={AddIcon}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="street-addresses" headerName={$t`Street address`}
+      {isEditing} addFunc={addStreetAddress} addLabel={$t`Add street address`}>
+      <StreetIcon size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $streetAddresses.each as entry}
           <ContactEntryUI {entry} coll={streetAddresses}
@@ -135,20 +86,8 @@
   {/if}
 
   {#if showGroups}
-    <GroupBox classes="categories">
-      <svelte:fragment slot="header">
-        <Icon data={ContactsIcon} size="16px" />
-        <h3>{$t`Groups`}</h3>
-        <hbox flex class="header actions">
-          <!--
-          <Button
-            on:click={addEmail}
-            icon={AddIcon}
-            label={$t`Add to group`}
-            iconOnly plain classes="add" />
-          -->
-        </hbox>
-      </svelte:fragment>
+    <GroupBox classes="groups" headerName={$t`Groups`} {isEditing}>
+      <Icon data={GroupIcon} size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $groups.each as entry}
           <ContactEntryUI {entry} coll={groups}
@@ -161,11 +100,8 @@
   {/if}
 
   <!--
-  <GroupBox classes="preferences">
-    <svelte:fragment slot="header">
-      <Icon data={ChatIcon} size="16px" />
-      <h3>Preferences</h3>
-    </svelte:fragment>
+  <GroupBox classes="preferences" headerName={$t`Preferences`}>
+    <Icon data={ChatIcon} size="16px" slot="icon" />
     <vbox class="preferred" slot="content">
       <hbox>Preferred communication tool</hbox>
       <hbox>WhatsApp</hbox>
@@ -237,7 +173,6 @@
   import WebsiteIcon from "lucide-svelte/icons/globe";
   import GroupIcon from "lucide-svelte/icons/users-round";
   import NotesIcon from "lucide-svelte/icons/notebook-pen";
-  import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -332,30 +267,10 @@
   .boxes {
     height: 100%;
   }
-  .boxes :global(.group .header h3) {
-    margin-inline-start: 10px;
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    vertical-align: middle;
-    font-size: 14px;
-  }
-  :global(.mobile) .boxes :global(h3) {
-    font-size: 16px;
-    font-weight: 500;
-  }
-  .boxes :global(grid.items) {
+  grid.items {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: start;
-  }
-  .boxes :global(.group button.add) {
-    color: grey;
-  }
-  .header.actions {
-    justify-content: end;
-  }
-  :global(.group:not(:hover)) .header.actions {
-    visibility: hidden;
   }
   .phone :global(path),
   .expanders :global(.phone .icon path) {

@@ -1,9 +1,6 @@
 {#if $sameName?.hasItems}
-  <GroupBox classes="merge">
-    <svelte:fragment slot="header">
-      <PersonsIcon size="16px" />
-      <h3>{$t`Persons with the same name`}</h3>
-    </svelte:fragment>
+  <GroupBox classes="merge" headerName={$t`Persons with the same name`}>
+    <PersonsIcon size="16px" slot="icon" />
     <vbox class="merge" slot="content">
       {#if isEditing}
         <hbox class="intro">{$t`If these are the same person, you can merge these contacts into this contact`}</hbox>

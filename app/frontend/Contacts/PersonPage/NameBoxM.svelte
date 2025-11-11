@@ -43,7 +43,7 @@
   </vbox>
   <vbox class="main-info" flex>
     {#if isEditing}
-      <GroupBox>
+      <GroupBox headerName="">
         <vbox class="names-edit-box" slot="content">
           <hbox class="name">
             <EditableSimpleText bind:value={person.name}
@@ -188,7 +188,6 @@
   }
   .main-info {
     justify-content: center;
-    margin-inline-start: 12px;
     margin-block-end: 8px;
   }
   .center {

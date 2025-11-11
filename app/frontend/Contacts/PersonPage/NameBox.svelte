@@ -1,4 +1,4 @@
-<GroupBox classes="person">
+<GroupBox classes="person" headerName="">
   <hbox flex class="main-left" slot="content" language={getUILocale()}>
     <hbox flex>
       {#if person.picture}
