@@ -30,7 +30,7 @@ jobs:
     - name: Set NDK to v28
       run:  echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
 
-    - run: cd mobile; sh hooks/common/parula-brand.sh
+    - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
     - run: cd backend; yarn install
