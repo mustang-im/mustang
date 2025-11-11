@@ -59,6 +59,12 @@
   .call-buttons {
     gap: 10px;
   }
+  :global(.mobile) .call-buttons :global(button) {
+    border-color: transparent;
+    box-shadow: -1px 0px 3px 0px rgba(22, 12, 39, 8%); /* #160C27 */;
+    background-color: var(--bg);
+    color: var(--fg);
+  }
   .preferred {
     margin-block-start: 8px;
     margin-block-end: 8px;
