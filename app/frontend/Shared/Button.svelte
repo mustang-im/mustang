@@ -152,6 +152,9 @@
     background-color: var(--inverted-bg);
     color: var(--inverted-fg);
   }
+  button {
+    font-size: 14px;
+  }
   button.large {
     padding: 8px 24px;
     font-size: 16px;

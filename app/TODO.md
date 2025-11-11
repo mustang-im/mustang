@@ -8,8 +8,11 @@
 * Mobile
   * Composer
   * Contacts Person page
+    * Combo box background color
+    * Edit/Save buttons not on second line
     * Star
-    * Align name labels in grid
+    * Name field labels
+    * Avatar
   * Debug messages in UI
 
 # Release
