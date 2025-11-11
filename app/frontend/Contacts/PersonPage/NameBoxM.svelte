@@ -153,6 +153,9 @@
     margin: 12px 12px;
     flex-wrap: wrap;
   }
+  .buttons :global(button.primary) {
+    padding: 10px 16px;
+  }
   .buttons :global(button .label) {
     white-space: nowrap; /** TODO Move to `<Button>`? */
   }
