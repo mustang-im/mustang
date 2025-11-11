@@ -157,6 +157,9 @@
     font-size: 16px;
     font-weight: bold;
   }
+  :global(.mobile) button {
+    font-size: 16px;
+  }
   .gap {
     width: 8px;
   }

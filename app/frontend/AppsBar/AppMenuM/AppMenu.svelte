@@ -52,6 +52,9 @@
 </script>
 
 <style>
+  :global(.content) .app-menu {
+    background-color: transparent;
+  }
   .app-menu {
     align-items: center;
   }
