@@ -2,7 +2,7 @@
   {#if showSearch}
     <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
   {/if}
-  <FastList items={filteredPersons} columns="auto">
+  <FastList items={sortedPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} on:click>
         <slot name="top-right" slot="top-right" {person} />
@@ -34,7 +34,7 @@
   export let doSearch = false;
 
   $: filteredPersons = searchTerm
-    ? persons.filter(p =>
+    ? persons.filterObservable(p =>
       p.name?.toLowerCase().includes(searchTerm) ||
       p instanceof Person && (
         p.emailAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
@@ -44,11 +44,12 @@
         p.notes?.toLowerCase().includes(searchTerm))
     )
     : persons;
+  $: sortedPersons = filteredPersons.sortBy(person => person.name.toLowerCase());
 
   $: searchTerm && adaptSelected();
   function adaptSelected() {
-    if (!filteredPersons.contains(selected)) {
-      selected = filteredPersons.first;
+    if (!sortedPersons.contains(selected)) {
+      selected = sortedPersons.first;
     }
   }
 
