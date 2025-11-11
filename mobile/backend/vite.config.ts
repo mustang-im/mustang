@@ -54,8 +54,12 @@ export default defineConfig(({}) => {
             rename: 'package.json',
           },
           {
-            src: 'node_modules',
-            dest: '../../dist/nodejs',
+            src: 'node_modules/better-sqlite3/',
+            dest: '../../dist/nodejs/node_modules/',
+          },
+          {
+            src: 'node_modules/bufferutil/',
+            dest: '../../dist/nodejs/node_modules/',
           },
         ]
       }),
