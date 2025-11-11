@@ -45,6 +45,7 @@
       <grid class="items" slot="content">
         {#each $chatAccounts.each as entry}
           <ContactEntryUI {entry} coll={chatAccounts}
+            protocolLabels={chatProtocols}
             on:save={save} bind:isEditing={isEditing}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
@@ -304,6 +305,27 @@
   }
 
   $: fontSize = appGlobal.isMobile ? "font-normal" : "font-small";
+
+  /** Contains the Purpose values that we want to show to the user for him to select from.
+   *
+   * Do *not* translate `$t` brand names.
+   * The names *must* be short (<= 8 chars), otherwise the dropdown is long and
+   * the address field has no space left. */
+  const chatProtocols = {
+    "xmpp": `XMPP`,
+    "matrix": `Matrix`,
+    "irc": `IRC`,
+    "teams": `Teams`,
+    "slack": `Slack`,
+    "signal": `Signal`,
+    "whatsapp": `WhatsApp`,
+    "threema": `Threema`,
+    "telegram": `Telegram`,
+    "facebook": `Facebook`,
+    "wechat": `WeChat`,
+    "qq": `QQ`,
+    "discord": `Discord`,
+  }
 </script>
 
 <style>

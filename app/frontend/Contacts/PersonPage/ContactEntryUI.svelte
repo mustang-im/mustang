@@ -1,14 +1,29 @@
 {#if isEditing}
-  <hbox class="purpose edit">
-    <select bind:value={entry.purpose}>
-      {#each Object.entries(suggestedPurposes) as p }
-        <option value={p[0]}>{p[1]}</option>
-      {/each}
-      {#if !entry.purpose || !suggestedPurposes[entry.purpose]}
-        <option value={entry.purpose}>{hiddenPurposes[entry.purpose] ?? entry.purpose}</option>
-      {/if}
-    </select>
-  </hbox>
+  {#if protocolLabels}
+    <hbox class="protocol edit">
+      <select bind:value={entry.protocol}>
+        {#each Object.entries(protocolLabels) as p }
+          <option value={p[0]}>{p[1]}</option>
+        {/each}
+        {#if !entry.protocol}
+          <option value={entry.protocol}>{$t`Select *=> Select what this chat address is for`}</option>
+        {:else if !protocolLabels[entry.protocol]}
+          <option value={entry.protocol}>{entry.protocol}</option>
+        {/if}
+      </select>
+    </hbox>
+  {:else}
+    <hbox class="purpose edit">
+      <select bind:value={entry.purpose}>
+        {#each Object.entries(suggestedPurposes) as p }
+          <option value={p[0]}>{p[1]}</option>
+        {/each}
+        {#if !entry.purpose || !suggestedPurposes[entry.purpose]}
+          <option value={entry.purpose}>{hiddenPurposes[entry.purpose] ?? entry.purpose}</option>
+        {/if}
+      </select>
+    </hbox>
+  {/if}
   <hbox class="value edit"
     bind:this={inputWrapperEl}
     tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
@@ -29,9 +44,15 @@
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  <hbox class="purpose display" on:click={startEditing}>
-    {displayPurpose(entry.purpose)}
-  </hbox>
+  {#if protocolLabels}
+    <hbox class="protocol display" on:click={startEditing}>
+      {displayProtocol(entry.protocol)}
+    </hbox>
+  {:else}
+    <hbox class="purpose display" on:click={startEditing}>
+      {displayPurpose(entry.purpose)}
+    </hbox>
+  {/if}
   <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>
@@ -75,6 +96,9 @@
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
   export let isEditing = !entry.value;
+  /** Same format as `suggestedPurposes`.
+   * Will show a Protocol dropdown instead of a Purpose dropdown. */
+  export let protocolLabels: Record<string, string> = null;
 
   let inputWrapperEl: HTMLDivElement;
   let copied = false;
@@ -125,25 +149,32 @@
   const hiddenPurposes = {
     "primary": $t`Primary *=> Most important email address for that person`,
     "collected": $t`Collected *=> Email address that was automatically added to the contacts`,
-    null: $t`Select purpose *=> Select what this email address is for`,
+    null: $t`Select *=> Select what this email address is for`,
   }
 
   function displayPurpose(purpose: string) {
-    return suggestedPurposes[purpose] ?? hiddenPurposes[purpose] ?? purpose;
+    return suggestedPurposes[purpose] ?? hiddenPurposes[purpose] ?? purpose ?? "";
+  }
+  function displayProtocol(protocol: string) {
+    return protocolLabels[protocol] ?? protocol ?? "";
   }
 </script>
 
 <style>
-  .purpose, .value {
+  .purpose,
+  .protocol,
+  .value {
     margin-block: 4px;
   }
 
-  .purpose {
+  .purpose,
+  .protocol {
     margin-inline-end: 20px;
     color: grey;
     font-style: italic;
   }
   :global(.mobile) .purpose.edit,
+  :global(.mobile) .protocol.edit,
   :global(.mobile) .actions.edit {
     padding-block-start: 5px;
   }
