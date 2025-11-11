@@ -284,7 +284,6 @@
     margin: 6px;
     margin-block-start: 16px;
     border: 1px solid var(--border);
-    border-radius: 2px;
   }
   .notes textarea {
     height: 100%;
@@ -294,6 +293,14 @@
     font-family: sans-serif;
     border: 1px solid var(--border);
     padding: 8px;
+  }
+  .notes,
+  .notes textarea {
+    border-radius: 2px;
+  }
+  :global(.mobile) .notes,
+  :global(.mobile) .notes textarea {
+    border-radius: 12px;
   }
   .notes textarea::placeholder {
     color: grey;
