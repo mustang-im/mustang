@@ -169,6 +169,8 @@
   :global(.mobile) .message {
     padding: 8px 12px 8px 12px !important;
   }
+
+  /* account color bar */
   .message::before {
     position: absolute;
     top: 18%;
@@ -177,10 +179,7 @@
     border-left: 3px solid var(--account-color);
     border-radius: 10px;
   }
-  :global(.mobile) .message::before {
-    top: 18%;
-    height: 64%;
-  }
+
   .top-row,
   .bottom-row {
     width: 100%;

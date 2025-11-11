@@ -1,4 +1,6 @@
-<hbox flex class="person" class:selected={isSelected} on:click>
+<hbox flex class="person" class:selected={isSelected} on:click
+  style="--account-color: {addressbook?.color ?? "transparent"};"
+  >
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
@@ -21,6 +23,7 @@
   export let pictureSize: number;
 
   $: fontClass = appGlobal.isMobile ? "font-normal" : "font-small";
+  $: addressbook = ($person as any).addressbook;
 </script>
 
 <style>
@@ -35,6 +38,21 @@
   .person :global(.avatar) {
     margin: 2px 14px;
   }
+
+  /* account color bar */
+  .person {
+    position: relative;
+  }
+  .person::before {
+    position: absolute;
+    left: 8px;
+    top: 15%;
+    content: "";
+    height: 70%;
+    border-left: 3px solid var(--account-color);
+    border-radius: 10px;
+  }
+
   .main {
     justify-content: center;
     margin-block-start: 0px;
