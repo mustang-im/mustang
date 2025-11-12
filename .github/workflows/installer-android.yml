@@ -68,11 +68,18 @@ jobs:
         cd mobile
         VERSION=$(jq -r '.version' package.json)
         echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
 
     - name: Upload to GitHub release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.APP_VERSION }}
+        make_latest: ${{ env.RELEASE }}
+        prerelease: ${{ env.RELEASE != 'true' }}
         files: |
           mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab
