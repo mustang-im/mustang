@@ -89,3 +89,91 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
+
+// Task to collect all rebuilt .node files and place them in nodejs/build/Release
+// This runs after all native modules are rebuilt by the capacitor-nodejs plugin
+afterEvaluate {
+    // Resolve file paths and project references during configuration time for configuration cache compatibility
+    def nodejsDir = project.file('src/main/assets/public/nodejs')
+    // Use the app project's build directory (where native assets are actually stored)
+    def buildDir = project.layout.buildDirectory.get().asFile
+    def nativeAssetsBaseDir = new File(buildDir, "nodejs-native-assets")
+
+    tasks.register("CollectNodeNativeModules") {
+        description = "Collects all rebuilt .node files and places them in nodejs/build/Release, then deletes node_modules"
+        group = "nodejs"
+
+        doLast {
+            if (!nodejsDir.exists()) {
+                logger.warn("Could not find nodejs directory at ${nodejsDir.absolutePath}")
+                return
+            }
+
+            if (!nativeAssetsBaseDir || !nativeAssetsBaseDir.exists()) {
+                logger.warn("Could not find native assets directory at ${nativeAssetsBaseDir?.absolutePath}")
+                return
+            }
+
+            // Create build/Release directory
+            def buildReleaseDir = new File(nodejsDir, "build/Release")
+            buildReleaseDir.mkdirs()
+
+            int copiedCount = 0
+            nativeAssetsBaseDir.eachDir { abiDir ->
+                if (abiDir.name.startsWith("nodejs-native-assets-")) {
+                    // Find all .node files recursively
+                    abiDir.eachFileRecurse { sourceFile ->
+                        if (sourceFile.name.endsWith('.node')) {
+                            // Copy directly to build/Release (flatten structure)
+                            def targetFile = new File(buildReleaseDir, sourceFile.name)
+                            // Use Files.copy for proper file copying
+                            java.nio.file.Files.copy(
+                                sourceFile.toPath(),
+                                targetFile.toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            )
+                            copiedCount++
+                            logger.info("Copied .node file: ${sourceFile.name}")
+                        }
+                    }
+                }
+            }
+
+            logger.info("Copied ${copiedCount} .node files to ${buildReleaseDir.absolutePath}")
+
+            // Delete node_modules directory
+            def nodeModulesDir = new File(nodejsDir, "node_modules")
+            if (nodeModulesDir.exists()) {
+                logger.info("Deleting node_modules directory at ${nodeModulesDir.absolutePath}")
+                nodeModulesDir.deleteDir()
+            } else {
+                logger.info("node_modules directory not found, skipping deletion")
+            }
+        }
+    }
+
+    // Configure dependencies - depend on capacitor-nodejs preBuild to ensure native modules are built
+    def collectTask = tasks.named("CollectNodeNativeModules")
+    def capacitorNodejsProject = project.rootProject.subprojects.find { it.name == 'capacitor-nodejs' }
+    if (capacitorNodejsProject) {
+        // Wait for the plugin project to be evaluated, then set up dependencies
+        capacitorNodejsProject.afterEvaluate {
+            // Depend on all GenerateNodeNativeAssetsLists tasks
+            def allAbiFilters = android.defaultConfig.ndk.abiFilters
+            allAbiFilters.each { abiName ->
+                def listTaskName = "GenerateNodeNativeAssetsLists${abiName}"
+                def listTask = capacitorNodejsProject.tasks.findByName(listTaskName)
+                if (listTask != null) {
+                    collectTask.configure {
+                        dependsOn(listTask)
+                    }
+                }
+            }
+        }
+    }
+
+    // Make preBuild depend on CollectNodeNativeModules
+    tasks.named('preBuild').configure {
+        dependsOn "CollectNodeNativeModules"
+    }
+}
