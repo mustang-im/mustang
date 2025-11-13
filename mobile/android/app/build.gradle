@@ -95,9 +95,6 @@ try {
 afterEvaluate {
     // Resolve file paths and project references during configuration time for configuration cache compatibility
     def nodejsDir = project.file('src/main/assets/public/nodejs')
-    // Use the app project's build directory (where native assets are actually stored)
-    def buildDir = project.layout.buildDirectory.get().asFile
-    def nativeAssetsBaseDir = new File(buildDir, "nodejs-native-assets")
 
     tasks.register("CollectNodeNativeModules") {
         description = "Collects all rebuilt .node files and places them in nodejs/build/Release, then deletes node_modules"
@@ -109,40 +106,46 @@ afterEvaluate {
                 return
             }
 
-            if (!nativeAssetsBaseDir || !nativeAssetsBaseDir.exists()) {
-                logger.warn("Could not find native assets directory at ${nativeAssetsBaseDir?.absolutePath}")
-                return
-            }
-
-            // Create build/Release directory
-            def buildReleaseDir = new File(nodejsDir, "build/Release")
+            // Create build/Release directory in public folder (where plugin looks)
+            def publicNodejsDir = new File(nodejsDir, "public")
+            def buildReleaseDir = new File(publicNodejsDir, "build/Release")
             buildReleaseDir.mkdirs()
 
             int copiedCount = 0
-            nativeAssetsBaseDir.eachDir { abiDir ->
-                if (abiDir.name.startsWith("nodejs-native-assets-")) {
-                    // Find all .node files recursively
-                    abiDir.eachFileRecurse { sourceFile ->
-                        if (sourceFile.name.endsWith('.node')) {
-                            // Copy directly to build/Release (flatten structure)
-                            def targetFile = new File(buildReleaseDir, sourceFile.name)
-                            // Use Files.copy for proper file copying
-                            java.nio.file.Files.copy(
-                                sourceFile.toPath(),
-                                targetFile.toPath(),
-                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                            )
-                            copiedCount++
-                            logger.info("Copied .node file: ${sourceFile.name}")
+            // The .node files are in app/build/intermediates/nodejs-native-assets/nodejs-native-assets-ABI/
+            // Find them directly from the build directory - use project.buildDir directly in doLast
+            def buildDirValue = project.buildDir
+            def nodejsNativeAssetsDir = new File(buildDirValue, "intermediates/nodejs-native-assets")
+
+            if (nodejsNativeAssetsDir.exists()) {
+                nodejsNativeAssetsDir.eachDir { abiDir ->
+                    if (abiDir.name.startsWith("nodejs-native-assets-")) {
+                        // Find all .node files recursively
+                        abiDir.eachFileRecurse { sourceFile ->
+                            if (sourceFile.name.endsWith('.node')) {
+                                // Copy directly to build/Release (flatten structure)
+                                def targetFile = new File(buildReleaseDir, sourceFile.name)
+                                // Use Files.copy for proper file copying
+                                java.nio.file.Files.copy(
+                                    sourceFile.toPath(),
+                                    targetFile.toPath(),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                )
+                                copiedCount++
+                                logger.info("Copied .node file: ${sourceFile.name} from ${abiDir.name}")
+                            }
                         }
                     }
                 }
+            } else {
+                logger.warn("NodeJS native assets directory does not exist yet: ${nodejsNativeAssetsDir.absolutePath}")
+                logger.warn("This task should run after native modules are built. Make sure dependencies are correct.")
             }
 
             logger.info("Copied ${copiedCount} .node files to ${buildReleaseDir.absolutePath}")
 
-            // Delete node_modules directory
-            def nodeModulesDir = new File(nodejsDir, "node_modules")
+            // Delete node_modules directory from public folder
+            def nodeModulesDir = new File(publicNodejsDir, "node_modules")
             if (nodeModulesDir.exists()) {
                 logger.info("Deleting node_modules directory at ${nodeModulesDir.absolutePath}")
                 nodeModulesDir.deleteDir()
@@ -152,28 +155,14 @@ afterEvaluate {
         }
     }
 
-    // Configure dependencies - depend on capacitor-nodejs preBuild to ensure native modules are built
-    def collectTask = tasks.named("CollectNodeNativeModules")
-    def capacitorNodejsProject = project.rootProject.subprojects.find { it.name == 'capacitor-nodejs' }
-    if (capacitorNodejsProject) {
-        // Wait for the plugin project to be evaluated, then set up dependencies
-        capacitorNodejsProject.afterEvaluate {
-            // Depend on all GenerateNodeNativeAssetsLists tasks
-            def allAbiFilters = android.defaultConfig.ndk.abiFilters
-            allAbiFilters.each { abiName ->
-                def listTaskName = "GenerateNodeNativeAssetsLists${abiName}"
-                def listTask = capacitorNodejsProject.tasks.findByName(listTaskName)
-                if (listTask != null) {
-                    collectTask.configure {
-                        dependsOn(listTask)
-                    }
-                }
-            }
-        }
-    }
+    // Configure dependencies - depend on capacitor-nodejs tasks that build native modules
+    // Note: Dependencies are set up via processDebugResources below
 
-    // Make preBuild depend on CollectNodeNativeModules
-    tasks.named('preBuild').configure {
+    // Make processDebugResources depend on CollectNodeNativeModules
+    // This ensures .node files are in place before resources are processed
+    tasks.named('processDebugResources').configure {
         dependsOn "CollectNodeNativeModules"
     }
 }
+
+
