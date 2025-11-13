@@ -399,23 +399,23 @@ export async function openPurchasePage(paidCallback?: (license: Ticket) => void,
   let pageURL = kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
   console.log("Opening payment page in browser", pageURL);
   await openExternalURL(pageURL);
-  startPolling(paidCallback);
+  startFastPolling(paidCallback);
 }
 
 let purchasePoller: NodeJS.Timeout | null = null;
 
-function startPolling(paidCallback?: (license: Ticket) => void) {
+function startFastPolling(paidCallback?: (license: Ticket) => void) {
   /** How often to poll after the user clicked [Buy] */
   const kPurchasePollInterval = 10 * 1000; // 10 seconds
   /** For how long to poll after the user clicked [Buy] */
   const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
 
-  stopPurchasePolling();
+  stopFastPolling();
   purchasePoller = setInterval(async () => {
     try {
       let ticket = await fetchTicket();
       if (ticket.valid && paidCallback) {
-        stopPurchasePolling();
+        stopFastPolling();
         paidCallback(ticket);
         paidCallback = null;
       }
@@ -424,10 +424,10 @@ function startPolling(paidCallback?: (license: Ticket) => void) {
     }
   }, kPurchasePollInterval);
 
-  setTimeout(stopPurchasePolling, kPurchasePollFor);
+  setTimeout(stopFastPolling, kPurchasePollFor);
 }
 
-function stopPurchasePolling() {
+function stopFastPolling() {
   if (purchasePoller) {
     clearInterval(purchasePoller);
   }
@@ -441,6 +441,12 @@ async function startup() {
   if (appGlobal.emailAccounts.isEmpty) {
     await sleep(10);
   }
+
+  appGlobal.emailAccounts.subscribe(() => {
+    // Clear license cache when accounts are added or removed, e.g. after setup
+    gLicense.license = null;
+  });
+
   nextPoll();
   const kSoonExpiringPollInterval = k1DayMS; // 1 day
   setInterval(nextPoll, kSoonExpiringPollInterval);
