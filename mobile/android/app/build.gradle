@@ -79,6 +79,132 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
 }
 
+// Allow custom post-build configuration
+ext.postBuildExtras = {
+    // Task to flatten .node files from node_modules to build/Release after native modules are rebuilt
+    afterEvaluate {
+        def nodejsDir = project.file('src/main/assets/public/nodejs')
+        def buildReleaseDir = new File(nodejsDir, 'build/Release')
+
+        tasks.register("FlattenNodeNativeModules") {
+            description = "Moves rebuilt .node files from node_modules to flattened build/Release structure"
+            group = "nodejs"
+
+            doLast {
+                if (!nodejsDir.exists()) {
+                    logger.warn("Could not find nodejs directory at ${nodejsDir.absolutePath}")
+                    return
+                }
+
+                // Create build/Release directory
+                buildReleaseDir.mkdirs()
+
+                def nodeModulesDir = new File(nodejsDir, 'node_modules')
+                if (!nodeModulesDir.exists()) {
+                    logger.warn("node_modules directory not found at ${nodeModulesDir.absolutePath}")
+                    return
+                }
+
+                int movedCount = 0
+
+                // Find all .node files in node_modules/*/build/Release/
+                nodeModulesDir.eachDir { packageDir ->
+                    def packageBuildRelease = new File(packageDir, 'build/Release')
+                    if (packageBuildRelease.exists()) {
+                        // Find the main .node file (skip test files and obj.target)
+                        def mainNodeFile = null
+                        packageBuildRelease.eachFileMatch(~/.*\.node$/) { nodeFile ->
+                            // Skip obj.target directory files and test files
+                            if (nodeFile.parentFile.name == 'obj.target' ||
+                                nodeFile.name.contains('test') ||
+                                nodeFile.name.contains('Test')) {
+                                return
+                            }
+
+                            // Prefer the main package .node file (matches package name)
+                            if (nodeFile.name == "${packageDir.name}.node" ||
+                                mainNodeFile == null) {
+                                mainNodeFile = nodeFile
+                            }
+                        }
+
+                        if (mainNodeFile != null) {
+                            // Copy the .node file with its original name
+                            def targetFile = new File(buildReleaseDir, mainNodeFile.name)
+                            java.nio.file.Files.copy(
+                                mainNodeFile.toPath(),
+                                targetFile.toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            )
+                            movedCount++
+                            logger.info("Moved .node file: ${mainNodeFile.name} -> ${targetFile.name}")
+                        }
+                    }
+                }
+
+                logger.info("Moved ${movedCount} .node files to ${buildReleaseDir.absolutePath}")
+
+                // Delete node_modules directory after moving .node files to reduce APK size
+                if (nodeModulesDir.exists()) {
+                    logger.info("Deleting node_modules directory at ${nodeModulesDir.absolutePath}")
+                    nodeModulesDir.deleteDir()
+                    logger.info("node_modules directory deleted successfully")
+                } else {
+                    logger.info("node_modules directory not found, skipping deletion")
+                }
+            }
+        }
+
+        // Make FlattenNodeNativeModules depend on buildNativeModules task from capacitor-nodejs
+        // This ensures native modules are rebuilt before we move and delete node_modules
+        // We need to wait for both projects to be evaluated
+        project.afterEvaluate {
+            def capacitorNodejsProject = project.rootProject.subprojects.find { it.name == 'capacitor-nodejs' }
+            if (capacitorNodejsProject) {
+                // Wait for capacitor-nodejs project to be fully evaluated
+                capacitorNodejsProject.afterEvaluate {
+                    // Wait a bit more to ensure tasks are registered
+                    project.gradle.projectsEvaluated {
+                        def buildNativeModulesTask = capacitorNodejsProject.tasks.findByName('buildNativeModules')
+                        if (buildNativeModulesTask) {
+                            tasks.named("FlattenNodeNativeModules").configure {
+                                mustRunAfter buildNativeModulesTask
+                                dependsOn buildNativeModulesTask
+                            }
+                        }
+
+                        // Also depend on individual buildNativeModule_* tasks
+                        capacitorNodejsProject.tasks.matching { it.name.startsWith('buildNativeModule_') }.configureEach { buildTask ->
+                            tasks.named("FlattenNodeNativeModules").configure {
+                                mustRunAfter buildTask
+                                dependsOn buildTask
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Make mergeDebugAssets and mergeReleaseAssets depend on FlattenNodeNativeModules
+        // This ensures .node files are flattened and node_modules deleted before assets are merged
+        tasks.named('mergeDebugAssets').configure {
+            dependsOn "FlattenNodeNativeModules"
+        }
+        tasks.named('mergeReleaseAssets').configure {
+            dependsOn "FlattenNodeNativeModules"
+        }
+
+        // Also ensure processDebugResources and processReleaseResources depend on FlattenNodeNativeModules
+        // This ensures .node files are flattened before resources are processed
+        tasks.named('processDebugResources').configure {
+            dependsOn "FlattenNodeNativeModules"
+        }
+        tasks.named('processReleaseResources').configure {
+            dependsOn "FlattenNodeNativeModules"
+        }
+    }
+}
+
 apply from: 'capacitor.build.gradle'
 
 try {
@@ -89,80 +215,4 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
-
-// Task to collect all rebuilt .node files and place them in nodejs/build/Release
-// This runs after all native modules are rebuilt by the capacitor-nodejs plugin
-afterEvaluate {
-    // Resolve file paths and project references during configuration time for configuration cache compatibility
-    def nodejsDir = project.file('src/main/assets/public/nodejs')
-
-    tasks.register("CollectNodeNativeModules") {
-        description = "Collects all rebuilt .node files and places them in nodejs/build/Release, then deletes node_modules"
-        group = "nodejs"
-
-        doLast {
-            if (!nodejsDir.exists()) {
-                logger.warn("Could not find nodejs directory at ${nodejsDir.absolutePath}")
-                return
-            }
-
-            // Create build/Release directory in public folder (where plugin looks)
-            def publicNodejsDir = new File(nodejsDir, "public")
-            def buildReleaseDir = new File(publicNodejsDir, "build/Release")
-            buildReleaseDir.mkdirs()
-
-            int copiedCount = 0
-            // The .node files are in app/build/intermediates/nodejs-native-assets/nodejs-native-assets-ABI/
-            // Find them directly from the build directory - use project.buildDir directly in doLast
-            def buildDirValue = project.buildDir
-            def nodejsNativeAssetsDir = new File(buildDirValue, "intermediates/nodejs-native-assets")
-
-            if (nodejsNativeAssetsDir.exists()) {
-                nodejsNativeAssetsDir.eachDir { abiDir ->
-                    if (abiDir.name.startsWith("nodejs-native-assets-")) {
-                        // Find all .node files recursively
-                        abiDir.eachFileRecurse { sourceFile ->
-                            if (sourceFile.name.endsWith('.node')) {
-                                // Copy directly to build/Release (flatten structure)
-                                def targetFile = new File(buildReleaseDir, sourceFile.name)
-                                // Use Files.copy for proper file copying
-                                java.nio.file.Files.copy(
-                                    sourceFile.toPath(),
-                                    targetFile.toPath(),
-                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                                )
-                                copiedCount++
-                                logger.info("Copied .node file: ${sourceFile.name} from ${abiDir.name}")
-                            }
-                        }
-                    }
-                }
-            } else {
-                logger.warn("NodeJS native assets directory does not exist yet: ${nodejsNativeAssetsDir.absolutePath}")
-                logger.warn("This task should run after native modules are built. Make sure dependencies are correct.")
-            }
-
-            logger.info("Copied ${copiedCount} .node files to ${buildReleaseDir.absolutePath}")
-
-            // Delete node_modules directory from public folder
-            def nodeModulesDir = new File(publicNodejsDir, "node_modules")
-            if (nodeModulesDir.exists()) {
-                logger.info("Deleting node_modules directory at ${nodeModulesDir.absolutePath}")
-                nodeModulesDir.deleteDir()
-            } else {
-                logger.info("node_modules directory not found, skipping deletion")
-            }
-        }
-    }
-
-    // Configure dependencies - depend on capacitor-nodejs tasks that build native modules
-    // Note: Dependencies are set up via processDebugResources below
-
-    // Make processDebugResources depend on CollectNodeNativeModules
-    // This ensures .node files are in place before resources are processed
-    tasks.named('processDebugResources').configure {
-        dependsOn "CollectNodeNativeModules"
-    }
-}
-
 
