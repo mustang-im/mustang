@@ -14,7 +14,7 @@
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if filteredMessages && selectedPerson }
-      <PaymentBar account={$selectedAccount} />
+      <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
       <Header person={selectedPerson} />
       <vbox flex class="messages background-pattern">
         <MessageList messages={filteredMessages}>

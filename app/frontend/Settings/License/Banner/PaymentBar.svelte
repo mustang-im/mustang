@@ -1,4 +1,4 @@
-{#if !account || account?.needsLicense()}
+{#if account?.needsLicense() || (showWhenNoAccount && !account)}
   <vbox class="payment-bar">
     {#await getLicense()}
       <!-- Checking license... -->
@@ -14,7 +14,7 @@
       {:else if owlLicense}
         <Upgrade bind:license {owlLicense} />
       {:else}
-        <NeverPaid bind:license />
+        <NeverPaid bind:license message={neverLicensedText} />
       {/if}
     {:catch ex}
       <ErrorMessageInline {ex} />
@@ -35,6 +35,8 @@
   /** If given, the bar shows only if this account needs a license.
    * If not passed, the bar always shows. */
   export let account: Account | null = null;
+  export let showWhenNoAccount: boolean;
+  export let neverLicensedText: string = undefined;
 
   let license: Ticket = new BadTicket();
   let owlLicense: Ticket | null = null;
@@ -56,6 +58,9 @@
 </script>
 
 <style>
+  .payment-bar {
+    border-radius: inherit;
+  }
   /*.payment-bar {
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
   }*/

@@ -7,7 +7,12 @@
       classes="plain primary" border={false} iconSize="24px" />
   </hbox>
   <hbox flex />
-  <PaymentBar />
+  <vbox class="payment-bar-container">
+    <vbox class="payment-bar">
+      <PaymentBar account={selectedAccount} showWhenNoAccount={true}
+      neverLicensedText={$t`If you want to test our video conferences, you can buy a license from us`} />
+    </vbox>
+  </vbox>
   <hbox flex />
   <AccountDropDown
     accounts={appGlobal.meetAccounts}
@@ -221,5 +226,12 @@
     .actions-container {
       order: 2;
     }
+  }
+  .payment-bar-container {
+    justify-content: end;
+  }
+  .payment-bar {
+    border-radius: 24px;
+    border: 1px solid var(--border);
   }
 </style>
