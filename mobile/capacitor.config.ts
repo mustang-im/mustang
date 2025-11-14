@@ -9,6 +9,7 @@ const config: CapacitorConfig = {
       nodeDir: "nodejs",
       androidLibNode: "https://github.com/mustang-im/nodejs-mobile/releases/download/v22.9.0/nodejs-mobile-v22.9.0-android.zip",
       androidArchitectures: ["arm64"],
+      iosLibnode: "https://github.com/mustang-im/nodejs-mobile/releases/download/v24.5.0/nodejs-mobile-v24.5.0-ios.zip",
     },
     SplashScreen: {
       launchAutoHide: true,

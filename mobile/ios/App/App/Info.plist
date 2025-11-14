@@ -36,7 +36,7 @@
 		</dict>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>The app frontend needs to communicate with a local backend via WebSocket for mail synchronization, storage and other tasks. We want the app to run entirely local without any cloud service, that&apos;s why the service runs locally on the device.</string>
+	<string>The app frontend needs to communicate with a local backend via WebSocket for mail synchronization, storage and other tasks. We want the app to run entirely local without any cloud service, that's why the service runs locally on the device.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
