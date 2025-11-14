@@ -38,7 +38,7 @@ import { logError } from "../../frontend/Util/error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 import { openExternalURL } from "./os-integration";
-import { sleep } from "./util";
+import { sleep, type URLString } from "./util";
 
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
 // cat license.pem.pub, and append the part between "-----" after "base64,"
@@ -382,11 +382,18 @@ function isFirstRun(): boolean {
   return isFirstRun;
 }
 
-const kGetLicenseURL = siteRoot;
-
 /** Called from [Bug] button in license bar and in settings page,
  * and on first run */
 export async function openPurchasePage(paidCallback?: (license: Ticket) => void, mode: "welcome" | "purchase" = "purchase") {
+  let pageURL = purchagePageURL(mode);
+  console.log("Opening payment page in browser", pageURL);
+  await openExternalURL(pageURL);
+  startFastPolling(paidCallback);
+}
+
+const kGetLicenseURL = siteRoot;
+
+export function purchagePageURL(mode: "welcome" | "purchase" | "inline-payment" = "purchase"): URLString {
   let params = {
     lang: getUILocale(),
     goal: mode,
@@ -396,10 +403,7 @@ export async function openPurchasePage(paidCallback?: (license: Ticket) => void,
     params.email = primaryIdentity?.emailAddress;
     params.name = primaryIdentity?.realname;
   }
-  let pageURL = kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
-  console.log("Opening payment page in browser", pageURL);
-  await openExternalURL(pageURL);
-  startFastPolling(paidCallback);
+  return kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
 }
 
 let purchasePoller: NodeJS.Timeout | null = null;

@@ -1,34 +1,47 @@
-<vbox>
-  {#await getLicense()}
-    <div class="message">{$t`Checking...`}</div>
-  {:then}
-    {#if license.isSoonExpiring}
-      <SoonExpiring bind:license />
-    {:else if license.isExpired}
-      <Expired bind:license />
-    {:else if license.valid && !wasValid}
-      <PaidJustNow bind:license />
-    {:else if license.valid}
-      <HaveLicense bind:license />
-    {:else if owlLicense}
-      <Upgrade bind:license {owlLicense} />
-    {:else}
-      <NeverPaid bind:license />
-    {/if}
-  {:catch ex}
-    <div class="error-intro message">{$t`Failed to contact the license server`}</div>
-    <ErrorMessageInline {ex} />
-  {/await}
+<vbox flex>
+  {#if appGlobal.emailAccounts.isEmpty}
+    <SetupMail />
+  {:else}
+    {#await getLicense()}
+      <div class="message">{$t`Checking...`}</div>
+    {:then}
+      {#if license.isSoonExpiring}
+        <SoonExpiring bind:license />
+      {:else if license.isExpired}
+        <Expired bind:license />
+      {:else if license.valid && !wasValid}
+        <PaidJustNow bind:license />
+      {:else if license.valid}
+        <HaveLicense bind:license />
+      {:else if owlLicense}
+        <Upgrade bind:license {owlLicense} />
+      {:else}
+        <NeverPaid bind:license />
+      {/if}
+
+      {#if !license?.valid}
+        <vbox class="payment-page" flex>
+          <PaymentPage />
+        </vbox>
+      {/if}
+    {:catch ex}
+      <div class="error-intro message">{$t`Failed to contact the license server`}</div>
+      <ErrorMessageInline {ex} />
+    {/await}
+  {/if}
 </vbox>
 
 <script lang="ts">
   import { checkSavedLicense, Ticket, BadTicket, fetchLicenseFromServer } from "../../../../logic/util/LicenseClient";
+  import { appGlobal } from "../../../../logic/app";
   import HaveLicense from "./HaveLicense.svelte";
   import SoonExpiring from "./SoonExpiring.svelte";
   import Expired from "./Expired.svelte";
   import Upgrade from "./Upgrade.svelte";
   import PaidJustNow from "./PaidJustNow.svelte";
   import NeverPaid from "./NeverPaid.svelte";
+  import PaymentPage from "./PaymentPage.svelte";
+  import SetupMail from "../../../Setup/Mail/SetupMail.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../../l10n/l10n";
 
@@ -56,5 +69,8 @@
 <style>
   .error-intro {
     margin: 4px 20px;
+  }
+  .payment-page {
+    margin-block-start: 24px;
   }
 </style>
