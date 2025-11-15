@@ -19,7 +19,6 @@
   import NotificationBar from "../../MainWindow/NotificationBar.svelte";
   import { notifications } from "../../MainWindow/Notification";
   import { gLicense } from "../../../logic/util/License";
-  import { Ticket } from "../../../logic/util/LicenseClient";
   import { catchErrors } from "../../Util/error";
   import { onMount } from "svelte";
 
@@ -33,8 +32,7 @@
     let myName = anchor.get("name");
     appGlobal.me.name = myName;
 
-    let ticket = gLicense.license = new Ticket();
-    ticket.valid = true; // Proprietary, see comment in License.ts
+    gLicense.license = { valid: true }; // Proprietary, see comment in License.ts
     let account = new LiveKitAccount();
     account.url = "https://" + urlObj.host;
     let meeting = new LiveKitConf(account);
