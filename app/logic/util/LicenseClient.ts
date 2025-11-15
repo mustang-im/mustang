@@ -185,7 +185,7 @@ async function nextPoll() {
 }
 
 export async function fetchLicenseFromServer(): Promise<Ticket> {
-  return fetchTicket();
+  return await fetchTicket();
 }
 
 /** A promise that resolves when a ticket refresh finishes */
@@ -408,7 +408,7 @@ export function purchagePageURL(mode: "welcome" | "purchase" | "inline-payment" 
 
 let purchasePoller: NodeJS.Timeout | null = null;
 
-function startFastPolling(paidCallback?: (license: Ticket) => void) {
+export function startFastPolling(paidCallback?: (license: Ticket) => void) {
   /** How often to poll after the user clicked [Buy] */
   const kPurchasePollInterval = 10 * 1000; // 10 seconds
   /** For how long to poll after the user clicked [Buy] */
@@ -431,7 +431,7 @@ function startFastPolling(paidCallback?: (license: Ticket) => void) {
   setTimeout(stopFastPolling, kPurchasePollFor);
 }
 
-function stopFastPolling() {
+export function stopFastPolling() {
   if (purchasePoller) {
     clearInterval(purchasePoller);
   }

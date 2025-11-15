@@ -4,13 +4,14 @@
   <hbox flex />
   <Button
     label={$t`Renew`}
-    onClick={() => openPurchasePage(paid => license = paid)}
+    onClick={() => openSettingsCategoryByID("license")}
     classes="filled"
     />
 </hbox>
 
 <script lang="ts">
-  import { Ticket, openPurchasePage } from "../../../../logic/util/LicenseClient";
+  import { openSettingsCategoryByID } from "../../Window/CategoriesUtils";
+  import { Ticket } from "../../../../logic/util/LicenseClient";
   import { getDateString } from "../../../Util/date";
   import Button from "../../../Shared/Button.svelte";
   import { t } from "../../../../l10n/l10n";
@@ -24,5 +25,9 @@
     align-items: center;
     background-color: red;
     color: #160C27;
+    border-radius: inherit;
+  }
+  .payment-bar :global(button) {
+    padding: 2px 12px !important;
   }
 </style>

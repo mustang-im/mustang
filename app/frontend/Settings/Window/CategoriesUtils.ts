@@ -29,6 +29,12 @@ export function getSettingsCategoryForApp(app: MustangApp) {
   return getAllSettingsCategories().find(cat => cat.forApp == app);
 }
 
+export function openSettingsCategoryByID(id: string) {
+  let cat = getSettingsCategoryByID(id);
+  selectedCategory.set(cat);
+  openApp(settingsMustangApp, {});
+}
+
 export function openSettingsCategoryForApp(app: MustangApp) {
   let cat = getSettingsCategoryForApp(app);
   selectedCategory.set(cat);

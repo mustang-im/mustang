@@ -4,12 +4,13 @@
   <hbox flex />
   <Button
     label={$t`Upgrade`}
-    onClick={() => openPurchasePage(paid => license = paid)}
+    onClick={() => openSettingsCategoryByID("license")}
     />
 </hbox>
 
 <script lang="ts">
-  import { Ticket, openPurchasePage } from "../../../../logic/util/LicenseClient";
+  import { Ticket } from "../../../../logic/util/LicenseClient";
+  import { openSettingsCategoryByID } from "../../Window/CategoriesUtils";
   import { appName } from "../../../../logic/build";
   import Button from "../../../Shared/Button.svelte";
   import { t } from "../../../../l10n/l10n";
