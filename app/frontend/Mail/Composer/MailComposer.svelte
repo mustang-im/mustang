@@ -4,17 +4,29 @@
   allowInline={true}>
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
+      {#if appGlobal.isMobile}
+        <hbox class="delete buttons">
+          <Button
+            label={$t`Discard`}
+            icon={TrashIcon}
+            iconSize="15px" iconOnly
+            onClick={onDelete}
+            />
+        </hbox>
+      {/if}
       <IdentitySelector bind:selectedIdentity={fromIdentity}
         bind:fromAddress={mail.from.emailAddress}
         bind:fromName={mail.from.name} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
-        <Button
-          label={$t`Discard`}
-          icon={TrashIcon}
-          iconSize="15px" iconOnly
-          onClick={onDelete}
-          />
+        {#if !appGlobal.isMobile}
+          <Button
+            label={$t`Discard`}
+            icon={TrashIcon}
+            iconSize="15px" iconOnly
+            onClick={onDelete}
+            />
+        {/if}
         <Button
           label={$t`Save`}
           icon={CloseIcon}
@@ -368,8 +380,11 @@
   .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
   }
-  .close.buttons > :global(*){
-    margin-inline-start: 8px;
+  .delete.buttons {
+    margin-inline-end: 8px;
+  }
+  .close.buttons {
+    gap: 8px;
   }
   .close.buttons :global(svg) {
     stroke-width: 1.5px;
