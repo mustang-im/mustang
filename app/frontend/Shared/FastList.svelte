@@ -249,8 +249,7 @@
     }
   }
 
-  let isMobile = !!navigator.userAgent.match(/Android|iPhone|iPad/i);
-  const onScrollThrottled = throttle(onScroll, isMobile ? 30 : 10);
+  const onScrollThrottled = throttle(onScroll, 30);
   function onScroll() {
     let topY = listE.scrollTop - headerHeight;
     let startPosCalc = Math.floor(topY / rowHeight);
