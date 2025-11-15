@@ -394,6 +394,8 @@ export class Event extends Observable {
   fromExtraJSON(json: any) {
     assert(typeof (json) == "object", "Must be a JSON object");
     this.syncState = json.syncState;
+    this.isOnline = sanitize.boolean(json.isOnline, false);
+    this.onlineMeetingURL = sanitize.url(json.onlineMeetingURL, null);
     this.isCancelled = sanitize.boolean(json.isCancelled, false);
     this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
     this.lastMod = sanitize.date(json.lastMod, this.lastMod);
@@ -401,6 +403,8 @@ export class Event extends Observable {
   toExtraJSON(): any {
     let json: any = {};
     json.syncState = this.syncState;
+    json.isOnline = this.isOnline;
+    json.onlineMeetingURL = this.onlineMeetingURL;
     json.isCancelled = this.isCancelled;
     json.lastUpdateTime = this.lastUpdateTime;
     json.lastMod = this.lastMod;
