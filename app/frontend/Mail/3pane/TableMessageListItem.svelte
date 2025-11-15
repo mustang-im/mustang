@@ -28,26 +28,29 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{contactName}</hbox>
-<hbox class="subject"
-  class:unread={!$message.isRead}
-  draggable="true"
-  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
-  on:contextmenu={contextMenu.onContextMenu}
-  >{$message.subject}</hbox>
-<hbox class="tags" class:tagged={$tags.hasItems}>
-  {#if $tags.hasItems}
-    <TagSelector tags={$tags} object={message} canAdd={false} />
-  {/if}
-</hbox>
-<hbox class="star button" class:starred={$message.isStarred}>
-  <Button
-    icon={StarIcon}
-    iconSize="16px"
-    iconOnly
-    label={$t`Remember this message`}
-    onClick={toggleStar}
-    plain
-    />
+<hbox class="subject-tags">
+  <hbox class="subject"
+    class:unread={!$message.isRead}
+    draggable="true"
+    on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+    on:contextmenu={contextMenu.onContextMenu}
+    >{$message.subject}</hbox>
+  <hbox flex />
+  <hbox class="tags" class:tagged={$tags.hasItems}>
+    {#if $tags.hasItems}
+      <TagSelector tags={$tags} object={message} canAdd={false} />
+    {/if}
+  </hbox>
+  <hbox class="star button" class:starred={$message.isStarred}>
+    <Button
+      icon={StarIcon}
+      iconSize="16px"
+      iconOnly
+      label={$t`Remember this message`}
+      onClick={toggleStar}
+      plain
+      />
+  </hbox>
 </hbox>
 <hbox class="date"
   class:unread={!$message.isRead}
@@ -173,6 +176,13 @@
     font-weight: 300;
     height: 100%;
   }
+  .subject {
+    overflow: hidden;
+    /* Avoid cutting off within a word
+    white-space: wrap;
+    height: 1.3em; */
+    margin-inline-start: 6px;
+  }
   .date {
     justify-content: start;
     min-width: 8em;
@@ -264,7 +274,7 @@
   :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
-  :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
+  :global(.row:not(:hover)) .star:not(.starred) {
     display: none;
   }
   :global(.row:not(:hover)) .unread-dot:not(.unread) :global(svg) {
