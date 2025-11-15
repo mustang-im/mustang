@@ -1,14 +1,14 @@
 {#if hasLeft && hasRight}
   <hbox class="splitter" bind:clientWidth={containerWidth}
     class:mobile={appGlobal.isMobile}>
-    <hbox class="left" bind:clientWidth={currentLeftWidth}>
+    <hbox class="left" bind:clientWidth={currentLeftWidth} style="min-width: {leftMinWidth}px;">
       <slot name="left" />
     </hbox>
     <hbox class="splitter-bar"
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
-    <hbox class="right" style="flex: {rightRatio} 0 0;">
+    <hbox class="right" style="flex: {rightRatio} 0 0; min-width: {rightMinWidth}px;">
       <slot name="right" />
     </hbox>
   </hbox>
