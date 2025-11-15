@@ -1,7 +1,7 @@
 <vbox flex class="calendar-app">
   <Splitter
     initialRightRatio={0.25}
-    rightMinWidth={350}
+    rightMinWidth={250}
     hasRight={!appGlobal.isMobile}
     >
     <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
