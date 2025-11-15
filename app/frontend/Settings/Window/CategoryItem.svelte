@@ -9,7 +9,7 @@
 {/if}
 
 <script lang="ts">
-  import type { SettingsCategory } from "./SettingsCategory";
+  import type { SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";

@@ -9,10 +9,9 @@
 
 <script lang="ts">
   import type { Account } from "../../../logic/Abstract/Account";
-  import type { SettingsCategory } from "./SettingsCategory";
+  import { accountSettings, type SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
-  import { accountSettings } from "../SettingsCategories";
 
   /** in */
   export let account: Account;
@@ -21,7 +20,7 @@
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
   $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
-  $: subCategories = accountSettings.filter(cat => account instanceof cat.type && !cat.isMain);
+  $: subCategories = accountSettings.filterObservable(cat => account instanceof cat.type && !cat.isMain);
 
   function onSelect() {
     $selectedAccount = account;

@@ -50,8 +50,6 @@
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
-  import { selectedCategory } from "./Window/selected";
-  import { settingsCategories } from "./SettingsCategories";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";

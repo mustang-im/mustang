@@ -43,6 +43,8 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { openSettingsCategoryForAccount } from "../../Settings/Window/CategoriesUtils";
+  import { appGlobal } from "../../../logic/app";
   import Icon from 'svelte-icon/Icon.svelte';
   import GetMailButton from "./GetMailButton.svelte";
   import AccountMenu from "../../Mail/LeftPane/AccountMenu.svelte";
@@ -53,7 +55,6 @@
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import SettingsIcon from "lucide-svelte/icons/settings";
   import { t } from "../../../l10n/l10n";
-  import { appGlobal } from "../../../logic/app";
 
   export let account: MailAccount;
 
@@ -62,7 +63,6 @@
   }
 
   async function openSettings() {
-    const { openSettingsCategoryForAccount } = await import("../../Settings/Window/CategoriesUtils"); // break circular dependency
     openSettingsCategoryForAccount(account);
   }
 

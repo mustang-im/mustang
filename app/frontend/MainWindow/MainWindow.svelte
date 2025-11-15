@@ -64,6 +64,7 @@
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
+  import { categoriesLoaded } from "../Settings/SettingsCategories";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -94,6 +95,7 @@
   const setSidebarDebounced = useDebounce(() => sidebar = $sidebarApp?.sidebar);
   $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
+  categoriesLoaded; /* make sure to import the file, so that that categories load */
 
   onMount(() => catchErrors(onLoad));
 

@@ -32,7 +32,7 @@
 <script lang="ts">
   import { Workspace } from "../../../logic/Abstract/Workspace";
   import { Account } from "../../../logic/Abstract/Account";
-  import { settingsCategories, accountSettings } from "../SettingsCategories";
+  import { settingsCategories, accountSettings } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "../Window/selected";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { openApp } from "../../AppsBar/selectedApp";

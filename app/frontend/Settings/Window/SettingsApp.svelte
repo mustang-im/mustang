@@ -20,7 +20,7 @@
 </Splitter>
 
 <script lang="ts">
-  import { settingsCategories } from "../SettingsCategories";
+  import { settingsCategories } from "../SettingsCategory";
   import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import { mailMustangApp } from "../../Mail/MailMustangApp";

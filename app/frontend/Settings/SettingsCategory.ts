@@ -1,8 +1,8 @@
-import type { Account } from "../../../logic/Abstract/Account";
-import { Observable, notifyChangedProperty } from "../../../logic/util/Observable";
+import type { Account } from "../../logic/Abstract/Account";
+import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 import type { ComponentType, SvelteComponentTyped } from 'svelte';
 import { ArrayColl, Collection } from "svelte-collections";
-import type { MustangApp } from "../../AppsBar/MustangApp";
+import type { MustangApp } from "../AppsBar/MustangApp";
 
 export class SettingsCategory extends Observable {
   id: string;
@@ -55,3 +55,6 @@ export class AccountSettingsCategory extends SettingsCategory {
     this.type = type;
   }
 }
+
+export const settingsCategories = new ArrayColl<SettingsCategory>();
+export const accountSettings = new ArrayColl<AccountSettingsCategory>();

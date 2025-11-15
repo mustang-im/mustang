@@ -7,7 +7,7 @@
 </Scroll>
 
 <script lang="ts">
-  import type { SettingsCategory } from "./SettingsCategory";
+  import type { SettingsCategory } from "../SettingsCategory";
   import { selectedAccount } from "./selected";
   import Scroll from "../../Shared/Scroll.svelte";
   import { useDebounce } from "@svelteuidev/composables";

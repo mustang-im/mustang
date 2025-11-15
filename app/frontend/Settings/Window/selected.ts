@@ -1,4 +1,4 @@
-import type { SettingsCategory } from "./SettingsCategory";
+import type { SettingsCategory } from "../SettingsCategory";
 import type { Account } from "../../../logic/Abstract/Account";
 import { writable } from "svelte/store";
 

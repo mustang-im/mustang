@@ -7,7 +7,7 @@
 {/if}
 
 <script lang="ts">
-  import { SettingsCategory } from "./../Window/SettingsCategory";
+  import { SettingsCategory } from "../SettingsCategory";
   import { appGlobal } from "../../../logic/app";
   import MainContent from "../Window/MainContent.svelte";
   import PanelBarM from "./PanelBarM.svelte";

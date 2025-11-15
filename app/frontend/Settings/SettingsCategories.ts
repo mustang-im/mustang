@@ -1,4 +1,4 @@
-import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./Window/SettingsCategory";
+import { SettingsCategory, AccountSettingsCategory as AccSetting, accountSettings, settingsCategories } from "./SettingsCategory";
 import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
@@ -39,12 +39,8 @@ import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
-import { ArrayColl } from "svelte-collections";
 import { gt } from "../../l10n/l10n";
 import { production } from "../../logic/build";
-
-export const settingsCategories = new ArrayColl<SettingsCategory>();
-export const accountSettings = new ArrayColl<AccSetting>();
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 
@@ -161,3 +157,5 @@ settingsCategories.add(about);
 if (!production) {
   about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
 }
+
+export const categoriesLoaded = true; /* dummy */

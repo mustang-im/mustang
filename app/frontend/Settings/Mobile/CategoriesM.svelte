@@ -5,8 +5,8 @@
 {/if}
 
 <script lang="ts">
-  import { settingsCategories } from "../SettingsCategories";
-  import type { SettingsCategory } from "../Window/SettingsCategory";
+  import { settingsCategories } from "../SettingsCategory";
+  import type { SettingsCategory } from "../SettingsCategory";
   import { selectedCategory } from "../Window/selected";
   import { appGlobal } from "../../../logic/app";
   import SettingsCategoriesPane from "../Window/CategoriesPane.svelte";

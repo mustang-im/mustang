@@ -1,5 +1,5 @@
-import type { SettingsCategory } from "./SettingsCategory";
-import { accountSettings, settingsCategories } from "../SettingsCategories";
+import type { SettingsCategory } from "../SettingsCategory";
+import { accountSettings, settingsCategories } from "../SettingsCategory";
 import type { MustangApp } from "../../AppsBar/MustangApp";
 import type { Account } from "../../../logic/Abstract/Account";
 import { settingsMustangApp } from "./SettingsMustangApp";

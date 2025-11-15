@@ -21,7 +21,7 @@
 {/if}
 
 <script lang="ts">
-  import type { SettingsCategory } from "./SettingsCategory";
+  import type { SettingsCategory } from "../SettingsCategory";
   import { goTo } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
