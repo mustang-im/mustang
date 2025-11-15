@@ -1,10 +1,5 @@
 # Bugs
 * IMAP Message download race condition (see IMAPEmail)
-* Event doesn't save online meeting link
-* License client
-  * Video conf finds no license
-  * Video conf should allow to buy license
-  * Add purchase in client UI
 * Mobile
   * Composer
   * Contacts Person page
@@ -13,7 +8,6 @@
     * Star
     * Name field labels
     * Avatar
-  * Debug messages in UI
 
 # Release
 * Polish based on feedback
