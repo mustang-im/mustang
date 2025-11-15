@@ -84,7 +84,7 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../../logic/Mail/MailIdentity";
-  import { isLicensed } from "../../../../logic/util/LicenseClient";
+  import { gLicense } from "../../../../logic/util/License";
   import SentByExplainer from "./SentByExplainer.svelte";
   import HTMLEditor from "../../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../../Shared/Editor/HTMLEditorToolbar.svelte";
@@ -106,7 +106,7 @@
   let showReplyTo = !!identity.replyTo;
   let showOrganisation = !!identity.organisation;
   let showSignature = !!identity.signatureHTML;
-  let showSentBy = true;
+  let showSentBy = !gLicense.license;
   let showSentByExplainer = false;
   let editor: Editor;
 
@@ -120,10 +120,6 @@
       identity.signatureHTML = null;
     }
   }
-
-  onMount(async () => {
-    showSentBy = !await isLicensed();
-  });
 </script>
 
 <style>
