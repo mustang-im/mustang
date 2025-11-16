@@ -67,29 +67,29 @@ mailSettings.newAccountURL = "/setup/mail";
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
 
+// #if [!WEBMAIL]
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
+// #endif
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
 
+// #if [DEV]
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
 chatSettings.subCategories.addAll([
   new SettingsCategory("chat-appearance", gt`Appearance`),
   new SettingsCategory("chat-notifications", gt`Notifications`, ChatNotifications),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
-// #if [!WEBMAIL]
 chatSettings.newAccountURL = "/setup/chat";
-// #endif
 chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
-// #if [!WEBMAIL]
 accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
-// #endif
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
+// #endif
 
 const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, true);
 calendarSettings.subCategories.addAll([
@@ -129,21 +129,23 @@ settingsCategories.add(meetSettings);
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 
+// #if [DEV]
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
 filesSettings.subCategories.addAll([
 ]);
 filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
-// #if [!WEBMAIL]
 filesSettings.newAccountURL = "/setup/files";
-// #endif
 filesSettings.forApp = filesMustangApp;
 settingsCategories.add(filesSettings);
+// #endif
 
+// #if [!WEBMAIL]
 const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
 appSettings.subCategories.addAll([
 ]);
 appSettings.forApp = webAppsMustangApp;
 // settingsCategories.add(appSettings);
+// #endif
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([

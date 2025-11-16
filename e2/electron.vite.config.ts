@@ -31,6 +31,8 @@ export default defineConfig({
           // For conditional `// #if [FOO]` statements in the code
           WEBMAIL: webMail && includeProprietary ? webMail : undefined,
           PROPRIETARY: includeProprietary ? true : undefined,
+          PRODUCTION: production ? true : undefined,
+          DEV: !production ? true : undefined,
         },
       }),
       nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
