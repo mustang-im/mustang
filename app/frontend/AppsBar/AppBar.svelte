@@ -11,9 +11,11 @@
   {/each}
   <vbox flex class="middle">
   </vbox>
+  // #if [!WEBMAIL]
   <vbox class="above-setup">
     <DemoToggle />
   </vbox>
+  // #endif
 </vbox>
 
 <script lang="ts">
