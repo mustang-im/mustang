@@ -8,20 +8,24 @@
     initialSecondRatio={horizontal ? 2 : 1}
     slot="right">
     <vbox flex class="message-list-pane" slot="first">
+      // #if [PROPRIETARY]
       <PaymentBar account={selectedAccount} showWhenNoAccount={false} />
+      // #endif
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
       {#if !horizontal}
         <FolderFooter folder={selectedFolder} bind:searchMessages />
       {/if}
     </vbox>
-    <vbox flex class="message-display-pane" slot="second">
-      {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} />
-      {:else}
-        <StartPage />
-      {/if}
-    </vbox>
+    <InfoSidebarSplitter person={selectedMessage?.from} message={selectedMessage} slot="second">
+      <vbox flex class="message-display-pane" slot="message">
+        {#if selectedMessage}
+          <MessageDisplay message={selectedMessage} />
+        {:else}
+          <StartPage />
+        {/if}
+      </vbox>
+    </InfoSidebarSplitter>
   </SplitterBidirectional>
 </Splitter>
 
@@ -36,10 +40,9 @@
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
+  import InfoSidebarSplitter from "../InfoSidebar/InfoSidebarSplitter.svelte";
   // #if [PROPRIETARY]
   import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
-  // #else
-  import PaymentBar from "../../Shared/Empty.svelte";
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";

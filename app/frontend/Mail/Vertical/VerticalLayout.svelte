@@ -5,18 +5,22 @@
     slot="left" />
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
     <vbox flex class="message-list-pane" slot="left">
+      // #if [PROPRIETARY]
       <PaymentBar account={selectedAccount} showWhenNoAccount={false} />
+      // #endif
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages />
       <FolderFooter folder={selectedFolder} bind:searchMessages />
     </vbox>
-    <vbox flex class="message-display-pane" slot="right">
-      {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} />
-      {:else}
-        <StartPage />
-      {/if}
-    </vbox>
+    <InfoSidebarSplitter person={selectedMessage?.from} message={selectedMessage} slot="right">
+      <vbox flex class="message-display-pane" slot="message">
+        {#if selectedMessage}
+          <MessageDisplay message={selectedMessage} />
+        {:else}
+          <StartPage />
+        {/if}
+      </vbox>
+    </InfoSidebarSplitter>
   </Splitter>
 </Splitter>
 
@@ -31,10 +35,9 @@
   import StartPage from "../StartPage.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
+  import InfoSidebarSplitter from "../InfoSidebar/InfoSidebarSplitter.svelte";
   // #if [PROPRIETARY]
   import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
-  // #else
-  import PaymentBar from "../../Shared/Empty.svelte";
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
@@ -59,5 +62,8 @@
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
+  }
+  .message-display-pane {
+    padding-inline-start: 2px;
   }
 </style>

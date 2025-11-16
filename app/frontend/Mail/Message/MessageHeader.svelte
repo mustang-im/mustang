@@ -162,7 +162,6 @@
   .message-header {
     min-height: 5em;
     padding: 12px 20px 2px 20px;
-    box-shadow: 0px -1px 5px 0px rgba(0, 0, 0, 8%);
     z-index: 1;
   }
   .top-right {
