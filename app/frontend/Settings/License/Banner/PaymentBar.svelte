@@ -1,4 +1,4 @@
-{#if account?.needsLicense() || (showWhenNoAccount && !account)}
+{#if !gLicense?.license?.valid && (account?.needsLicense() || (showWhenNoAccount && !account))}
   <vbox class="payment-bar">
     {#await getLicense()}
       <!-- Checking license... -->
@@ -24,6 +24,7 @@
 
 <script lang="ts">
   import { checkSavedLicense, Ticket, BadTicket } from "../../../../logic/util/LicenseClient";
+  import { gLicense } from "../../../../logic/util/License";
   import { Account } from "../../../../logic/Abstract/Account";
   import PaidJustNow from "./PaidJustNow.svelte";
   import SoonExpiring from "./SoonExpiring.svelte";
