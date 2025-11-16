@@ -12,22 +12,26 @@
     <PersonsList {persons} bind:selected={selectedPerson} />
     <ViewSwitcher />
   </vbox>
-  <vbox class="right-pane" slot="right">
-    {#if filteredMessages && selectedPerson }
-      <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
-      <Header person={selectedPerson} />
-      <vbox flex class="messages background-pattern">
-        <MessageList messages={filteredMessages}>
-          <svelte:fragment slot="message" let:message let:previousMessage>
-            <MailMessage {message} {previousMessage} />
-          </svelte:fragment>
-        </MessageList>
-      </vbox>
-      <vbox class="editor">
-        <MsgEditor to={chat} />
-      </vbox>
-    {/if}
-  </vbox>
+  <InfoSidebarSplitter person={selectedPerson} message={filteredMessages?.last} slot="right">
+    <vbox class="right-pane" slot="message">
+      {#if filteredMessages && selectedPerson }
+        // #if [PROPRIETARY]
+        <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
+        // #endif
+        <Header person={selectedPerson} />
+        <vbox flex class="messages background-pattern">
+          <MessageList messages={filteredMessages}>
+            <svelte:fragment slot="message" let:message let:previousMessage>
+              <MailMessage {message} {previousMessage} />
+            </svelte:fragment>
+          </MessageList>
+        </vbox>
+        <vbox class="editor">
+          <MsgEditor to={chat} />
+        </vbox>
+      {/if}
+    </vbox>
+  </InfoSidebarSplitter>
 </Splitter>
 
 <script lang="ts">
@@ -47,10 +51,9 @@
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import InfoSidebarSplitter from "../InfoSidebar/InfoSidebarSplitter.svelte";
   // #if [PROPRIETARY]
   import PaymentBar from "../../Settings/License/Banner/PaymentBar.svelte";
-  // #else
-  import PaymentBar from "../../Shared/Empty.svelte";
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import { randomID } from "../../../logic/util/util";
