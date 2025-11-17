@@ -20,7 +20,7 @@
   </hbox>
   <hbox class="subtitle font-small">
     <span class="label">{$t`Your name`}</span>
-    <span>{$t`How you appear to others`}</span>
+    <span>{$t`How your name will be seen by others`}</span>
   </hbox>
 {/if}
 

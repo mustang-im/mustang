@@ -4,7 +4,7 @@
       {#if isIOS}
         <RoundButton
           icon={BackIcon}
-          label={$t`Back to persons list`}
+          label={$t`Back to list of persons`}
           onClick={() => navigate(-1)}
           classes="back" />
       {/if}
