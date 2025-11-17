@@ -12,11 +12,20 @@ const __dirname = import.meta.dirname;
  */
 function reorderBuildPhases(pbxprojContent: string): string {
   // Find the buildPhases section for the App target
-  // Need to match the specific target's buildPhases, not all of them
-  // Look for the App target's buildPhases section
-  const targetBuildPhasesRegex = /(name = App;\s+isa = PBXNativeTarget;[^}]*buildPhases = \(\s*)([\s\S]*?)(\s*\);)/;
+  // The structure is: UUID /* App */ = { isa = PBXNativeTarget; ... buildPhases = ( ... ); ... name = App; }
+  // We need to match the buildPhases section within the PBXNativeTarget that has name = App
+  // Match: /* App */ = { ... isa = PBXNativeTarget; ... buildPhases = ( ... ); ... name = App; }
+  // Use a more flexible regex that matches buildPhases within the App target block
+  const targetBuildPhasesRegex = /(\/\* App \*\/\s*=\s*\{[\s\S]*?isa\s*=\s*PBXNativeTarget;[\s\S]*?buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]*?name\s*=\s*App;)/;
 
-  const match = pbxprojContent.match(targetBuildPhasesRegex);
+  let match = pbxprojContent.match(targetBuildPhasesRegex);
+
+  // If that doesn't work, try matching by finding buildPhases followed by name = App within reasonable distance
+  if (!match) {
+    const alternativeRegex = /(buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]{0,500}?name\s*=\s*App;)/;
+    match = pbxprojContent.match(alternativeRegex);
+  }
+
   if (!match) {
     console.warn("Could not find App target buildPhases section, skipping reorder");
     return pbxprojContent;
@@ -79,7 +88,14 @@ function reorderBuildPhases(pbxprojContent: string): string {
   // Reconstruct the buildPhases section with proper indentation
   const newBuildPhases = match[1] + newPhases.join('\n') + '\n' + match[3];
 
-  return pbxprojContent.replace(targetBuildPhasesRegex, newBuildPhases);
+  // Replace using the same pattern that matched (store which one matched)
+  const usedPrimaryRegex = pbxprojContent.match(targetBuildPhasesRegex) === match;
+  if (usedPrimaryRegex) {
+    return pbxprojContent.replace(targetBuildPhasesRegex, newBuildPhases);
+  } else {
+    const alternativeRegex = /(buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]{0,500}?name\s*=\s*App;)/;
+    return pbxprojContent.replace(alternativeRegex, newBuildPhases);
+  }
 }
 
 /**
