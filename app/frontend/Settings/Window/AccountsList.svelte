@@ -23,7 +23,7 @@
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
   import { goTo } from "../../AppsBar/selectedApp";
-  import { selectedCategory } from "./selected";
+  import { URLPart } from "../../Util/util";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import AccountItem from "./AccountItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -39,14 +39,13 @@
   function onNewAccount() {
     assert(category.newAccountURL, "Need newAccountURL");
     let setupApp = new SetupMustangApp();
-    let url = setupApp.appURL = category.newAccountURL;
+    setupApp.appURL = category.newAccountURL;
     setupApp.onBack = () => onReOpenThis();
-    goTo(url, {});
+    goTo(category.newAccountURL, {});
   }
 
   function onReOpenThis() {
-    $selectedCategory = category;
-    goTo("settings/", { category });
+    goTo(URLPart`settings/category/${category.id}`, { category });
   }
 </script>
 
