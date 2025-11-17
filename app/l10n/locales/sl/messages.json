@@ -865,14 +865,12 @@
   "FGOUAP": "{0} na spletnem mestu . {1}",
   "4L+suW": "<p>\n    Cilji srečanja so:\n    <ol>\n      <li>Pregled specifikacij UX za aplikacijo Meet</li>\n      <li>razprava o povratnih informacijah</li>\n      <li>Odločitev, ali naj se nadaljuje</li>\n      <li>Naslednji koraki</li>\n    </ol>\n  </p>",
   "2ls1gc": "Vse nastavitve",
-  "EK1xWs": "Nazaj na seznam oseb",
   "iIhoxv": "Izbriši zgodovino dnevnika",
   "yPcmwQ": "Zgodovina stikov",
   "/4gGIX": "Kopiranje v odložišče",
   "Osn70z": "Razhroščevanje",
   "qEHbpO": "Dnevnik za odpravljanje napak",
   "0W0FHK": "Polno ime",
-  "tCwp7j": "Kako se zdite drugim.",
   "DwNDZG": "Če želite preizkusiti naše videokonference, lahko pri nas kupite licenco.",
   "UZiTpp": "Srečanja z {0}",
   "Kcr9Fr": "Nov račun",
@@ -899,5 +897,7 @@
   "sh1VOf": "Zbrani",
   "ujDvGc": "Primarni",
   "4d9kFA": "Izberite",
-  "Xr9OTN": "Izberite"
+  "Xr9OTN": "Izberite",
+  "Z8mQpX": "Nazaj na seznam oseb",
+  "3fHcs2": "Kako bodo vaše ime videli drugi"
 }

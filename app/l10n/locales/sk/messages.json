@@ -865,14 +865,12 @@
   "FGOUAP": "{0} z {1}",
   "4L+suW": "<p>\n    Ciele stretnutia sú:\n    <ol>\n      <li>Preskúmanie špecifikácií UX pre aplikáciu Meet</li>\n      <li>Diskusia o spätnej väzbe</li>\n      <li>Rozhodnutie, či pokračovať</li>\n      <li>Ďalšie kroky</li>\n    </ol>\n  </p>",
   "2ls1gc": "Všetky nastavenia",
-  "EK1xWs": "Späť na zoznam osôb",
   "iIhoxv": "Vymazanie histórie protokolov",
   "yPcmwQ": "História kontaktov",
   "/4gGIX": "Kopírovanie do schránky",
   "Osn70z": "Ladenie",
   "qEHbpO": "Denník ladenia",
   "0W0FHK": "Celé meno",
-  "tCwp7j": "Ako sa javíte ostatným",
   "DwNDZG": "Ak si chcete vyskúšať naše videokonferencie, môžete si od nás zakúpiť licenciu.",
   "UZiTpp": "Stretnutia s {0}",
   "Kcr9Fr": "Nový účet",
@@ -899,5 +897,7 @@
   "sh1VOf": "Zozbierané",
   "ujDvGc": "Primárne",
   "4d9kFA": "Vyberte",
-  "Xr9OTN": "Vyberte"
+  "Xr9OTN": "Vyberte",
+  "Z8mQpX": "Späť na zoznam osôb",
+  "3fHcs2": "Ako vaše meno uvidia ostatní"
 }

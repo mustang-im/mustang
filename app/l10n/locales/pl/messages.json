@@ -865,14 +865,12 @@
   "FGOUAP": "{0} z {1}",
   "4L+suW": "<p>\n    Cele spotkania są następujące:\n    <ol>\n      <li>Przegląd specyfikacji UX dla aplikacji Meet</li>\n      <li>Omówienie informacji zwrotnych</li>\n      <li>Decyzja, czy kontynuować</li>\n      <li>Kolejne kroki</li>\n    </ol>\n  </p>",
   "2ls1gc": "Wszystkie ustawienia",
-  "EK1xWs": "Powrót do listy osób",
   "iIhoxv": "Wyczyść historię dziennika",
   "yPcmwQ": "Historia kontaktów",
   "/4gGIX": "Kopiuj do schowka",
   "Osn70z": "Debugowanie",
   "qEHbpO": "Dziennik debugowania",
   "0W0FHK": "Imię i nazwisko",
-  "tCwp7j": "Jak wyglądasz dla innych",
   "DwNDZG": "Jeśli chcesz przetestować nasze wideokonferencje, możesz kupić od nas licencję",
   "UZiTpp": "Spotkania z {0}",
   "Kcr9Fr": "Nowe konto",
@@ -899,5 +897,7 @@
   "sh1VOf": "Zebrane",
   "ujDvGc": "Podstawowy",
   "4d9kFA": "Wybierz",
-  "Xr9OTN": "Wybierz"
+  "Xr9OTN": "Wybierz",
+  "Z8mQpX": "Powrót do listy osób",
+  "3fHcs2": "Jak twoje imię będzie postrzegane przez innych"
 }

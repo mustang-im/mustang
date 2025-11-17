@@ -865,14 +865,12 @@
   "FGOUAP": "{0} van {1}",
   "4L+suW": "<p>\n    Doelstellingen van de bijeenkomst zijn:\n    <ol>\n      <li>Beoordelen van de UX specificaties voor Meet app</li>\n      <li>Bespreken van feedback</li>\n      <li>Beslissing of we doorgaan</li>\n      <li>Volgende stappen</li>\n    </ol>\n  </p>",
   "2ls1gc": "Alle instellingen",
-  "EK1xWs": "Terug naar personenlijst",
   "iIhoxv": "Logboekgeschiedenis wissen",
   "yPcmwQ": "Contactgeschiedenis",
   "/4gGIX": "Kopiëren naar klembord",
   "Osn70z": "Debug",
   "qEHbpO": "Debug-logboek",
   "0W0FHK": "Volledige naam",
-  "tCwp7j": "Hoe je overkomt op anderen",
   "DwNDZG": "Als u onze videoconferenties wilt testen, kunt u bij ons een licentie kopen",
   "UZiTpp": "Ontmoetingen met {0}",
   "Kcr9Fr": "Nieuw account",
@@ -899,5 +897,7 @@
   "sh1VOf": "Verzameld",
   "ujDvGc": "Primaire",
   "4d9kFA": "Selecteer",
-  "Xr9OTN": "Selecteer"
+  "Xr9OTN": "Selecteer",
+  "Z8mQpX": "Terug naar de lijst met personen",
+  "3fHcs2": "Hoe je naam door anderen wordt gezien"
 }

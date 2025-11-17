@@ -865,14 +865,12 @@
   "FGOUAP": "{0} of {1}",
   "4L+suW": "<p>\n    Objectives of the meeting are:\n    <ol>\n      <li>Review of the UX specs for Meet app</li>\n      <li>Discussion of feedback</li>\n      <li>Decision whether to proceed</li>\n      <li>Next steps</li>\n    </ol>\n  </p>",
   "2ls1gc": "All settings",
-  "EK1xWs": "Back to persons list",
   "iIhoxv": "Clear log history",
   "yPcmwQ": "Contact history",
   "/4gGIX": "Copy to clipboard",
   "Osn70z": "Debug",
   "qEHbpO": "Debug log",
   "0W0FHK": "Full name",
-  "tCwp7j": "How you appear to others",
   "DwNDZG": "If you want to test our video conferences, you can buy a license from us",
   "UZiTpp": "Meetings with {0}",
   "Kcr9Fr": "New account",
@@ -899,5 +897,7 @@
   "sh1VOf": "Collected",
   "ujDvGc": "Primary",
   "4d9kFA": "Select",
-  "Xr9OTN": "Select"
+  "Xr9OTN": "Select",
+  "Z8mQpX": "Back to list of persons",
+  "3fHcs2": "How your name will be seen by others"
 }

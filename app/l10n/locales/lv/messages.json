@@ -865,14 +865,12 @@
   "FGOUAP": "{0} no {1}",
   "4L+suW": "<p>\n    Sanāksmes mērķi:\n    <ol>\n      <li>Apskatīt lietotnes Meet UX specifikāciju.</li>\n      <li>Atgriezeniskās saites apspriešana</li>\n      <li>Lēmums par turpmāko rīcību.</li>\n      <li>Turpmākie soļi</li>\n    </ol>\n  </p>",
   "2ls1gc": "Visi iestatījumi",
-  "EK1xWs": "Atpakaļ uz personu sarakstu",
   "iIhoxv": "Dzēst žurnāla vēsturi",
   "yPcmwQ": "Kontaktu vēsture",
   "/4gGIX": "Kopēt uz starpliktuvi",
   "Osn70z": "Debug",
   "qEHbpO": "Debug žurnāls",
   "0W0FHK": "Pilns nosaukums",
-  "tCwp7j": "Kā jūs parādāties citiem",
   "DwNDZG": "Ja vēlaties izmēģināt mūsu videokonferences, varat iegādāties licenci no mums.",
   "UZiTpp": "Tikšanās ar {0}",
   "Kcr9Fr": "Jauns konts",
@@ -899,5 +897,7 @@
   "sh1VOf": "Savākts",
   "ujDvGc": "Primārais",
   "4d9kFA": "Izvēlieties",
-  "Xr9OTN": "Izvēlieties"
+  "Xr9OTN": "Izvēlieties",
+  "Z8mQpX": "Atgriezties pie personu saraksta",
+  "3fHcs2": "Kā jūsu vārdu redzēs citi"
 }

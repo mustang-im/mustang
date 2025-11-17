@@ -865,14 +865,12 @@
   "FGOUAP": "{0} de {1}",
   "4L+suW": "<p>\n    Los objetivos de la reunión son:\n    <ol>\n      <li>Revisión de las especificaciones de UX para Meet app</li>\n      <li>Debate sobre los comentarios recibidos</li>\n      <li>Decidir si seguir adelante</li>\n      <li>Pasos siguientes</li>\n    </ol>\n  </p>",
   "2ls1gc": "Todos los ajustes",
-  "EK1xWs": "Volver a la lista de personas",
   "iIhoxv": "Borrar historial de registro",
   "yPcmwQ": "Historial de contactos",
   "/4gGIX": "Copiar al portapapeles",
   "Osn70z": "Depurar",
   "qEHbpO": "Registro de depuración",
   "0W0FHK": "Nombre y apellidos",
-  "tCwp7j": "Cómo le ven los demás",
   "DwNDZG": "Si quieres probar nuestras videoconferencias, puedes comprarnos una licencia",
   "UZiTpp": "Reuniones con {0}",
   "Kcr9Fr": "Nueva cuenta",
@@ -899,5 +897,7 @@
   "sh1VOf": "Recogida",
   "ujDvGc": "Principal",
   "4d9kFA": "Seleccione",
-  "Xr9OTN": "Seleccione"
+  "Xr9OTN": "Seleccione",
+  "Z8mQpX": "Volver a la lista de personas",
+  "3fHcs2": "Cómo verán su nombre los demás"
 }

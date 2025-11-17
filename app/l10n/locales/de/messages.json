@@ -865,14 +865,12 @@
   "FGOUAP": "{0} von {1}",
   "4L+suW": "<p>\n    Die Ziele des Treffens sind:\n    <ol>\n      <li>Überprüfung der UX-Spezifikationen für Meet app</li>\n      <li>Diskussion des Feedbacks</li>\n      <li>Entscheidung über das weitere Vorgehen</li>\n      <li>Nächste Schritte</li>\n    </ol>\n  </p>",
   "2ls1gc": "Alle Einstellungen",
-  "EK1xWs": "Zurück zur Personenliste",
   "iIhoxv": "Protokollverlauf löschen",
   "yPcmwQ": "Kontakt Geschichte",
   "/4gGIX": "In die Zwischenablage kopieren",
   "Osn70z": "Debuggen",
   "qEHbpO": "Debug-Protokoll",
   "0W0FHK": "Vollständiger Name",
-  "tCwp7j": "Wie Sie auf andere wirken",
   "DwNDZG": "Wenn Sie unsere Videokonferenzen testen möchten, können Sie bei uns eine Lizenz erwerben",
   "UZiTpp": "Begegnungen mit {0}",
   "Kcr9Fr": "Neues Konto",
@@ -899,5 +897,7 @@
   "sh1VOf": "Gesammelt",
   "ujDvGc": "Primäre",
   "4d9kFA": "Wählen Sie",
-  "Xr9OTN": "Wählen Sie"
+  "Xr9OTN": "Wählen Sie",
+  "Z8mQpX": "Zurück zur Liste der Personen",
+  "3fHcs2": "Wie Ihr Name von anderen gesehen werden wird"
 }

@@ -865,14 +865,12 @@
   "FGOUAP": "{0} iš {1}",
   "4L+suW": "<p>\n    Susitikimo tikslai:\n    <ol>\n      <li>Programėlės \"Meet\" UX specifikacijų peržiūra</li>\n      <li>grįžtamojo ryšio aptarimas</li>\n      <li>Sprendimas, ar tęsti darbą</li>\n      <li>Tolesni veiksmai</li>\n    </ol>\n  </p>",
   "2ls1gc": "Visi nustatymai",
-  "EK1xWs": "Atgal į asmenų sąrašą",
   "iIhoxv": "Išvalyti žurnalo istoriją",
   "yPcmwQ": "Kontaktų istorija",
   "/4gGIX": "Kopijuoti į iškarpinę",
   "Osn70z": "Derinimas",
   "qEHbpO": "Derinimo žurnalas",
   "0W0FHK": "Visas vardas ir pavardė",
-  "tCwp7j": "Kaip atrodote kitiems",
   "DwNDZG": "Jei norite išbandyti mūsų vaizdo konferencijas, galite iš mūsų įsigyti licenciją.",
   "UZiTpp": "Susitikimai su {0}",
   "Kcr9Fr": "Nauja paskyra",
@@ -899,5 +897,7 @@
   "sh1VOf": "Surinkta",
   "ujDvGc": "Pagrindinis",
   "4d9kFA": "Pasirinkite",
-  "Xr9OTN": "Pasirinkite"
+  "Xr9OTN": "Pasirinkite",
+  "Z8mQpX": "Grįžti į asmenų sąrašą",
+  "3fHcs2": "Kaip jūsų vardą matys kiti"
 }

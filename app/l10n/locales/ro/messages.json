@@ -865,14 +865,12 @@
   "FGOUAP": "{0} de {1}",
   "4L+suW": "<p>\n    Obiectivele reuniunii sunt:\n    <ol>\n      <li>Revizuirea specificațiilor UX pentru aplicația Meet</li>\n      <li>Discutarea feedback-ului</li>\n      <li>Decizia de a continua sau nu</li>\n      <li>următorii pași</li>\n    </ol>\n  </p>",
   "2ls1gc": "Toate setările",
-  "EK1xWs": "Înapoi la lista de persoane",
   "iIhoxv": "Ștergeți istoricul jurnalului",
   "yPcmwQ": "Istoric de contact",
   "/4gGIX": "Copiere în clipboard",
   "Osn70z": "Depanare",
   "qEHbpO": "Debug log",
   "0W0FHK": "Numele și prenumele",
-  "tCwp7j": "Cum vă vedeți în ochii celorlalți",
   "DwNDZG": "Dacă doriți să testați conferințele noastre video, puteți cumpăra o licență de la noi",
   "UZiTpp": "Întâlniri cu {0}",
   "Kcr9Fr": "Cont nou",
@@ -899,5 +897,7 @@
   "sh1VOf": "Colectat",
   "ujDvGc": "Principală",
   "4d9kFA": "Selectați",
-  "Xr9OTN": "Selectați"
+  "Xr9OTN": "Selectați",
+  "Z8mQpX": "Înapoi la lista de persoane",
+  "3fHcs2": "Modul în care numele dvs. va fi văzut de ceilalți"
 }

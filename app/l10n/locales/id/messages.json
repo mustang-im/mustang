@@ -865,14 +865,12 @@
   "FGOUAP": "{0} dari {1}",
   "4L+suW": "<p>\n    Tujuan dari pertemuan ini adalah:\n    <ol>\n      <li>Meninjau spesifikasi UX untuk aplikasi Meet</li>\n      <li>Diskusi tentang umpan balik</li>\n      <li>Keputusan apakah akan dilanjutkan atau tidak</li>\n      <li>Langkah selanjutnya</li>\n    </ol>\n  </p>",
   "2ls1gc": "Semua pengaturan",
-  "EK1xWs": "Kembali ke daftar orang",
   "iIhoxv": "Menghapus riwayat log",
   "yPcmwQ": "Riwayat kontak",
   "/4gGIX": "Menyalin ke papan klip",
   "Osn70z": "Debug",
   "qEHbpO": "Log debug",
   "0W0FHK": "Nama lengkap",
-  "tCwp7j": "Bagaimana Anda terlihat oleh orang lain",
   "DwNDZG": "Jika Anda ingin menguji konferensi video kami, Anda dapat membeli lisensi dari kami",
   "UZiTpp": "Pertemuan dengan {0}",
   "Kcr9Fr": "Akun baru",
@@ -899,5 +897,7 @@
   "sh1VOf": "Dikumpulkan",
   "ujDvGc": "Utama",
   "4d9kFA": "Pilih",
-  "Xr9OTN": "Pilih"
+  "Xr9OTN": "Pilih",
+  "Z8mQpX": "Kembali ke daftar orang",
+  "3fHcs2": "Bagaimana nama Anda akan dilihat oleh orang lain"
 }

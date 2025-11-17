@@ -865,14 +865,12 @@
   "FGOUAP": "{0} of {1}",
   "4L+suW": "<p>\n    Kokouksen tavoitteet ovat:\n    <ol>\n      <li>Meet-sovelluksen UX-spesifikaatioiden tarkastelu.</li>\n      <li>Keskustelu palautteesta</li>\n      <li>Päätös jatkamisesta</li>\n      <li>Seuraavat vaiheet</li>\n    </ol>\n  </p>",
   "2ls1gc": "Kaikki asetukset",
-  "EK1xWs": "Takaisin henkilöluetteloon",
   "iIhoxv": "Tyhjennä lokihistoria",
   "yPcmwQ": "Yhteyshistoria",
   "/4gGIX": "Kopioi leikepöydälle",
   "Osn70z": "Vianmääritys",
   "qEHbpO": "Vianmääritysloki",
   "0W0FHK": "Koko nimi",
-  "tCwp7j": "Miten vaikutat muille",
   "DwNDZG": "Jos haluat testata videokonferenssejamme, voit ostaa meiltä lisenssin.",
   "UZiTpp": "Tapaamiset {0}",
   "Kcr9Fr": "Uusi tili",
@@ -899,5 +897,7 @@
   "sh1VOf": "Kerätty",
   "ujDvGc": "Ensisijainen",
   "4d9kFA": "Valitse",
-  "Xr9OTN": "Valitse"
+  "Xr9OTN": "Valitse",
+  "Z8mQpX": "Takaisin henkilöluetteloon",
+  "3fHcs2": "Miten muut näkevät nimesi"
 }

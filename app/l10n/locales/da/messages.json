@@ -865,14 +865,12 @@
   "FGOUAP": "{0} af {1}",
   "4L+suW": "<p>\n    Målsætningerne for mødet er:\n    <ol>\n      <li>Gennemgang af UX-specifikationerne for Meet-appen</li>\n      <li>Diskussion af feedback</li>\n      <li>Beslutning om at gå videre</li>\n      <li>Næste skridt</li>\n    </ol>\n  </p>",
   "2ls1gc": "Alle indstillinger",
-  "EK1xWs": "Tilbage til personlisten",
   "iIhoxv": "Ryd loghistorik",
   "yPcmwQ": "Kontakthistorie",
   "/4gGIX": "Kopier til udklipsholder",
   "Osn70z": "Fejlfinding",
   "qEHbpO": "Fejlfindingslog",
   "0W0FHK": "Fuldt navn",
-  "tCwp7j": "Hvordan du fremstår for andre",
   "DwNDZG": "Hvis du vil teste vores videokonferencer, kan du købe en licens hos os.",
   "UZiTpp": "Møder med {0}",
   "Kcr9Fr": "Ny konto",
@@ -899,5 +897,7 @@
   "sh1VOf": "Indsamlet",
   "ujDvGc": "Primær",
   "4d9kFA": "Vælg",
-  "Xr9OTN": "Vælg"
+  "Xr9OTN": "Vælg",
+  "Z8mQpX": "Tilbage til listen over personer",
+  "3fHcs2": "Hvordan dit navn vil blive set af andre"
 }

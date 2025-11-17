@@ -865,14 +865,12 @@
   "FGOUAP": "{0} de {1}",
   "4L+suW": "<p>\n    Les objectifs de la réunion sont les suivants\n    <ol>\n      <li>Examen des spécifications UX pour l'application Meet</li>\n      <li>Discussion sur le retour d'information</li>\n      <li>Décision de poursuivre ou non</li>\n      <li>Prochaines étapes</li>\n    </ol>\n  </p>",
   "2ls1gc": "Tous les paramètres",
-  "EK1xWs": "Retour à la liste des personnes",
   "iIhoxv": "Effacer l'historique du journal",
   "yPcmwQ": "Historique des contacts",
   "/4gGIX": "Copier dans le presse-papiers",
   "Osn70z": "Débogage",
   "qEHbpO": "Journal de débogage",
   "0W0FHK": "Nom complet",
-  "tCwp7j": "L'image que vous donnez aux autres",
   "DwNDZG": "Si vous souhaitez tester nos vidéoconférences, vous pouvez nous acheter une licence.",
   "UZiTpp": "Réunions avec {0}",
   "Kcr9Fr": "Nouveau compte",
@@ -899,5 +897,7 @@
   "sh1VOf": "Recueillie",
   "ujDvGc": "Primaire",
   "4d9kFA": "Sélectionner",
-  "Xr9OTN": "Sélectionner"
+  "Xr9OTN": "Sélectionner",
+  "Z8mQpX": "Retour à la liste des personnes",
+  "3fHcs2": "Comment votre nom sera-t-il perçu par les autres ?"
 }

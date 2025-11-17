@@ -865,14 +865,12 @@
   "FGOUAP": "{0} aadressilt {1}",
   "4L+suW": "<p>\n    Kohtumise eesmärgid on järgmised:\n    <ol>\n      <li>Meet appi UX-spetsifikaatide läbivaatamine.</li>\n      <li>Tagasiside arutelu</li>\n      <li>otsus, kas jätkata</li>\n      <li>Järgmised sammud</li>\n    </ol>\n  </p>",
   "2ls1gc": "Kõik seaded",
-  "EK1xWs": "Tagasi isikute nimekirja",
   "iIhoxv": "Tühjenda logi ajalugu",
   "yPcmwQ": "Kontaktide ajalugu",
   "/4gGIX": "Kopeeri lõikelauale",
   "Osn70z": "Debug",
   "qEHbpO": "Veaparandusprotokoll",
   "0W0FHK": "Täielik nimi",
-  "tCwp7j": "Kuidas sa teistele paistad",
   "DwNDZG": "Kui soovite testida meie videokonverentse, saate meilt osta litsentsi.",
   "UZiTpp": "Kohtumised {0}",
   "Kcr9Fr": "Uus konto",
@@ -899,5 +897,7 @@
   "sh1VOf": "Kogutud",
   "ujDvGc": "Esmane",
   "4d9kFA": "Valige",
-  "Xr9OTN": "Valige"
+  "Xr9OTN": "Valige",
+  "Z8mQpX": "Tagasi isikute nimekirja juurde",
+  "3fHcs2": "Kuidas teised teie nime näevad"
 }

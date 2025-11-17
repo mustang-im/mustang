@@ -865,14 +865,12 @@
   "FGOUAP": "{0}. {1}",
   "4L+suW": "<p>\n    Toplantının hedefleri şunlardır:\n    <ol>\n      <li>Meet uygulaması için UX özelliklerinin gözden geçirilmesi</li>\n      <li>Geri bildirim tartışması</li>\n      <li>Devam edip etmeme kararı</li>\n      <li>Sonraki adımlar</li>\n    </ol>\n  </p>",
   "2ls1gc": "Tüm ayarlar",
-  "EK1xWs": "Kişi listesine geri dön",
   "iIhoxv": "Günlük geçmişini temizle",
   "yPcmwQ": "İletişim geçmişi",
   "/4gGIX": "Panoya kopyala",
   "Osn70z": "Hata Ayıklama",
   "qEHbpO": "Hata ayıklama günlüğü",
   "0W0FHK": "Tam adınız",
-  "tCwp7j": "Başkalarına nasıl göründüğünüz",
   "DwNDZG": "Video konferanslarımızı test etmek istiyorsanız, bizden bir lisans satın alabilirsiniz",
   "UZiTpp": "İle toplantılar {0}",
   "Kcr9Fr": "Yeni hesap",
@@ -899,5 +897,7 @@
   "sh1VOf": "Toplanmış",
   "ujDvGc": "Birincil",
   "4d9kFA": "Seçiniz",
-  "Xr9OTN": "Seçiniz"
+  "Xr9OTN": "Seçiniz",
+  "Z8mQpX": "Kişi listesine geri dön",
+  "3fHcs2": "İsminizin başkaları tarafından nasıl görüleceği"
 }
