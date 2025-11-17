@@ -11,7 +11,7 @@ else
     echo "Warning: apple-dist.mobileprovision not found in mobile/ios"
 fi
 
-cd ../ && bash ./hooks/ios/setup.sh && bash ./hooks/common/build.sh
+cd ../ && bash ./hooks/common/build.sh
 
 npx cap sync ios
 
