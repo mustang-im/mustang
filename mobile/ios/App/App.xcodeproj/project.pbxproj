@@ -52,18 +52,6 @@
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BFA9F2542E84856F00A9E37F /* Exceptions for "nodejs-project" folder in "App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				build/better_sqlite3.node,
-				"prebuilds/ios-arm64/bufferutil.node",
-				"prebuilds/ios-arm64-simulator/bufferutil.node",
-			);
-			target = 504EC3031FED79650016851F /* App */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -72,9 +60,6 @@
 		};
 		DD0EE6372DD26C52002B679D /* nodejs-project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				BFA9F2542E84856F00A9E37F /* Exceptions for "nodejs-project" folder in "App" target */,
-			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
 		};
@@ -126,7 +111,6 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
-				DD0EE6382DD28781002B679D /* NodeRunner.swift */,
 				DD0EE6372DD26C52002B679D /* nodejs-project */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
@@ -162,7 +146,6 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
-				BFB3ED892E8365590007C670 /* Code Sign Node Native Modules */,
 			);
 			buildRules = (
 			);
@@ -264,24 +247,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BFB3ED892E8365590007C670 /* Code Sign Node Native Modules */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Code Sign Node Native Modules";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "bash ../../hooks/ios/xcode-codesign.sh\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -290,7 +255,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
-				DD0EE6392DD28787002B679D /* NodeRunner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

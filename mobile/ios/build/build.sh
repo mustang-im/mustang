@@ -11,9 +11,12 @@ else
     echo "Warning: apple-dist.mobileprovision not found in mobile/ios"
 fi
 
-cd ../ && bash ./hooks/common/build.sh
+cd ../ && npx @capacitor/assets generate --ios && bash ./hooks/common/build.sh
 
 npx cap sync ios
+
+# Add organize build phase to iOS project (after cap sync)
+node --experimental-strip-types ./ios/build/add-organize-build-phase.ts
 
 # Build the project
 xcodebuild -workspace './ios/App/App.xcworkspace' -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive

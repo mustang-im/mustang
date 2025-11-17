@@ -8,7 +8,7 @@ const __dirname = import.meta.dirname;
  * Reorder build phases to ensure correct execution order:
  * 1. Build Node.js Mobile Native Modules
  * 2. Organize Node.js Native Modules
- * 3. Code Sign Node Native Modules / Sign Node.js Mobile Native Modules
+ * 3. Code Sign NoSign Node.js Mobile Native Modules
  */
 function reorderBuildPhases(pbxprojContent: string): string {
   // Find the buildPhases section for the App target
@@ -87,7 +87,7 @@ function reorderBuildPhases(pbxprojContent: string): string {
  * This script should be run after `cap copy` to add the organize build phase
  */
 async function addOrganizeBuildPhase() {
-  const iosPath = path.join(__dirname, "../../ios/App");
+  const iosPath = path.join(__dirname, "../App");
   const xcodeprojPath = path.join(iosPath, "App.xcodeproj");
   const pbxprojFile = path.join(xcodeprojPath, "project.pbxproj");
 
@@ -173,11 +173,11 @@ async function addOrganizeBuildPhase() {
     '',
     '# Organize .node files',
     '# Find the script path relative to project root',
-    '# PROJECT_DIR is ios/App, so hooks/ios is at ../../hooks/ios',
-    'SCRIPT_PATH="${PROJECT_DIR}/../../hooks/ios/organize-node-files.ts"',
+    '# PROJECT_DIR is ios/App, so build directory is at ../build',
+    'SCRIPT_PATH="${PROJECT_DIR}/../build/organize-node-files.ts"',
     'if [ ! -f "${SCRIPT_PATH}" ]; then',
     '  # Fallback: try from SRCROOT if PROJECT_DIR approach fails',
-    '  SCRIPT_PATH="${SRCROOT}/../../hooks/ios/organize-node-files.ts"',
+    '  SCRIPT_PATH="${SRCROOT}/../build/organize-node-files.ts"',
     'fi',
     'if [ ! -f "${SCRIPT_PATH}" ]; then',
     '  echo "Warning: organize-node-files.ts not found, skipping organization"',
