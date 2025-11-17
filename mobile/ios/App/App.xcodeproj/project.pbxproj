@@ -15,9 +15,6 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
-		DD0EE6332DD26625002B679D /* NodeMobile.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD0EE6322DD26625002B679D /* NodeMobile.xcframework */; };
-		DD0EE6342DD26625002B679D /* NodeMobile.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD0EE6322DD26625002B679D /* NodeMobile.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		DD0EE6362DD26665002B679D /* NodeMobile.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD0EE6322DD26625002B679D /* NodeMobile.xcframework */; };
 		DD0EE6432DD29A3E002B679D /* nodejs-project in Resources */ = {isa = PBXBuildFile; fileRef = DD0EE6422DD29A3E002B679D /* nodejs-project */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +25,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DD0EE6342DD26625002B679D /* NodeMobile.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,8 +67,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */,
-				DD0EE6332DD26625002B679D /* NodeMobile.xcframework in Frameworks */,
-				DD0EE6362DD26665002B679D /* NodeMobile.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
