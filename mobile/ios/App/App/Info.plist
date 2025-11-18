@@ -38,7 +38,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Your camera is needed for video conferences and optionally allows you to make your avatar.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>This is required for the app to work. The user interface of the app needs to communicate with a local backend part via WebSocket for mail synchronization, storage and other tasks. We want the app to run entirely locally on your device, without any cloud service, that's why the service runs locally on the device.</string>
+	<string>This is required for the app to work. The user interface of the app needs to communicate via WebSocket with a local backend part of this app for mail synchronization, storage and other tasks. We want the app to run entirely locally on your device, without any cloud service, that's why the service runs locally on your device.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We save your photos received or made from chats, emails, files, or avatars.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
