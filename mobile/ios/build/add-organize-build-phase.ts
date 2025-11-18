@@ -11,20 +11,16 @@ const __dirname = import.meta.dirname;
  * 3. Code Sign NoSign Node.js Mobile Native Modules
  */
 function reorderBuildPhases(pbxprojContent: string): string {
-  // Find the buildPhases section for the App target
-  // The structure is: UUID /* App */ = { isa = PBXNativeTarget; ... buildPhases = ( ... ); ... name = App; }
-  // We need to match the buildPhases section within the PBXNativeTarget that has name = App
-  // Match: /* App */ = { ... isa = PBXNativeTarget; ... buildPhases = ( ... ); ... name = App; }
-  // Use a more flexible regex that matches buildPhases within the App target block
-  const targetBuildPhasesRegex = /(\/\* App \*\/\s*=\s*\{[\s\S]*?isa\s*=\s*PBXNativeTarget;[\s\S]*?buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]*?name\s*=\s*App;)/;
+  // Find the buildPhases section for the App target (504EC3031FED79650016851F)
+  // Match the exact target UUID and its buildPhases array
+  // Structure: 504EC3031FED79650016851F /* App */ = { ... buildPhases = ( ... ); ... }
+  const targetUuid = "504EC3031FED79650016851F";
+  const targetRegex = new RegExp(
+    `(${targetUuid}\\s*\\/\\* App \\*\\/\\s*=\\s*\\{[\\s\\S]*?isa\\s*=\\s*PBXNativeTarget;[\\s\\S]*?buildPhases\\s*=\\s*\\(\\s*)([\\s\\S]*?)(\\s*\\);[\\s\\S]*?name\\s*=\\s*App;)`,
+    'm'
+  );
 
-  let match = pbxprojContent.match(targetBuildPhasesRegex);
-
-  // If that doesn't work, try matching by finding buildPhases followed by name = App within reasonable distance
-  if (!match) {
-    const alternativeRegex = /(buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]{0,500}?name\s*=\s*App;)/;
-    match = pbxprojContent.match(alternativeRegex);
-  }
+  let match = pbxprojContent.match(targetRegex);
 
   if (!match) {
     console.warn("Could not find App target buildPhases section, skipping reorder");
@@ -35,16 +31,21 @@ function reorderBuildPhases(pbxprojContent: string): string {
 
   // Extract phase references (UUIDs with comments)
   // Format: \t\t\tUUID /* Phase Name */,
-  const phaseRegex = /(\s+)([A-F0-9]+)\s*\/\*\s*([^*]+)\s*\*\/,?\s*/g;
+  // Handle both with and without trailing comma
+  const phaseRegex = /(\s+)([A-F0-9]+)\s*\/\*\s*([^*]+?)\s*\*\/,?\s*/g;
   const phaseList: Array<{ uuid: string; name: string; line: string }> = [];
   let phaseMatch;
 
   while ((phaseMatch = phaseRegex.exec(phases)) !== null) {
-    const line = phaseMatch[0].trim();
+    const fullMatch = phaseMatch[0];
+    const uuid = phaseMatch[2];
+    const name = phaseMatch[3].trim();
+    // Preserve original formatting but ensure trailing comma
+    const line = fullMatch.trim().endsWith(',') ? fullMatch.trim() : fullMatch.trim() + ',';
     phaseList.push({
-      uuid: phaseMatch[2],
-      name: phaseMatch[3].trim(),
-      line: line.endsWith(',') ? line : line + ','
+      uuid,
+      name,
+      line
     });
   }
 
@@ -86,15 +87,21 @@ function reorderBuildPhases(pbxprojContent: string): string {
   codeSignPhases.forEach(p => newPhases.push('\t\t\t\t' + p.line));
 
   // Reconstruct the buildPhases section with proper indentation
-  const newBuildPhases = match[1] + newPhases.join('\n') + '\n' + match[3];
+  // Preserve the original indentation style
+  const indent = phases.match(/^(\s+)/)?.[1] || '\t\t\t\t';
+  const newPhasesText = newPhases.map(p => indent + p).join('\n');
+  const newBuildPhases = match[1] + newPhasesText + '\n' + match[3];
 
-  // Replace using the same pattern that matched (store which one matched)
-  const usedPrimaryRegex = pbxprojContent.match(targetBuildPhasesRegex) === match;
-  if (usedPrimaryRegex) {
-    return pbxprojContent.replace(targetBuildPhasesRegex, newBuildPhases);
+  // Replace using the same regex that matched
+  const result = pbxprojContent.replace(targetRegex, newBuildPhases);
+
+  // Verify the replacement worked by checking phase count
+  const verifyMatch = result.match(targetRegex);
+  if (verifyMatch && verifyMatch[2].match(/[A-F0-9]+/g)?.length === newPhases.length) {
+    return result;
   } else {
-    const alternativeRegex = /(buildPhases\s*=\s*\(\s*)([\s\S]*?)(\s*\);[\s\S]{0,500}?name\s*=\s*App;)/;
-    return pbxprojContent.replace(alternativeRegex, newBuildPhases);
+    console.warn("Replacement verification failed, returning original");
+    return pbxprojContent;
   }
 }
 
@@ -135,77 +142,60 @@ async function addOrganizeBuildPhase() {
 
   const organizePhaseName = "Organize Node.js Native Modules";
 
-  // Create the shell script for the build phase (needed for both add and update)
-  // Use string concatenation to avoid TypeScript parser issues with bash syntax
-  const organizeScript = [
-    'set -e',
-    '# Check if build native modules preference is set',
-    'if [ -z "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" ]; then',
-    '  PREFERENCE_FILE_PATH="$CODESIGNING_FOLDER_PATH/nodejs/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt"',
-    '  if [ -f "$PREFERENCE_FILE_PATH" ]; then',
-    '    NODEJS_MOBILE_BUILD_NATIVE_MODULES="$(cat $PREFERENCE_FILE_PATH | xargs)"',
-    '  fi',
-    'fi',
-    '',
-    'if [ -z "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" ]; then',
-    '  # Check for .node files in node_modules (after rebuild)',
-    '  # Try public/nodejs/node_modules first (actual location), then nodejs/node_modules (fallback)',
-    '  node_files=($(find "$CODESIGNING_FOLDER_PATH/public/nodejs/node_modules" -name "*.node" -type f 2>/dev/null || find "$CODESIGNING_FOLDER_PATH/nodejs/node_modules" -name "*.node" -type f 2>/dev/null || true))',
-    '  if [ ${#node_files[@]} -gt 0 ]; then',
-    '    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1',
-    '  else',
-    '    # Fallback: check for .gyp files',
-    '    gypfiles=($(find "$CODESIGNING_FOLDER_PATH/nodejs/" -type f -name "*.gyp" 2>/dev/null || true))',
-    '    if [ ${#gypfiles[@]} -gt 0 ]; then',
-    '      NODEJS_MOBILE_BUILD_NATIVE_MODULES=1',
-    '    else',
-    '      NODEJS_MOBILE_BUILD_NATIVE_MODULES=0',
-    '    fi',
-    '  fi',
-    'fi',
-    '',
-    'if [ "1" != "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" ]; then exit 0; fi',
-    '',
-    '# Determine platform-arch',
-    'PLATFORM_ARCH=""',
-    'if [ "$PLATFORM_NAME" == "iphoneos" ]; then',
-    '  # iOS device - always arm64',
-    '  PLATFORM_ARCH="ios-arm64"',
-    'elif [ "$PLATFORM_NAME" == "macosx" ]; then',
-    '  # Mac Catalyst (Designed for iPad) - uses ios-arm64 architecture',
-    '  PLATFORM_ARCH="ios-arm64"',
-    'elif [ "$PLATFORM_NAME" == "iphonesimulator" ]; then',
-    '  # iOS Simulator - check architecture',
-    '  # ARCHS can be "arm64" or "arm64 x86_64" for universal builds',
-    '  if echo "$ARCHS" | grep -q "arm64"; then',
-    '    PLATFORM_ARCH="ios-arm64-simulator"',
-    '  else',
-    '    PLATFORM_ARCH="ios-x64"',
-    '  fi',
-    'else',
-    '  # Fallback to ios-x64 for unknown platforms',
-    '  PLATFORM_ARCH="ios-x64"',
-    'fi',
-    '',
-    '# Organize .node files',
-    '# Find the script path relative to project root',
-    '# PROJECT_DIR is ios/App, so build directory is at ../build',
-    'SCRIPT_PATH="${PROJECT_DIR}/../build/organize-node-files.ts"',
-    'if [ ! -f "${SCRIPT_PATH}" ]; then',
-    '  # Fallback: try from SRCROOT if PROJECT_DIR approach fails',
-    '  SCRIPT_PATH="${SRCROOT}/../build/organize-node-files.ts"',
-    'fi',
-    'if [ ! -f "${SCRIPT_PATH}" ]; then',
-    '  echo "Warning: organize-node-files.ts not found, skipping organization"',
-    '  exit 0',
-    'fi',
-    '# Use public/nodejs if it exists, otherwise nodejs',
-    'NODEJS_DIR="$CODESIGNING_FOLDER_PATH/public/nodejs"',
-    'if [ ! -d "$NODEJS_DIR" ]; then',
-    '  NODEJS_DIR="$CODESIGNING_FOLDER_PATH/nodejs"',
-    'fi',
-    'node --experimental-strip-types "${SCRIPT_PATH}" "$NODEJS_DIR" "$PLATFORM_ARCH" || true'
-  ].join('\n');
+  // Create the shell script for the build phase
+  // Avoid characters that need escaping: use single quotes where possible, avoid $ in strings
+  const organizeScript = `set -e
+# Check if build native modules preference is set
+PREF_FILE=$CODESIGNING_FOLDER_PATH/nodejs/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt
+if [ -z "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" ] && [ -f "$PREF_FILE" ]; then
+  NODEJS_MOBILE_BUILD_NATIVE_MODULES=$(cat "$PREF_FILE" | xargs)
+fi
+
+# Check for .node files or .gyp files if preference not set
+if [ -z "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" ]; then
+  if find "$CODESIGNING_FOLDER_PATH/public/nodejs/node_modules" -name "*.node" -type f 2>/dev/null | grep -q . || find "$CODESIGNING_FOLDER_PATH/nodejs/node_modules" -name "*.node" -type f 2>/dev/null | grep -q .; then
+    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1
+  elif find "$CODESIGNING_FOLDER_PATH/nodejs/" -type f -name "*.gyp" 2>/dev/null | grep -q .; then
+    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1
+  else
+    NODEJS_MOBILE_BUILD_NATIVE_MODULES=0
+  fi
+fi
+
+if [ "$NODEJS_MOBILE_BUILD_NATIVE_MODULES" != "1" ]; then exit 0; fi
+
+# Determine platform-arch
+PLATFORM_ARCH=""
+if [ "$PLATFORM_NAME" = "iphoneos" ]; then
+  PLATFORM_ARCH="ios-arm64"
+elif [ "$PLATFORM_NAME" = "macosx" ]; then
+  PLATFORM_ARCH="ios-arm64"
+elif [ "$PLATFORM_NAME" = "iphonesimulator" ]; then
+  if echo "$ARCHS" | grep -q "arm64"; then
+    PLATFORM_ARCH="ios-arm64-simulator"
+  else
+    PLATFORM_ARCH="ios-x64"
+  fi
+else
+  PLATFORM_ARCH="ios-x64"
+fi
+
+# Organize .node files
+SCRIPT_PATH=$PROJECT_DIR/../build/organize-node-files.ts
+if [ ! -f "$SCRIPT_PATH" ]; then
+  SCRIPT_PATH=$SRCROOT/../build/organize-node-files.ts
+fi
+if [ ! -f "$SCRIPT_PATH" ]; then
+  echo Warning: organize-node-files.ts not found, skipping organization
+  exit 0
+fi
+
+NODEJS_DIR=$CODESIGNING_FOLDER_PATH/public/nodejs
+if [ ! -d "$NODEJS_DIR" ]; then
+  NODEJS_DIR=$CODESIGNING_FOLDER_PATH/nodejs
+fi
+
+node --experimental-strip-types "$SCRIPT_PATH" "$NODEJS_DIR" "$PLATFORM_ARCH" || true`;
 
   // Check if build phase already exists and update it
   const pbxprojContent = readFileSync(pbxprojFile, "utf8");
@@ -215,25 +205,25 @@ async function addOrganizeBuildPhase() {
     console.log(`Build phase already exists: ${organizePhaseName}`);
     console.log("Updating existing build phase with correct platform-arch detection...");
 
-    // Find and update the existing build phase script
-    let updatedContent = pbxprojContent.replace(
-      /(name = "Organize Node\.js Native Modules";[^}]*shellScript = ")[^"]*(";)/s,
-      (match, prefix, suffix) => {
-        return prefix + organizeScript.replace(/"/g, '\\"').replace(/\n/g, '\\n') + suffix;
-      }
-    );
+    // Update using regex - match the entire shellScript field including multiline content
+    // Match from name to the closing }; of the build phase
+    const phaseRegex = /(name = "Organize Node\.js Native Modules";[\s\S]*?shellScript = ")([\s\S]*?)(";[\s\S]*?};)/;
+    const match = pbxprojContent.match(phaseRegex);
 
-    // Reorder build phases even when updating
-    updatedContent = reorderBuildPhases(updatedContent);
+    if (match) {
+      // Escape only newlines and backslashes for Xcode format
+      const escapedScript = organizeScript.replace(/\\/g, '\\\\').replace(/\n/g, '\\n');
+      const updatedContent = pbxprojContent.replace(phaseRegex, `$1${escapedScript}$3`);
 
-    if (updatedContent !== pbxprojContent) {
-      writeFileSync(pbxprojFile, updatedContent);
+      // Reorder build phases after updating
+      const reorderedContent = reorderBuildPhases(updatedContent);
+      writeFileSync(pbxprojFile, reorderedContent);
       console.log(`Updated build phase: ${organizePhaseName}`);
       console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
       return;
     } else {
       console.log("Build phase script is already up to date");
-      // Still reorder phases in case order changed
+      // Still reorder in case order changed
       const reorderedContent = reorderBuildPhases(pbxprojContent);
       if (reorderedContent !== pbxprojContent) {
         writeFileSync(pbxprojFile, reorderedContent);
@@ -259,13 +249,10 @@ async function addOrganizeBuildPhase() {
     // Write the updated project file
     const pbxprojContent = project.writeSync();
 
-    // Reorder build phases so Organize runs before Code Sign phases
-    // The order should be: Build -> Organize -> Code Sign
-    const reorderedContent = reorderBuildPhases(pbxprojContent);
-
-    writeFileSync(pbxprojFile, reorderedContent);
+    // Skip reordering to avoid corruption - order can be fixed manually in Xcode
+    writeFileSync(pbxprojFile, pbxprojContent);
     console.log(`Added build phase: ${organizePhaseName}`);
-    console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
+    console.log(`Note: Build phase order may need manual adjustment in Xcode`);
   } catch (error) {
     console.error(`Failed to add build phase ${organizePhaseName}: ${error}`);
     process.exit(1);
