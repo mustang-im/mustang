@@ -129,6 +129,9 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
+				A8F55743798E440AB4F63C95 /* Organize Node.js Native Modules */,
+				7FA35B1EC30D410A98CC7E75 /* Build Node.js Mobile Native Modules */,
+				5E32F73C3280499286A86A70 /* Sign Node.js Mobile Native Modules */,
 			);
 			buildRules = (
 			);
@@ -146,7 +149,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 920;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
@@ -189,6 +192,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		5E32F73C3280499286A86A70 /* Sign Node.js Mobile Native Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Sign Node.js Mobile Native Modules";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -e\n# Get nodeDir from config (defaults to \"nodejs\" if not set)\nNODE_DIR=\"nodejs\"\n\n# Use public/$NODE_DIR if it exists, otherwise $NODE_DIR\n# Files are typically copied to public/nodejs/ in Capacitor apps\nNODEJS_DIR=\"$CODESIGNING_FOLDER_PATH/public/$NODE_DIR\"\nif [ ! -d \"$NODEJS_DIR\" ]; then\n  NODEJS_DIR=\"$CODESIGNING_FOLDER_PATH/$NODE_DIR\"\nfi\n\n# Check if build native modules preference is set\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then\n  PREFERENCE_FILE_PATH=\"$NODEJS_DIR/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt\"\n  if [ -f \"$PREFERENCE_FILE_PATH\" ]; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=\"$(cat $PREFERENCE_FILE_PATH | xargs)\"\n    rm \"$PREFERENCE_FILE_PATH\"\n  fi\nfi\n\n# Check if node directory exists\nif [ ! -d \"$NODEJS_DIR\" ]; then\n  echo \"Warning: node directory not found at $NODEJS_DIR, skipping code signing\"\n  exit 0\nfi\n\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then\n  organized_dirs=($(find \"$NODEJS_DIR/build/Release\" -name \"*.node\" -type d 2>/dev/null || find \"$NODEJS_DIR/prebuilds\" -name \"*.node\" -type d 2>/dev/null || find \"$NODEJS_DIR/node_modules\" -path \"*/prebuilds/*/*.node\" -type d 2>/dev/null || true))\n  if [ ${#organized_dirs[@]} -gt 0 ]; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1\n  else\n    gypfiles=($(find \"$NODEJS_DIR/\" -type f -name \"*.gyp\" 2>/dev/null || true))\n    if [ ${#gypfiles[@]} -gt 0 ]; then\n      NODEJS_MOBILE_BUILD_NATIVE_MODULES=1\n    else\n      NODEJS_MOBILE_BUILD_NATIVE_MODULES=0\n    fi\n  fi\nfi\n\nif [ \"1\" != \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then exit 0; fi\n\n# Delete object files\nfind \"$NODEJS_DIR/\" -name \"*.o\" -type f -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.a\" -type f -delete 2>/dev/null || true\n\n# Create frameworks and override-dlopen-paths-data.json using TypeScript helper from plugin\n# Find the script path in the plugin\nSCRIPT_PATH=\"../../node_modules/capacitor-nodejs/scripts/dist/create-frameworks-and-override.js\"\nif [ ! -f \"${SCRIPT_PATH}\" ]; then\n  # Try source TypeScript file if dist doesn't exist\n  SCRIPT_PATH=\"${PROJECT_DIR}/../../node_modules/capacitor-nodejs/scripts/create-frameworks-and-override.ts\"\nfi\nif [ ! -f \"${SCRIPT_PATH}\" ]; then\n  echo \"Warning: create-frameworks-and-override script not found, skipping framework creation\"\n  exit 0\nfi\n\n# Run the TypeScript script to create frameworks and JSON override file\nFRAMEWORK_OUTPUT=$(node \"${SCRIPT_PATH}\" \"$NODEJS_DIR\" 2>&1)\nFRAMEWORK_EXIT_CODE=$?\n\necho \"$FRAMEWORK_OUTPUT\"\n\nif [ $FRAMEWORK_EXIT_CODE -ne 0 ]; then\n  echo \"Warning: Framework creation script failed, continuing anyway\"\nfi\n\n# Extract framework paths from output (lines starting with FRAMEWORK:)\nFRAMEWORK_PATHS=$(echo \"$FRAMEWORK_OUTPUT\" | grep \"^FRAMEWORK:\" | sed 's/^FRAMEWORK://')\n\n# Embed frameworks\nembed_framework()\n{\n    FRAMEWORK_NAME=\"$(basename \"$1\")\"\n    mkdir -p \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n    cp -r \"$1\" \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n    /usr/bin/codesign --force --sign $EXPANDED_CODE_SIGN_IDENTITY --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/$FRAMEWORK_NAME\"\n}\n\n# Embed frameworks found by the script\nif [ -n \"$FRAMEWORK_PATHS\" ]; then\n  echo \"$FRAMEWORK_PATHS\" | while read frmwrk_path; do\n    if [ -n \"$frmwrk_path\" ] && [ -d \"$frmwrk_path\" ]; then\n      embed_framework \"$frmwrk_path\"\n    fi\n  done\nfi\n\n# Also embed any frameworks found via find (fallback)\nfind \"$NODEJS_DIR/\" -name \"*.framework\" -type d 2>/dev/null | while read frmwrk_path; do\n  # Skip if already embedded\n  FRAMEWORK_NAME=\"$(basename \"$frmwrk_path\")\"\n  if [ ! -d \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/$FRAMEWORK_NAME\" ]; then\n    embed_framework \"$frmwrk_path\"\n  fi\ndone\n\n# Cleanup\nfind \"$NODEJS_DIR/\" -path \"*/.deps/*\" -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \".deps\" -type d -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -path \"*/*.framework/*\" -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.framework\" -type d -delete 2>/dev/null || true\n\n";
+		};
 		6634F4EFEBD30273BCE97C65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -206,6 +223,20 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		7FA35B1EC30D410A98CC7E75 /* Build Node.js Mobile Native Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Node.js Mobile Native Modules";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -e\n# Get nodeDir from config (defaults to \"nodejs\" if not set)\nNODE_DIR=\"nodejs\"\n\n# Use public/$NODE_DIR if it exists, otherwise $NODE_DIR\n# Files are typically copied to public/nodejs/ in Capacitor apps\nNODEJS_DIR=\"$CODESIGNING_FOLDER_PATH/public/$NODE_DIR\"\nif [ ! -d \"$NODEJS_DIR\" ]; then\n  NODEJS_DIR=\"$CODESIGNING_FOLDER_PATH/$NODE_DIR\"\nfi\n\n# Check if build native modules preference is set\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then\n  # If build native modules preference is not set, look for it in the project's\n  # webDir/nodeDir/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt\n  PREFERENCE_FILE_PATH=\"$NODEJS_DIR/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt\"\n  if [ -f \"$PREFERENCE_FILE_PATH\" ]; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=\"$(cat $PREFERENCE_FILE_PATH | xargs)\"\n  fi\nfi\n\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then\n  # If build native modules preference is not set, try to find .gyp files to turn it on.\n  gypfiles=($(find \"$NODEJS_DIR/\" -type f -name \"*.gyp\" 2>/dev/null || true))\n  gypfiles_count=${#gypfiles[@]}\n  if [ \"$gypfiles_count\" -gt 0 ]; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1\n  else\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=0\n  fi\nfi\n\nif [ \"1\" != \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then exit 0; fi\n\n# Delete object files that may already come from within the npm package.\nfind \"$NODEJS_DIR/\" -name \"*.o\" -type f -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.a\" -type f -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.node\" -type f -delete 2>/dev/null || true\n\n# Delete bundle contents that may be there from previous builds.\nfind \"$NODEJS_DIR/\" -path \"*/*.node/*\" -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.node\" -type d -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -path \"*/*.framework/*\" -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \"*.framework\" -type d -delete 2>/dev/null || true\n\n# Symlinks to binaries are resolved during the copy, causing build time errors.\n# The original project's .bin folder will be added to the path before building the native modules.\nfind \"$NODEJS_DIR/\" -path \"*/.bin/*\" -delete 2>/dev/null || true\nfind \"$NODEJS_DIR/\" -name \".bin\" -type d -delete 2>/dev/null || true\n\n# Get the nodejs-mobile-gyp location\nNODEJS_MOBILE_GYP_BIN_FILE=\"/Users/jeremyc/Documents/GitHub/mustang/mobile/node_modules/.bin/nodejs-mobile-gyp\"\n\n# Get the nodejs headers directory (libnode/include/node)\n# Try multiple possible paths\nNODEJS_HEADERS_DIR=\"\"\nif [ -d \"$PROJECT_DIR/../ios/libnode/include/node\" ]; then\n  NODEJS_HEADERS_DIR=\"$( cd \"$PROJECT_DIR\" && cd ../ios/libnode/include/node && pwd )\"\nelif [ -d \"$PROJECT_DIR/../../ios/libnode/include/node\" ]; then\n  NODEJS_HEADERS_DIR=\"$( cd \"$PROJECT_DIR\" && cd ../../ios/libnode/include/node && pwd )\"\nelif [ -d \"$( dirname \"$PRODUCT_SETTINGS_PATH\" )/Plugins/capacitor-nodejs/ios/libnode/include/node\" ]; then\n  NODEJS_HEADERS_DIR=\"$( cd \"$( dirname \"$PRODUCT_SETTINGS_PATH\" )\" && cd Plugins/capacitor-nodejs/ios/libnode/include/node && pwd )\"\nfi\n\n# Adds the original project .bin to the path. It's a workaround\n# to correctly build some modules that depend on symlinked modules,\n# like node-pre-gyp.\nif [ -d \"$NODEJS_DIR/node_modules/.bin/\" ]; then\n  PATH=\"$NODEJS_DIR/node_modules/.bin/:$PATH\"\nfi\n\n# Rebuild modules for each architecture\npushd \"$NODEJS_DIR/\" > /dev/null\n\n# Determine target architecture based on platform\nif [ \"$PLATFORM_NAME\" == \"iphoneos\" ]; then\n  # Device build - arm64\n  TARGET_ARCH=\"ios-arm64\"\nelse\n  # Simulator build - x64\n  TARGET_ARCH=\"ios-x64\"\nfi\n\n# Find all native modules (those with binding.gyp or *.gyp files) and rebuild them\n# Search in node_modules directory\nNODE_MODULES_DIR=\"$NODEJS_DIR/node_modules\"\nif [ -d \"$NODE_MODULES_DIR\" ]; then\n  # Find all directories with binding.gyp or *.gyp files\n  # binding.gyp is the standard file name for GYP-based native modules\n  # Use -path pattern matching instead of -o to avoid parentheses\n  find \"$NODE_MODULES_DIR\" -type f -name \"binding.gyp\" | while read -r gypfile; do\n    # Get the directory containing the .gyp file (the module directory)\n    MODULE_DIR=$(dirname \"$gypfile\")\n    \n    # Skip if it's a nested node_modules (only process direct dependencies)\n    # Also skip if we've already processed this module (avoid duplicates)\n    if [[ \"$MODULE_DIR\" != *\"/node_modules/node_modules/\"* ]] && [ -f \"$MODULE_DIR/package.json\" ]; then\n      MODULE_NAME=$(basename \"$MODULE_DIR\")\n      echo \"Rebuilding native module: $MODULE_NAME ($MODULE_DIR) for $TARGET_ARCH\"\n      GYP_DEFINES=\"OS=ios\" \n      npm_config_nodedir=\"$NODEJS_HEADERS_DIR\" \n      npm_config_node_gyp=\"$NODEJS_MOBILE_GYP_BIN_FILE\" \n      npm_config_platform=\"ios\" \n      npm_config_format=\"make-ios\" \n      npm_config_node_engine=\"chakracore\" \n      npm_config_arch=\"${TARGET_ARCH#ios-}\" \n      node \"../../node_modules/capacitor-nodejs/scripts/dist/rebuild-native-module.js\" \"$MODULE_DIR\" \"$TARGET_ARCH\" || {\n        echo \"Warning: Failed to rebuild $MODULE_NAME, continuing with other modules...\"\n      }\n    fi\n  done\n  \n  # Also find *.gyp files (other than binding.gyp)\n  find \"$NODE_MODULES_DIR\" -type f -name \"*.gyp\" ! -name \"binding.gyp\" | while read -r gypfile; do\n    # Get the directory containing the .gyp file (the module directory)\n    MODULE_DIR=$(dirname \"$gypfile\")\n    \n    # Skip if it's a nested node_modules (only process direct dependencies)\n    # Also skip if we've already processed this module (avoid duplicates)\n    if [[ \"$MODULE_DIR\" != *\"/node_modules/node_modules/\"* ]] && [ -f \"$MODULE_DIR/package.json\" ]; then\n      MODULE_NAME=$(basename \"$MODULE_DIR\")\n      echo \"Rebuilding native module: $MODULE_NAME ($MODULE_DIR) for $TARGET_ARCH\"\n      GYP_DEFINES=\"OS=ios\" \n      npm_config_nodedir=\"$NODEJS_HEADERS_DIR\" \n      npm_config_node_gyp=\"$NODEJS_MOBILE_GYP_BIN_FILE\" \n      npm_config_platform=\"ios\" \n      npm_config_format=\"make-ios\" \n      npm_config_node_engine=\"chakracore\" \n      npm_config_arch=\"${TARGET_ARCH#ios-}\" \n      node \"../../node_modules/capacitor-nodejs/scripts/dist/rebuild-native-module.js\" \"$MODULE_DIR\" \"$TARGET_ARCH\" || {\n        echo \"Warning: Failed to rebuild $MODULE_NAME, continuing with other modules...\"\n      }\n    fi\n  done\nelse\n  echo \"Warning: node_modules directory not found at $NODE_MODULES_DIR\"\nfi\n\npopd > /dev/null\n\n";
 		};
 		9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -225,6 +256,20 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		A8F55743798E440AB4F63C95 /* Organize Node.js Native Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Organize Node.js Native Modules";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n# Check if build native modules preference is set\nPREF_FILE=$CODESIGNING_FOLDER_PATH/nodejs/NODEJS_MOBILE_BUILD_NATIVE_MODULES_VALUE.txt\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ] && [ -f \"$PREF_FILE\" ]; then\n  NODEJS_MOBILE_BUILD_NATIVE_MODULES=$(cat \"$PREF_FILE\" | xargs)\nfi\n\n# Check for .node files or .gyp files if preference not set\nif [ -z \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" ]; then\n  if find \"$CODESIGNING_FOLDER_PATH/public/nodejs/node_modules\" -name \"*.node\" -type f 2>/dev/null | grep -q . || find \"$CODESIGNING_FOLDER_PATH/nodejs/node_modules\" -name \"*.node\" -type f 2>/dev/null | grep -q .; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1\n  elif find \"$CODESIGNING_FOLDER_PATH/nodejs/\" -type f -name \"*.gyp\" 2>/dev/null | grep -q .; then\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=1\n  else\n    NODEJS_MOBILE_BUILD_NATIVE_MODULES=0\n  fi\nfi\n\nif [ \"$NODEJS_MOBILE_BUILD_NATIVE_MODULES\" != \"1\" ]; then exit 0; fi\n\n# Determine platform-arch\nPLATFORM_ARCH=\"\"\nif [ \"$PLATFORM_NAME\" = \"iphoneos\" ]; then\n  PLATFORM_ARCH=\"ios-arm64\"\nelif [ \"$PLATFORM_NAME\" = \"macosx\" ]; then\n  PLATFORM_ARCH=\"ios-arm64\"\nelif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  if echo \"$ARCHS\" | grep -q \"arm64\"; then\n    PLATFORM_ARCH=\"ios-arm64-simulator\"\n  else\n    PLATFORM_ARCH=\"ios-x64\"\n  fi\nelse\n  PLATFORM_ARCH=\"ios-x64\"\nfi\n\n# Organize .node files\nSCRIPT_PATH=$PROJECT_DIR/../build/organize-node-files.ts\nif [ ! -f \"$SCRIPT_PATH\" ]; then\n  SCRIPT_PATH=$SRCROOT/../build/organize-node-files.ts\nfi\nif [ ! -f \"$SCRIPT_PATH\" ]; then\n  echo Warning: organize-node-files.ts not found, skipping organization\n  exit 0\nfi\n\nNODEJS_DIR=$CODESIGNING_FOLDER_PATH/public/nodejs\nif [ ! -d \"$NODEJS_DIR\" ]; then\n  NODEJS_DIR=$CODESIGNING_FOLDER_PATH/nodejs\nfi\n\nnode --experimental-strip-types \"$SCRIPT_PATH\" \"$NODEJS_DIR\" \"$PLATFORM_ARCH\" || true";
 		};
 /* End PBXShellScriptBuildPhase section */
 
