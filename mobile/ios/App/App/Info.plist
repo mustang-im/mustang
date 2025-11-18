@@ -35,8 +35,14 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Your camera is needed for video conferences and optionally allows you to make your avatar.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>The app frontend needs to communicate with a local backend via WebSocket for mail synchronization, storage and other tasks. We want the app to run entirely local without any cloud service, that&apos;s why the service runs locally on the device.</string>
+	<string>This is required for the app to work. The user interface of the app needs to communicate with a local backend part of this app for mail synchronization, storage and other tasks. Both parts are on your device. We use a local WebSocket, which never leaves your device. We want the app to run entirely locally on your device, without any cloud service, that's why the service runs locally on your device.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We save your photos received or made from chats, emails, files, or avatars.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>You can choose a photo as your avatar, or to send to others as chat, email or file.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
