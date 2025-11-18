@@ -41,7 +41,7 @@ perl -p -i \
   ../../mobile/backend/backend.ts
 
 MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
-BUILD_VERSION="${MAJOR_MINOR}.$(date +%s)"
+BUILD_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d%H%M%S)"
 echo Setting iOS Build Version to $BUILD_VERSION
 perl -p -i \
   -e "s|Mustang|Parula|;" \
