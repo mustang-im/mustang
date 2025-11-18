@@ -128,26 +128,18 @@ async function addOrganizeBuildPhase() {
       const escapedScript = organizeScript.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
       const updatedContent = pbxprojContent.replace(phaseRegex, `$1${escapedScript}$3`);
 
-      // Reorder build phases after updating (if reorder succeeds)
+      // Always reorder build phases after updating
       const reorderedContent = reorderBuildPhases(updatedContent);
-      if (reorderedContent !== updatedContent) {
-        writeFileSync(pbxprojFile, reorderedContent);
-        console.log(`Updated build phase: ${organizePhaseName}`);
-        console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
-      } else {
-        writeFileSync(pbxprojFile, updatedContent);
-        console.log(`Updated build phase: ${organizePhaseName}`);
-        console.log(`Note: Build phase reordering skipped (phases may need manual ordering in Xcode)`);
-      }
+      writeFileSync(pbxprojFile, reorderedContent);
+      console.log(`Updated build phase: ${organizePhaseName}`);
+      console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
       return;
     } else {
       console.log("Build phase script is already up to date");
-      // Still reorder in case order changed
+      // Always reorder to ensure correct order
       const reorderedContent = reorderBuildPhases(pbxprojContent);
-      if (reorderedContent !== pbxprojContent) {
-        writeFileSync(pbxprojFile, reorderedContent);
-        console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
-      }
+      writeFileSync(pbxprojFile, reorderedContent);
+      console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
       return;
     }
   }
