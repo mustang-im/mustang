@@ -1,7 +1,8 @@
 import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../../backend/backend';
-import { app, shell, BrowserWindow, session } from 'electron'
+import { app, shell, BrowserWindow, session, protocol, net } from 'electron'
 import { ipcMain } from 'electron/main';
-import { join } from 'path'
+import { join } from 'path';
+import nodeURL from 'node:url';
 import electronUpdater from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
@@ -10,6 +11,10 @@ const { autoUpdater } = electronUpdater;
 function createWindow(): void {
   try {
     startupBackend();
+
+    protocol.handle("app", request => {
+      return net.fetch(nodeURL.pathToFileURL(join(__dirname, new URL(request.url).pathname)).toString());
+    });
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -79,6 +84,8 @@ function createWindow(): void {
       mainWindow.loadURL('http://localhost:5454');
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    } else if (process.platform === 'win32') {
+      mainWindow.loadURL("app://index.html");
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
