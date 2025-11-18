@@ -40,10 +40,14 @@ perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   ../../mobile/backend/backend.ts
 
+MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
+BUILD_VERSION="${MAJOR_MINOR}.$(date +%s)"
+echo Setting iOS Build Version to $BUILD_VERSION
 perl -p -i \
   -e "s|Mustang|Parula|;" \
   -e "s|im.mustang.mail|app.parula.mail|;" \
   -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\";|;" \
+  -e "s|CURRENT_PROJECT_VERSION = .*|CURRENT_PROJECT_VERSION = $BUILD_VERSION;|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
 perl -p -i \
