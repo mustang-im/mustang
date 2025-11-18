@@ -13,7 +13,8 @@ function createWindow(): void {
     startupBackend();
 
     protocol.handle("app", request => {
-      return net.fetch(nodeURL.pathToFileURL(join(__dirname, new URL(request.url).pathname)).toString());
+      console.log("mapping", request.url, "to", nodeURL.pathToFileURL(join(__dirname, "../renderer/", new URL(request.url).pathname)).toString())
+      return net.fetch(nodeURL.pathToFileURL(join(__dirname, "../renderer/", new URL(request.url).pathname)).toString());
     });
 
     // Create the browser window.
@@ -84,8 +85,9 @@ function createWindow(): void {
       mainWindow.loadURL('http://localhost:5454');
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    } else if (process.platform === 'win32') {
-      mainWindow.loadURL("app://index.html");
+    //} else if (process.platform === 'win32') {
+    } else if (true) {
+      mainWindow.loadURL("app:///index.html");
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
