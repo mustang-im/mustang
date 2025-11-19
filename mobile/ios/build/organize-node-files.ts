@@ -44,7 +44,7 @@ function getPackageNameFromPath(nodePath: string, nodeDir: string): string | nul
 }
 
 /**
- * Find all .node files in node_modules/*/build/Release
+ * Find all .node files in node_modules/package/build/Release
  */
 function findNodeFiles(nodeDir: string): NodeFileInfo[] {
   const nodeFiles: NodeFileInfo[] = [];
