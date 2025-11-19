@@ -17,6 +17,7 @@ echo "Building for platform: $PLATFORM (MOBILE_ARCH: ${MOBILE_ARCH:-not set})"
 # Update Android settings (only for Android or all)
 if [ "$PLATFORM" = "android" ] || [ "$PLATFORM" = "all" ]; then
   node --experimental-strip-types ./hooks/android/update-project.ts
+  npx @capacitor/assets generate --android
 fi
 
 # Setup mobile UI
