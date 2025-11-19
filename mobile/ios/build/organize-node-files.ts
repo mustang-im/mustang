@@ -2,23 +2,20 @@
 /**
  * Organize .node files after rebuilding native modules for iOS
  *
- * This script finds .node files after they are rebuilt and organizes them into:
- * - {nodeDir}/build/Release/{filename}.node/{packageName} for packages without prebuilds (default)
- * - {packageDir}/prebuilds/{platform}-{arch}/{package}.node/{package} if prebuilds folder exists
- *   (preserves package directory structure so node-gyp-build can find it)
+ * This script finds .node files in node_modules/package/build/Release and organizes them into:
+ * - {nodeDir}/build/Release/{filename}.node/{packageName}
  *
  * Usage: organize-node-files.js <nodeDir> <platform-arch>
  * Example: organize-node-files.js /path/to/nodejs ios-arm64
  */
 
-import { existsSync, readdirSync, statSync, mkdirSync, renameSync, copyFileSync, unlinkSync, rmSync } from 'node:fs';
-import { join, dirname, basename, resolve, relative } from 'node:path';
+import { existsSync, readdirSync, mkdirSync, copyFileSync, unlinkSync } from 'node:fs';
+import { join, basename, resolve, relative } from 'node:path';
 
 interface NodeFileInfo {
   nodePath: string;
   packageName: string;
   packageDir: string;
-  hasPrebuilds: boolean;
 }
 
 /**
@@ -47,18 +44,9 @@ function getPackageNameFromPath(nodePath: string, nodeDir: string): string | nul
 }
 
 /**
- * Check if package has prebuilds folder
+ * Find all .node files in node_modules/*/build/Release
  */
-function hasPrebuildsFolder(packageDir: string): boolean {
-  const prebuildsPath = join(packageDir, 'prebuilds');
-  return existsSync(prebuildsPath) && statSync(prebuildsPath).isDirectory();
-}
-
-/**
- * Find all .node files in node_modules
- * For packages with prebuilds, only include the one matching platformArch
- */
-function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
+function findNodeFiles(nodeDir: string): NodeFileInfo[] {
   const nodeFiles: NodeFileInfo[] = [];
   const nodeModulesPath = join(nodeDir, 'node_modules');
 
@@ -66,73 +54,27 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
     return nodeFiles;
   }
 
-  function searchDirectory(dir: string): void {
+  function searchPackage(packagePath: string): void {
+    const buildReleasePath = join(packagePath, 'build', 'Release');
+
+    if (!existsSync(buildReleasePath)) {
+      return;
+    }
+
     try {
-      const entries = readdirSync(dir, { withFileTypes: true });
+      const entries = readdirSync(buildReleasePath, { withFileTypes: true });
 
       for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          // Skip .node directories (they're bundles, not files)
-          if (!entry.name.endsWith('.node')) {
-            searchDirectory(fullPath);
-          }
-        } else if (entry.isFile() && entry.name.endsWith('.node')) {
+        if (entry.isFile() && entry.name.endsWith('.node')) {
+          const fullPath = join(buildReleasePath, entry.name);
           const packageName = getPackageNameFromPath(fullPath, nodeDir);
+
           if (packageName) {
-            // Find the package root directory
-            const relativePath = relative(nodeModulesPath, fullPath);
-            const pathParts = relativePath.split('/');
-            let packageDir = nodeModulesPath;
-
-            if (pathParts[0]?.startsWith('@')) {
-              // Scoped package
-              packageDir = join(nodeModulesPath, pathParts[0], pathParts[1]);
-            } else {
-              packageDir = join(nodeModulesPath, pathParts[0]);
-            }
-
-            const hasPrebuilds = hasPrebuildsFolder(packageDir);
-            const isInBuildRelease = fullPath.includes('/build/Release/') || fullPath.includes('/build/Debug/');
-            const isInPrebuilds = fullPath.includes('/prebuilds/');
-
-            // If the .node file is in build/Release or build/Debug, always include it (even if package has prebuilds)
-            // This handles cases where a package has prebuilds but the file was built from source
-            if (isInBuildRelease) {
-              nodeFiles.push({
-                nodePath: fullPath,
-                packageName,
-                packageDir,
-                hasPrebuilds: false, // Treat as non-prebuilds since it's in build/Release
-              });
-            } else if (isInPrebuilds) {
-              // For prebuilds, only include if it matches the platform-arch
-              // Check if this .node file is in the correct prebuilds/{platform-arch} directory
-              // Also check for darwin-x64+arm64 as it works for ios-arm64
-              const isCorrectPlatform = fullPath.includes(`/prebuilds/${platformArch}/`) ||
-                (platformArch === 'ios-arm64' && fullPath.includes('/prebuilds/darwin-x64+arm64/'));
-
-              if (isCorrectPlatform) {
-                nodeFiles.push({
-                  nodePath: fullPath,
-                  packageName,
-                  packageDir,
-                  hasPrebuilds: true,
-                });
-              }
-              // Skip prebuilds for other platforms
-            } else {
-              // .node file is not in build/Release or prebuilds - include it anyway
-              // This handles cases where the file might be in a different location
-              // (e.g., directly in node_modules or in a custom build location)
-              nodeFiles.push({
-                nodePath: fullPath,
-                packageName,
-                packageDir,
-                hasPrebuilds: false,
-              });
-            }
+            nodeFiles.push({
+              nodePath: fullPath,
+              packageName,
+              packageDir: packagePath,
+            });
           }
         }
       }
@@ -141,7 +83,36 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
     }
   }
 
-  searchDirectory(nodeModulesPath);
+  // Search all packages in node_modules
+  try {
+    const packages = readdirSync(nodeModulesPath, { withFileTypes: true });
+
+    for (const entry of packages) {
+      if (entry.isDirectory()) {
+        const packagePath = join(nodeModulesPath, entry.name);
+
+        if (entry.name.startsWith('@')) {
+          // Scoped package: search inside @scope/package
+          try {
+            const scopedPackages = readdirSync(packagePath, { withFileTypes: true });
+            for (const scopedEntry of scopedPackages) {
+              if (scopedEntry.isDirectory()) {
+                searchPackage(join(packagePath, scopedEntry.name));
+              }
+            }
+          } catch (error) {
+            // Skip scoped packages we can't read
+          }
+        } else {
+          // Regular package
+          searchPackage(packagePath);
+        }
+      }
+    }
+  } catch (error) {
+    // Ignore errors reading node_modules
+  }
+
   return nodeFiles;
 }
 
@@ -150,117 +121,28 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
  */
 function organizeNodeFile(
   info: NodeFileInfo,
-  nodeDir: string,
-  platformArch: string
+  nodeDir: string
 ): void {
-  const { nodePath, packageName, packageDir, hasPrebuilds } = info;
+  const { nodePath, packageName } = info;
   const nodeFileName = basename(nodePath);
 
-  let targetDir: string;
-  let targetPath: string;
-
-  if (hasPrebuilds) {
-    // Use prebuilds structure: {packageDir}/prebuilds/{platform}-{arch}/{package}.node/{package}
-    // This preserves the package directory structure so node-gyp-build can find it
-    targetDir = join(packageDir, 'prebuilds', platformArch, `${packageName}.node`);
-    targetPath = join(targetDir, packageName);
-  } else {
-    // Default: build/Release/{filename}.node/{packageName}
-    // Create a directory named after the .node file, with the package name as the binary
-    targetDir = join(nodeDir, 'build', 'Release', nodeFileName);
-    targetPath = join(targetDir, packageName);
-  }
+  // Target: build/Release/{filename}.node/{packageName}
+  const targetDir = join(nodeDir, 'build', 'Release', nodeFileName);
+  const targetPath = join(targetDir, packageName);
 
   // Create target directory
   mkdirSync(targetDir, { recursive: true });
 
   // Copy the .node file to the target location
-  // (copy instead of move in case it's needed elsewhere)
   copyFileSync(nodePath, targetPath);
 
   console.log(`Organized ${packageName}: ${nodePath} -> ${targetPath}`);
 
-  // Optionally remove the original if it's in build/Release (not needed after organization)
-  if (nodePath.includes('/build/Release/') || nodePath.includes('/build/Debug/')) {
-    try {
-      unlinkSync(nodePath);
-    } catch (error) {
-      // Ignore errors removing original
-    }
-  }
-}
-
-/**
- * Clean up prebuilds directories that don't match the current platform-arch
- * This prevents Android prebuilds from being included in iOS builds
- * Now checks both top-level prebuilds and package-level prebuilds
- */
-function cleanupOtherPlatformPrebuilds(nodeDir: string, currentPlatformArch: string): void {
-  // Clean up top-level prebuilds (legacy location)
-  const prebuildsDir = join(nodeDir, 'prebuilds');
-  if (existsSync(prebuildsDir)) {
-    try {
-      const entries = readdirSync(prebuildsDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const platformArchDir = entry.name;
-          // Keep the current platform-arch, remove others (especially android-*)
-          if (platformArchDir !== currentPlatformArch &&
-              (platformArchDir.startsWith('android-') ||
-               (platformArchDir.startsWith('ios-') && platformArchDir !== currentPlatformArch))) {
-            const fullPath = join(prebuildsDir, platformArchDir);
-            console.log(`Removing top-level prebuilds for other platform: ${platformArchDir}`);
-            try {
-              // Remove the entire directory
-              rmSync(fullPath, { recursive: true, force: true });
-            } catch (error) {
-              console.warn(`Failed to remove ${fullPath}: ${error instanceof Error ? error.message : String(error)}`);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      // Ignore errors
-    }
-  }
-
-  // Clean up package-level prebuilds (new location)
-  const nodeModulesPath = join(nodeDir, 'node_modules');
-  if (existsSync(nodeModulesPath)) {
-    try {
-      const packages = readdirSync(nodeModulesPath, { withFileTypes: true });
-      for (const entry of packages) {
-        if (entry.isDirectory()) {
-          const packagePrebuildsDir = join(nodeModulesPath, entry.name, 'prebuilds');
-          if (existsSync(packagePrebuildsDir)) {
-            try {
-              const platformDirs = readdirSync(packagePrebuildsDir, { withFileTypes: true });
-              for (const platformEntry of platformDirs) {
-                if (platformEntry.isDirectory()) {
-                  const platformArchDir = platformEntry.name;
-                  // Keep the current platform-arch, remove others
-                  if (platformArchDir !== currentPlatformArch &&
-                      (platformArchDir.startsWith('android-') ||
-                       (platformArchDir.startsWith('ios-') && platformArchDir !== currentPlatformArch))) {
-                    const fullPath = join(packagePrebuildsDir, platformArchDir);
-                    console.log(`Removing package prebuilds for other platform: ${entry.name}/${platformArchDir}`);
-                    try {
-                      rmSync(fullPath, { recursive: true, force: true });
-                    } catch (error) {
-                      // Ignore errors
-                    }
-                  }
-                }
-              }
-            } catch (error) {
-              // Ignore errors
-            }
-          }
-        }
-      }
-    } catch (error) {
-      // Ignore errors
-    }
+  // Remove the original file from build/Release
+  try {
+    unlinkSync(nodePath);
+  } catch (error) {
+    // Ignore errors removing original
   }
 }
 
@@ -287,93 +169,28 @@ function main(): void {
   console.log(`Organizing .node files in: ${resolvedNodeDir}`);
   console.log(`Platform-Arch: ${platformArch}`);
 
-  // Clean up prebuilds from other platforms (e.g., remove android-* from iOS builds)
-  cleanupOtherPlatformPrebuilds(resolvedNodeDir, platformArch);
-
-  const nodeFiles = findNodeFiles(resolvedNodeDir, platformArch);
+  const nodeFiles = findNodeFiles(resolvedNodeDir);
 
   if (nodeFiles.length === 0) {
-    console.log('No .node files found to organize.');
+    console.log('No .node files found in node_modules/*/build/Release');
+    console.log(`Searched in: ${resolvedNodeDir}`);
     return;
   }
 
   console.log(`Found ${nodeFiles.length} .node file(s) to organize:`);
+  for (const info of nodeFiles) {
+    console.log(`  - ${info.packageName}: ${info.nodePath}`);
+  }
 
   for (const info of nodeFiles) {
     try {
-      organizeNodeFile(info, resolvedNodeDir, platformArch);
+      organizeNodeFile(info, resolvedNodeDir);
     } catch (error) {
       console.error(`Failed to organize ${info.packageName}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   console.log('Finished organizing .node files.');
-
-  // Clean up node_modules: remove packages without prebuilds, keep those with prebuilds
-  // Packages with prebuilds need to keep their directory structure for node-gyp-build
-  const nodeModulesPath = join(resolvedNodeDir, 'node_modules');
-  if (existsSync(nodeModulesPath)) {
-    console.log(`Cleaning up node_modules folder: ${nodeModulesPath}`);
-    try {
-      const packages = readdirSync(nodeModulesPath, { withFileTypes: true });
-      const packagesWithPrebuilds = new Set(
-        nodeFiles
-          .filter(info => info.hasPrebuilds)
-          .map(info => {
-            // Extract just the package name (handle scoped packages)
-            const relativePath = relative(nodeModulesPath, info.packageDir);
-            const parts = relativePath.split('/');
-            return parts[0]; // First part is package name or @scope
-          })
-      );
-
-      for (const entry of packages) {
-        if (entry.isDirectory()) {
-          const packagePath = join(nodeModulesPath, entry.name);
-          const shouldKeep = packagesWithPrebuilds.has(entry.name);
-
-          if (shouldKeep) {
-            console.log(`Keeping package with prebuilds: ${entry.name}`);
-            // Clean up everything except prebuilds directory
-            try {
-              const packageContents = readdirSync(packagePath, { withFileTypes: true });
-              for (const item of packageContents) {
-                const itemPath = join(packagePath, item.name);
-                // Keep prebuilds, remove everything else
-                if (item.name !== 'prebuilds') {
-                  try {
-                    if (item.isDirectory()) {
-                      rmSync(itemPath, { recursive: true, force: true });
-                    } else {
-                      unlinkSync(itemPath);
-                    }
-                  } catch (error) {
-                    // Ignore errors
-                  }
-                }
-              }
-            } catch (error) {
-              // Ignore errors cleaning package contents
-            }
-          } else {
-            // Remove packages without prebuilds
-            console.log(`Removing package without prebuilds: ${entry.name}`);
-            try {
-              rmSync(packagePath, { recursive: true, force: true });
-            } catch (error) {
-              console.warn(`Failed to remove ${packagePath}: ${error instanceof Error ? error.message : String(error)}`);
-            }
-          }
-        }
-      }
-      console.log('Finished cleaning up node_modules folder.');
-    } catch (error) {
-      console.warn(`Failed to clean up node_modules folder: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  } else {
-    console.log('node_modules folder not found, skipping cleanup.');
-  }
 }
 
 main();
-
