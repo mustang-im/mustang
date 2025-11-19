@@ -95,6 +95,7 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
 
             const hasPrebuilds = hasPrebuildsFolder(packageDir);
             const isInBuildRelease = fullPath.includes('/build/Release/') || fullPath.includes('/build/Debug/');
+            const isInPrebuilds = fullPath.includes('/prebuilds/');
 
             // If the .node file is in build/Release or build/Debug, always include it (even if package has prebuilds)
             // This handles cases where a package has prebuilds but the file was built from source
@@ -105,7 +106,7 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
                 packageDir,
                 hasPrebuilds: false, // Treat as non-prebuilds since it's in build/Release
               });
-            } else if (hasPrebuilds) {
+            } else if (isInPrebuilds) {
               // For prebuilds, only include if it matches the platform-arch
               // Check if this .node file is in the correct prebuilds/{platform-arch} directory
               // Also check for darwin-x64+arm64 as it works for ios-arm64
@@ -121,6 +122,16 @@ function findNodeFiles(nodeDir: string, platformArch: string): NodeFileInfo[] {
                 });
               }
               // Skip prebuilds for other platforms
+            } else {
+              // .node file is not in build/Release or prebuilds - include it anyway
+              // This handles cases where the file might be in a different location
+              // (e.g., directly in node_modules or in a custom build location)
+              nodeFiles.push({
+                nodePath: fullPath,
+                packageName,
+                packageDir,
+                hasPrebuilds: false,
+              });
             }
           }
         }
