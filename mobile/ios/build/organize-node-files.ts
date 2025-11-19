@@ -1,21 +1,27 @@
 #!/usr/bin/env node
 /**
- * Organize .node files after rebuilding native modules for iOS
+ * Organize .node files and directories after rebuilding native modules for iOS
  *
- * This script finds .node files in node_modules/package/build/Release and organizes them into:
- * - {nodeDir}/build/Release/{filename}.node/{packageName}
+ * This script finds both:
+ * - .node files in node_modules/package/build/Release
+ * - .node directories in node_modules/package/build/Release (each containing an executable)
+ *
+ * And organizes them into:
+ * - {nodeDir}/build/Release/{package}.node/{packageName}
  *
  * Usage: organize-node-files.js <nodeDir> <platform-arch>
  * Example: organize-node-files.js /path/to/nodejs ios-arm64
  */
 
-import { existsSync, readdirSync, mkdirSync, copyFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readdirSync, mkdirSync, copyFileSync, unlinkSync, statSync } from 'node:fs';
 import { join, basename, resolve, relative } from 'node:path';
 
 interface NodeFileInfo {
-  nodePath: string;
+  nodePath: string; // Path to the executable (either a .node file or executable inside .node directory)
+  nodeDir?: string; // Path to the .node directory (if it's a directory, undefined if it's a file)
   packageName: string;
   packageDir: string;
+  isDirectory: boolean; // true if source is a directory, false if it's a file
 }
 
 /**
@@ -44,7 +50,10 @@ function getPackageNameFromPath(nodePath: string, nodeDir: string): string | nul
 }
 
 /**
- * Find all .node files in node_modules/package/build/Release
+ * Find all .node files and directories in node_modules/package/build/Release
+ * Handles both:
+ * - .node files (direct files)
+ * - .node directories (containing an executable)
  */
 function findNodeFiles(nodeDir: string): NodeFileInfo[] {
   const nodeFiles: NodeFileInfo[] = [];
@@ -65,16 +74,46 @@ function findNodeFiles(nodeDir: string): NodeFileInfo[] {
       const entries = readdirSync(buildReleasePath, { withFileTypes: true });
 
       for (const entry of entries) {
-        if (entry.isFile() && entry.name.endsWith('.node')) {
+        if (entry.name.endsWith('.node')) {
           const fullPath = join(buildReleasePath, entry.name);
           const packageName = getPackageNameFromPath(fullPath, nodeDir);
 
-          if (packageName) {
+          if (!packageName) {
+            continue;
+          }
+
+          if (entry.isFile()) {
+            // It's a .node file directly
             nodeFiles.push({
               nodePath: fullPath,
+              nodeDir: undefined,
               packageName,
               packageDir: packagePath,
+              isDirectory: false,
             });
+          } else if (entry.isDirectory()) {
+            // It's a .node directory - find the executable inside
+            try {
+              const nodeDirContents = readdirSync(fullPath, { withFileTypes: true });
+
+              for (const contentEntry of nodeDirContents) {
+                // The executable is usually a file (not a directory) and not a plist
+                if (contentEntry.isFile() && !contentEntry.name.endsWith('.plist')) {
+                  const executablePath = join(fullPath, contentEntry.name);
+                  nodeFiles.push({
+                    nodePath: executablePath,
+                    nodeDir: fullPath,
+                    packageName,
+                    packageDir: packagePath,
+                    isDirectory: true,
+                  });
+                  // Only take the first executable found in each .node directory
+                  break;
+                }
+              }
+            } catch (error) {
+              // Skip .node directories we can't read
+            }
           }
         }
       }
@@ -117,30 +156,55 @@ function findNodeFiles(nodeDir: string): NodeFileInfo[] {
 }
 
 /**
- * Organize a .node file to its proper location
+ * Organize a .node file or directory to its proper location
  */
 function organizeNodeFile(
   info: NodeFileInfo,
   nodeDir: string
 ): void {
-  const { nodePath, packageName } = info;
-  const nodeFileName = basename(nodePath);
+  const { nodePath, nodeDir: sourceNodeDir, packageName, isDirectory } = info;
 
-  // Target: build/Release/{filename}.node/{packageName}
-  const targetDir = join(nodeDir, 'build', 'Release', nodeFileName);
+  // Determine the .node name (either from directory name or file name)
+  let nodeDirName: string;
+  if (isDirectory && sourceNodeDir) {
+    nodeDirName = basename(sourceNodeDir); // e.g., "bufferutil.node"
+  } else {
+    nodeDirName = basename(nodePath); // e.g., "bufferutil.node"
+  }
+
+  // Target: build/Release/{package}.node/{packageName}
+  const targetDir = join(nodeDir, 'build', 'Release', nodeDirName);
   const targetPath = join(targetDir, packageName);
 
   // Create target directory
   mkdirSync(targetDir, { recursive: true });
 
-  // Copy the .node file to the target location
+  // Copy the file/executable to the target location
   copyFileSync(nodePath, targetPath);
 
   console.log(`Organized ${packageName}: ${nodePath} -> ${targetPath}`);
 
-  // Remove the original file from build/Release
+  // Remove the original from build/Release
   try {
-    unlinkSync(nodePath);
+    if (isDirectory && sourceNodeDir) {
+      // Remove all files in the original .node directory
+      const originalContents = readdirSync(sourceNodeDir, { withFileTypes: true });
+      for (const entry of originalContents) {
+        const entryPath = join(sourceNodeDir, entry.name);
+        if (entry.isFile()) {
+          unlinkSync(entryPath);
+        }
+      }
+      // Try to remove the directory (will fail if not empty, but that's okay)
+      try {
+        unlinkSync(sourceNodeDir);
+      } catch (error) {
+        // Directory might not be empty, ignore
+      }
+    } else {
+      // It's a file - just remove it
+      unlinkSync(nodePath);
+    }
   } catch (error) {
     // Ignore errors removing original
   }
@@ -172,12 +236,12 @@ function main(): void {
   const nodeFiles = findNodeFiles(resolvedNodeDir);
 
   if (nodeFiles.length === 0) {
-    console.log('No .node files found in node_modules/*/build/Release');
+    console.log('No .node files or directories found in node_modules/*/build/Release');
     console.log(`Searched in: ${resolvedNodeDir}`);
     return;
   }
 
-  console.log(`Found ${nodeFiles.length} .node file(s) to organize:`);
+  console.log(`Found ${nodeFiles.length} .node file(s)/directory/directories to organize:`);
   for (const info of nodeFiles) {
     console.log(`  - ${info.packageName}: ${info.nodePath}`);
   }
