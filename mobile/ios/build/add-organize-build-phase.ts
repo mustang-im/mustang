@@ -135,16 +135,16 @@ async function addOrganizeBuildPhase() {
 if [ -n "$PROJECT_DIR" ] && [ -d "$PROJECT_DIR/../../node_modules/.bin" ]; then
   export PATH="$PROJECT_DIR/../../node_modules/.bin:$PATH"
 fi
-# Find and execute organize-node-modules.sh
-SCRIPT_PATH="$PROJECT_DIR/../build/organize-node-modules.sh"
+# Find and execute organize-node-modules.ts
+SCRIPT_PATH="$PROJECT_DIR/../build/organize-node-modules.ts"
 if [ ! -f "$SCRIPT_PATH" ]; then
-  SCRIPT_PATH="$SRCROOT/../build/organize-node-modules.sh"
+  SCRIPT_PATH="$SRCROOT/../build/organize-node-modules.ts"
 fi
 if [ ! -f "$SCRIPT_PATH" ]; then
-  echo "Error: organize-node-modules.sh not found at $PROJECT_DIR/../build/organize-node-modules.sh or $SRCROOT/../build/organize-node-modules.sh"
+  echo "Error: organize-node-modules.ts not found at $PROJECT_DIR/../build/organize-node-modules.ts or $SRCROOT/../build/organize-node-modules.ts"
   exit 1
 fi
-bash "$SCRIPT_PATH"`;
+node --experimental-strip-types "$SCRIPT_PATH" || true`;
 
   // Check if build phase already exists and update it
   const pbxprojContent = readFileSync(pbxprojFile, "utf8");
