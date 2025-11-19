@@ -14,7 +14,7 @@ const __dirname = import.meta.dirname;
 function reorderBuildPhases(pbxprojContent: string): string {
   const targetUuid = "504EC3031FED79650016851F";
 
-  // Match the buildPhases section
+  // Match the buildPhases section - be more flexible with whitespace
   const buildPhasesRegex = new RegExp(
     `(${targetUuid}\\s*\\/\\* App \\*\\/\\s*=\\s*\\{[\\s\\S]*?buildPhases\\s*=\\s*\\()([\\s\\S]*?)(\\s*\\);[\\s\\S]*?name\\s*=\\s*App;)`,
     'm'
@@ -22,6 +22,7 @@ function reorderBuildPhases(pbxprojContent: string): string {
 
   const match = pbxprojContent.match(buildPhasesRegex);
   if (!match) {
+    console.warn("Warning: Could not find buildPhases section, skipping reorder");
     return pbxprojContent;
   }
 
@@ -34,10 +35,11 @@ function reorderBuildPhases(pbxprojContent: string): string {
   });
 
   if (phaseLines.length === 0) {
+    console.warn("Warning: No build phases found, skipping reorder");
     return pbxprojContent;
   }
 
-  // Categorize phases
+  // Categorize phases - use more specific patterns
   const buildPhase = phaseLines.find(line => /Build Node\.js Mobile Native Modules/.test(line));
   const organizePhase = phaseLines.find(line => /Organize Node\.js Native Modules/.test(line));
   const signPhase = phaseLines.find(line => /Sign Node\.js Mobile Native Modules/.test(line));
@@ -47,7 +49,7 @@ function reorderBuildPhases(pbxprojContent: string): string {
     !/Sign Node\.js Mobile Native Modules/.test(line)
   );
 
-  // Build new ordered list
+  // Build new ordered list - always enforce order
   const orderedPhases: string[] = [];
   orderedPhases.push(...otherPhases);
   if (buildPhase) orderedPhases.push(buildPhase);
@@ -62,10 +64,31 @@ function reorderBuildPhases(pbxprojContent: string): string {
   const newPhasesSection = orderedPhases.map(line => {
     // Ensure consistent indentation
     const trimmed = line.trim();
-    return indent + trimmed + (trimmed.endsWith(',') ? '' : ',');
+    // Preserve trailing comma if it exists, otherwise add one
+    const hasComma = trimmed.endsWith(',');
+    const cleanLine = hasComma ? trimmed : trimmed + ',';
+    return indent + cleanLine;
   }).join('\n');
 
   const result = pbxprojContent.replace(buildPhasesRegex, `$1${newPhasesSection}\n$3`);
+
+  // Verify the reorder worked by checking if phases are in correct order
+  const verifyMatch = result.match(buildPhasesRegex);
+  if (verifyMatch) {
+    const verifyPhases = verifyMatch[2];
+    const buildIndex = verifyPhases.indexOf('Build Node.js Mobile Native Modules');
+    const organizeIndex = verifyPhases.indexOf('Organize Node.js Native Modules');
+    const signIndex = verifyPhases.indexOf('Sign Node.js Mobile Native Modules');
+
+    if (buildIndex !== -1 && organizeIndex !== -1 && signIndex !== -1) {
+      if (buildIndex < organizeIndex && organizeIndex < signIndex) {
+        console.log("✓ Build phases verified in correct order");
+      } else {
+        console.warn(`Warning: Build phases may not be in correct order (Build: ${buildIndex}, Organize: ${organizeIndex}, Sign: ${signIndex})`);
+      }
+    }
+  }
+
   return result;
 }
 
@@ -107,8 +130,27 @@ async function addOrganizeBuildPhase() {
   const organizePhaseName = "Organize Node.js Native Modules";
 
   // Reference the external shell script
-  // Use $PROJECT_DIR to reference the script relative to the Xcode project
-  const organizeScript = `bash "$PROJECT_DIR/../build/organize-node-modules.sh"`;
+  // Try multiple paths to handle different build environments (local, CI, etc.)
+  const organizeScript = `# Add node_modules/.bin to PATH to ensure node-gyp-build and other tools are found
+if [ -n "$PROJECT_DIR" ] && [ -d "$PROJECT_DIR/../../node_modules/.bin" ]; then
+  export PATH="$PROJECT_DIR/../../node_modules/.bin:$PATH"
+fi
+# Try to find organize-node-modules.sh in common locations
+SCRIPT_PATH=""
+if [ -f "$PROJECT_DIR/../build/organize-node-modules.sh" ]; then
+  SCRIPT_PATH="$PROJECT_DIR/../build/organize-node-modules.sh"
+elif [ -f "$SRCROOT/../build/organize-node-modules.sh" ]; then
+  SCRIPT_PATH="$SRCROOT/../build/organize-node-modules.sh"
+elif [ -f "$(dirname "$PROJECT_DIR")/build/organize-node-modules.sh" ]; then
+  SCRIPT_PATH="$(dirname "$PROJECT_DIR")/build/organize-node-modules.sh"
+else
+  echo "Error: organize-node-modules.sh not found. Searched:"
+  echo "  $PROJECT_DIR/../build/organize-node-modules.sh"
+  echo "  $SRCROOT/../build/organize-node-modules.sh"
+  echo "  $(dirname "$PROJECT_DIR")/build/organize-node-modules.sh"
+  exit 1
+fi
+bash "$SCRIPT_PATH"`;
 
   // Check if build phase already exists and update it
   const pbxprojContent = readFileSync(pbxprojFile, "utf8");
@@ -160,10 +202,11 @@ async function addOrganizeBuildPhase() {
     // Write the updated project file
     const pbxprojContent = project.writeSync();
 
-    // Skip reordering to avoid corruption - order can be fixed manually in Xcode
-    writeFileSync(pbxprojFile, pbxprojContent);
+    // Always reorder build phases to ensure correct order (especially important for CI)
+    const reorderedContent = reorderBuildPhases(pbxprojContent);
+    writeFileSync(pbxprojFile, reorderedContent);
     console.log(`Added build phase: ${organizePhaseName}`);
-    console.log(`Note: Build phase order may need manual adjustment in Xcode`);
+    console.log(`Reordered build phases: Build -> Organize -> Code Sign`);
   } catch (error) {
     console.error(`Failed to add build phase ${organizePhaseName}: ${error}`);
     process.exit(1);
