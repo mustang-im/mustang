@@ -14,5 +14,6 @@ NodeMobile.xcframework
 !setup.sh
 !xcode-codesign.sh
 !variables.sh
+!ios/build/organize-node-modules.sh
 backend/nodejs-assets
 ios/App.xcarchive

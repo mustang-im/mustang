@@ -130,52 +130,20 @@ async function addOrganizeBuildPhase() {
   const organizePhaseName = "Organize Node.js Native Modules";
 
   // Reference the external shell script
-  // Try multiple paths to handle different build environments (local, CI, etc.)
-  // Use a more robust path resolution that works in both local and CI environments
   const organizeScript = `set -e
 # Add node_modules/.bin to PATH to ensure node-gyp-build and other tools are found
 if [ -n "$PROJECT_DIR" ] && [ -d "$PROJECT_DIR/../../node_modules/.bin" ]; then
   export PATH="$PROJECT_DIR/../../node_modules/.bin:$PATH"
 fi
-# Try to find organize-node-modules.sh in common locations
-# Use absolute path resolution to handle CI environments better
-SCRIPT_PATH=""
-# Normalize PROJECT_DIR to absolute path if it's relative
-if [ -n "$PROJECT_DIR" ]; then
-  ABS_PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
-  # Try paths relative to PROJECT_DIR
-  if [ -f "$ABS_PROJECT_DIR/../build/organize-node-modules.sh" ]; then
-    SCRIPT_PATH=$(cd "$ABS_PROJECT_DIR/../build" && pwd)/organize-node-modules.sh
-  fi
+# Find and execute organize-node-modules.sh
+SCRIPT_PATH="$PROJECT_DIR/../build/organize-node-modules.sh"
+if [ ! -f "$SCRIPT_PATH" ]; then
+  SCRIPT_PATH="$SRCROOT/../build/organize-node-modules.sh"
 fi
-# Try SRCROOT if PROJECT_DIR didn't work
-if [ -z "$SCRIPT_PATH" ] && [ -n "$SRCROOT" ]; then
-  ABS_SRCROOT=$(cd "$SRCROOT" && pwd)
-  if [ -f "$ABS_SRCROOT/../build/organize-node-modules.sh" ]; then
-    SCRIPT_PATH=$(cd "$ABS_SRCROOT/../build" && pwd)/organize-node-modules.sh
-  fi
-fi
-# Try using dirname approach
-if [ -z "$SCRIPT_PATH" ] && [ -n "$PROJECT_DIR" ]; then
-  PARENT_DIR=$(dirname "$PROJECT_DIR")
-  if [ -f "$PARENT_DIR/build/organize-node-modules.sh" ]; then
-    SCRIPT_PATH=$(cd "$PARENT_DIR/build" && pwd)/organize-node-modules.sh
-  fi
-fi
-# Final check - if still not found, show error with all attempted paths
-if [ -z "$SCRIPT_PATH" ] || [ ! -f "$SCRIPT_PATH" ]; then
-  echo "Error: organize-node-modules.sh not found. Searched:"
-  [ -n "$PROJECT_DIR" ] && echo "  $PROJECT_DIR/../build/organize-node-modules.sh"
-  [ -n "$SRCROOT" ] && echo "  $SRCROOT/../build/organize-node-modules.sh"
-  [ -n "$PROJECT_DIR" ] && echo "  $(dirname "$PROJECT_DIR")/build/organize-node-modules.sh"
-  echo "PROJECT_DIR: $PROJECT_DIR"
-  echo "SRCROOT: $SRCROOT"
-  echo "PWD: $(pwd)"
+if [ ! -f "$SCRIPT_PATH" ]; then
+  echo "Error: organize-node-modules.sh not found at $PROJECT_DIR/../build/organize-node-modules.sh or $SRCROOT/../build/organize-node-modules.sh"
   exit 1
 fi
-# Make sure script is executable
-[ ! -x "$SCRIPT_PATH" ] && chmod +x "$SCRIPT_PATH"
-# Execute the script
 bash "$SCRIPT_PATH"`;
 
   // Check if build phase already exists and update it
