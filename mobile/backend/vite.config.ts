@@ -45,11 +45,11 @@ export default defineConfig(({}) => {
             rename: 'package.json',
           },
           {
-            src: `node_modules/better-sqlite3${isAndroid ? `/prebuilds/${arch}/better_sqlite3.node` : undefined}`,
+            src: `node_modules/better-sqlite3${isAndroid ? `/prebuilds/${arch}/better_sqlite3.node` : ''}`,
             dest: `${projectDir}/${isAndroid ? 'build' : 'node_modules'}`,
           },
           {
-            src: `node_modules/bufferutil${isAndroid ? `/prebuilds/${arch}/bufferutil.node` : undefined}`,
+            src: `node_modules/bufferutil${isAndroid ? `/prebuilds/${arch}/bufferutil.node` : ''}`,
             dest: `${projectDir}/${isAndroid ? `prebuilds/${arch}` : 'node_modules'}`,
           },
         ]
