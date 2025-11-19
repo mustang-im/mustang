@@ -83,32 +83,49 @@ function findNodeFiles(nodeDir: string): NodeFileInfo[] {
           }
 
           if (entry.isFile()) {
-            // It's a .node file directly
-            nodeFiles.push({
-              nodePath: fullPath,
-              nodeDir: undefined,
-              packageName,
-              packageDir: packagePath,
-              isDirectory: false,
-            });
+            // It's a .node file directly - verify it's not empty
+            try {
+              const fileStat = statSync(fullPath);
+              if (fileStat.size > 0) {
+                nodeFiles.push({
+                  nodePath: fullPath,
+                  nodeDir: undefined, // No .node directory when it's just a file
+                  packageName,
+                  packageDir: packagePath,
+                  isDirectory: false,
+                });
+              }
+            } catch (error) {
+              // Skip invalid files
+              continue;
+            }
           } else if (entry.isDirectory()) {
             // It's a .node directory - find the executable inside
             try {
               const nodeDirContents = readdirSync(fullPath, { withFileTypes: true });
 
               for (const contentEntry of nodeDirContents) {
-                // The executable is usually a file (not a directory) and not a plist
-                if (contentEntry.isFile() && !contentEntry.name.endsWith('.plist')) {
+                // The executable is usually a file (not a directory) and not a plist or framework
+                if (contentEntry.isFile() && !contentEntry.name.endsWith('.plist') && !contentEntry.name.endsWith('.framework')) {
                   const executablePath = join(fullPath, contentEntry.name);
-                  nodeFiles.push({
-                    nodePath: executablePath,
-                    nodeDir: fullPath,
-                    packageName,
-                    packageDir: packagePath,
-                    isDirectory: true,
-                  });
-                  // Only take the first executable found in each .node directory
-                  break;
+                  // Verify it's actually a file and not empty
+                  try {
+                    const fileStat = statSync(executablePath);
+                    if (fileStat.isFile() && fileStat.size > 0) {
+                      nodeFiles.push({
+                        nodePath: executablePath,
+                        nodeDir: fullPath,
+                        packageName,
+                        packageDir: packagePath,
+                        isDirectory: true,
+                      });
+                      // Only take the first valid executable found in each .node directory
+                      break;
+                    }
+                  } catch (error) {
+                    // Skip invalid files
+                    continue;
+                  }
                 }
               }
             } catch (error) {
