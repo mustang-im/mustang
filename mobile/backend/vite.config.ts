@@ -1,14 +1,17 @@
 import { defineConfig } from 'vite';
-import nodeExternals from 'rollup-plugin-node-externals';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import esmShim from '@rollup/plugin-esm-shim';
+
+const nodeNativeModules = ['better-sqlite3', 'ws'];
 
 const projectDir = '../../dist/nodejs';
 export default defineConfig(({}) => {
   const arch = process.env.MOBILE_ARCH;
   const isAndroid = arch?.startsWith('android');
   return {
-    ssr: { noExternal: true },
+    ssr: {
+      noExternal: createNegationRegex(nodeNativeModules),
+    },
     build: {
       target: 'node24',
       lib: {
@@ -20,16 +23,8 @@ export default defineConfig(({}) => {
       emptyOutDir: true,
       minify: false,
       ssr: true,
-      commonjsOptions: {
-        // To load better-sqlite3
-        ignoreDynamicRequires: true,
-      },
     },
     plugins: [
-      nodeExternals({
-        deps: false,
-        devDeps: true, // Use node.js internal modules
-      }),
       // Required for proper error messages
       esmShim(),
       viteStaticCopy({
@@ -57,3 +52,15 @@ export default defineConfig(({}) => {
     ],
   }
 });
+
+function createNegationRegex(arr: string[]) {
+  // Escape special regex characters in each string for safe regex usage
+  const escaped = arr.map((s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+  // Join array into alternation group
+  const pattern = escaped.join('|');
+
+  // Negative lookahead to negate the entire pattern anywhere in the string
+  // This pattern matches strings that do NOT contain any of the array strings
+  return new RegExp(`^(?!.*(?:${pattern})).*$`);
+}
