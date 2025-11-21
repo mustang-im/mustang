@@ -54,12 +54,12 @@ export class OWAOffice365Notifications extends OWANotifications {
         abortTimer = setTimeout(appGlobal.remoteApp.OWA.fetchJSON, (json.KeepAliveTimeout || 40) * 60 * 1000, this.account.partition, url, options);
         // Now set up the stream itself.
         url = this.account.url + URLPart`notificationchannel/connect?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        let stream = await appGlobal.remoteApp.OWA.streamEvents(this.account.partition, url, streamOptions);
+        let stream = await fetch(url, streamOptions);
         //console.log("stream", stream.ok ? "OK" : "Failed", "status", stream.status, "statusText", stream.statusText, "stream obj", stream);
         if (!stream.ok) {
-          throw new Error(`streamEvents failed with HTTP ${stream.status} ${stream.statusText}`);
+          throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
         }
-        for await (let chunk of stream.body) {
+        for await (let chunk of stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()))) {
           //console.log(chunk);
           // Ignore the initial chunk and any heartbeat chunks
           if (chunk.data != "initialized" && chunk.data != "{}") {
@@ -94,5 +94,57 @@ class OWAGetAccessTokenforResourceRequest {
 
   get action() {
     return "GetAccessTokenforResource";
+  }
+}
+
+function newEvent() {
+  return {
+    name: 'message',
+    data: '',
+    id: '',
+    retry: 0,
+  };
+}
+
+class EventDecoder {
+  data = '';
+  event = newEvent();
+  transform(chunk, controller) {
+    this.data += chunk;
+    let lines = this.data.split(/\r\n?|\n/);
+    this.data = lines.pop();
+    for (let line of lines) {
+      if (!line) {
+        this.event.data = this.event.data.slice(0, -1);
+        controller.enqueue(this.event);
+        this.event = newEvent();
+        continue;
+      }
+      let value = '';
+      let pos = line.indexOf(":");
+      if (pos != -1) {
+        value = line.slice(pos + 1);
+        if (value[0] == ' ') {
+          value = value.slice(1);
+        }
+        line = line.slice(0, pos);
+      }
+      switch (line) {
+      case 'event':
+        this.event.name = value;
+        break;
+      case 'data':
+        this.event.data += value + "\n";
+        break;
+      case 'id':
+        this.event.id = value;
+        break;
+      case 'retry':
+        if (Number.isInteger(value)) {
+          this.event.retry = Number(value);
+        }
+        break;
+      }
+    }
   }
 }

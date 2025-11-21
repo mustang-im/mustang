@@ -211,8 +211,10 @@ function allowCrossDomainRequestsFromFrontend() {
       responseHeaders["Access-Control-Allow-Origin"] = ["*"];
       responseHeaders["Access-Control-Allow-Methods"] = ["*"];
       responseHeaders["Access-Control-Allow-Headers"] = ["*"];
+      // Pretend that all CORS preflight requests succeed
+      let statusLine = details.method == "OPTIONS" ? "HTTP/1.1 200 OK" : details.statusLine;
       // console.log("Response", details.url, responseHeaders);
-      callback({ responseHeaders });
+      callback({ responseHeaders, statusLine });
     }
   );
 }
