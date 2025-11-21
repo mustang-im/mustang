@@ -41,6 +41,11 @@ export class OWAAccount extends MailAccount {
    * since Mustang doesn't use a dedicated root folder object.
    */
   msgFolderRootID: string | undefined;
+  /**
+   * OAuth2 authorization header for Hotmail or Office 365 environments.
+   * In future it might be possible to perform requests from the front end?
+   */
+  authorizationHeader: string | undefined;
   @notifyChangedProperty
   hasLoggedIn = false;
   protected notifications: OWANotifications;
@@ -122,6 +127,7 @@ export class OWAAccount extends MailAccount {
     await ensureLicensed();
     await super.login(interactive);
     await this.loginCommon(interactive);
+    this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     this.hasLoggedIn = true;
     await this.listFolders();
 
@@ -342,8 +348,7 @@ export class OWAAccount extends MailAccount {
   }
 
   isOffice365(): boolean {
-    let hostname = new URL(this.url).hostname;
-    return hostname == "outlook.office.com" || hostname == "outlook.live.com";
+    return this.authorizationHeader != null;
   }
 
   async createToplevelFolder(name: string): Promise<OWAFolder> {

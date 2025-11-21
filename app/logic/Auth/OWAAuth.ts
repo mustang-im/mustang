@@ -71,6 +71,7 @@ export class OWAAuth extends WebBasedAuth {
 
   // Called from `OAuth2Embed.login()` and `OAuth2Tab.login()`
   async getAuthURL(): Promise<URLString> {
+    await appGlobal.remoteApp.OWA.scrapeStartupDataAuth(this.account.partition);
     return this.account.url;
   }
 
