@@ -15,3 +15,4 @@ NodeMobile.xcframework
 !xcode-embed-node-native.sh
 !variables.sh
 backend/nodejs-assets
+*.xcarchive
