@@ -31,16 +31,11 @@ function autoFillPageScript(username, password) {
       case null:
         // Maybe we're trying to sign in to a personal account.
         for (let link of document.links) {
-          if (link.dataset.m) {
-            try {
-              if (JSON.parse(link.dataset.m).cN == "SIGNIN") {
-                sessionStorage.setItem("AutoLoginStep", "OtherUser");
-                link.click();
-                return;
-              }
-            } catch (ex) {
-              console.error(ex);
-            }
+          if (link.dataset.biCn == "signin" && link.checkVisibility()) {
+            sessionStorage.setItem("AutoLoginStep", "OtherUser");
+            link.target = "";
+            link.click();
+            return;
           }
         }
         // No sign in link? Fall through to try the "Other User" element.
