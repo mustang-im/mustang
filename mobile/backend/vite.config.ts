@@ -1,13 +1,44 @@
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import esmShim from '@rollup/plugin-esm-shim';
+import { copyExternals } from './vite-plugin-copy-externals';
+import { resolve } from 'path';
 
-const nodeNativeModules = ['better-sqlite3', 'ws'];
+const nodeNativeModules = ['better-sqlite3', 'bufferutil'];
 
-const projectDir = '../../dist/nodejs';
+const projectDir = resolve(__dirname, '../dist/nodejs');
+
 export default defineConfig(({}) => {
   const arch = process.env.MOBILE_ARCH;
   const isAndroid = arch?.startsWith('android');
+
+  // Conditional plugin arrays
+  const staticCopyTargets = [
+    {
+      src: 'dist/index.js',
+      dest: projectDir,
+      rename: 'index.mjs',
+    },
+    {
+      src: 'package-deploy.json',
+      dest: projectDir,
+      rename: 'package.json',
+    },
+  ];
+
+  if (isAndroid) {
+    staticCopyTargets.push(
+      {
+        src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node`,
+        dest: `${projectDir}/build`,
+      },
+      {
+        src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node`,
+        dest: `${projectDir}/prebuilds/${arch}`,
+      }
+    );
+  }
+
   return {
     ssr: {
       noExternal: createNegationRegex(nodeNativeModules),
@@ -25,42 +56,23 @@ export default defineConfig(({}) => {
       ssr: true,
     },
     plugins: [
-      // Required for proper error messages
       esmShim(),
       viteStaticCopy({
-        targets: [
-          {
-            src: 'dist/index.js',
-            dest: projectDir,
-            rename: 'index.mjs',
-          },
-          {
-            src: 'package-deploy.json',
-            dest: projectDir,
-            rename: 'package.json',
-          },
-          {
-            src: `node_modules/better-sqlite3${isAndroid ? `/prebuilds/${arch}/better_sqlite3.node` : ''}`,
-            dest: `${projectDir}/${isAndroid ? 'build' : 'node_modules'}`,
-          },
-          {
-            src: `node_modules/bufferutil${isAndroid ? `/prebuilds/${arch}/bufferutil.node` : ''}`,
-            dest: `${projectDir}/${isAndroid ? `prebuilds/${arch}` : 'node_modules'}`,
-          },
-        ]
+        targets: staticCopyTargets,
       }),
-    ],
+      // Only run copyExternals for non-Android
+      !isAndroid &&
+        copyExternals({
+          deps: nodeNativeModules,
+          outDir: `${projectDir}/node_modules`,
+          lockFile: 'yarn',
+        }),
+    ].filter(Boolean), // remove false entries
   }
 });
 
 function createNegationRegex(arr: string[]) {
-  // Escape special regex characters in each string for safe regex usage
   const escaped = arr.map((s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-
-  // Join array into alternation group
   const pattern = escaped.join('|');
-
-  // Negative lookahead to negate the entire pattern anywhere in the string
-  // This pattern matches strings that do NOT contain any of the array strings
   return new RegExp(`^(?!.*(?:${pattern})).*$`);
 }
