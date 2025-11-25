@@ -164,7 +164,7 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				DD0EE6352DD26626002B679D /* Embed Frameworks */,
-				BFB3ED892E8365590007C670 /* Code Sign Node Native Modules */,
+				BF5A29A62EA999E50057CD27 /* Embed Node.js Mobile Native Modules */,
 			);
 			buildRules = (
 			);
@@ -266,7 +266,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BFB3ED892E8365590007C670 /* Code Sign Node Native Modules */ = {
+		BF5A29A62EA999E50057CD27 /* Embed Node.js Mobile Native Modules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -275,14 +275,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Code Sign Node Native Modules";
+			name = "Embed Node.js Mobile Native Modules";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "bash ../../hooks/ios/xcode-codesign.sh\n";
+			shellScript = "bash ../build/xcode-embed-node-native.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
