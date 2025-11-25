@@ -3,6 +3,14 @@ Beonex GmbH and others, and is licensed under the EUPL 1.2 only,
 unless specific subdirectories or files specify another license.
 For such subdirectories or files, the given license applies.
 
+The following features are proprietary:
+* Exchange support (because Microsoft is also proprietary)
+  `app/logic/Mail/EWS/`, `OWA/`, `ActiveSync/`, `Graph/`
+* Web Mail (because we want companies to pay)
+  `app/logic/WebMail/`
+* Meet (video-conference)
+  `app/logic/Meet/`, `app/frontend/Meet/`
+
 Later versions of the EUPL may not be used, nor other licenses,
 unless approved by the original author. Please see the end for
 more clarifications.
@@ -351,6 +359,8 @@ it, suppress it, nor alter it without explicit permission.
 The above notices must be displayed in the same manner and prominence,
 independent of any program code changes that you make.
 
+The app may be called "Mustang" or "Parula" only under the condition
+that the trademark holder consents. They are registered trademarks.
 You may rename the application, as long as it's clear to all users that
 your application is based on this work and its authors, e.g.
 by stating that your work is "based on" or "powered by" this app,
@@ -384,12 +394,11 @@ distribute such a combined work.
 
 ### Additional licenses
 
-When you make modifications and you keep this paragraph,
-you additionally give Ben Bucksch (the original author) the right to
-additionally license the modified work including your modifications
-under different terms. This is similar to MPL 1.1 Section 6.1.
-This provision allows license changes without contacting all authors
-individually. If you do not wish to do so, please remove the last paragraph, starting with the heading "Additional licenses".
+You additionally give Ben Bucksch (the original author) the right to
+additionally license and sublicense the modified work including your
+modifications under different terms. This is similar to MPL 1.1 Section 6.1
+and MPL 2.0 Sections 10.1 and 10.2. This provision allows license
+changes without contacting all authors individually.
 
 In any case, irregardless of this provision, your rights under this
 license for this work remain in effect forever. You may continue to use this work under this license.
