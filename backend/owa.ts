@@ -4,6 +4,37 @@ import { Readable } from 'stream';
 const kCanaryName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
 
+// To log in to Hotmail or Office 365 environments, we need to
+// scrape the Authorization header from the startupdata request.
+let scrapedAuth: Record<string, string> = {};
+
+/**
+ * Used by the front end to tell whether this is Hotmail or Office 365.
+ */
+export function getAnyScrapedAuth(partition: string) {
+  return scrapedAuth[partition];
+}
+
+/**
+ * Used by the front end to start watching for startupdata requests.
+ */
+export function scrapeStartupDataAuth(partition: string) {
+  let session = Session.fromPartition(partition);
+  session.webRequest.onSendHeaders({
+    urls: ["https://*/*startupdata*"],
+  }, async (details: { requestHeaders: Record<string, string>, frame: { executeJavaScript: (code : string) => Promise<any> } }) => {
+    // Note: this differs from the browser.webRequest.onSendHeaders API!
+    for (let name in details.requestHeaders) {
+      if (/^Authorization$/i.test(name)) {
+        scrapedAuth[partition] = details.requestHeaders[name];
+        // We need to notify the front end. It's already listening for
+        // load events, so this is the easiest way.
+        await details.frame.executeJavaScript("document.location = 'about:blank';");
+      }
+    }
+  });
+}
+
 export async function fetchJSON(partition: string, url: string, options: any, bodyJSON: any) {
   let result = {
     ok: false,
@@ -14,15 +45,21 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
     json: null,
   };
   let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: kCanaryName });
-  if (!cookies.length) {
-    result.status = 401;
-    return result;
-  }
   options ??= {};
   options.method ??= "POST";
   options.headers ??= {};
-  options.headers[kCanaryName] = cookies[0].value;
+  if (scrapedAuth[partition]) {
+    // This is Hotmail or an Office 365 environment
+    options.headers["Authorization"] ??= scrapedAuth[partition];
+  } else {
+    // This is on-premises Exchange
+    let cookies = await session.cookies.get({ name: kCanaryName });
+    if (!cookies.length) {
+      result.status = 401;
+      return result;
+    }
+    options.headers[kCanaryName] = cookies[0].value;
+  }
   if (bodyJSON) {
     options.headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(bodyJSON);
@@ -136,7 +173,10 @@ export async function streamEvents(partition: string, url: string, options: any)
 }
 
 export async function clearStorageData(partition: string) {
-  await Session.fromPartition(partition).clearStorageData();
+  delete scrapedAuth[partition];
+  let session = Session.fromPartition(partition);
+  session.webRequest.onSendHeaders(null);
+  await session.clearStorageData();
 }
 
 function newEvent() {
