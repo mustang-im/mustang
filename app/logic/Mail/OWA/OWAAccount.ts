@@ -72,9 +72,16 @@ export class OWAAccount extends MailAccount {
   async testLoggedIn(): Promise<boolean> {
     assert(!this.hasLoggedIn, "Only for use during login");
     let url = this.url + 'service.svc';
-    let options = { headers: { Action: "FindFolder" } };
+    let options = {
+      headers: {
+        Action: "FindFolder",
+        "x-anchormailbox": this.emailAddress,
+        "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
+        "x-owa-explicitlogonuser": this.emailAddress,
+      },
+    };
     let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
-    let  response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
     if ([401, 440].includes(response.status)) {
       return false;
     }
@@ -230,6 +237,9 @@ export class OWAAccount extends MailAccount {
     let options = {
       headers: {
         Action: aRequest.action,
+        "x-anchormailbox": this.emailAddress,
+        "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
+        "x-owa-explicitlogonuser": this.emailAddress,
       },
     };
     // Body needs to get passed via JPC as a regular object, not an object instance
