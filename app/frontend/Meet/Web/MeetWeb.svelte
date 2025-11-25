@@ -13,6 +13,7 @@
   import { LiveKitConf } from "../../../logic/Meet/LiveKit/LiveKitConf";
   import { LiveKitAccount } from "../../../logic/Meet/LiveKit/LiveKitAccount";
   import { appGlobal } from "../../../logic/app";
+  import { WebMailBackend } from "../../../logic/WebMail/backend";
   import InMeeting from "../InMeeting.svelte";
   import Calling from "../Start/Calling.svelte";
   import LogoScreen from "./LogoScreen.svelte";
@@ -27,6 +28,7 @@
 
   onMount(() => catchErrors(getMeeting));
   async function getMeeting() {
+    appGlobal.remoteApp = new WebMailBackend();
     let urlObj = window.location;
     let anchor = new URLSearchParams(urlObj.hash);
     let myName = anchor.get("name");
