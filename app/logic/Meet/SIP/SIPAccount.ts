@@ -50,6 +50,14 @@ export class SIPAccount extends MeetAccount {
   }
 
   protected onIncomingCall(invitation: Invitation) {
+    console.log("incoming call", invitation);
+    if (appGlobal.meetings.find(meet => meet instanceof SIPMeeting &&
+          meet.inviter?._contact.replace(/;.*/, "") == invitation._contact.replace(/;.*/, ""))) {
+      /* Work around a bug where we get an incoming call (Invitation)
+        when we make an outgoing call (Invite) */
+      return;
+    }
+
     let call = new SIPMeeting(this);
     call.onIncomingCall(invitation);
     appGlobal.meetings.add(call);
