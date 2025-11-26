@@ -45,7 +45,7 @@
           placeholder={$t`Enter meeting link to join`}
           on:input={() => errorMsg = null}
           on:paste={() => catchErrors(joinURLPasted, showError)}
-          on:keydown={event => onKeyEnter(event, () => catchErrors(joinByURL, showError))} />
+          on:keydown={event => onKeyEnter(event, () => catchErrors(() => joinByURL(conferenceURL), showError))} />
         <Button label={$t`Join`} classes="secondary"
           disabled={!conferenceURL}
           onClick={() => joinByURL(conferenceURL)}
