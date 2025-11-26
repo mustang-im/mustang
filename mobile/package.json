@@ -34,6 +34,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.0.0",
     "nodejs-mobile-gyp": "https://github.com/mustang-im/nodejs-mobile-gyp.git#update-11-3-0",
+    "prebuild-for-nodejs-mobile": "^18.17.7",
     "tar": "^7.4.3",
     "typescript": "^5.9.2",
     "vite": "^5.4.2",
