@@ -9,15 +9,15 @@
       placeholder="fred" autofocus />
     <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
-    <label for="hostname">{$t`${"SIP"} server`}</label>
-    <input type="text" bind:value={config.hostname} name="hostname"
+    <label for="domain">{$t`${"SIP"} server`}</label>
+    <input type="text" bind:value={config.domain} name="domain"
       placeholder="tele.com" />
   </grid>
 </vbox>
 
 <ButtonsBottom
   onContinue={onContinue}
-  canContinue={!!config.username && !!config.password && !!config.hostname}
+  canContinue={!!config.username && !!config.password && !!config.domain}
   canCancel={true}
   onCancel={onCancel}
   />
@@ -38,10 +38,11 @@
   export let onCancel = (event: Event) => undefined;
 
   async function onContinue() {
-    sanitize.hostname(config.hostname);
-    sanitize.emailAddress(config.username + "@" + config.hostname);
-    config.name = config.hostname;
-    config.url = "wss://" + config.hostname;
+    sanitize.hostname(config.domain);
+    sanitize.emailAddress(config.username + "@" + config.domain);
+    config.name = config.domain;
+    let port = 5066;
+    config.url = "wss://" + config.domain + ":" + port;
     config.realname = appGlobal.me.name;
     await config.login(true);
     await config.save();

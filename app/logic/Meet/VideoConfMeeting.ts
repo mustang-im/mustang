@@ -53,9 +53,38 @@ export class VideoConfMeeting extends Observable {
     console.log("Call ended");
   };
 
-  /** Before joining */
+  /**
+   * Before joining
+   *
+   * Part of the flow to create a new conference room. Flow:
+   * 1. createNewConference(url) <--- You are here
+   * 2. MeetingState.Init
+   * 3. UI to confirm to create the meeting
+   * 4. start() (TODO: Rename to connectNewConference())
+   * 5. MeetingState.Ongoing
+   * 6. Select person(s) to invite
+   * 7. createInvitationURL()
+   * 8. Other participants join on their end, using join()
+   * 9. hangup()
+   * 10. MeetingState.Ended
+   */
   async createNewConference() {
     throw new AbstractFunction();
+  }
+
+  /**
+   * Part of the flow of creating a conference room.
+   * TODO: Rename to connectNewConference(), and split from joinConnect()
+   */
+  async start() {
+    this.startNow();
+  }
+
+  /**
+   *
+   */
+  protected startNow() {
+    this.started = new Date();
   }
 
   /** Creates a URL that leads to a webpage that allows people
@@ -76,15 +105,18 @@ export class VideoConfMeeting extends Observable {
    *
    * You need to call `start()` after.
    * TODO: Rename the function: It only prepares the joining.
+   *
+   * Part of the flow to join a conference room. Flow:
+   * 1. join(url) <--- You are here (TODO: Rename to joinPropose())
+   * 2. MeetingState.JoinConference
+   * 3. UI to confirm to join the meeting
+   * 4. start() (TODO: joinConnect(), and split from connectNewConference())
+   * 5. MeetingState.Ongoing
+   * 6. hangup()
+   * 7. MeetingState.Ended
    */
   async join(url: URLString): Promise<void> {
     throw new AbstractFunction();
-  }
-
-  /** You are now starting a new conference on the server and
-   * you join the room that you created. */
-  async start() {
-    this.started = new Date();
   }
 
   /** Called when the user's own local cam/screen from `.mediaDeviceStreams` changes */
@@ -154,6 +186,19 @@ export class VideoConfMeeting extends Observable {
 
   readonly canHandUp: boolean = false;
 
+  /**
+   * Part of the outgoing phone call flow:
+   * 1. join(url) (?)
+   * 2. MeetingState.OutgoingCallConfirm
+   * 3. UI to confirm outgoing call
+   * 4. call() <--- You are here
+   * 5. MeetingState.OutgoingCall
+   * 6. Ringing remote. Waiting for the called person to answer.
+   * 7. MeetingState.Ongoing
+   * 8. hangup()
+   * 9. MeetingState.Ended
+   *
+   * The function will return once the conference room is established. */
   async call() {
     assert(this.state == MeetingState.OutgoingCallConfirm, "Must be an outgoing call");
     this.state = MeetingState.OutgoingCall;
@@ -163,9 +208,18 @@ export class VideoConfMeeting extends Observable {
    * and the listener passes the VideoConfMeeting object,
    * you can accept the call with this method.
    *
+   * Part of the flow for incoming phone calls:
+   * 1. onIncomingCall() (?)
+   * 2. MeetingState.IncomingCall
+   * 3. Ringing here. UI to accept the call.
+   * 4. answer() <--- You are here
+   * 5. MeetingState.Ongoing
+   * 6. hangup()
+   * 7. MeetingState.Ended
+   *
    * The function will return once the conference room is established. */
   async answer() {
-    await this.start();
+    this.startNow();
   }
 
   /** Leave this conference. */
@@ -180,6 +234,9 @@ export class VideoConfMeeting extends Observable {
   }
 }
 
+/**
+ *
+ */
 export enum MeetingState {
   /** Initial state, before setting up. */
   Init = "init",
