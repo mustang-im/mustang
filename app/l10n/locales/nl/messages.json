@@ -655,7 +655,6 @@
   "fv2V8g": "Hand omhoog",
   "5EpOsx": "Hoe wilt u de account {0} noemen?",
   "Kw1+qc": "Ongeldig adres",
-  "mUviya": "LiveKit videoconferentie account",
   "g/j66k": "Kunstmatige testgegevens laden voor demodoeleinden. Dit kan even duren...",
   "gz6UQ3": "Maximaliseer",
   "iGyOSZ": "Uitnodiging voor een lopende vergadering",
@@ -899,5 +898,15 @@
   "4d9kFA": "Selecteer",
   "Xr9OTN": "Selecteer",
   "Z8mQpX": "Terug naar de lijst met personen",
-  "3fHcs2": "Hoe je naam door anderen wordt gezien"
+  "3fHcs2": "Hoe je naam door anderen wordt gezien",
+  "Ulkvln": "{0} domein",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} serverpoort",
+  "vz++ya": "{0} telefoonrekening",
+  "/dIm7W": "Telefoonnummer nodig in tel: URL",
+  "At5fs9": "Alleen tel: URL's worden ondersteund",
+  "bZ0vJ3": "Het telefoonnummer moet in internationaal formaat zijn, bijv. tel:+49-611-000000 of tel:+1-650-555-0000",
+  "JrKXWo": "Uw bestaande {0} telefoonaccount instellen",
+  "PNQbDm": "Je kunt de configuratie opvragen bij je provider {0}.",
+  "JK9y6G": "Uw {0} gebruiker"
 }

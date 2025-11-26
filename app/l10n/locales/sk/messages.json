@@ -655,7 +655,6 @@
   "fv2V8g": "Ruku hore",
   "5EpOsx": "Ako chcete nazvať účet {0}?",
   "Kw1+qc": "Neplatná adresa",
-  "mUviya": "Účet videokonferencie LiveKit",
   "g/j66k": "Načítanie umelých testovacích údajov na demonštračné účely. Môže to chvíľu trvať...",
   "gz6UQ3": "Maximalizujte",
   "iGyOSZ": "Pozvánka na prebiehajúce stretnutie",
@@ -899,5 +898,15 @@
   "4d9kFA": "Vyberte",
   "Xr9OTN": "Vyberte",
   "Z8mQpX": "Späť na zoznam osôb",
-  "3fHcs2": "Ako vaše meno uvidia ostatní"
+  "3fHcs2": "Ako vaše meno uvidia ostatní",
+  "Ulkvln": "{0} doména",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} port servera",
+  "vz++ya": "{0} telefónny účet",
+  "/dIm7W": "Potrebujete telefónne číslo v tel: URL",
+  "At5fs9": "Podporované sú len tel: adresy URL",
+  "bZ0vJ3": "Telefónne číslo musí byť v medzinárodnom formáte, napr. tel:+49-611-000000 alebo tel:+1-650-555-0000",
+  "JrKXWo": "Nastavenie existujúceho telefónneho konta {0} ",
+  "PNQbDm": "Konfiguráciu môžete získať od svojho telefónneho operátora na stránke {0}.",
+  "JK9y6G": "Váš používateľ {0} "
 }

@@ -655,7 +655,6 @@
   "fv2V8g": "Käsi püsti",
   "5EpOsx": "Kuidas te soovite kontot {0} nimetada ?",
   "Kw1+qc": "Vale aadress",
-  "mUviya": "LiveKit videokonverentsi konto",
   "g/j66k": "Tehislike katseandmete laadimine demo eesmärgil. See võib võtta hetke...",
   "gz6UQ3": "Maksimeeri",
   "iGyOSZ": "Kohtumise kutse käimasoleva koosoleku jaoks",
@@ -899,5 +898,15 @@
   "4d9kFA": "Valige",
   "Xr9OTN": "Valige",
   "Z8mQpX": "Tagasi isikute nimekirja juurde",
-  "3fHcs2": "Kuidas teised teie nime näevad"
+  "3fHcs2": "Kuidas teised teie nime näevad",
+  "Ulkvln": "{0} domeen",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} serveri port",
+  "vz++ya": "{0} telefonikonto",
+  "/dIm7W": "Vajalik telefoninumber tel: URL",
+  "At5fs9": "Toetatakse ainult tel: URL-i",
+  "bZ0vJ3": "Telefoninumber peab olema rahvusvahelises numbriformaadis, nt tel:+49-611-00000000 või tel:+1-650-555-0000.",
+  "JrKXWo": "Seadistage oma olemasolev {0} telefonikonto",
+  "PNQbDm": "Konfiguratsiooni saate oma telefonioperaatorilt {0}.",
+  "JK9y6G": "Teie {0} kasutaja"
 }

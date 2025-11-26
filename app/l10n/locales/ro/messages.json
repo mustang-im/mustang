@@ -655,7 +655,6 @@
   "fv2V8g": "Ridicați mâna",
   "5EpOsx": "Cum doriți să apelați contul {0}?",
   "Kw1+qc": "Adresă invalidă",
-  "mUviya": "Cont de conferință video LiveKit",
   "g/j66k": "Încărcarea datelor de testare artificiale în scopuri demonstrative. Acest lucru poate dura un moment...",
   "gz6UQ3": "Maximizați",
   "iGyOSZ": "Invitație la întâlnire pentru o întâlnire în curs",
@@ -899,5 +898,15 @@
   "4d9kFA": "Selectați",
   "Xr9OTN": "Selectați",
   "Z8mQpX": "Înapoi la lista de persoane",
-  "3fHcs2": "Modul în care numele dvs. va fi văzut de ceilalți"
+  "3fHcs2": "Modul în care numele dvs. va fi văzut de ceilalți",
+  "Ulkvln": "{0} domeniu",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} port server",
+  "vz++ya": "{0} cont telefonic",
+  "/dIm7W": "Aveți nevoie de număr de telefon în tel: URL",
+  "At5fs9": "Doar tel: URL-urile sunt acceptate",
+  "bZ0vJ3": "Numărul de telefon trebuie să fie în format internațional, de ex. tel:+49-611-000000 sau tel:+1-650-555-0000",
+  "JrKXWo": "Configurați contul dvs. de telefon existent {0} ",
+  "PNQbDm": "Puteți obține configurația de la operatorul dvs. de telefonie {0}.",
+  "JK9y6G": "Utilizatorul dumneavoastră {0} "
 }

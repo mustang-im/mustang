@@ -655,7 +655,6 @@
   "fv2V8g": "Angkat tangan.",
   "5EpOsx": "Bagaimana Anda ingin menghubungi akun {0}?",
   "Kw1+qc": "Alamat tidak valid",
-  "mUviya": "Akun konferensi video LiveKit",
   "g/j66k": "Memuat data uji buatan untuk tujuan demo. Ini mungkin memerlukan waktu beberapa saat...",
   "gz6UQ3": "Memaksimalkan",
   "iGyOSZ": "Undangan rapat untuk rapat yang sedang berlangsung",
@@ -899,5 +898,15 @@
   "4d9kFA": "Pilih",
   "Xr9OTN": "Pilih",
   "Z8mQpX": "Kembali ke daftar orang",
-  "3fHcs2": "Bagaimana nama Anda akan dilihat oleh orang lain"
+  "3fHcs2": "Bagaimana nama Anda akan dilihat oleh orang lain",
+  "Ulkvln": "{0} domain",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} port server",
+  "vz++ya": "{0} akun telepon",
+  "/dIm7W": "Perlu nomor telepon di tel: URL",
+  "At5fs9": "Hanya tel: URL yang didukung",
+  "bZ0vJ3": "Nomor telepon harus dalam format nomor internasional, misalnya tel: +49-611-000000 atau tel: +1-650-555-0000",
+  "JrKXWo": "Siapkan akun telepon {0} Anda yang sudah ada",
+  "PNQbDm": "Anda dapat memperoleh konfigurasi dari {0} operator telepon Anda.",
+  "JK9y6G": "Pengguna {0} Anda"
 }

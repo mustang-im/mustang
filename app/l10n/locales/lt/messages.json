@@ -655,7 +655,6 @@
   "fv2V8g": "Pakelta ranka",
   "5EpOsx": "Kaip norite vadinti paskyrą {0}?",
   "Kw1+qc": "Neteisingas adresas",
-  "mUviya": "\"LiveKit\" vaizdo konferencijų paskyra",
   "g/j66k": "Dirbtinių bandymų duomenų įkėlimas demonstraciniais tikslais. Tai gali užtrukti akimirką...",
   "gz6UQ3": "Padidinkite",
   "iGyOSZ": "Kvietimas į vykstantį susitikimą",
@@ -899,5 +898,15 @@
   "4d9kFA": "Pasirinkite",
   "Xr9OTN": "Pasirinkite",
   "Z8mQpX": "Grįžti į asmenų sąrašą",
-  "3fHcs2": "Kaip jūsų vardą matys kiti"
+  "3fHcs2": "Kaip jūsų vardą matys kiti",
+  "Ulkvln": "{0} domenas",
+  "zVBfbv": "{0} serveris",
+  "QZ9bsx": "{0} serverio prievadas",
+  "vz++ya": "{0} telefono sąskaita",
+  "/dIm7W": "Reikia telefono numerio tel: URL",
+  "At5fs9": "Palaikomi tik tel: URL adresai",
+  "bZ0vJ3": "Telefono numeris turi būti tarptautinio numerio formato, pvz., tel.:+49-611-000000 arba tel.:+1-650-555-0000.",
+  "JrKXWo": "Nustatykite turimą {0} telefono paskyrą",
+  "PNQbDm": "Konfigūraciją galite gauti iš {0} telefono operatoriaus.",
+  "JK9y6G": "Jūsų {0} naudotojas"
 }

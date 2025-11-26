@@ -655,7 +655,6 @@
   "fv2V8g": "Mano arriba",
   "5EpOsx": "¿Cómo quiere llamar a la cuenta {0}?",
   "Kw1+qc": "Dirección no válida",
-  "mUviya": "Cuenta de videoconferencia LiveKit",
   "g/j66k": "Carga de datos de prueba artificiales para fines de demostración. Esto puede tardar un momento...",
   "gz6UQ3": "Maximice",
   "iGyOSZ": "Convocatoria para una reunión en curso",
@@ -899,5 +898,15 @@
   "4d9kFA": "Seleccione",
   "Xr9OTN": "Seleccione",
   "Z8mQpX": "Volver a la lista de personas",
-  "3fHcs2": "Cómo verán su nombre los demás"
+  "3fHcs2": "Cómo verán su nombre los demás",
+  "Ulkvln": "{0} dominio",
+  "zVBfbv": "{0} servidor",
+  "QZ9bsx": "{0} puerto del servidor",
+  "vz++ya": "{0} cuenta telefónica",
+  "/dIm7W": "Necesito número de teléfono en tel: URL",
+  "At5fs9": "Sólo se admiten URL tel:.",
+  "bZ0vJ3": "El número de teléfono debe tener formato internacional, por ejemplo, tel:+49-611-000000 o tel:+1-650-555-0000",
+  "JrKXWo": "Configure su cuenta de teléfono {0} ",
+  "PNQbDm": "Puede obtener la configuración a través de su operador de telefonía {0}.",
+  "JK9y6G": "Su usuario {0} "
 }

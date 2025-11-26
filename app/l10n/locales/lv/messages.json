@@ -655,7 +655,6 @@
   "fv2V8g": "Roku uz augšu",
   "5EpOsx": "Kā vēlaties saukt kontu {0}?",
   "Kw1+qc": "Nederīga adrese",
-  "mUviya": "LiveKit videokonferenču konts",
   "g/j66k": "Mākslīgu testa datu ielādēšana demonstrācijas nolūkos. Tas var aizņemt brīdi...",
   "gz6UQ3": "Maksimizēt",
   "iGyOSZ": "Uzaicinājums uz notiekošu sanāksmi",
@@ -899,5 +898,15 @@
   "4d9kFA": "Izvēlieties",
   "Xr9OTN": "Izvēlieties",
   "Z8mQpX": "Atgriezties pie personu saraksta",
-  "3fHcs2": "Kā jūsu vārdu redzēs citi"
+  "3fHcs2": "Kā jūsu vārdu redzēs citi",
+  "Ulkvln": "{0} domēns",
+  "zVBfbv": "{0} serveris",
+  "QZ9bsx": "{0} servera ports",
+  "vz++ya": "{0} tālruņa konts",
+  "/dIm7W": "Nepieciešams tālruņa numurs tel: URL",
+  "At5fs9": "Tiek atbalstīti tikai tel: URL",
+  "bZ0vJ3": "Tālruņa numuram jābūt starptautiskā formātā, piemēram, tel:+49-611-000000 vai tel:+1-650-555-0000.",
+  "JrKXWo": "Esošā {0} tālruņa konta iestatīšana",
+  "PNQbDm": "Konfigurāciju varat saņemt no tālruņa operatora {0}.",
+  "JK9y6G": "Jūsu {0} lietotājs"
 }

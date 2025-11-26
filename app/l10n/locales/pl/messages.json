@@ -655,7 +655,6 @@
   "fv2V8g": "Ręka w górę",
   "5EpOsx": "Jak chcesz nazwać konto {0}?",
   "Kw1+qc": "Nieprawidłowy adres",
-  "mUviya": "Konto do wideokonferencji LiveKit",
   "g/j66k": "Ładowanie sztucznych danych testowych do celów demonstracyjnych. Może to chwilę potrwać...",
   "gz6UQ3": "Maksymalizacja",
   "iGyOSZ": "Zaproszenie na trwające spotkanie",
@@ -899,5 +898,15 @@
   "4d9kFA": "Wybierz",
   "Xr9OTN": "Wybierz",
   "Z8mQpX": "Powrót do listy osób",
-  "3fHcs2": "Jak twoje imię będzie postrzegane przez innych"
+  "3fHcs2": "Jak twoje imię będzie postrzegane przez innych",
+  "Ulkvln": "{0} domena",
+  "zVBfbv": "{0} serwer",
+  "QZ9bsx": "{0} port serwera",
+  "vz++ya": "{0} konto telefoniczne",
+  "/dIm7W": "Potrzebny numer telefonu w tel: URL",
+  "At5fs9": "Obsługiwane są tylko adresy tel: URL",
+  "bZ0vJ3": "Numer telefonu musi być w formacie międzynarodowym, np. tel:+49-611-000000 lub tel:+1-650-555-0000.",
+  "JrKXWo": "Skonfiguruj istniejące konto telefoniczne {0} ",
+  "PNQbDm": "Konfigurację można uzyskać od operatora telefonicznego {0}.",
+  "JK9y6G": "Użytkownik {0} "
 }

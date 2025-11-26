@@ -655,7 +655,6 @@
   "fv2V8g": "Opp med hånden",
   "5EpOsx": "Hvordan vil du kalle kontoen {0}?",
   "Kw1+qc": "Ugyldig adresse",
-  "mUviya": "LiveKit-videokonferansekonto",
   "g/j66k": "Laster inn kunstige testdata for demoformål. Dette kan ta et øyeblikk...",
   "gz6UQ3": "Maksimer",
   "iGyOSZ": "Møteinvitasjon til et pågående møte",
@@ -899,5 +898,15 @@
   "4d9kFA": "Velg",
   "Xr9OTN": "Velg",
   "Z8mQpX": "Tilbake til listen over personer",
-  "3fHcs2": "Hvordan navnet ditt vil bli sett av andre"
+  "3fHcs2": "Hvordan navnet ditt vil bli sett av andre",
+  "Ulkvln": "{0} domene",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} serverport",
+  "vz++ya": "{0} telefonkonto",
+  "/dIm7W": "Trenger telefonnummer i tel: URL",
+  "At5fs9": "Kun tel: URL-er støttes",
+  "bZ0vJ3": "Telefonnummeret må være i internasjonalt nummerformat, f.eks. tel:+49-611-000000 eller tel:+1-650-555-0000",
+  "JrKXWo": "Konfigurer din eksisterende {0} telefonkonto",
+  "PNQbDm": "Du kan få konfigurasjonen fra telefonoperatøren din på {0}.",
+  "JK9y6G": "Din {0} bruker"
 }

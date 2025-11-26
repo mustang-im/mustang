@@ -655,7 +655,6 @@
   "fv2V8g": "Mão para cima",
   "5EpOsx": "Como pretende chamar a conta {0}?",
   "Kw1+qc": "Endereço inválido",
-  "mUviya": "Conta de videoconferência LiveKit",
   "g/j66k": "Carregamento de dados de teste artificiais para efeitos de demonstração. Isto pode demorar um pouco...",
   "gz6UQ3": "Maximizar",
   "iGyOSZ": "Convite de reunião para uma reunião em curso",
@@ -899,5 +898,15 @@
   "4d9kFA": "Selecionar",
   "Xr9OTN": "Selecionar",
   "Z8mQpX": "Voltar à lista de pessoas",
-  "3fHcs2": "Como é que o seu nome será visto pelos outros"
+  "3fHcs2": "Como é que o seu nome será visto pelos outros",
+  "Ulkvln": "{0} domínio",
+  "zVBfbv": "{0} servidor",
+  "QZ9bsx": "{0} porta do servidor",
+  "vz++ya": "{0} conta telefónica",
+  "/dIm7W": "Necessita de um número de telefone no tel: URL",
+  "At5fs9": "Apenas tel: URLs são suportados",
+  "bZ0vJ3": "O número de telefone tem de estar no formato de número internacional, por exemplo, tel:+49-611-000000 ou tel:+1-650-555-0000",
+  "JrKXWo": "Configurar a sua conta telefónica existente {0} ",
+  "PNQbDm": "Pode obter a configuração junto do seu operador telefónico {0}.",
+  "JK9y6G": "O seu utilizador {0} "
 }

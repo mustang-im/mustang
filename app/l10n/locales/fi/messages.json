@@ -655,7 +655,6 @@
   "fv2V8g": "Käsi ylös",
   "5EpOsx": "Miten haluat kutsua tiliä {0}?",
   "Kw1+qc": "Virheellinen osoite",
-  "mUviya": "LiveKit-videokonferenssitili",
   "g/j66k": "Keinotekoisten testidatan lataaminen demotarkoituksiin. Tämä voi kestää hetken...",
   "gz6UQ3": "Maksimoi",
   "iGyOSZ": "Kokouskutsu meneillään olevaan kokoukseen",
@@ -899,5 +898,15 @@
   "4d9kFA": "Valitse",
   "Xr9OTN": "Valitse",
   "Z8mQpX": "Takaisin henkilöluetteloon",
-  "3fHcs2": "Miten muut näkevät nimesi"
+  "3fHcs2": "Miten muut näkevät nimesi",
+  "Ulkvln": "{0} verkkotunnus",
+  "zVBfbv": "{0} palvelin",
+  "QZ9bsx": "{0} palvelimen portti",
+  "vz++ya": "{0} puhelintili",
+  "/dIm7W": "Tarvitaan puhelinnumero tel: URL-osoitteessa",
+  "At5fs9": "Vain tel: URL-osoitteita tuetaan",
+  "bZ0vJ3": "Puhelinnumeron on oltava kansainvälisessä numeromuodossa, esim. puh:+49-611-000000 tai puh:+1-650-555-0000.",
+  "JrKXWo": "Määritä olemassa oleva {0} puhelintilisi",
+  "PNQbDm": "Voit saada kokoonpanon {0} puhelinoperaattoriltasi.",
+  "JK9y6G": "Sinun {0} käyttäjäsi"
 }

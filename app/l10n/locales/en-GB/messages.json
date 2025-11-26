@@ -655,7 +655,6 @@
   "fv2V8g": "Hand up",
   "5EpOsx": "How do you want to call the account {0}?",
   "Kw1+qc": "Invalid address",
-  "mUviya": "LiveKit video conference account",
   "g/j66k": "Loading artificial test data for demo purposes. This may take a moment...",
   "gz6UQ3": "Maximize",
   "iGyOSZ": "Meeting invitation for an ongoing meeting",
@@ -899,5 +898,15 @@
   "4d9kFA": "Select",
   "Xr9OTN": "Select",
   "Z8mQpX": "Back to list of persons",
-  "3fHcs2": "How your name will be seen by others"
+  "3fHcs2": "How your name will be seen by others",
+  "Ulkvln": "{0} domain",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} server port",
+  "vz++ya": "{0} telephone account",
+  "/dIm7W": "Need phone number in tel: URL",
+  "At5fs9": "Only tel: URLs are supported",
+  "bZ0vJ3": "Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000",
+  "JrKXWo": "Set up your existing {0} telephone account",
+  "PNQbDm": "You can get the configuration from your {0} phone operator.",
+  "JK9y6G": "Your {0} user"
 }

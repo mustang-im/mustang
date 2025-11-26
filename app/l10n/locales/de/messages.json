@@ -655,7 +655,6 @@
   "fv2V8g": "Hand hoch",
   "5EpOsx": "Wie möchten Sie das Konto {0} aufrufen?",
   "Kw1+qc": "Ungültige Adresse",
-  "mUviya": "LiveKit-Videokonferenz-Konto",
   "g/j66k": "Laden künstlicher Testdaten für Demozwecke. Dies kann einen Moment dauern...",
   "gz6UQ3": "Maximieren Sie",
   "iGyOSZ": "Sitzungseinladung für eine laufende Sitzung",
@@ -899,5 +898,15 @@
   "4d9kFA": "Wählen Sie",
   "Xr9OTN": "Wählen Sie",
   "Z8mQpX": "Zurück zur Liste der Personen",
-  "3fHcs2": "Wie Ihr Name von anderen gesehen werden wird"
+  "3fHcs2": "Wie Ihr Name von anderen gesehen werden wird",
+  "Ulkvln": "{0} Domain",
+  "zVBfbv": "{0} Server",
+  "QZ9bsx": "{0} Server-Port",
+  "vz++ya": "{0} Telefonkonto",
+  "/dIm7W": "Benötigte Telefonnummer in tel: URL",
+  "At5fs9": "Nur tel: URLs werden unterstützt",
+  "bZ0vJ3": "Die Telefonnummer muss im internationalen Format angegeben werden, z. B. tel:+49-611-000000 oder tel:+1-650-555-0000",
+  "JrKXWo": "Richten Sie Ihr bestehendes {0} Telefonkonto ein.",
+  "PNQbDm": "Die Konfiguration erhalten Sie von Ihrem {0} Telefonanbieter.",
+  "JK9y6G": "Ihr {0} Benutzer"
 }

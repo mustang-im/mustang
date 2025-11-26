@@ -655,7 +655,6 @@
   "fv2V8g": "Kezeket fel!",
   "5EpOsx": "Hogyan akarja hívni a {0} számlát ?",
   "Kw1+qc": "Érvénytelen cím",
-  "mUviya": "LiveKit videokonferencia-fiók",
   "g/j66k": "Mesterséges tesztadatok betöltése bemutató célokra. Ez eltarthat egy darabig...",
   "gz6UQ3": "Maximalizálja a  címet.",
   "iGyOSZ": "Meghívó egy folyamatban lévő megbeszélésre",
@@ -899,5 +898,15 @@
   "4d9kFA": "Válassza ki a  címet",
   "Xr9OTN": "Válassza ki a  címet.",
   "Z8mQpX": "Vissza a személyek listájához",
-  "3fHcs2": "Hogyan látják majd a nevét mások"
+  "3fHcs2": "Hogyan látják majd a nevét mások",
+  "Ulkvln": "{0} domain",
+  "zVBfbv": "{0} szerver",
+  "QZ9bsx": "{0} kiszolgáló port",
+  "vz++ya": "{0} telefonszámla",
+  "/dIm7W": "Telefonszámra van szükség a tel: URL-ben",
+  "At5fs9": "Csak a tel: URL-ek támogatottak",
+  "bZ0vJ3": "A telefonszámnak nemzetközi formátumúnak kell lennie, pl. tel:+49-611-00000000 vagy tel:+1-650-555-0000.",
+  "JrKXWo": "A meglévő {0} telefonszámla beállítása",
+  "PNQbDm": "A konfigurációt a {0} telefonszolgáltatótól kaphatja meg.",
+  "JK9y6G": "Az Ön {0} felhasználója"
 }

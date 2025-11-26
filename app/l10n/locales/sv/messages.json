@@ -655,7 +655,6 @@
   "fv2V8g": "Hand upp",
   "5EpOsx": "Hur vill du ringa till kontot {0}?",
   "Kw1+qc": "Ogiltig adress",
-  "mUviya": "LiveKit-konto för videokonferens",
   "g/j66k": "Laddar artificiella testdata för demosyften. Detta kan ta en stund...",
   "gz6UQ3": "Maximera",
   "iGyOSZ": "Mötesinbjudan till ett pågående möte",
@@ -899,5 +898,15 @@
   "4d9kFA": "Välj",
   "Xr9OTN": "Välj",
   "Z8mQpX": "Tillbaka till listan över personer",
-  "3fHcs2": "Hur ditt namn kommer att uppfattas av andra"
+  "3fHcs2": "Hur ditt namn kommer att uppfattas av andra",
+  "Ulkvln": "{0} domän",
+  "zVBfbv": "{0} server",
+  "QZ9bsx": "{0} serverport",
+  "vz++ya": "{0} telefonkonto",
+  "/dIm7W": "Behöver telefonnummer i tel: URL",
+  "At5fs9": "Endast tel: URL:er stöds",
+  "bZ0vJ3": "Telefonnumret måste vara i internationellt nummerformat, t.ex. tel:+49-611-000000 eller tel:+1-650-555-0000",
+  "JrKXWo": "Konfigurera ditt befintliga {0} telefonkonto",
+  "PNQbDm": "Du kan få konfigurationen från din telefonoperatör på {0}.",
+  "JK9y6G": "Din {0} användare"
 }
