@@ -53,7 +53,7 @@ export class SIPMeeting extends VideoConfMeeting {
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
     let phoneNumber = sanitize.string(urlParsed.pathname);
     assert(phoneNumber, gt`Need phone number in tel: URL`);
-    assert(phoneNumber[1] == "+", gt`Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000`);
+    assert(phoneNumber[0] == "+", gt`Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000`);
     this.remotePhoneNumber = phoneNumber;
 
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
@@ -71,7 +71,7 @@ export class SIPMeeting extends VideoConfMeeting {
   protected sessionOptions = {
     sessionDescriptionHandlerOptions: {
       constraints: {
-        audio: false,  // false, because we will attach our own stream
+        audio: true,  // false, because we will attach our own stream
         video: false,
       },
     },
@@ -79,9 +79,12 @@ export class SIPMeeting extends VideoConfMeeting {
 
   async call() {
     assert(this.id, "Need to create the call first");
+    await this.login(true);
+    assert(this.account.userAgent, "Need userAgent");
     await super.start();
     this.createMyParticipant();
-    let target = UserAgent.makeURI("sip:" + this.remotePhoneNumber + "@" + this.account.domain);
+    let target = UserAgent.makeURI(this.account.makeCalleeSIPID(this.remotePhoneNumber));
+    console.log("Calling", target.toString());
     this.inviter = new Inviter(this.account.userAgent, target);
     let request = await this.inviter.invite(this.sessionOptions);
     this.waitForState(SessionState.Established, () => this.onEstablished());
