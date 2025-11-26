@@ -1,6 +1,6 @@
 <hbox class="value">
-  <a href="tel:{value}"
-    on:click={event => event.stopPropagation()}>
+  <!-- MainWindow on:click > Event url-tel > MeetBackground > VideoConfMeeting -->
+  <a href="tel:{value}">
     {value}
   </a>
 </hbox>

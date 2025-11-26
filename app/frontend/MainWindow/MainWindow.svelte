@@ -162,12 +162,24 @@
     let targetE = event.target as HTMLElement;
     let linkE = targetE.closest && targetE.closest("a[href]");
     let url = linkE?.getAttribute("href");
-    if (!url ||
-        // Let default handler open in external browser
-        linkE.getAttribute("target") == "_blank") {
+    if (!url) {
       return;
     }
-    let urlObj = new URL(url); // throws
+    // _blank should open in external browser
+    if (linkE.getAttribute("target") == "_blank") {
+      // Let default handler open in external browser
+      return;
+      /* // ... unless it's a link in an email that we can handle internally
+      if (linkE.getAttribute("source") == "convert-html" &&
+          appGlobal.meetAccounts.some(acc => acc.isMeetingURL(new URL(url)))) {
+        // open internally, continue below
+      } else {
+        // Let default handler open in external browser
+        return;
+      }*/
+    }
+    // open internally
+    let urlObj = new URL(url); // throws, if invalid
     let protocol = urlObj.protocol.replace(":", "");
     let urlEvent = new Event("url-" + protocol); // e.g. "url-mailto"
     (urlEvent as any).url = url;

@@ -161,6 +161,7 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
         try {
           // New window requests are caught by e2 index.ts setWindowOpenHandler()
           node.setAttribute("target", "_blank");
+          node.setAttribute("source", "convert-html");
           let url = node.getAttribute(attribute);
           if (!url) {
             continue;

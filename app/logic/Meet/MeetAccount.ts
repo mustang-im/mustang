@@ -40,6 +40,13 @@ export class MeetAccount extends Account {
     throw new AbstractFunction();
   }
 
+  async openMeetingURL(url: string): Promise<VideoConfMeeting> {
+    let meeting = this.newMeeting();
+    appGlobal.meetings.add(meeting);
+    await meeting.join(url);
+    return meeting;
+  }
+
   async save(): Promise<void> {
     await this.storage?.saveAccount(this);
   }

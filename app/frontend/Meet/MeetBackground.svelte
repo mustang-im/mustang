@@ -1,8 +1,13 @@
+<svelte:window
+  on:url-tel|capture={event => catchErrors(() => onMeetingURL(event, event.url))}
+  on:url-https|capture={event => catchErrors(() => onMeetingURL(event, event.url))} />
+
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
   import { openApp, selectedApp } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
   import { appGlobal } from "../../logic/app";
+  import { catchErrors } from "../Util/error";
 
   $: meetings = appGlobal.meetings;
 
@@ -19,5 +24,16 @@
         meeting.state == MeetingState.IncomingCall) {
       openApp(meetMustangApp, { meeting });
     }
+  }
+
+  async function onMeetingURL(event: Event, url: string) {
+    let urlParsed = new URL(url);
+    let acc = appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
+    if (!acc) {
+      return;
+    }
+    event.stopPropagation();
+    let meeting = await acc.openMeetingURL(url);
+    openApp(meetMustangApp, { meeting });
   }
 </script>

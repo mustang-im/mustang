@@ -54,6 +54,7 @@ export class SIPMeeting extends VideoConfMeeting {
     let phoneNumber = sanitize.string(urlParsed.pathname);
     assert(phoneNumber, gt`Need phone number in tel: URL`);
     assert(phoneNumber[0] == "+", gt`Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000`);
+    phoneNumber = phoneNumber.replaceAll(/[^0-9\+]/g, ""); // Leave only numbers and leading +
     this.remotePhoneNumber = phoneNumber;
 
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
