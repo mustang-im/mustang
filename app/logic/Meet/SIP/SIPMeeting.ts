@@ -87,20 +87,24 @@ export class SIPMeeting extends VideoConfMeeting {
     console.log("Calling", target.toString());
     this.inviter = new Inviter(this.account.userAgent, target);
     let request = await this.inviter.invite(this.sessionOptions);
+    this.state = MeetingState.Ongoing; // TODO sip.js needs the mic to be open when the other party picks up our outgoing call, otherwise the call drops immediately after pickup
     this.waitForState(SessionState.Established, () => this.onEstablished());
   }
 
   waitForState(desiredState: SessionState, onChangedToState: () => void) {
-    this.session.stateChange.addListener(newState => {
+    let listener = (newState: SessionState) => {
+      console.log("SIP call changed state to", newState);
       if (newState == desiredState) {
         onChangedToState();
+        this.session.stateChange.removeListener(listener);
       }
-    });
+    }
+    this.session.stateChange.addListener(listener);
   }
 
   protected onEstablished() {
     this.state = MeetingState.Ongoing;
-    this.waitForState(SessionState.Terminating, () => this.callEnded());
+    this.waitForState(SessionState.Terminated, () => this.callEnded());
     this.attachLocalDevices();
     this.attachRemoteDevices();
   }
@@ -134,6 +138,7 @@ export class SIPMeeting extends VideoConfMeeting {
 
   protected attachLocalDevices() {
     let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
+    assert(this.mediaDeviceStreams.cameraMicStream, "Local microphone is not ready");
     for (let track of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
       console.log("Add local track", track);
       peerConnection.addTrack(track);
