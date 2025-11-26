@@ -17,6 +17,7 @@
   import { newMeetAccountForProtocol } from "../../../logic/Meet/AccountsList/MeetAccounts";
   import M3Login from "./M3Login.svelte";
   import LiveKitLogin from "./LiveKitLogin.svelte";
+  import SIPLogin from "./SIPLogin.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -33,8 +34,9 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: $t`${appName} video conference account`, protocolID: "m3" },
-    { label: $t`LiveKit video conference account`, protocolID: "livekit" },
+    { label: $t`${appName} video conference account`, protocolID: "livekit" },
+    //{ label: $t`M3 video conference account`, protocolID: "m3" },
+    { label: $t`${"SIP"} telephone account`, protocolID: "sip" },
   ];
 
   function onContinue() {
@@ -43,6 +45,8 @@
       showPage = M3Login;
     } else if (selectedProtocol == "livekit") {
       showPage = LiveKitLogin;
+    } else if (selectedProtocol == "sip") {
+      showPage = SIPLogin;
     } else {
       throw new NotReached();
     }

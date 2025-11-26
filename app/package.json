@@ -61,6 +61,7 @@
     "postal-mime": "^2.4.3",
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
+    "sip.js": "^0.21.2",
     "stanza": "^12.21.0",
     "svelte-collections": "^1.2.12",
     "svelte-icon": "^2.0.0",

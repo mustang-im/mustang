@@ -108,7 +108,7 @@ export async function joinByURL(url: URLString) {
 
 export async function createMustangMeetAccountIfPossible() {
   // For paying users only, create a free Meet account for demo purposes
-  if (appGlobal.meetAccounts.isEmpty &&
+  if (!appGlobal.meetAccounts.find(acc => acc.url == "https://meet.mustang.im") &&
       appGlobal.emailAccounts.hasItems &&
       await isLicensed()) {
     let account = new LiveKitAccount();
