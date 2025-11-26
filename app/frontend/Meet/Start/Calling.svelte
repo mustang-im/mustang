@@ -115,10 +115,16 @@
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
   <audio src="/sound/ringtone1.mp3" loop autoplay />
 {/if}
+{#if $meeting.state == MeetingState.OutgoingCall && $meeting.account.protocol == "sip" }
+  <!-- Workaround: sip.js needs the mic to be open when the other party picks up our outgoing call,
+    otherwise the call drops immediately after pickup -->
+  <vbox class="sip-outgoing-toolbar">
+    <InMeetingToolbar {meeting} isSidebar={true} showSidebar={false} />
+  </vbox>
+{/if}
 {#if $appGlobal.isMobile}
   <StartBarM selectedAccount={appGlobal.meetAccounts.first} />
 {/if}
-
 
 <script lang="ts">
   import { MeetingState, type VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
@@ -128,6 +134,7 @@
   import GroupPicture from "../../Contacts/Person/GroupPicture.svelte";
   import DeviceSetup from "../Setup/DeviceSetup.svelte";
   import StartBarM from "./StartBarM.svelte";
+  import InMeetingToolbar from "../InMeetingToolbar.svelte";
   import CallIcon from "lucide-svelte/icons/phone-call";
   import HangUpIcon from "lucide-svelte/icons/phone";
   import XIcon from "lucide-svelte/icons/x";
@@ -147,7 +154,7 @@
   $: upcomingMeetingInMin = upcomingMeeting?.startTime ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
 
   async function cancel() {
-    meeting.state = MeetingState.Ended;
+    await meeting.hangup();
     appGlobal.meetings.remove(meeting);
   }
 
@@ -270,6 +277,9 @@
   .upcoming-meeting .title {
     justify-content: center;
     align-items: center;
+  }
+  .sip-outgoing-toolbar {
+    display: none;
   }
 
   .calling[state="incoming"] .what,

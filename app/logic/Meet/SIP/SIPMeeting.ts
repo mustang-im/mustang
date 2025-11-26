@@ -79,6 +79,7 @@ export class SIPMeeting extends VideoConfMeeting {
 
   async call() {
     assert(this.id, "Need to create the call first");
+    this.state = MeetingState.OutgoingCall;
     await this.login(true);
     assert(this.account.userAgent, "Need userAgent");
     await super.start();
@@ -87,7 +88,6 @@ export class SIPMeeting extends VideoConfMeeting {
     console.log("Calling", target.toString());
     this.inviter = new Inviter(this.account.userAgent, target);
     let request = await this.inviter.invite(this.sessionOptions);
-    this.state = MeetingState.Ongoing; // TODO sip.js needs the mic to be open when the other party picks up our outgoing call, otherwise the call drops immediately after pickup
     this.waitForState(SessionState.Established, () => this.onEstablished());
   }
 
