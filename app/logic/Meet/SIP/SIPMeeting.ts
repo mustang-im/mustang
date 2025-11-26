@@ -115,8 +115,7 @@ export class SIPMeeting extends VideoConfMeeting {
     this.videos.add(v);
 
     let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
-    peerConnection.ontrack = (event) => {
-      let track = event.track;
+    let addTrack = (track: MediaStreamTrack) => {
       // Avoid adding local tracks
       for (let localTrack of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
         if (track == localTrack) {
@@ -127,6 +126,10 @@ export class SIPMeeting extends VideoConfMeeting {
       console.log("Add remote track", track);
       mediaStream.addTrack(track);
     };
+    for (let receiver of peerConnection.getReceivers()) {
+      addTrack(receiver.track);
+    }
+    peerConnection.ontrack = (event) => addTrack(event.track);
   }
 
   protected attachLocalDevices() {
