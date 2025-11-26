@@ -58,6 +58,14 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
     }
   }
 
+  for (let account of appGlobal.meetAccounts) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      account.login(false)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
   for (let account of appGlobal.emailAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {

@@ -115,7 +115,8 @@
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
   <audio src="/sound/ringtone1.mp3" loop autoplay />
 {/if}
-{#if $meeting.state == MeetingState.OutgoingCall && $meeting.account.protocol == "sip" }
+{#if ($meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall) &&
+    $meeting.account.protocol == "sip" }
   <!-- Workaround: sip.js needs the mic to be open when the other party picks up our outgoing call,
     otherwise the call drops immediately after pickup -->
   <vbox class="sip-outgoing-toolbar">

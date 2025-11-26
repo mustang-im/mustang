@@ -7,7 +7,7 @@ import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
-import { assert, type URLString } from "../../util/util";
+import { assert, sleep, type URLString } from "../../util/util";
 import { UserAgent, type Session, Inviter, type Invitation, SessionState } from "sip.js";
 
 export class SIPMeeting extends VideoConfMeeting {
@@ -88,24 +88,28 @@ export class SIPMeeting extends VideoConfMeeting {
     console.log("Calling", target.toString());
     this.inviter = new Inviter(this.account.userAgent, target);
     let request = await this.inviter.invite(this.sessionOptions);
+    this.waitForState(SessionState.Terminated, () => this.callEnded());
     this.waitForState(SessionState.Established, () => this.onEstablished());
   }
 
-  waitForState(desiredState: SessionState, onChangedToState: () => void) {
-    let listener = (newState: SessionState) => {
-      console.log("SIP call changed state to", newState);
-      if (newState == desiredState) {
-        onChangedToState();
-        this.session.stateChange.removeListener(listener);
+  waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
+    let listener = async (newState: SessionState) => {
+      try {
+        console.log("SIP call changed state to", newState);
+        if (newState == desiredState) {
+          await onChangedToState();
+          this.session.stateChange.removeListener(listener);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     this.session.stateChange.addListener(listener);
   }
 
-  protected onEstablished() {
+  protected async onEstablished() {
     this.state = MeetingState.Ongoing;
-    this.waitForState(SessionState.Terminated, () => this.callEnded());
-    this.attachLocalDevices();
+    await this.attachLocalDevices();
     this.attachRemoteDevices();
   }
 
@@ -136,9 +140,20 @@ export class SIPMeeting extends VideoConfMeeting {
     peerConnection.ontrack = (event) => addTrack(event.track);
   }
 
-  protected attachLocalDevices() {
+  protected async attachLocalDevices() {
     let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
+
+    // HACK Ensure that mic has time to open, esp. for incoming calls TODO Not working correctly, either
+    const maxWaitMS = 2000;
+    let start = Date.now();
+    while (!this.mediaDeviceStreams.cameraMicStream) {
+      await sleep(0.1);
+      if (Date.now() - start > maxWaitMS) {
+        break;
+      }
+    }
     assert(this.mediaDeviceStreams.cameraMicStream, "Local microphone is not ready");
+
     for (let track of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
       console.log("Add local track", track);
       peerConnection.addTrack(track);
@@ -146,17 +161,20 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   onIncomingCall(invitation: Invitation) {
+    this.invitation = invitation;
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
-    this.title = `Called by ... at ${time}`;
+    this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
     this.state = MeetingState.IncomingCall;
   }
 
   async answer() {
     await super.answer();
     console.log("accept - invitation state", this.invitation.state);
-    assert(this.invitation.state == SessionState.Establishing, "Invitation in wrong state " + this.invitation.state);
+    assert(this.invitation.state == SessionState.Initial, "Invitation in wrong state " + this.invitation.state);
+    this.createMyParticipant();
+    this.waitForState(SessionState.Terminated, () => this.callEnded());
     await this.invitation.accept(this.sessionOptions);
-    this.onEstablished();
+    await this.onEstablished();
   }
 
   async hangup() {
