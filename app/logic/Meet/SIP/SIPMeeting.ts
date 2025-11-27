@@ -88,9 +88,9 @@ export class SIPMeeting extends VideoConfMeeting {
     let target = UserAgent.makeURI(this.account.makeCalleeSIPID(this.remotePhoneNumber));
     console.log("Calling", target.toString());
     this.inviter = new Inviter(this.account.userAgent, target);
-    let request = await this.inviter.invite(this.sessionOptions);
     this.waitForState(SessionState.Terminated, () => this.callEnded());
     this.waitForState(SessionState.Established, () => this.onEstablished());
+    let request = await this.inviter.invite(this.sessionOptions);
   }
 
   waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
@@ -109,6 +109,9 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   protected async onEstablished() {
+    if (this.state == MeetingState.Ongoing) {
+      return;
+    }
     this.state = MeetingState.Ongoing;
     await this.attachLocalDevices();
     this.attachRemoteDevices();
@@ -166,6 +169,7 @@ export class SIPMeeting extends VideoConfMeeting {
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
     this.state = MeetingState.IncomingCall;
+    this.waitForState(SessionState.Terminated, () => this.callEnded());
   }
 
   async answer() {
@@ -173,7 +177,6 @@ export class SIPMeeting extends VideoConfMeeting {
     console.log("accept - invitation state", this.invitation.state);
     assert(this.invitation.state == SessionState.Initial, "Invitation in wrong state " + this.invitation.state);
     this.createMyParticipant();
-    this.waitForState(SessionState.Terminated, () => this.callEnded());
     await this.invitation.accept(this.sessionOptions);
     await this.onEstablished();
   }
