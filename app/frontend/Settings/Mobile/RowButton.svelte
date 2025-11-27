@@ -19,10 +19,10 @@
 <script lang="ts">
   import Button from "../../Shared/Button.svelte";
   import GoIcon from "lucide-svelte/icons/chevron-right";
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
 
   export let label: string;
-  export let icon: ComponentType | string | null = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string | null = null;
   export let onClick: (event: Event) => void;
 </script>
 

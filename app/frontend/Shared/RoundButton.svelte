@@ -27,10 +27,10 @@
   import { showError } from '../Util/error';
   import Icon from 'svelte-icon/Icon.svelte';
   import Spinner from './Spinner.svelte';
-  import type { ComponentType } from 'svelte';
+  import type { ConstructorOfATypedSvelteComponent } from 'svelte';
 
   export let label: string = null;
-  export let icon: ComponentType | string = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string = null;
   export let classes = "";
   export let iconSize =
     classes?.includes("create") ? "18px" :

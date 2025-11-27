@@ -26,7 +26,7 @@
   import Button from "./Button.svelte";
   import Icon from "./Icon.svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -37,7 +37,7 @@
   /** in/out */
   export let expanded = false;
   export let label: string;
-  export let icon: ComponentType | string | null = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string | null = null;
   export let iconSize = "16px";
   export let addIconSize = iconSize;
   export let classes = "";

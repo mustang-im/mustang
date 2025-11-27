@@ -40,7 +40,7 @@
   import type { Account } from "../../logic/Abstract/Account";
   import RoundButton from "./RoundButton.svelte";
   import type { Collection } from "svelte-collections";
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
   import { t } from "../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ select: Account }>();
@@ -51,7 +51,7 @@
   export let showAllOption = false;
   /** in/out */
   export let selectedAccount: Account;
-  export let iconDefault: ComponentType | string;
+  export let iconDefault: ConstructorOfATypedSvelteComponent | string;
   export let iconSize: string = undefined;
   export let large = false;
 

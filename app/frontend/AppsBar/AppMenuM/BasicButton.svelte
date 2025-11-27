@@ -10,10 +10,10 @@
 <script lang="ts">
   import { goTo } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
 
   export let label: string = null;
-  export let icon: ComponentType | string = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string = null;
   export let onClick = onClickPage;
   export let page: string | null = null;
   export let params = {};

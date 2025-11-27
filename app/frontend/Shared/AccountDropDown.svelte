@@ -31,7 +31,7 @@
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { t } from "../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { createEventDispatcher, SvelteComponentTyped } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ select: Account }>();
 
   export let selectedAccount: Account; /* in/out */

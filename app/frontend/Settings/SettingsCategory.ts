@@ -1,6 +1,5 @@
 import type { Account } from "../../logic/Abstract/Account";
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
-import type { ComponentType, SvelteComponentTyped } from 'svelte';
 import { ArrayColl, Collection } from "svelte-collections";
 import type { MustangApp } from "../AppsBar/MustangApp";
 
@@ -12,12 +11,12 @@ export class SettingsCategory extends Observable {
   /** Alternative words for `name` that the user might think of. Used for searching settings. */
   synonyms = new ArrayColl<string>();
   /** Icon, either as SVG string or as Svelte component */
-  icon: string | ComponentType<SvelteComponentTyped>;
+  icon: string | ConstructorOfATypedSvelteComponent;
 
   isMain = false;
   /** Window content with the actual settings that shows on the right
    * when the user selected this settings category */
-  windowContent: ComponentType<SvelteComponentTyped> | undefined;
+  windowContent: ConstructorOfATypedSvelteComponent | undefined;
 
   @notifyChangedProperty
   subCategories: Collection<SettingsCategory> = new ArrayColl<SettingsCategory>();
@@ -29,7 +28,7 @@ export class SettingsCategory extends Observable {
   /** If `isMain && !isAccountSpecific`, can have the app that these settings are for */
   forApp: MustangApp;
 
-  constructor(id: string, name: string, content?: ComponentType<SvelteComponentTyped>, isMain = false) {
+  constructor(id: string, name: string, content?: ConstructorOfATypedSvelteComponent, isMain = false) {
     super();
     this.id = id;
     this.name = name;
@@ -50,7 +49,7 @@ export class SettingsCategory extends Observable {
 
 export class AccountSettingsCategory extends SettingsCategory {
   type: typeof Account;
-  constructor(type: typeof Account, id: string, name: string, content: ComponentType<SvelteComponentTyped>, isMain = false) {
+  constructor(type: typeof Account, id: string, name: string, content: ConstructorOfATypedSvelteComponent, isMain = false) {
     super(id, name, content, isMain);
     this.type = type;
   }

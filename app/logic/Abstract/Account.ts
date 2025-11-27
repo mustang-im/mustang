@@ -5,7 +5,6 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
-import type { ComponentType } from "svelte";
 
 export class Account extends Observable {
   id: string;
@@ -16,7 +15,7 @@ export class Account extends Observable {
   /** A `data:` URL to an image that represents this account.
    * E.g. the company logo. */
   @notifyChangedProperty
-  icon: string | ComponentType | null = null;
+  icon: string | any | null = null;
   @notifyChangedProperty
   color: string = "#FFFFFF";
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */

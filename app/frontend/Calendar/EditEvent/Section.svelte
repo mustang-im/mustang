@@ -14,10 +14,10 @@
 {/if}
 
 <script lang="ts">
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
 
   export let label: string = "";
-  export let icon: ComponentType = null;
+  export let icon: ConstructorOfATypedSvelteComponent = null;
   export let flex = null;
 </script>
 

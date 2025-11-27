@@ -14,10 +14,10 @@
   import { goTo, type PageParams } from "../selectedApp";
   import BasicButton from "./BasicButton.svelte";
   import AccountIcon from "lucide-svelte/icons/rabbit";
-  import type { ComponentType } from 'svelte';
+  import type { ConstructorOfATypedSvelteComponent } from 'svelte';
 
   export let account: Account;
-  export let defaultIcon: ComponentType = AccountIcon;
+  export let defaultIcon: ConstructorOfATypedSvelteComponent = AccountIcon;
   /**
    * Default handler for `goToAccount()`
    * @param account
