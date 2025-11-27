@@ -93,21 +93,6 @@ export class SIPMeeting extends VideoConfMeeting {
     let request = await this.inviter.invite(this.sessionOptions);
   }
 
-  waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
-    let listener = async (newState: SessionState) => {
-      try {
-        console.log("SIP call changed state to", newState);
-        if (newState == desiredState) {
-          await onChangedToState();
-          this.session.stateChange.removeListener(listener);
-        }
-      } catch (ex) {
-        this.account.errorCallback(ex);
-      }
-    }
-    this.session.stateChange.addListener(listener);
-  }
-
   protected async onEstablished() {
     if (this.state == MeetingState.Ongoing) {
       return;
@@ -211,5 +196,20 @@ export class SIPMeeting extends VideoConfMeeting {
     }
     console.log("Remote end has hung up");
     await super.hangup();
+  }
+
+  waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
+    let listener = async (newState: SessionState) => {
+      try {
+        console.log("SIP call changed state to", newState);
+        if (newState == desiredState) {
+          await onChangedToState();
+          this.session.stateChange.removeListener(listener);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
+    this.session.stateChange.addListener(listener);
   }
 }
