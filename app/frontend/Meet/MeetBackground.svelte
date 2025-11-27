@@ -9,7 +9,8 @@
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
 
-  $: meetings = appGlobal.meetings;
+  // HACK: Why are some ended meetings not removed? See `VideoConfMeeting.hangup()`
+  $: meetings = appGlobal.meetings.filterObservable(m => m.state != MeetingState.Ended);
 
   /** Open sidebar, if meeting is ongoing */
   $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");

@@ -156,7 +156,6 @@
 
   async function cancel() {
     await meeting.hangup();
-    appGlobal.meetings.remove(meeting);
   }
 
   async function accept() {
@@ -172,7 +171,6 @@
   }
 
   async function hangup() {
-    appGlobal.meetings.remove(meeting);
     await meeting.hangup();
   }
 </script>

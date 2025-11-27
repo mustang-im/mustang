@@ -224,9 +224,12 @@ export class VideoConfMeeting extends Observable {
 
   /** Leave this conference. */
   async hangup() {
+    /** TODO `remove()` not working when the call starts while I'm in another app and being called.
+     * The meeting is in state `Ended` (which is only set here), but still in `appGlobal.meetings`.
+     * Workaround: `filterObservable()` in Main.svelte and MeetBackground.svelte. */
+    appGlobal.meetings.remove(this);
     this.state = MeetingState.Ended;
     this.ended = new Date();
-    appGlobal.meetings.remove(this);
   }
 
   get selfVideo(): VideoStream | null {

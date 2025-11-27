@@ -181,7 +181,6 @@
     await meeting.hangup();
     await stream.setScreenShare(false);
     await stream.setCameraMicOn(false, false);
-    appGlobal.meetings.remove(meeting);
   }
 
   async function toggleHand() {
