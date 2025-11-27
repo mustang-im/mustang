@@ -9,11 +9,12 @@ perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../e2/package.json
 
+MARKETING_VERSION=$(echo "$VERSION" | sed 's/-.*//')
 MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
 BUILD_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d%H%M%S)"
 echo Setting iOS Build Version to $BUILD_VERSION
 perl -p -i \
-  -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$VERSION\";|;" \
+  -e "s|MARKETING_VERSION = .*|MARKETING_VERSION = \"$MARKETING_VERSION\";|;" \
   -e "s|CURRENT_PROJECT_VERSION = .*|CURRENT_PROJECT_VERSION = $BUILD_VERSION;|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
