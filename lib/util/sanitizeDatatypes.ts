@@ -15,7 +15,7 @@ let throwErrors = Symbol("Throw");
  * they throw exceptions.
  */
 class Sanitize {
-  integer(unchecked: number | string | null, fallback: number | null | Symbol = throwErrors): number {
+  integer(unchecked: number | string | null | undefined, fallback: number | null | Symbol = throwErrors): number {
     if (typeof (unchecked) == "number") {
       return unchecked;
     }
@@ -26,7 +26,7 @@ class Sanitize {
     return r;
   }
 
-  integerRange(unchecked: number | string | null, min: number, max: number, fallback: number | null | Symbol = throwErrors): number {
+  integerRange(unchecked: number | string | null | undefined, min: number, max: number, fallback: number | null | Symbol = throwErrors): number {
     let i = this.integer(unchecked, fallback);
     if (i < min) {
       return haveError("Number too small", unchecked, fallback);
@@ -37,7 +37,7 @@ class Sanitize {
     return i;
   }
 
-  float(unchecked: number | string | null, fallback: number | null | Symbol = throwErrors): number {
+  float(unchecked: number | string | null | undefined, fallback: number | null | Symbol = throwErrors): number {
     if (typeof (unchecked) == "number") {
       return unchecked;
     }
@@ -48,7 +48,7 @@ class Sanitize {
     return r;
   }
 
-  boolean(unchecked: boolean | string | number | null, fallback: boolean | null | Symbol = throwErrors): boolean {
+  boolean(unchecked: boolean | string | number | null | undefined, fallback: boolean | null | Symbol = throwErrors): boolean {
     if (typeof (unchecked) == "boolean") {
       return unchecked;
     }
@@ -67,14 +67,14 @@ class Sanitize {
     return haveError("Boolean", unchecked, fallback);
   }
 
-  string(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  string(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     if (unchecked === null || unchecked === undefined) {
       return haveError("String empty", unchecked, fallback);
     }
     return String(unchecked);
   }
 
-  nonemptystring(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  nonemptystring(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     if (!unchecked) {
       return haveError("String empty", unchecked, fallback);
     }
@@ -86,7 +86,7 @@ class Sanitize {
    *
    * Empty strings not allowed (good idea?).
    */
-  alphanumdash(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  alphanumdash(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
     if (!/^[a-zA-Z0-9\-\_]*$/.test(str)) {
       return haveError("Not alpha-num-dash", unchecked, fallback);
@@ -106,7 +106,7 @@ class Sanitize {
    * HACK: "%" is allowed, because we allow placeholders in hostnames in the
    * config file.
    */
-  hostname(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  hostname(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
     try {
       if (!this.regexpHostname.test(str)) {
@@ -123,14 +123,14 @@ class Sanitize {
     return str?.toLowerCase();
   }
 
-  portTCP(unchecked: number | string | null, fallback: number | null | Symbol = throwErrors): number {
+  portTCP(unchecked: number | string | null | undefined, fallback: number | null | Symbol = throwErrors): number {
     return this.integerRange(unchecked, 1, 65535, fallback);
   }
 
   /**
    * A non-chrome URL that's safe to request.
    */
-  url(unchecked: string | null, fallback: string | null | Symbol = throwErrors,
+  url(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors,
     allowedURLSchemes: string[] = ["https", "http"]): string {
     let str = this.nonemptystring(unchecked, fallback);
     if (!str) { // in case of fallback
@@ -150,7 +150,7 @@ class Sanitize {
   /**
    * Email address foo@bar.com
    */
-  emailAddress(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  emailAddress(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     if (!unchecked) {
       return haveError("Missing email address", unchecked, fallback);
     }
@@ -185,7 +185,7 @@ class Sanitize {
    * \ / : . ' " ! ? * |
    * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
    * but there are many others. */
-  filename(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  filename(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     let filename = this.nonemptystring(unchecked, fallback);
     try {
       filename = filename.replace(this.regexpFilename, "").trim();
@@ -209,7 +209,7 @@ class Sanitize {
   /**
    * A value which should be shown to the user in the UI as label
    */
-  label(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  label(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
     return this.string(unchecked, fallback);
   }
 
@@ -219,7 +219,7 @@ class Sanitize {
    *   or an RFC822 Date string
    * @return {Date}
    */
-  date(unchecked: Date | string | number | null, fallback: Date | null | Symbol = throwErrors): Date {
+  date(unchecked: Date | string | number | null | undefined, fallback: Date | null | Symbol = throwErrors): Date {
     function newDate(val: string | number | Date) {
       let date = new Date(val);
       if (isNaN(date.getTime())) {
@@ -243,7 +243,7 @@ class Sanitize {
   /**
    * A value which should be shown to the user in the UI as label
    */
-  array(unchecked: [] | null, fallback: [] | null | Symbol = throwErrors): [] | null {
+  array(unchecked: [] | null | undefined, fallback: [] | null | Symbol = throwErrors): [] | null {
     if (unchecked && Array.isArray(unchecked)) {
       return unchecked;
     } else {
@@ -262,7 +262,7 @@ class Sanitize {
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  enum<T>(unchecked: T | null, allowedValues: T[], fallback: T | null | Symbol = throwErrors): T {
+  enum<T>(unchecked: T | null | undefined, allowedValues: T[], fallback: T | null | Symbol = throwErrors): T {
     return allowedValues.find(allowedValue => allowedValue == unchecked) ??
       haveError("Allowed value", unchecked, fallback);
   }
@@ -284,7 +284,7 @@ class Sanitize {
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  translate<F, T>(unchecked: F | null, mapping: Record<any, T>, fallback: T | null | Symbol = throwErrors): T {
+  translate<F, T>(unchecked: F | null | undefined, mapping: Record<any, T>, fallback: T | null | Symbol = throwErrors): T {
     for (let inputValue in mapping) {
       if (inputValue == unchecked) {
         return mapping[inputValue];
