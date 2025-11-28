@@ -13,6 +13,7 @@ export class CalDAVEvent extends Event {
   declare readonly exceptions: ArrayColl<CalDAVEvent>;
   /** URL of this specific Event on the server. null, if not yet saved on server. */
   url: URLString | null = null;
+  originalICal: string;
 
   get itemID(): string | null {
     return this.pID;
@@ -28,6 +29,7 @@ export class CalDAVEvent extends Event {
   }
 
   fromDAVObject(entry: DAVObject): boolean {
+    this.originalICal = entry.data;
     let isEvent = convertICalToEvent(entry.data, this);
     if (!isEvent) {
       return false;
@@ -49,6 +51,7 @@ export class CalDAVEvent extends Event {
     this.calUID ??= crypto.randomUUID();
     let iCal = getICal(this);
     if (this.url) {
+      // TODO take `originalICal` and update only the properties we know about
       console.log("updating", this, this.url, "with ICS", iCal);
       await this.calendar.client.updateCalendarObject({
         calendarObject: this.getDAVObject(iCal),
@@ -72,10 +75,12 @@ export class CalDAVEvent extends Event {
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
     this.url = sanitize.url(json.url, null);
+    this.originalICal = sanitize.string(json.original, null);
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();
     json.url = this.url;
+    json.original = this.originalICal;
     return json;
   }
 

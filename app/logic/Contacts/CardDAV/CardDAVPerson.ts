@@ -1,6 +1,6 @@
 import { Person } from '../../Abstract/Person';
 import type { CardDAVAddressbook } from './CardDAVAddressbook';
-import { personToVCard, convertVCardToPerson } from '../VCard/VCard';
+import { personToVCard, convertVCardToPerson, getUpdatedVCard, parse } from '../VCard/VCard';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";
@@ -8,6 +8,10 @@ import type { DAVObject } from "tsdav";
 export class CardDAVPerson extends Person {
   declare addressbook: CardDAVAddressbook | null;
   url: URLString | null = null;
+  /** The vCard that we downloaded from the server.
+   * Allows updates of only the properties that we know about,
+   * leaving unknown properties as-is. */
+  originalVCard: string;
 
   get itemID(): string | null {
     return this.id;
@@ -23,6 +27,7 @@ export class CardDAVPerson extends Person {
   }
 
   fromDAVObject(entry: DAVObject) {
+    this.originalVCard = entry.data;
     convertVCardToPerson(entry.data, this);
     this.url = new URL(entry.url, this.addressbook.addressbookURL).href;
     this.syncState = entry.etag;
@@ -38,14 +43,15 @@ export class CardDAVPerson extends Person {
 
   async saveToServer() {
     this.id ??= crypto.randomUUID();
-    let vCard = personToVCard(this);
     if (this.url) {
+      let vCard = getUpdatedVCard(this, parse(this.originalVCard));
       // TODO Update doesn't work, if the contact was deleted on the server
       console.log("updating", this.url, "with vCard", vCard);
       await this.addressbook.client.updateVCard({
         vCard: this.getDAVObject(vCard),
       });
     } else {
+      let vCard = personToVCard(this);
       console.log("creating with vCard", vCard);
       let filename = this.id + ".vcf";
       await this.addressbook.client.createVCard({
@@ -63,11 +69,13 @@ export class CardDAVPerson extends Person {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
+    this.originalVCard = sanitize.string(json.original, null);
     this.url = sanitize.url(json.url, null);
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();
     json.url = this.url;
+    json.original = this.originalVCard;
     return json;
   }
 
