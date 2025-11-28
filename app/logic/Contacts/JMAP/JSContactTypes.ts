@@ -196,6 +196,8 @@ export interface TEmailAddress {
   label?: string;
 }
 
+export type TPhoneFeature = Record<"voice" | "mobile" | "main-number" | "fax" | "pager" | "text" | "textphone" | "video", true>;
+
 export interface TPhone {
   "@type"?: "TPhone";
   /** Phone number, either URI or free-form, e.g.
@@ -204,7 +206,7 @@ export interface TPhone {
    */
   number: string;
   /** Phone, fax etc. */
-  features?: Record<"voice" | "mobile" | "main-number" | "fax" | "pager" | "text" | "textphone" | "video", true>;
+  features?: TPhoneFeature;
   /** Contexts in which to use this phone */
   contexts?: TPrivateOrWork;
   pref?: TInteger;
