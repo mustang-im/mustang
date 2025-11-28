@@ -84,6 +84,7 @@ export class OWAAccount extends MailAccount {
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
+      method: "POST",
     };
     let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
     let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
@@ -247,6 +248,7 @@ export class OWAAccount extends MailAccount {
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
+      method: "POST",
     };
     // Body needs to get passed via JPC as a regular object, not an object instance
     let bodyJSON = Object.assign({}, aRequest);

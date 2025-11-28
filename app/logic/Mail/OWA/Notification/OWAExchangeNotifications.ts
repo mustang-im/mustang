@@ -6,7 +6,7 @@ export class OWAExchangeNotifications extends OWANotifications {
     // handle logout
     // add throttle
     let url = this.account.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url);
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url, { method: "POST" });
     let json = response.json;
     let cid = json.cid;
     // This loop only ends by exception (e.g. logout) or app shutdown.
