@@ -38,14 +38,14 @@ export class OWAOffice365Notifications extends OWANotifications {
         // The remaining requests require a connection token.
         // This request also gives us the transport and keep alive timeouts.
         let url = this.account.url + "notificationchannel/negotiate?cid=" + cid;
-        response = await appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url, options);
+        response = await fetch(url, options);
         if (!response.ok) {
           throw new Error(`negotiate failed with HTTP ${response.status} ${response.statusText}`);
         }
-        json = response.json;
+        json = await response.json();
         // Tell the server to start sending events.
         url = this.account.url + URLPart`notificationchannel/start?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        response = await appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url, options);
+        response = await fetch(url, options);
         //console.log("response", response.ok ? "OK" : "Failed", "status", response.status, "statusText", response.statusText, "response obj", response);
         if (!response.ok) {
           throw new Error(`start failed with HTTP ${response.status} ${response.statusText}`);
@@ -53,11 +53,11 @@ export class OWAOffice365Notifications extends OWANotifications {
         // We have to request a ping every 5 minutes,
         // otherwise we stop receiving events.
         url = this.account.url + URLPart`notificationchannel/ping?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        pingTimer = setInterval(appGlobal.remoteApp.OWA.fetchJSON, (json.TransportConnectTimeout || 5) * 60 * 1000, this.account.partition, url, timerOptions);
+        pingTimer = setInterval(fetch, (json.TransportConnectTimeout || 5) * 60 * 1000, url, timerOptions);
         // We have to abort the stream after 40 minutes,
         // because the access token will expire eventually.
         url = this.account.url + URLPart`notificationchannel/abort?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        abortTimer = setTimeout(appGlobal.remoteApp.OWA.fetchJSON, (json.KeepAliveTimeout || 40) * 60 * 1000, this.account.partition, url, timerOptions);
+        abortTimer = setTimeout(fetch, (json.KeepAliveTimeout || 40) * 60 * 1000, url, timerOptions);
         // Now set up the stream itself.
         url = this.account.url + URLPart`notificationchannel/connect?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
         let stream = await fetch(url, streamOptions);
@@ -83,7 +83,7 @@ export class OWAOffice365Notifications extends OWANotifications {
       clearTimeout(abortTimer);
       if (json?.ConnectionToken) {
         let url = this.account.url + URLPart`notificationchannel/abort?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url, timerOptions);
+        fetch(url, timerOptions);
       }
     }
   }
