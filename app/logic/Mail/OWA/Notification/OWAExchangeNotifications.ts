@@ -12,9 +12,9 @@ export class OWAExchangeNotifications extends OWANotifications {
     // This loop only ends by exception (e.g. logout) or app shutdown.
     while (true) {
       url = this.account.url + "ev.owa2?ns=PendingRequest&ev=PendingNotificationRequest&UA=0&cid=" + cid + "&X-OWA-CANARY=";
-      let stream = await appGlobal.remoteApp.OWA.streamJSON(this.account.partition, url);
+      let stream = await appGlobal.remoteApp.OWA.fetchJSON(this.account.partition, url);
       if (!stream.ok) {
-        throw new Error(`streamJSON failed with HTTP ${stream.status} ${stream.statusText}`);
+        throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
       }
       for await (let chunk of stream.body) {
         // Avoid racing with ourselves, if we caused the notification.

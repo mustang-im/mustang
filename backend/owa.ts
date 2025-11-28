@@ -45,14 +45,16 @@ export async function fetchJSON(partition: string, url: string, options: any) {
     json: null,
   };
   let session = Session.fromPartition(partition);
-  options ??= {};
-  options.headers ??= {};
   let cookies = await session.cookies.get({ name: kCanaryName });
   if (!cookies.length) {
     result.status = 401;
     return result;
   }
-  options.headers[kCanaryName] = cookies[0].value;
+  if (options) {
+    options.headers ??= {};
+    options.headers[kCanaryName] = cookies[0].value;
+  } else {
+    url += cookies[0].value;
   }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
@@ -60,12 +62,16 @@ export async function fetchJSON(partition: string, url: string, options: any) {
   result.statusText = response.statusText;
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
-  result.text = await response.text();
-  try {
-    result.json = JSON.parse(result.text);
-  } catch (ex) {
-    result.ok = false;
-    result.statusText = ex.message;
+  if (options) {
+    result.text = await response.text();
+    try {
+      result.json = JSON.parse(result.text);
+    } catch (ex) {
+      result.ok = false;
+      result.statusText = ex.message;
+    }
+  } else {
+    result.body = response.body.pipeThrough(new TextDecoderStream());
   }
   return result;
 }
@@ -123,27 +129,6 @@ export async function fetchText(partition: string, url: string, data?: Dict<stri
     });
     request.end(data ? new URLSearchParams(data).toString() : '');
   });
-}
-
-export async function streamJSON(partition: string, url: string) {
-  let result = {
-    ok: false,
-    status: 0,
-    statusText: '',
-    body: null,
-  };
-  let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: kCanaryName });
-  if (!cookies.length) {
-    result.status = 401;
-    return result;
-  }
-  let response = await session.fetch(url + cookies[0].value);
-  result.ok = response.ok;
-  result.status = response.status;
-  result.statusText = response.statusText;
-  result.body = response.body.pipeThrough(new TextDecoderStream());
-  return result;
 }
 
 export async function clearStorageData(partition: string) {
