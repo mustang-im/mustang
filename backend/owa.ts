@@ -47,10 +47,7 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
   let session = Session.fromPartition(partition);
   options ??= {};
   options.headers ??= {};
-  if (scrapedAuth[partition]) {
-    // This is Hotmail or an Office 365 environment
-    options.headers["Authorization"] ??= scrapedAuth[partition];
-  } else {
+  if (!options.headers["Authorization"]) {
     // This is on-premises Exchange
     let cookies = await session.cookies.get({ name: kCanaryName });
     if (!cookies.length) {

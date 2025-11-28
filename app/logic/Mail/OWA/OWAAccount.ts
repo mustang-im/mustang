@@ -76,10 +76,12 @@ export class OWAAccount extends MailAccount {
 
   async testLoggedIn(): Promise<boolean> {
     assert(!this.hasLoggedIn, "Only for use during login");
+    this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     let url = this.url + 'service.svc';
     let options = {
       headers: {
         Action: "FindFolder",
+        Authorization: this.authorizationHeader,
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
@@ -244,6 +246,7 @@ export class OWAAccount extends MailAccount {
     let options = {
       headers: {
         Action: aRequest.action,
+        Authorization: this.authorizationHeader,
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
