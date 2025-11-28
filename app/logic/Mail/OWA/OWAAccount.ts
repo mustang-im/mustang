@@ -90,6 +90,18 @@ export class OWAAccount extends MailAccount {
       },
       method: "POST",
     };
+    if (this.authorizationHeader) {
+      let response = await fetch(url, options);
+      if ([401, 440].includes(response.status)) {
+        return false;
+      }
+      try {
+        await response.json();
+        return true;
+      } catch (ex) {
+        return false;
+      }
+    }
     let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
     if ([401, 440].includes(response.status)) {
       return false;
@@ -260,7 +272,25 @@ export class OWAAccount extends MailAccount {
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
+      if (this.authorizationHeader) {
+        let result = await fetch(url, options);
+        response = {
+          ok: result.ok,
+          status: result.status,
+          statusText: result.statusText,
+          url: result.url,
+          contentType: result.headers.get('Content-Type'),
+          text: await result.text(),
+        };
+        try {
+          response.json = JSON.parse(response.text);
+        } catch (ex) {
+          response.ok = false;
+          response.statusText = ex.message;
+        }
+      } else {
+        response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
+      }
     } finally {
       lock.release();
     }
@@ -270,11 +300,11 @@ export class OWAAccount extends MailAccount {
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
+      if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
+        await this.logout();
+        throw new Error(response.statusText);
+      }
       throw new OWAError(response);
-    }
-    if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
-      await this.logout();
-      throw new Error(response.message);
     }
     let result = response.json;
     if (result.Body) {

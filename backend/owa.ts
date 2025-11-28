@@ -47,14 +47,12 @@ export async function fetchJSON(partition: string, url: string, options: any) {
   let session = Session.fromPartition(partition);
   options ??= {};
   options.headers ??= {};
-  if (!options.headers["Authorization"]) {
-    // This is on-premises Exchange
-    let cookies = await session.cookies.get({ name: kCanaryName });
-    if (!cookies.length) {
-      result.status = 401;
-      return result;
-    }
-    options.headers[kCanaryName] = cookies[0].value;
+  let cookies = await session.cookies.get({ name: kCanaryName });
+  if (!cookies.length) {
+    result.status = 401;
+    return result;
+  }
+  options.headers[kCanaryName] = cookies[0].value;
   }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
