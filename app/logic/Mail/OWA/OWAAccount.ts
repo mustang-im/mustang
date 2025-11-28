@@ -79,17 +79,18 @@ export class OWAAccount extends MailAccount {
     this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     let url = this.url + 'service.svc';
     let options = {
+      body: JSON.stringify(owaFindFoldersRequest(false)),
       headers: {
         Action: "FindFolder",
         Authorization: this.authorizationHeader,
+        "Content-Type": "application/json",
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
       method: "POST",
     };
-    let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
     if ([401, 440].includes(response.status)) {
       return false;
     }
@@ -244,22 +245,22 @@ export class OWAAccount extends MailAccount {
     }
     let url = this.url + 'service.svc';
     let options = {
+      body: JSON.stringify(aRequest),
       headers: {
         Action: aRequest.action,
         Authorization: this.authorizationHeader,
+        "Content-Type": "application/json",
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
       method: "POST",
     };
-    // Body needs to get passed via JPC as a regular object, not an object instance
-    let bodyJSON = Object.assign({}, aRequest);
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
     } finally {
       lock.release();
     }

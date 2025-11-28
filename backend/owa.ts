@@ -35,7 +35,7 @@ export function scrapeStartupDataAuth(partition: string) {
   });
 }
 
-export async function fetchJSON(partition: string, url: string, options: any, bodyJSON: any) {
+export async function fetchJSON(partition: string, url: string, options: any) {
   let result = {
     ok: false,
     status: 0,
@@ -55,10 +55,6 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
       return result;
     }
     options.headers[kCanaryName] = cookies[0].value;
-  }
-  if (bodyJSON) {
-    options.headers["Content-Type"] = "application/json";
-    options.body = JSON.stringify(bodyJSON);
   }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
