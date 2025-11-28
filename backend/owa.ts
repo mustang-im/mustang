@@ -46,7 +46,6 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
   };
   let session = Session.fromPartition(partition);
   options ??= {};
-  options.method ??= "POST";
   options.headers ??= {};
   if (scrapedAuth[partition]) {
     // This is Hotmail or an Office 365 environment
