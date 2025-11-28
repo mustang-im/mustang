@@ -35,7 +35,7 @@ export function scrapeStartupDataAuth(partition: string) {
   });
 }
 
-export async function fetchJSON(partition: string, url: string, options: any, bodyJSON: any) {
+export async function fetchJSON(partition: string, url: string, options: any) {
   let result = {
     ok: false,
     status: 0,
@@ -45,24 +45,16 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
     json: null,
   };
   let session = Session.fromPartition(partition);
-  options ??= {};
-  options.method ??= "POST";
-  options.headers ??= {};
-  if (scrapedAuth[partition]) {
-    // This is Hotmail or an Office 365 environment
-    options.headers["Authorization"] ??= scrapedAuth[partition];
-  } else {
-    // This is on-premises Exchange
-    let cookies = await session.cookies.get({ name: kCanaryName });
-    if (!cookies.length) {
-      result.status = 401;
-      return result;
-    }
-    options.headers[kCanaryName] = cookies[0].value;
+  let cookies = await session.cookies.get({ name: kCanaryName });
+  if (!cookies.length) {
+    result.status = 401;
+    return result;
   }
-  if (bodyJSON) {
-    options.headers["Content-Type"] = "application/json";
-    options.body = JSON.stringify(bodyJSON);
+  if (options) {
+    options.headers ??= {};
+    options.headers[kCanaryName] = cookies[0].value;
+  } else {
+    url += cookies[0].value;
   }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
@@ -70,12 +62,16 @@ export async function fetchJSON(partition: string, url: string, options: any, bo
   result.statusText = response.statusText;
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
-  result.text = await response.text();
-  try {
-    result.json = JSON.parse(result.text);
-  } catch (ex) {
-    result.ok = false;
-    result.statusText = ex.message;
+  if (options) {
+    result.text = await response.text();
+    try {
+      result.json = JSON.parse(result.text);
+    } catch (ex) {
+      result.ok = false;
+      result.statusText = ex.message;
+    }
+  } else {
+    result.body = response.body.pipeThrough(new TextDecoderStream());
   }
   return result;
 }
@@ -135,98 +131,9 @@ export async function fetchText(partition: string, url: string, data?: Dict<stri
   });
 }
 
-export async function streamJSON(partition: string, url: string) {
-  let result = {
-    ok: false,
-    status: 0,
-    statusText: '',
-    body: null,
-  };
-  let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: kCanaryName });
-  if (!cookies.length) {
-    result.status = 401;
-    return result;
-  }
-  let response = await session.fetch(url + cookies[0].value);
-  result.ok = response.ok;
-  result.status = response.status;
-  result.statusText = response.statusText;
-  result.body = response.body.pipeThrough(new TextDecoderStream());
-  return result;
-}
-
-export async function streamEvents(partition: string, url: string, options: any) {
-  let result = {
-    ok: false,
-    status: 0,
-    statusText: '',
-    body: null,
-  };
-  let session = Session.fromPartition(partition);
-  let response = await session.fetch(url, options);
-  result.ok = response.ok;
-  result.status = response.status;
-  result.statusText = response.statusText;
-  result.body = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
-  return result;
-}
-
 export async function clearStorageData(partition: string) {
   delete scrapedAuth[partition];
   let session = Session.fromPartition(partition);
   session.webRequest.onSendHeaders(null);
   await session.clearStorageData();
-}
-
-function newEvent() {
-  return {
-    name: 'message',
-    data: '',
-    id: '',
-    retry: 0,
-  };
-}
-
-class EventDecoder {
-  data = '';
-  event = newEvent();
-  transform(chunk, controller) {
-    this.data += chunk;
-    let lines = this.data.split(/\r\n?|\n/);
-    this.data = lines.pop();
-    for (let line of lines) {
-      if (!line) {
-        this.event.data = this.event.data.slice(0, -1);
-        controller.enqueue(this.event);
-        this.event = newEvent();
-        continue;
-      }
-      let value = '';
-      let pos = line.indexOf(":");
-      if (pos != -1) {
-        value = line.slice(pos + 1);
-        if (value[0] == ' ') {
-          value = value.slice(1);
-        }
-        line = line.slice(0, pos);
-      }
-      switch (line) {
-      case 'event':
-        this.event.name = value;
-        break;
-      case 'data':
-        this.event.data += value + "\n";
-        break;
-      case 'id':
-        this.event.id = value;
-        break;
-      case 'retry':
-        if (Number.isInteger(value)) {
-          this.event.retry = Number(value);
-        }
-        break;
-      }
-    }
-  }
 }

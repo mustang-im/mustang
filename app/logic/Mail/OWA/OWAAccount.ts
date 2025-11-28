@@ -76,17 +76,33 @@ export class OWAAccount extends MailAccount {
 
   async testLoggedIn(): Promise<boolean> {
     assert(!this.hasLoggedIn, "Only for use during login");
+    this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     let url = this.url + 'service.svc';
     let options = {
+      body: JSON.stringify(owaFindFoldersRequest(false)),
       headers: {
         Action: "FindFolder",
+        Authorization: this.authorizationHeader,
+        "Content-Type": "application/json",
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
+      method: "POST",
     };
-    let bodyJSON = Object.assign({}, owaFindFoldersRequest(false)); // Remove class before JPC, not needed for JSON
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    if (this.authorizationHeader) {
+      let response = await fetch(url, options);
+      if ([401, 440].includes(response.status)) {
+        return false;
+      }
+      try {
+        await response.json();
+        return true;
+      } catch (ex) {
+        return false;
+      }
+    }
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
     if ([401, 440].includes(response.status)) {
       return false;
     }
@@ -241,20 +257,40 @@ export class OWAAccount extends MailAccount {
     }
     let url = this.url + 'service.svc';
     let options = {
+      body: JSON.stringify(aRequest),
       headers: {
         Action: aRequest.action,
+        Authorization: this.authorizationHeader,
+        "Content-Type": "application/json",
         "x-anchormailbox": this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
         "x-owa-explicitlogonuser": this.emailAddress,
       },
+      method: "POST",
     };
-    // Body needs to get passed via JPC as a regular object, not an object instance
-    let bodyJSON = Object.assign({}, aRequest);
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+      if (this.authorizationHeader) {
+        let result = await fetch(url, options);
+        response = {
+          ok: result.ok,
+          status: result.status,
+          statusText: result.statusText,
+          url: result.url,
+          contentType: result.headers.get('Content-Type'),
+          text: await result.text(),
+        };
+        try {
+          response.json = JSON.parse(response.text);
+        } catch (ex) {
+          response.ok = false;
+          response.statusText = ex.message;
+        }
+      } else {
+        response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options);
+      }
     } finally {
       lock.release();
     }
@@ -264,11 +300,11 @@ export class OWAAccount extends MailAccount {
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
+      if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
+        await this.logout();
+        throw new Error(response.statusText);
+      }
       throw new OWAError(response);
-    }
-    if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
-      await this.logout();
-      throw new Error(response.message);
     }
     let result = response.json;
     if (result.Body) {
