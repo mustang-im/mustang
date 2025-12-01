@@ -1,18 +1,58 @@
-import { HTTPServer } from '../../backend/HTTPServer';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { appName, production } from '../../app/logic/build';
-import { ImapFlow } from 'imapflow';
+import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import nodemailer from 'nodemailer';
-import MailComposer from 'nodemailer/lib/mail-composer';
-import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+
+let HTTPServer: any;
+async function importHTTPServer() {
+  if (!HTTPServer) {
+    let HTTPServerModule = await import('../../backend/HTTPServer');
+    HTTPServer = HTTPServerModule.HTTPServer;
+  }
+  return HTTPServer;
+}
+
+let ImapFlow: any;
+async function importImapFlow() {
+  if (!ImapFlow) {
+    let imapFlowModule = await import('imapflow');
+    ImapFlow = imapFlowModule.ImapFlow;
+  }
+  return ImapFlow;
+}
+
+let nodemailer: any;
+async function importNodemailer() {
+  if (!nodemailer) {
+    let nodemailerModule = await import('nodemailer');
+    nodemailer = nodemailerModule.default;
+  }
+  return nodemailer;
+}
+
+let MailComposer: any;
+async function importMailComposer() {
+  if (!MailComposer) {
+    let mailComposerModule = await import('nodemailer/lib/mail-composer');
+    MailComposer = mailComposerModule.default;
+  }
+  return MailComposer;
+}
+
+let DAVClient: any;
+async function importDAVClient() {
+  if (!DAVClient) {
+    let TSDavModule = await import('tsdav');
+    DAVClient = TSDavModule.DAVClient;
+  }
+  return DAVClient;
+}
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -245,7 +285,8 @@ async function streamHTTP(url: string, data: any, config: any) {
   };
 }
 
-function newHTTPServer() {
+async function newHTTPServer() {
+  const HTTPServer = await importHTTPServer();
   return new HTTPServer();
 }
 
@@ -282,7 +323,8 @@ function showFileInFolder(filePath: string) { // TODO
 function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
-function createIMAPFlowConnection(...args): ImapFlow {
+async function createIMAPFlowConnection(...args){
+  const ImapFlow = await importImapFlow();
   return new ImapFlow(...args);
 }
 
@@ -291,22 +333,26 @@ function getSQLiteDatabase(filename: string, options: any): Database {
 }
 
 async function sendMailNodemailer(transport, mail) {
+  const nodemailer = await importNodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.sendMail(mail);
 }
 
 async function verifyServerNodemailer(transport) {
+  const nodemailer = await importNodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
+  const MailComposer = await importMailComposer();
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+async function createWebDAVClient(options: any) {
+  const DAVClient = await importDAVClient();
   return new DAVClient(options);
 }
 

@@ -28,6 +28,11 @@ export default defineConfig(({}) => {
         // To load better-sqlite3
         ignoreDynamicRequires: true,
       },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.mjs',
+        },
+      },
     },
     plugins: [
       conditionalCompile({
