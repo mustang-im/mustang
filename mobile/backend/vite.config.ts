@@ -49,9 +49,8 @@ export default defineConfig(({}) => {
       viteStaticCopy({
         targets: [
           {
-            src: 'dist/index.js',
+            src: 'dist/*',
             dest: projectDir,
-            rename: 'index.mjs',
           },
           {
             src: 'package-deploy.json',
