@@ -54,6 +54,17 @@
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BF0C0FBB2EDE1F69002D8549 /* Exceptions for "nodejs-project" folder in "App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				build/better_sqlite3.node/better_sqlite3,
+				"prebuilds/ios-arm64/bufferutil.node/bufferutil",
+			);
+			target = 504EC3031FED79650016851F /* App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFB473CD2E1DCEB2008D311F /* libTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -62,6 +73,9 @@
 		};
 		DD0EE6372DD26C52002B679D /* nodejs-project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BF0C0FBB2EDE1F69002D8549 /* Exceptions for "nodejs-project" folder in "App" target */,
+			);
 			path = "nodejs-project";
 			sourceTree = "<group>";
 		};
