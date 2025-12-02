@@ -8,6 +8,8 @@ import topLevelAwait from "vite-plugin-top-level-await";
 //import { olm } from './build/olm';
 import { webMail, isMobile, includeProprietary } from './logic/build';
 
+import { analyzer } from 'vite-bundle-analyzer';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
@@ -30,10 +32,12 @@ export default defineConfig({
     // olm,
     sentryVitePlugin({
       org: "mustang-jq",
-      project: "mustang"
+      project: "mustang",
+      disable: true,
     }),
     wasm(),
     topLevelAwait(),
+    analyzer(),
   ],
 
   build: {
