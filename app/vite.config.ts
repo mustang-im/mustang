@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import conditionalCompile from "vite-plugin-conditional-compile";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 //import { olm } from './build/olm';
 import { webMail, isMobile, includeProprietary } from './logic/build';
 
@@ -29,11 +31,13 @@ export default defineConfig({
     sentryVitePlugin({
       org: "mustang-jq",
       project: "mustang"
-    })
+    }),
+    wasm(),
+    topLevelAwait(),
   ],
 
   build: {
-    sourcemap: true
+    sourcemap: false
   },
   base: './',
 });
