@@ -60,7 +60,7 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.location) {
     lines.push(["LOCATION", event.location]);
   }
-  if (event.isOnline) {
+  if (event.isOnline && event.onlineMeetingURL) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
     lines.push(["CONFERENCE", event.onlineMeetingURL]);
   }
@@ -124,7 +124,9 @@ function datetime2ical(date: Date, timeZone: string): string {
 }
 
 function escaped(s: string, quote: boolean): string {
-  if (quote) {
+  if (!s) {
+    return "";
+  } else if (quote) {
     // param-value isn't supposed to include these at all;
     // maybe we should just delete them?
     s = s.replace(/["\\]/g, "\\$&").replace(/\r\n?|\n/g, "\\n");
