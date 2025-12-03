@@ -1,18 +1,50 @@
-import { HTTPServer } from '../../backend/HTTPServer';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { appName, production } from '../../app/logic/build';
-import { ImapFlow } from 'imapflow';
+import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
-import ky from 'ky';
-import nodemailer from 'nodemailer';
-import MailComposer from 'nodemailer/lib/mail-composer';
-import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import { lazyImport } from "../../lib/lazyImport/lazyImport";
+
+let HTTPServer: any;
+async function loadHTTPServer() {
+  if (!HTTPServer) {
+    HTTPServer = lazyImport("../../backend/HTTPServer");
+  }
+}
+
+let ky: any;
+async function loadky() {
+  if (ky) return;
+  ky = (await lazyImport("ky")).default;
+}
+
+let ImapFlow: any;
+async function loadImapFlow() {
+  if (ImapFlow) return;
+  ImapFlow = (await lazyImport("ImapFlow")).default;
+}
+
+let nodemailer: any;
+async function loadnodemailer() {
+  if (nodemailer) return;
+  nodemailer = (await lazyImport("nodemailer")).default;
+}
+
+let MailComposer: any;
+async function loadMailComposer() {
+  if (MailComposer) return;
+  MailComposer = (await lazyImport("nodemailer/lib/mail-composer")).default;
+}
+
+let DAVClient: any;
+async function loadDAVClient() {
+  if (DAVClient) return;
+  DAVClient = (await lazyImport("tsdav")).DAVClient;
+}
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -123,7 +155,8 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
  * let json = await ky.get(https://api.example.com/users", { result: "json" });
  * ```
  */
-function kyCreate(defaultOptions) {
+async function kyCreate(defaultOptions) {
+  await loadky();
   /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
    * which confuses jpc, so make it only an object. */
   let kyObj = {};
@@ -150,6 +183,7 @@ function kyCreate(defaultOptions) {
   }
   return kyObj;
 }
+console.log("ky create", await kyCreate({}));
 
 export class HTTPFetchError extends Error {
   url: string;
@@ -191,6 +225,7 @@ export class HTTPFetchError extends Error {
  */
 async function optionsHTTP(url: string, config: any) {
   // Sadly OPTIONS is not directly supported by ky
+  await loadky();
   config.method = 'OPTIONS';
   let response = await ky(url, config);
   return {
@@ -209,6 +244,7 @@ async function optionsHTTP(url: string, config: any) {
  * @param config ky config @see <https://github.com/sindresorhus/ky>
  */
 async function postHTTP(url: string, data: any, responseType: string, config: any) {
+  await loadky();
   switch (config.headers['Content-Type']) {
   case 'application/x-www-form-urlencoded':
     config.body = new URLSearchParams(data);
@@ -234,6 +270,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
  * @param config ky config @see <https://github.com/sindresorhus/ky>
  */
 async function streamHTTP(url: string, data: any, config: any) {
+  await loadky();
   config.body = data;
   let response = await ky.post(url, config);
   return {
@@ -245,9 +282,11 @@ async function streamHTTP(url: string, data: any, config: any) {
   };
 }
 
-function newHTTPServer() {
+async function newHTTPServer() {
+  await loadHTTPServer();
   return new HTTPServer();
 }
+console.log("http", await newHTTPServer());
 
 function newTrayIcon(imgDataURL: string): null {
 }
@@ -282,31 +321,38 @@ function showFileInFolder(filePath: string) { // TODO
 function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
-function createIMAPFlowConnection(...args): ImapFlow {
+async function createIMAPFlowConnection(...args): ImapFlow {
+  await loadImapFlow();
   return new ImapFlow(...args);
 }
+console.log("imap", await createIMAPFlowConnection());
 
 function getSQLiteDatabase(filename: string, options: any): Database {
   return new Database(filename, options);
 }
 
 async function sendMailNodemailer(transport, mail) {
+  await loadnodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.sendMail(mail);
 }
 
 async function verifyServerNodemailer(transport) {
+  await loadnodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
 }
+console.log("nodemailer", verifyServerNodemailer({}));
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
+  await loadMailComposer();
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+async function createWebDAVClient(options: any) {
+  await loadDAVClient();
   return new DAVClient(options);
 }
 

@@ -1,4 +1,6 @@
 import type { Plugin } from "vite";
+import MagicString from 'magic-string';
+import { findStaticImports } from 'mlly';
 
 const lazyImportRegex = /lazyImport\s*\(\s*(['"`])(.*?)\1\s*\)/g;
 
@@ -14,35 +16,45 @@ globalThis.__lazyImport__ = async function(modulePath, importer) {
 }
 `
 
-export function lazyImportPlugin(): Plugin {
+const entryFile = "index.js";
 
+export function lazyImportPlugin(): Plugin {
   let injected = false;
+
   return {
     name: "lazy-import-plugin",
     transform(code, id, options) {
+      console.log(id);
 
-      let transformedCode: string = "";
+      let s = new MagicString(code);
 
-      if (!injected) {
-        transformedCode = `${lazyImportCache}\n${code}`;
+      if (!injected && !code.includes(lazyImportCache)) {
+        const lastESMImport = findStaticImports(code).pop();
+        const indexToAppend = lastESMImport ? lastESMImport.end : 0;
+        s = s.appendRight(indexToAppend, lazyImportCache);
+        injected = true;
       }
 
       if (id.includes("node_modules")) {
-        return null;
+        return {
+          code: s.toString(),
+          map: s.generateMap(),
+        };
       }
 
       if (!lazyImportRegex.test(code)) {
         return null;
       }
 
-      transformedCode = transformedCode.replaceAll(lazyImportRegex,
+      s = s.replaceAll(lazyImportRegex,
         (match, quote, path) => {
           return `globalThis.__lazyImport__(${quote}${path}${quote}, () => import(${quote}${path}${quote}))`;
         }
       );
 
       return {
-        code: transformedCode,
+        code: s.toString(),
+        map: s.generateMap(),
       }
     },
   }

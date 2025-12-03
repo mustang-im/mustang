@@ -8,6 +8,7 @@
     "i18n": "^0.8.3",
     "iocane": "^1.0.2",
     "lodash": "^4.17.21",
+    "mlly": "^1.8.0",
     "r2": "^2.0.1",
     "svelte-collections": "^1.2.2",
     "vite-plugin-node-polyfills": "^0.22.0",

@@ -3,6 +3,7 @@ import conditionalCompile from "vite-plugin-conditional-compile";
 import nodeExternals from 'rollup-plugin-node-externals';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import esmShim from '@rollup/plugin-esm-shim';
+import { lazyImportPlugin } from "../../lib/lazyImport/lazyImportPlugin";
 
 const androidProject = '../../dist/nodejs';
 const iosProject = '../../ios/App/App/nodejs-project';
@@ -41,6 +42,7 @@ export default defineConfig(({}) => {
       }),
       // Required for proper error messages
       esmShim(),
+      lazyImportPlugin(),
       viteStaticCopy({
         targets: [
           {
@@ -53,16 +55,16 @@ export default defineConfig(({}) => {
             dest: projectDir,
             rename: 'package.json',
           },
-          {
-            src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node${isIOS ? '/better_sqlite3' : ''}`,
-            dest: `${projectDir}/build${isIOS ? '/better_sqlite3.node' : ''}`,
-            rename: isIOS ? 'better_sqlite3' : undefined,
-          },
-          {
-            src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node${isIOS ? '/bufferutil' : ''}`,
-            dest: `${projectDir}/prebuilds/${arch}${isIOS ? '/bufferutil.node' : ''}`,
-            rename: isIOS ? 'bufferutil' : undefined,
-          },
+          // {
+          //   src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node${isIOS ? '/better_sqlite3' : ''}`,
+          //   dest: `${projectDir}/build${isIOS ? '/better_sqlite3.node' : ''}`,
+          //   rename: isIOS ? 'better_sqlite3' : undefined,
+          // },
+          // {
+          //   src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node${isIOS ? '/bufferutil' : ''}`,
+          //   dest: `${projectDir}/prebuilds/${arch}${isIOS ? '/bufferutil.node' : ''}`,
+          //   rename: isIOS ? 'bufferutil' : undefined,
+          // },
         ]
       }),
     ],
