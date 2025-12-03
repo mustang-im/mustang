@@ -6,6 +6,7 @@ import conditionalCompile from "vite-plugin-conditional-compile";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import { viteLazyImport } from '@phantasm0009/lazy-import/bundler';
 //import { olm } from './build/olm';
 import { webMail, isMobile, includeProprietary } from './logic/build';
 
@@ -39,6 +40,7 @@ export default defineConfig({
     wasm(),
     topLevelAwait(),
     ViteImageOptimizer(),
+    viteLazyImport(),
     analyzer(),
   ],
 
