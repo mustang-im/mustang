@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "l10n:extract": "npx tsx l10n/extractor/extractor.ts",
+    "l10n:extract": "node l10n/extractor/extractor.ts",
     "l10n:placeholder": "npx mustang-autotranslate --input l10n/locales --service dry-run --delete-unused-strings --type key-based --exclude **/*.template.json",
     "l10n:auto-translate": "npx mustang-autotranslate --input l10n/locales --service deepl-free --config $DEEPL_API_KEY,default,1000 --delete-unused-strings --type key-based --template messages.template.json --decode-escapes=dynamic",
     "l10n:crowdin": "cd l10n && crowdin",
@@ -71,12 +71,10 @@
     "timezone-picker-svelte": "^1.0.2",
     "tiptap-extension-resize-image": "^1.2.1",
     "tsdav": "^2.1.4",
-    "volume-meter": "^2.0.1",
-    "ws": "^8.16.0"
+    "volume-meter": "^2.0.1"
   },
   "devDependencies": {
     "@composi/gestures": "^1.0.9",
-    "@crowdin/cli": "^4.0.0",
     "@phantasm0009/lazy-import": "^2.1.0",
     "@sveltejs/vite-plugin-svelte": "^2.5.3",
     "@tsconfig/svelte": "^3.0.0",
@@ -94,9 +92,8 @@
     "svelte-popperjs": "^1.3.2",
     "svgo": "^4.0.0",
     "tslib": "^2.5.0",
-    "tsx": "^4.19.3",
     "typescript": "^4.9.3",
-    "vite": "latest",
+    "vite": "4.2.0",
     "vite-bundle-analyzer": "^1.2.3",
     "vite-plugin-conditional-compile": "^1.4.5",
     "vite-plugin-image-optimizer": "^2.0.3",
