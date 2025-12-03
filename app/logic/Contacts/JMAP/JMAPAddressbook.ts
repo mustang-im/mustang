@@ -2,7 +2,7 @@ import { Addressbook } from "../Addressbook";
 import { JMAPPerson } from "./JMAPPerson";
 import { JMAPGroup } from "./JMAPGroup";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
-import type { TJMAPAddressbook } from "./JMAPContactTypes";
+import type { TJMAPAddressbook } from "./TJMAPAddressbook";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 

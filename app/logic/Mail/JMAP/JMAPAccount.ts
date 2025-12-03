@@ -1,7 +1,7 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./JMAPTypes";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ConnectError, LoginError } from "../../Abstract/Account";

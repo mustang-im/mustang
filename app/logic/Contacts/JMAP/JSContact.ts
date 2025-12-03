@@ -1,5 +1,5 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
-import type { TEmailAddress, TID, TJSContact, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './JSContactTypes';
+import type { TEmailAddress, TID, TJSContact, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './TJSContact';
 import type { StreetAddress } from '../StreetAddress';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { ensureArray } from '../../util/util';

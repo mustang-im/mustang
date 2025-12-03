@@ -1,7 +1,7 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { JMAPAddressbook } from './JMAPAddressbook';
 import { JSContact } from './JSContact';
-import type { TJSContact, TPrivateOrWork } from './JSContactTypes';
+import type { TJSContact, TPrivateOrWork } from './TJSContact';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 
 export class JMAPPerson extends Person {
