@@ -2,7 +2,7 @@ import { Chat } from "../Chat";
 import { GraphChatMessage } from "./GraphChatMessage";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
-import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./GraphChatTypes";
+import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
 import { DeliveryStatus, UserChatMessage } from "../Message";
 import { assert } from "../../util/util";
 import { ContactEntry } from "../../Abstract/Person";

@@ -1,7 +1,8 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { GraphFolder } from "./GraphFolder";
-import type { TGraphFolder, UUID } from "./GraphTypes";
+import type { TGraphFolder } from "./TGraphMail";
+import type { UUID } from "./TGraphGeneric";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import type { GraphChatAccount } from "../../Chat/Graph/GraphChatAccount";

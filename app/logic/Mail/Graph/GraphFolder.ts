@@ -3,7 +3,7 @@ import { GraphEMail } from "./GraphEMail";
 import { kMaxFetchCount, type GraphAccount } from "./GraphAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { type TGraphFolder, type TGraphEMail, TGraphEMailHeaderProperties } from "./GraphTypes";
+import { type TGraphFolder, type TGraphEMail, TGraphEMailHeaderProperties } from "./TGraphMail";
 import { Semaphore } from "../../util/Semaphore";
 import { Lock } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

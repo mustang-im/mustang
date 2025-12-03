@@ -1,4 +1,5 @@
-import type { TGraphPersonUID, DateTimeString, IDString, UUID, MIMEType } from "../../Mail/Graph/GraphTypes";
+import type { DateTimeString, IDString, UUID, MIMEType } from "../../Mail/Graph/TGraphGeneric";
+import type { TGraphPersonUID } from "../../Mail/Graph/TGraphMail";
 import type { URLString } from "../../util/util";
 
 /** <https://learn.microsoft.com/en-us/graph/api/resources/chat> */

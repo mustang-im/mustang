@@ -3,7 +3,7 @@ import { Attachment } from "../../Abstract/Attachment";
 import { NotReached } from "../../util/util";
 import { UserChatMessage } from "../Message";
 import type { GraphChatRoom } from "./GraphChatRoom";
-import type { TGraphChatMessage } from "./GraphChatTypes";
+import type { TGraphChatMessage } from "./TGraphChat";
 
 export class GraphChatMessage extends UserChatMessage {
   to: GraphChatRoom;

@@ -5,7 +5,7 @@ import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./GraphTypes";
+import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./TGraphMail";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, blobToBase64, NotReached } from "../../util/util";
