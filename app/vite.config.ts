@@ -1,4 +1,3 @@
-import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
@@ -32,11 +31,6 @@ export default defineConfig({
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
     // olm,
-    sentryVitePlugin({
-      org: "mustang-jq",
-      project: "mustang",
-      disable: true,
-    }),
     wasm(),
     topLevelAwait(),
     ViteImageOptimizer(),
