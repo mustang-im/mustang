@@ -34,7 +34,7 @@ export class OWAFolder extends Folder {
       this.dirty = true;
     }
     this.id = sanitize.nonemptystring(json.FolderId.Id);
-    this.name = sanitize.nonemptystring(json.DisplayName);
+    this.name = sanitize.nonemptylabel(json.DisplayName);
     this.countTotal = sanitize.integer(json.TotalCount);
     this.countUnread = sanitize.integer(json.UnreadCount);
     switch (json.DistinguishedFolderId) { // allowed to be null

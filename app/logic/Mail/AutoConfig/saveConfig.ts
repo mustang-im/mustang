@@ -50,14 +50,14 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   await config.saveAll();
 }
 
-export async function saveChildService(config: Account, parent: Account): Promise<void> {
-  config.realname = parent.realname;
-  config.username = parent.username;
-  config.password = parent.password;
-  config.name = parent.name;
-  config.color = parent.color;
-  config.icon = parent.icon;
-  config.mainAccount = parent;
+export async function saveChildService(config: Account, main: Account): Promise<void> {
+  config.realname = main.realname;
+  config.username = main.username;
+  config.password = main.password;
+  config.name = main.name;
+  config.color = main.color;
+  config.icon = main.icon;
+  config.mainAccount = main;
   addAccountToGlobal(config);
   await config.save();
 }

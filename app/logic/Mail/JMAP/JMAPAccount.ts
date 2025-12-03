@@ -53,6 +53,17 @@ export class JMAPAccount extends MailAccount {
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();
+
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.mainAccount == this) {
+        await addressbook.listContacts();
+      }
+    }
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        await calendar.listEvents();
+      }
+    }
   }
 
   async verifyLogin(): Promise<void> {

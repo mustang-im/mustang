@@ -49,6 +49,21 @@ export class EWSAccount extends MailAccount {
 
   async verifyLogin(): Promise<void> {
     await this.loginCommon(true);
+
+    let query = {
+      m$FindFolder: {
+        Traversal: "Shallow",
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+        },
+        m$ParentFolderIds: {
+          t$DistinguishedFolderId: [{
+            Id: "msgfolderroot",
+          }],
+        },
+      },
+    };
+    await this.callEWS(query);
   }
 
   protected async loginCommon(interactive: boolean): Promise<void> {
@@ -62,7 +77,6 @@ export class EWSAccount extends MailAccount {
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
-    await this.listFolders();
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -70,15 +84,20 @@ export class EWSAccount extends MailAccount {
     await super.login(interactive);
     await this.loginCommon(interactive);
 
+    await this.listFolders();
+
+    // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.mainAccount == this) {
-        await addressbook.listContacts();
+        addressbook.listContacts()
+          .catch(this.errorCallback);
       }
     }
-
     for (let calendar of appGlobal.calendars) {
       if (calendar.mainAccount == this) {
-        await calendar.listEvents();
+        calendar.listEvents()
+          .catch(this.errorCallback);
       }
     }
 
@@ -538,23 +557,19 @@ export class EWSAccount extends MailAccount {
       // Link (until #155) or create the default address book.
       // TODO: Support user-added address books. Compare FolderId.
       // FolderClass will be IPF.Contacts but some internal folders exist
-      if (folder.DistinguishedFolderId == "contacts") {
-        let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook | null;
-        if (!addressbook) {
-          addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.name = this.name;
-          addressbook.url = this.url;
-          addressbook.username = this.username;
-          addressbook.workspace = this.workspace;
-          addressbook.icon = this.icon;
-          addressbook.color = this.color;
-          addressbook.mainAccount = this;
+      let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
+      if (isMainAddressbook) {
+        let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
+        if (!haveAddressbook) {
+          let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
+          addressbook.initFromMainAccount(this);
+          if (!isMainAddressbook) {
+            addressbook.name = sanitize.nonemptylabel(folder.DisplayName, addressbook.name);
+          }
+          addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+          await addressbook.save();
           appGlobal.addressbooks.add(addressbook);
         }
-        addressbook.icon ??= this.icon; // Migration, remove later
-        addressbook.color ??= this.color;
-        addressbook.folderID ??= folder.FolderId.Id;
-        await addressbook.save();
       }
     }
     for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
@@ -564,23 +579,19 @@ export class EWSAccount extends MailAccount {
       // FolderClass will be IPF.Appointment except for Birthdays calendar
       // which is IPF.Appointment.Birthdays
       // Holidays calendar is read-only but it's hard to tell from the API...
-      if (folder.DistinguishedFolderId == "calendar") {
-        let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar | null;
-        if (!calendar) {
-          calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.name = this.name;
-          calendar.url = this.url;
-          calendar.username = this.username;
-          calendar.workspace = this.workspace;
-          calendar.icon = this.icon;
-          calendar.color = this.color;
-          calendar.mainAccount = this;
+      let isMainCalendar = folder.DistinguishedFolderId == "calendar";
+      if (isMainCalendar) {
+        let haveCalendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
+        if (!haveCalendar) {
+          let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+          calendar.initFromMainAccount(this);
+          if (!isMainCalendar) {
+            calendar.name = sanitize.nonemptylabel(folder.DisplayName, calendar.name);
+          }
+          calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+          await calendar.save();
           appGlobal.calendars.add(calendar);
         }
-        calendar.icon ??= this.icon; // Migration, remove later
-        calendar.color ??= this.color;
-        calendar.folderID ??= folder.FolderId.Id;
-        await calendar.save();
       }
     }
   }

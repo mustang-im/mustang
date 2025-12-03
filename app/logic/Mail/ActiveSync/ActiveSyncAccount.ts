@@ -7,9 +7,9 @@ import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
-import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
+import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
+import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
@@ -106,12 +106,18 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
-    // `listFolders` will subscribe to new user-added address books and calendars
-    for (let account of this.dependentAccounts()) {
-      if (account instanceof ActiveSyncAddressbook) {
-        account.listContacts();
-      } else if (account instanceof ActiveSyncCalendar) {
-        account.listEvents();
+    // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.mainAccount == this) {
+        addressbook.listContacts()
+          .catch(this.errorCallback);
+      }
+    }
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        calendar.listEvents()
+          .catch(this.errorCallback);
       }
     }
 
@@ -426,13 +432,14 @@ export class ActiveSyncAccount extends MailAccount {
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
         try {
           url.searchParams.set("serverID", change.ServerId);
+          let folderURL = url.toString();
           switch (change.Type) {
-          case FolderType.OtherSpecialFolder:
           case FolderType.Inbox:
           case FolderType.Drafts:
           case FolderType.Trash:
           case FolderType.Sent:
           case FolderType.Outbox:
+          case FolderType.OtherSpecialFolder:
           case FolderType.UserFolder:
             let folder = this.findFolderById(change.ServerId) || this.newFolder();
             folder.fromWBXML(change);
@@ -445,53 +452,41 @@ export class ActiveSyncAccount extends MailAccount {
             await folder.save();
             missingFolders.remove(folder);
             break;
-          case FolderType.Tasks:
-          case FolderType.UserTasks:
-            // Mustang doesn't support tasks yet, fortunately.
+          case FolderType.Contacts:
+          case FolderType.UserContacts:
+            let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
+            let isMainAddressbook = !haveAddressbook; // TODO Determine default addressbook
+            if (!haveAddressbook) {
+              let addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
+              addressbook.initFromMainAccount(this);
+              if (!isMainAddressbook) {
+                addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
+              }
+              addressbook.url = sanitize.url(folderURL);
+              addressbook.serverID = sanitize.nonemptystring(change.ServerId);
+              await addressbook.save();
+              appGlobal.addressbooks.add(addressbook);
+            }
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == change.ServerId)) as ActiveSyncCalendar | null;
-            console.log("found the ActS cal again", calendar?.name);
-            if (calendar) {
-              calendar.name = change.DisplayName;
-              calendar.serverID ??= change.ServerId;
-              calendar.icon ??= this.icon; // Migration, remove later
-              calendar.color ??= this.color;
-            } else {
-              calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
-              calendar.name = change.DisplayName;
-              calendar.serverID = change.ServerId;
-              calendar.url = url.toString();
-              calendar.username = this.username;
-              calendar.workspace = this.workspace;
-              calendar.icon = this.icon;
-              calendar.color = this.color;
-              calendar.mainAccount = this;
+            let haveCalendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
+            let isMainCalendar = !haveCalendar; // TODO Determine default calendar
+            if (!haveCalendar) {
+              let calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
+              calendar.initFromMainAccount(this);
+              if (!isMainCalendar) {
+                calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
+              }
+              calendar.url = sanitize.url(folderURL);
+              calendar.serverID = sanitize.nonemptystring(change.ServerId);
+              await calendar.save();
               appGlobal.calendars.add(calendar);
             }
             break;
-          case FolderType.Contacts:
-          case FolderType.UserContacts:
-            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == change.ServerId)) as ActiveSyncAddressbook | null;
-            console.log("found the ActS AB again", addressbook?.name);
-            if (addressbook) {
-              addressbook.name = change.DisplayName;
-              addressbook.serverID ??= change.ServerId;
-              addressbook.icon ??= this.icon; // Migration, remove later
-              addressbook.color ??= this.color;
-            } else {
-              addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
-              addressbook.name = change.DisplayName;
-              addressbook.serverID = change.ServerId;
-              addressbook.url = url.toString();
-              addressbook.username = this.username;
-              addressbook.workspace = this.workspace;
-              addressbook.icon = this.icon;
-              addressbook.color = this.color;
-              addressbook.mainAccount = this;
-              appGlobal.addressbooks.add(addressbook);
-            }
+          case FolderType.Tasks:
+          case FolderType.UserTasks:
+            // Mustang doesn't support tasks yet, fortunately.
             break;
           }
         } catch (ex) {
@@ -508,15 +503,15 @@ export class ActiveSyncAccount extends MailAccount {
           }
           let url = new URL(this.url);
           url.searchParams.set("serverID", deletion.ServerId);
-          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == deletion.ServerId)) as ActiveSyncAddressbook | undefined;
+          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && addressbook.serverID == deletion.ServerId) as ActiveSyncAddressbook | undefined;
           if (addressbook) {
             this.removePingable(addressbook);
-            addressbook.deleteIt();
+            await addressbook.deleteIt();
           }
-          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == deletion.ServerId)) as ActiveSyncCalendar | undefined;
+          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && calendar.serverID == deletion.ServerId) as ActiveSyncCalendar | undefined;
           if (calendar) {
             this.removePingable(calendar);
-            calendar.deleteIt();
+            await calendar.deleteIt();
           }
         } catch (ex) {
           this.errorCallback(ex);

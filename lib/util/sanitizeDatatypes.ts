@@ -214,6 +214,13 @@ class Sanitize {
   }
 
   /**
+     * A value which should be shown to the user in the UI as label
+     */
+  nonemptylabel(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
+    return this.nonemptystring(unchecked, fallback);
+  }
+
+  /**
    * @param unchecked either Unixtime in milliseconds (as number)
    *   or an ISO time string "2024-03-14T16:00:00+0100"
    *   or an RFC822 Date string

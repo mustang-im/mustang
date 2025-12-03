@@ -54,46 +54,51 @@ export class GraphAccount extends MailAccount {
     inbox.startPolling();
 
     /*
-    let addressbook = appGlobal.addressbooks.find((addressbook: GraphAddressbook) => addressbook.protocol == "addressbook-graph" && addressbook.url == this.url && addressbook.username == this.username) as GraphAddressbook | undefined;
-    if (!addressbook) {
-      addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
+    let haveAddressbook = appGlobal.addressbooks.find(acc => acc.mainAccount == this);
+    if (!haveAddressbook) {
+      let addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
-      addressbook.username = this.username;
-      addressbook.workspace = this.workspace;
-      addressbook.icon = this.icon;
-      addressbook.color = this.color;
+      addressbook.initFromMainAccount(this);
+      await addressbook.save();
       appGlobal.addressbooks.add(addressbook);
     }
-    addressbook.account = this;
-    await addressbook.listContacts();
 
-    let calendar = appGlobal.calendars.find((calendar: GraphCalendar) => calendar.protocol == "calendar-graph" && calendar.url == this.url && calendar.username == this.username) as GraphCalendar | undefined;
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.username;
-      calendar.workspace = this.workspace;
-      calendar.icon = this.icon;
-      calendar.color = this.color;
+    let haveCalendar = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
+    if (!haveCalendar) {
+      let calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
+      calendar.initFromMainAccount(this);
+      await calendar.save();
       appGlobal.calendars.add(calendar);
     }
-    calendar.account = this;
-    await calendar.listEvents();
     */
 
-    let chatAccount = appGlobal.chatAccounts.find((calendar: GraphChatAccount) => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username) as GraphChatAccount | undefined;
-    if (!chatAccount) {
-      chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
-      chatAccount.name = this.name;
-      chatAccount.url = this.url;
-      chatAccount.username = this.username;
-      chatAccount.workspace = this.workspace;
+    let haveChatAccount = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
+    if (!haveChatAccount) {
+      let chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
+      chatAccount.initFromMainAccount(this);
+      await chatAccount.save();
       appGlobal.chatAccounts.add(chatAccount);
     }
-    chatAccount.account = this;
-    await chatAccount.listChats();
+
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.mainAccount == this) {
+        addressbook.listContacts()
+          .catch(this.errorCallback);
+      }
+    }
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        await calendar.listEvents()
+          .catch(this.errorCallback);
+      }
+    }
+    for (let chatAccount of appGlobal.chatAccounts) {
+      if (chatAccount.mainAccount == this) {
+        await chatAccount.listChats()
+          .catch(this.errorCallback);
+      }
+    }
   }
 
   async verifyLogin(): Promise<void> {

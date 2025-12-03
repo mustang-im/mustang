@@ -8,8 +8,11 @@ import { MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {
   readonly protocol: string = "chat-graph";
-  account: GraphAccount;
   readonly chats = new MapColl<ChatPerson | Group, GraphChatRoom>;
+
+  get account(): GraphAccount {
+    return this.mainAccount as GraphAccount;
+  }
 
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.

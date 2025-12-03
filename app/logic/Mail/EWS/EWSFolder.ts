@@ -22,7 +22,7 @@ export class EWSFolder extends Folder {
 
   fromXML(xmljs: any) {
     this.id = sanitize.nonemptystring(xmljs.FolderId.Id);
-    this.name = sanitize.nonemptystring(xmljs.DisplayName);
+    this.name = sanitize.nonemptylabel(xmljs.DisplayName);
     this.countTotal = sanitize.integer(xmljs.TotalCount);
     this.countUnread = sanitize.integer(xmljs.UnreadCount);
     switch (xmljs.DistinguishedFolderId) { // allowed to be null

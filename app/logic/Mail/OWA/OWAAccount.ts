@@ -138,27 +138,28 @@ export class OWAAccount extends MailAccount {
     this.hasLoggedIn = true;
     await this.listFolders();
 
+    // `listFolders()` will subscribe to new user-added calendars
+
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books. Compare addressbook ID.
-    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook | null;
-    console.log("found the OWA AB again", addressbook?.name);
-    if (!addressbook) {
-      addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-      addressbook.url = this.url;
-      addressbook.username = this.username;
-      addressbook.workspace = this.workspace;
-      addressbook.icon = this.icon;
-      addressbook.color = this.color;
-      addressbook.mainAccount = this;
+    let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
+    if (!haveAddressbook) {
+      let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+      addressbook.initFromMainAccount(this);
+      await addressbook.save();
       appGlobal.addressbooks.add(addressbook);
     }
-    addressbook.icon ??= this.icon; // Migration, remove later
-    addressbook.color ??= this.color;
-    await addressbook.listContacts();
 
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.mainAccount == this) {
+        addressbook.listContacts()
+          .catch(this.errorCallback);
+      }
+    }
     for (let calendar of appGlobal.calendars) {
       if (calendar.mainAccount == this) {
-        await calendar.listEvents();
+        calendar.listEvents()
+          .catch(this.errorCallback);
       }
     }
 
@@ -311,24 +312,20 @@ export class OWAAccount extends MailAccount {
         // Link (until #155) or create the default calendar.
         // TODO: Support user-added calendars. Compare FolderId.
         // FolderClass is IPF.Appointment.Birthday for the Birthdays calendar
-        // N.B. Only default calendar can handle meeting requests and responses
-        if (folder.DistinguishedFolderId == "calendar") {
+        // Note: Only default calendar can handle meeting requests and responses
+        let isMainCalendar = folder.DistinguishedFolderId == "calendar";
+        if (isMainCalendar) {
           let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
           if (!calendar) {
             calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-            calendar.name = this.name;
-            calendar.url = this.url;
-            calendar.username = this.username;
-            calendar.workspace = this.workspace;
-            calendar.icon = this.icon;
-            calendar.color = this.color;
-            calendar.mainAccount = this;
+            calendar.initFromMainAccount(this);
+            if (!isMainCalendar) {
+              calendar.name = sanitize.nonemptylabel(folder.DisplayName);
+            }
+            calendar.folderID = folder.FolderId.Id;
+            await calendar.save();
             appGlobal.calendars.add(calendar);
           }
-          calendar.icon ??= this.icon; // Migration, remove later
-          calendar.color ??= this.color;
-          calendar.folderID ??= folder.FolderId.Id;
-          await calendar.save();
         }
       } // Addressbook FolderId currently handled in OWAAddressbook
     }

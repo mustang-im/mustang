@@ -104,6 +104,15 @@ export class Account extends Observable {
   dependentAccounts(): Collection<Account> {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
+  initFromMainAccount(main: Account) {
+    this.mainAccount = main;
+    this.name = main.name;
+    this.url = main.url;
+    this.color = main.color;
+    this.icon = main.icon;
+    this.workspace = main.workspace;
+    this.username = main.username;
+  }
 
   /** The cookie store to use when loading this account. For `<webview partition="persist:...">` */
   get webSessionID(): string | null {
