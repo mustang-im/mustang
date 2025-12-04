@@ -87,7 +87,7 @@
 
   {#if showGroups}
     <GroupBox classes="groups" headerName={$t`Groups`} {isEditing}>
-      <Icon data={GroupIcon} size="16px" slot="icon" />
+      <GroupIcon size="16px" slot="icon" />
       <grid class="items" slot="content">
         {#each $groups.each as entry}
           <ContactEntryUI {entry} coll={groups}
