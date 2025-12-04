@@ -299,7 +299,6 @@ export class EMail extends Message {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      console.log("Running email processor", processor.constructor.name);
       processor.process(this, postalMIME)
         .catch(console.error);
     }

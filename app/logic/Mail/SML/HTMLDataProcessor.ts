@@ -21,7 +21,6 @@ export abstract class HTMLDataProcessor extends EMailProcessor {
    * `["*"]` for all domains. */
   abstract fromDomains: string[];
   async process(email: EMail): Promise<void> {
-    console.log("checking email", email.subject);
     if (!email.hasHTML) {
       return;
     }
