@@ -1,4 +1,4 @@
-{#if $isDemo}
+{#if $isDemo && false}
   <hbox class="demo-bar">
     <hbox flex />
     <div class="message value">
