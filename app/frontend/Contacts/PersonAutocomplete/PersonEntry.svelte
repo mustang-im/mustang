@@ -15,7 +15,7 @@
 </hbox>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
   <PersonPopup personUID={person}
-    on:removePerson
+    {onRemovePerson}
     on:close={onPopupClose}
     {disabled}
     >
@@ -37,6 +37,7 @@
 
   export let person: PersonUID;
   export let disabled = false;
+  export let onRemovePerson: (person: PersonUID) => void | Promise<void>;
 
   // Popup
   let popupOpen = false;

@@ -70,7 +70,7 @@
         />
       <Button plain
         label={$t`Remove`}
-        onClick={onRemovePerson}
+        onClick={() => onRemovePerson(personUID)}
         />
       <slot name="buttons" {personUID} />
     </hbox>
@@ -93,10 +93,10 @@
   import { backgroundError, catchErrors } from "../../Util/error";
   import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
-  const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;
   export let disabled = false;
+  export let onRemovePerson: (person: PersonUID) => void | Promise<void>;
 
   let person: Person;
   let contactEntry: ContactEntry;
@@ -141,10 +141,6 @@
   function onEditPerson() {
     onClose();
     openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook));
-  }
-  function onRemovePerson() {
-    console.log("remove contact");
-    dispatch("removePerson", personUID);
   }
   function useOtherEmailAddress(emailAddress: string) {
     personUID.emailAddress = emailAddress;

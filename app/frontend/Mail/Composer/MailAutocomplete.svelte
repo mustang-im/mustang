@@ -1,7 +1,4 @@
-<PersonsAutocomplete persons={addresses} {placeholder} {tabindex} {autofocus}
-  on:addPerson={(event) => onAddPerson(event.detail)}
-  on:removePerson={(event) => onRemovePerson(event.detail)}
-  >
+<PersonsAutocomplete persons={addresses} {placeholder} {tabindex} {autofocus}>
   <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
     {person.emailAddress}
   </hbox>
@@ -26,13 +23,6 @@
   export let placeholder: string;
   export let tabindex = null;
   export let autofocus = false;
-
-  function onAddPerson(person: PersonUID) {
-    addresses.add(person);
-  }
-  function onRemovePerson(person: PersonUID) {
-    addresses.remove(person);
-  }
 </script>
 
 <style>
