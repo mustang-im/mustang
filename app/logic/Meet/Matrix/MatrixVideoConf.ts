@@ -5,7 +5,7 @@ import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
 import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
-import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
+import { getModule } from "../../../frontend/MainWindow/lazyModules";
 
 export class MatrixVideoConf extends VideoConfMeeting {
   protected _call: MatrixCall;
@@ -57,6 +57,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
   }
 
   async hangup() {
+    const { CallErrorCode } = getModule("matrix-js-sdk/lib/webrtc/call");
     this._call.hangup(CallErrorCode.UserHangup, false);
     await super.hangup();
   }
@@ -65,6 +66,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    * @param client Logged in, and the initial sync has already finished.
    */
   static async call(chatRoom: Chat, client: MatrixClient): Promise<MatrixVideoConf> {
+    const { createNewMatrixCall } = getModule("matrix-js-sdk/lib/webrtc/call");
     let call = createNewMatrixCall(client, chatRoom.id);
     assert(call, "Matrix failed to start the call");
     let meet = new MatrixVideoConf(client, call);

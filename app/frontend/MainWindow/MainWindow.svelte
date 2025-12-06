@@ -115,6 +115,7 @@
   }
 
   async function startup() {
+    await loadModules();
     await getStartObjects();
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
@@ -186,6 +187,11 @@
     targetE.dispatchEvent(urlEvent);
     event.stopPropagation();
     event.preventDefault();
+  }
+
+  globalThis.lazyModules = new Map() as Map<string, any>;
+  async function loadModules() {
+    globalThis.lazyModules.set("matrix-js-sdk/lib/webrtc/call", await import("matrix-js-sdk/lib/webrtc/call"));
   }
 </script>
 
