@@ -4,17 +4,17 @@
       <!-- Checking license... -->
     {:then}
       {#if license.isSoonExpiring}
-        <SoonExpiring {license} />
+        <SoonExpiring bind:license />
       {:else if license.isExpired}
-        <Expired {license} />
+        <Expired bind:license />
       {:else if license.valid && !wasValid}
         <PaidJustNow />
       {:else if license.valid}
         <!-- Have valid license -->
       {:else if owlLicense}
-        <Upgrade {license} {owlLicense} />
+        <Upgrade bind:license {owlLicense} />
       {:else}
-        <NeverPaid message={neverLicensedText} />
+        <NeverPaid bind:license message={neverLicensedText} />
       {/if}
     {:catch ex}
       <ErrorMessageInline {ex} />
