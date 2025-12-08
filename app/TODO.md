@@ -29,12 +29,17 @@
   * Make icon clickable
 
 # Next
+  * JMAP Calendar and Contacts
+  * Graph Calendar and Contacts
+  * PGP
+  * SML
+    * Purchase
+    * Poll
   * Actions (Filters)
     * Run on fetch, not full download
     * Save/load folder and tag
     * Move on server fails, works locally
   * Calendar
-    * Invitations
     * Free/Busy
     * Tasks
   * Contacts
