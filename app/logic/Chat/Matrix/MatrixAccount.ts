@@ -1,6 +1,6 @@
 import { ChatAccount } from '../ChatAccount';
 import { MatrixChatRoom } from './MatrixChatRoom';
-import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
+// import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
@@ -220,6 +220,7 @@ export class MatrixAccount extends ChatAccount {
     msg.contact = this.getExistingPerson(senderUserID);
     msg.outgoing = senderUserID == this.globalUserID;
   }
+  /*
   async incomingCall(conf: MatrixVideoConf) {
     try {
       let room = this.getExistingRoom(conf._call.roomId);
@@ -234,6 +235,7 @@ export class MatrixAccount extends ChatAccount {
       this.errorCallback(ex);
     }
   }
+  */
   /** Listen to messages for all rooms */
   listenToRoomMessages() {
     this.client.on("Room.timeline", async (event, room, toStartOfTimeline) => {

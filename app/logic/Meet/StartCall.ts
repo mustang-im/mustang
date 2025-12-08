@@ -8,7 +8,7 @@ import type { M3Account } from "./M3/M3Account";
 import { M3Conf } from "./M3/M3Conf";
 import type { LiveKitAccount } from "./LiveKit/LiveKitAccount";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
-import { MatrixVideoConf } from "./Matrix/MatrixVideoConf";
+// import { MatrixVideoConf } from "./Matrix/MatrixVideoConf";
 import { appGlobal } from "../app";
 import { UserError, type URLString, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
