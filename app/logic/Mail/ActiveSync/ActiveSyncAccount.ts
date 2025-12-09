@@ -457,12 +457,12 @@ export class ActiveSyncAccount extends MailAccount {
               addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.initFromMainAccount(this);
               addressbook.serverID = sanitize.nonemptystring(change.ServerId);
+              appGlobal.addressbooks.add(addressbook);
             }
             if (!isMainAddressbook) {
               addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
             }
             await addressbook.save();
-            appGlobal.addressbooks.add(addressbook);
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
@@ -472,12 +472,12 @@ export class ActiveSyncAccount extends MailAccount {
               calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.initFromMainAccount(this);
               calendar.serverID = sanitize.nonemptystring(change.ServerId);
+              appGlobal.calendars.add(calendar);
             }
             if (!isMainCalendar) {
               calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
             }
             await calendar.save();
-            appGlobal.calendars.add(calendar);
             break;
           case FolderType.Tasks:
           case FolderType.UserTasks:
