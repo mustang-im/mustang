@@ -8,37 +8,37 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 
-let HTTPServer: any;
+let HTTPServer: typeof import("../../backend/HTTPServer").HTTPServer;
 async function importHTTPServer() {
   if (HTTPServer) return;
   HTTPServer = (await import("../../backend/HTTPServer")).HTTPServer;
 }
 
-let ImapFlow: any;
+let ImapFlow: typeof import("imapflow").ImapFlow;
 async function importImapFlow() {
   if (ImapFlow) return;
   ImapFlow = (await import("imapflow")).ImapFlow;
 }
 
-let ky: any;
+let ky: typeof import("ky").default;
 async function importKy() {
   if (ky) return;
   ky = (await import("ky")).default;
 }
 
-let nodemailer: any;
+let nodemailer: typeof import("nodemailer");
 async function importNodemailer() {
   if (nodemailer) return;
   nodemailer = (await import("nodemailer")).default;
 }
 
-let MailComposer: any;
+let MailComposer: typeof import("nodemailer/lib/mail-composer");
 async function importMailComposer() {
   if (MailComposer) return;
   MailComposer = (await import("nodemailer/lib/mail-composer")).default;
 }
 
-let DAVClient: any;
+let DAVClient: typeof import("tsdav").DAVClient;
 async function importDAVClient() {
   if (DAVClient) return;
   DAVClient = (await import("tsdav")).DAVClient;
