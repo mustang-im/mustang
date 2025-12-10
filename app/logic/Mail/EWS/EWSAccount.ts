@@ -556,10 +556,10 @@ export class EWSAccount extends MailAccount {
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
       for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-        // EWS has some internal contacts folders.
-        // Fortunately they all have distinguished folder IDs,
-        // so we are only interested in the primary contacts folder
-        // or a user contact folder with no distinguished ID.
+        /* EWS has some internal contacts folders that we don't want to display.
+           Fortunately, they all have distinguished folder IDs,
+           so we are only interested in the primary user address book ("contacts")
+           or a additional user-created address books (which have no distinguished ID). */
         if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
           let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
           addressbook.initFromMainAccount(this);
