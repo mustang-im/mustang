@@ -1,13 +1,7 @@
-import { HTTPServer } from '../../backend/HTTPServer';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { appName, production } from '../../app/logic/build';
-import { ImapFlow } from 'imapflow';
+import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
-import ky from 'ky';
-import nodemailer from 'nodemailer';
-import MailComposer from 'nodemailer/lib/mail-composer';
-import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -123,10 +117,11 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
  * let json = await ky.get(https://api.example.com/users", { result: "json" });
  * ```
  */
-function kyCreate(defaultOptions) {
+async function kyCreate(defaultOptions) {
   /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
    * which confuses jpc, so make it only an object. */
   let kyObj = {};
+  const { default: ky } = await import("ky");
   let kyFunc = ky.create(defaultOptions);
   for (let name in kyFunc) {
     kyObj[name] = async (input, options) => {
@@ -192,6 +187,7 @@ export class HTTPFetchError extends Error {
 async function optionsHTTP(url: string, config: any) {
   // Sadly OPTIONS is not directly supported by ky
   config.method = 'OPTIONS';
+  const { default: ky } = await import("ky");
   let response = await ky(url, config);
   return {
     ok: response.ok,
@@ -220,6 +216,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     config.body = data;
     break;
   }
+  const { default: ky } = await import("ky");
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -235,6 +232,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
  */
 async function streamHTTP(url: string, data: any, config: any) {
   config.body = data;
+  const { default: ky } = await import("ky");
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -245,7 +243,8 @@ async function streamHTTP(url: string, data: any, config: any) {
   };
 }
 
-function newHTTPServer() {
+async function newHTTPServer() {
+  const { HTTPServer } = await import("../../backend/HTTPServer");
   return new HTTPServer();
 }
 
@@ -282,7 +281,8 @@ function showFileInFolder(filePath: string) { // TODO
 function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
-function createIMAPFlowConnection(...args): ImapFlow {
+async function createIMAPFlowConnection(...args): ImapFlow {
+  const { ImapFlow } = await import("imapflow");
   return new ImapFlow(...args);
 }
 
@@ -291,22 +291,26 @@ function getSQLiteDatabase(filename: string, options: any): Database {
 }
 
 async function sendMailNodemailer(transport, mail) {
-  let transporter = nodemailer.createTransport(transport);
+  const { createTransport } = await import("nodemailer");
+  let transporter = createTransport(transport);
   await transporter.sendMail(mail);
 }
 
 async function verifyServerNodemailer(transport) {
-  let transporter = nodemailer.createTransport(transport);
+  const { createTransport } = await import("nodemailer");
+  let transporter = createTransport(transport);
   await transporter.verify();
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
+  const { default: MailComposer } = await import("nodemailer/lib/mail-composer");
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+async function createWebDAVClient(options: any) {
+  const { DAVClient } = await import("tsdav");
   return new DAVClient(options);
 }
 
