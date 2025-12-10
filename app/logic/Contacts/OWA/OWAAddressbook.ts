@@ -32,28 +32,14 @@ export class OWAAddressbook extends Addressbook {
   }
 
   async listContactsSlow() {
-    let response = await this.account.callOWA(new OWAGetPeopleFiltersRequest());
-    let contacts = response.find(filter => !filter.IsReadOnly);
-    if (!contacts) {
-      this.persons.clear();
-      this.groups.clear();
-      return;
-    }
-    if (this.folderID == `${{}}`) { // Temporary workaround for corrupt IDs
-      this.folderID = null;
-    }
-    let newFolderID = !this.folderID; // Temporary until support for multiple address books
-    this.folderID ??= contacts.FolderId.Id;
-    if (!this.name) {
-      this.name = contacts.DisplayName;
-    }
-    if (!this.dbID || newFolderID) {
+    if (!this.dbID) {
       await this.save();
     }
 
     let persons = [];
     let groups = [];
-    let request = owaFindPersonsRequest(contacts.FolderId, kMaxFetchCount);
+    let request = owaFindPersonsRequest(this.folderID, kMaxFetchCount);
+    let response;
     do {
       response = await this.account.callOWA(request);
       for (let result of response.ResultSet) {
@@ -145,13 +131,6 @@ export class OWAAddressbook extends Addressbook {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
     return json;
-  }
-}
-
-class OWAGetPeopleFiltersRequest {
-  /** This is an empty request, but it still needs an action. */
-  get action() {
-    return "GetPeopleFilters";
   }
 }
 

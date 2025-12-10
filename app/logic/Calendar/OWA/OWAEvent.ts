@@ -161,10 +161,10 @@ export class OWAEvent extends Event {
 
   protected getExchangeSaveRequest() {
     return this.itemID ?
-      new OWAUpdateItemRequest(this.itemID, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new OWAUpdateItemRequest(this.itemID, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
-      new OWAUpdateOccurrenceRequest(this, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
-      new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+      new OWAUpdateOccurrenceRequest(this, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
+      new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
   }
 
   protected getOffice365SaveRequest() {
@@ -173,7 +173,7 @@ export class OWAEvent extends Event {
       this.parentEvent ?
       new OWAUpdateOffice365OccurrenceRequest(this) :
       // Office 365 requires an explicit saved item folder id
-      new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "DistinguishedFolderId:#Exchange", Id: "calendar" } } });
+      new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } } });
   }
 
   async saveCalendarItem() {

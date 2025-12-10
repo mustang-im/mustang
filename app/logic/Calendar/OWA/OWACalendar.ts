@@ -13,11 +13,13 @@ import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
-  folderID: string;
   declare readonly events: ArrayColl<OWAEvent>;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
+  folderID: string;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  /** Is this the default calendar that handles incoming invitations */
+  useForInvitations: boolean = false;
   listEventsOnce = new RunOnce(() => this.listEventsSlow());
 
   get account(): OWAAccount {
@@ -58,10 +60,7 @@ export class OWACalendar extends Calendar {
     }
 
     let events = new ArrayColl<OWAEvent>;
-    await this.listFolder("calendar", events);
-    /* Disabling tasks for now.
-    await this.listFolder("tasks", events);
-    */
+    await this.listFolder(events);
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
       await event.deleteLocally();
@@ -69,8 +68,8 @@ export class OWACalendar extends Calendar {
     this.events.replaceAll(events);
   }
 
-  protected async listFolder(folderID: string, events: ArrayColl<OWAEvent>) {
-    let request = owaFindEventsRequest(folderID, kMaxFetchCount);
+  protected async listFolder(events: ArrayColl<OWAEvent>) {
+    let request = owaFindEventsRequest(this.folderID, kMaxFetchCount);
     let result: any = { RootFolder: { IncludesLastItemInRange: false } };
     while (result?.RootFolder?.IncludesLastItemInRange === false) {
       result = await this.account.callOWA(request);
@@ -136,10 +135,12 @@ export class OWACalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
+    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
+    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }
