@@ -164,10 +164,10 @@ export class EWSEvent extends Event {
 
   async saveCalendarItemToServer() {
     let request: any = this.itemID ?
-      new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new EWSUpdateItemRequest(this.itemID, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
-      new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
-      new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+      new EWSUpdateOccurrenceRequest(this, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
+      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -230,7 +230,7 @@ export class EWSEvent extends Event {
   }
 
   async saveTask() {
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } } });
     request.addField("Task", "Subject", this.title, "item:Subject");
     request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");

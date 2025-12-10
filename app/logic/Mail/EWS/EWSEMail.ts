@@ -6,6 +6,7 @@ import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import type { Calendar } from "../../Calendar/Calendar";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { appGlobal } from "../../app";
@@ -198,7 +199,7 @@ export class EWSEMail extends EMail {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
     if (this.invitationMessage == InvitationMessage.Invitation) {
       // EWS always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).useForInvitations);
     }
     return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }

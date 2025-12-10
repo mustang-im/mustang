@@ -553,18 +553,19 @@ export class EWSAccount extends MailAccount {
         await folder.deleteItLocally();
       }
     }
-    for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-      // Link (until #155) or create the default address book.
-      // TODO: Support user-added address books. Compare FolderId.
-      // FolderClass will be IPF.Contacts but some internal folders exist
-      let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
-      if (isMainAddressbook) {
-        let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
-        if (!haveAddressbook) {
+    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
+    if (!haveAddressbook) {
+      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
+        /* EWS has some internal contacts folders that we don't want to display.
+           Fortunately, they all have distinguished folder IDs,
+           so we are only interested in the primary user address book ("contacts")
+           or a additional user-created address books (which have no distinguished ID). */
+        if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
           let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
           addressbook.initFromMainAccount(this);
-          if (!isMainAddressbook) {
-            addressbook.name = sanitize.nonemptylabel(folder.DisplayName, addressbook.name);
+          let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
+          if (!isMainAddressbook && folder.DisplayName) {
+            addressbook.name = `${this.name} ${folder.DisplayName}`;
           }
           addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
           await addressbook.save();
@@ -572,21 +573,17 @@ export class EWSAccount extends MailAccount {
         }
       }
     }
-    for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-      // Link (until #155) or create the default calendar.
-      // TODO: Support user-added calendars. Compare FolderId.
-      // N.B. Only default calendar can handle meeting requests and responses
-      // FolderClass will be IPF.Appointment except for Birthdays calendar
-      // which is IPF.Appointment.Birthdays
-      // Holidays calendar is read-only but it's hard to tell from the API...
-      let isMainCalendar = folder.DistinguishedFolderId == "calendar";
-      if (isMainCalendar) {
-        let haveCalendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
-        if (!haveCalendar) {
+    let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
+    if (!haveCalendar) {
+      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
+        if (folder.FolderClass == "IPF.Appointment") {
           let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
           calendar.initFromMainAccount(this);
-          if (!isMainCalendar) {
-            calendar.name = sanitize.nonemptylabel(folder.DisplayName, calendar.name);
+          let isMainCalendar = folder.DistinguishedFolderId == "calendar";
+          if (isMainCalendar) {
+            calendar.useForInvitations = true;
+          } else if (folder.DisplayName) {
+            calendar.name = `${this.name} ${folder.DisplayName}`;
           }
           calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
           await calendar.save();
