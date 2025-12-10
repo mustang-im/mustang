@@ -139,14 +139,14 @@ export class IMAPFolder extends Folder {
     let allUIDs = await this.fetchUIDList({ all: true });
 
     // Delete messages that are no longer on the server @see checkDeletedMessages()
-    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => !allUIDs.includes(msg.uid));
+    let deletedMsgs = this.messages.filterOnce(msg => !allUIDs.includes(msg.uid));
     this.messages.removeAll(deletedMsgs);
     for (let deletedMsg of deletedMsgs) {
       await deletedMsg.deleteMessageLocally();
     }
 
     // Fetch new msgs
-    let localUIDs = new ArrayColl(this.messages.contents.map((msg: IMAPEMail) => msg.uid));
+    let localUIDs = new ArrayColl(this.messages.contents.map(msg => msg.uid));
     let newUIDs = allUIDs.subtract(localUIDs).sortBy(uid => -uid);
     let newMsgs = new ArrayColl<IMAPEMail>();
     //console.log("Folder", this.account.name, this.name, "has", allUIDs.length, "msgs,", localUIDs.length, "local msgs,", newUIDs.length, "new");
@@ -315,7 +315,7 @@ export class IMAPFolder extends Folder {
     let downloadedMsgs = new ArrayColl<IMAPEMail>();
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
-      let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
+      let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount);
       needMsgs.removeAll(downloadingMsgs);
       let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
@@ -360,15 +360,15 @@ export class IMAPFolder extends Folder {
   }
 
   getEMailByUID(uid: number): IMAPEMail {
-    return this.messages.find((m: IMAPEMail) => m.uid == uid) as IMAPEMail;
+    return this.messages.find(m => m.uid == uid);
   }
 
   /** @returns UID of newest message known locally */
   protected getHighestUID(): number {
     let highest = 1;
     for (let msg of this.messages) {
-      if ((msg as IMAPEMail).uid > highest) {
-        highest = (msg as IMAPEMail).uid;
+      if (msg.uid > highest) {
+        highest = msg.uid;
       }
     }
     return highest;
@@ -380,9 +380,9 @@ export class IMAPFolder extends Folder {
     let recently = new Date();
     recently.setDate(recently.getDate() - kDaysPast);
     return this.messages
-      .filter(msg => msg.received.getTime() > recently.getTime()) // last n days
-      .sortBy((msg: IMAPEMail) => msg.uid)
-      .first as IMAPEMail; // oldest
+      .filterOnce(msg => msg.received.getTime() > recently.getTime()) // last n days
+      .sortBy(msg => msg.uid)
+      .first; // oldest
   }
 
   /** Save partial headers of newly discovered emails.
@@ -456,9 +456,9 @@ export class IMAPFolder extends Folder {
    *   Optional. By default, checks entire folder (may be slow!)
    */
   async checkDeletedMessages(fromUID: number = 1) {
-    let localMsgs = this.messages.contents.filter((msg: IMAPEMail) => msg.uid >= fromUID);
+    let localMsgs = this.messages.filterOnce(msg => msg.uid >= fromUID);
     let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.getHighestUID() });
-    let deletedMsgs = localMsgs.filter((msg: IMAPEMail) => !serverUIDs.includes(msg.uid));
+    let deletedMsgs = localMsgs.filterOnce(msg => !serverUIDs.includes(msg.uid));
 
     this.messages.removeAll(deletedMsgs);
     for (let deletedMsg of deletedMsgs) {
@@ -513,7 +513,7 @@ export class IMAPFolder extends Folder {
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
-    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => startUID < msg.uid && msg.uid < endUID);
+    let deletedMsgs = this.messages.filterOnce(msg => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
       //console.log(`Deleted msg ${deletedMsg.subject}`);
       await deletedMsg.deleteMessageLocally();
@@ -562,7 +562,7 @@ export class IMAPFolder extends Folder {
     /*
     assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
     let newFolder = await this.createSubFolder(folder.name);
-    await newFolder.moveMessagesHere(folder.messages as any as Collection<IMAPEMail>);
+    await newFolder.moveMessagesHere(folder.messages);
     await folder.deleteIt();
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */

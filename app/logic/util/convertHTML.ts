@@ -89,7 +89,7 @@ function urlAttribute(url: URLString, includeExternal = false) {
   return "";
 }
 
-function addStyles(output, styles) {
+function addStyles(output: string[], styles: CSSStyleDeclaration) {
   for (let style of [...styles].reverse()) {
     if (styles[style]) {
       styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
@@ -98,7 +98,7 @@ function addStyles(output, styles) {
   }
 };
 
-function addCSSRules(output, cssRules = []) {
+function addCSSRules(output: string[], cssRules = []) {
   for (let rule of [...cssRules].reverse()) {
     switch (rule.type) {
       case CSSRule.STYLE_RULE:
@@ -147,7 +147,7 @@ if (!DOMPurify.addHook) { // for unit tests only. TODO Load it in vitests as wel
 
 DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'style') {
-    const output = [];
+    const output: string[] = [];
     addCSSRules(output, (node as HTMLStyleElement)?.sheet?.cssRules);
     node.textContent = output.join("\n");
   }
