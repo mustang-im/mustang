@@ -201,7 +201,7 @@ export class EWSAccount extends MailAccount {
         },
       },
     }, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Header");
-    JSON2XML(aRequest, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Body");
+    JSON2XML(aRequest as Json, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Body");
     return new XMLSerializer().serializeToString(xml);
   }
 

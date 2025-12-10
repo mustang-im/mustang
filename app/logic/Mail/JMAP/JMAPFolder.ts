@@ -390,7 +390,7 @@ export class JMAPFolder extends Folder {
 
   async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
     let targetFolderID = this.id;
-    let updates = {};
+    let updates: Record<string, Record<string, boolean>> = {};
     for (let msg of messages) {
       let id = msg.pID;
       let sourceFolderID = msg.folder.id;

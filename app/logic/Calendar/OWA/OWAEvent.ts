@@ -404,13 +404,13 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
   for (let attendee of attendees) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
-      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[Number(day)])) : null;
 }
 
 function fromWindowsZone(zone: string | null): string | null {

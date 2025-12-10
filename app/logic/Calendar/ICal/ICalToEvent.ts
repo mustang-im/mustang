@@ -100,7 +100,7 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
       value = value.replace(/^MAILTO:/i, "");
-      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || InvitationResponse.Unknown));
+      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
       if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = InvitationResponse.Organizer;
         // Remove the organizer as it has less detail than an attendee

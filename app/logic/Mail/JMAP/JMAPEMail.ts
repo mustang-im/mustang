@@ -71,7 +71,7 @@ export class JMAPEMail extends EMail {
   }
 
   static getJMAPFlags(email: EMail): Record<string, boolean> {
-    let flags = {};
+    let flags: Record<string, boolean> = {};
     flags["$seen"] = email.isRead ? true : null;
     flags["$flagged"] = email.isStarred ? true : null;
     flags["$answered"] = email.isReplied ? true : null;

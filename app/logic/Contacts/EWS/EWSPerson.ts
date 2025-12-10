@@ -138,14 +138,18 @@ export class EWSPerson extends Person {
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   postalCode: "PostalCode",
   state: "State",
   country: "CountryOrRegion",
 };
-const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
+const PhysicalAddressPurposes: Record<string, string> = {
+  Business: "work",
+  Home: "home",
+  Other: "other",
+};
 const PhoneMapping: [string, string, number, string][] = [
   ["home", "tel", 2, "HomePhone"],
   ["work", "tel", 2, "BusinessPhone"],
