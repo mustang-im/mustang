@@ -148,7 +148,7 @@
 
   async function checkForShares(person: PersonUID) {
     sharedPerson = person;
-    let shares = await (account as EWSAccount).findNamedFolders(sharedPerson, ["msgfolderroot", "inbox", "contacts", "calendar"]);
+    let shares = await (account as EWSAccount).findSharedFolders(sharedPerson, ["msgfolderroot", "inbox", "contacts", "calendar"]);
     if (!shares.includes("msgfolderroot")) {
       shareAccountDisabled = await $t`The root folder is inaccessible`;
     } else if (account.dependentAccounts().find(other => other.protocol == 'ews' && other.username == sharedPerson.emailAddress)) {

@@ -685,7 +685,7 @@ export class EWSAccount extends MailAccount {
 
   async createToplevelFolder(name: string): Promise<EWSFolder> {
     if (this.sharedFolderRoot == "inbox") {
-      throw new Error(gt`You only have access to the Inbox of these shared folders`);
+      throw new Error(gt`You only have access to the Inbox of this shared account`);
     }
     let request = {
       m$CreateFolder: {
@@ -715,7 +715,7 @@ export class EWSAccount extends MailAccount {
     return folder;
   }
 
-  async findNamedFolders(person: PersonUID, names: string[]): Promise<string[]> {
+  async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -730,8 +730,8 @@ export class EWSAccount extends MailAccount {
           },
         },
         m$FolderIds: {
-          t$DistinguishedFolderId: names.map(name => ({
-            Id: name,
+          t$DistinguishedFolderId: DistinguishedIDs.map(DistinguishedID => ({
+            Id: DistinguishedID,
             t$Mailbox: {
               t$EmailAddress: person.emailAddress,
             },
