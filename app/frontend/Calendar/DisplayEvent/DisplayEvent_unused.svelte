@@ -105,7 +105,7 @@
   import RadioGroup from "../EditEvent/RadioGroup.svelte";
   import CheckboxGroup from "../EditEvent/CheckboxGroup.svelte";
   import Button from "../../Shared/Button.svelte";
-  import { Checkbox, Radio } from "@svelteuidev/core";
+  import Checkbox from "../../Shared/Checkbox.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import { getDateTimeFormatPref, t, plural } from "../../../l10n/l10n";
