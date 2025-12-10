@@ -32,7 +32,7 @@ export class OWAGroup extends Group {
     throw new NotImplemented();
     /* Don't know whether this works
     let request = new OWADeletePersonaRequest(this.personaID);
-    await this.addressbook.account.callOWA(request);
+    await this.addressbook.callOWA(request);
     //await super.deleteIt();
     */
   }

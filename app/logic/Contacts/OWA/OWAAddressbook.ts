@@ -20,6 +20,12 @@ export class OWAAddressbook extends Addressbook {
     return this.mainAccount as OWAAccount;
   }
 
+  callOWA(aRequest: any) {
+    return this.username == this.account.username
+      ? this.account.callOWA(aRequest)
+      : this.account.callOWA(aRequest, { mailbox: this.username });
+  }
+
   newPerson(): OWAPerson {
     return new OWAPerson(this);
   }
@@ -41,7 +47,7 @@ export class OWAAddressbook extends Addressbook {
     let request = owaFindPersonsRequest(this.folderID, kMaxFetchCount);
     let response;
     do {
-      response = await this.account.callOWA(request);
+      response = await this.callOWA(request);
       for (let result of response.ResultSet) {
         if (result.EmailAddress?.EmailAddress) {
           persons.push(result);
@@ -65,10 +71,10 @@ export class OWAAddressbook extends Addressbook {
     for (let result of persons) {
       try {
         let request = owaGetPersonaRequest(result.PersonaId.Id);
-        let response = await this.account.callOWA(request);
+        let response = await this.callOWA(request);
         Object.assign(result, response.Persona);
         let requestNotes = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
-        let responseNotes = await this.account.callOWA(requestNotes);
+        let responseNotes = await this.callOWA(requestNotes);
         result.Notes = responseNotes.PersonaWithNotes?.BodiesArray[0].Value.Value;
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
@@ -94,7 +100,7 @@ export class OWAAddressbook extends Addressbook {
     for (let result of groups) {
       try {
         let request: any = new OWAGetGroupInfoRequest(result.EmailAddress.ItemId.Id);
-        let response = await this.account.callOWA(request);
+        let response = await this.callOWA(request);
         result.Members = response.Members;
         request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
         response = await this.account.callOWA(request);

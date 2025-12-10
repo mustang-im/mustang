@@ -26,6 +26,12 @@ export class OWACalendar extends Calendar {
     return this.mainAccount as OWAAccount;
   }
 
+  callOWA(aRequest: any) {
+    return this.username == this.account.username
+      ? this.account.callOWA(aRequest)
+      : this.account.callOWA(aRequest, { mailbox: this.username });
+  }
+
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
   }
@@ -35,7 +41,7 @@ export class OWACalendar extends Calendar {
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
-    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
+    let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     return participants.map((participant, i) => ({
       participant,
       availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
@@ -72,7 +78,7 @@ export class OWACalendar extends Calendar {
     let request = owaFindEventsRequest(this.folderID, kMaxFetchCount);
     let result: any = { RootFolder: { IncludesLastItemInRange: false } };
     while (result?.RootFolder?.IncludesLastItemInRange === false) {
-      result = await this.account.callOWA(request);
+      result = await this.callOWA(request);
       if (!result?.RootFolder?.Items?.length) {
         break;
       }
@@ -97,11 +103,11 @@ export class OWACalendar extends Calendar {
     if (!eventIDs.length) {
       return;
     }
-    let results = await this.account.callOWA(owaGetEventsRequest(eventIDs));
+    let results = await this.callOWA(owaGetEventsRequest(eventIDs));
     let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
     let online = items.filter(item => item.IsOnlineMeeting);
     if (online.length) {
-      let results = await this.account.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
+      let results = await this.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let i = 0; i < items.length; i++) {
         online[i].OnlineMeetingJoinUrl = items[i].OnlineMeetingJoinUrl;
