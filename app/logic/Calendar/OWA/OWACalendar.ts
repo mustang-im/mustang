@@ -14,12 +14,12 @@ import { ArrayColl } from "svelte-collections";
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   declare readonly events: ArrayColl<OWAEvent>;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
   /** Is this the default calendar that handles incoming invitations */
-  usedForInvitations: boolean = false;
+  useForInvitations: boolean = false;
   listEventsOnce = new RunOnce(() => this.listEventsSlow());
 
   get account(): OWAAccount {
@@ -135,12 +135,12 @@ export class OWACalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.usedForInvitations = sanitize.boolean(json.usedForInvitations, false);
+    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.usedForInvitations = this.usedForInvitations;
+    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

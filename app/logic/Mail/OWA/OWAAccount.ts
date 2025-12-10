@@ -356,7 +356,7 @@ export class OWAAccount extends MailAccount {
         let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
         calendar.initFromMainAccount(this);
         if (folder.DistinguishedFolderId == "calendar") {
-          calendar.usedForInvitations = true;
+          calendar.useForInvitations = true;
         } else {
           calendar.name = `${this.name} ${folder.DisplayName}`;
         }
