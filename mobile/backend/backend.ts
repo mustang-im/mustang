@@ -8,42 +8,6 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 
-let HTTPServer: typeof import("../../backend/HTTPServer").HTTPServer;
-async function importHTTPServer() {
-  if (HTTPServer) return;
-  HTTPServer = (await import("../../backend/HTTPServer")).HTTPServer;
-}
-
-let ImapFlow: typeof import("imapflow").ImapFlow;
-async function importImapFlow() {
-  if (ImapFlow) return;
-  ImapFlow = (await import("imapflow")).ImapFlow;
-}
-
-let ky: typeof import("ky").default;
-async function importKy() {
-  if (ky) return;
-  ky = (await import("ky")).default;
-}
-
-let nodemailer: typeof import("nodemailer");
-async function importNodemailer() {
-  if (nodemailer) return;
-  nodemailer = (await import("nodemailer")).default;
-}
-
-let MailComposer: typeof import("nodemailer/lib/mail-composer");
-async function importMailComposer() {
-  if (MailComposer) return;
-  MailComposer = (await import("nodemailer/lib/mail-composer")).default;
-}
-
-let DAVClient: typeof import("tsdav").DAVClient;
-async function importDAVClient() {
-  if (DAVClient) return;
-  DAVClient = (await import("tsdav")).DAVClient;
-}
-
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
 const OWA = {
@@ -157,7 +121,7 @@ async function kyCreate(defaultOptions) {
   /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
    * which confuses jpc, so make it only an object. */
   let kyObj = {};
-  await importKy();
+  const { default: ky } = await import("ky");
   let kyFunc = ky.create(defaultOptions);
   for (let name in kyFunc) {
     kyObj[name] = async (input, options) => {
@@ -223,6 +187,7 @@ export class HTTPFetchError extends Error {
 async function optionsHTTP(url: string, config: any) {
   // Sadly OPTIONS is not directly supported by ky
   config.method = 'OPTIONS';
+  const { default: ky } = await import("ky");
   let response = await ky(url, config);
   return {
     ok: response.ok,
@@ -251,7 +216,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     config.body = data;
     break;
   }
-  await importKy();
+  const { default: ky } = await import("ky");
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -267,7 +232,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
  */
 async function streamHTTP(url: string, data: any, config: any) {
   config.body = data;
-  await importKy();
+  const { default: ky } = await import("ky");
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -279,7 +244,7 @@ async function streamHTTP(url: string, data: any, config: any) {
 }
 
 async function newHTTPServer() {
-  await importHTTPServer();
+  const { HTTPServer } = await import("../../backend/HTTPServer");
   return new HTTPServer();
 }
 
@@ -317,7 +282,7 @@ function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
 async function createIMAPFlowConnection(...args): ImapFlow {
-  await importImapFlow();
+  const { ImapFlow } = await import("imapflow");
   return new ImapFlow(...args);
 }
 
@@ -326,26 +291,26 @@ function getSQLiteDatabase(filename: string, options: any): Database {
 }
 
 async function sendMailNodemailer(transport, mail) {
-  await importNodemailer();
-  let transporter = nodemailer.createTransport(transport);
+  const { createTransport } = await import("nodemailer");
+  let transporter = createTransport(transport);
   await transporter.sendMail(mail);
 }
 
 async function verifyServerNodemailer(transport) {
-  await importNodemailer();
-  let transporter = nodemailer.createTransport(transport);
+  const { createTransport } = await import("nodemailer");
+  let transporter = createTransport(transport);
   await transporter.verify();
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
-  await importMailComposer();
+  const { default: MailComposer } = await import("nodemailer/lib/mail-composer");
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
 }
 
 async function createWebDAVClient(options: any) {
-  await importDAVClient();
+  const { DAVClient } = await import("tsdav");
   return new DAVClient(options);
 }
 
