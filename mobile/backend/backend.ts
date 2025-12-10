@@ -1,18 +1,48 @@
-import { HTTPServer } from '../../backend/HTTPServer';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { appName, production } from '../../app/logic/build';
-import { ImapFlow } from 'imapflow';
+import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
-import ky from 'ky';
-import nodemailer from 'nodemailer';
-import MailComposer from 'nodemailer/lib/mail-composer';
-import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+
+let HTTPServer: any;
+async function importHTTPServer() {
+  if (HTTPServer) return;
+  HTTPServer = (await import("../../backend/HTTPServer")).HTTPServer;
+}
+
+let ImapFlow: any;
+async function importImapFlow() {
+  if (ImapFlow) return;
+  ImapFlow = (await import("imapflow")).ImapFlow;
+}
+
+let ky: any;
+async function importKy() {
+  if (ky) return;
+  ky = (await import("ky")).default;
+}
+
+let nodemailer: any;
+async function importNodemailer() {
+  if (nodemailer) return;
+  nodemailer = (await import("nodemailer")).default;
+}
+
+let MailComposer: any;
+async function importMailComposer() {
+  if (MailComposer) return;
+  MailComposer = (await import("nodemailer/lib/mail-composer")).default;
+}
+
+let DAVClient: any;
+async function importDAVClient() {
+  if (DAVClient) return;
+  DAVClient = (await import("tsdav")).DAVClient;
+}
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -123,10 +153,11 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
  * let json = await ky.get(https://api.example.com/users", { result: "json" });
  * ```
  */
-function kyCreate(defaultOptions) {
+async function kyCreate(defaultOptions) {
   /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
    * which confuses jpc, so make it only an object. */
   let kyObj = {};
+  await importKy();
   let kyFunc = ky.create(defaultOptions);
   for (let name in kyFunc) {
     kyObj[name] = async (input, options) => {
@@ -220,6 +251,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     config.body = data;
     break;
   }
+  await importKy();
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -235,6 +267,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
  */
 async function streamHTTP(url: string, data: any, config: any) {
   config.body = data;
+  await importKy();
   let response = await ky.post(url, config);
   return {
     ok: response.ok,
@@ -245,7 +278,8 @@ async function streamHTTP(url: string, data: any, config: any) {
   };
 }
 
-function newHTTPServer() {
+async function newHTTPServer() {
+  await importHTTPServer();
   return new HTTPServer();
 }
 
@@ -282,7 +316,8 @@ function showFileInFolder(filePath: string) { // TODO
 function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
-function createIMAPFlowConnection(...args): ImapFlow {
+async function createIMAPFlowConnection(...args): ImapFlow {
+  await importImapFlow();
   return new ImapFlow(...args);
 }
 
@@ -291,22 +326,26 @@ function getSQLiteDatabase(filename: string, options: any): Database {
 }
 
 async function sendMailNodemailer(transport, mail) {
+  await importNodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.sendMail(mail);
 }
 
 async function verifyServerNodemailer(transport) {
+  await importNodemailer();
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
+  await importMailComposer();
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+async function createWebDAVClient(options: any) {
+  await importDAVClient();
   return new DAVClient(options);
 }
 

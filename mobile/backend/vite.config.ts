@@ -28,6 +28,11 @@ export default defineConfig(({}) => {
         // To load better-sqlite3
         ignoreDynamicRequires: true,
       },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.mjs',
+        },
+      },
     },
     plugins: [
       conditionalCompile({
@@ -44,9 +49,8 @@ export default defineConfig(({}) => {
       viteStaticCopy({
         targets: [
           {
-            src: 'dist/index.js',
+            src: 'dist/*',
             dest: projectDir,
-            rename: 'index.mjs',
           },
           {
             src: 'package-deploy.json',
