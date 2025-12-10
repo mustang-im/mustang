@@ -199,7 +199,7 @@ export class EWSEMail extends EMail {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
     if (this.invitationMessage == InvitationMessage.Invitation) {
       // EWS always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).usedForInvitations);
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).useForInvitations);
     }
     return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }

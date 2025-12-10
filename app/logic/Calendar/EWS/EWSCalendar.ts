@@ -12,12 +12,12 @@ import type { ArrayColl } from "svelte-collections";
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
   declare readonly events: ArrayColl<EWSEvent>;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
   /** Is this the default calendar that handles incoming invitations */
-  usedForInvitations: boolean = false;
+  useForInvitations: boolean = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -251,12 +251,12 @@ export class EWSCalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.usedForInvitations = sanitize.boolean(json.usedForInvitations, false);
+    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.usedForInvitations = this.usedForInvitations;
+    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

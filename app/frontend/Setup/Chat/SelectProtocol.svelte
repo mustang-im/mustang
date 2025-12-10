@@ -36,7 +36,7 @@
 
   const protocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
-    { label: "Matrix", protocolID: "matrix" },
+    //{ label: "Matrix", protocolID: "matrix" },
   ];
 
   function onContinue() {
