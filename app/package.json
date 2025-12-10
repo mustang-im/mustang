@@ -27,7 +27,6 @@
     "@popperjs/core": "^2.11.8",
     "@sentry/svelte": "^8.15.0",
     "@sentry/vite-plugin": "^2.22.6",
-    "@svelteuidev/core": "^0.14.0",
     "@tiptap/core": "^2.2.2",
     "@tiptap/extension-code": "^2.2.2",
     "@tiptap/extension-code-block-lowlight": "^2.2.2",

@@ -1,11 +1,19 @@
-<NativeSelect
-    data={dateIntervalOptions}
-    bind:value={dateIntervalSelected}
-/>
+<hbox class="container">
+  <select name="" id="" bind:value={dateIntervalSelected}>
+    {#each dateIntervalOptions as opt}
+      <option value={opt.value}>{opt.label}</option>
+    {/each}
+  </select>
+  <hbox class="icon">
+    <ChevronsUpDownIcon size={16} strokeWidth={4}/>
+  </hbox>
+</hbox>
+
+
 
 <script lang="ts">
+  import ChevronsUpDownIcon from "lucide-svelte/icons/chevrons-up-down";
   import type { DateInterval } from "./selected";
-  import { NativeSelect } from '@svelteuidev/core';
   import { t } from "../../l10n/l10n";
 
   export let dateInterval: DateInterval = 7; /* in/out */
@@ -41,4 +49,32 @@
 </script>
 
 <style>
+  .container {
+    position: relative;
+  }
+  select {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    transition: border-color 100ms;
+    height: 36px;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 34px;
+    text-align: left;
+    padding-left: 12px;
+    padding-right: 36px;
+    border-radius: 4px;
+    appearance: none;
+  }
+  .icon {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    color: var(--input-placeholder);
+    pointer-events: none;
+  }
 </style>

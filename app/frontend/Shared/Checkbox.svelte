@@ -6,29 +6,37 @@
   class:disabled
   class={classes}>
   {#if checked === true}
-    <Checkbox
+    <input type="checkbox"
       checked
       on:click={onToggle}
-      bind:id
+      {id}
       {disabled}
-      color="var(--selected-bg)"
-      size="sm" radius="sm" />
+      />
   {:else if checked == false && allowIndetermined}
-    <Checkbox
+    <input type="checkbox"
       indeterminate
       on:click={onToggle}
-      bind:id
+      {id}
       {disabled}
-      color="red"
-      size="sm" radius="sm" />
+      class="indetermined"
+      />
   {:else}
-    <Checkbox
+    <input type="checkbox"
       on:click={onToggle}
-      bind:id
+      {id}
       {disabled}
-      color="var(--selected-bg)"
-      size="sm" radius="sm" />
+      />
   {/if}
+    <hbox class="icon-wrapper">
+    {#if checked === true}
+      <CheckIcon strokeWidth={5} size={12} />
+    {:else if checked == false && allowIndetermined}
+      <MinusIcon strokeWidth={5} size={12} />
+    {/if}
+    </hbox>
+  <hbox>
+
+  </hbox>
   <label for={id}>
     <slot name="icon" />
     {label}
@@ -36,8 +44,10 @@
 </hbox>
 
 <script lang="ts">
-  import { Checkbox } from "@svelteuidev/core";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import MinusIcon from "lucide-svelte/icons/minus";
   import { createEventDispatcher } from "svelte";
+  import { randomID } from "../../logic/util/util";
   const dispatch = createEventDispatcher<{ change: boolean }>();
 
   /** in/out */
@@ -50,7 +60,7 @@
   export let disabled = false;
   export let tooltip: string | null = null;
 
-  let id: string;
+  let id: string = randomID();
 
   function onToggle() {
     if (disabled) {
@@ -87,5 +97,36 @@
   }
   hbox.indetermined label {
     opacity: 60%;
+  }
+  input {
+    cursor: pointer;
+    appearance: none;
+    background: #fff;
+    border: 1px solid var(--button-border);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    padding: 0px;
+    display: block;
+    margin: 0px;
+    transition: border-color 100ms, background-color 100ms;
+  }
+  input:checked {
+    border: none;
+    background-color: var(--selected-bg);
+    color: #fff;
+  }
+  input.indetermined {
+    border: none;
+    background-color: red;
+  }
+  .icon-wrapper {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #fff;
   }
 </style>
