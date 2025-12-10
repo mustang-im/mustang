@@ -13,7 +13,7 @@
     {:else}
       {#each $sharedWith.each as otherAccount}
         <hbox class="existing-person">
-          <hbox class="name" flex>{otherAccount.identities.first.realname}</hbox>
+          <hbox class="name" flex>{otherAccount.name}</hbox>
           <!-- Show access level -->
           <RoundButton
             label={$t`Delete`}
@@ -61,7 +61,7 @@
 </vbox>
 
 <script lang="ts">
-  import { type Account, getAllAccounts } from "../../../logic/Abstract/Account";
+  import type { Account } from "../../../logic/Abstract/Account";
   import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
   import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -78,7 +78,7 @@
   import { gt, t } from "../../../l10n/l10n";
 
   export let account: Account;
-  $: sharedWith = getAllAccounts().filterObservable(other => other.protocol == account.protocol && other.mainAccount == account);
+  $: sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
   $: skipPersons = sharedWith.map(account => new PersonUID(account.username));
 
   async function onDelete(otherAccount: Account) {
@@ -107,7 +107,7 @@
       if (!(account instanceof EWSAccount || account instanceof OWAAccount)) {
         return;
       }
-      if (account.dependentAccounts().find(other => other.username == person.emailAddress)) {
+      if (account.dependentAccounts().find(other => other.username == person.emailAddress && other.protocol == account.protocol)) {
         errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
       }

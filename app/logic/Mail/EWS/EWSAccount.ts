@@ -747,7 +747,7 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox") {
+  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox"): Promise<EWSAccount> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -764,9 +764,10 @@ export class EWSAccount extends MailAccount {
     account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
+    return account;
   }
 
-  async addSharedAddressbook(person: PersonUID) {
+  async addSharedAddressbook(person: PersonUID): Promise<EWSAddressbook> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -795,9 +796,10 @@ export class EWSAccount extends MailAccount {
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
     await this.streamNotifications(folder.FolderId.Id);
+    return addressbook;
   }
 
-  async addSharedCalendar(person: PersonUID) {
+  async addSharedCalendar(person: PersonUID): Promise<EWSCalendar> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -826,6 +828,7 @@ export class EWSAccount extends MailAccount {
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
     await this.streamNotifications(folder.FolderId.Id);
+    return calendar;
   }
 
   fromConfigJSON(json: any) {

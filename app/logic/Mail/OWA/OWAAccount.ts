@@ -521,7 +521,7 @@ export class OWAAccount extends MailAccount {
   /**
    * Used by the sharing UI to add another user's mailbox or inbox as an account
    */
-  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox") {
+  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox"): Promise<OWAAccount> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -538,13 +538,14 @@ export class OWAAccount extends MailAccount {
     account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
+    return account;
   }
 
   /**
    * Used by the sharing UI to add another user's addressbook as an account.
    * Only the default addressbook is supported.
    */
-  async addSharedAddressbook(person: PersonUID) {
+  async addSharedAddressbook(person: PersonUID): Promise<OWAAddressbook> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -557,13 +558,14 @@ export class OWAAccount extends MailAccount {
     addressbook.folderID = folder.FolderId.Id;
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
+    return addressbook;
   }
 
   /**
    * Used by the sharing UI to add another user's calendar as an account.
    * Only the default calendar is supported.
    */
-  async addSharedCalendar(person: PersonUID) {
+  async addSharedCalendar(person: PersonUID): Promise<OWACalendar> {
     if (this.mainAccount) {
       throw new NotReached();
     }
@@ -576,6 +578,7 @@ export class OWAAccount extends MailAccount {
     calendar.folderID = folder.FolderId.Id;
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
+    return calendar;
   }
 
   fromConfigJSON(json: any) {
