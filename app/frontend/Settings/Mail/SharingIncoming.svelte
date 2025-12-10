@@ -76,7 +76,6 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
-  import { ArrayColl } from "svelte-collections";
 
   export let account: Account;
   $: sharedWith = getAllAccounts().filterObservable(other => other.protocol == account.protocol && other.mainAccount == account);
@@ -125,6 +124,7 @@
 
   async function onAddPerson(person: PersonUID) {
     assert(account instanceof EWSAccount || account instanceof OWAAccount, "Not supported");
+    sharedPerson = null;
     if (sharedFolders.includes("msgfolderroot")) {
       await account.addSharedFolders(person, "msgfolderroot");
     } else if (sharedFolders.includes("inbox")) {
@@ -136,7 +136,6 @@
     if (sharedFolders.includes("calendar")) {
       await account.addSharedCalendar(person);
     }
-    sharedPerson = null;
   }
 
   function onCloseAddDialog() {

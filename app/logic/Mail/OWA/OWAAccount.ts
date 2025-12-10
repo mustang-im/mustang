@@ -288,7 +288,8 @@ export class OWAAccount extends MailAccount {
 
   async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
     if (this.mainAccount) {
-      return (this.mainAccount as OWAAccount).callOWA(aRequest, { mailbox: this.username });
+      let mainAccount = this.mainAccount as OWAAccount;
+      return await mainAccount.callOWA(aRequest, { mailbox: this.username });
     }
     if (!this.hasLoggedIn) {
       throw new LoginError(null, "Please login");
@@ -300,9 +301,9 @@ export class OWAAccount extends MailAccount {
         Action: aRequest.action,
         Authorization: this.authorizationHeader,
         "Content-Type": "application/json",
-        "x-anchormailbox": mailbox || this.emailAddress,
+        "x-anchormailbox": mailbox ?? this.emailAddress,
         "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
-        "x-owa-explicitlogonuser": mailbox || this.emailAddress,
+        "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
       },
       method: "POST",
     };
