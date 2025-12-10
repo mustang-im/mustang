@@ -105,6 +105,7 @@
     border: 1px solid var(--button-border);
     width: 20px;
     height: 20px;
+    min-width: 20px;
     border-radius: 4px;
     padding: 0px;
     display: block;

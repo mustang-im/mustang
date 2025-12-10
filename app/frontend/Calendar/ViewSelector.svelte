@@ -5,7 +5,7 @@
     {/each}
   </select>
   <hbox class="icon">
-    <ChevronsUpDownIcon size={16} strokeWidth={4}/>
+    <ChevronsUpDownIcon size={16} strokeWidth={2}/>
   </hbox>
 </hbox>
 
@@ -56,12 +56,12 @@
     background-color: transparent;
     border: 1px solid var(--border);
     transition: border-color 100ms;
-    height: 36px;
+    height: 30px;
     -webkit-tap-highlight-color: transparent;
-    line-height: 34px;
     text-align: left;
-    padding-left: 12px;
-    padding-right: 36px;
+    padding-block: 2px;
+    padding-inline-start: 12px;
+    padding-inline-end: 36px;
     border-radius: 4px;
     appearance: none;
   }
