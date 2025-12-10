@@ -17,6 +17,7 @@ import MailRead from "./Mail/Read.svelte";
 import MailSend from "./Mail/Send.svelte";
 import MailTags from "./Mail/Tags.svelte";
 import MailRules from "./Mail/Rules.svelte";
+import MailSharing from "./Mail/Sharing.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
@@ -32,6 +33,7 @@ import Debug from "./About/Debug.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
+import { EWSAccount } from "../../logic/Mail/EWS/EWSAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
@@ -73,7 +75,8 @@ accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, Accou
 // #endif
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
-accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
+accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
+accountSettings.add(new AccSetting(EWSAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
 
 // #if [DEV]
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);

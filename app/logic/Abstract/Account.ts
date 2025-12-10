@@ -101,6 +101,9 @@ export class Account extends Observable {
   set mainAccount(val: Account) {
     this._mainAccount = val;
   }
+  get isDependentAccount(): boolean {
+    return !!this._mainAccount;
+  }
   dependentAccounts(): Collection<Account> {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
