@@ -112,7 +112,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { useDebounce } from '@svelteuidev/composables';
+  import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
@@ -125,7 +125,7 @@
   let shareCalendarDisabled: boolean | string = false;
   $: account, (sharedPerson = null), (shareAccountDisabled = shareInboxDisabled = shareAddressbookDisabled = shareCalendarDisabled = $t`Please enter the email address of the shared account`);
 
-  const onChange = useDebounce(() => catchErrors(onSave), 500);
+  const onChange = debounce(() => catchErrors(onSave), 500);
   async function onSave() {
     await account.save();
   }

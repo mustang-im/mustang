@@ -43,7 +43,7 @@
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
   import { ArrayColl, Collection } from "svelte-collections";
-  import { useDebounce } from '@svelteuidev/composables';
+  import debounce from "lodash/debounce";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ clear: void }>();
@@ -65,7 +65,7 @@
   }
 
   $: isOpen, $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
-  const startSearchDebounced = useDebounce(() => startSearch(), 300);
+  const startSearchDebounced = debounce(() => startSearch(), 300);
   async function startSearch() {
     try {
       let searchTerm = $globalSearchTerm;
