@@ -27,7 +27,9 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
+// #if [DEV && MOBILE]
 import Debug from "./About/Debug.svelte";
+// #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
@@ -40,7 +42,6 @@ import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
 import { gt } from "../../l10n/l10n";
-import { production } from "../../logic/build";
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 
@@ -156,8 +157,8 @@ about.subCategories.addAll([
 ]);
 settingsCategories.add(about);
 
-if (!production) {
-  about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
-}
+// #if [DEV && MOBILE]
+about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
+// #endif
 
 export const categoriesLoaded = true; /* dummy */
