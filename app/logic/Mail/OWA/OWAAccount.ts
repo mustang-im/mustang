@@ -159,15 +159,15 @@ export class OWAAccount extends MailAccount {
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      for (let filter of response) {
+      for (let ab of response) {
         // Exclude internal contacts folders.
-        if (filter.IsReadOnly || !filter.FolderId?.Id) {
+        if (ab.IsReadOnly || !ab.FolderId?.Id) {
           continue;
         }
         let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
         addressbook.initFromMainAccount(this);
-        addressbook.name = `${this.name} ${filter.DisplayName}`;
-        addressbook.folderID = filter.FolderId.Id;
+        addressbook.name = `${this.name} ${ab.DisplayName}`;
+        addressbook.folderID = ab.FolderId.Id;
         appGlobal.addressbooks.add(addressbook);
         addressbook.save();
       }
@@ -352,7 +352,7 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (!haveCalendar && folder.FolderClass == "IPF.Appointment") {
+      } else if (folder.FolderClass == "IPF.Appointment" && !haveCalendar) {
         let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
         calendar.initFromMainAccount(this);
         if (folder.DistinguishedFolderId == "calendar") {
