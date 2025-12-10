@@ -83,7 +83,7 @@
   import { rtlLocales } from "../../l10n/list";
   import { appName } from "../../logic/build";
   import { onMount } from "svelte";
-  import { useDebounce } from "@svelteuidev/composables";
+  import debounce from "lodash/debounce";
   import { Router } from "svelte-navigator";
   // #if [MOBILE]
   import { SplashScreen } from '@capacitor/splash-screen';
@@ -92,7 +92,7 @@
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   let sidebar;
-  const setSidebarDebounced = useDebounce(() => sidebar = $sidebarApp?.sidebar);
+  const setSidebarDebounced = debounce(() => sidebar = $sidebarApp?.sidebar);
   $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   categoriesLoaded; /* make sure to import the file, so that that categories load */
