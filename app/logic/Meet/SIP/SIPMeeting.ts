@@ -8,7 +8,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
 import { assert, sleep, type URLString } from "../../util/util";
-import { UserAgent, type Session, Inviter, type Invitation, SessionState } from "sip.js";
+import type { UserAgent, Session, Inviter, Invitation, SessionState } from "sip.js";
 
 export class SIPMeeting extends VideoConfMeeting {
   /* Authentication */
@@ -79,6 +79,7 @@ export class SIPMeeting extends VideoConfMeeting {
   };
 
   async call() {
+    const { UserAgent, Inviter, SessionState } = await import("sip.js");
     assert(this.id, "Need to create the call first");
     this.state = MeetingState.OutgoingCall;
     await this.login(true);
@@ -149,7 +150,8 @@ export class SIPMeeting extends VideoConfMeeting {
     }
   }
 
-  onIncomingCall(invitation: Invitation) {
+  async onIncomingCall(invitation: Invitation) {
+    const { SessionState } = await import("sip.js");
     this.invitation = invitation;
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
@@ -158,6 +160,7 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   async answer() {
+    const { SessionState } = await import("sip.js");
     await super.answer();
     console.log("accept - invitation state", this.invitation.state);
     assert(this.invitation.state == SessionState.Initial, "Invitation in wrong state " + this.invitation.state);
@@ -167,6 +170,7 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   async hangup() {
+    const { SessionState } = await import("sip.js");
     console.log("hangup");
     if (this.session) {
       console.log("session state", this.session.state);

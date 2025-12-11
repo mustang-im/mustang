@@ -3,7 +3,7 @@ import { notifyChangedProperty, notifyChangedAccessor } from "../../util/Observa
 import { Lock } from "../../util/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
+import type { LocalParticipant, LocalTrack } from "livekit-client";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
@@ -29,6 +29,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   }
 
   async setCameraOn(on: boolean, device?: string) {
+    const { Track } = await import("livekit-client");
     device ??= this._cameraDevice;
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     let lock = await this._lock.lock();
@@ -48,12 +49,13 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
         deviceId: device,
       });
       this._cameraDevice = device;
-      this.cameraMicStream = this.getCameraMicStream();
+      this.cameraMicStream = await this.getCameraMicStream();
     } finally {
       lock.release();
     }
   }
   async setMicOn(on: boolean, device?: string) {
+    const { Track } = await import("livekit-client");
     device ??= this._micDevice;
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     let lock = await this._lock.lock();
@@ -73,7 +75,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
         autoGainControl: true,
       });
       this._micDevice = device;
-      this.cameraMicStream = this.getCameraMicStream();
+      this.cameraMicStream = await this.getCameraMicStream();
     } finally {
       lock.release();
     }
@@ -90,13 +92,14 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
     let lock = await this._lock.lock();
     try {
       await this.localParticipant.setScreenShareEnabled(on);
-      this.screenStream = this.getScreenStream();
+      this.screenStream = await this.getScreenStream();
     } finally {
       lock.release();
     }
   }
 
-  protected getCameraMicStream(): MediaStream {
+  protected async getCameraMicStream(): Promise<MediaStream> {
+    const { Track } = await import("livekit-client");
     let mediaStream = new MediaStream();
     for (let trackPub of this.localParticipant.getTrackPublications()) {
       let isCam = trackPub.source == Track.Source.Camera || trackPub.source == Track.Source.Microphone;
@@ -109,7 +112,8 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
     return mediaStream;
   }
 
-  protected getScreenStream(): MediaStream {
+  protected async getScreenStream(): Promise<MediaStream> {
+    const { Track } = await import("livekit-client");
     let mediaStream = new MediaStream();
     for (let trackPub of this.localParticipant.getTrackPublications()) {
       let isScreen = trackPub.source == Track.Source.ScreenShare || trackPub.source == Track.Source.ScreenShareAudio;
