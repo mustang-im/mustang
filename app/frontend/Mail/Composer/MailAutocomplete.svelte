@@ -1,7 +1,4 @@
 <PersonsAutocomplete persons={addresses} {placeholder} {tabindex} {autofocus}>
-  <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
-    {person.emailAddress}
-  </hbox>
   <slot name="end" slot="end" />
   <hbox class="addressbooks" slot="person-popup-bottom" let:person class:top-border={person?.person?.emailAddresses.length > 1}>
     {#if person?.person}
@@ -26,12 +23,6 @@
 </script>
 
 <style>
-  .recipient-email-address {
-    opacity: 50%;
-    overflow: hidden;
-    align-items: center;
-  }
-
   .addressbooks {
     padding: 12px;
     max-width: 280px;

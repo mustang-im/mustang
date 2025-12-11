@@ -5,6 +5,9 @@
       <hbox flex class="name font-normal">{person.name}</hbox>
     </hbox>
     <hbox class="bottom-row">
+      <hbox class="email-address font-small" let:person>
+        {person.emailAddress}
+      </hbox>
       <slot name="bottom-row" />
     </hbox>
   </vbox>
@@ -24,6 +27,11 @@
   }
   .name {
   }
+  .email-address {
+    opacity: 50%;
+    overflow: hidden;
+    align-items: center;
+  }
   .person :global(.avatar) {
     margin: 0px;
     margin-inline-end: 6px;
@@ -33,5 +41,6 @@
     height: 16px;
     overflow: hidden;
     white-space: nowrap;
+    align-items: center;
   }
 </style>
