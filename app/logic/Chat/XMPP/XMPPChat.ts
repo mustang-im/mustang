@@ -6,7 +6,6 @@ import { ChatPerson } from "../Person";
 import { ContactBase } from "../../Abstract/Contact";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
-import type { JXT } from "stanza";
 import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends Chat {

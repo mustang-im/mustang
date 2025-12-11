@@ -33,7 +33,7 @@ export class XMPPAccount extends ChatAccount {
   };
   async connect() {
     this.jid = getJID(this.username);
-    const { default: XMPP } = await import("stanza");
+    const XMPP = await import("stanza");
     this.client = await XMPP.createClient({
       jid: this.jid,
       password: this.password,
