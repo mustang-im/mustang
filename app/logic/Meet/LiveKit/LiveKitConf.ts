@@ -2,7 +2,7 @@ import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
 import { LiveKitMediaDeviceStreams } from "./LiveKitMediaDeviceStreams";
-import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
+import type { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
 import { ensureLicensed, getSavedTicket } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -217,6 +217,7 @@ export class LiveKitConf extends VideoConfMeeting {
   }
 
   protected async participantJoined(remoteParticipant: RemoteParticipant): Promise<void> {
+    const { LiveKitRemoteParticipant } = await import("./LiveKitRemoteParticipant");
     let participant = new LiveKitRemoteParticipant(remoteParticipant, this);
     this.participants.add(participant);
   }
