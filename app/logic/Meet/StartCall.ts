@@ -1,15 +1,14 @@
 import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
-import { MeetingParticipant } from "./Participant";
-import type { Person, ContactEntry } from "../Abstract/Person";
-import type { Group } from "../Abstract/Group";
-/*
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
+import { MeetingParticipant } from "./Participant";
 import type { ChatAccount } from "../Chat/ChatAccount";
 import type { Chat } from "../Chat/Chat";
+import type { M3Account } from "./M3/M3Account";
+import { M3Conf } from "./M3/M3Conf";
+import type { LiveKitAccount } from "./LiveKit/LiveKitAccount";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./Matrix/MatrixVideoConf";
-*/
 import { appGlobal } from "../app";
 import { UserError, type URLString, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -24,10 +23,7 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
   call.state = MeetingState.OutgoingCallConfirm;
   appGlobal.meetings.add(call);
   return call;
-}
 
-/*
-export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeting> {
   let haveChat = getExistingChat(to);
   if (!haveChat) {
     if (to instanceof Person) {
@@ -117,7 +113,6 @@ function haveAccountType(type: typeof ChatAccount): boolean {
 function entryIsMatrix(contact: ContactEntry) {
   return contact.purpose?.toLowerCase() == "matrix";
 }
-*/
 
 export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {
   throw new Error("Not yet implemented. Try a video call.");

@@ -4,16 +4,8 @@ import { MeetingParticipant } from "../Participant";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
-//import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
-//import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
-// dummy, remove when enabling;
-type MatrixClient = any;
-type MatrixCall = any;
-function createNewMatrixCall() { return {}; };
-enum CallErrorCode {
-  UserHangup = 1,
-};
-
+import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
+import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
 
 export class MatrixVideoConf extends VideoConfMeeting {
   protected _call: MatrixCall;
@@ -100,7 +92,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    *
    * This `listenForCalls()` function should normally be called only once in the lifetime of the app.
    */
-  static listenForCalls(client: MatrixClient, incomingCallCallback: (conf: MatrixVideoConf) => Promise<void>) {
+  static listenForCalls(client: MatrixClient, incomingCallCallback: (MatrixVideoConf) => Promise<void>) {
     client.on("Call.incoming", (call: MatrixCall) => {
       console.log("Incoming call", call.roomId, call);
       let conf = new MatrixVideoConf(client, call);
