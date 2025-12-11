@@ -60,24 +60,26 @@
         border={false}
         />
     {/if}
-    {#if meeting instanceof FakeMeeting}
-      <RoundButton
-        label={$t`Add participant`}
-        classes="large"
-        onClick={() => meeting.addParticipant()}
-        icon={AddIcon}
-        iconSize="24px"
-        border={false}
-        />
-      <RoundButton
-        label={$t`Add participant`}
-        classes="large"
-        onClick={() => meeting.removeParticipant()}
-        icon={RemoveIcon}
-        iconSize="24px"
-        border={false}
-        />
-    {/if}
+    {#await import("../../logic/Meet/FakeMeeting") then module}
+      {#if meeting instanceof module.FakeMeeting}
+        <RoundButton
+          label={$t`Add participant`}
+          classes="large"
+          onClick={() => meeting.addParticipant()}
+          icon={AddIcon}
+          iconSize="24px"
+          border={false}
+          />
+        <RoundButton
+          label={$t`Add participant`}
+          classes="large"
+          onClick={() => meeting.removeParticipant()}
+          icon={RemoveIcon}
+          iconSize="24px"
+          border={false}
+          />
+      {/if}
+    {/await}
     <RoundButton
       label={`Change view of participant videos`}
       classes="view-selector large"
@@ -116,7 +118,6 @@
   import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
   import SelectScreenShare from "./SelectScreenShare.svelte";
