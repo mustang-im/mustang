@@ -245,6 +245,17 @@ export class Folder extends Observable implements TreeItem<Folder> {
     }
   }
 
+  /**
+   * Triggers a full resync of the folder.
+   * Works only for protocols that have a sync key (e.g. EWS).
+   * For some protocols (e.g. JMAP), might trigger a full resync of
+   * *every* folder (in the account), on their respective next sync.
+   */
+  async fullResync(): Promise<void> {
+    this.syncState = null;
+    await this.listMessages();
+  }
+
   get children(): Collection<Folder> {
     return this.subFolders as any as Collection<Folder>;
   }
