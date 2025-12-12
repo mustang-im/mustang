@@ -7,7 +7,7 @@
   <!-- TODO make it clickable to navigate to main account Sharing settings -->
 {:else}
   <SharingIncoming {account}  />
-  <SharingOutgoing {account} />
+  <!--<SharingOutgoing {account} />-->
 {/if}
 
 <script lang="ts">
