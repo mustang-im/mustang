@@ -23,7 +23,7 @@
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url} {title} {partition} />
 // #else
-<iframe bind:this={webviewE} src={url} {title} />
+<iframe bind:this={webviewE} src={url} {title} sandbox="allow-scripts allow-forms" />
 // #endif
 
 <script lang="ts">
