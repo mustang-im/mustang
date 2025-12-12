@@ -68,6 +68,7 @@ export async function testIncoming(person: Person) {
 }
 
 export async function callSelected(person: Person): Promise<VideoConfMeeting> {
+  const { faker } = await import("@faker-js/faker");
   let callee = new MeetingParticipant();
   callee.name = person.name;
   callee.picture = person.picture;
