@@ -4,7 +4,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { LiveKitConf } from "./LiveKitConf";
-import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "livekit-client";
+import type { RemoteParticipant, Track as TrackType, TrackPublication } from "livekit-client";
 
 export class LiveKitRemoteParticipant extends MeetingParticipant {
   rp: RemoteParticipant;
@@ -59,7 +59,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     }
   }
 
-  async addTrack(track: Track) {
+  async addTrack(track: TrackType) {
     console.log("Participant", this.rp.identity, "added a track", track.mediaStream, track.mediaStream.getTracks());
     assert(track.mediaStream, "Need mediaStream for Track");
     let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
@@ -87,7 +87,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
     this.conf.participants._notifySvelteOfChanges();
   }
-  async removeTrack(track: Track) {
+  async removeTrack(track: TrackType) {
     console.log("Participant", this.rp.identity, "removed a track");
     let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
     let video = isScreen ? this.screenShare : this.video;
@@ -122,4 +122,33 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       this.addTrack(trackPub.videoTrack);
     }
   }
+}
+
+// <copied from="https://github.com/livekit/client-sdk-js/blob/main/src/room/track/Track.ts#L423" reason="avoid import" />
+export namespace Track {
+  export enum Kind {
+    Audio = 'audio',
+    Video = 'video',
+    Unknown = 'unknown',
+  }
+  export enum Source {
+    Camera = 'camera',
+    Microphone = 'microphone',
+    ScreenShare = 'screen_share',
+    ScreenShareAudio = 'screen_share_audio',
+    Unknown = 'unknown',
+  }
+}
+// <copied from="https://github.com/livekit/client-sdk-js/blob/main/src/room/events.ts#L357" reason="avoid import" />
+export enum ParticipantEvent {
+  TrackPublished = 'trackPublished',
+  TrackSubscribed = 'trackSubscribed',
+  TrackUnpublished = 'trackUnpublished',
+  TrackUnsubscribed = 'trackUnsubscribed',
+  TrackMuted = 'trackMuted',
+  TrackUnmuted = 'trackUnmuted',
+  ParticipantMetadataChanged = 'participantMetadataChanged',
+  ParticipantNameChanged = 'participantNameChanged',
+  IsSpeakingChanged = 'isSpeakingChanged',
+  AttributesChanged = 'attributesChanged',
 }

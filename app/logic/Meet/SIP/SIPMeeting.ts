@@ -8,7 +8,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
 import { assert, sleep, type URLString } from "../../util/util";
-import { UserAgent, type Session, Inviter, type Invitation, SessionState } from "sip.js";
+import type { Session, Inviter, Invitation } from "sip.js";
 
 export class SIPMeeting extends VideoConfMeeting {
   /* Authentication */
@@ -79,6 +79,7 @@ export class SIPMeeting extends VideoConfMeeting {
   };
 
   async call() {
+    const { UserAgent, Inviter } = await import("sip.js");
     assert(this.id, "Need to create the call first");
     this.state = MeetingState.OutgoingCall;
     await this.login(true);
@@ -212,4 +213,13 @@ export class SIPMeeting extends VideoConfMeeting {
     }
     this.session.stateChange.addListener(listener);
   }
+}
+
+// <copied from="https://github.com/onsip/SIP.js/blob/master/src/api/session-state.ts#L18" reason="avoid import" />
+enum SessionState {
+  Initial = "Initial",
+  Establishing = "Establishing",
+  Established = "Established",
+  Terminating = "Terminating",
+  Terminated = "Terminated"
 }

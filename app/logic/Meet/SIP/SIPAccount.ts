@@ -3,7 +3,7 @@ import { MeetAccount } from "../MeetAccount";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import { UserAgent, Registerer, type Invitation } from "sip.js";
+import type { UserAgent, Registerer, Invitation } from "sip.js";
 
 export class SIPAccount extends MeetAccount {
   readonly protocol: string = "sip";
@@ -21,6 +21,7 @@ export class SIPAccount extends MeetAccount {
   canCreateURL = false;
 
   async login(interactive: boolean, relogin = false): Promise<void> {
+    const { UserAgent, Registerer } = await import("sip.js");
     let urlParsed = new URL(this.url);
     assert(urlParsed.protocol == "wss:", "Need WebSocket URL");
     this.mySIPID = "sip:" + this.username + "@" + this.domain;

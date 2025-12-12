@@ -9,7 +9,7 @@ import { appGlobal } from '../../app';
 import { ConnectError } from '../../Abstract/Account';
 import { gt } from '../../../l10n/l10n';
 import { MapColl } from 'svelte-collections';
-import * as XMPP from 'stanza';
+import type * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
@@ -33,6 +33,7 @@ export class XMPPAccount extends ChatAccount {
   };
   async connect() {
     this.jid = getJID(this.username);
+    const XMPP = await import("stanza");
     this.client = await XMPP.createClient({
       jid: this.jid,
       password: this.password,
