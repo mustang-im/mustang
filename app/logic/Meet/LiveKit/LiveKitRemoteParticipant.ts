@@ -4,7 +4,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { LiveKitConf } from "./LiveKitConf";
-import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "livekit-client";
+import type { RemoteParticipant, Track, TrackPublication } from "livekit-client";
+import { Track as TrackEnum, ParticipantEvent } from "./LiveKitEnums";
 
 export class LiveKitRemoteParticipant extends MeetingParticipant {
   rp: RemoteParticipant;
@@ -62,7 +63,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
   async addTrack(track: Track) {
     console.log("Participant", this.rp.identity, "added a track", track.mediaStream, track.mediaStream.getTracks());
     assert(track.mediaStream, "Need mediaStream for Track");
-    let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
+    let isScreen = track.source == TrackEnum.Source.ScreenShare || track.source == TrackEnum.Source.ScreenShareAudio;
     let video: VideoStream;
     if (isScreen) {
       if (!this.screenShare) {
@@ -78,7 +79,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       }
       video = this.video;
     }
-    if (track.kind == Track.Kind.Video) {
+    if (track.kind == TrackEnum.Kind.Video) {
       video.hasVideo = true;
     }
 
@@ -89,7 +90,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
   }
   async removeTrack(track: Track) {
     console.log("Participant", this.rp.identity, "removed a track");
-    let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
+    let isScreen = track.source == TrackEnum.Source.ScreenShare || track.source == TrackEnum.Source.ScreenShareAudio;
     let video = isScreen ? this.screenShare : this.video;
     if (!video) {
       return;

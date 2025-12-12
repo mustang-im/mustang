@@ -4,6 +4,7 @@ import { Lock } from "../../util/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { LocalParticipant, LocalTrack } from "livekit-client";
+import { Track } from "./LiveKitEnums";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
@@ -120,15 +121,5 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
       mediaStream.addTrack(track.mediaStreamTrack);
     }
     return mediaStream;
-  }
-}
-
-export namespace Track {
-  export enum Source {
-    Camera = 'camera',
-    Microphone = 'microphone',
-    ScreenShare = 'screen_share',
-    ScreenShareAudio = 'screen_share_audio',
-    Unknown = 'unknown',
   }
 }
