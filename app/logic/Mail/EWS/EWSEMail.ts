@@ -64,12 +64,12 @@ export class EWSEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(sanitize.emailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(getEmailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
     }
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
@@ -268,5 +268,63 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(sanitize.emailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+}
+
+/**
+ * Converts X.400 into pseudo email addresses.
+ * Alternative to sanitize.emailAddress()
+ * @param emailAddress email address or X.400 address
+ * @returns email address
+ * @throws when not valid
+ */
+function getEmailAddress(emailAddress: string): string {
+  if (emailAddress.startsWith("/o=")) {
+    return convertX400ToEmailAddress(emailAddress);
+  }
+  return sanitize.emailAddress(emailAddress);
+}
+
+/**
+ * Converts X.400 into pseudo email addresses.
+ * @param x400 X.400 address
+ * @returns pseudo email address
+ */
+export function convertX400ToEmailAddress(x400: string): string {
+  let parts = x400.split("/");
+  let username = "user";
+  let domain = "x400";
+  for (let part of parts) {
+    if (!part) {
+      continue;
+    }
+    if (part.startsWith("o=")) {
+      part = part.substring(3);
+      let company = ensureAlphaNum(part);
+      domain = company + "." + domain;
+    }
+    if (part.startsWith("ou=")) {
+      part = part.substring(3);
+      const prefix = "Exchange Organizational Unit (";
+      const suffix = ")";
+      if (part.startsWith(prefix)) {
+        part = part.substring(prefix.length, part.length - suffix.length);
+      }
+      let department = ensureAlphaNum(part);
+      domain = department + "." + domain;
+    }
+    if (part.startsWith("cn=Recipient")) {
+      continue;
+    }
+    if (part.startsWith("cn=")) {
+      part = part.substring(3);
+      username = ensureAlphaNum(part);
+    }
+  }
+  console.log("X.400 to email", username + "@" + domain);
+  return sanitize.emailAddress(username + "@" + domain);
+}
+
+function ensureAlphaNum(str: string): string {
+  return str.replace(/[^a-zA-Z0-9\-]/g, "");
 }
