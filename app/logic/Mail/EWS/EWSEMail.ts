@@ -287,13 +287,17 @@ function getEmailAddress(emailAddress: string): string {
 
 /**
  * Converts X.400 into pseudo email addresses.
+ *
+ * This is just as a fail-safe. When we download the MIME and parse it,
+ * we should be getting the real Internet email addresses anyways.
+ *
  * @param x400 X.400 address
  * @returns pseudo email address
  */
 export function convertX400ToEmailAddress(x400: string): string {
   let parts = x400.split("/");
   let username = "user";
-  let domain = "x400";
+  let domain = "xfourhundred";
   for (let part of parts) {
     if (!part) {
       continue;
@@ -305,7 +309,7 @@ export function convertX400ToEmailAddress(x400: string): string {
     }
     if (part.startsWith("ou=")) {
       part = part.substring(3);
-      const prefix = "Exchange Organizational Unit (";
+      const prefix = "Exchange Administrative Group (";
       const suffix = ")";
       if (part.startsWith(prefix)) {
         part = part.substring(prefix.length, part.length - suffix.length);
@@ -321,8 +325,7 @@ export function convertX400ToEmailAddress(x400: string): string {
       username = ensureAlphaNum(part);
     }
   }
-  console.log("X.400 to email", username + "@" + domain);
-  return sanitize.emailAddress(username + "@" + domain);
+  return sanitize.emailAddress(username + "@" + domain, "must@ng");
 }
 
 function ensureAlphaNum(str: string): string {
