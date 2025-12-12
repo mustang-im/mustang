@@ -106,7 +106,7 @@ export class FakeMeeting extends VideoConfMeeting {
 
 
 export class FakeMeetAccount extends MeetAccount {
-  readonly protocol: string = "fake";
+  readonly protocol: string = "fake-meeting";
 
   constructor() {
     super();
