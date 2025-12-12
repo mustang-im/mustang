@@ -79,7 +79,7 @@ export class SIPMeeting extends VideoConfMeeting {
   };
 
   async call() {
-    const { UserAgent, Inviter, SessionState } = await import("sip.js");
+    const { UserAgent, Inviter } = await import("sip.js");
     assert(this.id, "Need to create the call first");
     this.state = MeetingState.OutgoingCall;
     await this.login(true);
@@ -215,6 +215,7 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 }
 
+// <copied from="https://github.com/onsip/SIP.js/blob/master/src/api/session-state.ts#L18" reason="avoid import" />
 enum SessionState {
   Initial = "Initial",
   Establishing = "Establishing",

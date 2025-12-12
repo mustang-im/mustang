@@ -124,6 +124,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
   }
 }
 
+// <copied from="https://github.com/livekit/client-sdk-js/blob/main/src/room/track/Track.ts#L423" reason="avoid import" />
 export namespace Track {
   export enum Kind {
     Audio = 'audio',
@@ -138,7 +139,7 @@ export namespace Track {
     Unknown = 'unknown',
   }
 }
-
+// <copied from="https://github.com/livekit/client-sdk-js/blob/main/src/room/events.ts#L357" reason="avoid import" />
 export enum ParticipantEvent {
   TrackPublished = 'trackPublished',
   TrackSubscribed = 'trackSubscribed',
