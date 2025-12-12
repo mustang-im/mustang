@@ -278,7 +278,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
  * @returns email address
  * @throws when not valid
  */
-function getEmailAddress(emailAddress: string): string {
+export function getEmailAddressOrX400(emailAddress: string): string {
   if (emailAddress.startsWith("/o=")) {
     return convertX400ToEmailAddress(emailAddress);
   }

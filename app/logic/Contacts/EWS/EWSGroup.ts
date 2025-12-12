@@ -5,6 +5,7 @@ import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { getEmailAddressOrX400 } from '../../Mail/EWS/EWSEMail';
 import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -23,7 +24,7 @@ export class EWSGroup extends Group {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.description = sanitize.nonemptystring(xmljs.Body?.Value, "");
-    this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(sanitize.emailAddress(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
+    this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(getEmailAddressOrX400(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
   }
 
   async saveToServer() {
