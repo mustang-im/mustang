@@ -4,8 +4,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { LiveKitConf } from "./LiveKitConf";
-import type { RemoteParticipant, Track, TrackPublication } from "livekit-client";
-import { Track as TrackEnum, ParticipantEvent } from "./LiveKitEnums";
+import type { RemoteParticipant, Track as TrackType, TrackPublication } from "livekit-client";
 
 export class LiveKitRemoteParticipant extends MeetingParticipant {
   rp: RemoteParticipant;
@@ -60,10 +59,10 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     }
   }
 
-  async addTrack(track: Track) {
+  async addTrack(track: TrackType) {
     console.log("Participant", this.rp.identity, "added a track", track.mediaStream, track.mediaStream.getTracks());
     assert(track.mediaStream, "Need mediaStream for Track");
-    let isScreen = track.source == TrackEnum.Source.ScreenShare || track.source == TrackEnum.Source.ScreenShareAudio;
+    let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
     let video: VideoStream;
     if (isScreen) {
       if (!this.screenShare) {
@@ -79,7 +78,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       }
       video = this.video;
     }
-    if (track.kind == TrackEnum.Kind.Video) {
+    if (track.kind == Track.Kind.Video) {
       video.hasVideo = true;
     }
 
@@ -88,9 +87,9 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
     this.conf.participants._notifySvelteOfChanges();
   }
-  async removeTrack(track: Track) {
+  async removeTrack(track: TrackType) {
     console.log("Participant", this.rp.identity, "removed a track");
-    let isScreen = track.source == TrackEnum.Source.ScreenShare || track.source == TrackEnum.Source.ScreenShareAudio;
+    let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
     let video = isScreen ? this.screenShare : this.video;
     if (!video) {
       return;
@@ -123,4 +122,32 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       this.addTrack(trackPub.videoTrack);
     }
   }
+}
+
+export namespace Track {
+  export enum Kind {
+    Audio = 'audio',
+    Video = 'video',
+    Unknown = 'unknown',
+  }
+  export enum Source {
+    Camera = 'camera',
+    Microphone = 'microphone',
+    ScreenShare = 'screen_share',
+    ScreenShareAudio = 'screen_share_audio',
+    Unknown = 'unknown',
+  }
+}
+
+export enum ParticipantEvent {
+  TrackPublished = 'trackPublished',
+  TrackSubscribed = 'trackSubscribed',
+  TrackUnpublished = 'trackUnpublished',
+  TrackUnsubscribed = 'trackUnsubscribed',
+  TrackMuted = 'trackMuted',
+  TrackUnmuted = 'trackUnmuted',
+  ParticipantMetadataChanged = 'participantMetadataChanged',
+  ParticipantNameChanged = 'participantNameChanged',
+  IsSpeakingChanged = 'isSpeakingChanged',
+  AttributesChanged = 'attributesChanged',
 }

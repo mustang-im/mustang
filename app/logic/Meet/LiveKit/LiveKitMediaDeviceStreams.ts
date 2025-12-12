@@ -4,7 +4,7 @@ import { Lock } from "../../util/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { LocalParticipant, LocalTrack } from "livekit-client";
-import { Track } from "./LiveKitEnums";
+import { Track } from "./LiveKitRemoteParticipant";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
