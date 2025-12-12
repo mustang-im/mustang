@@ -29,7 +29,6 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   }
 
   async setCameraOn(on: boolean, device?: string) {
-    const { Track } = await import("livekit-client");
     device ??= this._cameraDevice;
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     let lock = await this._lock.lock();
@@ -49,13 +48,12 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
         deviceId: device,
       });
       this._cameraDevice = device;
-      this.cameraMicStream = await this.getCameraMicStream();
+      this.cameraMicStream = this.getCameraMicStream();
     } finally {
       lock.release();
     }
   }
   async setMicOn(on: boolean, device?: string) {
-    const { Track } = await import("livekit-client");
     device ??= this._micDevice;
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     let lock = await this._lock.lock();
@@ -75,7 +73,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
         autoGainControl: true,
       });
       this._micDevice = device;
-      this.cameraMicStream = await this.getCameraMicStream();
+      this.cameraMicStream = this.getCameraMicStream();
     } finally {
       lock.release();
     }
@@ -92,14 +90,13 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
     let lock = await this._lock.lock();
     try {
       await this.localParticipant.setScreenShareEnabled(on);
-      this.screenStream = await this.getScreenStream();
+      this.screenStream = this.getScreenStream();
     } finally {
       lock.release();
     }
   }
 
-  protected async getCameraMicStream(): Promise<MediaStream> {
-    const { Track } = await import("livekit-client");
+  protected getCameraMicStream(): MediaStream {
     let mediaStream = new MediaStream();
     for (let trackPub of this.localParticipant.getTrackPublications()) {
       let isCam = trackPub.source == Track.Source.Camera || trackPub.source == Track.Source.Microphone;
@@ -112,8 +109,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
     return mediaStream;
   }
 
-  protected async getScreenStream(): Promise<MediaStream> {
-    const { Track } = await import("livekit-client");
+  protected getScreenStream(): MediaStream {
     let mediaStream = new MediaStream();
     for (let trackPub of this.localParticipant.getTrackPublications()) {
       let isScreen = trackPub.source == Track.Source.ScreenShare || trackPub.source == Track.Source.ScreenShareAudio;
@@ -124,5 +120,15 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
       mediaStream.addTrack(track.mediaStreamTrack);
     }
     return mediaStream;
+  }
+}
+
+export namespace Track {
+  export enum Source {
+    Camera = 'camera',
+    Microphone = 'microphone',
+    ScreenShare = 'screen_share',
+    ScreenShareAudio = 'screen_share_audio',
+    Unknown = 'unknown',
   }
 }
