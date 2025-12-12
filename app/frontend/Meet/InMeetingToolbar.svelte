@@ -60,26 +60,24 @@
         border={false}
         />
     {/if}
-    {#await import("../../logic/Meet/FakeMeeting") then module}
-      {#if meeting instanceof module.FakeMeeting}
-        <RoundButton
-          label={$t`Add participant`}
-          classes="large"
-          onClick={() => meeting.addParticipant()}
-          icon={AddIcon}
-          iconSize="24px"
-          border={false}
-          />
-        <RoundButton
-          label={$t`Add participant`}
-          classes="large"
-          onClick={() => meeting.removeParticipant()}
-          icon={RemoveIcon}
-          iconSize="24px"
-          border={false}
-          />
-      {/if}
-    {/await}
+    {#if meeting.account.protocol == "meet"}
+      <RoundButton
+        label={$t`Add participant`}
+        classes="large"
+        onClick={() => meeting.addParticipant()}
+        icon={AddIcon}
+        iconSize="24px"
+        border={false}
+        />
+      <RoundButton
+        label={$t`Add participant`}
+        classes="large"
+        onClick={() => meeting.removeParticipant()}
+        icon={RemoveIcon}
+        iconSize="24px"
+        border={false}
+        />
+    {/if}
     <RoundButton
       label={`Change view of participant videos`}
       classes="view-selector large"
