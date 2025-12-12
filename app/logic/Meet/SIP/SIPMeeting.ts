@@ -150,7 +150,7 @@ export class SIPMeeting extends VideoConfMeeting {
     }
   }
 
-  async onIncomingCall(invitation: Invitation) {
+  onIncomingCall(invitation: Invitation) {
     this.invitation = invitation;
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
     this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
