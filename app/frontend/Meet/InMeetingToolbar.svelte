@@ -60,7 +60,7 @@
         border={false}
         />
     {/if}
-    {#if meeting.account.protocol == "meet"}
+    {#if meeting.account.protocol == "fake"}
       <RoundButton
         label={$t`Add participant`}
         classes="large"
