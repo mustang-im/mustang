@@ -5,9 +5,11 @@ import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
-import { ArrayColl, Collection } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
 
@@ -526,6 +528,152 @@ export class EWSFolder extends Folder {
 
   disableChangeSpecial(): string | false {
     return "You cannot change Exchange special folders.";
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return new ArrayColl(result.Folders.Folder.PermissionSet.Permissions.Permission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    let request = {
+      m$UpdateFolder: {
+        m$FolderChanges: {
+          t$FolderChange: {
+            t$FolderId: {
+              Id: this.id,
+            },
+            t$Updates: {
+              t$SetFolderField: {
+                t$FieldURI: {
+                  FieldURI: "folder:PermissionSet",
+                },
+                t$Folder: {
+                  t$PermissionSet: {
+                    t$Permissions: {
+                      t$Permission: permissions.contents.map(permission => permission.toEWSFolderPermission()),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    await this.account.callEWS(request);
+  }
+}
+
+export class ExchangePermissions {
+  CanCreateItems: boolean;
+  CanCreateSubFolders: boolean;
+  DeleteItems: "None" | "Owned" | "All";
+  EditItems: "None" | "Owned" | "All";
+  IsFolderContact: boolean;
+  IsFolderOwner: boolean;
+  IsFolderVisible: boolean;
+  ReadItems: "None" | "TimeOnly" | "TimeAndSubjectAndLocation" | "FullDetails";
+
+  constructor(permissions: Partial<ExchangePermissions> = {}) {
+    this.CanCreateItems = sanitize.boolean(permissions.CanCreateItems, false);
+    this.CanCreateSubFolders = sanitize.boolean(permissions.CanCreateSubFolders, false);
+    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
+    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
+    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
+    this.IsFolderOwner = sanitize.boolean(permissions.IsFolderOwner, false);
+    this.IsFolderVisible = sanitize.boolean(permissions.IsFolderVisible, true);
+    this.ReadItems = sanitize.enum(permissions.ReadItems, ["None", "TimeOnly", "TimeAndSubjectAndLocation", "FullDetails"], "None");
+  }
+
+  toEWS() {
+    let result: Record<string, boolean | string> = {};
+    for (let permission in this) {
+      result["t$" + permission] = this[permission] as string | boolean;
+    }
+    return result;
+  }
+}
+
+export class ExchangePermission extends PersonUID {
+  exchangePermissions: ExchangePermissions;
+  distinguishedUser?: string;
+
+  constructor(emailAddress: string, name: string, permissions: Partial<ExchangePermissions> = {}, distinguishedUser?: "Anonymous" | "Default") {
+    super(emailAddress, name);
+    this.exchangePermissions = new ExchangePermissions(permissions);
+    this.distinguishedUser = distinguishedUser;
+  }
+
+  static fromExchange(permissions: any, emailAddress: string) {
+    let name;
+    let distinguishedUser = permissions.UserId.DistinguishedUser as "Anonymous" | "Default" | undefined;
+    switch (distinguishedUser) {
+    case "Anonymous":
+      emailAddress = "*@*";
+      name = gt`Anonymous`;
+      break;
+    case "Default":
+      emailAddress = emailAddress.replace(/.*@/, "*@");
+      name = gt`All other users`;
+      break;
+    default:
+      emailAddress = sanitize.emailAddress(permissions.UserId.PrimarySmtpAddress, null);
+      name = sanitize.string(permissions.UserId.DisplayName, null);
+      break;
+    }
+    return new ExchangePermission(emailAddress, name, permissions, distinguishedUser);
+  }
+
+  toEWSFolderPermission() {
+    return Object.assign({
+      t$UserId: this.distinguishedUser
+      ? { t$DistinguishedUser: this.distinguishedUser, }
+      : { t$PrimarySmtpAddress: this.emailAddress, },
+    }, { t$PermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+  }
+
+  toEWSCalendarPermission() {
+    return Object.assign({
+      t$UserId: this.distinguishedUser
+      ? { t$DistinguishedUser: this.distinguishedUser, }
+      : { t$PrimarySmtpAddress: this.emailAddress, },
+    }, { t$CalendarPermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+  }
+
+  toOWAFolderPermission() {
+    return Object.assign({
+      __type: "Permission:#Exchange",
+      UserId: this.distinguishedUser
+      ? { DistinguishedUser: this.distinguishedUser, }
+      : { PrimarySmtpAddress: this.emailAddress, },
+    }, { PermissionLevel: "Custom" }, this.exchangePermissions);
+  }
+
+  toOWACalendarPermission() {
+    return Object.assign({
+      __type: "CalendarPermission:#Exchange",
+      UserId: this.distinguishedUser
+      ? { DistinguishedUser: this.distinguishedUser, }
+      : { PrimarySmtpAddress: this.emailAddress, },
+    }, { PermissionLevel: "Custom" }, this.exchangePermissions);
   }
 }
 
