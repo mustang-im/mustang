@@ -16,7 +16,7 @@ jobs:
     - name: Build installers for Mac
       uses: actions/setup-node@v3
       with:
-        node-version: 20.x
+        node-version: 24.x
 
     - run: sudo -H pip install setuptools
     - run: cd app/build; sh mustang-brand.sh
