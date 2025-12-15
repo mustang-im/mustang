@@ -440,29 +440,34 @@ export class JMAPAccount extends MailAccount {
 
   /**
    * Call this when the server state changed and the server told us.
-   * This may be in result of a `get`, `set` or push call.
-   * Triggers an update, as needed.
    *
    * @param type What object type the sync state is for.
    *  The state is account-global (i.e. across folders), but specific to an
    *  object type.
    * @param newState The sync state that the server returned after a server call.
-   * @param oldState
-   *  Empty, if this was a `get` operation and we're now up to date
+   */
+  setState(type: TJMAPObjectType, newState: string) {
+    this.syncState.set(type, newState);
+  }
+
+  /**
+   * Triggers an update, as needed.
+   *
+   * @param type What object type the sync state is for.
+   *  The state is account-global (i.e. across folders), but specific to an
+   *  object type.
+   * @param toState (Optional) The sync state that the server returned after a server call.
+   * @param fromState (Optional)
    *  If this was a `set` operation, this is the state that the server
    *  returned as the old state before the operation.
    */
-  setState(type: TJMAPObjectType, newState: string, oldState?: string) {
-    let knownState = this.syncState.get(type);
-    this.syncState.set(type, newState);
-    if (knownState != newState && knownState != oldState && oldState) {
-      this.sync(type, knownState)
-        .catch(this.errorCallback);
+  async sync(type: TJMAPObjectType, toState?: string, fromState?: string) {
+    fromState ??= this.syncState.get(type);
+    if (toState && toState == fromState) {
+      return;
     }
-  }
-
-  async sync(type: TJMAPObjectType, fromState: string) {
-    // TODO
+    await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
+    // TODO folder changes, email flags changes, calendar & contacts
   }
 
   hasCapability(capa: string): boolean {
