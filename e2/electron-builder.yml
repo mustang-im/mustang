@@ -61,6 +61,7 @@ publish:
     protocol: https
     releaseType: release
     channel: mustang
+    publishAutoUpdate: true
 #  - provider generic
 #    url: https://mustang.im/auto-updates
 extraMetadata:
