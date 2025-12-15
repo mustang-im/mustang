@@ -9,9 +9,6 @@ android {
             version '3.22.1'
         }
     }
-    kotlinOptions {
-        jvmTarget = '21'
-    }
     namespace "im.mustang.capa"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
