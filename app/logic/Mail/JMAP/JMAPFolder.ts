@@ -174,13 +174,15 @@ export class JMAPFolder extends Folder {
       let addedResponseByFolder = new Map<string, TJMAPEMailHeaders[]>();
       let changedResponseByFolder = new Map<string, TJMAPEMailHeaders[]>();
       let newMessagesOfThisFolder = new ArrayColl<JMAPEMail>();
-
       splitByFolder(addedResponse.list, addedResponseByFolder);
       splitByFolder(changedResponse.list, changedResponseByFolder);
 
       let allFolders = this.account.getAllFolders() as ArrayColl<JMAPFolder>;
       for (let folder of allFolders) {
         let removedMessages = await folder.parseRemovedMessages(changes.destroyed)
+        if (!addedResponseByFolder.get(folder.id) && !changedResponseByFolder.get(folder.id)) {
+          continue;
+        }
         let addedResult = folder.parseMessageList(addedResponseByFolder.get(folder.id) ?? [], false);
         let changedResult = folder.parseMessageList(changedResponseByFolder.get(folder.id) ?? []);
         addedResult.newMessages.addAll(changedResult.newMessages);
@@ -188,18 +190,13 @@ export class JMAPFolder extends Folder {
         //console.log(folder.name, "updates messages", changedResult.updatedMessages.contents.map(e => e.subject));
         //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
 
-        if (addedResult.newMessages.hasItems || changedResult.updatedMessages.hasItems || removedMessages.hasItems) {
-          folder.messages.removeAll(removedMessages);
-          folder.messages.addAll(addedResult.newMessages);
-          await folder.storage.saveFolderProperties(folder);
-          await folder.saveMsgUpdates(changedResult.updatedMessages);
-          await folder.saveNewMsgs(addedResult.newMessages);
-          for (let removed of removedMessages) {
-            await removed.deleteMessageLocally(); // deletes in DB and in folder.messages
-          }
-          if (this === folder) {
-            newMessagesOfThisFolder = addedResult.newMessages;
-          }
+        folder.messages.removeAll(removedMessages);
+        folder.messages.addAll(addedResult.newMessages);
+        await folder.storage.saveFolderProperties(folder);
+        await folder.saveMsgUpdates(changedResult.updatedMessages);
+        await folder.saveNewMsgs(addedResult.newMessages);
+        if (this === folder) {
+          newMessagesOfThisFolder = addedResult.newMessages;
         }
       }
 
