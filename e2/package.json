@@ -15,7 +15,7 @@
     "build-org": "npm run typecheck && electron-vite build",
     "build": "electron-vite build",
     "build:win": "npm run build && electron-builder --win --config",
-    "build:mac": "npm run build && electron-builder --mac --config --publish never",
+    "build:mac": "npm run build && electron-builder --mac --config",
     "build:linux": "npm run build && npm run icon:icns && electron-builder --linux --config",
     "build:release:win": "npm run build && electron-builder --win --config --publish always",
     "build:release:mac": "npm run build && electron-builder --mac --config --publish always",
