@@ -59,7 +59,7 @@ npmRebuild: true
 publish:
   - provider: github
     protocol: https
-    releaseType: release
+    releaseType: draft
     channel: mustang
 #  - provider generic
 #    url: https://mustang.im/auto-updates
