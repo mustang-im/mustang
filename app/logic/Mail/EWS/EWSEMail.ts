@@ -64,12 +64,12 @@ export class EWSEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(getEmailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
     }
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
@@ -268,7 +268,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddressOrX400(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
 }
 
 /**
