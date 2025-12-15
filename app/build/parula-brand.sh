@@ -31,6 +31,14 @@ perl -p -i \
   -e "s|mustang|parula|g;" \
   ../../e2/electron-builder.yml
 
+# Dev build publishing
+if [[ $VERSION == *"-dev" ]]; then
+  perl -p -i \
+  -e "s|releaseType: release|releaseType: prerelease|g;" \
+  -e "s|publishAutoUpdate: true|publishAutoUpdate: false|g" \
+  ../../e2/electron-builder.yml
+fi
+
 perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   -e "s|"Mustang"|"Parula"|;" \

@@ -18,6 +18,14 @@ perl -p -i \
   -e "s|CURRENT_PROJECT_VERSION = .*|CURRENT_PROJECT_VERSION = $BUILD_VERSION;|;" \
   ../../mobile/ios/App/App.xcodeproj/project.pbxproj
 
+# Dev build publishing
+if [[ $VERSION == *"-dev" ]]; then
+  perl -p -i \
+  -e "s|releaseType: release|releaseType: prerelease|g;" \
+  -e "s|publishAutoUpdate: true|publishAutoUpdate: false|g" \
+  ../../e2/electron-builder.yml
+fi
+
 # Mobile Icons
 perl -MFile::Path -e "mkpath('../../mobile/assets')"
 perl -MFile::Copy -e "copy('../../e2/build/icon.png', '../../mobile/assets/icon.png')"
