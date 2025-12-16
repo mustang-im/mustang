@@ -19,8 +19,8 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
 
     companion object {
         init {
-            System.loadLibrary("node-runner")
-            System.loadLibrary("libnode")
+            System.loadLibrary("node-process")
+            System.loadLibrary("node")
         }
     }
 
