@@ -258,6 +258,9 @@ export class ActiveSyncAccount extends MailAccount {
       timeout: heartbeat * 1000 + 25000, // extra timeout for Ping commands
     };
     if (this.oAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        throw new LoginError(null, "Please login");
+      }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
