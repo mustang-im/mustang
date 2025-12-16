@@ -45,7 +45,7 @@ export class OAuth2 extends WebBasedAuth {
   @notifyChangedProperty
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
-  uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
+  uiMethod: OAuth2UIMethod = OAuth2UIMethod.Tab;
   protected ui: OAuth2UI | null = null;
 
   expiresAt: Date | null = null;
