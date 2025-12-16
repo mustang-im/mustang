@@ -179,6 +179,7 @@ export class JMAPFolder extends Folder {
 
       let allFolders = this.account.getAllFolders() as ArrayColl<JMAPFolder>;
       for (let folder of allFolders) {
+        await folder.readFolder();
         let removedMessages = await folder.parseRemovedMessages(changes.destroyed)
         if (!addedResponseByFolder.get(folder.id) && !changedResponseByFolder.get(folder.id)) {
           continue;
