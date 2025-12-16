@@ -4,7 +4,7 @@
 #include "node.h"
 
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT int JNICALL
 Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArray args) {
     // 1. Get the number of arguments
     jsize argc = env->GetArrayLength(args);
@@ -52,7 +52,7 @@ Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArr
     }
 
     // 5. Call the node function
-    node::Start(argv.size(), argv.data());
+    return jint(node::Start(argv.size(), argv.data()));
 
     // All memory in argv_data and argv is automatically cleaned up here!
 }
@@ -69,7 +69,7 @@ JNIEXPORT jint JNI_ON_LOAD(JavaVM *vm, void *reserved) {
 
     // Register your class' native methods.
     static const JNINativeMethod methods[] = {
-            {"startNode", "([Ljava/lang/String;)V", (void*)Java_im_mustang_capa_NodeProcess_startNode}
+            {"startNode", "([Ljava/lang/String;)I", (void*)Java_im_mustang_capa_NodeProcess_startNode}
     };
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;

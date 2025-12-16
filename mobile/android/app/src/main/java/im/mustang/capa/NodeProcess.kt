@@ -6,8 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -25,15 +23,34 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
 
     companion object {
         init {
-            System.loadLibrary("node-process")
             System.loadLibrary("node")
+            System.loadLibrary("node-process")
+        }
+
+        // Define constants to match Android's log levels
+        // These will be passed from C++ to identify the log level.
+        private const val ANDROID_LOG_INFO = 4
+        private const val ANDROID_LOG_ERROR = 6
+
+        /**
+         * This is the implementation of the native logToCapacitor function.
+         * It will be called from C++ threads.
+         * The @JvmStatic annotation is important.
+         */
+        @JvmStatic
+        private fun logToCapacitorImpl(level: Int, tag: String, message: String) {
+            when (level) {
+                ANDROID_LOG_INFO -> Logger.info(tag, message)
+                ANDROID_LOG_ERROR -> Logger.error(tag, Error(message))
+                else -> Logger.debug(tag, message)
+            }
         }
     }
 
-    private external fun startNode(args: Array<String>)
+    private external fun startNode(args: Array<String>): Int
 
     fun start() {
-        if (this::job.isInitialized) {
+        if (this::job.isInitialized && job.isActive) {
             job.cancel()
         }
         job = coroutineScope.launch(Dispatchers.Default) {
@@ -98,6 +115,12 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
                     }
                 }
             }
+        }
+    }
+
+    fun stop() {
+        if (this::job.isInitialized && job.isActive) {
+            job.cancel()
         }
     }
 }
