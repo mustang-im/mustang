@@ -11,6 +11,8 @@ export type Contact = Person | Group;
 export class ContactBase extends Observable {
   id: string;
   dbID: number;
+  /** Protocol-specific ID for this person */
+  pID: string | null = null;
   addressbook: Addressbook | null;
   @notifyChangedProperty
   name: string;

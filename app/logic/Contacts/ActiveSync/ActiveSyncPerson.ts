@@ -9,10 +9,10 @@ export class ActiveSyncPerson extends Person {
   declare addressbook: ActiveSyncAddressbook | null;
 
   get serverID() {
-    return this.id;
+    return this.pID;
   }
   set serverID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromWBXML(wbxmljs: any) {

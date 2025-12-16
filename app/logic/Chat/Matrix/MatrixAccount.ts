@@ -74,8 +74,8 @@ export class MatrixAccount extends ChatAccount {
     for (let member of room.getJoinedMembers()) {
       group.participants.add(this.getPerson(member));
     }
-    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
-      ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
+    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.pID == this.globalUserID)
+      ? (group.participants.find(person => person.pID != this.globalUserID) ?? group.participants.first)
       : group;
     this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
 
@@ -105,7 +105,7 @@ export class MatrixAccount extends ChatAccount {
     }
     let person = new ChatPerson();
     person.name = member.name;
-    person.id = member.userId;
+    person.pID = member.userId;
     person.chatAccounts.add(new ContactEntry(member.userId, "matrix"));
     let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
     // let picMXC = member.getMxcAvatarUrl();
