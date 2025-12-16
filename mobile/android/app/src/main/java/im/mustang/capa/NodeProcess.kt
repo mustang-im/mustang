@@ -1,10 +1,13 @@
 package im.mustang.capa
 
 import android.content.Context
+import com.getcapacitor.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -12,9 +15,12 @@ import java.io.FileOutputStream
 
 class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
     lateinit var job: Job
+    lateinit var mainJSPath: String
+    val mainJS = "index.mjs"
+    val projectDir = "nodejs"
     val cacheDir = context.cacheDir
     val filesDir = context.filesDir
-    val assetsDir = context.assets
+    val assetManager = context.assets
 
 
     companion object {
@@ -26,15 +32,16 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
 
     private external fun startNode(args: Array<String>)
 
-    fun start(projectDir: String, args: Array<String>) {
+    fun start() {
         if (this::job.isInitialized) {
             job.cancel()
         }
         job = coroutineScope.launch(Dispatchers.Default) {
             withContext(Dispatchers.IO) {
-                copyDir(projectDir)
+                copyAssetDir("public/$projectDir", File(filesDir, projectDir))
             }
-            startNode(args)
+            mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
+            startNode(arrayOf("node", mainJSPath))
         }
     }
 
@@ -55,7 +62,7 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
         }
 
         // List all files and subdirectories in the current asset directory
-        val assetFileNames = assetsDir.list(assetDir)
+        val assetFileNames = assetManager.list(assetDir)
             ?: throw IOException("Failed to list assets in directory: $assetDir")
 
         if (assetFileNames.isEmpty() && assetDir.isNotEmpty()) {
@@ -72,11 +79,11 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
             // We can determine this by trying to list its contents. If it fails, it's a file.
             try {
                 // If list() returns a non-empty array, it's a directory.
-                if (assetsDir.list(assetPath)?.isNotEmpty() == true) {
+                if (assetManager.list(assetPath)?.isNotEmpty() == true) {
                     copyAssetDir(assetPath, destFile) // Recursive call for subdirectory
                 } else {
                     // It's a file, copy it
-                    assetsDir.open(assetPath).use { inputStream ->
+                    assetManager.open(assetPath).use { inputStream ->
                         FileOutputStream(destFile).use { outputStream ->
                             inputStream.copyTo(outputStream)
                         }
@@ -85,25 +92,12 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
             } catch (e: IOException) {
                 // This exception typically means `assetPath` is a file, not a directory.
                 // So, we copy it as a file.
-                assetsDir.open(assetPath).use { inputStream ->
+                assetManager.open(assetPath).use { inputStream ->
                     FileOutputStream(destFile).use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                 }
             }
-        }
-    }
-
-    private fun copyDir(dir: String) {
-        // Example of how to use the function.
-        // This copies a hypothetical 'node_project' directory from your assets
-        // to a 'node_project' directory inside your app's filesDir.
-        val destDir = File(filesDir, "public/${dir}")
-        try {
-            copyAssetDir(dir, destDir)
-        } catch (e: IOException) {
-            // Handle the error, e.g., log it or show a message
-            e.printStackTrace()
         }
     }
 }

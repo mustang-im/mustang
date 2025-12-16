@@ -3,12 +3,17 @@ package im.mustang.capa
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import com.getcapacitor.BridgeActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : BridgeActivity() {
-    val nodeProcess = NodeProcess(applicationContext, lifecycleScope)
+    lateinit var nodeProcess: NodeProcess
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        nodeProcess.start("nodejs", arrayOf("node", "index.mjs"))
+        lifecycleScope.launch(Dispatchers.IO) {
+            nodeProcess = NodeProcess(applicationContext, lifecycleScope)
+            nodeProcess.start()
+        }
     }
 }
