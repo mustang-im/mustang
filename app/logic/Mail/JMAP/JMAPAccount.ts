@@ -11,6 +11,7 @@ import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
+import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
@@ -53,9 +54,10 @@ export class JMAPAccount extends MailAccount {
     await this.loginOAuth2(interactive);
     await this.getSession();
     await this.listFolders();
+    this.startPushListener()
+      .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
-    await this.startPushListener();
     inbox.startPolling();
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -490,50 +492,47 @@ export class JMAPAccount extends MailAccount {
     // TODO folder changes, email flags changes, calendar & contacts
   }
 
+  /** Starts push mail
+   * Runs as long as we're logged in */
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
-    if (!url) {
-      return;
-    }
+    assert(url, "Need event source URL");
     url = url
       .replace("{accountId}", this.accountID)
       .replace("{types}", "Email") // TJMAPObjectTypes.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
     console.log("JMAP push mail URL", url);
-    this.eventSource = await appGlobal.remoteApp.newEventSource(url, {
-      headers: {
-        Authorization: this.authorizationHeader(),
-      }
-    });
-    this.eventSource.addEventListener("state", async (event) => {
-      try {
-        console.log(this.name, "push event arrived");
-        let type = "Email" as TJMAPObjectType;
-        await this.sync(type, this.syncState.get(type));
-        /* TODO Not getting any data. Maybe due to npm eventsource ?
-        console.log("JMAP push state change", event);
-        let data = event as TJMAPStateChange;
-        assert(data.changed, "Need state changes");
-        let changes = data.changed[this.accountID];
-        for (let typename in changes) {
-          // let newState = changes[typename];
-          let type = typename as TJMAPObjectType;
-          await this.sync(type, this.syncState.get(type));
+    while (this.isLoggedIn) {
+      let stream = await fetch(url, {
+        headers: {
+          Authorization: this.authorizationHeader(),
         }
-        */
-      } catch (ex) {
-        this.errorCallback(ex);
-      }
-    });
-    return new Promise((resolve, reject) => {
-      this.eventSource.addEventListener("open", () => resolve());
-      this.eventSource.addEventListener("error", (error: any) => {
-        let ex = new Error(error.message) as any;
-        ex.code = error.code;
-        reject(new ConnectError(ex, "JMAP push mail failed to open: " + error.message));
       });
-    });
+      if (!stream.ok) {
+        throw new Error(`EventSource start failed with HTTP ${stream.status} ${stream.statusText}`);
+      }
+      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+      for await (let event of eventStream) {
+        if (event.name == "state") {
+          let type = "Email" as TJMAPObjectType;
+          await this.sync(type, this.syncState.get(type));
+          try {
+            let json = JSON.parse(event.data);
+            console.log("event data", json);
+            assert(json.changed, "Need state changes");
+            let changes = json.changed[this.accountID];
+            for (let typename in changes) {
+              // let newState = changes[typename];
+              let type = typename as TJMAPObjectType;
+              await this.sync(type, this.syncState.get(type));
+            }
+          } catch (ex) {
+            console.error(ex);
+          }
+        }
+      }
+    }
   }
 
   protected async syncMailboxes(fromState: string) {

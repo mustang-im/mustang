@@ -2,7 +2,6 @@ import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
-import { EventSource } from "eventsource";
 import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -38,7 +37,6 @@ async function createSharedAppObject() {
     optionsHTTP,
     postHTTP,
     streamHTTP,
-    newEventSource,
     OWA,
     newOSNotification,
     isOSNotificationSupported,
@@ -243,19 +241,6 @@ async function streamHTTP(url: string, data: any, config: any) {
     body: response.body.pipeThrough(new TextDecoderStream()),
     WWWAuthenticate: response.headers.get("WWW-Authenticate"),
   };
-}
-
-function newEventSource(url: string, options: any) {
-  if (options.headers) {
-    options.fetch = (input, init) => fetch(input, {
-      ...init,
-      headers: {
-        ...init.headers,
-        ...options.headers,
-      },
-    });
-  }
-  return new EventSource(url, options);
 }
 
 async function newHTTPServer() {

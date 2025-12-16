@@ -10,7 +10,6 @@
     "bufferutil": "^4.0.8",
     "des.js": "^1.0.1",
     "electron-updater": "^6.6.2",
-    "eventsource": "^3.0.2",
     "express": "^4.19.2",
     "imapflow": "https://github.com/mustang-im/imapflow/",
     "js-md4": "^0.3.2",
