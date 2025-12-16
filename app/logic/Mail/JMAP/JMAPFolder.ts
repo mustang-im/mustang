@@ -112,7 +112,7 @@ export class JMAPFolder extends Folder {
       listResponse = response["emails"];
 
       let result = this.parseMessageList(listResponse.list);
-      this.account.setState("Email", listResponse.state);
+      this.account.syncState.set("Email", listResponse.state);
       return result;
     } finally {
       lock.release();
@@ -201,7 +201,7 @@ export class JMAPFolder extends Folder {
         }
       }
 
-      this.account.setState("Email", changes.newState);
+      this.account.syncState.set("Email", changes.newState);
       if (changes.hasMoreChanges) {
         lock.release();
         await this.fetchChangedMessagesForAllFolders();
@@ -245,6 +245,24 @@ export class JMAPFolder extends Folder {
     }
     return { newMessages, updatedMessages };
   }
+
+  /*
+  protected findFoldersForMsgs(msgs: TJMAPEMailHeaders[]):
+    ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }> {
+    let results = new ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }>();
+    for (let msgJSON of msgs) {
+      for (let mailboxId in msgJSON.mailboxIds) {
+        let folder = this.account.getFolderByID(mailboxId);
+        if (!folder) {
+          continue;
+        }
+        let msg = this.getEMailByPID(msgJSON.id);
+        results.push({ folder, msg, msgJSON });
+      }
+    }
+    return results;
+  }
+  */
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {

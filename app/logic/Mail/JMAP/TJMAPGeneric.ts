@@ -88,3 +88,9 @@ export interface TJMAPUpload {
   type: string,
   size: number,
 }
+
+/** <https://www.rfc-editor.org/rfc/rfc8620.html#section-7.1> */
+export interface TJMAPStateChange {
+  "@type": string,
+  changed: Record<string, Record<TJMAPObjectType, string>>,
+}
