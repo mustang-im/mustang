@@ -490,7 +490,7 @@ export class JMAPAccount extends MailAccount {
     // TODO folder changes, email flags changes, calendar & contacts
   }
 
-  async startPushListener() {
+  async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     if (!url) {
       return;
@@ -527,7 +527,7 @@ export class JMAPAccount extends MailAccount {
       }
     });
     return new Promise((resolve, reject) => {
-      this.eventSource.addEventListener("open", resolve);
+      this.eventSource.addEventListener("open", () => resolve());
       this.eventSource.addEventListener("error", (error: any) => {
         let ex = new Error(error.message) as any;
         ex.code = error.code;
@@ -597,7 +597,7 @@ export class JMAPAccount extends MailAccount {
         continue;
       }
       let msg = added.folder.newEMail();
-      await msg.fromJMAP(added.msgJSON);
+      msg.fromJMAP(added.msgJSON);
       msg.folder.messages.add(msg);
     }
 
@@ -607,7 +607,7 @@ export class JMAPAccount extends MailAccount {
         msg = changed.folder.newEMail();
         changed.folder.messages.add(msg);
       }
-      await msg.fromJMAP(changed.msgJSON);
+      msg.fromJMAP(changed.msgJSON);
     }
 
     for (let removed of this.findFoldersForMsgs(removedResponse.list)) {
