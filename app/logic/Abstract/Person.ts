@@ -7,7 +7,6 @@ import { ArrayColl } from 'svelte-collections';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 
 export class Person extends ContactBase {
-  id: string;
   @notifyChangedProperty
   firstName: string | null;
   @notifyChangedProperty

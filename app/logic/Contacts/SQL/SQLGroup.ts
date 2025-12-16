@@ -22,14 +22,14 @@ export class SQLGroup extends Group {
             name, description, pID, addressbookID, json
           ) VALUES (
             ${group.name}, ${group.description},
-            ${group.id}, ${group.addressbook?.dbID}, ${jsonStr}
+            ${group.pID}, ${group.addressbook?.dbID}, ${jsonStr}
           )`);
         group.dbID = insert.lastInsertRowid;
       } else {
         await (await getDatabase()).run(sql`
           UPDATE "group" SET
             name = ${group.name}, description = ${group.description},
-            pID = ${group.id}, addressbookID = ${group.addressbook?.dbID},
+            pID = ${group.pID}, addressbookID = ${group.addressbook?.dbID},
             json = ${jsonStr}
           WHERE id = ${group.dbID}
           `);
@@ -93,7 +93,7 @@ export class SQLGroup extends Group {
     group.dbID = sanitize.integer(dbID);
     group.name = sanitize.label(row.name);
     group.description = sanitize.label(row.description, "");
-    group.id = sanitize.string(row.pID, null);
+    group.pID = sanitize.string(row.pID, null);
     group.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);

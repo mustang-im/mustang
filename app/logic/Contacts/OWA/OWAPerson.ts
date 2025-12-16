@@ -11,10 +11,10 @@ export class OWAPerson extends Person {
   fields: Record<string, string> = this.toFields();
 
   get personaID() {
-    return this.id;
+    return this.pID;
   }
   set personaID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromJSON(json: any): OWAPerson {
@@ -65,7 +65,7 @@ export class OWAPerson extends Person {
     if (Object.keys(fields).every(key => fields[key] == this.fields[key])) {
       return;
     }
-    let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
+    let request = this.existsOnServer ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
     let response = await this.addressbook.callOWA(request);
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
