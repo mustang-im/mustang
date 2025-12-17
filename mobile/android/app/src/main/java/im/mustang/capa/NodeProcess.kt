@@ -56,13 +56,11 @@ class NodeProcess(): ViewModel() {
             loggerScope.launch {
                 ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
                     val buffer = ByteArray(4096)
-                    while (isActive) {
-                        val bytesRead = inputStream.read(buffer)
+                    var bytesRead: Int
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                         if (bytesRead > 0) {
                             val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
                             Logger.consoleLog(message)
-                        } else if (bytesRead == -1) {
-                            break
                         }
                     }
                 }
@@ -88,13 +86,11 @@ class NodeProcess(): ViewModel() {
             loggerScope.launch {
                 ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
                     val buffer = ByteArray(4096)
-                    while (isActive) {
-                        val bytesRead = inputStream.read(buffer)
+                    var bytesRead: Int
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                         if (bytesRead > 0) {
                             val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
                             Logger.consoleError(message)
-                        } else if (bytesRead == -1) {
-                            break
                         }
                     }
                 }
