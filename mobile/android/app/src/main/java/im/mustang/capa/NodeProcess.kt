@@ -1,27 +1,31 @@
 package im.mustang.capa
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.content.pm.PackageInfo
 import com.getcapacitor.Bridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.FileOutputStream
+import androidx.core.content.edit
 
 class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val bridge: Bridge) {
-    lateinit var job: Job
-    lateinit var mainJSPath: String
-    val mainJS = "index.mjs"
-    val projectDir = "nodejs"
-    val cacheDir = context.cacheDir
-    val filesDir = context.filesDir
-    val assetManager = context.assets
+    private lateinit var job: Job
+    private lateinit var mainJSPath: String
+    private val mainJS = "index.mjs"
+    private val projectDir = "nodejs"
+    private val cacheDir = context.cacheDir
+    private val filesDir = context.filesDir
+    private val assetManager = context.assets
+    private val APP_UPDATE_TIME = "app_update_time"
+    private val PREFS_TAG = "node_process_prefs"
 
 
-    companion object {
+    private companion object {
         init {
             System.loadLibrary("node")
             System.loadLibrary("node-process")
@@ -35,11 +39,16 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val 
             job.cancel()
         }
         job = coroutineScope.launch(Dispatchers.IO) {
-            copyAssetDir("public/$projectDir", File(filesDir, projectDir))
-            mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
-            withContext(Dispatchers.Default) {
-                startNode(arrayOf("node", mainJSPath))
+            if (!isAppUpdated()) {
+                saveAppUpdatedTime()
+                val projectDestDir = File(filesDir, projectDir)
+                if (projectDestDir.exists()) {
+                    deleteDirectory(projectDestDir)
+                }
+                copyAssetDir("public/$projectDir", projectDestDir)
             }
+            mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
+            startNode(arrayOf("node", mainJSPath))
         }
     }
 
@@ -96,6 +105,34 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val 
                     }
                 }
             }
+        }
+    }
+    private fun deleteDirectory(directory: File): Boolean {
+        if (directory.exists()) {
+            directory.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    deleteDirectory(file)
+                } else {
+                    file.delete()
+                }}
+        }
+        return directory.delete()
+    }
+    private val preferences: SharedPreferences by lazy {
+        context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
+    }
+
+    private val packageInfo: PackageInfo by lazy {
+        context.packageManager.getPackageInfo(context.packageName, 0)
+    }
+    fun isAppUpdated(): Boolean {
+        val previousLastUpdateTime = preferences.getLong(APP_UPDATE_TIME, 0)
+        val lastUpdateTime = packageInfo.lastUpdateTime
+        return lastUpdateTime == previousLastUpdateTime
+    }
+    fun saveAppUpdatedTime() {
+        preferences.edit {
+            putLong(APP_UPDATE_TIME, System.currentTimeMillis())
         }
     }
 }
