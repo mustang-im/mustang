@@ -3,7 +3,6 @@ package im.mustang.capa
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageInfo
-import com.getcapacitor.Bridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -13,7 +12,7 @@ import java.io.IOException
 import java.io.FileOutputStream
 import androidx.core.content.edit
 
-class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val bridge: Bridge) {
+class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
     private lateinit var job: Job
     private lateinit var mainJSPath: String
     private val mainJS = "index.mjs"
