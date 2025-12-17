@@ -9,11 +9,7 @@
 extern "C" JNIEXPORT int JNICALL
 Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArray args) {
     jsize argc = env->GetArrayLength(args);
-    if (argc == 0) {
-        return jint(node::Start(0, nullptr));
-    }
 
-    // --- High-performance argv creation ---
     // 1. Calculate total memory needed for all strings
     size_t total_string_size = 0;
     std::vector<jsize> lengths(argc);
@@ -36,15 +32,15 @@ Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArr
     char* current_pos = string_buffer.data();
     for (jsize i = 0; i < argc; i++) {
         auto arg_jstring = (jstring)env->GetObjectArrayElement(args, i);
-        argv[i] = current_pos; // Set pointer
+        argv[i] = current_pos;
 
         if (arg_jstring != nullptr) {
             env->GetStringUTFRegion(arg_jstring, 0, lengths[i], current_pos);
-            current_pos[lengths[i]] = '\0'; // Null-terminate
-            current_pos += lengths[i] + 1;  // Move to next position
+            current_pos[lengths[i]] = '\0';
+            current_pos += lengths[i] + 1;
             env->DeleteLocalRef(arg_jstring);
         } else {
-            *current_pos = '\0'; // Handle null string argument
+            *current_pos = '\0';
             current_pos++;
         }
     }
@@ -63,24 +59,18 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return JNI_ERR;
     }
 
-    // --- Cache ParcelFileDescriptor details ---
     jclass pfd_class_local = env->FindClass("android/os/ParcelFileDescriptor");
     if (pfd_class_local == nullptr) return JNI_ERR;
-    // Create a global reference to use across JNI calls
     g_pfd_class = (jclass)env->NewGlobalRef(pfd_class_local);
     if (g_pfd_class == nullptr) return JNI_ERR;
-    // Clean up the local reference
     env->DeleteLocalRef(pfd_class_local);
 
     g_get_fd_method = env->GetMethodID(g_pfd_class, "getFd", "()I");
     if (g_get_fd_method == nullptr) return JNI_ERR;
-    // --- End of caching ---
 
-    // Find your class. JNI_OnLoad is called from the correct class loader context for this to work.
     jclass c = env->FindClass("im/mustang/capa/NodeProcess");
     if (c == nullptr) return JNI_ERR;
 
-    // Register your class' native methods.
     static const JNINativeMethod methods[] = {
             {"startNode", "([Ljava/lang/String;)I", (void*)Java_im_mustang_capa_NodeProcess_startNode}
     };
@@ -89,11 +79,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-// Now, your redirect functions become much faster
 extern "C" JNIEXPORT void JNICALL
 Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
     if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
-    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method); // Use cached method ID
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
     dup2(fd, STDOUT_FILENO);
     setvbuf(stdout, nullptr, _IOLBF, 0);
 }
@@ -101,7 +90,7 @@ Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobje
 extern "C" JNIEXPORT void JNICALL
 Java_im_mustang_capa_NodeProcess_redirectStderr(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
     if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
-    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method); // Use cached method ID
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
     dup2(fd, STDERR_FILENO);
     setvbuf(stderr, nullptr, _IONBF, 0);
 }

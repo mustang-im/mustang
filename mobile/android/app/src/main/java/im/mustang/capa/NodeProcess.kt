@@ -26,7 +26,9 @@ class NodeProcess(): ViewModel() {
     private val projectDir = "nodejs"
     private val APP_UPDATE_TIME = "app_update_time"
     private val PREFS_TAG = "node_process_prefs"
-
+    private val loggerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var stdoutPipe: ParcelFileDescriptor? = null
+    private var stderrPipe: ParcelFileDescriptor? = null
 
     private companion object {
         init {
@@ -35,12 +37,6 @@ class NodeProcess(): ViewModel() {
         }
     }
 
-    private val loggerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    // Keep track of two separate pipes now
-    private var stdoutPipe: ParcelFileDescriptor? = null
-    private var stderrPipe: ParcelFileDescriptor? = null
-
-    // --- Declare two separate native methods ---
     private external fun redirectStdout(writeFd: ParcelFileDescriptor?)
     private external fun redirectStderr(writeFd: ParcelFileDescriptor?)
 
@@ -56,6 +52,7 @@ class NodeProcess(): ViewModel() {
             redirectStdout(writeFd)
             writeFd.close()
 
+            // Launch a dedicated reader for stdout
             loggerScope.launch {
                 ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
                     val buffer = ByteArray(4096)
@@ -128,7 +125,12 @@ class NodeProcess(): ViewModel() {
             mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
             startRedirectingStdout()
             startRedirectingStderr()
-            startNode(arrayOf("node", mainJSPath))
+            try {
+                startNode(arrayOf("node", mainJSPath))
+            } catch (e: Exception) {
+                Log.e("NodeProcess", "Failed to start node", e)
+                Logger.consoleError("Failed to start node: ${e.message}")
+            }
         }
     }
 
