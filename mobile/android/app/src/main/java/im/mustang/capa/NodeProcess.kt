@@ -2,7 +2,6 @@ package im.mustang.capa
 
 import android.content.Context
 import com.getcapacitor.Bridge
-import com.getcapacitor.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -29,18 +28,7 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val 
         }
     }
 
-    private fun webViewConsoleLog(log: String) {
-        bridge.triggerJSEvent("nodeLog", "window", log)
-    }
-
-    private fun webViewConsoleError(log: String) {
-        bridge.triggerJSEvent("nodeError", "window", log)
-    }
-
     private external fun startNode(args: Array<String>): Int
-    private external fun initCapacitorRedirect()
-
-
 
     fun start() {
         if (this::job.isInitialized && job.isActive) {
@@ -49,9 +37,7 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val 
         job = coroutineScope.launch(Dispatchers.IO) {
             copyAssetDir("public/$projectDir", File(filesDir, projectDir))
             mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
-            initCapacitorRedirect()
             withContext(Dispatchers.Default) {
-                webViewConsoleLog("Starting node process")
                 startNode(arrayOf("node", mainJSPath))
             }
         }
@@ -110,12 +96,6 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val 
                     }
                 }
             }
-        }
-    }
-
-    fun stop() {
-        if (this::job.isInitialized && job.isActive) {
-            job.cancel()
         }
     }
 }

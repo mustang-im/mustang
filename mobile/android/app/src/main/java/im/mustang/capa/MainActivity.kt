@@ -16,11 +16,4 @@ class MainActivity : BridgeActivity() {
             nodeProcess.start()
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        lifecycleScope.launch(Dispatchers.IO) {
-            nodeProcess.stop()
-        }
-    }
 }
