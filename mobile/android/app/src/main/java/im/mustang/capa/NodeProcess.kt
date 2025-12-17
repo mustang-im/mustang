@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.res.AssetManager
+import android.os.ParcelFileDescriptor
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -13,6 +15,9 @@ import java.io.FileOutputStream
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
 
 class NodeProcess(): ViewModel() {
     private lateinit var job: Job
@@ -30,6 +35,78 @@ class NodeProcess(): ViewModel() {
         }
     }
 
+    private val loggerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    // Keep track of two separate pipes now
+    private var stdoutPipe: ParcelFileDescriptor? = null
+    private var stderrPipe: ParcelFileDescriptor? = null
+
+    // --- Declare two separate native methods ---
+    private external fun redirectStdout(writeFd: ParcelFileDescriptor?)
+    private external fun redirectStderr(writeFd: ParcelFileDescriptor?)
+
+    private fun startRedirectingStdout() {
+        if (stdoutPipe != null) return
+        try {
+            val pipeFds = ParcelFileDescriptor.createPipe()
+            val readFd = pipeFds[0]
+            val writeFd = pipeFds[1]
+            stdoutPipe = readFd
+
+            // Pass the write-end to the specific native method for stdout
+            redirectStdout(writeFd)
+            writeFd.close()
+
+            loggerScope.launch {
+                ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
+                    val buffer = ByteArray(4096)
+                    while (isActive) {
+                        val bytesRead = inputStream.read(buffer)
+                        if (bytesRead > 0) {
+                            val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
+                            Logger.consoleLog(message)
+                        } else if (bytesRead == -1) {
+                            break
+                        }
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            Log.e("NodeProcess", "Failed to start stdout redirection", e)
+        }
+    }
+
+    private fun startRedirectingStderr() {
+        if (stderrPipe != null) return
+        try {
+            val pipeFds = ParcelFileDescriptor.createPipe()
+            val readFd = pipeFds[0]
+            val writeFd = pipeFds[1]
+            stderrPipe = readFd
+
+            // Pass the write-end to the specific native method for stderr
+            redirectStderr(writeFd)
+            writeFd.close()
+
+            // Launch a dedicated reader for stderr
+            loggerScope.launch {
+                ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
+                    val buffer = ByteArray(4096)
+                    while (isActive) {
+                        val bytesRead = inputStream.read(buffer)
+                        if (bytesRead > 0) {
+                            val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
+                            Logger.consoleError(message)
+                        } else if (bytesRead == -1) {
+                            break
+                        }
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            Log.e("NodeProcess", "Failed to start stderr redirection", e)
+        }
+    }
+
     private external fun startNode(args: Array<String>): Int
 
     fun start(context: Context) {
@@ -41,7 +118,7 @@ class NodeProcess(): ViewModel() {
             val preferences = context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             if (!isAppUpdated(preferences, packageInfo)) {
-                saveAppUpdatedTime(preferences)
+                saveAppUpdatedTime(preferences, packageInfo)
                 val projectDestDir = File(filesDir, projectDir)
                 if (projectDestDir.exists()) {
                     deleteDirectory(projectDestDir)
@@ -49,6 +126,8 @@ class NodeProcess(): ViewModel() {
                 copyAssetDir("public/$projectDir", projectDestDir, context.assets)
             }
             mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
+            startRedirectingStdout()
+            startRedirectingStderr()
             startNode(arrayOf("node", mainJSPath))
         }
     }
@@ -124,9 +203,9 @@ class NodeProcess(): ViewModel() {
         val lastUpdateTime = packageInfo.lastUpdateTime
         return lastUpdateTime == previousLastUpdateTime
     }
-    fun saveAppUpdatedTime(preferences: SharedPreferences) {
+    fun saveAppUpdatedTime(preferences: SharedPreferences, packageInfo: PackageInfo) {
         preferences.edit {
-            putLong(APP_UPDATE_TIME, System.currentTimeMillis())
+            putLong(APP_UPDATE_TIME, packageInfo.lastUpdateTime)
         }
     }
 }

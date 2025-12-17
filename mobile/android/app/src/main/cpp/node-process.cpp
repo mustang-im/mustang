@@ -1,71 +1,81 @@
 #include <jni.h>
 #include <string>
-#include <vector>  // Include vector
+#include <vector>
 #include "node.h"
-#include <pthread.h>
 #include <unistd.h>
-#include <jni.h>
-#include <stdio.h>
+#include <cstdio>
 
-extern "C"
-JNIEXPORT int JNICALL
+
+extern "C" JNIEXPORT int JNICALL
 Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArray args) {
-    // 1. Get the number of arguments
     jsize argc = env->GetArrayLength(args);
+    if (argc == 0) {
+        return jint(node::Start(0, nullptr));
+    }
 
-    // 2. Use std::vector for safe, automatic memory management
-    std::vector<std::vector<char>> argv_data; // Stores the actual character data for each argument
-    argv_data.reserve(argc);
-
-    std::vector<char*> argv; // The final array of pointers for node::Start
-    argv.reserve(argc);
-
-    // 3. Process each argument using regions
+    // --- High-performance argv creation ---
+    // 1. Calculate total memory needed for all strings
+    size_t total_string_size = 0;
+    std::vector<jsize> lengths(argc);
     for (jsize i = 0; i < argc; i++) {
-        jstring arg_jstring = (jstring)env->GetObjectArrayElement(args, i);
-
-        // Safety check for null arguments in the Java array
+        auto arg_jstring = (jstring)env->GetObjectArrayElement(args, i);
         if (arg_jstring == nullptr) {
+            lengths[i] = 0;
             continue;
         }
-
-        // Get the length of the string in UTF-8 bytes (this is NOT the character count)
-        const jsize utf_len = env->GetStringUTFLength(arg_jstring);
-
-        // Create a buffer that is one byte longer for the null terminator
-        std::vector<char> buffer(utf_len + 1);
-
-        // Copy the string data into our buffer using the region call
-        env->GetStringUTFRegion(arg_jstring, 0, utf_len, buffer.data());
-
-        // MANUALLY add the null terminator
-        buffer[utf_len] = '\0';
-
-        // Store the buffer in our data vector
-        argv_data.push_back(std::move(buffer));
-
-        // No Release call is needed for GetStringUTFRegion!
-
-        // Immediately release the JNI local reference to the jstring
+        lengths[i] = env->GetStringUTFLength(arg_jstring);
+        total_string_size += lengths[i] + 1; // +1 for null terminator
         env->DeleteLocalRef(arg_jstring);
     }
 
-    // 4. Build the final argv for node::Start
-    for(auto& data : argv_data) {
-        argv.push_back(data.data());
+    // 2. Allocate one contiguous block for strings and one for pointers
+    std::vector<char> string_buffer(total_string_size);
+    std::vector<char*> argv(argc);
+
+    // 3. Copy strings into the buffer and set pointers
+    char* current_pos = string_buffer.data();
+    for (jsize i = 0; i < argc; i++) {
+        auto arg_jstring = (jstring)env->GetObjectArrayElement(args, i);
+        argv[i] = current_pos; // Set pointer
+
+        if (arg_jstring != nullptr) {
+            env->GetStringUTFRegion(arg_jstring, 0, lengths[i], current_pos);
+            current_pos[lengths[i]] = '\0'; // Null-terminate
+            current_pos += lengths[i] + 1;  // Move to next position
+            env->DeleteLocalRef(arg_jstring);
+        } else {
+            *current_pos = '\0'; // Handle null string argument
+            current_pos++;
+        }
     }
 
-    // 5. Call the node function
+    // 4. Call the node function
     return jint(node::Start(argv.size(), argv.data()));
-
-    // All memory in argv_data and argv is automatically cleaned up here!
 }
 
+static jclass g_pfd_class = nullptr;
+static jmethodID g_get_fd_method = nullptr;
+
+// In JNI_OnLoad, find and cache the class and method ID
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;
     }
+
+    // --- Cache ParcelFileDescriptor details ---
+    jclass pfd_class_local = env->FindClass("android/os/ParcelFileDescriptor");
+    if (pfd_class_local == nullptr) return JNI_ERR;
+    // Create a global reference to use across JNI calls
+    g_pfd_class = (jclass)env->NewGlobalRef(pfd_class_local);
+    if (g_pfd_class == nullptr) return JNI_ERR;
+    // Clean up the local reference
+    env->DeleteLocalRef(pfd_class_local);
+
+    g_get_fd_method = env->GetMethodID(g_pfd_class, "getFd", "()I");
+    if (g_get_fd_method == nullptr) return JNI_ERR;
+    // --- End of caching ---
+
     // Find your class. JNI_OnLoad is called from the correct class loader context for this to work.
     jclass c = env->FindClass("im/mustang/capa/NodeProcess");
     if (c == nullptr) return JNI_ERR;
@@ -77,4 +87,21 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;
     return JNI_VERSION_1_6;
+}
+
+// Now, your redirect functions become much faster
+extern "C" JNIEXPORT void JNICALL
+Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
+    if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method); // Use cached method ID
+    dup2(fd, STDOUT_FILENO);
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_im_mustang_capa_NodeProcess_redirectStderr(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
+    if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method); // Use cached method ID
+    dup2(fd, STDERR_FILENO);
+    setvbuf(stderr, nullptr, _IONBF, 0);
 }
