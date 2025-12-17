@@ -1,6 +1,7 @@
 package im.mustang.capa
 
 import android.content.Context
+import com.getcapacitor.Bridge
 import com.getcapacitor.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,7 +12,7 @@ import java.io.File
 import java.io.IOException
 import java.io.FileOutputStream
 
-class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
+class NodeProcess(val context: Context, val coroutineScope: CoroutineScope, val bridge: Bridge) {
     lateinit var job: Job
     lateinit var mainJSPath: String
     val mainJS = "index.mjs"
@@ -26,39 +27,33 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
             System.loadLibrary("node")
             System.loadLibrary("node-process")
         }
+    }
 
-        // Define constants to match Android's log levels
-        // These will be passed from C++ to identify the log level.
-        private const val ANDROID_LOG_INFO = 4
-        private const val ANDROID_LOG_ERROR = 6
+    private fun webViewConsoleLog(log: String) {
+        bridge.triggerJSEvent("nodeLog", "window", log)
+    }
 
-        /**
-         * This is the implementation of the native logToCapacitor function.
-         * It will be called from C++ threads.
-         * The @JvmStatic annotation is important.
-         */
-        @JvmStatic
-        private fun logToCapacitorImpl(level: Int, tag: String, message: String) {
-            when (level) {
-                ANDROID_LOG_INFO -> Logger.info(tag, message)
-                ANDROID_LOG_ERROR -> Logger.error(tag, Error(message))
-                else -> Logger.debug(tag, message)
-            }
-        }
+    private fun webViewConsoleError(log: String) {
+        bridge.triggerJSEvent("nodeError", "window", log)
     }
 
     private external fun startNode(args: Array<String>): Int
+    private external fun initCapacitorRedirect()
+
+
 
     fun start() {
         if (this::job.isInitialized && job.isActive) {
             job.cancel()
         }
-        job = coroutineScope.launch(Dispatchers.Default) {
-            withContext(Dispatchers.IO) {
-                copyAssetDir("public/$projectDir", File(filesDir, projectDir))
-            }
+        job = coroutineScope.launch(Dispatchers.IO) {
+            copyAssetDir("public/$projectDir", File(filesDir, projectDir))
             mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
-            startNode(arrayOf("node", mainJSPath))
+            initCapacitorRedirect()
+            withContext(Dispatchers.Default) {
+                webViewConsoleLog("Starting node process")
+                startNode(arrayOf("node", mainJSPath))
+            }
         }
     }
 

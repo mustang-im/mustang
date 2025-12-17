@@ -12,7 +12,7 @@ class MainActivity : BridgeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch(Dispatchers.IO) {
-            nodeProcess = NodeProcess(applicationContext, lifecycleScope)
+            nodeProcess = NodeProcess(applicationContext, lifecycleScope, bridge)
             nodeProcess.start()
         }
     }
