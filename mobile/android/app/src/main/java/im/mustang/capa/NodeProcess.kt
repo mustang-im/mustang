@@ -3,23 +3,22 @@ package im.mustang.capa
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageInfo
+import android.content.res.AssetManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.io.IOException
 import java.io.FileOutputStream
 import androidx.core.content.edit
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 
-class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
+class NodeProcess(): ViewModel() {
     private lateinit var job: Job
     private lateinit var mainJSPath: String
     private val mainJS = "index.mjs"
     private val projectDir = "nodejs"
-    private val cacheDir = context.cacheDir
-    private val filesDir = context.filesDir
-    private val assetManager = context.assets
     private val APP_UPDATE_TIME = "app_update_time"
     private val PREFS_TAG = "node_process_prefs"
 
@@ -33,18 +32,21 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
 
     private external fun startNode(args: Array<String>): Int
 
-    fun start() {
+    fun start(context: Context) {
         if (this::job.isInitialized && job.isActive) {
             job.cancel()
         }
-        job = coroutineScope.launch(Dispatchers.IO) {
-            if (!isAppUpdated()) {
-                saveAppUpdatedTime()
+        job = viewModelScope.launch(Dispatchers.IO) {
+            val filesDir = context.filesDir
+            val preferences = context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            if (!isAppUpdated(preferences, packageInfo)) {
+                saveAppUpdatedTime(preferences)
                 val projectDestDir = File(filesDir, projectDir)
                 if (projectDestDir.exists()) {
                     deleteDirectory(projectDestDir)
                 }
-                copyAssetDir("public/$projectDir", projectDestDir)
+                copyAssetDir("public/$projectDir", projectDestDir, context.assets)
             }
             mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
             startNode(arrayOf("node", mainJSPath))
@@ -59,7 +61,7 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
      * @throws IOException If an I/O error occurs during the copy process.
      */
     @Throws(IOException::class)
-    private fun copyAssetDir(assetDir: String, destDir: File) {
+    private fun copyAssetDir(assetDir: String, destDir: File, assetManager: AssetManager) {
         // Create the destination directory if it doesn't exist
         if (!destDir.exists()) {
             if (!destDir.mkdirs()) {
@@ -86,7 +88,7 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
             try {
                 // If list() returns a non-empty array, it's a directory.
                 if (assetManager.list(assetPath)?.isNotEmpty() == true) {
-                    copyAssetDir(assetPath, destFile) // Recursive call for subdirectory
+                    copyAssetDir(assetPath, destFile, assetManager) // Recursive call for subdirectory
                 } else {
                     // It's a file, copy it
                     assetManager.open(assetPath).use { inputStream ->
@@ -117,19 +119,12 @@ class NodeProcess(val context: Context, val coroutineScope: CoroutineScope) {
         }
         return directory.delete()
     }
-    private val preferences: SharedPreferences by lazy {
-        context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
-    }
-
-    private val packageInfo: PackageInfo by lazy {
-        context.packageManager.getPackageInfo(context.packageName, 0)
-    }
-    fun isAppUpdated(): Boolean {
+    fun isAppUpdated(preferences: SharedPreferences, packageInfo: PackageInfo): Boolean {
         val previousLastUpdateTime = preferences.getLong(APP_UPDATE_TIME, 0)
         val lastUpdateTime = packageInfo.lastUpdateTime
         return lastUpdateTime == previousLastUpdateTime
     }
-    fun saveAppUpdatedTime() {
+    fun saveAppUpdatedTime(preferences: SharedPreferences) {
         preferences.edit {
             putLong(APP_UPDATE_TIME, System.currentTimeMillis())
         }
