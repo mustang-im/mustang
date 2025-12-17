@@ -94,6 +94,7 @@ export class EWSAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.mainAccount) {
       await this.mainAccount.login(interactive);
+      await this.listFolders();
       return;
     }
     await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
