@@ -276,6 +276,9 @@ export class EWSAccount extends MailAccount {
       },
     };
     if (this.authMethod == AuthMethod.OAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        throw new LoginError(null, "Please login");
+      }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else if (this.authMethod == AuthMethod.NTLM) {
       if (authorizationHeader) {

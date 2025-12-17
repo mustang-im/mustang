@@ -3,7 +3,8 @@ import { notifyChangedProperty, notifyChangedAccessor } from "../../util/Observa
 import { Lock } from "../../util/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
+import type { LocalParticipant, LocalTrack } from "livekit-client";
+import { Track } from "./LiveKitRemoteParticipant";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */

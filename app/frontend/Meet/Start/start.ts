@@ -1,7 +1,6 @@
 import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
 import { MeetAccount } from "../../../logic/Meet/MeetAccount";
 import { LiveKitAccount } from "../../../logic/Meet/LiveKit/LiveKitAccount";
-import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
 import { VideoStream } from "../../../logic/Meet/VideoStream";
 import { MeetingParticipant } from "../../../logic/Meet/Participant";
 import type { Person } from "../../../logic/Abstract/Person";
@@ -12,7 +11,6 @@ import { appGlobal } from "../../../logic/app";
 import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
 import { gt } from "../../../l10n/l10n";
 import { UserError, type URLString } from "../../../logic/util/util";
-import { faker } from "@faker-js/faker";
 
 export async function startAdHocMeeting(): Promise<VideoConfMeeting> {
   await createMustangMeetAccountIfPossible();
@@ -31,6 +29,7 @@ export function getMeetAccount(): MeetAccount {
 }
 
 export async function startFakeMeeting() {
+  const { FakeMeeting } = await import("../../../logic/Meet/FakeMeeting");
   let meeting = new FakeMeeting();
   await meeting.createNewConference();
   appGlobal.meetings.add(meeting);
@@ -52,6 +51,7 @@ class FakeIncomingCall extends VideoConfMeeting {
 }
 
 export async function testIncoming(person: Person) {
+  const { faker } = await import("@faker-js/faker");
   let fakeMeeting = new Event();
   fakeMeeting.startTime = faker.date.soon({ days: 1/24/4 });
   fakeMeeting.endTime = faker.date.soon({ days: 1/24 });
@@ -68,6 +68,7 @@ export async function testIncoming(person: Person) {
 }
 
 export async function callSelected(person: Person): Promise<VideoConfMeeting> {
+  const { faker } = await import("@faker-js/faker");
   let callee = new MeetingParticipant();
   callee.name = person.name;
   callee.picture = person.picture;

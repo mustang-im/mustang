@@ -1,7 +1,7 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -9,6 +9,7 @@ import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
+import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
@@ -50,6 +51,8 @@ export class JMAPAccount extends MailAccount {
     await this.loginOAuth2(interactive);
     await this.getSession();
     await this.listFolders();
+    this.startPushListener()
+      .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();
@@ -154,7 +157,7 @@ export class JMAPAccount extends MailAccount {
     }
     let log: any[] = [ "Calling" ];
     for (let method of requestJSON?.methodCalls) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
@@ -173,7 +176,7 @@ export class JMAPAccount extends MailAccount {
     }
     log.push("Response");
     for (let method of responsesJSON?.methodResponses) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
     if (this.logging) {
       console.log(...log);
@@ -205,6 +208,19 @@ export class JMAPAccount extends MailAccount {
     return responsesJSON.methodResponses;
   }
 
+  protected authorizationHeader(): string {
+    // Auth method
+    let usePassword = [AuthMethod.Password].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
+    if (usePassword) {
+      return basicAuth(this.username, this.password);
+    } else if (useOAuth2) {
+      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
+      return this.oAuth2.authorizationHeader;
+    }
+    return undefined;
+  }
+
   protected async ky(options: Record<string, any> = {}) {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -214,16 +230,7 @@ export class JMAPAccount extends MailAccount {
     for (let name in options.headers) {
       headers[name] = options.headers[name];
     }
-
-    // Auth method
-    let usePassword = [AuthMethod.Password].includes(this.authMethod);
-    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
-    if (usePassword) {
-      headers.Authorization = basicAuth(this.username, this.password);
-    } else if (useOAuth2) {
-      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
-      headers.Authorization = this.oAuth2.authorizationHeader;
-    }
+    headers.Authorization = this.authorizationHeader();
     // console.log("JMAP headers", headers);
 
     return appGlobal.remoteApp.kyCreate({
@@ -439,30 +446,67 @@ export class JMAPAccount extends MailAccount {
   }
 
   /**
-   * Call this when the server state changed and the server told us.
-   * This may be in result of a `get`, `set` or push call.
    * Triggers an update, as needed.
    *
    * @param type What object type the sync state is for.
    *  The state is account-global (i.e. across folders), but specific to an
    *  object type.
-   * @param newState The sync state that the server returned after a server call.
-   * @param oldState
-   *  Empty, if this was a `get` operation and we're now up to date
+   * @param toState (Optional) The sync state that the server returned after a server call.
+   * @param fromState (Optional)
    *  If this was a `set` operation, this is the state that the server
    *  returned as the old state before the operation.
    */
-  setState(type: TJMAPObjectType, newState: string, oldState?: string) {
-    let knownState = this.syncState.get(type);
-    this.syncState.set(type, newState);
-    if (knownState != newState && knownState != oldState && oldState) {
-      this.sync(type, knownState)
-        .catch(this.errorCallback);
+  async sync(type: TJMAPObjectType, toState?: string, fromState?: string) {
+    fromState ??= this.syncState.get(type);
+    if (toState && toState == fromState) {
+      return;
+    }
+
+    if (type == "Email") {
+      await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
   }
 
-  async sync(type: TJMAPObjectType, fromState: string) {
-    // TODO
+  /** Starts push mail
+   * Runs as long as we're logged in, so don't `await` it */
+  async startPushListener(): Promise<void> {
+    let url = this.session.eventSourceUrl;
+    assert(url, "Need event source URL");
+    url = url
+      .replace("{accountId}", this.accountID)
+      .replace("{types}", "Email") // TJMAPObjectTypes.join(","))
+      .replace("{ping}", "500")
+      .replace("{closeafter}", "no");
+    while (this.isLoggedIn) {
+      let stream = await fetch(url, {
+        headers: {
+          Authorization: this.authorizationHeader(),
+        }
+      });
+      if (!stream.ok) {
+        throw new Error(`EventSource <${url}> failed with HTTP ${stream.status} ${stream.statusText}`);
+      }
+      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+      for await (let event of eventStream) {
+        if (event.name == "state") {
+          try {
+            let json = JSON.parse(event.data);
+            assert(json.changed, "Need state changes");
+            let changes = json.changed[this.accountID];
+            for (let typename in changes) {
+              let newState = changes[typename];
+              let type = typename as TJMAPObjectType;
+              if (newState == this.syncState.get(type)) {
+                continue;
+              }
+              await this.sync(type, newState);
+            }
+          } catch (ex) {
+            console.error(ex);
+          }
+        }
+      }
+    }
   }
 
   hasCapability(capa: string): boolean {

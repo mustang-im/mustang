@@ -3,6 +3,7 @@ import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
+import { EWSItemError } from "./EWSError";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { PersonUID } from "../../Abstract/PersonUID";
@@ -292,16 +293,23 @@ export class EWSFolder extends Folder {
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
-      for (let result of results) {
-        try {
-          let email = this.newEMail();
-          email.fromXML(getEWSItem(result.Items));
-          await this.storage.saveMessage(email);
-          newMsgs.add(email);
-        } catch (ex) {
-          this.account.errorCallback(ex);
+      try {
+        let results = ensureArray(await this.account.callEWS(request));
+        for (let result of results) {
+          try {
+            if (result.ResponseClass == "Error") {
+              throw new EWSItemError(result, request);
+            }
+            let email = this.newEMail();
+            email.fromXML(getEWSItem(result.Items));
+            await this.storage.saveMessage(email);
+            newMsgs.add(email);
+          } catch (ex) {
+            this.account.errorCallback(ex);
+          }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return newMsgs;

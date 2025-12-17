@@ -6,7 +6,6 @@ import { ChatPerson } from "../Person";
 import { ContactBase } from "../../Abstract/Contact";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
-import { JXT } from "stanza";
 import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends Chat {
@@ -44,6 +43,7 @@ export class XMPPChat extends Chat {
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: UserChatMessage) {
+    const { JXT } = await import("stanza");
     assert(message.contact instanceof ContactBase && message.contact.id, "Need contact with Jabber User ID");
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);

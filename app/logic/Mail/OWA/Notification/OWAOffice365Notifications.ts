@@ -1,5 +1,6 @@
 import { OWANotifications } from "./OWANotifications";
-import { appGlobal } from "../../../app";
+import { EventDecoder } from "../../../util/eventSource";
+import { sleep } from "../../../util/util";
 import { URLPart } from "../../../../frontend/Util/util";
 
 export class OWAOffice365Notifications extends OWANotifications {
@@ -65,15 +66,15 @@ export class OWAOffice365Notifications extends OWANotifications {
         if (!stream.ok) {
           throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
         }
-        for await (let chunk of stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()))) {
-          //console.log(chunk);
-          // Ignore the initial chunk and any heartbeat chunks
-          if (chunk.data != "initialized" && chunk.data != "{}") {
-            // Avoid racing with ourselves, if we caused the notification.
-            await new Promise(resolve => setTimeout(resolve, 100));
-            let json = JSON.parse(chunk.data);
-            await this.account.onNotificationMessages(json.M);
+        let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+        for await (let event of eventStream) {
+          // Ignore the initial event and any heartbeat events
+          if (event.data == "initialized" || event.data == "{}") {
+            continue;
           }
+          await sleep(0.1); // Avoid racing with ourselves, if we caused the notification
+          let json = JSON.parse(event.data);
+          await this.account.onNotificationMessages(json.M);
         }
         clearInterval(pingTimer);
         clearTimeout(abortTimer);
@@ -100,57 +101,5 @@ class OWAGetAccessTokenforResourceRequest {
 
   get action() {
     return "GetAccessTokenforResource";
-  }
-}
-
-function newEvent() {
-  return {
-    name: 'message',
-    data: '',
-    id: '',
-    retry: 0,
-  };
-}
-
-class EventDecoder {
-  data = '';
-  event = newEvent();
-  transform(chunk, controller) {
-    this.data += chunk;
-    let lines = this.data.split(/\r\n?|\n/);
-    this.data = lines.pop();
-    for (let line of lines) {
-      if (!line) {
-        this.event.data = this.event.data.slice(0, -1);
-        controller.enqueue(this.event);
-        this.event = newEvent();
-        continue;
-      }
-      let value = '';
-      let pos = line.indexOf(":");
-      if (pos != -1) {
-        value = line.slice(pos + 1);
-        if (value[0] == ' ') {
-          value = value.slice(1);
-        }
-        line = line.slice(0, pos);
-      }
-      switch (line) {
-      case 'event':
-        this.event.name = value;
-        break;
-      case 'data':
-        this.event.data += value + "\n";
-        break;
-      case 'id':
-        this.event.id = value;
-        break;
-      case 'retry':
-        if (Number.isInteger(value)) {
-          this.event.retry = Number(value);
-        }
-        break;
-      }
-    }
   }
 }

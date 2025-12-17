@@ -64,12 +64,12 @@ export class EWSEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(getEmailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
     }
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
@@ -268,7 +268,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddressOrX400(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
 }
 
 /**
@@ -278,7 +278,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
  * @returns email address
  * @throws when not valid
  */
-function getEmailAddress(emailAddress: string): string {
+export function getEmailAddressOrX400(emailAddress: string): string {
   if (emailAddress.startsWith("/o=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
@@ -287,13 +287,17 @@ function getEmailAddress(emailAddress: string): string {
 
 /**
  * Converts X.400 into pseudo email addresses.
+ *
+ * This is just as a fail-safe. When we download the MIME and parse it,
+ * we should be getting the real Internet email addresses anyways.
+ *
  * @param x400 X.400 address
  * @returns pseudo email address
  */
 export function convertX400ToEmailAddress(x400: string): string {
   let parts = x400.split("/");
   let username = "user";
-  let domain = "x400";
+  let domain = "xfourhundred";
   for (let part of parts) {
     if (!part) {
       continue;
@@ -305,7 +309,7 @@ export function convertX400ToEmailAddress(x400: string): string {
     }
     if (part.startsWith("ou=")) {
       part = part.substring(3);
-      const prefix = "Exchange Organizational Unit (";
+      const prefix = "Exchange Administrative Group (";
       const suffix = ")";
       if (part.startsWith(prefix)) {
         part = part.substring(prefix.length, part.length - suffix.length);
@@ -321,8 +325,7 @@ export function convertX400ToEmailAddress(x400: string): string {
       username = ensureAlphaNum(part);
     }
   }
-  console.log("X.400 to email", username + "@" + domain);
-  return sanitize.emailAddress(username + "@" + domain);
+  return sanitize.emailAddress(username + "@" + domain, "must@ng");
 }
 
 function ensureAlphaNum(str: string): string {

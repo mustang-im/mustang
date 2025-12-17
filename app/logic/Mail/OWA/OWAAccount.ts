@@ -181,6 +181,7 @@ export class OWAAccount extends MailAccount {
 
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
+      let isMainAB = true;
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
       for (let ab of response) {
         // Exclude internal contacts folders.
@@ -189,10 +190,13 @@ export class OWAAccount extends MailAccount {
         }
         let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
         addressbook.initFromMainAccount(this);
-        addressbook.name = `${this.name} ${ab.DisplayName}`;
+        if (!isMainAB) {
+          addressbook.name = `${this.name} ${ab.DisplayName}`;
+        }
         addressbook.folderID = ab.FolderId.Id;
         appGlobal.addressbooks.add(addressbook);
         addressbook.save();
+        isMainAB = false;
       }
     }
 

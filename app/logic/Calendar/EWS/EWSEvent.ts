@@ -8,6 +8,7 @@ import { EWSOutgoingInvitation } from "./EWSOutgoingInvitation";
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -102,7 +103,7 @@ export class EWSEvent extends Event {
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (xmljs.Organizer && (xmljs.RequiredAttendees?.Attendee || xmljs.OptionalAttendees?.Attendee)) {
-      organizer = sanitize.emailAddress(xmljs.Organizer.Mailbox.EmailAddress);
+      organizer = getEmailAddressOrX400(xmljs.Organizer.Mailbox.EmailAddress);
       xmljs.Organizer.ResponseType = "Organizer";
       addParticipants(xmljs.Organizer, participants);
     }

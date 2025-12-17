@@ -9,7 +9,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
 import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
-import { Room, RemoteParticipant, RoomEvent, type RpcInvocationData } from "livekit-client";
+import type { Room, RemoteParticipant, RpcInvocationData } from "livekit-client";
 
 export class LiveKitConf extends VideoConfMeeting {
   /* Authentication */
@@ -180,6 +180,7 @@ export class LiveKitConf extends VideoConfMeeting {
   }
 
   protected async joinAfterStart(participantToken: string) {
+    const { Room, RoomEvent } = await import("livekit-client");
     this.room = new Room();
     await this.room.connect(this.webSocketURL, participantToken);
     this.title = this.room.name;
