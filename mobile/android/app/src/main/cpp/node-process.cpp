@@ -9,7 +9,7 @@
 static jclass g_pfd_class = nullptr;
 static jmethodID g_get_fd_method = nullptr;
 
-// JNI_OnLoad is called once when the library is loaded. Perfect for caching.
+// JNI_OnLoad is called once when the library is loaded.
 extern "C" JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv* env;
@@ -30,7 +30,6 @@ JNI_OnLoad(JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-// --- Optimized Native Methods ---
 extern "C" JNIEXPORT void JNICALL
 Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
     if (parcelFileDescriptor == nullptr || g_get_fd_method == nullptr) return;
