@@ -1,10 +1,51 @@
 #include <jni.h>
-#include <string>
-#include <vector>
-#include "node.h"
 #include <unistd.h>
 #include <cstdio>
+#include "node.h"
+#include <vector>
+#include <string>
 
+// --- Globals for caching JNI lookups ---
+static jclass g_pfd_class = nullptr;
+static jmethodID g_get_fd_method = nullptr;
+
+// JNI_OnLoad is called once when the library is loaded. Perfect for caching.
+extern "C" JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
+
+    // Find and cache the ParcelFileDescriptor class and getFd method
+    jclass pfd_class_local = env->FindClass("android/os/ParcelFileDescriptor");
+    if (pfd_class_local == nullptr) return JNI_ERR;
+    g_pfd_class = (jclass)env->NewGlobalRef(pfd_class_local);
+    env->DeleteLocalRef(pfd_class_local);
+    if (g_pfd_class == nullptr) return JNI_ERR;
+
+    g_get_fd_method = env->GetMethodID(g_pfd_class, "getFd", "()I");
+    if (g_get_fd_method == nullptr) return JNI_ERR;
+
+    return JNI_VERSION_1_6;
+}
+
+// --- Optimized Native Methods ---
+extern "C" JNIEXPORT void JNICALL
+Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
+    if (parcelFileDescriptor == nullptr || g_get_fd_method == nullptr) return;
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
+    dup2(fd, STDOUT_FILENO);
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_im_mustang_capa_NodeProcess_redirectStderr(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
+    if (parcelFileDescriptor == nullptr || g_get_fd_method == nullptr) return;
+    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
+    dup2(fd, STDERR_FILENO);
+    setvbuf(stderr, nullptr, _IONBF, 0);
+}
 
 extern "C" JNIEXPORT int JNICALL
 Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArray args) {
@@ -47,50 +88,4 @@ Java_im_mustang_capa_NodeProcess_startNode(JNIEnv *env, jobject thiz, jobjectArr
 
     // 4. Call the node function
     return jint(node::Start(argv.size(), argv.data()));
-}
-
-static jclass g_pfd_class = nullptr;
-static jmethodID g_get_fd_method = nullptr;
-
-// In JNI_OnLoad, find and cache the class and method ID
-JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv* env;
-    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-        return JNI_ERR;
-    }
-
-    jclass pfd_class_local = env->FindClass("im/mustang/capa/ParcelFileDescriptor");
-    if (pfd_class_local == nullptr) return JNI_ERR;
-    g_pfd_class = (jclass)env->NewGlobalRef(pfd_class_local);
-    if (g_pfd_class == nullptr) return JNI_ERR;
-    env->DeleteLocalRef(pfd_class_local);
-
-    g_get_fd_method = env->GetMethodID(g_pfd_class, "getFd", "()I");
-    if (g_get_fd_method == nullptr) return JNI_ERR;
-
-    jclass c = env->FindClass("im/mustang/capa/NodeProcess");
-    if (c == nullptr) return JNI_ERR;
-
-    static const JNINativeMethod methods[] = {
-            {"startNode", "([im/mustang/capa/String;)I", (void*)Java_im_mustang_capa_NodeProcess_startNode}
-    };
-    int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
-    if (rc != JNI_OK) return rc;
-    return JNI_VERSION_1_6;
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_im_mustang_capa_NodeProcess_redirectStdout(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
-    if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
-    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
-    dup2(fd, STDOUT_FILENO);
-    setvbuf(stdout, nullptr, _IOLBF, 0);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_im_mustang_capa_NodeProcess_redirectStderr(JNIEnv* env, jobject thiz, jobject parcelFileDescriptor) {
-    if (parcelFileDescriptor == nullptr || g_pfd_class == nullptr || g_get_fd_method == nullptr) return;
-    int fd = env->CallIntMethod(parcelFileDescriptor, g_get_fd_method);
-    dup2(fd, STDERR_FILENO);
-    setvbuf(stderr, nullptr, _IONBF, 0);
 }

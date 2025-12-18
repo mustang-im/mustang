@@ -1,34 +1,52 @@
 package im.mustang.capa
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.res.AssetManager
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import java.io.File
-import java.io.IOException
-import java.io.FileOutputStream
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
+// Use application context to avoid memory leaks. Holding a direct context is risky.
+@SuppressLint("StaticFieldLeak")
 class NodeProcess(): ViewModel() {
     private lateinit var job: Job
-    private lateinit var mainJSPath: String
     private val mainJS = "index.mjs"
     private val projectDir = "nodejs"
     private val APP_UPDATE_TIME = "app_update_time"
     private val PREFS_TAG = "node_process_prefs"
+
+    // This scope is for the I/O reading threads. SupervisorJob prevents one failure from killing the other.
     private val loggerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private var isInitialized = false
+    private var appContext: Context? = null
     private var stdoutPipe: ParcelFileDescriptor? = null
     private var stderrPipe: ParcelFileDescriptor? = null
+
+    // --- Lazy properties for performance: initialized only once on first access ---
+    private val preferences: SharedPreferences by lazy {
+        appContext!!.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
+    }
+    private val packageInfo: PackageInfo by lazy {
+        appContext!!.packageManager.getPackageInfo(appContext!!.packageName, 0)
+    }
+    private val filesDir: File by lazy { appContext!!.filesDir }
+    private val assets: AssetManager by lazy { appContext!!.assets }
+    private val mainJSPath: String by lazy { File(filesDir, "$projectDir/$mainJS").absolutePath }
 
     private companion object {
         init {
@@ -37,34 +55,82 @@ class NodeProcess(): ViewModel() {
         }
     }
 
+
     private external fun redirectStdout(writeFd: ParcelFileDescriptor?)
     private external fun redirectStderr(writeFd: ParcelFileDescriptor?)
+    private external fun startNode(args: Array<String>): Int
+
+    fun start(context: Context) {
+        // Prevent re-initialization
+        if (isInitialized) {
+            return
+        }
+        this.appContext = context.applicationContext
+        isInitialized = true
+
+        job = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // Check for updates and copy assets if needed
+                if (!isAppUpdated()) {
+                    saveAppUpdatedTime()
+                    val projectDestDir = File(filesDir, projectDir)
+                    if (projectDestDir.exists()) {
+                        deleteDirectory(projectDestDir)
+                    }
+                    copyAssetDir("public/$projectDir", projectDestDir, assets)
+                }
+
+                // Start log redirection before starting the node process
+                startRedirectingStdout()
+                startRedirectingStderr()
+
+                // This is a long-running, blocking call.
+                startNode(arrayOf("node", "--optimize-for-size", "--max-old-space-size=256", mainJSPath))
+
+            } catch (e: Exception) {
+                // Catch any crash during setup or execution.
+                // This prevents the whole app from crashing if Node.js fails.
+                Logger.error("Node.js process failed or exited: ${e.message}")
+            } finally {
+                Logger.log("Node.js process has finished.")
+            }
+        }
+    }
+
+    // A single, efficient, reusable pipe reader
+    private fun startReadingFromPipe(readFd: ParcelFileDescriptor, logAction: (String) -> Unit) {
+        loggerScope.launch {
+            try {
+                ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    while (isActive) {
+                        bytesRead = inputStream.read(buffer)
+                        if (bytesRead == -1) {
+                            break
+                        }
+
+                        if (bytesRead > 0) {
+                            val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
+                            logAction(message)
+                        }
+                    }
+                }
+            } catch (e: IOException) {
+                // This is expected when the pipe is closed by the dying node process
+                Log.d("NodeProcess", "Pipe reader finished: ${e.message}")
+            }
+        }
+    }
 
     private fun startRedirectingStdout() {
         if (stdoutPipe != null) return
         try {
-            val pipeFds = ParcelFileDescriptor.createPipe()
-            val readFd = pipeFds[0]
-            val writeFd = pipeFds[1]
+            val (readFd, writeFd) = ParcelFileDescriptor.createPipe()
             stdoutPipe = readFd
-
-            // Pass the write-end to the specific native method for stdout
             redirectStdout(writeFd)
             writeFd.close()
-
-            // Launch a dedicated reader for stdout
-            loggerScope.launch {
-                ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
-                    val buffer = ByteArray(4096)
-                    var bytesRead: Int
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                        if (bytesRead > 0) {
-                            val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
-                            Logger.log(message)
-                        }
-                    }
-                }
-            }
+            startReadingFromPipe(readFd, Logger::log)
         } catch (e: IOException) {
             Log.e("NodeProcess", "Failed to start stdout redirection", e)
         }
@@ -73,60 +139,13 @@ class NodeProcess(): ViewModel() {
     private fun startRedirectingStderr() {
         if (stderrPipe != null) return
         try {
-            val pipeFds = ParcelFileDescriptor.createPipe()
-            val readFd = pipeFds[0]
-            val writeFd = pipeFds[1]
+            val (readFd, writeFd) = ParcelFileDescriptor.createPipe()
             stderrPipe = readFd
-
-            // Pass the write-end to the specific native method for stderr
             redirectStderr(writeFd)
             writeFd.close()
-
-            // Launch a dedicated reader for stderr
-            loggerScope.launch {
-                ParcelFileDescriptor.AutoCloseInputStream(readFd).use { inputStream ->
-                    val buffer = ByteArray(4096)
-                    var bytesRead: Int
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                        if (bytesRead > 0) {
-                            val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
-                            Logger.error(message)
-                        }
-                    }
-                }
-            }
+            startReadingFromPipe(readFd, Logger::error)
         } catch (e: IOException) {
             Log.e("NodeProcess", "Failed to start stderr redirection", e)
-        }
-    }
-
-    private external fun startNode(args: Array<String>): Int
-
-    fun start(context: Context) {
-        if (this::job.isInitialized && job.isActive) {
-            job.cancel()
-        }
-        job = viewModelScope.launch(Dispatchers.IO) {
-            val filesDir = context.filesDir
-            val preferences = context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE)
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            if (!isAppUpdated(preferences, packageInfo)) {
-                saveAppUpdatedTime(preferences, packageInfo)
-                val projectDestDir = File(filesDir, projectDir)
-                if (projectDestDir.exists()) {
-                    deleteDirectory(projectDestDir)
-                }
-                copyAssetDir("public/$projectDir", projectDestDir, context.assets)
-            }
-            mainJSPath = File(filesDir, "$projectDir/$mainJS").absolutePath
-            startRedirectingStdout()
-            startRedirectingStderr()
-            try {
-                startNode(arrayOf("node", mainJSPath))
-            } catch (e: Exception) {
-                Log.e("NodeProcess", "Failed to start node", e)
-                Logger.error("Failed to start node: ${e.message}")
-            }
         }
     }
 
@@ -196,14 +215,26 @@ class NodeProcess(): ViewModel() {
         }
         return directory.delete()
     }
-    fun isAppUpdated(preferences: SharedPreferences, packageInfo: PackageInfo): Boolean {
+    private fun isAppUpdated(): Boolean {
         val previousLastUpdateTime = preferences.getLong(APP_UPDATE_TIME, 0)
-        val lastUpdateTime = packageInfo.lastUpdateTime
-        return lastUpdateTime == previousLastUpdateTime
+        return packageInfo.lastUpdateTime == previousLastUpdateTime
     }
-    fun saveAppUpdatedTime(preferences: SharedPreferences, packageInfo: PackageInfo) {
+
+    private fun saveAppUpdatedTime() {
         preferences.edit {
             putLong(APP_UPDATE_TIME, packageInfo.lastUpdateTime)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Clean up resources when the ViewModel is destroyed
+        try {
+            stdoutPipe?.close()
+            stderrPipe?.close()
+            job.cancel() // Ensure the main coroutine is stopped
+        } catch (e: IOException) {
+            // Ignore, pipes might already be closed
         }
     }
 }
