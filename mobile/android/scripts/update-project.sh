@@ -16,6 +16,8 @@ MAIN_DIR="$ANDROID_DIR/src/main"
 JAVA_SRC_DIR="$MAIN_DIR/java"
 CPP_SRC_DIR="$MAIN_DIR/cpp"
 
+echo $MAIN_DIR
+
 echo "Updating Android project for $APP_ID..."
 
 # 2. Update build.gradle (In-place)
