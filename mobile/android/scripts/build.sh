@@ -1,7 +1,7 @@
 cd "$(dirname "${BASH_SOURCE}")/../"
 
 bash ./scripts/download-libnode.sh
-bash ./scripts/update-project.sh
+node ./scripts/update-project.js
 
 export MOBILE_ARCH=android-arm64
 
