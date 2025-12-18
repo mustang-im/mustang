@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.res.AssetManager
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -118,7 +117,7 @@ class NodeProcess(): ViewModel() {
                 }
             } catch (e: IOException) {
                 // This is expected when the pipe is closed by the dying node process
-                Log.d("NodeProcess", "Pipe reader finished: ${e.message}")
+                Logger.error("Pipe reader finished: ${e.message}")
             }
         }
     }
@@ -132,7 +131,7 @@ class NodeProcess(): ViewModel() {
             writeFd.close()
             startReadingFromPipe(readFd, Logger::log)
         } catch (e: IOException) {
-            Log.e("NodeProcess", "Failed to start stdout redirection", e)
+            Logger.error("Failed to start stdout redirection ${e.message}")
         }
     }
 
@@ -145,7 +144,7 @@ class NodeProcess(): ViewModel() {
             writeFd.close()
             startReadingFromPipe(readFd, Logger::error)
         } catch (e: IOException) {
-            Log.e("NodeProcess", "Failed to start stderr redirection", e)
+            Logger.error("Failed to start stderr redirection ${e.message}")
         }
     }
 
