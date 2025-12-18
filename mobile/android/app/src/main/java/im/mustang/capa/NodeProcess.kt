@@ -15,9 +15,41 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+
+// You can place this in its own file or within NodeProcess.kt
+object NativeLoader {
+    // A Mutex ensures thread-safe loading
+    private val mutex = Mutex()
+
+    // @Volatile ensures the result is visible to all threads
+    @Volatile
+    private var areLibrariesLoaded = false
+
+    suspend fun load() {
+        if (areLibrariesLoaded) {
+            return
+        }
+        // withLock is a suspend function that acquires the lock
+        mutex.withLock {
+            // Double-check in case another thread loaded it while we were waiting
+            if (areLibrariesLoaded) {
+                return@withLock
+            }
+            // Switch to a background thread for the blocking I/O call
+            withContext(Dispatchers.IO) {
+                System.loadLibrary("node")
+                System.loadLibrary("node-process")
+            }
+            areLibrariesLoaded = true
+        }
+    }
+}
 
 // Use application context to avoid memory leaks. Holding a direct context is risky.
 @SuppressLint("StaticFieldLeak")
@@ -47,14 +79,6 @@ class NodeProcess(): ViewModel() {
     private val assets: AssetManager by lazy { appContext!!.assets }
     private val mainJSPath: String by lazy { File(filesDir, "$projectDir/$mainJS").absolutePath }
 
-    private companion object {
-        init {
-            System.loadLibrary("node")
-            System.loadLibrary("node-process")
-        }
-    }
-
-
     private external fun redirectStdout(writeFd: ParcelFileDescriptor?)
     private external fun redirectStderr(writeFd: ParcelFileDescriptor?)
     private external fun startNode(args: Array<String>): Int
@@ -69,22 +93,32 @@ class NodeProcess(): ViewModel() {
 
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
+                // First, load the libraries asynchronously.
+                // The coroutine will suspend here until they are loaded.
+                NativeLoader.load()
+
                 // Check for updates and copy assets if needed
                 if (!isAppUpdated()) {
+                    Logger.log("App update detected. Copying assets.")
                     saveAppUpdatedTime()
                     val projectDestDir = File(filesDir, projectDir)
                     if (projectDestDir.exists()) {
+                        Logger.log("Deleting existing project directory.")
                         deleteDirectory(projectDestDir)
                     }
                     copyAssetDir("public/$projectDir", projectDestDir, assets)
+                    Logger.log("Assets copied successfully.")
                 }
 
                 // Start log redirection before starting the node process
+                Logger.log("Starting stdout redirection.")
                 startRedirectingStdout()
+                Logger.log("Starting stderr redirection.")
                 startRedirectingStderr()
 
                 // This is a long-running, blocking call.
-                startNode(arrayOf("node", "--optimize-for-size", "--max-old-space-size=256", mainJSPath))
+                Logger.log("Starting Node.js process.")
+                startNode(arrayOf("node", "--optimize-for-size", mainJSPath))
 
             } catch (e: Exception) {
                 // Catch any crash during setup or execution.
