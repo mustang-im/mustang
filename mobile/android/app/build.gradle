@@ -1,8 +1,12 @@
 import com.android.build.gradle.internal.tasks.FinalizeBundleTask
 
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
+    kotlinOptions {
+        jvmTarget = '21'
+    }
     externalNativeBuild {
         cmake {
             path file('src/main/cpp/CMakeLists.txt')
