@@ -118,6 +118,9 @@ export class IMAPAccount extends MailAccount {
       let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
       assert(connection, `Connection is null\n${this.hostname} IMAP server`);
 
+      // Start listening early to catch any errors and close connections
+      this.attachListeners(connection);
+
       try {
         await connection.connect();
       } catch (ex) {
@@ -140,7 +143,6 @@ export class IMAPAccount extends MailAccount {
       if (purpose == ConnectionPurpose.Main) {
         this.notifyObservers();
       }
-      this.attachListeners(connection);
       return connection;
     } finally {
       lock.release();
