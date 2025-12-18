@@ -22,8 +22,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-// You can place this in its own file or within NodeProcess.kt
-object NativeLoader {
+private object NativeLoader {
     // A Mutex ensures thread-safe loading
     private val mutex = Mutex()
 
@@ -121,8 +120,6 @@ class NodeProcess(): ViewModel() {
                 startNode(arrayOf("node", "--optimize-for-size", mainJSPath))
 
             } catch (e: Exception) {
-                // Catch any crash during setup or execution.
-                // This prevents the whole app from crashing if Node.js fails.
                 Logger.error("Node.js process failed or exited: ${e.message}")
             } finally {
                 Logger.log("Node.js process has finished.")
@@ -150,7 +147,6 @@ class NodeProcess(): ViewModel() {
                     }
                 }
             } catch (e: IOException) {
-                // This is expected when the pipe is closed by the dying node process
                 Logger.error("Pipe reader finished: ${e.message}")
             }
         }
