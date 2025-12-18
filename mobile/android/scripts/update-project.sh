@@ -42,12 +42,15 @@ update_kotlin_files() {
 # 4. Update C++ files (Updating JNI FindClass paths)
 update_cpp_files() {
     if [ -d "$CPP_SRC_DIR" ]; then
-        # On macOS (BSD sed), -i "" MUST come before other flags like -E
-        # or -E must come before -i "". The order below is most reliable:
-        find "$CPP_SRC_DIR" -type f \( -name "*.cpp" -o -name "*.h" \) -exec \
-            sed -E -i "" "s|([a-zA-Z0-9_]+/)+([a-zA-Z0-9_]+)|$JNI_PATH/\2|g" {} +
+        # This regex looks for FindClass("some/path/ClassName")
+        # and replaces it specifically with FindClass("im/mustang/capa/ClassName")
+        # \1 = 'FindClass("'
+        # \2 = The original class name (e.g., 'MainActivity')
 
-        echo "✓ Updated JNI paths in C++ files to $JNI_PATH"
+        find "$CPP_SRC_DIR" -type f \( -name "*.cpp" -o -name "*.h" \) -exec \
+            sed -E -i "" "s|(FindClass\(\")([a-zA-Z0-9_]+/)+([a-zA-Z0-9_]+)|\1$JNI_PATH/\3|g" {} +
+
+        echo "✓ Updated JNI paths in C++ files to: $JNI_PATH"
     fi
 }
 
