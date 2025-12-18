@@ -30,7 +30,6 @@ class Logger : Plugin() {
     }
 
     private fun consoleLog(log: String) {
-
         val logJS = JSObject()
         logJS.put("log", log)
         notifyListeners("nativeLog", logJS)

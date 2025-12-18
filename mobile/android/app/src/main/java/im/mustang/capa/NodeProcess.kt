@@ -203,6 +203,7 @@ class NodeProcess(): ViewModel() {
             }
         }
     }
+
     private fun deleteDirectory(directory: File): Boolean {
         if (directory.exists()) {
             directory.listFiles()?.forEach { file ->
@@ -214,6 +215,7 @@ class NodeProcess(): ViewModel() {
         }
         return directory.delete()
     }
+
     private fun isAppUpdated(): Boolean {
         val previousLastUpdateTime = preferences.getLong(APP_UPDATE_TIME, 0)
         return packageInfo.lastUpdateTime == previousLastUpdateTime
