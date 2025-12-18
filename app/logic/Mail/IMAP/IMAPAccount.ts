@@ -20,6 +20,16 @@ export class IMAPAccount extends MailAccount {
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  /**
+   * An object representing the IMAP namespaces on this server.
+   * There are three categories, "personal", "other" and "shared".
+   * Each category has an array of namespace values, which are
+   * a pair of { prefix, delimiter } strings.
+   * The prefix allows you to determine whether a path is in this namespace.
+   * The delimiter tells you how you should construct subfolder paths,
+   * becuse it can be different for each namespace for some reason...
+   */
+  namespaces = kDefaultNamespaces;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
@@ -49,6 +59,9 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
+    if (await this.hasCapability('NAMESPACE')) {
+      this.namespaces = await this.getNamespaces();
+    }
     await this.listFolders();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
@@ -234,8 +247,49 @@ export class IMAPAccount extends MailAccount {
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
-    let capabilities = await conn.capabilities;
+    // conn.capabilities doesn't work; it's an object property,
+    // and JPC doesn't notice direct changes to properties.
+    let capabilities = await conn.run('CAPABILITY');
     return await capabilities.has(capa);
+  }
+
+  /**
+   * If the connection supports it, this will return the server's namespaces.
+   * @see this.namespaces
+   */
+  async getNamespaces(): Promise<Record<IMAPNamespace, {prefix: string, delimiter: string}[]>> {
+    let conn = await this.connection();
+    // This should be `return await conn.run("NAMESPACE");`...
+    type ImapFlowAttribute = { type: string, value: string };
+    type ImapFlowNamespace = [prefix: ImapFlowAttribute, delimiter: ImapFlowAttribute];
+    type ImapFlowNamespaceList = ImapFlowNamespace[] | null;
+    type ImapFlowNamespaces = [personal: ImapFlowNamespaceList, other: ImapFlowNamespaceList, shared: ImapFlowNamespaceList];
+    let namespaces = Object.assign({}, kDefaultNamespaces);
+    let response = await conn.exec("NAMESPACE", false, {
+      untagged: {
+        NAMESPACE: async (untagged: { attributes?: ImapFlowNamespaces }) => {
+          if (Array.isArray(untagged.attributes)) {
+            let entries = untagged.attributes.map(list => Array.isArray(list)
+              ? list.map(entry => ({
+                prefix: sanitize.string(entry[0].value),
+                delimiter: sanitize.nonemptystring(entry[1].value),
+              }))
+              : null);
+            if (entries[0]) {
+              namespaces.personal = entries[0];
+            }
+            if (entries[1]) {
+              namespaces.other = entries[1];
+            }
+            if (entries[2]) {
+              namespaces.shared = entries[2];
+            }
+          }
+        }
+      }
+    });
+    await response.next();
+    return namespaces;
   }
 
   async listFolders(): Promise<void> {
@@ -374,6 +428,11 @@ export class IMAPAccount extends MailAccount {
     return new IMAPFolder(this);
   }
 }
+
+/** The three types of IMAP namespace. */
+type IMAPNamespace = "personal" | "other" | "shared";
+/** The effective namespaces for servers that don't support namespaces. */
+const kDefaultNamespaces: Record<IMAPNamespace, {prefix: string, delimiter: string}[]> = { personal: [{ prefix: "", delimiter: "." }], other: [], shared: [] };
 
 export enum ConnectionPurpose {
   Main = "main",
