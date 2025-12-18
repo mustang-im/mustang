@@ -33,13 +33,3 @@ function loadWindowSettings() {
   window.moveTo(windowPosition[0], windowPosition[1]);
 }
 window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false);
-
-// In your frontend code (e.g., App.tsx, main.ts, etc.)
-
-window.addEventListener('nodeLog', (event) => {
-  console.log(event);
-});
-
-window.addEventListener('nodeError', (event) => {
-  console.error(event);
-});
