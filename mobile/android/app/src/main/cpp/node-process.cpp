@@ -59,7 +59,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return JNI_ERR;
     }
 
-    jclass pfd_class_local = env->FindClass("android/os/ParcelFileDescriptor");
+    jclass pfd_class_local = env->FindClass("im/mustang/capa/ParcelFileDescriptor");
     if (pfd_class_local == nullptr) return JNI_ERR;
     g_pfd_class = (jclass)env->NewGlobalRef(pfd_class_local);
     if (g_pfd_class == nullptr) return JNI_ERR;
@@ -72,7 +72,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (c == nullptr) return JNI_ERR;
 
     static const JNINativeMethod methods[] = {
-            {"startNode", "([Ljava/lang/String;)I", (void*)Java_im_mustang_capa_NodeProcess_startNode}
+            {"startNode", "([im/mustang/capa/String;)I", (void*)Java_im_mustang_capa_NodeProcess_startNode}
     };
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;

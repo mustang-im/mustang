@@ -1,3 +1,5 @@
+# Run from mobile/android
+
 # Check if libnode already exists
 if [ -f "./app/main/cpp/libnode/bin/arm64-v8a/libnode.so" ]; then
     echo "libnode already exists, skipping download."
@@ -11,6 +13,6 @@ TMP_ZIP_FILE="libnode-download.zip"
 echo "Downloading $DOWNLOAD_URL"
 curl -L -o $TMP_ZIP_FILE "$DOWNLOAD_URL"
 
-unzip -o $TMP_ZIP_FILE -d ./app/main/cpp/
+unzip -o $TMP_ZIP_FILE -d ./app/src/main/cpp/libnode
 
 echo "Download and extraction complete."
