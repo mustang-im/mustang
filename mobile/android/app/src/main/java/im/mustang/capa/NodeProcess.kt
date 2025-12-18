@@ -60,7 +60,7 @@ class NodeProcess(): ViewModel() {
                     while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                         if (bytesRead > 0) {
                             val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
-                            Logger.consoleLog(message)
+                            Logger.log(message)
                         }
                     }
                 }
@@ -90,7 +90,7 @@ class NodeProcess(): ViewModel() {
                     while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                         if (bytesRead > 0) {
                             val message = String(buffer, 0, bytesRead, Charsets.UTF_8)
-                            Logger.consoleError(message)
+                            Logger.error(message)
                         }
                     }
                 }
@@ -125,7 +125,7 @@ class NodeProcess(): ViewModel() {
                 startNode(arrayOf("node", mainJSPath))
             } catch (e: Exception) {
                 Log.e("NodeProcess", "Failed to start node", e)
-                Logger.consoleError("Failed to start node: ${e.message}")
+                Logger.error("Failed to start node: ${e.message}")
             }
         }
     }
