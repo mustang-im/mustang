@@ -1,7 +1,7 @@
 # Run from mobile/android
 
 # Check if libnode already exists
-if [ -f "./app/main/cpp/libnode/bin/arm64-v8a/libnode.so" ]; then
+if [ -f "./app/src/main/cpp/libnode/bin/arm64-v8a/libnode.so" ]; then
     echo "libnode already exists, skipping download."
     exit 0
 fi
