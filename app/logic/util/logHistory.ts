@@ -26,5 +26,5 @@ NativeLogger.addListener("nativeLog", (e) => {
 });
 
 NativeLogger.addListener("nativeError", (e) => {
-  console.log("[Native Error]", e.error);
+  console.error("[Native Error]", e.error);
 });
