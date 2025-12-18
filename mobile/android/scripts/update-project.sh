@@ -39,18 +39,15 @@ update_kotlin_files() {
     fi
 }
 
-# 4. Update C++ files (Updating JNI FindClass paths)
+# 4. Update C++ files
 update_cpp_files() {
     if [ -d "$CPP_SRC_DIR" ]; then
-        # This regex looks for FindClass("some/path/ClassName")
-        # and replaces it specifically with FindClass("im/mustang/capa/ClassName")
-        # \1 = 'FindClass("'
-        # \2 = The original class name (e.g., 'MainActivity')
+        local OLD_JNI_PREFIX="im/mustang/capa"
 
         find "$CPP_SRC_DIR" -type f \( -name "*.cpp" -o -name "*.h" \) -exec \
-            sed -E -i "" "s|(FindClass\(\")([a-zA-Z0-9_]+/)+([a-zA-Z0-9_]+)|\1$JNI_PATH/\3|g" {} +
+            sed -E -i "" "s|$OLD_JNI_PREFIX|$JNI_PATH|g" {} +
 
-        echo "✓ Updated JNI paths in C++ files to: $JNI_PATH"
+        echo "✓ Updated JNI paths in C++ files"
     fi
 }
 
