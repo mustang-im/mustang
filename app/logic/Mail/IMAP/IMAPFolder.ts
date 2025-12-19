@@ -654,7 +654,8 @@ export class IMAPFolder extends Folder {
     let conn = await this.account.connection();
     let attributes: Array<{ type: string, value: string }>;
     let permissions = new ArrayColl<IMAPPermission>();
-    await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    await response.next();
     for (let i = 1; i < attributes.length; i += 2) {
       let name = sanitize.nonemptystring(attributes[i].value);
       let rights = sanitize.nonemptystring(attributes[i + 1].value);
@@ -666,12 +667,14 @@ export class IMAPFolder extends Folder {
 
   async setPermission(permission: IMAPPermission, right: keyof typeof IMAPACL) {
     let conn = await this.account.connection();
-    await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: permission[IMAPACL[right]] ? "+" + right : "-" + right }]);
+    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: permission[IMAPACL[right]] ? "+" + right : "-" + right }]);
+    await response.next();
   }
 
   async removePermission(permission: PersonUID) {
     let conn = await this.account.connection();
-    await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+    await response.next();
   }
 }
 
