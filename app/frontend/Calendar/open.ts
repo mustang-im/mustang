@@ -5,14 +5,17 @@ import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { appGlobal } from "../../logic/app";
 
 // TODO compare openUIFor()
-export function openEventFromOtherApp(event: Event) {
+export function openEventFromOtherApp(event: Event, edit = true) {
   selectedEvent.set(event);
-  // if full screen: calendarMustangApp.editEvent(event);
   selectedDate.set(new Date(event.startTime));
   startDate.set(new Date(event.startTime));
   if (appGlobal.isMobile) {
     goTo("/calendar/event", { event });
   } else {
     openApp(calendarMustangApp, { event });
+    if (edit) {
+      calendarMustangApp.showEvent(event);
+      event.startEditing();
+    }
   }
 }

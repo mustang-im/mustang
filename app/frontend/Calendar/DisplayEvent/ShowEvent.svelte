@@ -1,7 +1,9 @@
-{#if event.isIncomingMeeting}
+{#if $event.isIncomingMeeting}
   <InvitationInCalendar {event} />
-{:else}
+{:else if $event.unedited} <!-- is in edit mode -->
   <EditEvent {event} />
+{:else}
+  <DisplayEvent {event} />
 {/if}
 
 {#if appGlobal.isMobile}
@@ -12,6 +14,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
   import EditEvent from "../EditEvent/EditEvent.svelte";
+  import DisplayEvent from "./DisplayEvent.svelte";
   import InvitationInCalendar from "./InvitationInCalendar.svelte";
   import ShowEventBarM from "./ShowEventBarM.svelte";
 

@@ -9,6 +9,10 @@ perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../e2/package.json
 
+perl -p -i \
+  -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
+  ../../mobile/package.json
+
 MARKETING_VERSION=$(echo "$VERSION" | sed 's/-.*//')
 MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
 BUILD_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d%H%M%S)"

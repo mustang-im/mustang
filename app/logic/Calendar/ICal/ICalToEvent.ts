@@ -80,13 +80,20 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   } else {
     event.recurrenceRule = null;
   }
-  if (vevent.entries.location) {
-    event.location = vevent.entries.location[0].value;
-  }
   if (vevent.entries.conference) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
     event.isOnline = true;
     event.onlineMeetingURL = vevent.entries.conference[0].value;
+  }
+  if (vevent.entries.location) {
+    event.location = vevent.entries.location[0].value;
+    if (!event.onlineMeetingURL && event.location.startsWith("https://")) { // other clients may send online meeting URL in `LOCATION`
+      event.isOnline = true;
+      event.onlineMeetingURL = sanitize.url(event.location, null);
+    }
+    if (event.location == event.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
+      event.location = null;
+    }
   }
   if (vevent.entries.status?.[0].value == "CANCELLED") {
     event.isCancelled = true;

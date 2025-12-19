@@ -308,7 +308,6 @@ export enum SpecialFolder {
 }
 
 export const specialFolderOrder = [
-  SpecialFolder.All,
   SpecialFolder.Inbox,
   SpecialFolder.Sent,
   SpecialFolder.Drafts,
@@ -316,6 +315,7 @@ export const specialFolderOrder = [
   SpecialFolder.Spam,
   SpecialFolder.Archive,
   SpecialFolder.Outbox,
+  SpecialFolder.All,
   SpecialFolder.Search,
   SpecialFolder.Normal,
 ];

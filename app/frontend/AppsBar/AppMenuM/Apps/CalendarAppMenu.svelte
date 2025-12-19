@@ -15,6 +15,7 @@
 <script lang="ts">
   import { setNewEventTime } from "../../../Calendar/event";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
+  import { openEventFromOtherApp } from "../../../Calendar/open";
   import { selectedCalendar } from "../../../Calendar/selected";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
@@ -22,7 +23,6 @@
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
   import BasicButton from "../BasicButton.svelte";
-  import RoundButton from "../../../Shared/RoundButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
   import PlusIcon from "lucide-svelte/icons/plus";
@@ -35,7 +35,7 @@
     assert(calendar, "Create a calendar first");
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event);
   }
 
   function goToTODOs() {

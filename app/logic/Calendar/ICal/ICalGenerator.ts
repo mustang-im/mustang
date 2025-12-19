@@ -20,6 +20,19 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
   }
+  if (event.location) {
+    lines.push(["LOCATION", event.location]);
+  }
+  if (event.isOnline && event.onlineMeetingURL) {
+    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    lines.push(["CONFERENCE", event.onlineMeetingURL]);
+    if (!event.location) {
+      // Backwards compat, because other clients don't know `CONFERENCE`
+      lines.push(["LOCATION", event.onlineMeetingURL]);
+    }
+    // Maybe also add to the end of descriptionText and HTML?
+    // if (!event.descriptionHTML.includes(event.onlineMeetingURL)) { ...
+  }
   if (event.descriptionText) {
     if (event.hasHTML) {
       // Plaintext, and HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
@@ -56,13 +69,6 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
         lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.recurrenceStartTime, timezone)]);
       }
     }
-  }
-  if (event.location) {
-    lines.push(["LOCATION", event.location]);
-  }
-  if (event.isOnline && event.onlineMeetingURL) {
-    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
-    lines.push(["CONFERENCE", event.onlineMeetingURL]);
   }
   if (event.isCancelled) {
     lines.push(["STATUS", "CANCELLED"]);

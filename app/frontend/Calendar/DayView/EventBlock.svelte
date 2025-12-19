@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeFormatPref } from "../../../l10n/l10n";
@@ -53,7 +53,7 @@
   function onOpen(ev: MouseEvent) {
     ev.stopPropagation();
     $selectedEvent = event;
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>
 

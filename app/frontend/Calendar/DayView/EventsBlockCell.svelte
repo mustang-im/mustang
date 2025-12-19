@@ -10,7 +10,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar } from "../selected";
-  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { openEventFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
   import EventBlock from "./EventBlock.svelte";
   import { assert } from "../../../logic/util/util";
@@ -35,7 +35,7 @@
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, true, start);
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>
 

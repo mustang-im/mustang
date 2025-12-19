@@ -20,7 +20,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar, selectedDate } from "../selected";
-  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { openEventFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
   import EventLine from "./EventLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -54,7 +54,7 @@
     let event = $selectedCalendar.newEvent();
     let startTime = new Date(start.getTime() + 10 * k1HourMS);
     setNewEventTime(event, true, startTime);
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>
 

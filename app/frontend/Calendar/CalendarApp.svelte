@@ -29,10 +29,10 @@
 <CalendarInBackground />
 
 <script lang="ts">
-  import { calendarMustangApp } from "./CalendarMustangApp";
-  import { appGlobal } from "../../logic/app";
   import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
   import { setNewEventTime } from "./event";
+  import { openEventFromOtherApp } from "./open";
+  import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
@@ -51,7 +51,7 @@
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, false, $selectedDate);
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>
 
