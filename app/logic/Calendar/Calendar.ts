@@ -7,6 +7,7 @@ import { appGlobal } from "../app";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 import { recurrenceColl } from "./RecurrenceColl";
+import { gt } from "../../l10n/l10n";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -79,3 +80,20 @@ export interface CalendarStorage {
 }
 
 ICalEMailProcessor.hookup();
+
+export enum CalendarShareCombinedPermissions {
+  /** Can see whether the user is busy or not, but not the title nor details of the meeting */
+  ReadAvailability = "read-busy",
+  /** Can see the times and titles of the meeting, but nothing else */
+  ReadTitle = "read-title",
+  /** Can see all details of all meetings */
+  ReadAll = "read-all",
+  /** Full access: Modify meeting details, and add and delete meetings */
+  Modify = "modify",
+}
+export const calendarShareCombinedPermissionsLabels: Record<string, string> = {
+  [CalendarShareCombinedPermissions.ReadAvailability]: gt`See availability only`,
+  [CalendarShareCombinedPermissions.ReadTitle]: gt`See titles only`,
+  [CalendarShareCombinedPermissions.ReadAll]: gt`See all meetings with details`,
+  [CalendarShareCombinedPermissions.Modify]: gt`Modify, add and delete meetings`,
+};

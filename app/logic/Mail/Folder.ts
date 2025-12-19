@@ -331,3 +331,21 @@ specialFolderNames[SpecialFolder.Outbox] = gt`Outbox`;
 specialFolderNames[SpecialFolder.Search] = gt`Saved Search`;
 specialFolderNames[SpecialFolder.Normal] = gt`Normal folder`;
 specialFolderNames[SpecialFolder.All] = gt`All messages`;
+
+export enum MailShareCombinedPermissions {
+  Read = "read",
+  /** Can read messages, and change the flags and tags,
+   * but not add and delete emails */
+  FlagChange = "flags-change",
+  /** Full access, read, add and delete emails, and flag changes */
+  Modify = "modify",
+  Custom = "custom",
+}
+enum MailShareIndividualPermissions {
+}
+export const mailShareCombinedPermissionsLabels: Record<string, string> = {
+  [MailShareCombinedPermissions.Read]: gt`Read`,
+  [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
+  [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
+  [MailShareCombinedPermissions.Custom]: gt`Custom`,
+};
