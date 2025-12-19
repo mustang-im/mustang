@@ -39,6 +39,8 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  // Subscription IDs for all subscribed notificaions
+  subscriptions: string[] = [];
 
   constructor() {
     super();
@@ -127,6 +129,7 @@ export class EWSAccount extends MailAccount {
       await this.mainAccount.logout();
       return;
     }
+    await this.unsubscribeAllNotifications();
     await this.oAuth2?.logout();
   }
 
@@ -414,6 +417,23 @@ export class EWSAccount extends MailAccount {
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
+  async unsubscribeAllNotifications() {
+    if (!this.subscriptions.length) {
+      return;
+    }
+    let unsubscribe = {
+      m$Unsubscribe: {
+        m$SubscriptionId: this.subscriptions,
+      },
+    };
+    try {
+      await this.callEWS(unsubscribe);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+    this.subscriptions.length = 0;
+  }
+
   async streamNotifications(folderID?: string) {
     let subscribe = folderID
     ? {
@@ -454,6 +474,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
+    this.subscriptions.push(response.SubscriptionId);
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
