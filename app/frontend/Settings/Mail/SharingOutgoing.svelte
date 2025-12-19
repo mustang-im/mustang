@@ -36,7 +36,7 @@
         onClick={onCloseAddDialog}
         slot="buttons-top-right"
         />
-      <vbox>
+      <vbox class="add-dialog">
         <hbox class="person-input">
           <PersonsAutocomplete
             placeholder={$t`Mail address of your colleague`}
@@ -44,8 +44,10 @@
             persons={newPersons} />
         </hbox>
         {#if addPerson}
-          <hbox class="name">{addPerson.name ?? ""}</hbox>
-          <hbox class="email-address font-small">{addPerson.emailAddress}</hbox>
+          <vbox class="add-person">
+            <hbox class="name">{addPerson.name ?? ""}</hbox>
+            <hbox class="email-address font-small">{addPerson.emailAddress}</hbox>
+          </vbox>
         {/if}
         {#if errorMessage}
           <StatusMessage message={errorMessage} status="warning" />
@@ -281,10 +283,10 @@
   .person-input {
     margin-block-end: 8px;
   }
-  .name {
+  .add-person .name {
     margin-block-start: 32px;
   }
-  .email-address {
+  .add-person .email-address {
     opacity: 70%;
   }
   .enable {
