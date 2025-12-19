@@ -655,7 +655,7 @@ export class IMAPFolder extends Folder {
     let attributes: Array<{ type: string, value: string }>;
     let permissions = new ArrayColl<IMAPPermission>();
     await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
-    for (let i = 0; i < attributes.length; i += 2) {
+    for (let i = 1; i < attributes.length; i += 2) {
       let name = sanitize.nonemptystring(attributes[i].value);
       let rights = sanitize.nonemptystring(attributes[i + 1].value);
       let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
