@@ -40,6 +40,17 @@ perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   ../../mobile/backend/backend.ts
 
+perl -p -i \
+  -e "s|applicationId \".*\"|applicationId \"com.beonex.parula\"|;" \
+  -e "s|versionName \".*\"|versionName \"$VERSION\"|;" \
+  -e "s|def appName = \".*\"|def appName = \"Parula\"|;" \
+  ../../mobile/android/app/build.gradle
+
+perl -p -i \
+  -e "s|Mustang|Parula|g;" \
+  -e "s|\"custom_url_scheme\">im.mustang.capa|\"custom_url_scheme\">com.beonex.parula|;" \
+  ../../mobile/android/app/src/main/res/values/strings.xml
+
 MARKETING_VERSION=$(echo "$VERSION" | sed 's/-.*//')
 MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
 BUILD_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d%H%M%S)"
