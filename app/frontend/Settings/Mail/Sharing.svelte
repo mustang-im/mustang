@@ -7,16 +7,16 @@
   <!-- TODO make it clickable to navigate to main account Sharing settings -->
 {:else}
   <SharingIncoming {account}  />
-  <!--<SharingOutgoing {account} />-->
+  <SharingOutgoing {account} />
 {/if}
 
 <script lang="ts">
-  import type { Account } from "../../../logic/Abstract/Account";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import SharingIncoming from "./SharingIncoming.svelte";
   import SharingOutgoing from "./SharingOutgoing.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let account: Account;
+  export let account: MailAccount;
 </script>
 
 <style>
