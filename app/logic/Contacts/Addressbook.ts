@@ -3,6 +3,7 @@ import { Person } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
 import { appGlobal } from "../app";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 
 export class Addressbook extends Account {
@@ -53,3 +54,14 @@ export interface AddressbookStorage {
   saveAddressbook(addressbook: Addressbook): Promise<void>;
   deleteAddressbook(addressbook: Addressbook): Promise<void>;
 }
+
+export enum AddressbookShareCombinedPermissions {
+  /** Can see all contacts details, but not modify */
+  Read = "read",
+  /** Can see and modify all details of all contacts, and add and delete contacts */
+  Modify = "modify",
+}
+export const addressbookShareCombinedPermissionsLabels: Record<string, string> = {
+  [AddressbookShareCombinedPermissions.Read]: gt`See all contact details`,
+  [AddressbookShareCombinedPermissions.Modify]: gt`Modify, add and delete contacts`,
+};

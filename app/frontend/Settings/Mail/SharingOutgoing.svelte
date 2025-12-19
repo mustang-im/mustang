@@ -114,11 +114,11 @@
             <hbox class="account-name">{calendars.first?.name}</hbox>
             <hbox>
               <hbox class="label">{$t`Access`}</hbox>
-              <select bind:value={mailAccess}>
-                <option value={MailShareCombinedPermissions.Read}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Read]}</option>
-                <option value={MailShareCombinedPermissions.FlagChange}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.FlagChange]}</option>
-                <option value={MailShareCombinedPermissions.Modify}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Modify]}</option>
-                <option value={MailShareCombinedPermissions.Custom}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Custom]}</option>
+              <select bind:value={calendarAccess}>
+                <option value={CalendarShareCombinedPermissions.ReadAvailability}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAvailability]}</option>
+                <option value={CalendarShareCombinedPermissions.ReadTitle}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadTitle]}</option>
+                <option value={CalendarShareCombinedPermissions.ReadAll}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAll]}</option>
+                <option value={CalendarShareCombinedPermissions.Modify}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.Modify]}</option>
               </select>
             </hbox>
           </vbox>
@@ -140,11 +140,9 @@
             <hbox class="account-name">{addressbooks.first?.name}</hbox>
             <hbox>
               <hbox class="label">{$t`Access`}</hbox>
-              <select bind:value={mailAccess}>
-                <option value={MailShareCombinedPermissions.Read}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Read]}</option>
-                <option value={MailShareCombinedPermissions.FlagChange}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.FlagChange]}</option>
-                <option value={MailShareCombinedPermissions.Modify}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Modify]}</option>
-                <option value={MailShareCombinedPermissions.Custom}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Custom]}</option>
+              <select bind:value={addressbookAccess}>
+                <option value={AddressbookShareCombinedPermissions.Read}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Read]}</option>
+                <option value={AddressbookShareCombinedPermissions.Modify}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Modify]}</option>
               </select>
             </hbox>
           </vbox>
@@ -169,9 +167,9 @@
   import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
   import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
   import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
-  import { Addressbook } from "../../../logic/Contacts/Addressbook";
-  import { Calendar } from "../../../logic/Calendar/Calendar";
-  import type { Folder } from "../../../logic/Mail/Folder";
+  import { Addressbook, AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
+  import { Calendar, CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
+  import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appName } from "../../../logic/build";
@@ -250,52 +248,6 @@
     showAddDialog = false;
     resetAddDialog();
   }
-
-  enum MailShareCombinedPermissions {
-    Read = "read",
-    /** Can read messages, and change the flags and tags,
-     * but not add and delete emails */
-    FlagChange = "flags-change",
-    /** Full access, read, add and delete emails, and flag changes */
-    Modify = "modify",
-    Custom = "custom",
-  }
-  const mailShareCombinedPermissionsLabels: Record<string, string> = {
-    [MailShareCombinedPermissions.Read]: gt`Read`,
-    [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
-    [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
-    [MailShareCombinedPermissions.Custom]: gt`Custom`,
-  };
-  enum MailShareIndividualPermissions {
-  }
-
-  enum CalendarShareCombinedPermissions {
-    /** Can see whether the user is busy or not, but not the title nor details of the meeting */
-    ReadAvailability = "read-busy",
-    /** Can see the times and titles of the meeting, but nothing else */
-    ReadTitle = "read-title",
-    /** Can see all details of all meetings */
-    ReadAll = "read-all",
-    /** Full access: Modify meeting details, and add and delete meetings */
-    Modify = "modify",
-  }
-  const calendarShareCombinedPermissionsLabels: Record<string, string> = {
-    [CalendarShareCombinedPermissions.ReadAvailability]: gt`See availability only`,
-    [CalendarShareCombinedPermissions.ReadTitle]: gt`See titles only`,
-    [CalendarShareCombinedPermissions.ReadAll]: gt`See all meetings with details`,
-    [CalendarShareCombinedPermissions.Modify]: gt`Modify, add and delete meetings`,
-  };
-
-  enum AddressbookShareCombinedPermissions {
-    /** Can see all contacts details, but not modify */
-    Read = "read",
-    /** Can see and modify all details of all contacts, and add and delete contacts */
-    Modify = "modify",
-  }
-  const addressbookShareCombinedPermissionsLabels: Record<string, string> = {
-    [AddressbookShareCombinedPermissions.Read]: gt`See all contact details`,
-    [AddressbookShareCombinedPermissions.Modify]: gt`Modify, add and delete contacts`,
-  };
 
   let shareAllMail = true;
   let shareMailFolder = false;
