@@ -341,11 +341,26 @@ export enum MailShareCombinedPermissions {
   Modify = "modify",
   Custom = "custom",
 }
-enum MailShareIndividualPermissions {
+export enum MailShareIndividualPermissions {
+  Read = "read",
+  /** Can change the flags and tags */
+  FlagChange = "flags-change",
+  Delete = "delete",
+  Create = "create",
+  DeleteFolder = "delete-folder",
+  CreateSubfolders = "create-subfolders",
 }
 export const mailShareCombinedPermissionsLabels: Record<string, string> = {
   [MailShareCombinedPermissions.Read]: gt`Read`,
   [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
   [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
   [MailShareCombinedPermissions.Custom]: gt`Custom`,
+};
+export const mailShareIndividualPermissionsLabels: Record<string, string> = {
+  [MailShareIndividualPermissions.Read]: gt`Read mail`,
+  [MailShareIndividualPermissions.FlagChange]: gt`Change mail flags`,
+  [MailShareIndividualPermissions.Delete]: gt`Delete mails`,
+  [MailShareIndividualPermissions.Create]: gt`Add new mails`,
+  [MailShareIndividualPermissions.DeleteFolder]: gt`Delete this folder`,
+  [MailShareIndividualPermissions.CreateSubfolders]: gt`Add new folders`,
 };
