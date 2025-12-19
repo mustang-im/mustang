@@ -13,6 +13,10 @@ perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../mobile/package.json
 
+perl -p -i \
+  -e "s|versionName \".*\"|versionName \"$VERSION\"|;" \
+  ../../mobile/android/app/build.gradle
+
 MARKETING_VERSION=$(echo "$VERSION" | sed 's/-.*//')
 MAJOR_MINOR=$(echo "$VERSION" | sed 's/^\([0-9]*\.[0-9]*\).*/\1/')
 BUILD_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d%H%M%S)"
