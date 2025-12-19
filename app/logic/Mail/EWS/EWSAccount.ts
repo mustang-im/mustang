@@ -133,6 +133,10 @@ export class EWSAccount extends MailAccount {
     await this.oAuth2?.logout();
   }
 
+  async disconnect(): Promise<void> {
+    await this.unsubscribeAllNotifications();
+  }
+
   needsLicense(): boolean {
     return true;
   }
