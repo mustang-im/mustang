@@ -48,7 +48,7 @@ perl -p -i \
 
 perl -p -i \
   -e "s|Mustang|Parula|g;" \
-  -e "s|\"custom_url_scheme\">im.mustang.capa|\"custom_url_scheme\">com.beonex.parula|g;" \
+  -e "s|\"custom_url_scheme\">im.mustang.capa|\"custom_url_scheme\">com.beonex.parula|;" \
   ../../mobile/android/app/src/main/res/values/strings.xml
 
 MARKETING_VERSION=$(echo "$VERSION" | sed 's/-.*//')
