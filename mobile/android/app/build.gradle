@@ -1,8 +1,12 @@
 import com.android.build.gradle.internal.tasks.FinalizeBundleTask
 
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
+    kotlinOptions {
+        jvmTarget = '21'
+    }
     namespace "im.mustang.capa"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
