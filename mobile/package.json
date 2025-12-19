@@ -10,8 +10,8 @@
     "brand:parula": "./hooks/common/parula-brand.sh",
     "build": "./hooks/common/build.sh",
     "build:android": "npm run build:android:apk && npm run build:android:aab",
-    "build:android:apk": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew assembleRelease",
-    "build:android:aab": "export MOBILE_ARCH=android-arm64; npm run build && cap sync android && cd android && ./gradlew :app:bundleRelease",
+    "build:android:apk": "cd android && bash ./scripts/build.sh && ./gradlew assembleRelease",
+    "build:android:aab": "cd android && bash ./scripts/build.sh && ./gradlew :app:bundleRelease",
     "build:ios:release": "export MOBILE_ARCH=ios-arm64; cd ios && bash ./build/build.sh",
     "build:ios": "export MOBILE_ARCH=ios-arm64; (cd ios && bash ./build/build.sh) && cap sync ios && cap build ios",
     "preview": "vite preview",
@@ -27,8 +27,7 @@
     "@capacitor/ios": "^7.0.0",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
-    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3",
-    "capacitor-nodejs": "https://github.com/mustang-im/capacitor-nodejs/releases/download/1.0.0-beta.10/capacitor-nodejs-v1.0.0-beta.10.tgz"
+    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
