@@ -234,7 +234,10 @@ export class IMAPAccount extends MailAccount {
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
-    let capabilities = await conn.capabilities;
+    // conn.capabilities doesn't work; it's an object property,
+    // and JPC doesn't notice direct changes to properties.
+    // Fortunately `conn.run('CAPABILITY')` caches the result.
+    let capabilities = await conn.run('CAPABILITY');
     return await capabilities.has(capa);
   }
 
