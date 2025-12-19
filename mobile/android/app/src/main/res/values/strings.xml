@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Parula</string>
-    <string name="title_activity_main">Parula</string>
-    <string name="package_name">com.beonex.parula</string>
-    <string name="custom_url_scheme">com.beonex.parula</string>
+    <string name="app_name">Mustang</string>
+    <string name="title_activity_main">Mustang</string>
+    <string name="package_name">im.mustang.capa</string>
+    <string name="custom_url_scheme">im.mustang.capa</string>
 </resources>
