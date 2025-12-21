@@ -29,10 +29,24 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
         node-process.cpp)
 
+include_directories(libnode/include/node/)
+
+add_library( libnode
+        SHARED
+        IMPORTED )
+
+set_target_properties( # Specifies the target library.
+        libnode
+        # Specifies the parameter you want to define.
+        PROPERTIES IMPORTED_LOCATION
+        # Provides the path to the library you want to import.
+        ${CMAKE_PROJECT_NAME}/libnode/bin/${ANDROID_ABI}/libnode.so )
+
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # List libraries link to the target library
+    libnode
     android
     log)
