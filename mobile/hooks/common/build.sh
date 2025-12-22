@@ -3,10 +3,9 @@
 export NODE_OPTIONS="--max-old-space-size=32768"
 
 if [[ "$MOBILE_ARCH" == android* ]]; then
-  bash ./android/scripts/download-libnode.sh
+  (cd android && bash ./scripts/download-libnode.sh)
   npx @capacitor/assets generate --android
 fi
-
 
 # Setup mobile UI
 perl -p -i \

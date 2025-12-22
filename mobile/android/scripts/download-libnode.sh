@@ -6,6 +6,5 @@ echo "Downloading $DOWNLOAD_URL"
 curl -L -o $TMP_ZIP_FILE "$DOWNLOAD_URL"
 
 unzip -o $TMP_ZIP_FILE -d ./app/src/main/cpp/libnode
-rm -r $TMP_ZIP_FILE ./include
 
 echo "Download and extraction complete."
