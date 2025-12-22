@@ -15,16 +15,16 @@ jint startNode(JNIEnv *env,
 
     for (int i = 0; i < argc; i++) {
         jstring arg = static_cast<jstring>(env->GetObjectArrayElement(args, i));
-        jsize argLen = env->GetStringUTFLength(arg);
+        jsize argSize = env->GetStringUTFLength(arg);
 
 
-        argv[i] = new char[argLen + 1];
+        argv[i] = new char[argSize + 1];
 
         // Copy argument to argv directly and release reference automatically
         // <https://developer.android.com/ndk/guides/jni-tips#region-calls>
-        env->GetStringUTFRegion(arg, 0, argLen, argv[i]);
+        env->GetStringUTFRegion(arg, 0, argSize, argv[i]);
         // Append null terminator needed by C++
-        argv[i][argLen] = '\0';
+        argv[i][argSize] = '\0';
 
         // Always to remove the reference
         env->DeleteLocalRef(arg);
