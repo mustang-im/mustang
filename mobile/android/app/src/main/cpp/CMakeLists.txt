@@ -40,7 +40,7 @@ set_target_properties( # Specifies the target library.
         # Specifies the parameter you want to define.
         PROPERTIES IMPORTED_LOCATION
         # Provides the path to the library you want to import.
-        ${CMAKE_PROJECT_NAME}/libnode/bin/${ANDROID_ABI}/libnode.so )
+        ${CMAKE_SOURCE_DIR}/libnode/bin/${ANDROID_ABI}/libnode.so )
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
