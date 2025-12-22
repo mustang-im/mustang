@@ -46,20 +46,31 @@ class NodeProcess(val context: Context): ViewModel() {
         if (this::job.isInitialized && job.isActive) return
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
+                Log.d(TAG, "Starting to load libraries")
                 loadLibraries()
+                Log.d(TAG, "Libraries loaded")
+
 
                 // Node.js assets are in the APK archived and cannot be accessed with a path
                 // Because the we have node native modules and multiple files, we need to have
                 // it copied to a physical location for node to find the .node files using relative paths
                 val from = "public/$nodeDir"
                 val to = "${filesDir.absoluteFile}/$nodeDir"
+                Log.d(TAG, "Copying assets from $from to $to")
                 val copyResult = FileOperations.copyAssetsDir(assetManager, from, to)
+                Log.d(TAG, "Assets copied: $copyResult")
                 if (!copyResult) {
                     throw Exception("Error copying assets")
                 }
 
                 val mainJS = File(to, mainJS)
-                startNode(arrayOf("node", mainJS.absolutePath))
+                if (!mainJS.exists()) {
+                    throw Exception("Main JS file not found")
+                }
+
+                val args = arrayOf("node", mainJS.absolutePath)
+                Log.d(TAG, "Starting node with: ${args.joinToString(" ")}")
+                startNode(args)
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting node", e)
             }
@@ -69,6 +80,7 @@ class NodeProcess(val context: Context): ViewModel() {
     override fun onCleared() {
         super.onCleared()
         if (this::job.isInitialized && job.isActive) {
+            Log.d(TAG, "Cancelling job")
             job.cancel()
         }
     }

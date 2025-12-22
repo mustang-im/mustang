@@ -30,6 +30,7 @@ jint startNode(JNIEnv *env,
         env->DeleteLocalRef(arg);
     }
 
+    printf("Starting node in C++ with %d arguments\n", argc);
     int exitCode = node::Start(argc, argv);
     return jint(exitCode);
 }
