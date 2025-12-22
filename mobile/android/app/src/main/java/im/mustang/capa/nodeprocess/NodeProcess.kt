@@ -69,7 +69,7 @@ class NodeProcess(val context: Context): ViewModel() {
                 }
 
                 val args = arrayOf("node", mainJS.absolutePath)
-                Log.d(TAG, "Starting node with: ${args.joinToString(" ")}")
+                Log.d(TAG, "Starting node with arguments: \"${args.joinToString(" ")}\"")
                 startNode(args)
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting node", e)
