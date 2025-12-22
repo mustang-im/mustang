@@ -260,6 +260,21 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.subFolders as any as Collection<Folder>;
   }
 
+  /**
+   * Return this folder and all of its descendants.
+   */
+  getInclusiveDescendants(): ArrayColl<Folder> {
+    let descendants = new ArrayColl<Folder>();
+    function iterateFolders(folder: Folder) {
+      descendants.add(folder);
+      for (let child of folder.subFolders) {
+        iterateFolders(child);
+      }
+    }
+    iterateFolders(this);
+    return descendants;
+  }
+
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
   disableDelete(): string | false {
     if (this.specialFolder != SpecialFolder.Normal) {
@@ -331,3 +346,36 @@ specialFolderNames[SpecialFolder.Outbox] = gt`Outbox`;
 specialFolderNames[SpecialFolder.Search] = gt`Saved Search`;
 specialFolderNames[SpecialFolder.Normal] = gt`Normal folder`;
 specialFolderNames[SpecialFolder.All] = gt`All messages`;
+
+export enum MailShareCombinedPermissions {
+  Read = "read",
+  /** Can read messages, and change the flags and tags,
+   * but not add and delete emails */
+  FlagChange = "flags-change",
+  /** Full access, read, add and delete emails, and flag changes */
+  Modify = "modify",
+  Custom = "custom",
+}
+export enum MailShareIndividualPermissions {
+  Read = "read",
+  /** Can change the flags and tags */
+  FlagChange = "flags-change",
+  Delete = "delete",
+  Create = "create",
+  DeleteFolder = "delete-folder",
+  CreateSubfolders = "create-subfolders",
+}
+export const mailShareCombinedPermissionsLabels: Record<string, string> = {
+  [MailShareCombinedPermissions.Read]: gt`Read`,
+  [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
+  [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
+  [MailShareCombinedPermissions.Custom]: gt`Custom`,
+};
+export const mailShareIndividualPermissionsLabels: Record<string, string> = {
+  [MailShareIndividualPermissions.Read]: gt`Read mail`,
+  [MailShareIndividualPermissions.FlagChange]: gt`Change mail flags`,
+  [MailShareIndividualPermissions.Delete]: gt`Delete mails`,
+  [MailShareIndividualPermissions.Create]: gt`Add new mails`,
+  [MailShareIndividualPermissions.DeleteFolder]: gt`Delete this folder`,
+  [MailShareIndividualPermissions.CreateSubfolders]: gt`Add new folders`,
+};

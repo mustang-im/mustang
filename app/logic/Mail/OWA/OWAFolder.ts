@@ -8,9 +8,11 @@ import {
   owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,
   owaFolderCountsRequest, owaFolderMarkAllMsgsReadRequest,
   owaGetNewMsgHeadersRequest, owaMoveEntireFolderRequest,
-  owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
+  owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest,
+  owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
+import { ExchangePermission } from "../EWS/EWSFolder";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -276,5 +278,14 @@ export class OWAFolder extends Folder {
 
   disableChangeSpecial(): string | false {
     return gt`You cannot change special folders on the Exchange server`;
+  }
+
+  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.id));
+    return new ArrayColl(result.Folders[0].PermissionSet.Permissions.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+  }
+
+  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+    await this.account.callOWA(owaSetFolderPermissionsRequest(this.id, permissions.contents));
   }
 }

@@ -17,6 +17,7 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
+import { deduplicatePermissions } from "../EWS/EWSAccount";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -28,6 +29,7 @@ import { Throttle } from "../../util/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
+import type { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 export class OWAAccount extends MailAccount {
@@ -583,6 +585,14 @@ export class OWAAccount extends MailAccount {
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
     return calendar;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    let inboxPermissions = await (this.inbox as OWAFolder).getPermissions();
+    let addressbookPermissions = await (appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook).getPermissions();
+    let calendarPermissions = await (appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar).getPermissions();
+    return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
   }
 
   fromConfigJSON(json: any) {

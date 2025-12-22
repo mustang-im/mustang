@@ -13,6 +13,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
@@ -234,7 +235,10 @@ export class IMAPAccount extends MailAccount {
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
-    let capabilities = await conn.capabilities;
+    // conn.capabilities doesn't work; it's an object property,
+    // and JPC doesn't notice direct changes to properties.
+    // Fortunately `conn.run('CAPABILITY')` caches the result.
+    let capabilities = await conn.run('CAPABILITY');
     return await capabilities.has(capa);
   }
 
@@ -358,6 +362,11 @@ export class IMAPAccount extends MailAccount {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
     email.isRead = true;
     await sentFolder.addMessage(email);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    return await (this.inbox as IMAPFolder).getPermissions();
   }
 
   fromConfigJSON(config: any) {
