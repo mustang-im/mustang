@@ -12,10 +12,12 @@ import android.util.Log
 import java.io.File
 
 
+// Use ViewModels so it has the same lifecycle as the activity or App
+// <https://developer.android.com/topic/libraries/architecture/viewmodel#lifecycle>
 class NodeProcess(val context: Context): ViewModel() {
     private val TAG = "NodeProcess"
     private lateinit var job: Job
-    private val MainJS = "index.mjs"
+    private val mainJS = "index.mjs"
     private val nodeDir = "nodejs"
     // Don't initialize until needed
     private val assetManager: AssetManager by lazy {
@@ -45,17 +47,29 @@ class NodeProcess(val context: Context): ViewModel() {
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
                 loadLibraries()
-                val from = "${filesDir.absoluteFile}/public/$nodeDir"
+
+                // Node.js assets are in the APK archived and cannot be accessed with a path
+                // Because the we have node native modules and multiple files, we need to have
+                // it copied to a physical location for node to find the .node files using relative paths
+                val from = "public/$nodeDir"
                 val to = "${filesDir.absoluteFile}/$nodeDir"
                 val copyResult = FileOperations.copyAssetsDir(assetManager, from, to)
                 if (!copyResult) {
                     throw Exception("Error copying assets")
                 }
-                val mainJS = File(to, MainJS)
+
+                val mainJS = File(to, mainJS)
                 startNode(arrayOf("node", mainJS.absolutePath))
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting node", e)
             }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (this::job.isInitialized && job.isActive) {
+            job.cancel()
         }
     }
 }

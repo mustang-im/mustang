@@ -6,8 +6,10 @@ import im.mustang.capa.nodeprocess.NodeProcess
 
 class MainActivity : BridgeActivity() {
     private lateinit var nodeProcess: NodeProcess
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize after onCreate to the application context
         nodeProcess = NodeProcess(applicationContext)
         nodeProcess.start()
     }
