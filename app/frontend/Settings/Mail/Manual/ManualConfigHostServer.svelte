@@ -105,8 +105,6 @@
   import { dummyHostname } from "../../../../logic/Mail/AutoConfig/manualConfig";
   import { getDomainForEmailAddress } from "../../../../logic/util/netUtil";
   import { isCertError } from "../../../../logic/Mail/AutoConfig/checkConfig";
-  import { OAuth2URLs } from "../../../../logic/Auth/OAuth2URLs";
-  import { OAuth2 } from "../../../../logic/Auth/OAuth2";
   import ProtocolSelector from "./ProtocolSelector.svelte";
   import PasswordChange from "../../Shared/PasswordChange.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
@@ -231,11 +229,6 @@
     if (config.authMethod == AuthMethod.Unknown) {
       authError = new UserError(gt`Please enter the authentication method`);
       throw authError;
-    } else if (config.authMethod == AuthMethod.OAuth2) {
-      let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
-      if (oAuth) {
-        config.oAuth2 = new OAuth2(config, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret, oAuth.doPKCE);
-      }
     } else {
       authError = null;
     }

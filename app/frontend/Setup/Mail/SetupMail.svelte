@@ -58,12 +58,17 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { AuthMethod } from "../../../logic/Abstract/Account";
   import { saveAndInitConfig, fillConfig  } from "../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import { Cancelled } from "../../../logic/util/Abortable";
+  import { OAuth2URLs } from "../../../logic/Auth/OAuth2URLs";
+  import { OAuth2 } from "../../../logic/Auth/OAuth2";
+  import { OWAAuth } from "../../../logic/Auth/OWAAuth";
+  import { assert } from "../../../logic/util/util";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
   import FindConfig from "./FindConfig.svelte";
   import FoundConfig from "./FoundConfig.svelte";
@@ -80,7 +85,7 @@
   import { logError } from "../../Util/error";
   import { NotReached } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   let emailAddress: string;
   let password: string;
@@ -170,7 +175,8 @@
       errorMessage = null;
       if (config.setup?.instructions) {
         step = Step.Instructions;
-      } else if (config.oAuth2) {
+      } else if (config.authMethod == AuthMethod.OAuth2) {
+        fillOAuth2(config);
         step = Step.Login;
       } else {
         step = Step.CheckConfig;
@@ -184,7 +190,8 @@
       }
       fillConfig(config, emailAddress, password);
       errorMessage = null;
-      if (config.oAuth2) {
+      if (config.authMethod == AuthMethod.OAuth2) {
+        fillOAuth2(config);
         step = Step.Login;
       } else {
         step = Step.CheckConfig;
@@ -195,6 +202,16 @@
       await onSave();
     } else {
       throw new NotReached();
+    }
+  }
+
+  function fillOAuth2(config) {
+    if (config.protocol == "owa") {
+      config.oAuth2 = new OWAAuth(config);
+    } else {
+      let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
+      assert(oAuth, gt`Could not find OAuth2 config for ${config.hostname}`);
+      config.oAuth2 = new OAuth2(config, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret, oAuth.doPKCE);
     }
   }
 
