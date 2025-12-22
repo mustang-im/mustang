@@ -840,6 +840,14 @@ export class EWSAccount extends MailAccount {
     return calendar;
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    let inboxPermissions = await (this.inbox as EWSFolder).getPermissions();
+    let addressbookPermissions = await (appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook).getPermissions();
+    let calendarPermissions = await (appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar).getPermissions();
+    return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
@@ -946,6 +954,22 @@ const EWSPermissions: Record<DelegatePermission, string> = {
   "create": "Author",
   "write": "Editor",
 };
+
+export function deduplicatePermissions(permissionLists: ArrayColl<PersonUID>[]): ArrayColl<PersonUID> {
+  let persons = new Map<string, string>;
+  for (let permissions of permissionLists) {
+    for (let permission of permissions) {
+      if (!permission.emailAddress.includes('*')) {
+        persons.set(permission.emailAddress, permission.name);
+      }
+    }
+  }
+  let deduplicated = new ArrayColl<PersonUID>();
+  for (let [emailAddress, name] of persons) {
+    deduplicated.add(new PersonUID(emailAddress, name));
+  }
+  return deduplicated;
+}
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 

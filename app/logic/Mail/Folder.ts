@@ -260,6 +260,21 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.subFolders as any as Collection<Folder>;
   }
 
+  /**
+   * Return this folder and all of its descendants.
+   */
+  getInclusiveDescendants(): ArrayColl<Folder> {
+    let descendants = new ArrayColl<Folder>();
+    function iterateFolders(folder: Folder) {
+      descendants.add(folder);
+      for (let child of folder.subFolders) {
+        iterateFolders(child);
+      }
+    }
+    iterateFolders(this);
+    return descendants;
+  }
+
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
   disableDelete(): string | false {
     if (this.specialFolder != SpecialFolder.Normal) {
