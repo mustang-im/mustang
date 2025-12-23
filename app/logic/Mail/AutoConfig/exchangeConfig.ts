@@ -11,6 +11,7 @@ import JXON from "../../../../lib/util/JXON";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 
 /** Implements the Exchange AutoDiscover V1 (XML-SOAP-based) protocol */
 export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: string, username: string | null, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
@@ -255,7 +256,8 @@ function newURLAccount(url: URLString, protocol: string, source: ConfigSource): 
   acc.hostname = new URL(acc.url).hostname;
   acc.port = 443;
   acc.tls = TLSSocketType.TLS;
-  acc.authMethod = OAuth2URLs.some(oauth => oauth.domains.includes(acc.hostname))
+  acc.oAuth2 = getOAuth2BuiltIn(acc);
+  acc.authMethod = acc.oAuth2
     ? AuthMethod.OAuth2
     : protocol == "ews"
       ? AuthMethod.Unknown
