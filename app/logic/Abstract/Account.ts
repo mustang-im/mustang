@@ -89,7 +89,7 @@ export class Account extends Observable {
 
   /**
    * Used to request that any long-lived connections be disconnected,
-   * either due to app shutdown or account deletion.
+   * e.g. due to app shutdown.
    */
   async disconnect(): Promise<void> {
   }
@@ -152,7 +152,7 @@ export class Account extends Observable {
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
-    await this.disconnect();
+    await this.logout();
     for (let dependent of this.dependentAccounts()) {
       await dependent.deleteIt();
     }
