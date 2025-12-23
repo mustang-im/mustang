@@ -7,8 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.content.res.AssetManager
 import android.util.Log
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import java.io.File
 
 
@@ -24,7 +25,7 @@ class NodeProcess(val context: Context): ViewModel() {
         private var librariesLoaded = false
     }
 
-    suspend fun loadLibraries() {
+    private suspend fun loadLibraries() {
         if (librariesLoaded) return
         withContext(Dispatchers.IO) {
             System.loadLibrary("node-process")
@@ -33,39 +34,40 @@ class NodeProcess(val context: Context): ViewModel() {
         }
     }
 
+    // Node.js assets are in the APK archived and cannot be accessed with a path
+    // Because we have node native modules and multiple files, we need to have them
+    // copied to a physical location, for node to find the `.node` files using relative paths
+    private suspend fun copyNodeAssets(): String {
+        val filesDir = context.filesDir
+        val assetManager = context.assets
+
+        val from = "public/$nodeDir"
+        val to = "${filesDir.absoluteFile}/$nodeDir"
+
+        Log.d(TAG, "Copying assets from $from to $to")
+        FileOperations.copyAssetsDir(assetManager, from, to)
+        Log.d(TAG, "Assets copied")
+
+        val mainJS = File(to, mainJS)
+        if (!mainJS.exists()) {
+            throw Exception("Main JS file not found")
+        }
+        return mainJS.absolutePath
+    }
+
     private external fun startNode(args: Array<String>): Int
 
     fun start() {
         if (this::job.isInitialized && job.isActive) return
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Starting to load node.js libraries")
-                loadLibraries()
-                Log.d(TAG, "node.js libraries loaded")
-
-
-                // Node.js assets are in the APK archived and cannot be accessed with a path
-                // Because we have node native modules and multiple files, we need to have them
-                // copied to a physical location, for node to find the `.node` files using relative paths
-                val filesDir = context.filesDir
-                val assetManager = context.assets
-
-                val from = "public/$nodeDir"
-                val to = "${filesDir.absoluteFile}/$nodeDir"
-
-                Log.d(TAG, "Copying assets from $from to $to")
-                val copyResult = FileOperations.copyAssetsDir(assetManager, from, to)
-                Log.d(TAG, "Assets copied: $copyResult")
-                if (!copyResult) {
-                    throw Exception("Error copying assets")
+                var mainJSPath: String
+                coroutineScope {
+                    async(Dispatchers.IO) { loadLibraries() }.await()
+                    mainJSPath = async(Dispatchers.IO) {  return@async copyNodeAssets() }.await()
                 }
 
-                val mainJS = File(to, mainJS)
-                if (!mainJS.exists()) {
-                    throw Exception("Main JS file not found")
-                }
-
-                val args = arrayOf("node", mainJS.absolutePath)
+                val args = arrayOf("node", mainJSPath)
                 Log.d(TAG, "Starting node with arguments: \"${args.joinToString(" ")}\"")
                 startNode(args)
             } catch (e: Exception) {
