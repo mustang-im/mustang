@@ -3,7 +3,7 @@ import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { kStandardPorts } from "./configInfo";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { appGlobal } from "../../app";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -11,7 +11,6 @@ import JXON from "../../../../lib/util/JXON";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
-import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 
 /** Implements the Exchange AutoDiscover V1 (XML-SOAP-based) protocol */
 export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: string, username: string | null, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
