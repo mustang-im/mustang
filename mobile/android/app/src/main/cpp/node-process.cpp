@@ -3,7 +3,7 @@
 
 using namespace std;
 
-// Copy arguments to one contiguous memory
+// Copy arguments from JNI to C++ format
 jint startNode(JNIEnv *env,
                jobject /* this */,
                jobjectArray args) {
@@ -15,6 +15,8 @@ jint startNode(JNIEnv *env,
 
     for (int i = 0; i < argc; i++) {
         jstring arg = static_cast<jstring>(env->GetObjectArrayElement(args, i));
+        // Returns the length of the UTF8 byte stream, in bytes.
+        // ! `GetStringLength()` returns the Unicode chars and is unsuitable for array allocation
         jsize argSize = env->GetStringUTFLength(arg);
 
 

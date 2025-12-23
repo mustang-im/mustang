@@ -46,14 +46,14 @@ class NodeProcess(val context: Context): ViewModel() {
         if (this::job.isInitialized && job.isActive) return
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Starting to load libraries")
+                Log.d(TAG, "Starting to load node.js libraries")
                 loadLibraries()
-                Log.d(TAG, "Libraries loaded")
+                Log.d(TAG, "node.js libraries loaded")
 
 
                 // Node.js assets are in the APK archived and cannot be accessed with a path
-                // Because the we have node native modules and multiple files, we need to have
-                // it copied to a physical location for node to find the .node files using relative paths
+                // Because we have node native modules and multiple files, we need to have them
+                // copied to a physical location, for node to find the `.node` files using relative paths
                 val from = "public/$nodeDir"
                 val to = "${filesDir.absoluteFile}/$nodeDir"
                 Log.d(TAG, "Copying assets from $from to $to")
