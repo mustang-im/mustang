@@ -23,7 +23,7 @@ object FileOperations {
         } else {
             File(to).mkdirs()
             val copyTasks = files.map{ file ->
-                async {
+                async(Dispatchers.IO) {
                     val fromPath = "$from/$file"
                     val toPath = "$to/$file"
                     copyAssetsDir(assetManager, fromPath, toPath)
