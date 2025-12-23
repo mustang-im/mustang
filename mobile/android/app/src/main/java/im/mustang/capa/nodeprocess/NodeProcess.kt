@@ -19,13 +19,6 @@ class NodeProcess(val context: Context): ViewModel() {
     private lateinit var job: Job
     private val mainJS = "index.mjs"
     private val nodeDir = "nodejs"
-    // Don't initialize until needed
-    private val assetManager: AssetManager by lazy {
-        context.assets
-    }
-    private val filesDir: File by lazy {
-        context.filesDir
-    }
 
     companion object {
         private var librariesLoaded = false
@@ -54,8 +47,12 @@ class NodeProcess(val context: Context): ViewModel() {
                 // Node.js assets are in the APK archived and cannot be accessed with a path
                 // Because we have node native modules and multiple files, we need to have them
                 // copied to a physical location, for node to find the `.node` files using relative paths
+                val filesDir = context.filesDir
+                val assetManager = context.assets
+
                 val from = "public/$nodeDir"
                 val to = "${filesDir.absoluteFile}/$nodeDir"
+
                 Log.d(TAG, "Copying assets from $from to $to")
                 val copyResult = FileOperations.copyAssetsDir(assetManager, from, to)
                 Log.d(TAG, "Assets copied: $copyResult")
