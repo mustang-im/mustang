@@ -22,12 +22,7 @@ export class IMAPAccount extends MailAccount {
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /**
    * An object representing the IMAP namespaces on this server.
-   * There are three categories, "personal", "other" and "shared".
-   * Each category has an array of namespace values, which are
-   * a pair of { prefix, delimiter } strings.
-   * The prefix allows you to determine whether a path is in this namespace.
-   * The delimiter tells you how you should construct subfolder paths,
-   * becuse it can be different for each namespace for some reason...
+   * See @IMAPNamespace, @IMAPNamespaceRecord
    */
   namespaces = kDefaultNamespaces;
   /** if polling is enabled, how often to poll.
@@ -249,6 +244,8 @@ export class IMAPAccount extends MailAccount {
     let conn = await this.connection();
     // conn.capabilities doesn't work; it's an object property,
     // and JPC doesn't notice direct changes to properties.
+    // Fortuantely `conn.run("CAPABILITY")` has its own cache,
+    // and only makes a network request if absolutely necessary.
     let capabilities = await conn.run('CAPABILITY');
     return await capabilities.has(capa);
   }
@@ -429,10 +426,23 @@ export class IMAPAccount extends MailAccount {
   }
 }
 
-/** The three types of IMAP namespace. */
+/**
+ * The three categories of IMAP namespace.
+ * personal = user's own folders
+ * other = other users' folders
+ * shared = company public folders
+ * Each category has an array of namespace records.
+ */
 type IMAPNamespace = "personal" | "other" | "shared";
+/**
+ * An object representing an IMAP namespace record.
+ * The prefix allows you to determine whether a path is in this namespace.
+ * The delimiter tells you how you should construct subfolder paths,
+ * because it can be different for each namespace for some reason...
+ */
+interface IMAPNamespaceRecord { prefix: string; delimiter: string };
 /** The effective namespaces for servers that don't support namespaces. */
-const kDefaultNamespaces: Record<IMAPNamespace, {prefix: string, delimiter: string}[]> = { personal: [{ prefix: "", delimiter: "." }], other: [], shared: [] };
+const kDefaultNamespaces: Record<IMAPNamespace, IMAPNamespaceRecord[]> = { personal: [{ prefix: "", delimiter: "." }], other: [], shared: [] };
 
 export enum ConnectionPurpose {
   Main = "main",
