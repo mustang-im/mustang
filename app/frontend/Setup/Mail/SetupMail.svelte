@@ -60,6 +60,8 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { saveAndInitConfig, fillConfig  } from "../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
+  import { AuthMethod } from "../../../logic/Abstract/Account";
+  import { getOAuth2BuiltIn } from "../../../logic/Auth/OAuth2Util";
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
@@ -78,9 +80,9 @@
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import Button from "../../Shared/Button.svelte";
   import { logError } from "../../Util/error";
-  import { NotReached } from "../../../logic/util/util";
+  import { assert, NotReached } from "../../../logic/util/util";
+  import { gt, t } from "../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
-  import { t } from "../../../l10n/l10n";
 
   let emailAddress: string;
   let password: string;
@@ -170,7 +172,9 @@
       errorMessage = null;
       if (config.setup?.instructions) {
         step = Step.Instructions;
-      } else if (config.oAuth2) {
+      } else if (config.authMethod == AuthMethod.OAuth2) {
+        config.oAuth2 ??= getOAuth2BuiltIn(config); // TODO Fill this in the config source
+        assert(config.oAuth2, gt`Could not find OAuth2 config for ${config.hostname}`);
         step = Step.Login;
       } else {
         step = Step.CheckConfig;
@@ -182,13 +186,9 @@
       if (!await manualConfigEl.onContinue()) {
         return;
       }
-      fillConfig(config, emailAddress, password);
-      errorMessage = null;
-      if (config.oAuth2) {
-        step = Step.Login;
-      } else {
-        step = Step.CheckConfig;
-      }
+      step = Step.FoundConfig;
+      await onContinue();
+      return;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
     } else if (step == Step.FinalizeConfig) {
