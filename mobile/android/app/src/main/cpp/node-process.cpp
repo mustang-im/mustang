@@ -50,7 +50,7 @@ jint startNode(JNIEnv *env,
 
 // Called by System.loadLibrary("node-process")
 // Registers native methods in the Kotlin class without
-// letting the JNI to find them which is much faster.
+// letting the JNI find them which is much faster.
 // <https://developer.android.com/ndk/guides/jni-tips#native-libraries>
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env;
