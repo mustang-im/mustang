@@ -4,10 +4,7 @@
 using namespace std;
 
 // Copy arguments from JNI to C++ format
-char** argsJavaToC(JNIEnv *env, jobjectArray args) {
-    // Argument count
-    jsize argc = env->GetArrayLength(args);
-
+char** argsJavaToC(JNIEnv *env, jsize argc, jobjectArray args) {
     char** argv = new char*[argc];
 
     for (int i = 0; i < argc; i++) {
@@ -37,16 +34,23 @@ jint startNode(JNIEnv *env,
                jobjectArray args) {
 
     jsize argc = env->GetArrayLength(args);
-    char** argv = argsJavaToC(env, args);
+    char** argv = argsJavaToC(env, argc, args);
 
     printf("Starting node in C++ with %d arguments\n", argc);
     int exitCode = node::Start(argc, argv);
-    delete argv;
+    printf("Node process exited with code %d\n", exitCode);
+
+    for (int i = 0; i < argc; i++) {
+        delete[] argv[i];
+    }
+    delete[] argv;
+
     return jint(exitCode);
 }
 
 // Called by System.loadLibrary("node-process")
-// Registers native methods in the Kotlin class without letting
+// Registers native methods in the Kotlin class without
+// letting the JNI to find them which is much faster.
 // <https://developer.android.com/ndk/guides/jni-tips#native-libraries>
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env;
