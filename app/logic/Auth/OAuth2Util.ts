@@ -13,5 +13,7 @@ export function getOAuth2BuiltIn(config: MailAccount): WebBasedAuth | undefined 
   if (!o) {
     return undefined;
   }
-  return new OAuth2(config, o.tokenURL, o.authURL, o.authDoneURL, o.scope, o.clientID, o.clientSecret, o.doPKCE);
+  let oAuth2 = new OAuth2(config, o.tokenURL, o.authURL, o.authDoneURL, o.scope, o.clientID, o.clientSecret, o.doPKCE);
+  oAuth2.setTokenURLPasswordAuth(o.tokenURLPasswordAuth);
+  return oAuth2;
 }

@@ -10,8 +10,7 @@ import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressboo
 import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
-import { OAuth2 } from "../../Auth/OAuth2";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
@@ -80,12 +79,7 @@ export class ActiveSyncAccount extends MailAccount {
     await ensureLicensed();
     await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
-      }
+      this.oAuth2 ??= getOAuth2BuiltIn(this);
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
@@ -170,12 +164,8 @@ export class ActiveSyncAccount extends MailAccount {
       },
     };
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
-      }
+      this.oAuth2 ??= getOAuth2BuiltIn(this);
+      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
       await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
