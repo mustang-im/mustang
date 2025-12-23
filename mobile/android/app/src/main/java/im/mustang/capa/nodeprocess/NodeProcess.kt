@@ -28,8 +28,10 @@ class NodeProcess(val context: Context): ViewModel() {
     private suspend fun loadLibraries() {
         if (librariesLoaded) return
         withContext(Dispatchers.IO) {
+            Log.d(TAG, "Starting to load node.js libraries")
             System.loadLibrary("node-process")
             System.loadLibrary("node")
+            Log.d(TAG, "node.js libraries loaded")
             librariesLoaded = true
         }
     }
@@ -63,8 +65,11 @@ class NodeProcess(val context: Context): ViewModel() {
             try {
                 var mainJSPath: String
                 coroutineScope {
-                    async(Dispatchers.IO) { loadLibraries() }.await()
-                    mainJSPath = async(Dispatchers.IO) {  return@async copyNodeAssets() }.await()
+                    val loadLibrariesTask = async(Dispatchers.IO) { loadLibraries() }
+                    val copyNodeTask = async(Dispatchers.IO) {  return@async copyNodeAssets() }
+
+                    loadLibrariesTask.await()
+                    mainJSPath = copyNodeTask.await()
                 }
 
                 val args = arrayOf("node", mainJSPath)
