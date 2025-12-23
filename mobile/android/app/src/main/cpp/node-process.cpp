@@ -4,17 +4,14 @@
 using namespace std;
 
 // Copy arguments from JNI to C++ format
-jint startNode(JNIEnv *env,
-               jobject /* this */,
-               jobjectArray args) {
-
+char** argsJavaToC(JNIEnv *env, jobjectArray args) {
     // Argument count
     jsize argc = env->GetArrayLength(args);
 
     char** argv = new char*[argc];
 
     for (int i = 0; i < argc; i++) {
-        jstring arg = static_cast<jstring>(env->GetObjectArrayElement(args, i));
+        auto arg = (jstring)env->GetObjectArrayElement(args, i);
         // Returns the length of the UTF8 byte stream, in bytes.
         // ! `GetStringLength()` returns the Unicode chars and is unsuitable for array allocation
         jsize argSize = env->GetStringUTFLength(arg);
@@ -32,8 +29,19 @@ jint startNode(JNIEnv *env,
         env->DeleteLocalRef(arg);
     }
 
+    return argv;
+}
+
+jint startNode(JNIEnv *env,
+               jobject /* this */,
+               jobjectArray args) {
+
+    jsize argc = env->GetArrayLength(args);
+    char** argv = argsJavaToC(env, args);
+
     printf("Starting node in C++ with %d arguments\n", argc);
     int exitCode = node::Start(argc, argv);
+    delete argv;
     return jint(exitCode);
 }
 
@@ -52,7 +60,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
     // Register your class' native methods.
     static const JNINativeMethod methods[] = {
-            {"startNode", "([Ljava/lang/String;)I", reinterpret_cast<jint*>(startNode)},
+            {"startNode", "([Ljava/lang/String;)I", (jint*)(startNode)},
     };
 
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
