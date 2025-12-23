@@ -20,6 +20,11 @@ export class IMAPAccount extends MailAccount {
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  /**
+   * An object representing the IMAP namespaces on this server.
+   * See @IMAPNamespace, @IMAPNamespaceRecord
+   */
+  namespaces = kDefaultNamespaces;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
@@ -49,6 +54,9 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
+    if (await this.hasCapability('NAMESPACE')) {
+      this.namespaces = await this.getNamespaces();
+    }
     await this.listFolders();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
@@ -234,8 +242,51 @@ export class IMAPAccount extends MailAccount {
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
-    let capabilities = await conn.capabilities;
+    // conn.capabilities doesn't work; it's an object property,
+    // and JPC doesn't notice direct changes to properties.
+    // Fortuantely `conn.run("CAPABILITY")` has its own cache,
+    // and only makes a network request if absolutely necessary.
+    let capabilities = await conn.run('CAPABILITY');
     return await capabilities.has(capa);
+  }
+
+  /**
+   * If the connection supports it, this will return the server's namespaces.
+   * @see this.namespaces
+   */
+  async getNamespaces(): Promise<Record<IMAPNamespace, {prefix: string, delimiter: string}[]>> {
+    let conn = await this.connection();
+    // This should be `return await conn.run("NAMESPACE");`...
+    type ImapFlowAttribute = { type: string, value: string };
+    type ImapFlowNamespace = [prefix: ImapFlowAttribute, delimiter: ImapFlowAttribute];
+    type ImapFlowNamespaceList = ImapFlowNamespace[] | null;
+    type ImapFlowNamespaces = [personal: ImapFlowNamespaceList, other: ImapFlowNamespaceList, shared: ImapFlowNamespaceList];
+    let namespaces = Object.assign({}, kDefaultNamespaces);
+    let response = await conn.exec("NAMESPACE", false, {
+      untagged: {
+        NAMESPACE: async (untagged: { attributes?: ImapFlowNamespaces }) => {
+          if (Array.isArray(untagged.attributes)) {
+            let entries = untagged.attributes.map(list => Array.isArray(list)
+              ? list.map(entry => ({
+                prefix: sanitize.string(entry[0].value),
+                delimiter: sanitize.nonemptystring(entry[1].value),
+              }))
+              : null);
+            if (entries[0]) {
+              namespaces.personal = entries[0];
+            }
+            if (entries[1]) {
+              namespaces.other = entries[1];
+            }
+            if (entries[2]) {
+              namespaces.shared = entries[2];
+            }
+          }
+        }
+      }
+    });
+    await response.next();
+    return namespaces;
   }
 
   async listFolders(): Promise<void> {
@@ -374,6 +425,24 @@ export class IMAPAccount extends MailAccount {
     return new IMAPFolder(this);
   }
 }
+
+/**
+ * The three categories of IMAP namespace.
+ * personal = user's own folders
+ * other = other users' folders
+ * shared = company public folders
+ * Each category has an array of namespace records.
+ */
+type IMAPNamespace = "personal" | "other" | "shared";
+/**
+ * An object representing an IMAP namespace record.
+ * The prefix allows you to determine whether a path is in this namespace.
+ * The delimiter tells you how you should construct subfolder paths,
+ * because it can be different for each namespace for some reason...
+ */
+interface IMAPNamespaceRecord { prefix: string; delimiter: string };
+/** The effective namespaces for servers that don't support namespaces. */
+const kDefaultNamespaces: Record<IMAPNamespace, IMAPNamespaceRecord[]> = { personal: [{ prefix: "", delimiter: "." }], other: [], shared: [] };
 
 export enum ConnectionPurpose {
   Main = "main",
