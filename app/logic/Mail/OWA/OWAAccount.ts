@@ -164,6 +164,7 @@ export class OWAAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.mainAccount) {
       await this.mainAccount.login(interactive);
+      await this.listFolders();
       return;
     }
     await ensureLicensed();
@@ -172,10 +173,6 @@ export class OWAAccount extends MailAccount {
     this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     this.hasLoggedIn = true;
     await this.listFolders();
-
-    if (this.sharedFolderRoot) {
-      return;
-    }
 
     // `listFolders()` will subscribe to new user-added calendars
 
