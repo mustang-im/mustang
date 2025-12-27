@@ -9,10 +9,10 @@ export class JMAPPerson extends Person {
   original: TJSContact;
 
   get uid() {
-    return this.id;
+    return this.pID;
   }
   set uid(val) {
-    this.id = val;
+    this.pID = val;
   }
   get account() {
     return this.addressbook.account;

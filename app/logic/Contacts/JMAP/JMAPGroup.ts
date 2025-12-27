@@ -10,10 +10,10 @@ export class JMAPGroup extends Group {
   declare addressbook: JMAPAddressbook | null;
 
   get itemID() {
-    return this.id;
+    return this.pID;
   }
   set itemID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromJMAP(jmap: any) {

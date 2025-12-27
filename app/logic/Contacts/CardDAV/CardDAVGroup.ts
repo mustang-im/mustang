@@ -5,10 +5,10 @@ export class CardDAVGroup extends Group {
   declare addressbook: CardDAVAddressbook | null;
 
   get itemID() {
-    return this.id;
+    return this.pID;
   }
   set itemID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   async saveToServer() {

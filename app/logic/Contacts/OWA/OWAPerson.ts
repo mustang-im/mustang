@@ -11,10 +11,10 @@ export class OWAPerson extends Person {
   fields: Record<string, string> = this.toFields();
 
   get personaID() {
-    return this.id;
+    return this.pID;
   }
   set personaID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromJSON(json: any): OWAPerson {
