@@ -1,6 +1,6 @@
 package im.mustang.capa.nodeprocess
 
-import android.content.Context
+import android.content.res.AssetManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,7 @@ import java.io.File
 
 // Use ViewModels so it has the same lifecycle as the activity or App
 // <https://developer.android.com/topic/libraries/architecture/viewmodel#lifecycle>
-class NodeProcess(val context: Context): ViewModel() {
+class NodeProcess(val filesDir: File, val assetManager: AssetManager) : ViewModel() {
     private val TAG = "NodeProcess"
     private lateinit var job: Job
     private val mainJS = "index.mjs"
@@ -40,9 +40,6 @@ class NodeProcess(val context: Context): ViewModel() {
     // Because we have node native modules and multiple files, we need to have them
     // copied to a physical location, for node to find the `.node` files using relative paths
     private suspend fun copyNodeAssets(): String {
-        val filesDir = context.filesDir
-        val assetManager = context.assets
-
         val from = "public/$nodeDir"
         val to = "${filesDir.absoluteFile}/$nodeDir"
 

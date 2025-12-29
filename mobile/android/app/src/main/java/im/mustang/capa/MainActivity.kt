@@ -10,7 +10,7 @@ class MainActivity : BridgeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize after onCreate to the application context
-        nodeProcess = NodeProcess(applicationContext)
+        nodeProcess = NodeProcess(applicationContext.filesDir, applicationContext.assets)
         nodeProcess.start()
     }
 }
