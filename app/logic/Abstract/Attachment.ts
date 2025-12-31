@@ -2,6 +2,7 @@ import { File as FileEntry } from "../Files/File";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
+import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
 
 export class Attachment extends Observable {
@@ -71,7 +72,7 @@ export class Attachment extends Observable {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
-    await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
+    await openOSAppForFile(this.filepathLocal);
   }
   /** Open the native file manager with the folder
    * where this file is, and select this file. */
