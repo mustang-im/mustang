@@ -88,7 +88,7 @@
 
   export let event: Event;
 
-  $: showRepeat = !!event.recurrenceRule || event.parentEvent && event.isNew;
+  $: showRepeat = !!$event.recurrenceRule || event.parentEvent && event.isNew;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
