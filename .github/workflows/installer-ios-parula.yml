@@ -85,8 +85,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.APP_VERSION }}
-          make_latest: ${{ env.RELEASE }}
-          prerelease: ${{ env.RELEASE == 'false' }}
           files: ${{ env.IPA_FILE_PATH }}
 
       - name: Upload app to TestFlight
