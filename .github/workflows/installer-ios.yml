@@ -82,10 +82,9 @@ jobs:
 
       - name: Upload to GitHub release
         uses: softprops/action-gh-release@v2
+        if: env.RELEASE == 'true'
         with:
           tag_name: ${{ env.APP_VERSION }}
-          make_latest: ${{ env.RELEASE }}
-          prerelease: ${{ env.RELEASE == 'false' }}
           files: ${{ env.IPA_FILE_PATH }}
 
       - name: Upload app to TestFlight
