@@ -2,6 +2,8 @@ import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { EMailCollection } from "./Store/EMailCollection";
+import type { AddressbookShareCombinedPermissions } from "../Contacts/Addressbook";
+import type { CalendarShareCombinedPermissions } from "../Calendar/Calendar";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { Lock } from "../util/Lock";
@@ -379,3 +381,22 @@ export const mailShareIndividualPermissionsLabels: Record<string, string> = {
   [MailShareIndividualPermissions.DeleteFolder]: gt`Delete this folder`,
   [MailShareIndividualPermissions.CreateSubfolders]: gt`Add new folders`,
 };
+export interface SharePermissions {
+  shareAllMail: boolean;
+  shareMailFolder: boolean;
+  mailAccess: MailShareCombinedPermissions;
+  shareCalendar: boolean;
+  calendarAccess: CalendarShareCombinedPermissions;
+  shareAddressbook: boolean;
+  addressbookAccess: AddressbookShareCombinedPermissions;
+  /* Used when shareMailFolder == true */
+  mailFolder: Folder;
+  includeSubfolders: boolean;
+  /* Used when mailAccess == MailShareCombinedPermissions.Custom */
+  shareRead: boolean;
+  shareFlags: boolean;
+  shareDelete: boolean;
+  shareCreate: boolean;
+  shareDeleteFolder: boolean;
+  shareCreateSubfolders: boolean;
+}

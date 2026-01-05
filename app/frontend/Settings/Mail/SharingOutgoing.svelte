@@ -170,16 +170,13 @@
   import type { Account } from "../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
-  import type { IMAPFolder } from "../../../logic/Mail/IMAP/IMAPFolder";
   import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
-  import { ExchangePermission } from "../../../logic/Mail/EWS/EWSFolder";
   import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
   import { Addressbook, AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
   import { Calendar, CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
   import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
-  import { NotReached, NotSupported } from "../../../logic/util/util";
   import { appName } from "../../../logic/build";
   import PersonAutocomplete from "../../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
@@ -234,106 +231,9 @@
   }
 
   async function onAddPerson(person: PersonUID) {
-    if (account instanceof IMAPAccount) {
-      await onAddPersonIMAP(person);
-    } else if (account instanceof EWSAccount || account instanceof OWAAccount) {
-      await onAddPersonExchange(person);
-    } else {
-      throw new NotSupported();
-    }
-    addPerson = null;
-  }
-
-  async function onAddPersonIMAP(person: PersonUID) {
-    assert(account instanceof IMAPAccount, "Not supported");
-    if (shareAllMail || shareMailFolder) {
-      let foldersToShare = (shareAllMail ? account.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder])) as ArrayColl<IMAPFolder>;
-      let rights = "";
-      switch (mailAccess) {
-      case MailShareCombinedPermissions.Read:
-        rights = "lr";
-        break;
-      case MailShareCombinedPermissions.FlagChange:
-        rights = "lrsw";
-        break;
-      case MailShareCombinedPermissions.Modify:
-        rights = "lrswikxte";
-        break;
-      case MailShareCombinedPermissions.Custom:
-        rights = "l" + (shareRead ? "r" : "") + (shareFlags ? "sw" : "") + (shareDelete ? "te" : "") + (shareCreate ? "i" : "") + (shareDeleteFolder ? "x" : "") + (shareCreateSubfolders ? "k" : "");
-        break;
-      default:
-        throw new NotReached();
-      }
-      for (let folder of foldersToShare) {
-        await folder.addPermission(person, rights);
-      }
-      sharedWith.add(person);
-    }
-  }
-
-  async function onAddPersonExchange(person: PersonUID) {
-    assert(account instanceof EWSAccount || account instanceof OWAAccount, "Not supported");
-    if (shareCalendar) {
-      await setExchangePermissions(calendars.first as any, person, calendarAccess);
-    }
-    if (shareAddressbook) {
-      await setExchangePermissions(addressbooks.first as any, person, addressbookAccess);
-    }
-    if (shareAllMail || shareMailFolder) {
-      // XXX Need root folder to share all mail
-      let foldersToShare = (shareAllMail ? account.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
-      for (let folder of foldersToShare) {
-        await setExchangePermissions(folder as any, person, mailAccess);
-      }
-    }
+    await account.addSharedPerson(person, { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
     sharedWith.add(person);
-  }
-
-  async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string) {
-    let targetPermissions = await target.getPermissions();
-    let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
-    if (!personPermission) {
-      personPermission = new ExchangePermission(person.emailAddress, person.name, { IsFolderVisible: true });
-      targetPermissions.add(personPermission);
-    }
-    let permission = personPermission.exchangePermissions;
-    switch (access) {
-    case CalendarShareCombinedPermissions.ReadAvailability:
-      permission.ReadItems = "TimeOnly";
-      break;
-    case CalendarShareCombinedPermissions.ReadTitle:
-      permission.ReadItems = "TimeAndSubjectAndLocation";
-      break;
-    case CalendarShareCombinedPermissions.ReadAll:
-    case AddressbookShareCombinedPermissions.Read:
-    case MailShareCombinedPermissions.Read:
-      permission.ReadItems = "FullDetails";
-      break;
-    case MailShareCombinedPermissions.FlagChange:
-      permission.ReadItems = "FullDetails";
-      permission.EditItems = "All";
-      break;
-    case CalendarShareCombinedPermissions.Modify:
-    case AddressbookShareCombinedPermissions.Modify:
-    case MailShareCombinedPermissions.Modify:
-      permission.ReadItems = "FullDetails";
-      permission.EditItems = "All";
-      permission.DeleteItems = "All";
-      permission.CanCreateItems = true;
-      break;
-    case MailShareCombinedPermissions.Custom:
-      permission.ReadItems = shareRead ? "FullDetails" : "None";
-      permission.EditItems = shareFlags ? "All" : "None"; // closest supported by Exchange
-      permission.DeleteItems = shareDelete ? "All" : "None";
-      permission.CanCreateItems = shareCreate;
-      permission.IsFolderOwner = shareDeleteFolder; // closest supported by Exchange
-      permission.CanCreateSubFolders = shareCreateSubfolders;
-      break;
-    default:
-      throw new NotReached();
-    }
-    await target.setPermissions(targetPermissions);
+    addPerson = null;
   }
 
   function onCloseAddDialog() {

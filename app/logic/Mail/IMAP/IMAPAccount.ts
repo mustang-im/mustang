@@ -5,8 +5,8 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder } from "../Folder";
-import { assert, SpecificError } from "../../util/util";
+import { SpecialFolder, MailShareCombinedPermissions, type SharePermissions } from "../Folder";
+import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -420,6 +420,32 @@ export class IMAPAccount extends MailAccount {
   async deleteSharedPerson(otherPerson: PersonUID) {
     for (let folder of this.getAllFolders() as ArrayColl<IMAPFolder>) {
       await folder.removePermission(otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, { shareAllMail, shareMailFolder, mailAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders }: SharePermissions) {
+    if (shareAllMail || shareMailFolder) {
+      let foldersToShare = (shareAllMail ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder as IMAPFolder])) as ArrayColl<IMAPFolder>;
+      let rights = "";
+      switch (mailAccess) {
+      case MailShareCombinedPermissions.Read:
+        rights = "lr";
+        break;
+      case MailShareCombinedPermissions.FlagChange:
+        rights = "lrsw";
+        break;
+      case MailShareCombinedPermissions.Modify:
+        rights = "lrswikxte";
+        break;
+      case MailShareCombinedPermissions.Custom:
+        rights = "l" + (shareRead ? "r" : "") + (shareFlags ? "sw" : "") + (shareDelete ? "te" : "") + (shareCreate ? "i" : "") + (shareDeleteFolder ? "x" : "") + (shareCreateSubfolders ? "k" : "");
+        break;
+      default:
+        throw new NotReached();
+      }
+      for (let folder of foldersToShare) {
+        await folder.addPermission(otherPerson, rights);
+      }
     }
   }
 

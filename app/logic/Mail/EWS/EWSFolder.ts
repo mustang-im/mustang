@@ -1,4 +1,4 @@
-import { Folder, SpecialFolder } from "../Folder";
+import { Folder, SpecialFolder, MailShareCombinedPermissions, type SharePermissions } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
@@ -6,9 +6,11 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import { EWSItemError } from "./EWSError";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { AddressbookShareCombinedPermissions } from "../../Contacts/Addressbook";
+import { CalendarShareCombinedPermissions } from "../../Calendar/Calendar";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
+import { base64ToArrayBuffer, blobToBase64, NotReached, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -683,6 +685,53 @@ export class ExchangePermission extends PersonUID {
       : { PrimarySmtpAddress: this.emailAddress, },
     }, { PermissionLevel: "Custom" }, this.exchangePermissions);
   }
+}
+
+export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, customAccess = {} as SharePermissions) {
+  let { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders } = customAccess;
+  let targetPermissions = await target.getPermissions();
+  let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
+  if (!personPermission) {
+    personPermission = new ExchangePermission(person.emailAddress, person.name, { IsFolderVisible: true });
+    targetPermissions.add(personPermission);
+  }
+  let permission = personPermission.exchangePermissions;
+  switch (access) {
+  case CalendarShareCombinedPermissions.ReadAvailability:
+    permission.ReadItems = "TimeOnly";
+    break;
+  case CalendarShareCombinedPermissions.ReadTitle:
+    permission.ReadItems = "TimeAndSubjectAndLocation";
+    break;
+  case CalendarShareCombinedPermissions.ReadAll:
+  case AddressbookShareCombinedPermissions.Read:
+  case MailShareCombinedPermissions.Read:
+    permission.ReadItems = "FullDetails";
+    break;
+  case MailShareCombinedPermissions.FlagChange:
+    permission.ReadItems = "FullDetails";
+    permission.EditItems = "All";
+    break;
+  case CalendarShareCombinedPermissions.Modify:
+  case AddressbookShareCombinedPermissions.Modify:
+  case MailShareCombinedPermissions.Modify:
+    permission.ReadItems = "FullDetails";
+    permission.EditItems = "All";
+    permission.DeleteItems = "All";
+    permission.CanCreateItems = true;
+    break;
+  case MailShareCombinedPermissions.Custom:
+    permission.ReadItems = shareRead ? "FullDetails" : "None";
+    permission.EditItems = shareFlags ? "All" : "None"; // closest supported by Exchange
+    permission.DeleteItems = shareDelete ? "All" : "None";
+    permission.CanCreateItems = shareCreate;
+    permission.IsFolderOwner = shareDeleteFolder; // closest supported by Exchange
+    permission.CanCreateSubFolders = shareCreateSubfolders;
+    break;
+  default:
+    throw new NotReached();
+  }
+  await target.setPermissions(targetPermissions);
 }
 
 /**

@@ -3,7 +3,8 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import { EWSFolder, getEWSItem } from "./EWSFolder";
+import type { Folder, SharePermissions } from "../Folder";
+import { EWSFolder, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -861,6 +862,25 @@ export class EWSAccount extends MailAccount {
       if (personPermission) {
         targetPermissions.remove(personPermission);
         await target.setPermissions(targetPermissions);
+      }
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, permissions: SharePermissions) {
+    let { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders } = permissions;
+    if (shareCalendar) {
+      let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar;
+      await setExchangePermissions(calendar, otherPerson, calendarAccess);
+    }
+    if (shareAddressbook) {
+      let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook;
+      await setExchangePermissions(addressbook, otherPerson, addressbookAccess);
+    }
+    if (shareAllMail || shareMailFolder) {
+      // XXX Need root folder to share all mail
+      let foldersToShare = (shareAllMail ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
+      for (let folder of foldersToShare) {
+        await setExchangePermissions(folder as EWSFolder, otherPerson, mailAccess, permissions);
       }
     }
   }
