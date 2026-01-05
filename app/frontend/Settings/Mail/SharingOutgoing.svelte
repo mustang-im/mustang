@@ -38,22 +38,16 @@
         />
       <vbox class="add-dialog">
         <hbox class="person-input">
-          <PersonAutocomplete
+          <PersonsAutocomplete
             placeholder={$t`Mail address of your colleague`}
             onAddPerson={checkForShares}
-            skipPersons={sharedWith} />
+            persons={newPersons} />
         </hbox>
-        {#if addPerson}
-          <vbox class="add-person">
-            <hbox class="name">{addPerson.name ?? ""}</hbox>
-            <hbox class="email-address font-small">{addPerson.emailAddress}</hbox>
-          </vbox>
-        {/if}
         {#if errorMessage}
           <StatusMessage message={errorMessage} status="warning" />
         {/if}
 
-        {#if addPerson}
+        {#if $newPersons.hasItems}
           <hbox class="mail enable" flex>
             <Checkbox
               label={$t`Share all mail`}
@@ -154,8 +148,8 @@
           <hbox class="buttons">
             <Button
               label={$t`Add`}
-              onClick={() => onAddPerson(addPerson)}
-              disabled={!addPerson || errorMessage}
+              onClick={() => onAddPersons()}
+              disabled={errorMessage}
               classes="primary filled"
               />
           </hbox>
@@ -178,7 +172,7 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appName } from "../../../logic/build";
-  import PersonAutocomplete from "../../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
+  import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import StatusMessage from "../../Setup/Shared/StatusMessage.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
@@ -206,11 +200,11 @@
 
   let showAddDialog = false;
   let errorMessage: string | null = null;
-  let addPerson: PersonUID | null = null;
+  let newPersons = new ArrayColl<PersonUID>();
 
   function resetAddDialog() {
     errorMessage = null;
-    addPerson = null;
+    newPersons.clear();
   }
 
   async function checkForShares(person: PersonUID) {
@@ -224,16 +218,18 @@
         errorMessage = gt`You can only share with users in your company`;
         return;
       }
-      addPerson = person;
+      newPersons.add(person);
     } catch (ex) {
       errorMessage = ex.message;
     }
   }
 
-  async function onAddPerson(person: PersonUID) {
-    await account.addSharedPerson(person, { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
-    sharedWith.add(person);
-    addPerson = null;
+  async function onAddPersons() {
+    for (let person of newPersons) {
+      await account.addSharedPerson(person, { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
+      sharedWith.add(person);
+    }
+    newPersons.clear();
   }
 
   function onCloseAddDialog() {
