@@ -4,6 +4,7 @@ import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
@@ -130,6 +131,10 @@ export class MailAccount extends TCPAccount {
       return this.getSpecialFolder(SpecialFolder.Sent);
     }
     return this.rootFolders.first;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
   }
 
   fromConfigJSON(json: any) {

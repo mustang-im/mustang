@@ -13,7 +13,7 @@ import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import type { PersonUID } from "../../Abstract/PersonUID";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -26,6 +26,7 @@ import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -215,6 +216,11 @@ export class EWSAccount extends MailAccount {
     let freebusy = responseXML.querySelector("FreeBusyResponseArray");
     if (freebusy) {
       return ensureArray(getEWSItem(XML2JSON(freebusy)));
+    }
+    // GetDelegate returns a possibly missing array of responses
+    let delegate = responseXML.querySelector("GetDelegateResponse");
+    if (delegate?.getAttribute("ResponseClass") == "Success") {
+      return [...responseXML.querySelectorAll("DelegateUser")].map(user => XML2JSON(user));
     }
     let messages = responseXML.querySelector("ResponseMessages");
     if (!messages) {
@@ -835,6 +841,14 @@ export class EWSAccount extends MailAccount {
     return calendar;
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    let inboxPermissions = await (this.inbox as EWSFolder).getPermissions();
+    let addressbookPermissions = await (appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook).getPermissions();
+    let calendarPermissions = await (appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar).getPermissions();
+    return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
@@ -845,8 +859,118 @@ export class EWSAccount extends MailAccount {
     json.sharedFolderRoot = this.sharedFolderRoot;
     return json;
   }
+
+  async getDelegates(): Promise<ArrayColl<Delegate>> {
+    let request = {
+      m$GetDelegate: {
+        m$Mailbox: {
+          t$EmailAddress: this.emailAddress,
+        },
+        IncludePermissions: true,
+      },
+    };
+    let result = await this.callEWS(request);
+    return new ArrayColl(result.map(delegate => new Delegate(
+      sanitize.emailAddress(delegate.UserId.PrimarySmtpAddress, null),
+      sanitize.string(delegate.UserId.DisplayName, null),
+      sanitize.translate(delegate.DelegatePermissions?.InboxFolderPermissionLevel, DelegatePermissions, "none"),
+      sanitize.translate(delegate.DelegatePermissions?.ContactsFolderPermissionLevel, DelegatePermissions, "none"),
+      sanitize.translate(delegate.DelegatePermissions?.CalendarFolderPermissionLevel, DelegatePermissions, "none"),
+      false
+    )));
+  }
+
+  async removeDelegate(delegate: string) {
+    let request = {
+      m$RemoveDelegate: {
+        m$Mailbox: {
+          t$EmailAddress: this.emailAddress,
+        },
+        m$UserIds: {
+          t$UserId: {
+            t$PrimarySmtpAddress: delegate,
+          },
+        },
+      },
+    };
+    await this.callEWS(request);
+  }
+
+  async writeDelegate(delegate: Delegate) {
+    let request = {
+      [delegate.isNew ? "m$AddDelegate" : "m$UpdateDelegate"]: {
+        m$Mailbox: {
+          t$EmailAddress: this.emailAddress,
+        },
+        m$DelegateUsers: {
+          t$DelegateUser: {
+            t$UserId: {
+              t$PrimarySmtpAddress: delegate.emailAddress,
+            },
+            t$DelegatePermissions: {
+              t$InboxFolderPermissionLevel: EWSPermissions[delegate.inboxPermission],
+              t$ContactsFolderPermissionLevel: EWSPermissions[delegate.addressbookPermission],
+              t$CalendarFolderPermissionLevel: EWSPermissions[delegate.calendarPermission],
+            },
+          },
+        },
+      },
+    };
+    await this.callEWS(request);
+    delegate.isNew = false;
+  }
 }
 
+type DelegatePermission = "none" | "read" | "create" | "write";
+
+export class Delegate extends PersonUID {
+  inboxPermission: DelegatePermission;
+  addressbookPermission: DelegatePermission;
+  calendarPermission: DelegatePermission;
+  isNew: boolean;
+
+  constructor(emailAddress: string, name: string,
+    inboxPermission: DelegatePermission = "none",
+    addressbookPermission: DelegatePermission = "none",
+    calendarPermission: DelegatePermission = "none",
+    isNew: boolean = true) {
+    super(emailAddress, name);
+    this.inboxPermission = inboxPermission;
+    this.addressbookPermission = addressbookPermission;
+    this.calendarPermission = calendarPermission;
+    this.isNew = isNew;
+  }
+}
+
+const DelegatePermissions: Record<string, DelegatePermission> = {
+  "None": "none",
+  "Reviewer": "read",
+  "Author": "create",
+  "Editor": "write",
+};
+
+const EWSPermissions: Record<DelegatePermission, string> = {
+  "none": "None",
+  "read": "Reviewer",
+  "create": "Author",
+  "write": "Editor",
+};
+
+export function deduplicatePermissions(permissionLists: ArrayColl<PersonUID>[]): ArrayColl<PersonUID> {
+  let persons = new Map<string, string>;
+  for (let permissions of permissionLists) {
+    for (let permission of permissions) {
+      if (!permission.emailAddress.includes('*')) {
+        persons.set(permission.emailAddress, permission.name);
+      }
+    }
+  }
+  let deduplicated = new ArrayColl<PersonUID>();
+  for (let [emailAddress, name] of persons) {
+    deduplicated.add(new PersonUID(emailAddress, name));
+  }
+  return deduplicated;
+}
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 

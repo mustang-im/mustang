@@ -11,6 +11,7 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
@@ -644,5 +645,73 @@ export class IMAPFolder extends Folder {
 
   newEMail(): IMAPEMail {
     return new IMAPEMail(this);
+  }
+
+  async getPermissions(): Promise<ArrayColl<IMAPPermission> | undefined> {
+    if (!await this.account.hasCapability("ACL")) {
+      return undefined;
+    }
+    let conn = await this.account.connection();
+    let attributes: Array<{ type: string, value: string }>;
+    let permissions = new ArrayColl<IMAPPermission>();
+    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    await response.next();
+    for (let i = 1; i < attributes.length; i += 2) {
+      let name = sanitize.nonemptystring(attributes[i].value);
+      let rights = sanitize.nonemptystring(attributes[i + 1].value);
+      let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
+      permissions.add(new IMAPPermission(emailAddress, name, rights));
+    }
+    return permissions;
+  }
+
+  async setPermission(permission: IMAPPermission, right: keyof typeof IMAPACL) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: permission[IMAPACL[right]] ? "+" + right : "-" + right }]);
+    await response.next();
+  }
+
+  async addPermission(permission: PersonUID, rights: string) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
+    await response.next();
+  }
+
+  async removePermission(permission: PersonUID) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+    await response.next();
+  }
+}
+
+export enum IMAPACL {
+  l = "lookup",
+  r = "read",
+  s = "seen",
+  w = "write",
+  i = "create",
+  k = "subfolder",
+  x = "remove",
+  t = "delete",
+  e = "expunge",
+  a = "owner",
+}
+
+export class IMAPPermission extends PersonUID {
+  lookup: boolean;
+  read: boolean;
+  seen: boolean;
+  write: boolean;
+  create: boolean;
+  subfolder: boolean;
+  remove: boolean;
+  delete: boolean;
+  expunge: boolean;
+  owner: boolean;
+  constructor(emailAddress: string, name: string, rights: string = "") {
+    super(emailAddress, name);
+    for (let right of "lrswikxtea") {
+      this[IMAPACL[right]] = rights.includes(right);
+    }
   }
 }
