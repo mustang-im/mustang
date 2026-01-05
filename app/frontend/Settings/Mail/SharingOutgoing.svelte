@@ -203,36 +203,8 @@
     if (!confirmed) {
       return;
     }
-
-    if (account instanceof IMAPAccount) {
-      await onDeletePersonIMAP(otherPerson);
-    } else if (account instanceof EWSAccount || account instanceof OWAAccount) {
-      await onDeletePersonExchange(otherPerson);
-    } else {
-      throw new NotSupported();
-    }
-
+    await account.deleteSharedPerson(otherPerson);
     sharedWith.remove(otherPerson);
-  }
-
-  async function onDeletePersonIMAP(person: PersonUID) {
-    for (let folder of account.getAllFolders() as ArrayColl<IMAPFolder>) {
-      await folder.removePermission(person);
-    }
-  }
-
-  async function onDeletePersonExchange(person: PersonUID) {
-    let targets: ArrayColl<any> = account.getAllFolders();
-    targets.push(calendars.first);
-    targets.push(addressbooks.first);
-    for (let target of targets) {
-      let targetPermissions = await target.getPermissions();
-      let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
-      if (personPermission) {
-        targetPermissions.remove(personPermission);
-        await target.setPermissions(targetPermissions);
-      }
-    }
   }
 
   let showAddDialog = false;

@@ -592,6 +592,22 @@ export class OWAAccount extends MailAccount {
     return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
   }
 
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    let targets = this.getAllFolders() as ArrayColl<OWAFolder | OWACalendar | OWAAddressbook>;
+    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
+    targets.push(calendar as OWACalendar);
+    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
+    targets.push(addressbook as OWAAddressbook);
+    for (let target of targets) {
+      let targetPermissions = await target.getPermissions();
+      let personPermission = targetPermissions.find(permission => permission.emailAddress == otherPerson.emailAddress);
+      if (personPermission) {
+        targetPermissions.remove(personPermission);
+        await target.setPermissions(targetPermissions);
+      }
+    }
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);

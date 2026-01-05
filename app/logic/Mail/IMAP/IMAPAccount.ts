@@ -417,6 +417,12 @@ export class IMAPAccount extends MailAccount {
     return await (this.inbox as IMAPFolder).getPermissions();
   }
 
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders() as ArrayColl<IMAPFolder>) {
+      await folder.removePermission(otherPerson);
+    }
+  }
+
   fromConfigJSON(config: any) {
     super.fromConfigJSON(config);
     this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);

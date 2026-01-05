@@ -137,6 +137,9 @@ export class MailAccount extends TCPAccount {
     return new ArrayColl<PersonUID>();
   }
 
+  async deleteSharedPerson(Person: PersonUID) {
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
