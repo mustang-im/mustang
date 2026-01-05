@@ -460,8 +460,11 @@ export class ActiveSyncAccount extends MailAccount {
               appGlobal.addressbooks.add(addressbook);
             }
             if (!isMainAddressbook) {
+              // Rename and new address books
               addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
             }
+            // ActiveSync doesn't list all folders, only the changed ones.
+            // So, if we're here, then the address book changed.
             await addressbook.save();
             break;
           case FolderType.Calendar:
