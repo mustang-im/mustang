@@ -1,9 +1,9 @@
-import { Addressbook } from "../Addressbook";
+import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
@@ -243,6 +243,10 @@ export class EWSAddressbook extends Addressbook {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {

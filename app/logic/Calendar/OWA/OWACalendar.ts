@@ -1,4 +1,4 @@
-import { Calendar } from "../Calendar";
+import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
@@ -8,7 +8,7 @@ import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../.
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
@@ -147,6 +147,10 @@ export class OWACalendar extends Calendar {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {

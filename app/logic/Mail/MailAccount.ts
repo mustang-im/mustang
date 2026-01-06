@@ -1,6 +1,6 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
 import { MailIdentity } from "./MailIdentity";
-import { Folder, SpecialFolder, type SharePermissions } from "./Folder";
+import { Folder, SpecialFolder, type MailShareCombinedPermissions, type ShareCustomPermissions } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
@@ -140,7 +140,7 @@ export class MailAccount extends TCPAccount {
   async deleteSharedPerson(Person: PersonUID) {
   }
 
-  async addSharedPerson(person: PersonUID, permissions: SharePermissions) {
+  async addSharedPerson(person: PersonUID, mailFolder: Folder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, permissions: ShareCustomPermissions) {
   }
 
   fromConfigJSON(json: any) {

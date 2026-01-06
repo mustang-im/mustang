@@ -3,7 +3,7 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import type { Folder, SharePermissions } from "../Folder";
+import type { Folder, MailShareCombinedPermissions, ShareCustomPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
@@ -596,22 +596,11 @@ export class OWAAccount extends MailAccount {
     }
   }
 
-  async addSharedPerson(otherPerson: PersonUID, permissions: SharePermissions) {
-    let { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders } = permissions;
-    if (shareCalendar) {
-      let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar;
-      await setExchangePermissions(calendar, otherPerson, calendarAccess);
-    }
-    if (shareAddressbook) {
-      let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook;
-      await setExchangePermissions(addressbook, otherPerson, addressbookAccess);
-    }
-    if (shareAllMail || shareMailFolder) {
-      // XXX Need root folder to share all mail
-      let foldersToShare = (shareAllMail ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
-      for (let folder of foldersToShare) {
-        await setExchangePermissions(folder as OWAFolder, otherPerson, mailAccess, permissions);
-      }
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: OWAFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, permissions: ShareCustomPermissions) {
+    // XXX Need root folder to share all mail
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
+    for (let folder of foldersToShare) {
+      await setExchangePermissions(folder as OWAFolder, otherPerson, access, permissions);
     }
   }
 

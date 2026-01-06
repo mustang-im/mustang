@@ -1,10 +1,10 @@
-import { Calendar } from "../Calendar";
+import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -256,6 +256,10 @@ export class EWSCalendar extends Calendar {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {

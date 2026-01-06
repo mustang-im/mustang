@@ -5,7 +5,7 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder, MailShareCombinedPermissions, type SharePermissions } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, type ShareCustomPermissions } from "../Folder";
 import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
@@ -423,29 +423,27 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  async addSharedPerson(otherPerson: PersonUID, { shareAllMail, shareMailFolder, mailAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders }: SharePermissions) {
-    if (shareAllMail || shareMailFolder) {
-      let foldersToShare = (shareAllMail ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder as IMAPFolder])) as ArrayColl<IMAPFolder>;
-      let rights = "";
-      switch (mailAccess) {
-      case MailShareCombinedPermissions.Read:
-        rights = "lr";
-        break;
-      case MailShareCombinedPermissions.FlagChange:
-        rights = "lrsw";
-        break;
-      case MailShareCombinedPermissions.Modify:
-        rights = "lrswikxte";
-        break;
-      case MailShareCombinedPermissions.Custom:
-        rights = "l" + (shareRead ? "r" : "") + (shareFlags ? "sw" : "") + (shareDelete ? "te" : "") + (shareCreate ? "i" : "") + (shareDeleteFolder ? "x" : "") + (shareCreateSubfolders ? "k" : "");
-        break;
-      default:
-        throw new NotReached();
-      }
-      for (let folder of foldersToShare) {
-        await folder.addPermission(otherPerson, rights);
-      }
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: IMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders }: ShareCustomPermissions) {
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder])) as ArrayColl<IMAPFolder>;
+    let rights = "";
+    switch (access) {
+    case MailShareCombinedPermissions.Read:
+      rights = "lr";
+      break;
+    case MailShareCombinedPermissions.FlagChange:
+      rights = "lrsw";
+      break;
+    case MailShareCombinedPermissions.Modify:
+      rights = "lrswikxte";
+      break;
+    case MailShareCombinedPermissions.Custom:
+      rights = "l" + (shareRead ? "r" : "") + (shareFlags ? "sw" : "") + (shareDelete ? "te" : "") + (shareCreate ? "i" : "") + (shareDeleteFolder ? "x" : "") + (shareCreateSubfolders ? "k" : "");
+      break;
+    default:
+      throw new NotReached();
+    }
+    for (let folder of foldersToShare) {
+      await folder.addPermission(otherPerson, rights);
     }
   }
 

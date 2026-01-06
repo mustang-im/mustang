@@ -69,6 +69,9 @@ export class Calendar extends Account {
   async deleteSharedPerson(Person: PersonUID) {
   }
 
+  async addSharedPerson(person: PersonUID, access: CalendarShareCombinedPermissions) {
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.syncState = json.syncState;

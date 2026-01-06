@@ -242,7 +242,15 @@
 
   async function onAddPersons() {
     for (let person of newPersons) {
-      await account.addSharedPerson(person, { shareAllMail, shareMailFolder, mailAccess, shareCalendar, calendarAccess, shareAddressbook, addressbookAccess, mailFolder, includeSubfolders, shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
+      if (shareAllMail || shareMailFolder) {
+        await account.addSharedPerson(person, shareMailFolder ? mailFolder : null, includeSubfolders, mailAccess, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
+      }
+      if (shareCalendar) {
+        await calendars.first?.addSharedPerson(person, calendarAccess);
+      }
+      if (shareAddressbook) {
+        await addressbooks.first?.addSharedPerson(person, addressbookAccess);
+      }
       sharedWith.add(person);
     }
     newPersons.clear();

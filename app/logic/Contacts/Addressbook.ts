@@ -43,6 +43,9 @@ export class Addressbook extends Account {
   async deleteSharedPerson(Person: PersonUID) {
   }
 
+  async addSharedPerson(person: PersonUID, access: AddressbookShareCombinedPermissions) {
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.syncState = json.syncState;

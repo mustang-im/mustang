@@ -1,4 +1,4 @@
-import { Folder, SpecialFolder, MailShareCombinedPermissions, type SharePermissions } from "../Folder";
+import { Folder, SpecialFolder, MailShareCombinedPermissions, type ShareCustomPermissions } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
@@ -696,8 +696,7 @@ export async function deleteExchangePermissions(target: { getPermissions(): Prom
   }
 }
 
-export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, customAccess = {} as SharePermissions) {
-  let { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders } = customAccess;
+export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders } = {} as ShareCustomPermissions) {
   let targetPermissions = await target.getPermissions();
   let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
   if (!personPermission) {
