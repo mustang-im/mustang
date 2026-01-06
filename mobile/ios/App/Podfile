@@ -16,6 +16,7 @@ def capacitor_pods
   pod 'CapacitorCamera', :path => '../../node_modules/@capacitor/camera'
   pod 'CapacitorFileViewer', :path => '../../node_modules/@capacitor/file-viewer'
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapgoInappbrowser', :path => '../../node_modules/@capgo/inappbrowser'
   pod 'CapacitorNodejs', :path => '../../node_modules/capacitor-nodejs'
 end
 

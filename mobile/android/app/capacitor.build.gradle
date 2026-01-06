@@ -16,6 +16,7 @@ dependencies {
     implementation project(':capacitor-filesystem')
     implementation project(':capacitor-splash-screen')
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
+    implementation project(':capgo-inappbrowser')
     implementation project(':capacitor-nodejs')
 
 }
