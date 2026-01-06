@@ -243,7 +243,26 @@
   async function onAddPersons() {
     for (let person of newPersons) {
       if (shareAllMail || shareMailFolder) {
-        await account.addSharedPerson(person, shareMailFolder ? mailFolder : null, includeSubfolders, mailAccess, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders });
+        let customPermissions: MailShareIndividualPermissions[] = [];
+        if (shareRead) {
+          customPermissions.push(MailShareIndividualPermissions.Read);
+        }
+        if (shareFlags) {
+          customPermissions.push(MailShareIndividualPermissions.FlagChange);
+        }
+        if (shareDelete) {
+          customPermissions.push(MailShareIndividualPermissions.Delete);
+        }
+        if (shareCreate) {
+          customPermissions.push(MailShareIndividualPermissions.Create);
+        }
+        if (shareDeleteFolder) {
+          customPermissions.push(MailShareIndividualPermissions.DeleteFolder);
+        }
+        if (shareCreateSubfolders) {
+          customPermissions.push(MailShareIndividualPermissions.CreateSubfolders);
+        }
+        await account.addSharedPerson(person, shareMailFolder ? mailFolder : null, includeSubfolders, mailAccess, ...customPermissions);
       }
       if (shareCalendar) {
         await calendars.first?.addSharedPerson(person, calendarAccess);

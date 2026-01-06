@@ -3,7 +3,7 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import type { Folder, MailShareCombinedPermissions, ShareCustomPermissions } from "../Folder";
+import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
@@ -853,11 +853,11 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  async addSharedPerson(otherPerson: PersonUID, mailFolder: EWSFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, permissions: ShareCustomPermissions) {
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: EWSFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
     // XXX Need root folder to share all mail
     let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
     for (let folder of foldersToShare) {
-      await setExchangePermissions(folder as EWSFolder, otherPerson, access, permissions);
+      await setExchangePermissions(folder as EWSFolder, otherPerson, access, ...permissions);
     }
   }
 

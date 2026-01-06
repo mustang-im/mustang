@@ -5,7 +5,7 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder, MailShareCombinedPermissions, type ShareCustomPermissions } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
@@ -423,7 +423,7 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  async addSharedPerson(otherPerson: PersonUID, mailFolder: IMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders }: ShareCustomPermissions) {
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: IMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
     let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder])) as ArrayColl<IMAPFolder>;
     let rights = "";
     switch (access) {
@@ -437,7 +437,24 @@ export class IMAPAccount extends MailAccount {
       rights = "lrswikxte";
       break;
     case MailShareCombinedPermissions.Custom:
-      rights = "l" + (shareRead ? "r" : "") + (shareFlags ? "sw" : "") + (shareDelete ? "te" : "") + (shareCreate ? "i" : "") + (shareDeleteFolder ? "x" : "") + (shareCreateSubfolders ? "k" : "");
+      if (permissions.includes(MailShareIndividualPermissions.Read)) {
+        rights += "r";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.FlagChange)) {
+        rights += "sw";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Delete)) {
+        rights += "te";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Create)) {
+        rights += "i";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.DeleteFolder)) {
+        rights += "x";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.CreateSubfolders)) {
+        rights += "k";
+      }
       break;
     default:
       throw new NotReached();

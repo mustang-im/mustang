@@ -379,12 +379,3 @@ export const mailShareIndividualPermissionsLabels: Record<string, string> = {
   [MailShareIndividualPermissions.DeleteFolder]: gt`Delete this folder`,
   [MailShareIndividualPermissions.CreateSubfolders]: gt`Add new folders`,
 };
-/** Used when mailAccess == MailShareCombinedPermissions.Custom */
-export interface ShareCustomPermissions {
-  shareRead: boolean;
-  shareFlags: boolean;
-  shareDelete: boolean;
-  shareCreate: boolean;
-  shareDeleteFolder: boolean;
-  shareCreateSubfolders: boolean;
-}

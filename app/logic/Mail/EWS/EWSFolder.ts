@@ -1,4 +1,4 @@
-import { Folder, SpecialFolder, MailShareCombinedPermissions, type ShareCustomPermissions } from "../Folder";
+import { Folder, SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
@@ -696,7 +696,7 @@ export async function deleteExchangePermissions(target: { getPermissions(): Prom
   }
 }
 
-export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders } = {} as ShareCustomPermissions) {
+export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, ...permissions: MailShareIndividualPermissions[]) {
   let targetPermissions = await target.getPermissions();
   let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
   if (!personPermission) {
@@ -729,12 +729,12 @@ export async function setExchangePermissions(target: { getPermissions(): Promise
     permission.CanCreateItems = true;
     break;
   case MailShareCombinedPermissions.Custom:
-    permission.ReadItems = shareRead ? "FullDetails" : "None";
-    permission.EditItems = shareFlags ? "All" : "None"; // closest supported by Exchange
-    permission.DeleteItems = shareDelete ? "All" : "None";
-    permission.CanCreateItems = shareCreate;
-    permission.IsFolderOwner = shareDeleteFolder; // closest supported by Exchange
-    permission.CanCreateSubFolders = shareCreateSubfolders;
+    permission.ReadItems = permissions.includes(MailShareIndividualPermissions.Read) ? "FullDetails" : "None";
+    permission.EditItems = permissions.includes(MailShareIndividualPermissions.FlagChange) ? "All" : "None"; // closest supported by Exchange
+    permission.DeleteItems = permissions.includes(MailShareIndividualPermissions.Delete) ? "All" : "None";
+    permission.CanCreateItems = permissions.includes(MailShareIndividualPermissions.Create);
+    permission.IsFolderOwner = permissions.includes(MailShareIndividualPermissions.DeleteFolder); // closest supported by Exchange
+    permission.CanCreateSubFolders = permissions.includes(MailShareIndividualPermissions.CreateSubfolders);
     break;
   default:
     throw new NotReached();
