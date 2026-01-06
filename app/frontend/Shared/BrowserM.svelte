@@ -20,14 +20,10 @@
   </hbox>
 {/if}
 
-// #if [!WEBMAIL && !MOBILE]
-<webview bind:this={webviewE} src={url} {title} {partition} />
-// #else
-<iframe bind:this={webviewE} src={url} {title} sandbox="allow-scripts allow-forms" />
-// #endif
+<webview bind:this={webviewE} />
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import RoundButton from './RoundButton.svelte';
   import Loader from './Loader.svelte';
   import { InAppBrowser, ToolBarType } from '@capgo/inappbrowser';
@@ -64,33 +60,42 @@
 
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
-  async function haveWebView () {
+  async function haveWebView() {
     await InAppBrowser.addListener("urlChangeEvent", (event) => {
       currentURL = event.url;
       dispatch("page-change", event.url);
     });
+
     await InAppBrowser.addListener("browserPageLoaded", async () => {
       isLoading = false;
       if (autofill) {
           await InAppBrowser.executeScript({ code: autofill });
       }
     });
+
     await InAppBrowser.addListener("closeEvent", async () => {
       await InAppBrowser.removeAllListeners();
     });
+
     let height = webviewE.clientHeight;
     let width = webviewE.clientWidth;
     await InAppBrowser.openWebView({
       url: url,
       preventDeeplink: true,
       headers: {
-          "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
       },
       toolbarType: ToolBarType.BLANK,
       width: width,
       height: height,
     });
   };
+
+  onDestroy(destroyWebView);
+  async function destroyWebView() {
+    await InAppBrowser.close();
+    await InAppBrowser.removeAllListeners();
+  }
 
   async function onClose() {
     dispatch("close");
