@@ -15,12 +15,15 @@
 <script lang="ts">
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
+  // #if [MOBILE && !WEBMAIL]
+  import Browser from "../BrowserM.svelte";
+  // #else
   import Browser from "../Browser.svelte";
+  // #endif
   import { autoFillLoginPage } from "../../../logic/Auth/LoginAutoFill";
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
-  import { InAppBrowser } from "@capgo/inappbrowser";
 
   export let dialog: OAuth2Tab | OAuth2Embed;
   export let withURLbar = true;
@@ -30,10 +33,6 @@
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;
     await dialog.urlChanged(url);
-    if (dialog.oAuth2.isAuthDoneURL(url)) {
-      await InAppBrowser.close();
-      await InAppBrowser.removeAllListeners();
-    }
   }
 
   function onClose() {

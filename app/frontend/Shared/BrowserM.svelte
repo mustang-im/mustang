@@ -30,6 +30,7 @@
   import { createEventDispatcher } from 'svelte';
   import RoundButton from './RoundButton.svelte';
   import Loader from './Loader.svelte';
+  import { InAppBrowser, ToolBarType } from '@capgo/inappbrowser';
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
@@ -63,24 +64,38 @@
 
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
-  function haveWebView () {
-    webviewE.addEventListener("dom-ready", () => {
-      currentURL = webviewE.src;
-      dispatch("page-change", webviewE.src);
+  async function haveWebView () {
+    await InAppBrowser.addListener("urlChangeEvent", (event) => {
+      currentURL = event.url;
+      dispatch("page-change", event.url);
     });
-    webviewE.addEventListener("did-start-loading", () => {
-      isLoading = true;
-    });
-    webviewE.addEventListener("did-stop-loading", () => {
+    await InAppBrowser.addListener("browserPageLoaded", async () => {
       isLoading = false;
       if (autofill) {
-        webviewE.executeJavaScript(autofill);
+          await InAppBrowser.executeScript({ code: autofill });
       }
     });
-  }
+    await InAppBrowser.addListener("closeEvent", async () => {
+      await InAppBrowser.removeAllListeners();
+    });
+    let height = webviewE.clientHeight;
+    let width = webviewE.clientWidth;
+    await InAppBrowser.openWebView({
+      url: url,
+      preventDeeplink: true,
+      headers: {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
+      },
+      toolbarType: ToolBarType.BLANK,
+      width: width,
+      height: height,
+    });
+  };
 
-  function onClose() {
+  async function onClose() {
     dispatch("close");
+    await InAppBrowser.close();
+    await InAppBrowser.removeAllListeners();
   }
 </script>
 
