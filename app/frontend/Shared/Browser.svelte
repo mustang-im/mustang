@@ -22,18 +22,23 @@
 
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url} {title} {partition} />
+// #elif [!WEBMAIL && MOBILE]
+<webview bind:this={webviewE} {title} />
 // #else
 <iframe bind:this={webviewE} src={url} {title} sandbox="allow-scripts allow-forms" />
 // #endif
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import RoundButton from './RoundButton.svelte';
   import Loader from './Loader.svelte';
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
   import { t } from '../../l10n/l10n';
+  // #if [!WEBMAIL && MOBILE]
+  import { InAppBrowser, ToolBarType } from '@capgo/inappbrowser';
+  // #endif
   const dispatch = createEventDispatcher();
 
   /**
@@ -63,6 +68,43 @@
 
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
+  // #if [!WEBMAIL && MOBILE]
+  async function haveWebView() {
+    await InAppBrowser.addListener("urlChangeEvent", (event) => {
+      currentURL = event.url;
+      dispatch("page-change", event.url);
+    });
+
+    await InAppBrowser.addListener("browserPageLoaded", async () => {
+      isLoading = false;
+      if (autofill) {
+          await InAppBrowser.executeScript({ code: autofill });
+      }
+    });
+
+    await InAppBrowser.addListener("closeEvent", async () => {
+      await InAppBrowser.removeAllListeners();
+    });
+
+    let height = webviewE.clientHeight;
+    let width = webviewE.clientWidth;
+    await InAppBrowser.openWebView({
+      url: url,
+      preventDeeplink: true,
+      headers: {
+        // Set User-Agent Header to the same as a normal Android Chrome Browser
+        // because embedded user agents are not allowed for OAuth2
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
+      },
+      toolbarType: ToolBarType.BLANK,
+      title: title,
+      visibleTitle: false,
+      // Set the width and height to the same as the placeholder <webview> element
+      width: width,
+      height: height,
+    });
+  };
+  // #else
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
       currentURL = webviewE.src;
@@ -78,10 +120,23 @@
       }
     });
   }
+  // #endif
 
-  function onClose() {
+  async function onClose() {
     dispatch("close");
+    // #if [!WEBMAIL && MOBILE]
+    await InAppBrowser.close();
+    await InAppBrowser.removeAllListeners();
+    // endif
   }
+
+  // #if [!WEBMAIL && MOBILE]
+  onDestroy(destroyWebView);
+  async function destroyWebView() {
+    await InAppBrowser.close();
+    await InAppBrowser.removeAllListeners();
+  }
+  // endif
 </script>
 
 <style>

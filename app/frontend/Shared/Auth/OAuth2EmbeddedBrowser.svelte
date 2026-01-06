@@ -15,11 +15,7 @@
 <script lang="ts">
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import { OAuth2Embed } from "../../../logic/Auth/UI/OAuth2Embed";
-  // #if [MOBILE && !WEBMAIL]
-  import Browser from "../BrowserM.svelte";
-  // #else
   import Browser from "../Browser.svelte";
-  // #endif
   import { autoFillLoginPage } from "../../../logic/Auth/LoginAutoFill";
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
