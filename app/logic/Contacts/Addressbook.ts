@@ -1,5 +1,6 @@
 import { Account } from "../Abstract/Account";
 import { Person } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
 import { appGlobal } from "../app";
@@ -33,6 +34,13 @@ export class Addressbook extends Account {
     await super.deleteIt();
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
   }
 
   fromConfigJSON(json: any) {

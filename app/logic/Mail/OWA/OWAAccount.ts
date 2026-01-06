@@ -18,8 +18,7 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
-import { deduplicatePermissions } from "../EWS/EWSAccount";
-import { setExchangePermissions } from "../EWS/EWSFolder";
+import { deleteExchangePermissions, setExchangePermissions } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -588,25 +587,12 @@ export class OWAAccount extends MailAccount {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     // well, some of them at least...
-    let inboxPermissions = await (this.inbox as OWAFolder).getPermissions();
-    let addressbookPermissions = await (appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook).getPermissions();
-    let calendarPermissions = await (appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar).getPermissions();
-    return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
+    return await (this.inbox as OWAFolder).getPermissions();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
-    let targets = this.getAllFolders() as ArrayColl<OWAFolder | OWACalendar | OWAAddressbook>;
-    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
-    targets.push(calendar as OWACalendar);
-    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
-    targets.push(addressbook as OWAAddressbook);
-    for (let target of targets) {
-      let targetPermissions = await target.getPermissions();
-      let personPermission = targetPermissions.find(permission => permission.emailAddress == otherPerson.emailAddress);
-      if (personPermission) {
-        targetPermissions.remove(personPermission);
-        await target.setPermissions(targetPermissions);
-      }
+    for (let folder of this.getAllFolders()) {
+      await deleteExchangePermissions(folder as OWAFolder, otherPerson);
     }
   }
 

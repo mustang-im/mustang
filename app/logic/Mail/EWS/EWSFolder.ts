@@ -687,6 +687,15 @@ export class ExchangePermission extends PersonUID {
   }
 }
 
+export async function deleteExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, otherPerson: PersonUID) {
+  let targetPermissions = await target.getPermissions();
+  let personPermission = targetPermissions.find(permission => permission.emailAddress == otherPerson.emailAddress);
+  if (personPermission) {
+    targetPermissions.remove(personPermission);
+    await target.setPermissions(targetPermissions);
+  }
+}
+
 export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, customAccess = {} as SharePermissions) {
   let { shareRead, shareFlags, shareDelete, shareCreate, shareDeleteFolder, shareCreateSubfolders } = customAccess;
   let targetPermissions = await target.getPermissions();

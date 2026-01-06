@@ -187,7 +187,21 @@
 
   export let account: MailAccount;
   let sharedWith = new ArrayColl<PersonUID>();
-  $: (async() => { sharedWith = new ArrayColl<PersonUID>(); sharedWith = await account.getSharedPersons(); })();
+  $: (async() => { sharedWith = new ArrayColl<PersonUID>(); findSharedPersons(account); })();
+
+  async function findSharedPersons(account: MailAccount) {
+    mergePersons(await account.getSharedPersons());
+    mergePersons(await calendars.first?.getSharedPersons());
+    mergePersons(await addressbooks.first?.getSharedPersons());
+  }
+
+  async function mergePersons(persons?: ArrayColl<PersonUID>) {
+    for (let person of persons) {
+      if (!sharedWith.some(otherPerson => otherPerson.emailAddress == person.emailAddress)) {
+        sharedWith.add(person);
+      }
+    }
+  }
 
   async function onDelete(otherPerson: PersonUID) {
     let confirmed = confirm($t`Are you sure that you want to remove all access to your data from the account ${otherPerson.name}?`);
@@ -195,6 +209,8 @@
       return;
     }
     await account.deleteSharedPerson(otherPerson);
+    await calendars.first?.deleteSharedPerson(otherPerson);
+    await addressbooks.first?.deleteSharedPerson(otherPerson);
     sharedWith.remove(otherPerson);
   }
 

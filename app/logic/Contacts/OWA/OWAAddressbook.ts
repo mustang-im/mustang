@@ -1,10 +1,11 @@
 import { Addressbook } from "../Addressbook";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
-import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -129,6 +130,14 @@ export class OWAAddressbook extends Addressbook {
 
   getGroupByPersonaID(id: string): OWAGroup | undefined {
     return this.groups.find(p => p.personaID == id);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return await this.getPermissions();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {

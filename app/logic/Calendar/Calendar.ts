@@ -1,4 +1,5 @@
 import { Account } from "../Abstract/Account";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
@@ -59,6 +60,13 @@ export class Calendar extends Account {
     await super.deleteIt();
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
   }
 
   fromConfigJSON(json: any) {

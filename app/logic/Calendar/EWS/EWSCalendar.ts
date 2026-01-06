@@ -1,9 +1,10 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -247,6 +248,14 @@ export class EWSCalendar extends Calendar {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return await this.getPermissions();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {

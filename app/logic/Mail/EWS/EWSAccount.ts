@@ -4,7 +4,7 @@ import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import type { Folder, SharePermissions } from "../Folder";
-import { EWSFolder, setExchangePermissions, getEWSItem } from "./EWSFolder";
+import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -844,25 +844,12 @@ export class EWSAccount extends MailAccount {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     // well, some of them at least...
-    let inboxPermissions = await (this.inbox as EWSFolder).getPermissions();
-    let addressbookPermissions = await (appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook).getPermissions();
-    let calendarPermissions = await (appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar).getPermissions();
-    return deduplicatePermissions([inboxPermissions, addressbookPermissions, calendarPermissions]);
+    return await (this.inbox as EWSFolder).getPermissions();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
-    let targets = this.getAllFolders() as ArrayColl<EWSFolder | EWSCalendar | EWSAddressbook>;
-    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
-    targets.push(calendar as EWSCalendar);
-    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
-    targets.push(addressbook as EWSAddressbook);
-    for (let target of targets) {
-      let targetPermissions = await target.getPermissions();
-      let personPermission = targetPermissions.find(permission => permission.emailAddress == otherPerson.emailAddress);
-      if (personPermission) {
-        targetPermissions.remove(personPermission);
-        await target.setPermissions(targetPermissions);
-      }
+    for (let folder of this.getAllFolders()) {
+      await deleteExchangePermissions(folder as EWSFolder, otherPerson);
     }
   }
 
@@ -991,22 +978,6 @@ const EWSPermissions: Record<DelegatePermission, string> = {
   "create": "Author",
   "write": "Editor",
 };
-
-export function deduplicatePermissions(permissionLists: ArrayColl<PersonUID>[]): ArrayColl<PersonUID> {
-  let persons = new Map<string, string>;
-  for (let permissions of permissionLists) {
-    for (let permission of permissions) {
-      if (!permission.emailAddress.includes('*')) {
-        persons.set(permission.emailAddress, permission.name);
-      }
-    }
-  }
-  let deduplicated = new ArrayColl<PersonUID>();
-  for (let [emailAddress, name] of persons) {
-    deduplicated.add(new PersonUID(emailAddress, name));
-  }
-  return deduplicated;
-}
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 

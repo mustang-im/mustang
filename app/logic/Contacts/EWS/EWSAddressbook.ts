@@ -1,8 +1,9 @@
 import { Addressbook } from "../Addressbook";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission } from "../../Mail/EWS/EWSFolder";
+import { ExchangePermission, deleteExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
@@ -234,6 +235,14 @@ export class EWSAddressbook extends Addressbook {
 
   protected getGroupByItemID(id: string): EWSGroup | undefined {
     return this.groups.find(p => p.itemID == id);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return await this.getPermissions();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
   }
 
   async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
