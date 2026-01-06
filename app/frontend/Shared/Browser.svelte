@@ -33,7 +33,7 @@
   import RoundButton from './RoundButton.svelte';
   import Loader from './Loader.svelte';
   // #if [!WEBMAIL && MOBILE]
-  import { InAppBrowser } from '@capgo/inappbrowser';
+  import { InAppBrowser, ToolBarType } from '@capgo/inappbrowser';
   // #endif
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
@@ -84,11 +84,11 @@
       }
     });
   }
-  // #else
+  // #elif [!WEBMAIL && MOBILE]
   async function haveWebView () {
-    await InAppBrowser.addListener("urlChangeEvent", () => {
-      currentURL = webviewE.src;
-      dispatch("page-change", webviewE.src);
+    await InAppBrowser.addListener("urlChangeEvent", (event) => {
+      currentURL = event.url;
+      dispatch("page-change", event.url);
     });
     await InAppBrowser.addListener("browserPageLoaded", async () => {
       isLoading = false;
@@ -96,25 +96,46 @@
         await InAppBrowser.executeScript({ code: autofill });
       }
     });
-    let x = webviewE.offsetLeft;
-    let y = webviewE.offsetTop;
-    let height = webviewE.height;
-    let width = webviewE.width;
+    await InAppBrowser.addListener("closeEvent", async () => {
+      await InAppBrowser.removeAllListeners();
+    });
+    let rect = webviewE.getBoundingClientRect();
+    let x = rect.x;
+    let y = rect.y;
+    let height = webviewE.clientHeight;
+    let width = webviewE.clientWidth;
     await InAppBrowser.openWebView({
       url: url,
+      preventDeeplink: true,
       headers: {
         "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
       },
+      toolbarType: ToolBarType.BLANK,
       x: x,
       y: y,
-      width: parseInt(width),
-      height: parseInt(height),
+      width: width,
+      height: height,
     });
+
+    const resizer = new ResizeObserver(async () => {
+      const rect = webviewE.getBoundingClientRect();
+      height = rect.height;
+      width = rect.width;
+      x = rect.x;
+      y = rect.y;
+      await InAppBrowser.updateDimensions({width, height, x, y});
+    });
+
+    resizer.observe(webviewE);
   };
   // #endif
 
-  function onClose() {
+  async function onClose() {
     dispatch("close");
+    // if [!WEBMAIL && MOBILE]
+    await InAppBrowser.close();
+    await InAppBrowser.removeAllListeners();
+    //
   }
 </script>
 

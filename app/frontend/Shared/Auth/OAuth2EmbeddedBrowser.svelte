@@ -20,6 +20,7 @@
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
+  import { InAppBrowser } from "@capgo/inappbrowser";
 
   export let dialog: OAuth2Tab | OAuth2Embed;
   export let withURLbar = true;
@@ -29,6 +30,10 @@
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;
     await dialog.urlChanged(url);
+    if (dialog.oAuth2.isAuthDoneURL(url)) {
+      await InAppBrowser.close();
+      await InAppBrowser.removeAllListeners();
+    }
   }
 
   function onClose() {
