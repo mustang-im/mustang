@@ -86,6 +86,8 @@
         "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
       },
       toolbarType: ToolBarType.BLANK,
+      title: title,
+      visibleTitle: false,
       width: width,
       height: height,
     });
