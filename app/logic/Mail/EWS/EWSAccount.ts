@@ -40,7 +40,7 @@ export class EWSAccount extends MailAccount {
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
   // JPC remoted AbortControllers for all currently streaming notifications
-  controllers = new Set<AbortController>();
+  notificationAbort = new Set<AbortController>();
   // Subscription IDs for all subscribed notificaions
   subscriptions: string[] = [];
 
@@ -367,7 +367,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
-    let lastAttempt, controller;
+    let lastAttempt: number;
+    let abort: AbortController;
     do {
       try {
         lastAttempt = Date.now();
@@ -383,8 +384,8 @@ export class EWSAccount extends MailAccount {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
-        controller = response.controller;
-        this.controllers.add(controller);
+        abort = response.abort;
+        this.notificationAbort.add(abort);
         for await (let chunk of response.body) {
           data += chunk;
           while (data.includes(endEnvelope)) {
@@ -422,16 +423,16 @@ export class EWSAccount extends MailAccount {
         this.errorCallback(ex);
         break;
       } finally {
-        this.controllers.delete(controller);
+        this.notificationAbort.delete(abort);
       }
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
   async unsubscribeAllNotifications() {
-    for (let controller of this.controllers) {
-      controller.abort();
+    for (let abort of this.notificationAbort) {
+      abort.abort();
     }
-    this.controllers.clear();
+    this.notificationAbort.clear();
     if (!this.subscriptions.length) {
       return;
     }
