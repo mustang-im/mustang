@@ -21,6 +21,8 @@ export default defineConfig({
         WEBMAIL: !!webMail && includeProprietary ? !!webMail : undefined,
         MOBILE: isMobile,
         PROPRIETARY: includeProprietary ? true : undefined,
+        // Workaround for disabling broken features for iOS
+        IOS: process.env.MOBILE_ARCH?.startsWith("ios"),
       },
     }),
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),

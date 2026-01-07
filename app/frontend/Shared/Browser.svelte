@@ -22,7 +22,7 @@
 
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url} {title} {partition} />
-// #elif [!WEBMAIL && MOBILE]
+// #elif [!WEBMAIL && MOBILE && !IOS]
 <webview bind:this={webviewE} {title} />
 // #else
 <iframe bind:this={webviewE} src={url} {title} sandbox="allow-scripts allow-forms" />
@@ -36,7 +36,7 @@
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
   import { t } from '../../l10n/l10n';
-  // #if [!WEBMAIL && MOBILE]
+  // #if [!WEBMAIL && MOBILE && !IOS]
   import { InAppBrowser, ToolBarType } from '@capgo/inappbrowser';
   // #endif
   const dispatch = createEventDispatcher();
@@ -68,7 +68,7 @@
 
   let webviewE: HTMLIFrameElement = null;
   $: url && webviewE && haveWebView();
-  // #if [!WEBMAIL && MOBILE]
+  // #if [!WEBMAIL && MOBILE && !IOS]
   async function haveWebView() {
     await InAppBrowser.addListener("urlChangeEvent", (event) => {
       currentURL = event.url;
@@ -124,13 +124,13 @@
 
   async function onClose() {
     dispatch("close");
-    // #if [!WEBMAIL && MOBILE]
+    // #if [!WEBMAIL && MOBILE && !IOS]
     await InAppBrowser.close();
     await InAppBrowser.removeAllListeners();
     // endif
   }
 
-  // #if [!WEBMAIL && MOBILE]
+  // #if [!WEBMAIL && MOBILE && !IOS]
   onDestroy(destroyWebView);
   async function destroyWebView() {
     await InAppBrowser.close();
