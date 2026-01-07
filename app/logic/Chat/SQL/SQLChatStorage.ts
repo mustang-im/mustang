@@ -21,10 +21,6 @@ export class SQLChatStorage implements ChatAccountStorage {
   }
 
   static async readChatAccounts(): Promise<Collection<ChatAccount>> {
-    let chatAccounts = await SQLChatAccount.readAll();
-    for (let chatAccount of chatAccounts) {
-      SQLChat.readAll(chatAccount);
-    }
-    return chatAccounts;
+    return await SQLChatAccount.readAll();
   }
 }

@@ -74,9 +74,7 @@ export class CardDAVAddressbook extends Addressbook {
   }
 
   async listContacts() {
-    if (!this.dbID) {
-      await this.save();
-    }
+    await super.listContacts();
 
     if (!this.davAddressbook) {
       let addressbooks = await this.listAddressbooks();

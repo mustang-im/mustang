@@ -82,10 +82,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   async listContacts() {
-    if (!this.dbID || !this.serverID) {
-      this.serverID ??= new URL(this.url).searchParams.get("serverID");
-      await this.save();
-    }
+    await super.listContacts();
 
     let data = {
       WindowSize: String(kMaxCount),

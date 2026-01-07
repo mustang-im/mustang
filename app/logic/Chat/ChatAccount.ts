@@ -3,8 +3,8 @@ import type { ChatPerson } from "./Person";
 import type { Group } from "../Abstract/Group";
 import { Chat } from "./Chat";
 import type { ChatMessage } from "./Message";
+import { SQLChat } from "./SQL/SQLChat";
 import { appGlobal } from "../app";
-import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
@@ -20,7 +20,12 @@ export class ChatAccount extends TCPAccount {
   isOnline = false;
 
   async listChats(): Promise<void> {
-    throw new AbstractFunction();
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.chats.isEmpty) {
+      SQLChat.readAll(this);
+    }
   }
 
   newChat(): Chat {

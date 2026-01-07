@@ -27,10 +27,6 @@ export class SQLAddressbookStorage implements AddressbookStorage {
   }
 
   static async readAddressbooks(): Promise<Collection<Addressbook>> {
-    let addressbooks = await SQLAddressbook.readAll();
-    for (let addressbook of addressbooks) {
-      SQLGroup.readAll(addressbook); // also reads persons
-    }
-    return addressbooks;
+    return await SQLAddressbook.readAll();
   }
 }

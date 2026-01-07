@@ -43,7 +43,7 @@ export class JMAPPerson extends Person {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
-    this.original = sanitize.json(json.original); // as object, not string
+    this.original = sanitize.json(json.original, {}); // as object, not string
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();

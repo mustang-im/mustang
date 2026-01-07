@@ -33,9 +33,7 @@ export class JMAPAddressbook extends Addressbook {
   }
 
   async listContacts() {
-    if (!this.dbID) {
-      await this.save();
-    }
+    await super.listContacts();
     if (!this.account.isLoggedIn) {
       await this.account.login(false);
     }

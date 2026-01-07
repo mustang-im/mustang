@@ -29,11 +29,7 @@ export class JMAPCalendar extends Calendar {
   }
 
   async listEvents() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
-    await this.save();
+    await super.listEvents();
   }
 
   getEventByItemID(id: string): JMAPEvent | undefined {

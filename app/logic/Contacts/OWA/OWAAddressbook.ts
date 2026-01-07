@@ -34,6 +34,7 @@ export class OWAAddressbook extends Addressbook {
   }
 
   async listContacts() {
+    await super.listContacts();
     await this.listContactsOnce.maybeRun();
   }
 

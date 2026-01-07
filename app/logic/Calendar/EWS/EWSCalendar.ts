@@ -63,10 +63,7 @@ export class EWSCalendar extends Calendar {
   }
 
   async listEvents() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
+    await super.listEvents();
     await this.syncFolder();
     await this.save();
   }

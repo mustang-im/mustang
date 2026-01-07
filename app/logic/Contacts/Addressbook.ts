@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Person } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
+import { SQLGroup } from "./SQL/SQLGroup";
 import { appGlobal } from "../app";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
@@ -23,7 +24,12 @@ export class Addressbook extends Account {
   }
 
   async listContacts() {
-    // Reading from DB happens on startup, in `Addressbooks.ts readAddressbooks()`
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.persons.isEmpty && this.groups.isEmpty) {
+      SQLGroup.readAll(this); // also reads persons
+    }
   }
 
   async save(): Promise<void> {

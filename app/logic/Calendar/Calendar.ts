@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
+import { SQLEvent } from "./SQL/SQLEvent";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -45,6 +46,12 @@ export class Calendar extends Account {
   }
 
   async listEvents() {
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.events.isEmpty) {
+      await SQLEvent.readAll(this);
+    }
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {

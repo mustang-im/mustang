@@ -27,9 +27,7 @@ export class EWSAddressbook extends Addressbook {
   }
 
   async listContacts() {
-    if (!this.dbID) {
-      await this.save();
-    }
+    await super.listContacts();
 
     return this.updateChangedContacts();
   }

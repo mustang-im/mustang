@@ -29,6 +29,7 @@ export class GraphChatAccount extends ChatAccount {
   }
 
   async listChats(): Promise<void> {
+    await super.listChats();
     let chatsJSON = await this.account.graphGetAll<TGraphChat>("chats", { top: 50 });
     for (let chatJSON of chatsJSON) {
       let chat = this.newChat();

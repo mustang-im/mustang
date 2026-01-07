@@ -101,7 +101,7 @@ export class SQLChat extends Chat {
     let newChats = new ArrayColl<Chat>();
     for (let row of rows) {
       try {
-        let chat = account.chats.find(email => email.dbID == row.id);
+        let chat = account.chats.find(chat => chat.dbID == row.id);
         if (chat) {
           await SQLChat.read(row.id, chat); // TODO needed?
         } else {

@@ -57,14 +57,12 @@ export class OWACalendar extends Calendar {
   }
 
   async listEvents() {
+    await super.listEvents();
     await this.listEventsOnce.maybeRun();
   }
 
   async listEventsSlow() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
+    await super.listEvents();
     let events = new ArrayColl<OWAEvent>;
     await this.listFolder(events);
     for (let event of this.events.subtract(events)) {

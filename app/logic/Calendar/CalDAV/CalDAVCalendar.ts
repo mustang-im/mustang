@@ -73,9 +73,7 @@ export class CalDAVCalendar extends Calendar {
   }
 
   async listEvents() {
-    if (!this.dbID) {
-      await this.save();
-    }
+    await super.listEvents();
 
     if (!this.davCalendar) {
         let calendars = await this.listCalendars();
