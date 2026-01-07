@@ -5,7 +5,9 @@ import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, typ
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
+import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
@@ -60,6 +62,7 @@ export class JMAPAccount extends MailAccount {
     inbox.startPolling();
 
     await this.listAddressbooks();
+    await this.listCalendars();
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.mainAccount == this) {
         await addressbook.listContacts();
@@ -150,7 +153,7 @@ export class JMAPAccount extends MailAccount {
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
     let requestJSON: TJMAPAPIRequest = {
-      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:contacts"],
+      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars"],
       methodCalls: [],
     };
     let callCounter = 0;
@@ -472,6 +475,10 @@ export class JMAPAccount extends MailAccount {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
     }
+    if (type == "CalendarEvent") {
+      let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+      await calendars.first?.fetchChangedEventsForAllCalendars();
+    }
   }
 
   /** Starts push mail
@@ -527,6 +534,19 @@ export class JMAPAccount extends MailAccount {
     let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
     ab.initFromMainAccount(this);
     ab.id = primaryID;
+  }
+
+  async listCalendars() {
+    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:calendars"];
+    if (!primaryID) {
+      return;
+    }
+    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.id == primaryID).hasItems) {
+      return;
+    }
+    let cal = newCalendarForProtocol("calendar-jmap") as JMAPCalendar;
+    cal.initFromMainAccount(this);
+    cal.id = primaryID;
   }
 
   hasCapability(capa: string): boolean {
