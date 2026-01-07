@@ -67,7 +67,7 @@
   let currentURL: URLString = url;
 
   let webviewE: HTMLIFrameElement = null;
-  $: webviewE && haveWebView();
+  $: url && webviewE && haveWebView();
   // #if [!WEBMAIL && MOBILE]
   async function haveWebView() {
     await InAppBrowser.addListener("urlChangeEvent", (event) => {
