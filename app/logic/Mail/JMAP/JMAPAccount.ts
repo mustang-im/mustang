@@ -15,7 +15,8 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
 import { assert, SpecificError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
+import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -465,6 +466,10 @@ export class JMAPAccount extends MailAccount {
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
+    if (type == "ContactCard") {
+      let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
+      await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
+    }
   }
 
   /** Starts push mail
@@ -474,7 +479,7 @@ export class JMAPAccount extends MailAccount {
     assert(url, "Need event source URL");
     url = url
       .replace("{accountId}", this.accountID)
-      .replace("{types}", "Email") // TJMAPObjectTypes.join(","))
+      .replace("{types}", "Email,ContactCard") // TJMAPObjectTypes.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
     while (this.isLoggedIn) {

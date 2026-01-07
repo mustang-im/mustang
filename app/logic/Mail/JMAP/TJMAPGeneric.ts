@@ -45,6 +45,18 @@ export interface TJMAPGetResponse<T> {
   state: string;
   list: T[];
   notFound: string[];
+  total: number;
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc8620#section-5.5> */
+export interface TJMAPQueryResponse {
+  accountId: string;
+  queryState: string;
+  ids: string[];
+  position: number;
+  limit?: number;
+  total?: number;
+  canCalculateChanges: boolean;
 }
 
 /** <https://www.rfc-editor.org/rfc/rfc8620#section-5.2> */
@@ -77,8 +89,8 @@ export interface TJMAPAPICallError {
 export type TJMAPMethodCall = [string, Record<string, any>, string];
 /** Contents: method name, arguments, call number */
 export type TJMAPMethodResponse = [string, Record<string, any>, string];
-export type TJMAPObjectType = "Mailbox" | "Email" | "EmailSubmission" | "Thread";
-export const TJMAPObjectTypes = [ "Mailbox", "Email", "EmailSubmission", "Thread" ];
+export type TJMAPObjectType = "Mailbox" | "Email" | "EmailSubmission" | "Thread" | "AddressBook" | "ContactCard" | "Calendar" | "CalendarEvent" | "CalendarEventNotification" | "ParticipantIdentity";
+export const TJMAPObjectTypes = ["Mailbox", "Email", "EmailSubmission", "Thread", "AddressBook", "ContactCard", "Calendar", "CalendarEvent", "CalendarEventNotification", "ParticipantIdentity" ];
 
 
 /** <https://www.rfc-editor.org/rfc/rfc8620.html#section-6.1> */

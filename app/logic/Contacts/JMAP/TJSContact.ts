@@ -1,4 +1,10 @@
 /** <https://www.rfc-editor.org/rfc/rfc9553.html#name-card> */
+export interface TJMAPContact extends TJSContact {
+  id: TID;
+  addressBookIds: Record<TID, boolean>;
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc9553.html#name-card> */
 export interface TJSContact {
   /** JSContact version (e.g., "1.0") */
   version: string;

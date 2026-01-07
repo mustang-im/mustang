@@ -23,6 +23,7 @@ export class Addressbook extends Account {
   }
 
   async listContacts() {
+    // Reading from DB happens on startup, in `Addressbooks.ts readAddressbooks()`
   }
 
   async save(): Promise<void> {
