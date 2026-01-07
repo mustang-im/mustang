@@ -264,9 +264,12 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
  * @param config ky config @see <https://github.com/sindresorhus/ky>
  */
 async function streamHTTP(url: string, data: any, config: any) {
+  let abort = new AbortController();
+  config.signal = abort.signal;
   config.body = data;
   let response = await ky.post(url, config);
   return {
+    abort,
     ok: response.ok,
     status: response.status,
     statusText: response.statusText,

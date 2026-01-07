@@ -39,6 +39,10 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  // JPC remoted AbortControllers for all currently streaming notifications
+  notificationAbort = new Set<AbortController>();
+  // Subscription IDs for all subscribed notificaions
+  subscriptions: string[] = [];
 
   constructor() {
     super();
@@ -128,7 +132,12 @@ export class EWSAccount extends MailAccount {
       await this.mainAccount.logout();
       return;
     }
+    await this.unsubscribeAllNotifications();
     await this.oAuth2?.logout();
+  }
+
+  async disconnect(): Promise<void> {
+    await this.unsubscribeAllNotifications();
   }
 
   needsLicense(): boolean {
@@ -359,7 +368,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
-    let lastAttempt;
+    let lastAttempt: number;
+    let abort: AbortController;
     do {
       try {
         lastAttempt = Date.now();
@@ -375,6 +385,8 @@ export class EWSAccount extends MailAccount {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
+        abort = response.abort;
+        this.notificationAbort.add(abort);
         for await (let chunk of response.body) {
           data += chunk;
           while (data.includes(endEnvelope)) {
@@ -411,8 +423,31 @@ export class EWSAccount extends MailAccount {
         }
         this.errorCallback(ex);
         break;
+      } finally {
+        this.notificationAbort.delete(abort);
       }
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+  }
+
+  async unsubscribeAllNotifications() {
+    for (let abort of this.notificationAbort) {
+      abort.abort();
+    }
+    this.notificationAbort.clear();
+    if (!this.subscriptions.length) {
+      return;
+    }
+    let unsubscribe = {
+      m$Unsubscribe: {
+        m$SubscriptionId: this.subscriptions,
+      },
+    };
+    try {
+      await this.callEWS(unsubscribe);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+    this.subscriptions.length = 0;
   }
 
   async streamNotifications(folderID?: string) {
@@ -455,6 +490,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
+    this.subscriptions.push(response.SubscriptionId);
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
