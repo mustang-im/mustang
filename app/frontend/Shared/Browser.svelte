@@ -127,7 +127,7 @@
     // #if [!WEBMAIL && MOBILE && !IOS]
     await InAppBrowser.close();
     await InAppBrowser.removeAllListeners();
-    // endif
+    // #endif
   }
 
   // #if [!WEBMAIL && MOBILE && !IOS]
@@ -136,7 +136,7 @@
     await InAppBrowser.close();
     await InAppBrowser.removeAllListeners();
   }
-  // endif
+  // #endif
 </script>
 
 <style>
