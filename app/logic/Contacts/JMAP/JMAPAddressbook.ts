@@ -49,14 +49,14 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
-    let countTotal = 1;
+    let hasMore = true;
     let allNewPersons = new ArrayColl<JMAPPerson>();
-    for (let i = 0; i < countTotal; i += batchSize) {
-      let { newPersons, total } = await this.fetchPersons(i, batchSize);
+    for (let i = 0; hasMore; i += batchSize) {
+      let { newPersons, updatedPersons } = await this.fetchPersons(i, batchSize + 1);
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
-      countTotal = total;
+      hasMore = newPersons.length + updatedPersons.length > batchSize;
     }
     return allNewPersons;
   }
@@ -79,7 +79,6 @@ export class JMAPAddressbook extends Addressbook {
             ],
             position: start,
             limit: limit,
-            calculateTotal: true, // because `hasMoreResults` not in spec
           },
           "list",
         ], [
@@ -97,7 +96,6 @@ export class JMAPAddressbook extends Addressbook {
       listResponse = response["persons"] as TJMAPGetResponse<TJMAPContact>;
 
       let result = this.parsePersonsList(listResponse.list);
-      result.total = (response["list"] as TJMAPQueryResponse).total;
       this.account.syncState.set("ContactCard", listResponse.state);
       return result;
     } finally {
@@ -236,7 +234,7 @@ export class JMAPAddressbook extends Addressbook {
         newPersons.add(msg);
       }
     }
-    return { newPersons: newPersons, updatedPersons: updatedPersons, total: newPersons.length + updatedPersons.length };
+    return { newPersons: newPersons, updatedPersons: updatedPersons };
   }
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
@@ -262,7 +260,7 @@ export class JMAPAddressbook extends Addressbook {
   }*/
 }
 
-type UpdateResult<T> = { newPersons: ArrayColl<T>, updatedPersons: ArrayColl<T>, total: number }
+type UpdateResult<T> = { newPersons: ArrayColl<T>, updatedPersons: ArrayColl<T> }
 
 function splitByAddressbook(list: TJMAPContact[], map: Map<string, TJMAPContact[]>) {
   for (let resp of list) {
