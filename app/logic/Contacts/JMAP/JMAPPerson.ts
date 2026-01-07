@@ -1,7 +1,7 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { Person } from '../../Abstract/Person';
 import type { JMAPAddressbook } from './JMAPAddressbook';
 import { JSContact } from './JSContact';
-import type { TJSContact, TPrivateOrWork } from './TJSContact';
+import type { TJSContact } from './TJSContact';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 
 export class JMAPPerson extends Person {
@@ -26,7 +26,7 @@ export class JMAPPerson extends Person {
   async saveToServer() {
     let jscontact = this.original ?? {} as TJSContact;
     JSContact.fromPerson(this, jscontact);
-    await this.account.makeSingleCall("Email/set", {
+    await this.account.makeSingleCall("ContactCard/set", {
       accountId: this.account.accountID,
       update: {
         [this.uid]: jscontact,
@@ -35,7 +35,7 @@ export class JMAPPerson extends Person {
   }
 
   async deleteFromServer() {
-    await this.account.makeSingleCall("Email/set", {
+    await this.account.makeSingleCall("ContactCard/set", {
       accountId: this.account.accountID,
       destroy: [this.uid],
     });

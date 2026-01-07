@@ -4,6 +4,8 @@ import { JMAPFolder } from "./JMAPFolder";
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
@@ -16,7 +18,6 @@ import { Lock } from "../../util/Lock";
 import { assert, SpecificError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
-import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -58,6 +59,7 @@ export class JMAPAccount extends MailAccount {
     assert(inbox, "Inbox not found");
     inbox.startPolling();
 
+    await this.listAddressbooks();
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.mainAccount == this) {
         await addressbook.listContacts();
@@ -127,7 +129,7 @@ export class JMAPAccount extends MailAccount {
    *     list: [ { id: "", subject: "" }, ... ]
    *   }
    *   If a call returns multiple results, only the last result of that call is returned. */
-  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
+  async makeCombinedCall(calls: [ string, Record<string, any>, string? ][]): Promise<Record<string, any>> {
     let responses = await this.makeCalls(calls);
     let results: Record<string, any> = {};
     for (let response of responses) {
@@ -148,7 +150,7 @@ export class JMAPAccount extends MailAccount {
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
     let requestJSON: TJMAPAPIRequest = {
-      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
+      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:contacts"],
       methodCalls: [],
     };
     let callCounter = 0;
@@ -512,6 +514,19 @@ export class JMAPAccount extends MailAccount {
         }
       }
     }
+  }
+
+  async listAddressbooks() {
+    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:contacts"];
+    if (!primaryID) {
+      return;
+    }
+    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.id == primaryID).hasItems) {
+      return;
+    }
+    let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
+    ab.initFromMainAccount(this);
+    ab.id = primaryID;
   }
 
   hasCapability(capa: string): boolean {

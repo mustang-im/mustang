@@ -4,7 +4,7 @@ import { JMAPGroup } from "./JMAPGroup";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { TJMAPAddressbook } from "./TJMAPAddressbook";
 import type { TJMAPContact } from "./TJSContact";
-import type { TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "../../Mail/JMAP/TJMAPGeneric";
+import type { TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -72,10 +72,10 @@ export class JMAPAddressbook extends Addressbook {
           "ContactCard/query", {
             accountId: this.account.accountID,
             filter: {
-              inMailbox: this.id,
+              inAddressBook: this.id,
             },
             sort: [
-              { property: "name" }
+              { property: "created" }
             ],
             position: start,
             limit: limit,
