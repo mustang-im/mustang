@@ -220,6 +220,11 @@ export class Event extends Observable {
   /** Includes changes to `alarm`, lastUpdateTime does not consider to be a change */
   @notifyChangedProperty
   lastMod = new Date();
+  /** The verbatim data we got from the server.
+   * For round-trips: Allows to keep unknown properties to be kept as-is, even during edit,
+   * instead of destroying everything unknown.
+   * @type JSON or string (Optional) */
+  original: Object | string | undefined;
   @notifyChangedProperty
   syncState: number | string | undefined;
   @notifyChangedProperty
