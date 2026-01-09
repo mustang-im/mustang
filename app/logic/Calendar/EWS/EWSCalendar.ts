@@ -27,6 +27,17 @@ export class EWSCalendar extends Calendar {
     return new EWSEvent(this, parentEvent);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
   getIncomingInvitationForEMail(message: EWSEMail) {
     return new EWSIncomingInvitation(this, message);
   }

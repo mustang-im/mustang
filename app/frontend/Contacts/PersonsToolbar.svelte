@@ -55,8 +55,12 @@
   }
 
   async function sync() {
-    assert($selectedAddressbook?.canSync, "Cannot sync " + $selectedAddressbook.protocol);
-    await $selectedAddressbook.listContacts();
+    let ab = $selectedAddressbook;
+    assert(ab?.canSync, "Cannot sync " + ab.protocol);
+    if (!ab.isLoggedIn) {
+      await ab.login(true);
+    }
+    await ab.listContacts();
   }
 </script>
 

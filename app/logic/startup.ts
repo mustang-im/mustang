@@ -73,6 +73,8 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
         .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
+  // Must log in email accounts before addressbooks and calenders,
+  // because many of the latter are dependent accounts of the former.
 
   for (let account of appGlobal.addressbooks) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
@@ -109,7 +111,7 @@ async function emailAccountLogin(account: MailAccount) {
 async function addressbookLogin(account: Addressbook) {
   await account.login(false);
   if (account.isLoggedIn) {
-    await account.listContacts()
+    await account.listContacts();
   }
 }
 

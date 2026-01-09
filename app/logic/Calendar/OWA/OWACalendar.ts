@@ -26,6 +26,17 @@ export class OWACalendar extends Calendar {
     return this.mainAccount as OWAAccount;
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
   callOWA(aRequest: any) {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)

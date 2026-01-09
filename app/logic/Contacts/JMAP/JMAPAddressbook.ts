@@ -27,6 +27,17 @@ export class JMAPAddressbook extends Addressbook {
     return new JMAPGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
   fromJMAP(jmap: TJMAPAddressbook) {
     this.id = sanitize.nonemptystring(jmap.id);
     this.name = sanitize.nonemptystring(jmap.name);

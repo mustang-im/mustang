@@ -23,16 +23,27 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   /** ActiveSync ServerId for this calendar */
   serverID: string;
 
+  newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
+    return new ActiveSyncEvent(this, parentEvent);
+  }
+
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
   }
 
-  async ping() {
-    await this.listEvents();
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
   }
 
-  newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
-    return new ActiveSyncEvent(this, parentEvent);
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
+  async ping() {
+    await this.listEvents();
   }
 
   getIncomingInvitationForEMail(message: ActiveSyncEMail) {
