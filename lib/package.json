@@ -9,7 +9,7 @@
     "iocane": "^5.2.0",
     "lodash": "^4.17.21",
     "r2": "^2.0.1",
-    "svelte-collections": "^1.2.2",
+    "svelte-collections": "^1.2.12",
     "vite-plugin-node-polyfills": "^0.24.0",
     "ws": "^8.19.0"
   },
