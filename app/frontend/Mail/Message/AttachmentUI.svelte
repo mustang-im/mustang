@@ -1,10 +1,11 @@
 <hbox class="attachment"
   draggable="true"
   on:dragstart={onDragStart}
+  on:click={() => catchErrors(onOpen)}
   >
   <hbox bind:this={iconEl}>
-    <hbox class="icon" on:click={() => catchErrors(onOpen)}>
-      <FileIcon ext={attachment.ext} localFilePath={attachment.filepathLocal} size={24} />
+    <hbox class="icon">
+      <FileIcon ext={$attachment.ext} localFilePath={$attachment.filepathLocal} size={24} />
     </hbox>
     <vbox class="info">
       <hbox title={$attachment.filename} class="filename top-row font-normal">
