@@ -3,14 +3,14 @@
   "version": "0.5.0",
   "description": "Mustang - User-friendly full-featured email application for everybody - Logic",
   "dependencies": {
-    "bufferutil": "^4.0.9",
-    "html-to-text": "^5.1.1",
-    "i18n": "^0.8.3",
-    "iocane": "^1.0.2",
+    "bufferutil": "^4.1.0",
+    "html-to-text": "^9.0.5",
+    "i18n": "^0.15.3",
+    "iocane": "^5.2.0",
     "lodash": "^4.17.21",
     "r2": "^2.0.1",
     "svelte-collections": "^1.2.2",
-    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-plugin-node-polyfills": "^0.24.0",
     "ws": "^8.16.0"
   },
   "scripts": {
