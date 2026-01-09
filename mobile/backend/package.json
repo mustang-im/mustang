@@ -9,21 +9,21 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@radically-straightforward/sqlite": "^1.0.0",
+    "@radically-straightforward/sqlite": "^1.1.13",
     "@types/nodemailer": "^7.0.4",
-    "adm-zip": "^0.5.12",
+    "adm-zip": "^0.5.16",
     "better-sqlite3": "^12.5.0",
-    "bufferutil": "^4.0.9",
-    "des.js": "^1.0.1",
+    "bufferutil": "^4.1.0",
+    "des.js": "^1.1.0",
     "express": "^5.2.1",
     "iconv-lite": "^0.7.2",
     "imapflow": "https://github.com/mustang-im/imapflow/",
     "js-md4": "^0.3.2",
-    "ky": "^1.2.3",
+    "ky": "^1.14.2",
     "nodemailer": "^7.0.12",
-    "tsdav": "^2.1.5",
+    "tsdav": "^2.1.6",
     "vite-plugin-static-copy": "^3.1.4",
-    "ws": "^8.16.0"
+    "ws": "^8.19.0"
   },
   "resolutions": {
     "**/iconv-lite": "^0.6.3"
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@rollup/plugin-esm-shim": "^0.1.8",
     "prebuild-for-nodejs-mobile": "https://github.com/mustang-im/prebuild-for-nodejs-mobile.git#update-libnode",
-    "rollup-plugin-node-externals": "^8.0.0",
+    "rollup-plugin-node-externals": "^8.1.2",
     "vite": "^7.3.1",
     "vite-plugin-conditional-compile": "^1.4.5"
   },
