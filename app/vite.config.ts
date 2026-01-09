@@ -1,5 +1,5 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { defineConfig } from 'vite'
+import { defineConfig, defaultClientConditions } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import conditionalCompile from "vite-plugin-conditional-compile";
@@ -31,6 +31,11 @@ export default defineConfig({
       project: "mustang"
     })
   ],
+
+  resolve: {
+    // Explicitly set the resolve conditions for Vite 7+
+    conditions: defaultClientConditions,
+  },
 
   build: {
     sourcemap: true
