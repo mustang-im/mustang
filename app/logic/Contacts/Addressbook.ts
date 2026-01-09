@@ -23,6 +23,11 @@ export class Addressbook extends Account {
     return new Group(this);
   }
 
+  get isLoggedIn(): boolean {
+    // Please override in subclasses
+    return true; // for local addressbook
+  }
+
   async listContacts() {
     if (!this.dbID) {
       await this.save();
