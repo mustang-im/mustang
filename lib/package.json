@@ -11,7 +11,7 @@
     "r2": "^2.0.1",
     "svelte-collections": "^1.2.2",
     "vite-plugin-node-polyfills": "^0.24.0",
-    "ws": "^8.16.0"
+    "ws": "^8.19.0"
   },
   "scripts": {
     "test": "node test.js"
