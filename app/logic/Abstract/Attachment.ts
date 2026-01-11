@@ -103,6 +103,7 @@ export enum ContentDisposition {
 }
 
 const kHiddenMIMETypes = [
+  "application/ld+json", // SML
   "application/ics", // calendar invitation
   "text/vcard", // vCard
   "text/calendar", // vCard

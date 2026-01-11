@@ -1,10 +1,12 @@
 import type { EMail } from "./EMail";
-import { ArrayColl } from "svelte-collections";
-import type PostalMime from "postal-mime";
+import type { ExtraData } from "./ExtraData";
 import { AbstractFunction } from "../util/util";
+import { ArrayColl, MapColl } from "svelte-collections";
+import type PostalMime from "postal-mime";
 
 export class EMailProcessorList {
   static processors = new ArrayColl<EMailProcessor>();
+  static extraDataTypes = new MapColl<string, typeof ExtraData>();
 }
 
 export class EMailProcessor {
@@ -33,7 +35,7 @@ export enum ProcessingStartOn {
   AfterFilterRules = 4,
   Sent = 5,
   Manual = 6,
-  /** Parse time, with SML JSON alrelady parsed */
+  /** Parse time, with SML JSON already parsed */
   SML = 7,
   /** Parse time, with HTML DOM already parsed */
   HTMLDOM = 8,

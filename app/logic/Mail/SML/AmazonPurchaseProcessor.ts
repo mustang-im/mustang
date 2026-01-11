@@ -1,7 +1,7 @@
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { EMail } from "../EMail";
 import { HTMLDataProcessor } from "./HTMLDataProcessor";
 import { DeliveryStatus, ProductPurchase, gPurchases } from "./ProductPurchase";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export abstract class AmazonPurchaseProcessor extends HTMLDataProcessor {
   // Domain after @ in the From: address

@@ -2,8 +2,9 @@ import { EMailProcessor, EMailProcessorList, ProcessingStartOn } from "../EMailP
 import { HTMLDataProcessor } from "./HTMLDataProcessor";
 import type { EMail } from "../EMail";
 import { getDomainForEmailAddress } from "../../util/netUtil";
-import { Collection } from "svelte-collections";
+import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
+import type { Collection } from "svelte-collections";
 
 /**
  * Reads the HTML DOM at email parse time,
@@ -42,7 +43,7 @@ export abstract class HTMLDataParseProcessor extends EMailProcessor {
         continue;
       }
       processor.processDOM(email, dom)
-        .catch(console.error);
+        .catch(logError);
     }
   }
 }

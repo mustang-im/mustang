@@ -10,6 +10,8 @@ import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
+import type { ExtraData } from "./ExtraData";
+import { FilterMoment } from "./FilterRules/FilterMoments";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
@@ -17,9 +19,9 @@ import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/PromiseAllDone";
 import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
+import { logError } from "../../frontend/Util/error";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
-import { FilterMoment } from "./FilterRules/FilterMoments";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -56,10 +58,6 @@ export class EMail extends Message {
   /** Complete MIME source of the email */
   @notifyChangedProperty
   mime: Uint8Array | undefined;
-  @notifyChangedProperty
-  invitationMessage: InvitationMessage = InvitationMessage.None;
-  @notifyChangedProperty
-  event: Event | null = null;
   folder: Folder;
   /** msg ID of the thread starter message */
   threadID: string | null = null;
@@ -82,8 +80,18 @@ export class EMail extends Message {
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+
+  /** Allows data-specific processors to add data to the message.
+   * ExtraData.extraDataName -> ExtraData */
+  extraData = new MapColl<string, ExtraData>();
+
+  // Calendar invitations - TODO move into `ExtraData`
   /* Only used when constructing iMIP outgoing messages */
   iCalMethod: iCalMethod | undefined;
+  @notifyChangedProperty
+  invitationMessage: InvitationMessage = InvitationMessage.None;
+  @notifyChangedProperty
+  event: Event | null = null;
 
   constructor(folder: Folder) {
     super();
@@ -300,7 +308,7 @@ export class EMail extends Message {
         continue;
       }
       processor.process(this, postalMIME)
-        .catch(console.error);
+        .catch(logError);
     }
   }
 
