@@ -33,4 +33,8 @@ export enum ProcessingStartOn {
   AfterFilterRules = 4,
   Sent = 5,
   Manual = 6,
+  /** Parse time, with SML JSON alrelady parsed */
+  SML = 7,
+  /** Parse time, with HTML DOM already parsed */
+  HTMLDOM = 8,
 }
