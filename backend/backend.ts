@@ -8,7 +8,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences } from "electron";
 import electronUpdater from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
@@ -58,6 +58,7 @@ async function createSharedAppObject() {
     startupArgs,
     isDefaultApp,
     setAsDefaultApp,
+    askForMediaAccess,
     onScreenSharingSelect,
     restartApp,
     checkForUpdate,
@@ -375,6 +376,14 @@ function setAsDefaultApp(protocol: string) {
 
 function showFileInFolder(filePath: string) {
   shell.showItemInFolder(filePath);
+}
+
+async function askForMediaAccess(mediaType: string) {
+  if (systemPreferences.getMediaAccessStatus(mediaType) == "granted") {
+    return true;
+  } else {
+    return await systemPreferences.askForMediaAccess(mediaType);
+  }
 }
 
 function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], error?: Error) => Promise<DesktopCapturerSource>,
