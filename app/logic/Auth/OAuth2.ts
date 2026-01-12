@@ -164,7 +164,11 @@ export class OAuth2 extends WebBasedAuth {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.accessToken;
+    return !!this.accessToken && !this.isExpired;
+  }
+
+  isExpired(): boolean {
+    return this.expiresAt.getTime() + 2000 > Date.now();
   }
 
   /**
