@@ -19,12 +19,12 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { XML2JSON, type Json, JSON2XML } from "./XML2JSON";
+import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, ensureArray, NotReached, NotSupported } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class EWSAccount extends MailAccount {

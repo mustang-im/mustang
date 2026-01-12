@@ -138,3 +138,5 @@ export class AbstractFunction extends Error {
 }
 
 export type URLString = string;
+export type Json = { [key: string]: JsonValue } | JsonValue[];
+type JsonValue = string | number | boolean | null | Json;

@@ -1,3 +1,5 @@
+import type { Json } from "../../util/util";
+
 export function XML2JSON(aNode: Element): Json {
   if (!aNode.children.length && !aNode.attributes.length) {
     return aNode.textContent;
@@ -50,5 +52,3 @@ export function JSON2XML(aJSON: Json, aParent: Element, aNS: string, aTag: strin
     }
   }
 }
-
-export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
