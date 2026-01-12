@@ -85,6 +85,7 @@ export class EMail extends Message {
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
   extraData = new MapColl<string, ExtraData>();
+  @notifyChangedProperty
   sml: SMLData | null = null;
 
   // Calendar invitations - TODO move into `ExtraData`

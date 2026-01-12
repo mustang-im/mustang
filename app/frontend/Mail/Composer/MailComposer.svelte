@@ -123,7 +123,7 @@
           icon={SMLIcon}
           iconOnly
           onClick={() => showSMLAdd = true}
-          disabled={mail.sml ? $t`You have already added an action` : false}
+          disabled={$mail.sml ? $t`You have already added an action` : false}
           />
         <Button
           label={$t`Attachments`}
@@ -143,6 +143,7 @@
             <hbox class="subject">
               <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} class="font-normal" />
             </hbox>
+            <SMLComposer {mail} />
             <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
@@ -150,18 +151,6 @@
             </vbox>
           </Scroll>
         </Paper>
-
-        {#if mail.sml}
-          {#if testSML}
-            <SMLDisplayKinds sml={mail.sml} />
-          {:else}
-            <SMLEditKinds sml={mail.sml} />
-          {/if}
-          <hbox class="sml buttons">
-            <Button label={$t`Show display`} onClick={() => testSML = !testSML} />
-            <Button label={$t`Remove`} onClick={() => {mail.sml = null; testSML = false;}} />
-          </hbox>
-        {/if}
       </vbox>
       {#if showAttachments}
         <vbox class="attachments">
@@ -207,9 +196,8 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
-  import SMLEditKinds from "../SML/SMLEditKinds.svelte";
+  import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
-  import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
@@ -471,10 +459,6 @@
   }
   .buttons :global(.send.disabled) {
     opacity: 30%;
-  }
-  .sml.buttons {
-    margin: 12px;
-    gap: 12px;
   }
   .sml-add-dialog {
     padding: 16px 24px;
