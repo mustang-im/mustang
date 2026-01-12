@@ -1,4 +1,5 @@
 import { MediaDeviceStreams } from "./MediaDeviceStreams";
+import { appGlobal } from "../app";
 import { notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert } from "../util/util";
@@ -37,6 +38,17 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     await this.setCameraMicOn(this._cameraOn, on, this._cameraDevice, device);
   }
   async setCameraMicOn(cameraOn: boolean, micOn: boolean, cameraDevice: string = this._cameraDevice, micDevice: string = this._micDevice) {
+    // #if [!WEBMAIL && !MOBILE]
+    if (cameraOn) {
+      let cameraAccess = await appGlobal.remoteApp.askForMediaAccess('camera');
+      assert(cameraAccess, gt`Camera access denied`);
+    }
+    if (micOn) {
+      let micAccess = await appGlobal.remoteApp.askForMediaAccess('microphone');
+      assert(micAccess, gt`Microphone access denied`);
+    }
+    // #endif
+
     cameraDevice ??= this._cameraDevice;
     micDevice ??= this._micDevice;
     let lock = await this._lock.lock();
