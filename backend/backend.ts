@@ -379,7 +379,6 @@ function showFileInFolder(filePath: string) {
 }
 
 async function askForMediaAccess(mediaType: string) {
-  if (os.platform() != "darwin") return true;
   if (systemPreferences.getMediaAccessStatus(mediaType) == "granted") {
     return true;
   } else {
