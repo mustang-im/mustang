@@ -1,9 +1,11 @@
 import { MediaDeviceStreams } from "./MediaDeviceStreams";
-import { appGlobal } from "../app";
 import { notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
+// #if [!WEBMAIL && !MOBILE]
+import { appGlobal } from "../app";
+// #endif
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
