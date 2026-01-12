@@ -8,6 +8,7 @@ import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
 import type { ArrayColl } from "svelte-collections";
+import { SMLData } from "../SML/SMLParseProcessor";
 
 export class JSONEMail {
   static filesDir: string | null = null;
@@ -51,9 +52,6 @@ export class JSONEMail {
   }
 
   static saveExtraData(email: EMail, json: any) {
-    if (email.invitationMessage) {
-      json.invitationMessage = email.invitationMessage;
-    }
     let extraDataJSON = [];
     email.extraData.forEach((extraData, type) => {
       let json = extraData.toJSON() as any;
@@ -65,6 +63,12 @@ export class JSONEMail {
     });
     if (extraDataJSON.length) {
       json.extraData = extraDataJSON;
+    }
+
+    json.sml = email.sml?.toJSON();
+
+    if (email.invitationMessage) {
+      json.invitationMessage = email.invitationMessage;
     }
   }
 
@@ -180,7 +184,6 @@ export class JSONEMail {
   }
 
   static readExtraData(email: EMail, json: any): void {
-    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
     if (json.extraData) {
       for (let extra of json.extraData) {
         try {
@@ -194,6 +197,11 @@ export class JSONEMail {
         }
       }
     }
+    if (json.sml) {
+      email.sml = new SMLData();
+      email.sml.fromJSON(json.sml);
+    }
+    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
   }
 
   static readRecipients(email: EMail, json: any): void {

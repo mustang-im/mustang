@@ -15,7 +15,7 @@ import { NotReached } from "../../util/util";
  * c) is efficient
  *
  * If you only want to build a display UI and don't need to process data at email download,
- * then you don't need this. You only need `let sml = email.extraData.get("sml") as SMLData`.
+ * then you don't need this. You only need `email.sml`.
  */
 export abstract class SMLProcessor extends EMailProcessor {
   /** Only process SML of these data types.

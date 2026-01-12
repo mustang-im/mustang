@@ -7,10 +7,11 @@ import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
 import type { Calendar } from "../Calendar/Calendar";
-import { Event } from "../Calendar/Event";
-import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
+import type { SMLData } from "./SML/SMLParseProcessor";
+import { Event } from "../Calendar/Event";
+import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -84,6 +85,7 @@ export class EMail extends Message {
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
   extraData = new MapColl<string, ExtraData>();
+  sml: SMLData | null = null;
 
   // Calendar invitations - TODO move into `ExtraData`
   /* Only used when constructing iMIP outgoing messages */

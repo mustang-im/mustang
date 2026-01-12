@@ -3,7 +3,7 @@ import { SMLProcessor } from "./SMLProcessor";
 import type { EMail } from "../EMail";
 import { ExtraData } from "../ExtraData";
 import { logError } from "../../../frontend/Util/error";
-import { assert } from "../../util/util";
+import { assert, type Json } from "../../util/util";
 import type { Collection } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
@@ -14,12 +14,12 @@ export class SMLData extends ExtraData {
   /** `sml.@type`, e.g. `"IceCreamShop"` ` */
   type!: string;
   /** The complete SML JSON */
-  sml!: Object;
+  sml!: Json;
 
-  toJSON(): Object {
+  toJSON(): Json {
     return this.sml;
   }
-  fromJSON(json: Object): void {
+  fromJSON(json: Json): void {
     this.context = sanitize.nonemptystring(json["@context"]);
     this.type = sanitize.nonemptystring(json["@type"]);
     this.sml = json;
@@ -50,7 +50,7 @@ export abstract class SMLParseProcessor extends EMailProcessor {
     data.context = sml["@context"];
     data.type = sml["@type"];
     data.sml = sml;
-    email.extraData.set(SMLData.extraDataName, data);
+    email.sml = data;
 
     let processors = EMailProcessorList.processors.filterOnce(p => p instanceof SMLProcessor) as Collection<SMLProcessor>;
     if (processors.hasItems) {
