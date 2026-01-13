@@ -137,9 +137,7 @@ export class OWAAccount extends MailAccount {
    */
   protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        this.oAuth2 = new OWAAuth(this);
-      }
+      this.oAuth2 ??= new OWAAuth(this);
       await this.oAuth2.login(interactive);
     } else if (!await this.testLoggedIn()) {
       let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);

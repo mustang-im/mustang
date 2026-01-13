@@ -18,7 +18,7 @@ import { OWAAccount } from "../OWA/OWAAccount";
 import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { OAuth2 } from "../../Auth/OAuth2";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import JXON from "../../../../lib/util/JXON";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
@@ -170,14 +170,9 @@ function getAuthConfig(account: Account, autoConfigXML: any): WebBasedAuth {
   if (account instanceof OWAAccount) {
     return new OWAAuth(account);
   }
-  let oAuth2: OAuth2;
   // try built-in
-  let hostname = account instanceof TCPAccount ? account.hostname : account.url ? new URL(account.url).hostname : null;
-  let builtin = OAuth2URLs.find(a => a.hostnames.includes(hostname));
-  if (builtin) {
-    oAuth2 = new OAuth2(account, builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret, builtin.doPKCE);
-    oAuth2.setTokenURLPasswordAuth(builtin.tokenURLPasswordAuth);
-  } else if (autoConfigXML.oAuth2) {
+  let oAuth2 = getOAuth2BuiltIn(account);
+  if (!oAuth2 && autoConfigXML.oAuth2) {
     try {
       let xml = autoConfigXML.oAuth2;
       oAuth2 = new OAuth2(
