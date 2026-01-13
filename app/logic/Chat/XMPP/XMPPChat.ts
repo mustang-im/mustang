@@ -16,7 +16,7 @@ export class XMPPChat extends Chat {
     jid = getJID(jid);
     this.id = jid;
     this.contact = new ChatPerson();
-    this.contact.id = jid;
+    this.contact.pID = jid;
     this.contact.name = jid;
     this.account.chats.set(this.contact, this);
   }
@@ -44,7 +44,7 @@ export class XMPPChat extends Chat {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: UserChatMessage) {
     const { JXT } = await import("stanza");
-    assert(message.contact instanceof ContactBase && message.contact.id, "Need contact with Jabber User ID");
+    assert(message.contact instanceof ContactBase && message.contact.pID, "Need contact with Jabber User ID");
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
     //console.log("Sending", message.text, "to", this.name);
@@ -56,7 +56,7 @@ export class XMPPChat extends Chat {
         </html>`);
     }
     message.id = this.account.client.sendMessage({
-      to: message.contact.id,
+      to: message.contact.pID,
       html: xhtmlIM,
       body: message.text,
     });

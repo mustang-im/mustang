@@ -23,7 +23,7 @@ export class SQLPerson {
           ) VALUES (
             ${person.name}, ${person.firstName}, ${person.lastName},
             ${person.picture}, ${person.notes}, ${person.popularity},
-            ${person.id}, ${person.addressbook?.dbID}, ${jsonStr}
+            ${person.pID}, ${person.addressbook?.dbID}, ${jsonStr}
           )`);
         person.dbID = insert.lastInsertRowid;
       } else {
@@ -35,7 +35,7 @@ export class SQLPerson {
             picture = ${person.picture},
             notes = ${person.notes},
             popularity = ${person.popularity},
-            pID = ${person.id},
+            pID = ${person.pID},
             addressbookID = ${person.addressbook?.dbID},
             json = ${jsonStr}
           WHERE id = ${person.dbID}
@@ -113,7 +113,7 @@ export class SQLPerson {
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
     person.popularity = sanitize.integer(row.popularity, null);
-    person.id = sanitize.string(row.pID, randomID());
+    person.pID = sanitize.string(row.pID, randomID());
     person.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);
