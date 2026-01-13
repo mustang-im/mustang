@@ -54,9 +54,7 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
-    if (await this.hasCapability('NAMESPACE')) {
-      this.namespaces = await this.getNamespaces();
-    }
+    this.namespaces = await this.getNamespaces();
     await this.listFolders();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
@@ -242,51 +240,21 @@ export class IMAPAccount extends MailAccount {
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
-    // conn.capabilities doesn't work; it's an object property,
-    // and JPC doesn't notice direct changes to properties.
-    // Fortuantely `conn.run("CAPABILITY")` has its own cache,
-    // and only makes a network request if absolutely necessary.
-    let capabilities = await conn.run('CAPABILITY');
-    return await capabilities.has(capa);
+    // conn.capabilities was automatically updated via `getNamespaces`
+    return await conn.capabilities.has(capa);
   }
 
   /**
-   * If the connection supports it, this will return the server's namespaces.
+   * This will return the server's namespaces.
    * @see this.namespaces
    */
   async getNamespaces(): Promise<Record<IMAPNamespace, {prefix: string, delimiter: string}[]>> {
     let conn = await this.connection();
-    // This should be `return await conn.run("NAMESPACE");`...
-    type ImapFlowAttribute = { type: string, value: string };
-    type ImapFlowNamespace = [prefix: ImapFlowAttribute, delimiter: ImapFlowAttribute];
-    type ImapFlowNamespaceList = ImapFlowNamespace[] | null;
-    type ImapFlowNamespaces = [personal: ImapFlowNamespaceList, other: ImapFlowNamespaceList, shared: ImapFlowNamespaceList];
-    let namespaces = Object.assign({}, kDefaultNamespaces);
-    let response = await conn.exec("NAMESPACE", false, {
-      untagged: {
-        NAMESPACE: async (untagged: { attributes?: ImapFlowNamespaces }) => {
-          if (Array.isArray(untagged.attributes)) {
-            let entries = untagged.attributes.map(list => Array.isArray(list)
-              ? list.map(entry => ({
-                prefix: sanitize.string(entry[0].value),
-                delimiter: sanitize.nonemptystring(entry[1].value),
-              }))
-              : null);
-            if (entries[0]) {
-              namespaces.personal = entries[0];
-            }
-            if (entries[1]) {
-              namespaces.other = entries[1];
-            }
-            if (entries[2]) {
-              namespaces.shared = entries[2];
-            }
-          }
-        }
-      }
-    });
-    await response.next();
-    return namespaces;
+    // This ImapFlow command checks for the NAMESPACE capability
+    // and returns the default namespaces if it doesn't support it.
+    await conn.run("NAMESPACE");
+    await conn.__refresh();
+    return conn.namespaces;
   }
 
   async listFolders(): Promise<void> {
@@ -442,7 +410,7 @@ type IMAPNamespace = "personal" | "other" | "shared";
  */
 interface IMAPNamespaceRecord { prefix: string; delimiter: string };
 /** The effective namespaces for servers that don't support namespaces. */
-const kDefaultNamespaces: Record<IMAPNamespace, IMAPNamespaceRecord[]> = { personal: [{ prefix: "", delimiter: "." }], other: [], shared: [] };
+const kDefaultNamespaces: Record<IMAPNamespace, IMAPNamespaceRecord[] | false> = { personal: [{ prefix: "", delimiter: "." }], other: false, shared: false };
 
 export enum ConnectionPurpose {
   Main = "main",
