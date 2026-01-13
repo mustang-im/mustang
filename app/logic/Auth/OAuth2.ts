@@ -168,7 +168,9 @@ export class OAuth2 extends WebBasedAuth {
   }
 
   isExpired(): boolean {
-    return this.expiresAt.getTime() + 2000 < Date.now();
+    return this.expiresAt
+      ? this.expiresAt.getTime() + 2000 < Date.now()
+      : false;
   }
 
   /**
