@@ -76,7 +76,8 @@ export class IMAPFolder extends Folder {
         }
       } catch (ex) {
         console.log("Opening IMAP folder failed", ex);
-        if (ex.code == "NoConnection") {
+        if (ex.code == "NoConnection" || // TCP connection dropped
+            ex.message == "Invalid credentials (Failure)") { // Gmail access token expired #350
           conn = await this.account.reconnect(conn);
           if (doLock) {
             lock = await this.account.connectionLock.get(conn).lock();
