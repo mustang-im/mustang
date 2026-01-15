@@ -153,6 +153,11 @@ export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Ad
   return groups;
 }
 
+function phoneNumberPattern(pattern: string): string {
+  let num = faker.phone.number();
+  return faker.helpers.fromRegExp(pattern);
+}
+
 export class FakeChatPerson extends Person {
   constructor() {
     super();
@@ -163,8 +168,8 @@ export class FakeChatPerson extends Person {
     this.name = this.firstName + " " + this.lastName;
     this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "work"));
     this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "home"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
+    this.phoneNumbers.add(new ContactEntry(phoneNumberPattern('+49-170-[0-9]{3} [0-9]{4}'), "mobile"));
+    this.phoneNumbers.add(new ContactEntry(phoneNumberPattern('+49-[0-9]{3}-[0-9]{6}'), "work"));
     this.chatAccounts.add(new ContactEntry(this.phoneNumbers.first.value, "WhatsApp"));
     this.chatAccounts.add(new ContactEntry(this.emailAddresses.first.value, "Teams"));
     this.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
