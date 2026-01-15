@@ -2,11 +2,15 @@ import { Account } from "../../Abstract/Account";
 import type { MailAccount } from "../MailAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
+import type { Json, URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class SMLHTTPAccount extends Account {
+  //////////////////////
+  // Login
+
   @notifyChangedProperty
-  accessToken: string | null = null;
+  protected accessToken: string | null = null;
 
   get emailAddress(): string | null {
     return this.username;
@@ -51,7 +55,7 @@ export class SMLHTTPAccount extends Account {
             clearInterval(poller);
           }
           resolve();
-          console.log("SML HTTP registration complete");
+          console.log("SML HTTP registration for", this.emailAddress, "completed automatically");
         }
       });
     });
@@ -75,6 +79,57 @@ export class SMLHTTPAccount extends Account {
       await msg.download();
     }
   }
+  setAccessToken(val: string) {
+    this.accessToken = val;
+  }
+
+  //////////////////////
+  // Resources
+
+  /**
+   * Creates a new resource on the server.
+   * @param bundleID
+   *   if null, create a new bundle.
+   *   if passed, create or update a subresource below this bundle.
+   *     You must own this bundle, otherwise the write will fail.
+   * @param resourceID
+   *   if null, create a new resource within the bundle.
+   *   if passed, update an existing subresource within the bundle.
+   *     You must either own the bundle, or the resource is writable to all who know the URL.
+   * @param writable Whether everybody who has the URL is allowed to change the content.
+   *   This should be used when you send the recipient a custom email with a URL only for that recipient.
+   *   The recipient can then update that URL, and only he knows the URL.
+   *   That presumes that you generate a different email for each recipient.
+   * @param json {JSON} the content of the resource that you want to write to the server
+   * @returns The resourceURL where others can HTTP GET the content that you pushed.
+   */
+  async saveResource(
+    bundleID: string | null = null,
+    resourceID: string | null = null,
+    writable: boolean,
+    json: Json
+  ): Promise<{
+    bundleID: string,
+    resourceID: string,
+    resourceURL: URLString
+  }> {
+    bundleID ??= crypto.randomUUID();
+    resourceID ??= crypto.randomUUID();
+    let resourceURL = this.url + "/r/" + bundleID + "/" + resourceID;
+    await fetch(resourceURL, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + this.accessToken,
+        "Content-Type": "application/json",
+        "Public-Access": writable ? "write" : "read",
+      },
+      body: JSON.stringify(json, null, 2),
+    });
+    return { bundleID, resourceID, resourceURL };
+  }
+
+  //////////////////////
+  // Accounts management
 
   protected static accounts = new ArrayColl<SMLHTTPAccount>;
   static getAccount(emailAddress: string): SMLHTTPAccount {

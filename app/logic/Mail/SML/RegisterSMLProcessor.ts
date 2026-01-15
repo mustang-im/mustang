@@ -26,9 +26,8 @@ export abstract class RegisterSMLProcessor extends SMLProcessor {
     assert(domain == emailDomain || trustedDomains.includes(domain), "Ignoring registration request for unknown domain " + domain);
     let oAuth2Call = await fetch(confirmURL) as any;
     let oAuth2Response = await oAuth2Call.json();
-    smlAccount.accessToken = sanitize.nonemptystring(oAuth2Response.access_token);
+    smlAccount.setAccessToken(sanitize.nonemptystring(oAuth2Response.access_token));
     await email.deleteMessage();
-    console.log("Registration for", emailAddress, "on", domain, "completed automatically");
   };
 }
 
