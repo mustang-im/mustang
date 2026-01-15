@@ -1,20 +1,20 @@
 import { EMailProcessor, EMailProcessorList, ProcessingStartOn } from "../EMailProcessor";
 import { SMLProcessor } from "./SMLProcessor";
 import type { EMail } from "../EMail";
-import { ExtraData } from "../ExtraData";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Observable, notifyChangedProperty } from "../../util/Observable";
 import { logError } from "../../../frontend/Util/error";
 import { assert, type Json } from "../../util/util";
 import type { Collection } from "svelte-collections";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class SMLData extends ExtraData {
-  static extraDataName: string = "sml";
+export class SMLData extends Observable {
   /** `sml.@context`, normally `"https://schema.org"` */
-  context!: string;
+  context: string;
   /** `sml.@type`, e.g. `"IceCreamShop"` ` */
-  type!: string;
+  type: string;
   /** The complete SML JSON */
-  sml!: Json;
+  @notifyChangedProperty
+  sml: Json;
 
   toJSON(): Json {
     return this.sml;
@@ -33,7 +33,7 @@ export class SMLData extends ExtraData {
 export abstract class SMLParseProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   async process(email: EMail): Promise<void> {
-    if (email.extraData.has(SMLData.extraDataName)) {
+    if (email.sml) {
       return;
     }
 

@@ -5,7 +5,6 @@ import { AmazonPurchaseProcessor } from "./AmazonPurchaseProcessor";
 
 export function dataProcessorsHookup() {
   SMLParseProcessor.hookup();
-  SMLData.hookup();
   RegisterSMLProcessor.hookup();
   HTMLDataParseProcessor.hookup();
   AmazonPurchaseProcessor.hookup();
