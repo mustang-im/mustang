@@ -34,7 +34,7 @@ export default defineConfig({
 
   resolve: {
     // Explicitly set the resolve conditions for Vite 7+
-    conditions: defaultClientConditions,
+    conditions: [...defaultClientConditions],
   },
 
   build: {
