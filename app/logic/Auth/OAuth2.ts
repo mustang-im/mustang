@@ -92,7 +92,7 @@ export class OAuth2 extends WebBasedAuth {
    */
   async login(interactive: boolean): Promise<string> {
     assert(this.account, "Need to set account first");
-    if (this.accessToken) {
+    if (this.isLoggedIn) {
       return this.accessToken;
     }
     this.refreshToken ??= await this.getRefreshTokenFromStorage();
