@@ -167,7 +167,7 @@
   placement="bottom"
   autoClose>
   <vbox class="sml-add-dialog">
-    <SMLAddKinds bind:sml={mail.sml}
+    <SMLAddKinds bind:sml={mail.sml} identity={fromIdentity}
       on:close={() => showSMLAdd = false} />
   </vbox>
 </Popup>

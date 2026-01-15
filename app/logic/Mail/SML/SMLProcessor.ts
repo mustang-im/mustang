@@ -25,7 +25,7 @@ export abstract class SMLProcessor extends EMailProcessor {
   abstract types: string[];
   /** The vocabulary registry of the `types`.
    * In most cases, this should be `"https://schema.org/"`. */
-  abstract context: string;
+  abstract context: string | undefined;
   abstract processSML(email: EMail, sml: Object): Promise<void>;
 
   ProcessingStartOn = ProcessingStartOn.SML;
