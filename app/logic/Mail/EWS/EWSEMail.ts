@@ -279,7 +279,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
  * @throws when not valid
  */
 export function getEmailAddressOrX400(emailAddress: string): string {
-  if (emailAddress.startsWith("/o=")) {
+  if (emailAddress.toLowerCase().startsWith("/o=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
   return sanitize.emailAddress(emailAddress);
@@ -295,7 +295,7 @@ export function getEmailAddressOrX400(emailAddress: string): string {
  * @returns pseudo email address
  */
 export function convertX400ToEmailAddress(x400: string): string {
-  let parts = x400.split("/");
+  let parts = x400.toLowerCase().split("/");
   let username = "user";
   let domain = "xfourhundred";
   for (let part of parts) {
