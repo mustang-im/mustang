@@ -51,37 +51,18 @@
       onClick={onMarkAllRead}
       />
   </hbox>
-  <hbox/>
-
-  {#if imapPermissions}
-    <label for="permissions">{$t`Folder permissions`}</label>
-    <PersonsAutocomplete persons={imapPermissions} placeholder={$t`Add permission`} {onAddPerson} {onRemovePerson}>
-      <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
-        {person.emailAddress}
-      </hbox>
-      <FolderIMAPPermissions slot="person-popup-bottom" let:person {person} {folder}/>
-    </PersonsAutocomplete>
-    <hbox/>
-  {/if}
 </grid>
 
 <script lang="ts">
-  import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
   import type { Folder } from "../../../../logic/Mail/Folder";
-  import { IMAPFolder, IMAPPermission } from "../../../../logic/Mail/IMAP/IMAPFolder";
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
-  import PersonsAutocomplete from "../../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import FolderIMAPPermissions from "./FolderIMAPPermissions.svelte";
-  import { showError } from '../../../Util/error';
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
   import { EMail } from "../../../../logic/Mail/EMail";
-  import type { ArrayColl, Collection } from "svelte-collections";
+  import { Collection } from "svelte-collections";
 
   export let folder: Folder;
-  let previousFolder: Folder;
-  let imapPermissions: ArrayColl<IMAPPermission> | undefined;
 
   $: init($folder);
 
@@ -92,20 +73,8 @@
   $: disableRename = $folder.disableRename();
 
   let folderName: string;
-  async function init(_dummy: any) {
-    if (folder == previousFolder) {
-      return;
-    }
-    previousFolder = folder;
+  function init(_dummy: any) {
     folderName = folder.name;
-    imapPermissions = undefined;
-    if (folder instanceof IMAPFolder) {
-      try {
-        imapPermissions = await folder.getPermissions();
-      } catch (ex) {
-        showError(ex);
-      }
-    }
   }
   async function onNameChange() {
     assert(folderName, $t`Name cannot be empty`);
@@ -153,19 +122,6 @@
 
   async function save() {
     await folder.save();
-  }
-
-  function onAddPerson(person: PersonUID) {
-    if (imapPermissions) {
-      imapPermissions.add(new IMAPPermission(person.emailAddress, person.name));
-    }
-  }
-
-  async function onRemovePerson(person: PersonUID) {
-    if (imapPermissions) {
-      await folder.removePermission(person);
-      imapPermissions.remove(person as IMAPPermission);
-    }
   }
 </script>
 
