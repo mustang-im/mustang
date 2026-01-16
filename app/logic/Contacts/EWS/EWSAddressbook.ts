@@ -3,11 +3,11 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
@@ -238,18 +238,6 @@ export class EWSAddressbook extends Addressbook {
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
-    return await this.getPermissions();
-  }
-
-  async deleteSharedPerson(otherPerson: PersonUID) {
-    await deleteExchangePermissions(this, otherPerson);
-  }
-
-  async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
-    await setExchangePermissions(this, otherPerson, access);
-  }
-
-  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
     let request = {
       m$GetFolder: {
         m$FolderShape: {
@@ -268,10 +256,40 @@ export class EWSAddressbook extends Addressbook {
       },
     };
     let result = await this.account.callEWS(request);
-    return new ArrayColl(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+    return getSharedPersons(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission);
   }
 
-  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.folderID,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return result.Folders.ContactsFolder.PermissionSet.Permissions.Permission.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
     let request = {
       m$UpdateFolder: {
         m$FolderChanges: {
@@ -287,7 +305,7 @@ export class EWSAddressbook extends Addressbook {
                 t$ContactsFolder: {
                   t$PermissionSet: {
                     t$Permissions: {
-                      t$Permission: permissions.contents.map(permission => permission.toEWSFolderPermission()),
+                      t$Permission: permissions.map(permission => permission.toEWSFolderPermission()),
                     },
                   },
                 },

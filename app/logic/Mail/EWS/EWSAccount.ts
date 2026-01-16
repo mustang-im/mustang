@@ -844,7 +844,7 @@ export class EWSAccount extends MailAccount {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     // well, some of them at least...
-    return await (this.inbox as EWSFolder).getPermissions();
+    return await (this.inbox as EWSFolder).getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

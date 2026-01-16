@@ -13,6 +13,7 @@ import {
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { ExchangePermission } from "../EWS/EWSFolder";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -280,12 +281,17 @@ export class OWAFolder extends Folder {
     return gt`You cannot change special folders on the Exchange server`;
   }
 
-  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     let result = await this.account.callOWA(owaGetPermissionsRequest(this.id));
-    return new ArrayColl(result.Folders[0].PermissionSet.Permissions.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+    return new ArrayColl(result.Folders[0].PermissionSet.Permissions.filter(permission => !permission.UserId.DistinguishedUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
   }
 
-  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
-    await this.account.callOWA(owaSetFolderPermissionsRequest(this.id, permissions.contents));
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.id));
+    return result.Folders[0].PermissionSet.Permissions.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    await this.account.callOWA(owaSetFolderPermissionsRequest(this.id, permissions));
   }
 }

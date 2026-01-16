@@ -8,7 +8,7 @@ import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../.
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
@@ -142,7 +142,8 @@ export class OWACalendar extends Calendar {
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
-    return await this.getPermissions();
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return getSharedPersons(result.Folders[0].PermissionSet.CalendarPermissions);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
@@ -153,13 +154,13 @@ export class OWACalendar extends Calendar {
     await setExchangePermissions(this, otherPerson, access);
   }
 
-  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+  async getPermissions(): Promise<ExchangePermission[]> {
     let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
-    return new ArrayColl(result.Folders[0].PermissionSet.CalendarPermissions.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+    return result.Folders[0].PermissionSet.CalendarPermissions.map(permission => new ExchangePermission(permission));
   }
 
-  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
-    await this.account.callOWA(owaSetCalendarPermissionsRequest(this.folderID, permissions.contents));
+  async setPermissions(permissions: ExchangePermission[]) {
+    await this.account.callOWA(owaSetCalendarPermissionsRequest(this.folderID, permissions));
   }
 
   fromConfigJSON(json: any) {

@@ -4,12 +4,12 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
@@ -251,18 +251,6 @@ export class EWSCalendar extends Calendar {
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
-    return await this.getPermissions();
-  }
-
-  async deleteSharedPerson(otherPerson: PersonUID) {
-    await deleteExchangePermissions(this, otherPerson);
-  }
-
-  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
-    await setExchangePermissions(this, otherPerson, access);
-  }
-
-  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
     let request = {
       m$GetFolder: {
         m$FolderShape: {
@@ -281,10 +269,40 @@ export class EWSCalendar extends Calendar {
       },
     };
     let result = await this.account.callEWS(request);
-    return new ArrayColl(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+    return getSharedPersons(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission);
   }
 
-  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.folderID,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
     let request = {
       m$UpdateFolder: {
         m$FolderChanges: {
@@ -300,7 +318,7 @@ export class EWSCalendar extends Calendar {
                 t$CalendarFolder: {
                   t$PermissionSet: {
                     t$CalendarPermissions: {
-                      t$CalendarPermission: permissions.contents.map(permission => permission.toEWSCalendarPermission()),
+                      t$CalendarPermission: permissions.map(permission => permission.toEWSCalendarPermission()),
                     },
                   },
                 },

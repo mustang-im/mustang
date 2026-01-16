@@ -540,7 +540,7 @@ export class EWSFolder extends Folder {
     return "You cannot change Exchange special folders.";
   }
 
-  async getPermissions(): Promise<ArrayColl<ExchangePermission>> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     let request = {
       m$GetFolder: {
         m$FolderShape: {
@@ -559,10 +559,32 @@ export class EWSFolder extends Folder {
       },
     };
     let result = await this.account.callEWS(request);
-    return new ArrayColl(result.Folders.Folder.PermissionSet.Permissions.Permission.map(permission => ExchangePermission.fromExchange(permission, this.account.emailAddress)));
+    return getSharedPersons(result.Folders.Folder.PermissionSet.Permissions.Permission);
   }
 
-  async setPermissions(permissions: ArrayColl<ExchangePermission>) {
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return result.Folders.Folder.PermissionSet.Permissions.Permission.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
     let request = {
       m$UpdateFolder: {
         m$FolderChanges: {
@@ -578,7 +600,7 @@ export class EWSFolder extends Folder {
                 t$Folder: {
                   t$PermissionSet: {
                     t$Permissions: {
-                      t$Permission: permissions.contents.map(permission => permission.toEWSFolderPermission()),
+                      t$Permission: permissions.map(permission => permission.toEWSFolderPermission()),
                     },
                   },
                 },
@@ -622,34 +644,17 @@ export class ExchangePermissions {
   }
 }
 
-export class ExchangePermission extends PersonUID {
+type ExchangeUser = { UserId: { DisplayName: string; DistinguishedUser: string; PrimarySmtpAddress: string; } };
+
+export class ExchangePermission {
   exchangePermissions: ExchangePermissions;
   distinguishedUser?: string;
+  emailAddress?: string;
 
-  constructor(emailAddress: string, name: string, permissions: Partial<ExchangePermissions> = {}, distinguishedUser?: "Anonymous" | "Default") {
-    super(emailAddress, name);
+  constructor(permissions: Partial<ExchangePermissions> & ExchangeUser) {
     this.exchangePermissions = new ExchangePermissions(permissions);
-    this.distinguishedUser = distinguishedUser;
-  }
-
-  static fromExchange(permissions: any, emailAddress: string) {
-    let name;
-    let distinguishedUser = permissions.UserId.DistinguishedUser as "Anonymous" | "Default" | undefined;
-    switch (distinguishedUser) {
-    case "Anonymous":
-      emailAddress = "*@*";
-      name = gt`Anonymous`;
-      break;
-    case "Default":
-      emailAddress = emailAddress.replace(/.*@/, "*@");
-      name = gt`All other users`;
-      break;
-    default:
-      emailAddress = sanitize.emailAddress(permissions.UserId.PrimarySmtpAddress, null);
-      name = sanitize.string(permissions.UserId.DisplayName, null);
-      break;
-    }
-    return new ExchangePermission(emailAddress, name, permissions, distinguishedUser);
+    this.distinguishedUser = permissions.UserId.DistinguishedUser;
+    this.emailAddress = permissions.UserId.PrimarySmtpAddress;
   }
 
   toEWSFolderPermission() {
@@ -687,21 +692,25 @@ export class ExchangePermission extends PersonUID {
   }
 }
 
-export async function deleteExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, otherPerson: PersonUID) {
+export function getSharedPersons(permissions: ExchangeUser[]): ArrayColl<PersonUID> {
+  return new ArrayColl(permissions.filter(permission => !permission.UserId.DistinguishedUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
+}
+
+export async function deleteExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, otherPerson: PersonUID) {
   let targetPermissions = await target.getPermissions();
-  let personPermission = targetPermissions.find(permission => permission.emailAddress == otherPerson.emailAddress);
-  if (personPermission) {
-    targetPermissions.remove(personPermission);
+  let personPermission = targetPermissions.findIndex(permission => permission.emailAddress == otherPerson.emailAddress);
+  if (personPermission >= 0) {
+    targetPermissions.splice(personPermission, 1);
     await target.setPermissions(targetPermissions);
   }
 }
 
-export async function setExchangePermissions(target: { getPermissions(): Promise<ArrayColl<ExchangePermission>>, setPermissions(permission: ArrayColl<ExchangePermission>): Promise<void> }, person: PersonUID, access: string, ...permissions: MailShareIndividualPermissions[]) {
+export async function setExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, person: PersonUID, access: string, ...permissions: MailShareIndividualPermissions[]) {
   let targetPermissions = await target.getPermissions();
   let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
   if (!personPermission) {
-    personPermission = new ExchangePermission(person.emailAddress, person.name, { IsFolderVisible: true });
-    targetPermissions.add(personPermission);
+    personPermission = new ExchangePermission({ IsFolderVisible: true, UserId: { DisplayName: undefined, DistinguishedUser: undefined, PrimarySmtpAddress: person.emailAddress } });
+    targetPermissions.push(personPermission);
   }
   let permission = personPermission.exchangePermissions;
   switch (access) {

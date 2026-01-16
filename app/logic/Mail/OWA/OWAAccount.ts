@@ -587,7 +587,7 @@ export class OWAAccount extends MailAccount {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     // well, some of them at least...
-    return await (this.inbox as OWAFolder).getPermissions();
+    return await (this.inbox as OWAFolder).getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
