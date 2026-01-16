@@ -63,30 +63,16 @@
     </PersonsAutocomplete>
     <hbox/>
   {/if}
-
-  {#if exchangePermissions}
-    <label for="permissions">{$t`Folder permissions`}</label>
-    <PersonsAutocomplete persons={exchangePermissions} placeholder={$t`Add permission`} {onAddPerson} {onRemovePerson}>
-      <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
-        {person.emailAddress}
-      </hbox>
-      <FolderExchangePermissions slot="person-popup-bottom" let:person {person}/>
-    </PersonsAutocomplete>
-    <Button label={$t`Save Permissions`} onClick={onSavePermissions}/>
-  {/if}
 </grid>
 
 <script lang="ts">
   import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
   import type { Folder } from "../../../../logic/Mail/Folder";
   import { IMAPFolder, IMAPPermission } from "../../../../logic/Mail/IMAP/IMAPFolder";
-  import { EWSFolder, ExchangePermission } from "../../../../logic/Mail/EWS/EWSFolder";
-  import { OWAFolder } from "../../../../logic/Mail/OWA/OWAFolder";
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
   import PersonsAutocomplete from "../../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import FolderIMAPPermissions from "./FolderIMAPPermissions.svelte";
-  import FolderExchangePermissions from "./FolderExchangePermissions.svelte";
   import { showError } from '../../../Util/error';
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
@@ -96,7 +82,6 @@
   export let folder: Folder;
   let previousFolder: Folder;
   let imapPermissions: ArrayColl<IMAPPermission> | undefined;
-  let exchangePermissions: ArrayColl<ExchangePermission> | undefined;
 
   $: init($folder);
 
@@ -114,17 +99,9 @@
     previousFolder = folder;
     folderName = folder.name;
     imapPermissions = undefined;
-    exchangePermissions = undefined;
     if (folder instanceof IMAPFolder) {
       try {
         imapPermissions = await folder.getPermissions();
-      } catch (ex) {
-        showError(ex);
-      }
-    }
-    if (folder instanceof EWSFolder || folder instanceof OWAFolder) {
-      try {
-        exchangePermissions = await folder.getPermissions();
       } catch (ex) {
         showError(ex);
       }
@@ -182,9 +159,6 @@
     if (imapPermissions) {
       imapPermissions.add(new IMAPPermission(person.emailAddress, person.name));
     }
-    if (exchangePermissions) {
-      exchangePermissions.add(new ExchangePermission(person.emailAddress, person.name));
-    }
   }
 
   async function onRemovePerson(person: PersonUID) {
@@ -192,13 +166,6 @@
       await folder.removePermission(person);
       imapPermissions.remove(person as IMAPPermission);
     }
-    if (exchangePermissions && !person.emailAddress.startsWith("*@")) {
-      exchangePermissions.remove(person as ExchangePermission);
-    }
-  }
-
-  async function onSavePermissions() {
-    await folder.setPermissions(exchangePermissions);
   }
 </script>
 

@@ -38,18 +38,6 @@
       </grid>
     </vbox>
   </HeaderGroupBox>
-
-  {#if account instanceof EWSAddressbook || account instanceof OWAAddressbook}
-    <AccountExchange {account} label={$t`Addressbook permissions`}>
-      <FolderExchangePermissions slot="person-popup-bottom" let:person {person}/>
-    </AccountExchange>
-  {/if}
-
-  {#if account instanceof EWSCalendar || account instanceof OWACalendar}
-    <AccountExchange {account} label={$t`Calendar permssions`}>
-      <CalendarExchangePermissions slot="person-popup-bottom" let:person {person}/>
-    </AccountExchange>
-  {/if}
 </vbox>
 
 <!-- <copied to="WorkspaceBlock.svelte" /> -->
@@ -66,18 +54,11 @@
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
   import { MeetAccount } from "../../logic/Meet/MeetAccount";
-  import { EWSAddressbook } from "../../logic/Contacts/EWS/EWSAddressbook";
-  import { EWSCalendar } from "../../logic/Calendar/EWS/EWSCalendar";
-  import { OWAAddressbook } from "../../logic/Contacts/OWA/OWAAddressbook";
-  import { OWACalendar } from "../../logic/Calendar/OWA/OWACalendar";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
   import { catchErrors } from "../Util/error";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import AccountExchange from "./AccountExchange.svelte";
-  import CalendarExchangePermissions from "./CalendarExchangePermissions.svelte";
-  import FolderExchangePermissions from "./Mail/Account/FolderExchangePermissions.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
