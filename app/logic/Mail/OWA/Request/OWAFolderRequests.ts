@@ -1,5 +1,6 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
+import type { ExchangePermission } from "../../EWS/EWSFolder";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
@@ -310,6 +311,79 @@ export function owaSharedFolderRequest(distinguishedIDs: string[], emailAddress:
         EmailAddress: emailAddress,
       },
     })),
+  });
+}
+
+/** Subtly different to owaSetFolderPermissionsRequst */
+export function owaSetCalendarPermissionsRequest(folderID: string, permissions: ExchangePermission[]): OWARequest {
+  return new OWARequest("UpdateFolder", {
+    __type: "UpdateFolderRequest:#Exchange",
+    FolderChanges: [{
+      __type: "FolderChange:#Exchange",
+      FolderId: {
+        __type: "FolderId:#Exchange",
+        Id: folderID,
+      },
+      Updates: [{
+        __type: "SetFolderField:#Exchange",
+        Folder: {
+          __type: "CalendarFolder:#Exchange",
+          PermissionSet: {
+            CalendarPermissions: permissions.map(permission => permission.toOWACalendarPermission()),
+          },
+        },
+        Path: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI: "PermissionSet",
+        },
+      }],
+    }],
+  });
+}
+
+export function owaSetFolderPermissionsRequest(folderID: string, permissions: ExchangePermission[]): OWARequest {
+  return new OWARequest("UpdateFolder", {
+    __type: "UpdateFolderRequest:#Exchange",
+    FolderChanges: [{
+      __type: "FolderChange:#Exchange",
+      FolderId: {
+        __type: "FolderId:#Exchange",
+        Id: folderID,
+      },
+      Updates: [{
+        __type: "SetFolderField:#Exchange",
+        Folder: {
+          __type: "Folder:#Exchange",
+          PermissionSet: {
+            __type: "PermissionSet:#Exchange",
+            Permissions: permissions.map(permission => permission.toOWAFolderPermission()),
+          },
+        },
+        Path: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI: "PermissionSet",
+        },
+      }],
+    }],
+  });
+}
+
+/** Also works with calendars, but returns CalendarFolder permissions */
+export function owaGetPermissionsRequest(folderID: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:PermissionSet",
+      }],
+    },
+    FolderIds: [{
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    }],
   });
 }
 

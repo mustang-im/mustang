@@ -5,14 +5,15 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder } from "../Folder";
-import { assert, SpecificError } from "../../util/util";
+import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
@@ -244,9 +245,9 @@ export class IMAPAccount extends MailAccount {
     let conn = await this.connection();
     // conn.capabilities doesn't work; it's an object property,
     // and JPC doesn't notice direct changes to properties.
-    // Fortuantely `conn.run("CAPABILITY")` has its own cache,
+    // Fortunately `conn.run("CAPABILITY")` has its own cache,
     // and only makes a network request if absolutely necessary.
-    let capabilities = await conn.run('CAPABILITY');
+    let capabilities = await conn.run("CAPABILITY");
     return await capabilities.has(capa);
   }
 
@@ -409,6 +410,58 @@ export class IMAPAccount extends MailAccount {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
     email.isRead = true;
     await sentFolder.addMessage(email);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
+    // well, some of them at least...
+    return await (this.inbox as IMAPFolder).getSharedPersons();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders() as ArrayColl<IMAPFolder>) {
+      await folder.removePermission(otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: IMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder])) as ArrayColl<IMAPFolder>;
+    let rights = "";
+    switch (access) {
+    case MailShareCombinedPermissions.Read:
+      rights = "lr";
+      break;
+    case MailShareCombinedPermissions.FlagChange:
+      rights = "lrsw";
+      break;
+    case MailShareCombinedPermissions.Modify:
+      rights = "lrswikxte";
+      break;
+    case MailShareCombinedPermissions.Custom:
+      if (permissions.includes(MailShareIndividualPermissions.Read)) {
+        rights += "r";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.FlagChange)) {
+        rights += "sw";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Delete)) {
+        rights += "te";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Create)) {
+        rights += "i";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.DeleteFolder)) {
+        rights += "x";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.CreateSubfolders)) {
+        rights += "k";
+      }
+      break;
+    default:
+      throw new NotReached();
+    }
+    for (let folder of foldersToShare) {
+      await folder.addPermission(otherPerson, rights);
+    }
   }
 
   fromConfigJSON(config: any) {

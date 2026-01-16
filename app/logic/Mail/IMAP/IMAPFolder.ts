@@ -11,6 +11,7 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
@@ -644,5 +645,34 @@ export class IMAPFolder extends Folder {
 
   newEMail(): IMAPEMail {
     return new IMAPEMail(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
+    if (!await this.account.hasCapability("ACL")) {
+      return undefined;
+    }
+    let conn = await this.account.connection();
+    let attributes: Array<{ type: string, value: string }>;
+    let persons = new ArrayColl<PersonUID>();
+    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    await response.next();
+    for (let i = 1; i < attributes.length; i += 2) {
+      let name = sanitize.nonemptystring(attributes[i].value);
+      let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
+      persons.add(new PersonUID(emailAddress, name));
+    }
+    return persons;
+  }
+
+  async addPermission(permission: PersonUID, rights: string) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
+    await response.next();
+  }
+
+  async removePermission(permission: PersonUID) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+    await response.next();
   }
 }
