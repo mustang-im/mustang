@@ -6,6 +6,7 @@ import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
+import { SingleFlight } from "../../util/SingleFlight";
 import { assert, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
@@ -29,16 +30,13 @@ export class IMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
-  protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  protected singleFlight = new SingleFlight();
   connectionLock = new MapColl<ImapFlow, Lock>();
   throttle = new Throttle(50, 1);
 
   constructor() {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
-    for (let purpose of connectionPurposes) {
-      this.connectLock.set(purpose, new Lock());
-    }
   }
 
   get isLoggedIn(): boolean {
@@ -68,14 +66,13 @@ export class IMAPAccount extends MailAccount {
   }
 
   async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
-    await this.throttle.throttle();
-    let conn = this.connections.get(purpose);
-    if (conn) {
-      return conn;
-    }
-    let lock = await this.connectLock.get(purpose).lock();
-    try {
-
+    assert(purpose, "IMAP connection: purpose is required");
+    return await this.singleFlight.do(purpose, async () => {
+      await this.throttle.throttle();
+      let conn = this.connections.get(purpose);
+      if (conn) {
+        return conn;
+      }
       this.fatalError = null;
 
       // Auth method
@@ -125,7 +122,7 @@ export class IMAPAccount extends MailAccount {
 
       let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
       assert(connection, `Connection is null\n${this.hostname} IMAP server`);
-      this.attachListeners(connection);
+      this.attachListeners(connection, purpose);
 
       try {
         await connection.connect();
@@ -150,16 +147,14 @@ export class IMAPAccount extends MailAccount {
         this.notifyObservers();
       }
       return connection;
-    } finally {
-      lock.release();
-    }
+    });
   }
 
-  attachListeners(connection: ImapFlow): void {
+  attachListeners(connection: ImapFlow, purpose: ConnectionPurpose): void {
     connection.on("close", async () => {
       try {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect(connection);
+        await this.reconnect(connection, purpose);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -168,7 +163,7 @@ export class IMAPAccount extends MailAccount {
     connection.on("error", async (ex) => {
       try {
         console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
-        await this.reconnect(connection);
+        await this.reconnect(connection, purpose);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -213,31 +208,34 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
-    // Note: Do not stop polling
+  async reconnect(connection: ImapFlow, purpose: ConnectionPurpose): Promise<ImapFlow> {
+    assert(purpose, "IMAP reconnect: purpose is required");
+    return await this.singleFlight.do(purpose, async () => {
+      // Note: Do not stop polling
 
-    assert(connection, "Reconnect: Connection unknown");
-    try {
-      await connection.close();
-    } catch (ex) {
-      // Sometimes gives "Connection not available". Do nothing.
-    }
-    this.connectionLock.delete(connection);
+      assert(connection, "Reconnect: Connection unknown");
+      try {
+        await connection.close();
+      } catch (ex) {
+        // Sometimes gives "Connection not available". Do nothing.
+      }
+      this.connectionLock.delete(connection);
 
-    let purpose = this.connections.getKeyForValue(connection);
-    assert(purpose, "Connection purpose unknown");
-    this.connections.set(purpose, null);
-    this.notifyObservers();
+      purpose ??= this.connections.getKeyForValue(connection);
+      assert(purpose, "Connection purpose unknown");
+      this.connections.set(purpose, null);
+      this.notifyObservers();
 
-    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
-        !this.oAuth2?.isLoggedIn) {
-      await this.oAuth2.login(false);
-    }
-    if (!(this.password || this.oAuth2?.isLoggedIn)) {
-      throw new LoginError(new Error(), "Reconnect failed due to missing login");
-    }
+      if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+          !this.oAuth2?.isLoggedIn) {
+        await this.oAuth2.login(false);
+      }
+      if (!(this.password || this.oAuth2?.isLoggedIn)) {
+        throw new LoginError(new Error(), "Reconnect failed due to missing login");
+      }
 
-    return await this.connection(false, purpose);
+      return await this.connection(false, purpose);
+    });
   }
 
   async hasCapability(capa: string): Promise<boolean> {
