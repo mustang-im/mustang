@@ -14,7 +14,7 @@ import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import { PersonUID } from "../../Abstract/PersonUID";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -871,102 +871,7 @@ export class EWSAccount extends MailAccount {
     json.sharedFolderRoot = this.sharedFolderRoot;
     return json;
   }
-
-  async getDelegates(): Promise<ArrayColl<Delegate>> {
-    let request = {
-      m$GetDelegate: {
-        m$Mailbox: {
-          t$EmailAddress: this.emailAddress,
-        },
-        IncludePermissions: true,
-      },
-    };
-    let result = await this.callEWS(request);
-    return new ArrayColl(result.map(delegate => new Delegate(
-      sanitize.emailAddress(delegate.UserId.PrimarySmtpAddress, null),
-      sanitize.string(delegate.UserId.DisplayName, null),
-      sanitize.translate(delegate.DelegatePermissions?.InboxFolderPermissionLevel, DelegatePermissions, "none"),
-      sanitize.translate(delegate.DelegatePermissions?.ContactsFolderPermissionLevel, DelegatePermissions, "none"),
-      sanitize.translate(delegate.DelegatePermissions?.CalendarFolderPermissionLevel, DelegatePermissions, "none"),
-      false
-    )));
-  }
-
-  async removeDelegate(delegate: string) {
-    let request = {
-      m$RemoveDelegate: {
-        m$Mailbox: {
-          t$EmailAddress: this.emailAddress,
-        },
-        m$UserIds: {
-          t$UserId: {
-            t$PrimarySmtpAddress: delegate,
-          },
-        },
-      },
-    };
-    await this.callEWS(request);
-  }
-
-  async writeDelegate(delegate: Delegate) {
-    let request = {
-      [delegate.isNew ? "m$AddDelegate" : "m$UpdateDelegate"]: {
-        m$Mailbox: {
-          t$EmailAddress: this.emailAddress,
-        },
-        m$DelegateUsers: {
-          t$DelegateUser: {
-            t$UserId: {
-              t$PrimarySmtpAddress: delegate.emailAddress,
-            },
-            t$DelegatePermissions: {
-              t$InboxFolderPermissionLevel: EWSPermissions[delegate.inboxPermission],
-              t$ContactsFolderPermissionLevel: EWSPermissions[delegate.addressbookPermission],
-              t$CalendarFolderPermissionLevel: EWSPermissions[delegate.calendarPermission],
-            },
-          },
-        },
-      },
-    };
-    await this.callEWS(request);
-    delegate.isNew = false;
-  }
 }
-
-type DelegatePermission = "none" | "read" | "create" | "write";
-
-export class Delegate extends PersonUID {
-  inboxPermission: DelegatePermission;
-  addressbookPermission: DelegatePermission;
-  calendarPermission: DelegatePermission;
-  isNew: boolean;
-
-  constructor(emailAddress: string, name: string,
-    inboxPermission: DelegatePermission = "none",
-    addressbookPermission: DelegatePermission = "none",
-    calendarPermission: DelegatePermission = "none",
-    isNew: boolean = true) {
-    super(emailAddress, name);
-    this.inboxPermission = inboxPermission;
-    this.addressbookPermission = addressbookPermission;
-    this.calendarPermission = calendarPermission;
-    this.isNew = isNew;
-  }
-}
-
-const DelegatePermissions: Record<string, DelegatePermission> = {
-  "None": "none",
-  "Reviewer": "read",
-  "Author": "create",
-  "Editor": "write",
-};
-
-const EWSPermissions: Record<DelegatePermission, string> = {
-  "none": "None",
-  "read": "Reviewer",
-  "create": "Author",
-  "write": "Editor",
-};
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
