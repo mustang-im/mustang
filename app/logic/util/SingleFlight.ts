@@ -1,3 +1,7 @@
+/**
+ * SingleFlight implementation to suppress duplicate async calls for the same key.
+ * Similar to Go's singleflight package: https://pkg.go.dev/golang.org/x/sync/singleflight
+ */
 export class SingleFlight {
   private inFlight = new Map<string, Promise<any>>();
 
