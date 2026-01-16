@@ -412,9 +412,9 @@ export class IMAPAccount extends MailAccount {
     await sentFolder.addMessage(email);
   }
 
-  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
     // well, some of them at least...
-    return await (this.inbox as IMAPFolder).getPermissions();
+    return await (this.inbox as IMAPFolder).getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
