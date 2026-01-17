@@ -67,7 +67,7 @@ export class IMAPAccount extends MailAccount {
 
   async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
     assert(purpose, "IMAP connection: purpose is required");
-    return await this.singleFlight.do(purpose, async () => {
+    return await this.singleFlight.do(`connection-${purpose}`, async () => {
       await this.throttle.throttle();
       let conn = this.connections.get(purpose);
       if (conn) {
@@ -210,7 +210,7 @@ export class IMAPAccount extends MailAccount {
 
   async reconnect(connection: ImapFlow, purpose: ConnectionPurpose): Promise<ImapFlow> {
     assert(purpose, "IMAP reconnect: purpose is required");
-    return await this.singleFlight.do(purpose, async () => {
+    return await this.singleFlight.do(`reconnect-${purpose}`, async () => {
       // Note: Do not stop polling
 
       assert(connection, "Reconnect: Connection unknown");
