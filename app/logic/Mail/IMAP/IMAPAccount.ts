@@ -122,7 +122,7 @@ export class IMAPAccount extends MailAccount {
 
       let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
       assert(connection, `Connection is null\n${this.hostname} IMAP server`);
-      this.attachListeners(connection, purpose);
+      this.attachListeners(connection);
 
       try {
         await connection.connect();
@@ -150,11 +150,11 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  attachListeners(connection: ImapFlow, purpose: ConnectionPurpose): void {
+  attachListeners(connection: ImapFlow): void {
     connection.on("close", async () => {
       try {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect(connection, purpose);
+        await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -163,7 +163,7 @@ export class IMAPAccount extends MailAccount {
     connection.on("error", async (ex) => {
       try {
         console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
-        await this.reconnect(connection, purpose);
+        await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -208,12 +208,15 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async reconnect(connection: ImapFlow, purpose: ConnectionPurpose): Promise<ImapFlow> {
-    assert(purpose, "IMAP reconnect: purpose is required");
+  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
+    assert(connection, "Reconnect: Connection unknown");
+
+    let purpose = this.connections.getKeyForValue(connection);
+    assert(purpose, "Connection purpose unknown");
+
     return await this.singleFlight.do(`reconnect-${purpose}`, async () => {
       // Note: Do not stop polling
 
-      assert(connection, "Reconnect: Connection unknown");
       try {
         await connection.close();
       } catch (ex) {
@@ -221,8 +224,6 @@ export class IMAPAccount extends MailAccount {
       }
       this.connectionLock.delete(connection);
 
-      purpose ??= this.connections.getKeyForValue(connection);
-      assert(purpose, "Connection purpose unknown");
       this.connections.set(purpose, null);
       this.notifyObservers();
 
