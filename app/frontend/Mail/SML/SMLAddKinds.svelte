@@ -70,47 +70,28 @@
     let userRes = crypto.randomUUID();
     let userContent = { "answer": 1 };
     let { resourceURL: userURL } = await acc.saveResource(bundle, userRes, true, userContent);
+    console.log("User URL", userURL);
 
-    let response = await fetch(mainURL);
-    let mainContentResponse = await response.json();
-    assert(mainContent.question == mainContentResponse.question, "Main does not match");
-    response = await fetch(userURL);
-    let userContentResponse = await response.json();
-    assert(userContent.answer == userContentResponse.answer, "Answer does not match");
+    let mainContentResponse = await SMLHTTPAccount.getURL(mainURL);
+    assert(mainContentResponse.question == mainContent.question, "Main does not match");
+    let userContentResponse = await SMLHTTPAccount.getURL(userURL);
+    assert(userContentResponse.answer == userContent.answer, "Answer does not match");
 
     let userContentChanged = { "answer": 2 };
-    console.log("User URL", userURL);
-    response = await fetch(userURL, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userContentChanged),
-    });
-    let userContentChangedResponse = await response.json();
-    assert(userContentChanged.answer == userContentChangedResponse.answer, "New answer does not match");
+    await SMLHTTPAccount.saveURL(userURL, userContentChanged);
+    let userContentChangedResponse = await SMLHTTPAccount.getURL(userURL);
+    assert(userContentChangedResponse.answer == userContentChanged.answer, "New answer does not match");
 
     let mainContentChanged = { "question": "2" };
-    response = await fetch(mainURL, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mainContentChanged),
-    });
-    let mainContentChangedResponse = mainContent;
     try {
-      mainContentChangedResponse = await response.json();
+      await SMLHTTPAccount.saveURL(mainURL, mainContentChanged);
       throw new Error("Should not be able to write to main resource without auth");
     } catch (ex) {
-      console.log("Expected error:", ex);
     }
-    assert(mainContentChanged.question != mainContentChangedResponse.question, "Main should not change without auth");
     let { resourceURL: mainURLChanged } = await acc.saveResource(bundle, mainRes, false, mainContentChanged);
-    response = await fetch(userURL);
-    mainContentChangedResponse = await response.json();
-    assert(mainContentChanged.question == mainContentChangedResponse.question, "New main does not match");
-    assert(mainURL == mainURLChanged, "URL should not change");
+    let mainContentChangedResponse = await SMLHTTPAccount.getURL(mainURL);
+    assert(mainContentChangedResponse.question == mainContentChanged.question, "New main does not match");
+    assert(mainURLChanged == mainURL, "URL should not change");
     console.log("tests succeeded");
   }
 

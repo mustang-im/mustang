@@ -2,7 +2,7 @@ import { Account } from "../../Abstract/Account";
 import type { MailAccount } from "../MailAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
-import type { Json, URLString } from "../../util/util";
+import { assert, type Json, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class SMLHTTPAccount extends Account {
@@ -88,6 +88,7 @@ export class SMLHTTPAccount extends Account {
 
   /**
    * Creates a new resource on the server.
+   * You have to be authenticated.
    * @param bundleID
    *   if null, create a new bundle.
    *   if passed, create or update a subresource below this bundle.
@@ -126,6 +127,66 @@ export class SMLHTTPAccount extends Account {
       body: JSON.stringify(json, null, 2),
     });
     return { bundleID, resourceID, resourceURL };
+  }
+
+  /**
+   * Saves an update of an existing resource on the server.
+   * You are not authenticated. The resource has to be marked world-writable by its creator.
+   * @param url The absolute URL of the resource
+   * @param json {JSON} the content of the resource that you want to write to the server
+   */
+  static async saveURL(url: URLString, json: Json): Promise<void> {
+    let response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(json, null, 2),
+    });
+    let result = await response.json();
+    if (typeof (result.error) == "string") {
+      throw new Error(result.error);
+    }
+  }
+
+  /**
+   * Gets the content of the resource.
+   * @param bundleID
+   * @param resourceID
+   * @param withAuth Whether you make the call authenticated.
+   */
+  async getResource(bundleID: string, resourceID: string, withAuth = false): Promise<any> {
+    let resourceURL = this.url + "/r/" + bundleID + "/" + resourceID;
+    return await SMLHTTPAccount.getURL(resourceURL, withAuth ? this.accessToken : undefined);
+  }
+
+  /**
+   * Gets the content of the resource.
+   * @param url The absolute URL of the resource
+   * @param withAuth Whether you make the call authenticated.
+   */
+  async getURL(url: URLString, withAuth = false): Promise<any> {
+    return await SMLHTTPAccount.getURL(url, withAuth ? this.accessToken : undefined);
+  }
+
+  /**
+   * Gets the content of the resource.
+   * You are not authenticated. The resource has to be marked world-readable or world-writable by its creator.
+   * @param url The absolute URL of the resource
+   * @param accessToken_internal Do not set this, only for internal use by this.getURL()/getResource().
+   */
+  static async getURL(url: URLString, accessToken_internal?: string): Promise<any> {
+    let response = await fetch(url, {
+      headers: {
+        "Authorization": accessToken_internal ? "Bearer " + accessToken_internal : undefined,
+        "Content-Type": "application/json",
+      },
+    });
+    let result = await response.json();
+    if (typeof (result.error) == "string") {
+      throw new Error(result.error);
+    }
+    return result;
   }
 
   //////////////////////

@@ -43,41 +43,22 @@ test("SML HTTP resource REST API", async () => {
   let userContent = { "answer": 1 };
   let { resourceURL: userURL } = await acc.saveResource(bundle, userRes, true, userContent);
 
-  let response = await fetch(mainURL);
-  let mainContentResponse = await response.json();
+  let mainContentResponse = await SMLHTTPAccount.getURL(mainURL);
   expect(mainContentResponse.question).toBe(mainContent.question);
-  response = await fetch(userURL);
-  let userContentResponse = await response.json();
+  let userContentResponse = await SMLHTTPAccount.getURL(userURL);
   expect(userContentResponse.answer).toBe(userContent.answer);
 
   let userContentChanged = { "answer": 2 };
-  console.log("User URL", userURL);
-  response = await fetch(userURL, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userContentChanged),
-  });
-  let userContentChangedResponse = await response.json();
+  await SMLHTTPAccount.saveURL(userURL, userContentChanged);
+  let userContentChangedResponse = await SMLHTTPAccount.getURL(userURL);
   expect(userContentChangedResponse.answer).toBe(userContentChanged.answer);
 
   let mainContentChanged = { "question": "2" };
-  response = await fetch(mainURL, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(mainContentChanged),
-  });
-  let mainContentChangedResponse = mainContent;
   await expect(async () => {
-    mainContentChangedResponse = await response.json();
+    await SMLHTTPAccount.saveURL(mainURL, mainContentChanged);
   }).rejects.toThrowError();
-  expect(mainContentChangedResponse.question).not.toBe(mainContentChanged.question);
   let { resourceURL: mainURLChanged } = await acc.saveResource(bundle, mainRes, false, mainContentChanged);
-  response = await fetch(userURL);
-  mainContentChangedResponse = await response.json();
+  let mainContentChangedResponse = await SMLHTTPAccount.getURL(mainURL);
   expect(mainContentChangedResponse.question).toBe(mainContentChanged.question);
   expect(mainURL).toBe(mainURLChanged);
 });
