@@ -20,7 +20,7 @@
   import Button from "../../Shared/Button.svelte";
   import PollIcon from "lucide-svelte/icons/list-checks";
   import { showError } from "../../Util/error";
-  import type { Json } from "../../../logic/util/util";
+  import { assert, type Json } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ close: void }>();
@@ -60,6 +60,58 @@
       acc.mailAccount = identity.account;
       await acc.login(); // waits for email, so often takes minutes or hangs entirely
     }
+
+    console.log("starting tests");
+    // Test
+    let bundle = crypto.randomUUID();
+    let mainRes = crypto.randomUUID();
+    let mainContent = { "question": "abs" };
+    let { resourceURL: mainURL } = await acc.saveResource(bundle, mainRes, false, mainContent);
+    let userRes = crypto.randomUUID();
+    let userContent = { "answer": 1 };
+    let { resourceURL: userURL } = await acc.saveResource(bundle, userRes, true, userContent);
+
+    let response = await fetch(mainURL);
+    let mainContentResponse = await response.json();
+    assert(mainContent.question == mainContentResponse.question, "Main does not match");
+    response = await fetch(userURL);
+    let userContentResponse = await response.json();
+    assert(userContent.answer == userContentResponse.answer, "Answer does not match");
+
+    let userContentChanged = { "answer": 2 };
+    console.log("User URL", userURL);
+    response = await fetch(userURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userContentChanged),
+    });
+    let userContentChangedResponse = await response.json();
+    assert(userContentChanged.answer == userContentChangedResponse.answer, "New answer does not match");
+
+    let mainContentChanged = { "question": "2" };
+    response = await fetch(mainURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(mainContentChanged),
+    });
+    let mainContentChangedResponse = mainContent;
+    try {
+      mainContentChangedResponse = await response.json();
+      throw new Error("Should not be able to write to main resource without auth");
+    } catch (ex) {
+      console.log("Expected error:", ex);
+    }
+    assert(mainContentChanged.question != mainContentChangedResponse.question, "Main should not change without auth");
+    let { resourceURL: mainURLChanged } = await acc.saveResource(bundle, mainRes, false, mainContentChanged);
+    response = await fetch(userURL);
+    mainContentChangedResponse = await response.json();
+    assert(mainContentChanged.question == mainContentChangedResponse.question, "New main does not match");
+    assert(mainURL == mainURLChanged, "URL should not change");
+    console.log("tests succeeded");
   }
 
   function close() {
