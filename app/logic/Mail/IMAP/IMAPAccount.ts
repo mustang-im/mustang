@@ -9,6 +9,7 @@ import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
@@ -31,7 +32,8 @@ export class IMAPAccount extends MailAccount {
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
   protected connectLock = new MapColl<ConnectionPurpose, Lock>();
   connectionLock = new MapColl<ImapFlow, Lock>();
-  throttle = new Throttle(50, 1);
+  protected throttle = new Throttle(50, 1);
+  protected reconnectRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -214,30 +216,31 @@ export class IMAPAccount extends MailAccount {
   }
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
-    // Note: Do not stop polling
+    await this.reconnectRunOnce.runOnce(async () => {
+      // Note: Do not stop polling
+      let purpose = this.connections.getKeyForValue(connection);
+      assert(purpose, "Connection purpose unknown");
+      this.connections.set(purpose, null);
 
-    assert(connection, "Reconnect: Connection unknown");
-    try {
-      await connection.close();
-    } catch (ex) {
-      // Sometimes gives "Connection not available". Do nothing.
-    }
-    this.connectionLock.delete(connection);
+      assert(connection, "Reconnect: Connection unknown");
+      try {
+        await connection.close();
+      } catch (ex) {
+        // Sometimes gives "Connection not available". Do nothing.
+      }
+      this.connectionLock.delete(connection);
+      this.notifyObservers();
 
-    let purpose = this.connections.getKeyForValue(connection);
-    assert(purpose, "Connection purpose unknown");
-    this.connections.set(purpose, null);
-    this.notifyObservers();
-
-    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+      if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {
-      await this.oAuth2.login(false);
-    }
-    if (!(this.password || this.oAuth2?.isLoggedIn)) {
-      throw new LoginError(new Error(), "Reconnect failed due to missing login");
-    }
+        await this.oAuth2.login(false);
+      }
+      if (!(this.password || this.oAuth2?.isLoggedIn)) {
+        throw new LoginError(new Error(), "Reconnect failed due to missing login");
+      }
 
-    return await this.connection(false, purpose);
+      return await this.connection(false, purpose);
+    });
   }
 
   async hasCapability(capa: string): Promise<boolean> {
