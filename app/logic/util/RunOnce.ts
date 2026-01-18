@@ -9,9 +9,13 @@ export class RunOnce<Result> {
   running: Promise<Result> | null = null;
 
   async runOnce(func: () => Promise<Result>): Promise<Result> {
-    if (!this.running) {
-      this.running = func();
+    try {
+      if (!this.running) {
+        this.running = func();
+      }
+      return await this.running;
+    } finally {
+      this.running = null;
     }
-    return await this.running;
   }
 }
