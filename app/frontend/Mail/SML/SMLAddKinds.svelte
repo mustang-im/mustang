@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
-  import type { TSMLChooseAction } from "../../../logic/Mail/SML/TSML";
+  import type { TSMLChooseAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
   import { SMLHTTPAccount } from "../../../logic/Mail/SML/SMLHTTPAccount";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import Button from "../../Shared/Button.svelte";
@@ -40,13 +40,13 @@
     close();
   }
 
-  function setSML(type: string, json: Json) {
+  function setSML(type: string, json: TSMLThing) {
     sml ??= new SMLData();
     sml.type = type;
     sml.context = "https://schema.org";
     json["@context"] = sml.context;
     json["@type"] = sml.type;
-    sml.sml = json;
+    sml.sml = json as any;
   }
 
   /**

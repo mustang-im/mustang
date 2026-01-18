@@ -28,7 +28,7 @@
   import { tick } from "svelte";
 
   export let sml: SMLData;
-  $: choose = $sml.sml as TSMLChooseAction;
+  $: choose = $sml.sml as any as TSMLChooseAction;
 
   function addOption(title?: string) {
     choose.actionOption.push({

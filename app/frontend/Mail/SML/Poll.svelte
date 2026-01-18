@@ -20,7 +20,7 @@
   import type { TSMLChooseAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
 
   export let sml: SMLData;
-  $: choose = $sml.sml as TSMLChooseAction;
+  $: choose = $sml.sml as any as TSMLChooseAction;
 
   function onSelect(option: TSMLThing) {
     choose.object = option;
