@@ -220,8 +220,7 @@ export class IMAPAccount extends MailAccount {
     let purpose = this.connections.getKeyForValue(connection);
     assert(purpose, "Connection purpose unknown");
 
-    let runOnce = this.reconnectRunOnce.get(purpose);
-    return await runOnce.runOnce(async () => {
+    return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
       try {
         await connection.close();
       } catch (ex) {
