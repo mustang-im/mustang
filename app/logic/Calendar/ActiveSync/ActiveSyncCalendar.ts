@@ -125,10 +125,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   async listEvents() {
-    if (!this.dbID || !this.serverID) {
-      this.serverID ??= new URL(this.url).searchParams.get("serverID");
-      await this.save();
-    }
+    await super.listEvents();
 
     let data = {
       WindowSize: String(kMaxCount),
