@@ -33,7 +33,7 @@ export class IMAPAccount extends MailAccount {
   protected connectLock = new MapColl<ConnectionPurpose, Lock>();
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
-  protected reconnectRunOnce = new RunOnce();
+  protected reconnectRunOnce = new RunOnce<ImapFlow>();
 
   constructor() {
     super();
