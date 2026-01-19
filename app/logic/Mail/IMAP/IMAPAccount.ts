@@ -208,10 +208,10 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
+  async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
     assert(connection, "Reconnect: Connection unknown");
 
-    let purpose = this.connections.getKeyForValue(connection);
+    purpose ??= this.connections.getKeyForValue(connection);
     assert(purpose, "Connection purpose unknown");
 
     return await this.singleFlight.do(`reconnect-${purpose}`, async () => {
