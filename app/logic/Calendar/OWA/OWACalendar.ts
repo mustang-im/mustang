@@ -23,7 +23,7 @@ export class OWACalendar extends Calendar {
   readonly canAcceptAnyInvitation = false;
   /** Is this the default calendar that handles incoming invitations */
   useForInvitations: boolean = false;
-  listEventsOnce = new RunOnce(() => this.listEventsSlow());
+  protected listEventsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -72,7 +72,7 @@ export class OWACalendar extends Calendar {
 
   async listEvents() {
     await super.listEvents();
-    await this.listEventsOnce.maybeRun();
+    await this.listEventsRunOnce.runOnce(() => this.listEventsSlow());
   }
 
   async listEventsSlow() {

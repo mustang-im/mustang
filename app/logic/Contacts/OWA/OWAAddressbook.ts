@@ -17,7 +17,7 @@ export class OWAAddressbook extends Addressbook {
   canSync: boolean = true;
   declare readonly persons: ArrayColl<OWAPerson>;
   declare readonly groups: ArrayColl<OWAGroup>;
-  listContactsOnce = new RunOnce(() => this.listContactsSlow());
+  protected listContactsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -49,7 +49,7 @@ export class OWAAddressbook extends Addressbook {
 
   async listContacts() {
     await super.listContacts();
-    await this.listContactsOnce.maybeRun();
+    await this.listContactsRunOnce.runOnce(() => this.listContactsSlow());
   }
 
   async listContactsSlow() {

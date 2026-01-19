@@ -9,6 +9,7 @@ import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermiss
 import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
@@ -30,15 +31,17 @@ export class IMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
-  protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  protected connectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
   connectionLock = new MapColl<ImapFlow, Lock>();
-  throttle = new Throttle(50, 1);
+  protected throttle = new Throttle(50, 1);
+  protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
 
   constructor() {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
     for (let purpose of connectionPurposes) {
-      this.connectLock.set(purpose, new Lock());
+      this.connectRunOnce.set(purpose, new RunOnce<ImapFlow>());
+      this.reconnectRunOnce.set(purpose, new RunOnce<ImapFlow>());
     }
   }
 
@@ -74,9 +77,7 @@ export class IMAPAccount extends MailAccount {
     if (conn) {
       return conn;
     }
-    let lock = await this.connectLock.get(purpose).lock();
-    try {
-
+    return await this.connectRunOnce.get(purpose).runOnce(async () => {
       this.fatalError = null;
 
       // Auth method
@@ -151,9 +152,7 @@ export class IMAPAccount extends MailAccount {
         this.notifyObservers();
       }
       return connection;
-    } finally {
-      lock.release();
-    }
+    });
   }
 
   attachListeners(connection: ImapFlow): void {
@@ -216,29 +215,31 @@ export class IMAPAccount extends MailAccount {
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
-
     assert(connection, "Reconnect: Connection unknown");
-    try {
-      await connection.close();
-    } catch (ex) {
-      // Sometimes gives "Connection not available". Do nothing.
-    }
-    this.connectionLock.delete(connection);
 
     let purpose = this.connections.getKeyForValue(connection);
     assert(purpose, "Connection purpose unknown");
-    this.connections.set(purpose, null);
-    this.notifyObservers();
 
-    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+    return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
+      try {
+        await connection.close();
+      } catch (ex) {
+        // Sometimes gives "Connection not available". Do nothing.
+      }
+      this.connectionLock.delete(connection);
+      this.connections.set(purpose, null);
+      this.notifyObservers();
+
+      if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {
-      await this.oAuth2.login(false);
-    }
-    if (!(this.password || this.oAuth2?.isLoggedIn)) {
-      throw new LoginError(new Error(), "Reconnect failed due to missing login");
-    }
+        await this.oAuth2.login(false);
+      }
+      if (!(this.password || this.oAuth2?.isLoggedIn)) {
+        throw new LoginError(new Error(), "Reconnect failed due to missing login");
+      }
 
-    return await this.connection(false, purpose);
+      return await this.connection(false, purpose);
+    });
   }
 
   async hasCapability(capa: string): Promise<boolean> {
