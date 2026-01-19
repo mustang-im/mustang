@@ -1,6 +1,13 @@
 import type { Json } from "../../util/util";
 
 export function XML2JSON(aNode: Element): Json {
+  /* We don't need the `xmlns` attribute, because we don't consider namespaces while reading.
+   * Kopano puts the namespace asttributes on individual XML nodes.
+   * This confuses our code which detects empty nodes, and that code thinks that the node
+   * is not empty.
+   * MS Exchange declares all of its namespaces on the result node, so the problem
+   * doesn't appear there. */
+  aNode.removeAttribute(aNode.prefix ? "xmlns:" + aNode.prefix : "xmlns");
   if (!aNode.children.length && !aNode.attributes.length) {
     return aNode.textContent;
   }
