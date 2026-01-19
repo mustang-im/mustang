@@ -265,7 +265,7 @@ export class EWSAddressbook extends Addressbook {
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission);
+    return getSharedPersons(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

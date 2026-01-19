@@ -658,6 +658,9 @@ export class IMAPFolder extends Folder {
     await response.next();
     for (let i = 1; i < attributes.length; i += 2) {
       let name = sanitize.nonemptystring(attributes[i].value);
+      if (name == this.account.username) {
+        continue;
+      }
       let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
       persons.add(new PersonUID(emailAddress, name));
     }

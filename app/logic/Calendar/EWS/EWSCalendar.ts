@@ -277,7 +277,7 @@ export class EWSCalendar extends Calendar {
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission);
+    return getSharedPersons(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission, this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

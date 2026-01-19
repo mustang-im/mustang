@@ -152,7 +152,7 @@ export class OWACalendar extends Calendar {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
-    return getSharedPersons(result.Folders[0].PermissionSet.CalendarPermissions);
+    return getSharedPersons(result.Folders[0].PermissionSet.CalendarPermissions, this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
