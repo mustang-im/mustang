@@ -30,7 +30,7 @@ export class IMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
-  protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  protected connectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
@@ -39,7 +39,7 @@ export class IMAPAccount extends MailAccount {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
     for (let purpose of connectionPurposes) {
-      this.connectLock.set(purpose, new Lock());
+      this.connectRunOnce.set(purpose, new RunOnce<ImapFlow>());
       this.reconnectRunOnce.set(purpose, new RunOnce<ImapFlow>());
     }
   }
@@ -76,9 +76,8 @@ export class IMAPAccount extends MailAccount {
     if (conn) {
       return conn;
     }
-    let lock = await this.connectLock.get(purpose).lock();
-    try {
-
+    let runOnce = this.connectRunOnce.get(purpose);
+    return await runOnce.runOnce(async () => {
       this.fatalError = null;
 
       // Auth method
@@ -153,9 +152,7 @@ export class IMAPAccount extends MailAccount {
         this.notifyObservers();
       }
       return connection;
-    } finally {
-      lock.release();
-    }
+    });
   }
 
   attachListeners(connection: ImapFlow): void {
