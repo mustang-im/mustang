@@ -5,7 +5,6 @@ import { ArrayColl } from 'svelte-collections';
 import { assert } from '../util/util';
 
 export class Person extends ContactBase {
-  id: string;
   @notifyChangedProperty
   firstName: string | null;
   @notifyChangedProperty

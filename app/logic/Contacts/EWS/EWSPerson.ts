@@ -11,10 +11,10 @@ export class EWSPerson extends Person {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {
-    return this.id;
+    return this.pID;
   }
   set itemID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromXML(xmljs: any) {
