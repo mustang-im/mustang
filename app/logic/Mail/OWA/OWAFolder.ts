@@ -12,8 +12,8 @@ import {
   owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { ExchangePermission } from "../EWS/EWSFolder";
-import { PersonUID } from "../../Abstract/PersonUID";
+import { getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -283,7 +283,7 @@ export class OWAFolder extends Folder {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     let result = await this.account.callOWA(owaGetPermissionsRequest(this.id));
-    return new ArrayColl(result.Folders[0].PermissionSet.Permissions.filter(permission => !permission.UserId.DistinguishedUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
+    return getSharedPersons(result.Folders[0].PermissionSet.Permissions, this.account.emailAddress);
   }
 
   async getPermissions(): Promise<ExchangePermission[]> {

@@ -146,7 +146,7 @@ export class OWAAddressbook extends Addressbook {
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
-    return getSharedPersons(result.Folders[0].PermissionSet.Permissions);
+    return getSharedPersons(result.Folders[0].PermissionSet.Permissions, this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

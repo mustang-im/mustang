@@ -559,7 +559,7 @@ export class EWSFolder extends Folder {
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.Folder.PermissionSet.Permissions.Permission);
+    return getSharedPersons(result.Folders.Folder.PermissionSet.Permissions.Permission, this.account.emailAddress);
   }
 
   async getPermissions(): Promise<ExchangePermission[]> {
@@ -692,8 +692,8 @@ export class ExchangePermission {
   }
 }
 
-export function getSharedPersons(permissions: ExchangeUser[]): ArrayColl<PersonUID> {
-  return new ArrayColl(permissions.filter(permission => !permission.UserId.DistinguishedUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
+export function getSharedPersons(permissions: ExchangeUser[], thisUser: string): ArrayColl<PersonUID> {
+  return new ArrayColl(permissions.filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress != thisUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
 }
 
 export async function deleteExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, otherPerson: PersonUID) {
