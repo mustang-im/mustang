@@ -96,63 +96,65 @@
             </vbox>
           {/if}
 
-          <hbox class="enable">
-            <Checkbox
-              label={$t`Share calendar`}
-              bind:checked={shareCalendar}
-              allowFalse />
-          </hbox>
-          {#if shareCalendar}
-            <vbox class="checkbox-details">
-              <!--
-              {#each calendars.each as cal}
-                <Checkbox label={cal.name} checked={true} />
-              {/each}
-              -->
-              <hbox class="account-name">{calendars.first?.name}</hbox>
-              <hbox>
-                <hbox class="label">{$t`Access`}</hbox>
-                <select bind:value={calendarAccess}>
-                  <option value={CalendarShareCombinedPermissions.ReadAvailability}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAvailability]}</option>
-                  <option value={CalendarShareCombinedPermissions.ReadTitle}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadTitle]}</option>
-                  <option value={CalendarShareCombinedPermissions.ReadAll}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAll]}</option>
-                  <option value={CalendarShareCombinedPermissions.Modify}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.Modify]}</option>
-                </select>
-              </hbox>
-            </vbox>
-          {/if}
+          {#if !(account instanceof IMAPAccount)}
+            <hbox class="enable">
+              <Checkbox
+                label={$t`Share calendar`}
+                bind:checked={shareCalendar}
+                allowFalse />
+            </hbox>
+            {#if shareCalendar}
+              <vbox class="checkbox-details">
+                <!--
+                {#each calendars.each as cal}
+                  <Checkbox label={cal.name} checked={true} />
+                {/each}
+                -->
+                <hbox class="account-name">{calendars.first?.name}</hbox>
+                <hbox>
+                  <hbox class="label">{$t`Access`}</hbox>
+                  <select bind:value={calendarAccess}>
+                    <option value={CalendarShareCombinedPermissions.ReadAvailability}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAvailability]}</option>
+                    <option value={CalendarShareCombinedPermissions.ReadTitle}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadTitle]}</option>
+                    <option value={CalendarShareCombinedPermissions.ReadAll}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAll]}</option>
+                    <option value={CalendarShareCombinedPermissions.Modify}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.Modify]}</option>
+                  </select>
+                </hbox>
+              </vbox>
+            {/if}
 
-          <hbox class="enable">
-            <Checkbox
-              label={$t`Share addressbook`}
-              bind:checked={shareAddressbook}
-              allowFalse />
-          </hbox>
-          {#if shareAddressbook}
-            <vbox class="checkbox-details">
-              <!--
-              {#each addressbooks.each as ab}
-                <Checkbox label={ab.name} checked={true} />
-              {/each}
-              -->
-              <hbox class="account-name">{addressbooks.first?.name}</hbox>
-              <hbox>
-                <hbox class="label">{$t`Access`}</hbox>
-                <select bind:value={addressbookAccess}>
-                  <option value={AddressbookShareCombinedPermissions.Read}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Read]}</option>
-                  <option value={AddressbookShareCombinedPermissions.Modify}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Modify]}</option>
-                </select>
-              </hbox>
-            </vbox>
+            <hbox class="enable">
+              <Checkbox
+                label={$t`Share addressbook`}
+                bind:checked={shareAddressbook}
+                allowFalse />
+            </hbox>
+            {#if shareAddressbook}
+              <vbox class="checkbox-details">
+                <!--
+                {#each addressbooks.each as ab}
+                  <Checkbox label={ab.name} checked={true} />
+                {/each}
+                -->
+                <hbox class="account-name">{addressbooks.first?.name}</hbox>
+                <hbox>
+                  <hbox class="label">{$t`Access`}</hbox>
+                  <select bind:value={addressbookAccess}>
+                    <option value={AddressbookShareCombinedPermissions.Read}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Read]}</option>
+                    <option value={AddressbookShareCombinedPermissions.Modify}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Modify]}</option>
+                  </select>
+                </hbox>
+              </vbox>
+            {/if}
+            <hbox class="buttons">
+              <Button
+                label={$t`Add`}
+                onClick={() => onAddPersons()}
+                disabled={errorMessage}
+                classes="primary filled"
+                />
+            </hbox>
           {/if}
-          <hbox class="buttons">
-            <Button
-              label={$t`Add`}
-              onClick={() => onAddPersons()}
-              disabled={errorMessage}
-              classes="primary filled"
-              />
-          </hbox>
         {/if}
 
       </vbox>
