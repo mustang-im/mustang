@@ -76,8 +76,7 @@ export class IMAPAccount extends MailAccount {
     if (conn) {
       return conn;
     }
-    let runOnce = this.connectRunOnce.get(purpose);
-    return await runOnce.runOnce(async () => {
+    return await this.connectRunOnce.get(purpose).runOnce(async () => {
       this.fatalError = null;
 
       // Auth method
