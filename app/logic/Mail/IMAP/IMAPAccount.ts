@@ -216,7 +216,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
-    await this.reconnectRunOnce.runOnce(async () => {
+    return await this.reconnectRunOnce.runOnce(async () => {
       // Note: Do not stop polling
       assert(connection, "Reconnect: Connection unknown");
       let purpose = this.connections.getKeyForValue(connection);
