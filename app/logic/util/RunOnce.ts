@@ -1,26 +1,21 @@
 /**
- * Wrapper around a slow async function to prevent it from being re-entered.
- * Call maybeRun() to attempt to invoke the async function.
- * Unlike Semaphore, attempting re-entrancy does nothing.
- * XXX need better name
+ * Wrapper around an async function to prevent it from being called
+ * twice at the same time.
+ * The second call will wait for the first call to finish, and then get the
+ * result from the first call, without calling the function a second time.
+ * Similar to C++ `std::call_once`.
  */
-export class RunOnce {
-  func: () => void;
-  running: boolean = false;
+export class RunOnce<Result> {
+  running: Promise<Result> | null = null;
 
-  constructor(func: () => void) {
-    this.func = func;
-  }
-
-  async maybeRun() {
-    if (this.running) {
-      return;
-    }
+  async runOnce(func: () => Promise<Result>): Promise<Result> {
     try {
-      this.running = true;
-      await this.func();
+      if (!this.running) {
+        this.running = func();
+      }
+      return await this.running;
     } finally {
-      this.running = false;
+      this.running = null;
     }
   }
 }
