@@ -1,6 +1,10 @@
 import type { Json } from "../../util/util";
 
 export function XML2JSON(aNode: Element): Json {
+  // This node may have been namespaced. We're not interested in that attribute.
+  // (This doesn't matter for Microsoft Exchange because it declares all of its
+  // namespaces on the result node, but other EWS implementations may vary.)
+  aNode.removeAttribute(aNode.prefix ? "xmlns:" + aNode.prefix : "xmlns");
   if (!aNode.children.length && !aNode.attributes.length) {
     return aNode.textContent;
   }
