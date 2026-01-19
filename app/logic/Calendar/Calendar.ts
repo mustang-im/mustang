@@ -28,6 +28,11 @@ export class Calendar extends Account {
     return new Event(this, parentEvent);
   }
 
+  get isLoggedIn(): boolean {
+    // Please override in subclasses
+    return true; // for local calendar
+  }
+
   /** Calculated from `events`. Returns
    * - Single events
    * - Recurring instances generated
