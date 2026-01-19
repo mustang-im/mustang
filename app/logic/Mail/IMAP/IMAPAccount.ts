@@ -222,14 +222,13 @@ export class IMAPAccount extends MailAccount {
     let runOnce = this.reconnectRunOnce.get(purpose);
     return await runOnce.runOnce(async () => {
       // Note: Do not stop polling
-      this.connections.set(purpose, null);
-
       try {
         await connection.close();
       } catch (ex) {
         // Sometimes gives "Connection not available". Do nothing.
       }
       this.connectionLock.delete(connection);
+      this.connections.set(purpose, null);
       this.notifyObservers();
 
       if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
