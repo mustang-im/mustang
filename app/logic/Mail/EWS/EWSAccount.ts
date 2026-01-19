@@ -3,7 +3,8 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import { EWSFolder, getEWSItem } from "./EWSFolder";
+import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -26,6 +27,7 @@ import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -224,6 +226,11 @@ export class EWSAccount extends MailAccount {
     let freebusy = responseXML.querySelector("FreeBusyResponseArray");
     if (freebusy) {
       return ensureArray(getEWSItem(XML2JSON(freebusy)));
+    }
+    // GetDelegate returns a possibly missing array of responses
+    let delegate = responseXML.querySelector("GetDelegateResponse");
+    if (delegate?.getAttribute("ResponseClass") == "Success") {
+      return [...responseXML.querySelectorAll("DelegateUser")].map(user => XML2JSON(user));
     }
     let messages = responseXML.querySelector("ResponseMessages");
     if (!messages) {
@@ -871,6 +878,25 @@ export class EWSAccount extends MailAccount {
     return calendar;
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    return await (this.inbox as EWSFolder).getSharedPersons();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders()) {
+      await deleteExchangePermissions(folder as EWSFolder, otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: EWSFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    // XXX Need root folder to share all mail
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
+    for (let folder of foldersToShare) {
+      await setExchangePermissions(folder as EWSFolder, otherPerson, access, ...permissions);
+    }
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
@@ -882,7 +908,6 @@ export class EWSAccount extends MailAccount {
     return json;
   }
 }
-
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
