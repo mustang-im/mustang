@@ -413,6 +413,10 @@ export class IMAPAccount extends MailAccount {
     await sentFolder.addMessage(email);
   }
 
+  canShareWithPersons(): boolean {
+    return this.namespaces?.other?.length > 0;
+  }
+
   async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
     // well, some of them at least...
     return await (this.inbox as IMAPFolder).getSharedPersons();

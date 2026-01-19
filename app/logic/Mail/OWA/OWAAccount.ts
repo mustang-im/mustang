@@ -585,6 +585,10 @@ export class OWAAccount extends MailAccount {
     return calendar;
   }
 
+  canShareWithPersons(): boolean {
+    return true;
+  }
+
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     // well, some of them at least...
     return await (this.inbox as OWAFolder).getSharedPersons();

@@ -9,6 +9,7 @@
 
 <script lang="ts">
   import type { Account } from "../../../logic/Abstract/Account";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { accountSettings, type SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
@@ -20,7 +21,14 @@
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
   $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
-  $: subCategories = accountSettings.filterObservable(cat => account instanceof cat.type && !cat.isMain);
+  $: subCategories = accountSettings.filterObservable(cat => account instanceof cat.type && !cat.isMain && showCat(cat, account));
+
+  function showCat(category: SettingsCategory, account: Account): boolean {
+    if (category.id == "mail-sharing" && account instanceof MailAccount) {
+      return account.canShareWithPersons();
+    }
+    return true;
+  }
 
   function onSelect() {
     $selectedAccount = account;

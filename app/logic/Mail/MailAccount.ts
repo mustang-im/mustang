@@ -133,6 +133,10 @@ export class MailAccount extends TCPAccount {
     return this.rootFolders.first;
   }
 
+  canShareWithPersons(): boolean {
+    return false;
+  }
+
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     return new ArrayColl<PersonUID>();
   }

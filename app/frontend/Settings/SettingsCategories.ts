@@ -33,8 +33,6 @@ import Debug from "./About/Debug.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
-import { EWSAccount } from "../../logic/Mail/EWS/EWSAccount";
-import { OWAAccount } from "../../logic/Mail/OWA/OWAAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
@@ -77,8 +75,7 @@ accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, Accou
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
 accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
-accountSettings.add(new AccSetting(EWSAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
-accountSettings.add(new AccSetting(OWAAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
+accountSettings.add(new AccSetting(MailAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
 
 // #if [DEV]
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
