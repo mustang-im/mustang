@@ -33,13 +33,14 @@ export class IMAPAccount extends MailAccount {
   protected connectLock = new MapColl<ConnectionPurpose, Lock>();
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
-  protected reconnectRunOnce = new RunOnce<ImapFlow>();
+  protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
 
   constructor() {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
     for (let purpose of connectionPurposes) {
       this.connectLock.set(purpose, new Lock());
+      this.reconnectRunOnce.set(purpose, new RunOnce<ImapFlow>());
     }
   }
 
@@ -216,11 +217,14 @@ export class IMAPAccount extends MailAccount {
   }
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
-    return await this.reconnectRunOnce.runOnce(async () => {
+    assert(connection, "Reconnect: Connection unknown");
+
+    let purpose = this.connections.getKeyForValue(connection);
+    assert(purpose, "Connection purpose unknown");
+
+    let runOnce = this.reconnectRunOnce.get(purpose);
+    return await runOnce.runOnce(async () => {
       // Note: Do not stop polling
-      assert(connection, "Reconnect: Connection unknown");
-      let purpose = this.connections.getKeyForValue(connection);
-      assert(purpose, "Connection purpose unknown");
       this.connections.set(purpose, null);
 
       try {
