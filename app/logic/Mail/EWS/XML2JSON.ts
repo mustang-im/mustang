@@ -1,9 +1,9 @@
 import type { Json } from "../../util/util";
 
 export function XML2JSON(aNode: Element): Json {
-  // This node may have been namespaced. We're not interested in that attribute.
-  // (This doesn't matter for Microsoft Exchange because it declares all of its
-  // namespaces on the result node, but other EWS implementations may vary.)
+  // We don't need the `xmlns` attribute, because we have the `prefix` property.
+  // This attribute confuses Kopano.
+  // MS Exchange declares all of its namespaces on the result node.
   aNode.removeAttribute(aNode.prefix ? "xmlns:" + aNode.prefix : "xmlns");
   if (!aNode.children.length && !aNode.attributes.length) {
     return aNode.textContent;
