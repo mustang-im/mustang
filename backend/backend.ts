@@ -14,7 +14,7 @@ import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
-import { client as xmppClient, Client as XMPPClient } from '@xmpp/client';
+import { client as xmppClient, type Client as XMPPClient } from '@xmpp/client';
 import setupRoster from '@xmpp-plugins/roster';
 import path from "node:path";
 import os from "node:os";

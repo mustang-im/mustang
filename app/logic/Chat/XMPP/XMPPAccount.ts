@@ -5,16 +5,14 @@ import type { Group } from '../../Abstract/Group';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { appGlobal } from '../../app';
-import { ConnectError } from '../../Abstract/Account';
-import { gt } from '../../../l10n/l10n';
 import { MapColl } from 'svelte-collections';
-import { xml } from '@xmpp/client';
+import { xml, type Client } from '@xmpp/client';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
   readonly chats = new MapColl<ChatPerson | Group, XMPPChat>;
   readonly roster = new MapColl<string, ChatPerson>();
-  client: XMPP.Agent;
+  client: Client;
   deviceID: string;
   jid: string;
 
@@ -22,11 +20,11 @@ export class XMPPAccount extends ChatAccount {
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
-    this.globalUserID = `${this.username}@${this.serverDomain}`;
+    let [username, domain] = this.jid.split("@");
     this.client = await appGlobal.remoteApp.createXMPPJSClient({
-      username: this.globalUserID,
+      username: username,
       password: this.password,
-      service: this.serverDomain,
+      service: domain,
     });
     await this.client.on("error", this.errorCallback);
     await this.client.start();
@@ -56,29 +54,6 @@ export class XMPPAccount extends ChatAccount {
     await this.getRooms();
     await this.client.enableKeepAlive();
   };
-  async connect() {
-    this.jid = getJID(this.username);
-    const XMPP = await import("stanza");
-    this.client = await XMPP.createClient({
-      jid: this.jid,
-      password: this.password,
-      // credentials: { token: ... }, TODO OAuth2
-
-      // If you have a .well-known/host-meta.json file for your
-      // domain, the connection transports can be set to `true`.
-      transports: {
-        websocket: this.url?.startsWith("wss:") ? this.url : !this.url,
-        bosh: this.url?.startsWith("https:") ? this.url : !this.url,
-      },
-    });
-    this.addListeners();
-    await this.client.connect();
-    console.log("client", this.client.config);
-    if (!this.client.jid) {
-      throw new ConnectError(new Error(), gt`Failed to connect to chat account ${this.name}`);
-    }
-    await this.waitForEvent("session:started");
-  }
   async waitForEvent(eventName: keyof XMPP.AgentEvents) {
     await new Promise(async resolve => {
       await this.client.on(eventName, (...results) => resolve(results));
@@ -87,7 +62,6 @@ export class XMPPAccount extends ChatAccount {
   /** For setup only. Test that the login works. */
   async verifyLogin(): Promise<void> {
     await super.login(true);
-    await this.connect();
   }
   async getRoster() {
     let roster = await this.client.getRoster();
