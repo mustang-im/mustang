@@ -28,9 +28,9 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   appGlobal.meetAccounts.addAll(await readMeetAccounts());
-  appGlobal.calendars.addAll(await readCalendars());
-  appGlobal.addressbooks.addAll(await readAddressbooks());
   appGlobal.fileSharingAccounts.addAll(await readFileSharingAccounts());
+  appGlobal.addressbooks.addAll(await readAddressbooks());
+  appGlobal.calendars.addAll(await readCalendars());
   setMainAccounts();
 
   // TODO Save the address book type and ensure that they are of the right type
@@ -50,6 +50,16 @@ export async function getStartObjects(): Promise<void> {
  *   e.g. the account being logged out, malformed data etc..
  */
 export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex: Error) => void): Promise<void> {
+  for (let account of appGlobal.emailAccounts) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      emailAccountLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+  // Must log in email accounts before addressbooks and calenders,
+  // because many of the latter are dependent accounts of the former.
+
   for (let account of appGlobal.chatAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {
@@ -66,15 +76,13 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
     }
   }
 
-  for (let account of appGlobal.emailAccounts) {
+  for (let account of appGlobal.fileSharingAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {
-      emailAccountLogin(account)
+      fileShareLogin(account)
         .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
-  // Must log in email accounts before addressbooks and calenders,
-  // because many of the latter are dependent accounts of the former.
 
   for (let account of appGlobal.addressbooks) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
@@ -88,14 +96,6 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {
       calendarLogin(account)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-
-  for (let account of appGlobal.fileSharingAccounts) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      fileShareLogin(account)
         .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }

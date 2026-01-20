@@ -1,6 +1,6 @@
 import type { ChatMessage } from "../Message";
 import type { Chat } from "../Chat";
-import { Person } from "../../Abstract/Person";
+import type { Person } from "../../Abstract/Person";
 import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
@@ -9,7 +9,6 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
-import { Message } from "../../Abstract/Message";
 
 export class SQLChatMessage {
   /**
