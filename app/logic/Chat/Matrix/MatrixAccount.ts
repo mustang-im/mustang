@@ -9,12 +9,10 @@ import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
-//import { MatrixClient, createClient } as matrix from 'matrix-js-sdk';
+//import { type MatrixClient, createClient } as matrix from 'matrix-js-sdk';
 //import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
-//import olm from 'olm'; // Needed for initCrypto(). Do not remove.
 //Add the following to package.json:
-//  "matrix-js-sdk": "^30.0.1",
-//  "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
+//  "matrix-js-sdk": "^40.1.0-rc.0",
 // dummy, remove when enabling:
 type MatrixClient = any;
 type Room = any;
@@ -35,7 +33,6 @@ export class MatrixAccount extends ChatAccount {
    * This will populate `persons` and `chats`. */
   async login() {
     super.login(false);
-    (window as any).global = window; // Fix Matrix
     let serverID = this.baseURL.replace("https://", "");
     let userID = `@${this.username}:${serverID}`;
     return;
@@ -44,8 +41,7 @@ export class MatrixAccount extends ChatAccount {
       userId: userID,
       deviceId: this.deviceID,
     });
-    //(window as any).olm = olm;
-    await this.client.initCrypto();
+    await this.client.initRustCrypto();
     await this.client.loginWithPassword(userID, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
