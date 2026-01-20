@@ -21,6 +21,7 @@
     "@capacitor/filesystem": "^7.1.4",
     "@capacitor/splash-screen": "^7.0.3",
     "@faker-js/faker": "^9.8.0",
+    "@matrix-org/matrix-sdk-crypto-wasm": "^17.0.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/svelte": "^8.15.0",
     "@sentry/vite-plugin": "^2.22.6",
@@ -63,6 +64,7 @@
     "timezone-picker-svelte": "^1.0.2",
     "tiptap-extension-resize-image": "^1.2.1",
     "tsdav": "^2.1.4",
+    "vite-plugin-wasm": "^3.5.0",
     "volume-meter": "^2.0.1",
     "ws": "^8.16.0"
   },

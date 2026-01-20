@@ -7,17 +7,11 @@ import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
+import { appName } from '../../build';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
-//import { type MatrixClient, createClient } as matrix from 'matrix-js-sdk';
-//import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
-//Add the following to package.json:
-//  "matrix-js-sdk": "^40.1.0-rc.0",
-// dummy, remove when enabling:
-type MatrixClient = any;
-type Room = any;
-type RoomMember = any;
-function createClient(opt: any) {};
+import type { MatrixClient } from 'matrix-js-sdk';
+import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -31,18 +25,47 @@ export class MatrixAccount extends ChatAccount {
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
-  async login() {
-    super.login(false);
+  async login(interactive: boolean) {
+    super.login(interactive);
+    let accessToken: string;
+    if (this.mainAccount?.oAuth2) {
+      this.oAuth2 = this.mainAccount.oAuth2;
+    }
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(interactive);
+      accessToken = this.oAuth2.accessToken;
+    }
     let serverID = this.baseURL.replace("https://", "");
     let userID = `@${this.username}:${serverID}`;
-    return;
-    this.client = createClient({
+    this.deviceID ??= crypto.randomUUID();
+    // Tutorial <https://matrix-org.github.io/matrix-js-sdk/>
+    const matrix = await import("matrix-js-sdk");
+    if (!this.oAuth2) {
+      let loginClient = matrix.createClient({
+        baseUrl: this.baseURL,
+        userId: userID,
+        deviceId: this.deviceID,
+      })
+      assert(this.password, "need password");
+      let loginResponse = await loginClient.loginRequest({
+        type: "m.login.password",
+        password: this.password,
+        identifier: {
+          type: "m.id.user",
+          user: this.username,
+        },
+        device_id: this.deviceID,
+        initial_device_display_name: appName,
+      });
+      accessToken = loginResponse.access_token;
+    }
+    this.client = matrix.createClient({
       baseUrl: this.baseURL,
       userId: userID,
       deviceId: this.deviceID,
+      accessToken: accessToken,
     });
-    await this.client.initRustCrypto();
-    await this.client.loginWithPassword(userID, this.password);
+    await this.client.initRustCrypto({ cryptoDatabasePrefix: this.id });
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 
@@ -52,7 +75,7 @@ export class MatrixAccount extends ChatAccount {
   };
   async waitForEvent(eventName: string) {
     await new Promise((resolve, reject) => {
-      this.client.once(eventName, (...results) => resolve(results));
+      this.client.once(eventName as any, (...results) => resolve(results));
     });
   }
   async getRooms() {
@@ -113,9 +136,9 @@ export class MatrixAccount extends ChatAccount {
   async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
     let type = event.getType();
     if (type == "m.room.message") {
-      return this.getUserMessage(event);
+      return this.getUserMessage(event, chatRoom);
     } else if (type == "m.room.encrypted") {
-      return await this.getEncryptedUserMessage(event);
+      return await this.getEncryptedUserMessage(event, chatRoom);
     } else if (type == "m.room.member") {
       return this.getJoinLeaveInviteEvent(event, chatRoom);
     } else if (type == "m.reaction") {
@@ -131,8 +154,8 @@ export class MatrixAccount extends ChatAccount {
       return this.getGenericChatRoomEvent(event);
     }
   }
-  getUserMessage(event): ChatMessage {
-    let msg = new UserChatMessage();
+  getUserMessage(event, chatRoom: MatrixChatRoom): ChatMessage {
+    let msg = new UserChatMessage(chatRoom);
     this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
@@ -140,9 +163,9 @@ export class MatrixAccount extends ChatAccount {
     msg.html = content.formatted_body ?? content.body.replace("\n", "<br>");
     return msg;
   }
-  async getEncryptedUserMessage(event): Promise<ChatMessage> {
+  async getEncryptedUserMessage(event, chatRoom: MatrixChatRoom): Promise<ChatMessage> {
     await this.client.decryptEventIfNeeded(event);
-    return this.getUserMessage(event);
+    return this.getUserMessage(event, chatRoom);
   }
   getReaction(event, chatRoom: MatrixChatRoom): void {
     let senderUserID = event.getSender();
