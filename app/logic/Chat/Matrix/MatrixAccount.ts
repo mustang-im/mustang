@@ -7,11 +7,12 @@ import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
 import type { MatrixClient } from 'matrix-js-sdk';
-import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
+import type { MatrixCall, Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -71,7 +72,6 @@ export class MatrixAccount extends ChatAccount {
 
     await this.getRooms();
     this.listenToRoomMessages();
-    MatrixVideoConf.listenForCalls(this.client, (conf) => this.incomingCall(conf));
   };
   async waitForEvent(eventName: string) {
     await new Promise((resolve, reject) => {
@@ -93,12 +93,12 @@ export class MatrixAccount extends ChatAccount {
     for (let member of room.getJoinedMembers()) {
       group.participants.add(this.getPerson(member));
     }
-    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
-      ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
-      : group;
-    this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
+    let others = group.participants.filterOnce(person => person.id != this.globalUserID);
+    chatRoom.contact = others.length > 1
+      ? group
+      : others.first ?? group.participants.first;
+    this.chats.set(chatRoom.contact, chatRoom);
 
-    //let init = await this.client.roomInitialSync(room.roomId, 300);
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
         let msg = await this.getEvent(event, chatRoom); // process system events
@@ -117,7 +117,7 @@ export class MatrixAccount extends ChatAccount {
   getExistingPerson(userId: string) {
     return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId && acc.purpose == "matrix"));
   }
-  getPerson(member: RoomMember) {
+  getPerson(member: RoomMember): ChatPerson {
     let existing = this.getExistingPerson(member.userId);
     if (existing) {
       return existing;
@@ -133,17 +133,24 @@ export class MatrixAccount extends ChatAccount {
     //appGlobal.persons.add(person);
     return person;
   }
+  async createRoom(name: string) {
+    // TODO create room on server
+    return new MatrixChatRoom(this);
+  }
   async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
     let type = event.getType();
     if (type == "m.room.message") {
-      return this.getUserMessage(event, chatRoom);
-    } else if (type == "m.room.encrypted") {
-      return await this.getEncryptedUserMessage(event, chatRoom);
-    } else if (type == "m.room.member") {
-      return this.getJoinLeaveInviteEvent(event, chatRoom);
-    } else if (type == "m.reaction") {
-      this.getReaction(event, chatRoom);
+      return chatRoom.getUserMessage(event);
+    } else if (type == "m.room.redaction") {
+      chatRoom.redactMessage(event);
       return null;
+    } else if (type == "m.reaction") {
+      chatRoom.getReaction(event);
+      return null;
+    } else if (type == "m.room.encrypted") {
+      return await chatRoom.getEncryptedUserMessage(event);
+    } else if (type == "m.room.member") {
+      return chatRoom.getJoinLeaveInviteEvent(event);
     } else if (type == "m.room.power_levels" ||
       type == "m.room.encryption" ||
       type == "m.room.join_rules" ||
@@ -154,33 +161,12 @@ export class MatrixAccount extends ChatAccount {
       return this.getGenericChatRoomEvent(event);
     }
   }
-  getUserMessage(event, chatRoom: MatrixChatRoom): ChatMessage {
-    let msg = new UserChatMessage(chatRoom);
-    this.fillMessage(event, msg);
-    msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
-    let content = event.getContent();
-    msg.text = content.body;
-    msg.html = content.formatted_body ?? content.body.replace("\n", "<br>");
-    return msg;
-  }
-  async getEncryptedUserMessage(event, chatRoom: MatrixChatRoom): Promise<ChatMessage> {
-    await this.client.decryptEventIfNeeded(event);
-    return this.getUserMessage(event, chatRoom);
-  }
-  getReaction(event, chatRoom: MatrixChatRoom): void {
+  fillMessage(event, msg: ChatMessage): void {
+    msg.id = event.event?.event_id;
+    msg.sent = msg.received = new Date(event.getTs());
     let senderUserID = event.getSender();
-    let person = this.getExistingPerson(senderUserID);
-    assert(person, "Reaction: Sender not found: " + senderUserID);
-    let data = event.event?.content["m.relates_to"];
-    assert(data.rel_type == "m.annotation", "Unknown reaction type " + data.rel_type);
-    let emoji = data.key;
-    let reactTo = chatRoom.messages.find(msg => msg.id == data.event_id);
-    if (!reactTo) {
-      // might be reacting to an older message which is not in our history
-      return;
-    }
-    assert(reactTo instanceof UserChatMessage, "Reacting to something that is not a message");
-    reactTo.reactions.set(person, emoji);
+    msg.contact = this.getExistingPerson(senderUserID);
+    msg.outgoing = senderUserID == this.globalUserID;
   }
   getGenericChatRoomEvent(event): ChatMessage {
     let msg = new ChatRoomEvent();
@@ -194,63 +180,14 @@ export class MatrixAccount extends ChatAccount {
       </div>`;
     return msg;
   }
-  getJoinLeaveInviteEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
-    let data = event.event.content;
-    let senderUserID = event.getSender();
-    let person = this.getExistingPerson(senderUserID);
-    if (!person) {
-      person = new ChatPerson();
-      person.name = event.displayname;
-      person.picture = event.avatar_url; // may be null
-      //appGlobal.persons.add(person);
-    }
-
-    if (data.membership == "join" || data.membership == "leave") {
-      let msg = new JoinLeave();
-      msg.join = data.membership == "join";
-      let group = chatRoom.contact;
-      if (group instanceof Group) {
-        if (msg.join) {
-          group.participants.add(person);
-        } else {
-          group.participants.remove(person);
-        }
-      } else {
-        // TODO change to group
-      }
-      this.fillMessage(event, msg);
-      msg.text = (msg.join ? "%person% joined" : "%person% left the room")
-        .replace("%person%", person.name);
-      msg.html = `<span class="joinleave">` +
-        (msg.join ? "%person% joined" : "%person% left the room")
-          .replace("%person%", `<span class="person">${person.name}</span>`) +
-        `</span>`;
-      return msg;
-    } else if (data.membership == "invite") {
-      let msg = new Invite();
-      this.fillMessage(event, msg);
-      msg.text = "%person% is invited to this room"
-        .replace("%person%", person.name);
-      msg.html = `<span class="invite">` +
-        "%person% is invited to this room"
-          .replace("%person%", `<span class="person">${person.name}</span>`) +
-        `</span>`;
-      return msg;
-    } else {
-      return this.getGenericChatRoomEvent(event);
-    }
-  }
-  fillMessage(event, msg: ChatMessage): void {
-    msg.id = event.event?.event_id;
-    msg.sent = msg.received = new Date(event.getTs());
-    let senderUserID = event.getSender();
-    msg.contact = this.getExistingPerson(senderUserID);
-    msg.outgoing = senderUserID == this.globalUserID;
-  }
-  async incomingCall(conf: MatrixVideoConf) {
+  async incomingCall(call: MatrixCall) {
     try {
+      console.log("Incoming call", call.roomId, call);
+      let conf = new MatrixVideoConf(this, call);
+      // Once the user accepts, call `conf.answer()`
+
       let room = this.getExistingRoom(conf._call.roomId);
-      let msg = new IncomingCall();
+      let msg = new IncomingCall(room);
       msg.contact = room.contact;
       msg.text = msg.html = `${msg.contact.name} is calling`;
       msg.outgoing = false;
@@ -279,5 +216,28 @@ export class MatrixAccount extends ChatAccount {
         this.errorCallback(ex);
       }
     });
+    this.client.on("Call.incoming", (call: MatrixCall) => {
+      this.incomingCall(call);
+    });
+  }
+
+  async logout() {
+    await super.logout();
+    await this.client.logout();
+  }
+
+  async deleteIt(): Promise<void> {
+    await super.deleteIt();
+    indexedDB.deleteDatabase(this.id + "::matrix-sdk-crypto");
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.deviceID = sanitize.alphanumdash(json.deviceID);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.deviceID = this.deviceID;
+    return json;
   }
 }
