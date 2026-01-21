@@ -217,7 +217,7 @@ export class IMAPAccount extends MailAccount {
     // Note: Do not stop polling
     assert(connection, "Reconnect: Connection unknown");
 
-    purpose ??= this.connections.getKeyForValue(connection);
+    purpose = this.connections.getKeyForValue(connection) ?? purpose;
     assert(purpose, "Connection purpose unknown");
 
     return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
