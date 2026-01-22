@@ -158,6 +158,7 @@ app.on('window-all-closed', () => {
 });
 
 async function updateAndRestartNowIfNeeded() {
+  await update?.downloadPromise;
   if (update?.updateInfo.version) {
     autoUpdater.autoRunAppAfterInstall = true;
     autoUpdater.autoInstallOnAppQuit = true;
