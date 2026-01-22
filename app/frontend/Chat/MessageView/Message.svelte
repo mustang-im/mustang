@@ -14,7 +14,7 @@
   {/if}
   <vbox class="right">
     {#if !(fastFollowup && hideHeaderFollowup)}
-      <hbox class="meta">
+      <hbox class="meta" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
         {#if !$message.outgoing && !followup}
           <hbox class="from">{$message.contact?.name}</hbox>
         {/if}
@@ -148,6 +148,9 @@
     align-items: end;
     margin-block-end: 2px;
     font-size: x-small;
+    color: #818181;
+  }
+  .meta.singlechat {
     color: #999999;
   }
   .incoming .meta {
@@ -159,6 +162,11 @@
   }
   .from {
     margin-inline-end: 16px;
+  }
+  .from:not(.singlechat) {
+    font-size: medium;
+    font-weight: 500;
+    color: rgb(34, 41, 111);
   }
   .text {
     overflow-wrap: anywhere;
