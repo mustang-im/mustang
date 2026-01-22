@@ -302,34 +302,32 @@ function restartApp() {
   app.quit();
 }
 
+class UpdateState extends Observable {
+  @notifyChangedProperty
+  state: "idle" | "checking" | "downloading" | "downloaded" | "error" = "idle";
+  @notifyChangedProperty
+  error: Error | null = null;
+}
+export const updateState = new UpdateState();
+
 /** @returns have update */
-async function checkForUpdate(): Promise<boolean | undefined> {
-  let result = await autoUpdater.checkForUpdates();
-  return result?.isUpdateAvailable;
-  /* return new Promise(async (resolve, reject) => {
-    let result = await autoUpdater.checkForUpdates();
-    if (result?.isUpdateAvailable) {
-      resolve(true);
-      return;
-    }
-    autoUpdater.once("update-available", () => {
-      resolve(true);
-    });
-    autoUpdater.once("update-not-available", () => {
-      resolve(false);
-    });
-    autoUpdater.once("error", reject);
-  });*/
+export async function checkForUpdate(): Promise<boolean | undefined> {
+  let haveUpdate = ["downloading", "downloaded"].includes(updateState.state);
+  if (haveUpdate) {
+    return true;
+  }
+  return !!((await autoUpdater.checkForUpdates())?.UpdateInfo);
 }
 
-async function installUpdate() {
-  await autoUpdater.downloadUpdate();
-  await new Promise((resolve, reject) => {
-    autoUpdater.once("update-downloaded", () => {
-      resolve(null);
+export async function installUpdate() {
+  if (updateState.state == "downloading") {
+    await new Promise((resolve) => {
+      autoUpdater.once('update-downloaded', () => {
+        resolve(null);
+      });
     });
-    autoUpdater.once("error", reject);
-  });
+  }
+  assert(updateState.state == "downloaded", "No update downloaded");
   autoUpdater.quitAndInstall(true, true);
 }
 
