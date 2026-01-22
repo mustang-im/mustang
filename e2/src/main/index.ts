@@ -2,7 +2,7 @@ import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../
 import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater, { UpdateCheckResult } from 'electron-updater';
+import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
