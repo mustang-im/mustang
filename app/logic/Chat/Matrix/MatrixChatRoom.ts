@@ -26,8 +26,7 @@ export class MatrixChatRoom extends Chat {
       // <https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/2676-message-editing.md>
       let orgID = sanitize.nonemptystring(relation.event_id);
       let orgMessage = this.messages.find(m => m.id == orgID);
-      if (orgMessage) { // In case we're live and received the original
-        // TODO untested
+      if (orgMessage) { // In case we're live and received the original - TODO untested
         console.log("replacement message", event.getContent());
         let content = event.getContent()["m.new_content"];
         orgMessage.text = content.body;

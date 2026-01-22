@@ -220,9 +220,14 @@ export class MatrixAccount extends ChatAccount {
     });
   }
 
+  get isLoggedIn() {
+    return !!this.client;
+  }
+
   async logout() {
     await super.logout();
     await this.client.logout();
+    this.client = null;
   }
 
   async deleteIt(): Promise<void> {
