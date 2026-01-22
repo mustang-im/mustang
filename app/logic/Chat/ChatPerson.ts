@@ -15,6 +15,7 @@ export class ChatPerson extends PersonUID {
 
   constructor(protocol: string, chatID: string, name?: string) {
     super();
+    this.protocol = protocol;
     this.chatID = chatID;
     this.name = name;
   }

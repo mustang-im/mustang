@@ -61,10 +61,8 @@ export class MatrixChatRoom extends Chat {
     let senderUserID = event.getSender();
     let person = this.account.getExistingPerson(senderUserID);
     if (!person) {
-      person = new ChatPerson();
-      person.name = event.displayname;
+      person = new ChatPerson("matrix", senderUserID, event.displayname);
       person.picture = event.avatar_url; // may be null
-      //appGlobal.persons.add(person);
     }
 
     if (data.membership == "join" || data.membership == "leave") {

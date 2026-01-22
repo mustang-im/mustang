@@ -134,7 +134,7 @@ export class Message extends Observable {
     this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
 
-  readonly reactions = new MapColl<Person, string>();
+  readonly reactions = new MapColl<PersonUID, string>();
 
   async markRead(read = true) {
     this.isRead = read;

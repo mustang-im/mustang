@@ -42,7 +42,7 @@
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">
-        {#each $reactions.entries().each as [sender, emoji]}
+        {#each [...$reactions.entries()] as [sender, emoji]}
           <hbox class="reaction" title={emoji + " " + sender?.name}>{emoji}</hbox>
         {/each}
       </hbox>
@@ -141,7 +141,7 @@
     margin-inline-end: 4px;
   }
   .message.followup.incoming {
-    /* no avatar */
+    /* no avatar - TODO when original has no avatar */
     padding-inline-start: 60px;
   }
   .meta {
