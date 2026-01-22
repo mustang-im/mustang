@@ -1,4 +1,5 @@
-<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} {doSearch}>
+<PersonsList persons={chatRooms} bind:selected={selectedChat} {doSearch}
+  sortBy={chat => -chat.lastMessage?.sent}>
   <hbox slot="top-right" class="last-time" let:person={chatRoom}>
     {#if chatRoom instanceof Chat && chatRoom.lastMessage}
       {getDateTimeString(chatRoom.lastMessage.sent)}
@@ -20,8 +21,6 @@
   export let chatRooms: Collection<Chat>;
   export let selectedChat: Chat;
   export let doSearch = false;
-
-  $: chatRoomsSorted = $chatRooms.sortBy(chat => -chat.lastMessage?.sent);
 </script>
 
 <style>

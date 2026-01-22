@@ -32,6 +32,7 @@
   export let showSearch = true;
   /** focus the search field when this component loads -- in */
   export let doSearch = false;
+  export let sortBy = (person: PersonOrGroup) => person.name.toLowerCase();
 
   $: filteredPersons = searchTerm
     ? persons.filterObservable(p =>
@@ -44,7 +45,7 @@
         p.notes?.toLowerCase().includes(searchTerm))
     )
     : persons;
-  $: sortedPersons = filteredPersons.sortBy(person => person.name.toLowerCase());
+  $: sortedPersons = filteredPersons.sortBy(sortBy);
 
   $: searchTerm && adaptSelected();
   function adaptSelected() {
