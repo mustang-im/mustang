@@ -1,5 +1,5 @@
 {#if message.sent.getDate() != previousMessage?.sent.getDate() }
-  <hbox class="date-separator font-small">
+  <hbox class="date-separator font-small value">
     {longDayFormat.format(message.sent)}
   </hbox>
 {/if}

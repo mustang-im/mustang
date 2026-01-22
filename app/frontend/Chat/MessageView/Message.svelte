@@ -16,12 +16,12 @@
     {#if !(fastFollowup && hideHeaderFollowup)}
       <hbox class="meta font-smallest" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
         {#if !$message.outgoing && !followup}
-          <hbox class="from">{$message.contact?.name}</hbox>
+          <hbox class="from value">{$message.contact?.name}</hbox>
         {/if}
         <hbox flex>
           <slot name="above-center" />
         </hbox>
-        <hbox class="time">{getDateTimeString($message.sent)}</hbox>
+        <hbox class="time value">{getDateTimeString($message.sent)}</hbox>
       </hbox>
     {/if}
     <vbox class="bubble">
@@ -31,7 +31,7 @@
         </hbox>
       {/if}
       <slot name="inner-top" />
-      <div class="text selectable font-normal">
+      <div class="text value font-normal">
         {@html $message.html || ""}
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
         <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
