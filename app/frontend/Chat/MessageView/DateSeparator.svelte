@@ -1,5 +1,5 @@
 {#if message.sent.getDate() != previousMessage?.sent.getDate() }
-  <hbox class="date-separator">
+  <hbox class="date-separator font-small">
     {longDayFormat.format(message.sent)}
   </hbox>
 {/if}
@@ -25,7 +25,6 @@
     justify-content: center;
     margin: 20px 20px 0px 20px;
     padding: 5px;
-    font-size: small;
     color: var(--main-pattern-fg);
     opacity: 60%; /* TODO Should change only text color */
   }

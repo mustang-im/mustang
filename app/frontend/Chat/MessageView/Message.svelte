@@ -5,16 +5,16 @@
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
   >
-  {#if !$message.outgoing && !followup}
-    <vbox class="avatar">
-      {#if $message.contact instanceof Person}
+  {#if !$message.outgoing}
+    <vbox class="avatar"  from={$message.contact?.name}>
+      {#if $message.contact?.picture && !followup}
         <PersonPicture person={$message.contact} size={32} />
       {/if}
     </vbox>
   {/if}
   <vbox class="right">
     {#if !(fastFollowup && hideHeaderFollowup)}
-      <hbox class="meta" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
+      <hbox class="meta font-smallest" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
         {#if !$message.outgoing && !followup}
           <hbox class="from">{$message.contact?.name}</hbox>
         {/if}
@@ -79,7 +79,6 @@
 <style>
   .message {
     margin: 16px 32px 0 20px;
-    color: black;
     max-width: 75%;
   }
   .incoming {
@@ -139,22 +138,18 @@
   .avatar {
     margin-block-start: 3px;
     margin-inline-end: 4px;
-  }
-  .message.followup.incoming {
-    /* no avatar - TODO when original has no avatar */
-    padding-inline-start: 60px;
+    min-width: 32px;
   }
   .meta {
     align-items: end;
     margin-block-end: 2px;
-    font-size: x-small;
     color: #818181;
   }
   .meta.singlechat {
     color: #999999;
   }
   .incoming .meta {
-    margin-inline-start: 10px;
+    margin-inline-start: 14px;
   }
   .outgoing .meta {
     justify-content: end;
@@ -166,7 +161,7 @@
   .from:not(.singlechat) {
     font-size: medium;
     font-weight: 500;
-    color: rgb(34, 41, 111);
+    color: var(--fg);
   }
   .text {
     overflow-wrap: anywhere;
