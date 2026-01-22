@@ -2,9 +2,10 @@ import { Chat } from "../Chat";
 import type { MatrixAccount } from "./MatrixAccount";
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
 import { ChatPerson } from "../ChatPerson";
+import { Group } from "../../Abstract/Group";
 import { Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
-import { Group } from "../../Abstract/Group";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class MatrixChatRoom extends Chat {
   declare account: MatrixAccount;
@@ -19,17 +20,38 @@ export class MatrixChatRoom extends Chat {
     let init = await this.account.client.roomInitialSync(this.id, 3000);
   }
 
-  getUserMessage(event): ChatMessage {
+  getUserMessage(event): ChatMessage | null {
+    let relation = event.getRelation();
+    if (relation?.rel_type == "m.replace") {
+      // <https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/2676-message-editing.md>
+      let orgID = sanitize.nonemptystring(relation.event_id);
+      let orgMessage = this.messages.find(m => m.id == orgID);
+      if (orgMessage) { // In case we're live and received the original
+        // TODO untested
+        console.log("replacement message", event.getContent());
+        let content = event.getContent()["m.new_content"];
+        orgMessage.text = content.body;
+        orgMessage.rawHTMLDangerous = content.formatted_body;
+      }
+      return null;
+    }
+    let replacedBy = event.replacingEvent(); // In case we're restoring history from server, which merges the replacement in
+    if (replacedBy) {
+      event = replacedBy;
+    }
     let msg = new UserChatMessage(this);
     this.account.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
+    if (replacedBy) {
+      content = content["m.new_content"];
+    }
     msg.text = content.body;
-    msg.html = content.formatted_body ?? content.body.replace("\n", "<br>");
+    msg.rawHTMLDangerous = content.formatted_body;
     return msg;
   }
 
-  async getEncryptedUserMessage(event): Promise<ChatMessage> {
+  async getEncryptedUserMessage(event): Promise<ChatMessage | null> {
     await this.account.client.decryptEventIfNeeded(event);
     return this.getUserMessage(event);
   }
@@ -45,7 +67,7 @@ export class MatrixChatRoom extends Chat {
     let person = this.account.getExistingPerson(senderUserID);
     assert(person, "Reaction: Sender not found: " + senderUserID);
     let data = event.event?.content["m.relates_to"];
-    assert(data.rel_type == "m.annotation", "Unknown reaction type " + data.rel_type);
+    assert(data?.rel_type == "m.annotation", "Unknown reaction type " + data?.rel_type);
     let emoji = data.key;
     let reactTo = this.messages.find(msg => msg.id == data.event_id);
     if (!reactTo) {
