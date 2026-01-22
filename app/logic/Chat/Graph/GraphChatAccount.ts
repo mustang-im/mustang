@@ -3,7 +3,7 @@ import type { GraphAccount } from '../../Mail/Graph/GraphAccount';
 import { GraphChatRoom } from './GraphChatRoom';
 import type { TGraphChat } from './TGraphChat';
 import type { Group } from '../../Abstract/Group';
-import type { ChatPerson } from '../Person';
+import type { ChatPerson } from '../ChatPerson';
 import { MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {

@@ -3,10 +3,9 @@ import type { XMPPChat } from './XMPPChat';
 import { XMPP1to1Chat } from './XMPP1to1Chat';
 import { XMPPGroupChat } from './XMPPGroupChat';
 import type { Group } from '../../Abstract/Group';
-import { ChatPerson } from '../Person';
-import { ContactEntry } from '../../Abstract/Person';
-import { appGlobal } from '../../app';
+import { ChatPerson } from '../ChatPerson';
 import { ConnectError } from '../../Abstract/Account';
+import { blobToDataURL } from '../../util/util';
 import { gt } from '../../../l10n/l10n';
 import { MapColl } from 'svelte-collections';
 import type * as XMPP from 'stanza';
@@ -18,6 +17,7 @@ export class XMPPAccount extends ChatAccount {
   client: XMPP.Agent;
   deviceID: string;
   jid: string;
+  static personsCache = new MapColl<string, ChatPerson>();
 
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
@@ -101,8 +101,7 @@ export class XMPPAccount extends ChatAccount {
   }
   getExistingPerson(jid: string) {
     jid = getJID(jid);
-    return this.roster.get(jid) ??
-      appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == jid));
+    return this.roster.get(jid) ?? XMPPAccount.personsCache.get(jid);
   }
   async getPerson(jid: string, name: string) {
     jid = getJID(jid);
@@ -110,26 +109,27 @@ export class XMPPAccount extends ChatAccount {
     if (existing) {
       return existing;
     }
-    let person = new ChatPerson();
-    person.chatAccounts.add(new ContactEntry(jid, "xmpp"));
     let info = await this.client.getAccountInfo(jid);
-    person.name = info.fullName ?? info.nick ?? name ?? jid;
+    let fullName = info.fullName ?? info.nick ?? name ?? jid;
+    let person = new ChatPerson("xmpp", jid, fullName);
+    /*
     person.firstName = info.givenName ?? '';
     person.lastName = info.familyName ?? '';
     if (info.email) {
-      person.chatAccounts.add(new ContactEntry(info.email, "other"));
+      person.emailAddress.add(new ContactEntry(info.email, "other"));
     }
     if (info.phone) {
       person.phoneNumbers.add(new ContactEntry(info.phone, "unknown"));
     }
     person.notes = info.text ?? '';
-    /*let avatar = await this.client.getAvatar(jid, 'pubsub');
+    */
+    let avatar = await this.client.getAvatar(jid, "pubsub");
     let avatarBuffer = avatar?.content?.data;
     if (avatarBuffer) {
       let blob = new Blob([avatarBuffer], { type: "image/png" });
-      person.picture = URL.createObjectURL(blob);
-      // Cannot save blobs to database. Use data URL? Don't save XMPP users?
-    }*/
+      person.picture = await blobToDataURL(blob);
+    }
+    XMPPAccount.personsCache.set(jid, person);
     this.roster.set(jid, person);
     return person;
   }

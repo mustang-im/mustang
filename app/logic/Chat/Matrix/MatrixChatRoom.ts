@@ -1,7 +1,7 @@
 import { Chat } from "../Chat";
 import type { MatrixAccount } from "./MatrixAccount";
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
-import { ChatPerson } from "../Person";
+import { ChatPerson } from "../ChatPerson";
 import { Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { Group } from "../../Abstract/Group";

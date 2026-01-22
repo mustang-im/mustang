@@ -1,5 +1,5 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
-import type { ChatPerson } from "./Person";
+import type { ChatPerson } from "./ChatPerson";
 import type { Group } from "../Abstract/Group";
 import { Chat } from "./Chat";
 import type { ChatMessage } from "./Message";

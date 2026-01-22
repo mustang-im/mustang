@@ -1,7 +1,6 @@
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
 import type { ChatAccount } from "./ChatAccount";
-import type { Contact } from "../Abstract/Contact";
-import type { ChatPerson } from "./Person";
+import type { ChatPerson } from "./ChatPerson";
 import { Group } from "../Abstract/Group";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
@@ -13,7 +12,7 @@ export class Chat extends Observable {
   dbID: number;
   account: ChatAccount;
   @notifyChangedProperty
-  contact: Contact;
+  contact: ChatContact;
   @notifyChangedProperty
   _name: string;
   /** The people in this chat room.
@@ -69,3 +68,5 @@ export class Chat extends Observable {
     return new ChatMessage(this);
   }
 }
+
+export type ChatContact = ChatPerson | Group;

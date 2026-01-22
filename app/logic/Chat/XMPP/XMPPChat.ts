@@ -2,8 +2,7 @@ import { Chat } from "../Chat";
 import { getJID, type XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { UserChatMessage, DeliveryStatus } from "../Message";
-import { ChatPerson } from "../Person";
-import { ContactBase } from "../../Abstract/Contact";
+import { ChatPerson } from "../ChatPerson";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
@@ -15,9 +14,7 @@ export class XMPPChat extends Chat {
     super(account);
     jid = getJID(jid);
     this.id = jid;
-    this.contact = new ChatPerson();
-    this.contact.id = jid;
-    this.contact.name = jid;
+    this.contact = new ChatPerson("xmpp", jid, jid);
     this.account.chats.set(this.contact, this);
   }
 
@@ -44,7 +41,7 @@ export class XMPPChat extends Chat {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: UserChatMessage) {
     const { JXT } = await import("stanza");
-    assert(message.contact instanceof ContactBase && message.contact.id, "Need contact with Jabber User ID");
+    assert(message.contact instanceof ChatPerson && message.contact.chatID && message.contact.protocol == "xmpp", "Need contact with Jabber User ID");
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
     //console.log("Sending", message.text, "to", this.name);

@@ -4,9 +4,7 @@ import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
-import { appGlobal } from '../../app';
-import { ChatPerson } from '../Person';
-import { ContactEntry } from '../../Abstract/Person';
+import { ChatPerson } from '../ChatPerson';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
 import { assert } from '../../util/util';
@@ -23,6 +21,8 @@ export class MatrixAccount extends ChatAccount {
   password: string;
   deviceID: string;
   globalUserID: string;
+  static personsCache = new MapColl<string, ChatPerson>();
+
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
@@ -115,22 +115,19 @@ export class MatrixAccount extends ChatAccount {
     return this.chats.find(chat => chat.id == roomID);
   }
   getExistingPerson(userId: string) {
-    return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId && acc.purpose == "matrix"));
+    return MatrixAccount.personsCache.get(userId);
   }
   getPerson(member: RoomMember): ChatPerson {
     let existing = this.getExistingPerson(member.userId);
     if (existing) {
       return existing;
     }
-    let person = new ChatPerson();
-    person.name = member.name;
-    person.id = member.userId;
-    person.chatAccounts.add(new ContactEntry(member.userId, "matrix"));
+    let person = new ChatPerson("matrix", member.userId, member.name);
     let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
     // let picMXC = member.getMxcAvatarUrl();
     // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
     person.picture = picURL;
-    //appGlobal.persons.add(person);
+    MatrixAccount.personsCache.set(member.userId, person);
     return person;
   }
   async createRoom(name: string) {
