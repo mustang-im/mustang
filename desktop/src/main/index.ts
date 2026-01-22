@@ -1,11 +1,9 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate } from '../../backend/backend';
 import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
-const { autoUpdater } = electronUpdater;
 
 function createWindow(): void {
   try {
@@ -121,8 +119,6 @@ if (gotLock) {
   // Event 'second-instance' will be called within the primary instance
 }
 
-let update: UpdateCheckResult | null = null;
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -153,15 +149,15 @@ async function whenReady() {
   })
 
   try {
-    update = await autoUpdater.checkForUpdatesAndNotify();
+    await checkForUpdateAndNotify();
     setInterval(async () => {
       try {
-        if (update?.updateInfo.version) {
+        if (updateState.haveUpdate) {
           console.log(`Already have update waiting.`);
           return; // `checkForUpdates()` downloads the update on every call
         }
         console.log("Routinely checking for app updates...");
-        update = await autoUpdater.checkForUpdatesAndNotify();
+        await checkForUpdateAndNotify();
       } catch (ex) {
         console.error(ex);
       }
@@ -183,11 +179,8 @@ app.on('window-all-closed', () => {
 });
 
 async function updateAndRestartNowIfNeeded() {
-  await update?.downloadPromise;
-  if (update?.updateInfo.version) {
-    autoUpdater.autoRunAppAfterInstall = true;
-    autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.quitAndInstall();
+  if (await updateState.updateDownloaded()) {
+    await installUpdate();
     // TODO restart after install, but open only a background window
   } // else do nothing
 }
