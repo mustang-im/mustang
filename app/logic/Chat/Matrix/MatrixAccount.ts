@@ -46,7 +46,7 @@ export class MatrixAccount extends ChatAccount {
         baseUrl: this.baseURL,
         userId: userID,
         deviceId: this.deviceID,
-      })
+      });
       assert(this.password, "need password");
       let loginResponse = await loginClient.loginRequest({
         type: "m.login.password",
@@ -67,6 +67,8 @@ export class MatrixAccount extends ChatAccount {
       accessToken: accessToken,
     });
     await this.client.initRustCrypto({ cryptoDatabasePrefix: this.id });
+    //let crypto = this.client.getCrypto();
+    //await crypto.requestOwnUserVerification();
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 
@@ -139,7 +141,7 @@ export class MatrixAccount extends ChatAccount {
     if (type == "m.room.message") {
       return chatRoom.getUserMessage(event);
     } else if (type == "m.room.redaction") {
-      chatRoom.redactMessage(event);
+      chatRoom.redactMessage(event, chatRoom);
       return null;
     } else if (type == "m.reaction") {
       chatRoom.getReaction(event);
@@ -155,7 +157,7 @@ export class MatrixAccount extends ChatAccount {
       type == "m.room.guest_access") {
       return null;
     } else {
-      return this.getGenericChatRoomEvent(event);
+      return this.getGenericChatRoomEvent(event, chatRoom);
     }
   }
   fillMessage(event, msg: ChatMessage): void {
@@ -165,8 +167,8 @@ export class MatrixAccount extends ChatAccount {
     msg.contact = this.getExistingPerson(senderUserID);
     msg.outgoing = senderUserID == this.globalUserID;
   }
-  getGenericChatRoomEvent(event): ChatMessage {
-    let msg = new ChatRoomEvent();
+  getGenericChatRoomEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
+    let msg = new ChatRoomEvent(chatRoom);
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);
     msg.text = json.substring(2, json.length - 2);
