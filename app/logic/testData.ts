@@ -373,20 +373,20 @@ export class FakeChatAccount extends ChatAccount {
     this.storage = new DummyChatStorage();
   }
   async login(interactive: boolean): Promise<void> {
-    await this.listChats();
+    await this.listRooms();
   }
-  async listChats(): Promise<void> {
-    if (this.chats.hasItems) {
+  async listRooms(): Promise<void> {
+    if (this.rooms.hasItems) {
       return;
     }
     for (let person of this.persons) {
-      let chat = this.newChat() as FakeChat;
-      chat.id = person.id + "-" + faker.string.uuid();
-      chat.contact = person;
-      this.chats.set(person, chat);
+      let room = this.newRoom() as FakeChat;
+      room.id = person.id + "-" + faker.string.uuid();
+      room.contact = person;
+      this.rooms.set(person, room);
     }
   }
-  newChat(): FakeChat {
+  newRoom(): FakeChat {
     return new FakeChat(this);
   }
 }

@@ -1,24 +1,24 @@
 <vbox flex class="pane">
-  {#if messages && chat }
-    <PersonHeader person={chat.contact} />
+  {#if messages && room }
+    <PersonHeader person={room.contact} />
     <vbox flex class="messages">
       <MessageList {messages}>
         <svelte:fragment slot="message" let:message let:previousMessage>
           {#if message instanceof UserChatMessage }
             <Message {message} {previousMessage} hideHeaderFollowup={true} />
           {:else if message instanceof ChatRoomEvent}
-            <ChatRoomEventUI {message} />
+            <RoomEventUI {message} />
           {/if}
           </svelte:fragment>
       </MessageList>
     </vbox>
     <vbox class="editor">
-      <MsgEditor to={chat} />
+      <MsgEditor to={room} />
     </vbox>
   {/if}
 </vbox>
 {#if $appGlobal.isMobile}
-  <ChatBarM />
+  <RoomBarM />
 {/if}
 
 <script lang="ts">
@@ -29,22 +29,22 @@
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
-  import ChatRoomEventUI from "./MessageView/ChatRoomEventUI.svelte";
+  import RoomEventUI from "./MessageView/RoomEventUI.svelte";
   import MsgEditor from "./MsgEditor.svelte";
   import PersonHeader from "./PersonHeader.svelte";
-  import ChatBarM from "./ChatBarM.svelte";
+  import RoomBarM from "./RoomBarM.svelte";
   import { catchErrors } from "../Util/error";
 
-  export let chat: ChatRoom;
+  export let room: ChatRoom;
 
   $: messages = $globalSearchTerm
-    ? chat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
-    : chat?.messages;
+    ? room?.messages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
+    : room?.messages;
 
-  $: chat && catchErrors(loadMessages)
+  $: room && catchErrors(loadMessages)
   async function loadMessages() {
-    await chat?.listMembers();
-    await chat?.listMessages();
+    await room?.listMembers();
+    await room?.listMessages();
   }
 </script>
 

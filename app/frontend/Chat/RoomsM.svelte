@@ -1,38 +1,38 @@
 <vbox flex class="pane">
   <Header bind:selectedAccount={$selectedAccount} {accounts} />
-  <ChatRoomList {chatRooms} bind:selectedChat={$selectedChat} {doSearch} />
+  <RoomList {rooms} bind:selectedRoom={$selectedRoom} {doSearch} />
 </vbox>
 {#if $appGlobal.isMobile}
-  <ChatsBarM />
+  <RoomsBarM />
 {/if}
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { selectedAccount, selectedChat } from "./selected";
+  import { selectedAccount, selectedRoom } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { appGlobal } from "../../logic/app";
   import Header from "./Header.svelte";
-  import ChatRoomList from "./ChatRoomList.svelte";
-  import ChatsBarM from "./ChatsBarM.svelte";
+  import RoomList from "./RoomList.svelte";
+  import RoomsBarM from "./RoomsBarM.svelte";
   import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";
 
   export let doSearch = false;
 
   $: accounts = appGlobal.chatAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
-  $: chatRooms = $selectedAccount ? $selectedAccount.chats : mergeColls(accounts.map(a => a.chats));
+  $: rooms = $selectedAccount ? $selectedAccount.rooms : mergeColls(accounts.map(a => a.rooms));
 
   onMount(() => {
-    $selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);
+    $selectedRoom = $selectedPerson && rooms.find(room => room.contact == $selectedPerson);
   });
-  $: if ($selectedChat?.contact instanceof Person) {
-    $selectedPerson = $selectedChat.contact;
+  $: if ($selectedRoom?.contact instanceof Person) {
+    $selectedPerson = $selectedRoom.contact;
   }
-  $: chatRooms, clearSelectedChat()
-  function clearSelectedChat() {
-    if (!chatRooms.contains($selectedChat)) {
-      $selectedChat = chatRooms.last;
+  $: rooms, clearSelectedRoom()
+  function clearSelectedRoom() {
+    if (!rooms.contains($selectedRoom)) {
+      $selectedRoom = rooms.last;
     }
   }
 </script>

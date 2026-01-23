@@ -12,7 +12,7 @@ import type * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
-  readonly chats = new MapColl<ChatPerson | Group, XMPPChat>;
+  readonly rooms = new MapColl<ChatPerson | Group, XMPPChat>;
   readonly roster = new MapColl<string, ChatPerson>();
   client: XMPP.Agent;
   deviceID: string;
@@ -78,7 +78,7 @@ export class XMPPAccount extends ChatAccount {
     //Promise.all(allRooms.map(room => this.getNewGroupChat(room)));
   }
   async getNewGroupRoom(jid: string): Promise<XMPPChat | null> {
-    if (this.chats.find(chat => chat.id == jid)) {
+    if (this.rooms.find(room => room.id == jid)) {
       return null;
     }
     let chatRoom = new XMPPGroupChat(this, jid);
@@ -88,7 +88,7 @@ export class XMPPAccount extends ChatAccount {
   }
   async getNew1to1Chat(jid: string): Promise<XMPPChat | null> {
     jid = getJID(jid);
-    if (this.chats.find(chat => chat.id == jid)) {
+    if (this.rooms.find(room => room.id == jid)) {
       return null;
     }
     let chatRoom = new XMPP1to1Chat(this, jid);
@@ -97,7 +97,7 @@ export class XMPPAccount extends ChatAccount {
   }
   getExistingChat(roomID: string): XMPPChat {
     roomID = getJID(roomID);
-    return this.chats.find(chat => chat.id == roomID);
+    return this.rooms.find(room => room.id == roomID);
   }
   getExistingPerson(jid: string) {
     jid = getJID(jid);

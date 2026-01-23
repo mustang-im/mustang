@@ -1,14 +1,14 @@
 <vbox class="chat-rooms" flex>
-  <PersonsList persons={chatRooms} bind:selected={selectedChat} {doSearch}
-    sortBy={chat => -chat.lastMessage?.sent}>
-    <hbox slot="top-right" class="last-time" let:person={chatRoom}>
-      {#if chatRoom instanceof ChatRoom && chatRoom.lastMessage}
-        {getDateTimeString(chatRoom.lastMessage.sent)}
+  <PersonsList persons={rooms} bind:selected={selectedRoom} {doSearch}
+    sortBy={room => -room.lastMessage?.sent}>
+    <hbox slot="top-right" class="last-time" let:person={room}>
+      {#if room instanceof ChatRoom && room.lastMessage}
+        {getDateTimeString(room.lastMessage.sent)}
       {/if}
     </hbox>
-    <hbox slot="second-row" flex class="last-msg font-smallest" let:person={chatRoom}>
-      {#if chatRoom instanceof ChatRoom && chatRoom.lastMessage}
-        {chatRoom.lastMessage.text?.substring(0, 50)}
+    <hbox slot="second-row" flex class="last-msg font-smallest" let:person={room}>
+      {#if room instanceof ChatRoom && room.lastMessage}
+        {room.lastMessage.text?.substring(0, 50)}
       {/if}
     </hbox>
   </PersonsList>
@@ -20,8 +20,8 @@
   import { getDateTimeString } from "../Util/date";
   import type { Collection } from "svelte-collections";
 
-  export let chatRooms: Collection<ChatRoom>;
-  export let selectedChat: ChatRoom;
+  export let rooms: Collection<ChatRoom>;
+  export let selectedRoom: ChatRoom;
   export let doSearch = false;
 </script>
 

@@ -1,6 +1,6 @@
 import { ChatRoom } from "../ChatRoom";
 import type { ChatAccount } from "../ChatAccount";
-import { Account } from "../../Abstract/Account";
+import type { Account } from "../../Abstract/Account";
 import { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
 import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
@@ -12,7 +12,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLChat extends ChatRoom {
+export class SQLChatRoom extends ChatRoom {
   static async save(chat: ChatRoom) {
     assert(chat.account, "Need chat account to save chat");
     assert(chat.account?.dbID, "Need chat account DB ID to save chat");
@@ -101,18 +101,18 @@ export class SQLChat extends ChatRoom {
     let newChats = new ArrayColl<ChatRoom>();
     for (let row of rows) {
       try {
-        let chat = account.chats.find(chat => chat.dbID == row.id);
+        let chat = account.rooms.find(chat => chat.dbID == row.id);
         if (chat) {
-          await SQLChat.read(row.id, chat); // TODO needed?
+          await SQLChatRoom.read(row.id, chat); // TODO needed?
         } else {
-          chat = account.newChat();
-          await SQLChat.read(row.id, chat, row);
+          chat = account.newRoom();
+          await SQLChatRoom.read(row.id, chat, row);
           newChats.add(chat);
         }
       } catch (ex) {
         account.errorCallback(ex);
       }
     }
-    account.chats.addAll(newChats);
+    account.rooms.addAll(newChats);
   }
 }

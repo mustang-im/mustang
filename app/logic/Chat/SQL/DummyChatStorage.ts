@@ -10,7 +10,7 @@ export class DummyChatStorage implements ChatAccountStorage {
   }
   async saveMessage(message: ChatMessage): Promise<void> {
   }
-  async saveChat(chat: ChatRoom): Promise<void> {
+  async saveRoom(chat: ChatRoom): Promise<void> {
   }
   static async readChatAccounts(): Promise<Collection<ChatAccount>> {
     return new ArrayColl<ChatAccount>();

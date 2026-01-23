@@ -14,7 +14,7 @@ import type { MatrixCall, Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
-  readonly chats = new MapColl<MatrixPerson | Group, MatrixRoom>;
+  readonly rooms = new MapColl<MatrixPerson | Group, MatrixRoom>;
   client: MatrixClient;
   baseURL = "https://matrix.org";
   username: string;
@@ -72,7 +72,7 @@ export class MatrixAccount extends ChatAccount {
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 
-    await this.getRooms();
+    await this.listRooms(); // TODO Don't wait for it
     this.listenToRoomMessages();
   };
   async waitForEvent(eventName: string) {
@@ -80,9 +80,10 @@ export class MatrixAccount extends ChatAccount {
       this.client.once(eventName as any, (...results) => resolve(results));
     });
   }
-  async getRooms() {
+  async listRooms(): Promise<void> {
+    // await super.listRooms(); TODO merge fresh list from server with old
     let allRooms = await this.client.getRooms();
-    Promise.all(allRooms.map(room => this.getNewRoom(room)));
+    await Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
   async getRoom(room: Room): Promise<MatrixRoom> {
     return this.getExistingRoom(room.roomId) ?? await this.getNewRoom(room);
@@ -102,7 +103,7 @@ export class MatrixAccount extends ChatAccount {
     chatRoom.contact = others.length > 1
       ? group
       : others.first ?? group.participants.first;
-    this.chats.set(chatRoom.contact, chatRoom);
+    this.rooms.set(chatRoom.contact, chatRoom);
 
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
@@ -118,7 +119,7 @@ export class MatrixAccount extends ChatAccount {
     return chatRoom;
   }
   getExistingRoom(roomID: string): MatrixRoom {
-    return this.chats.find(chat => chat.id == roomID);
+    return this.rooms.find(chat => chat.id == roomID);
   }
   getExistingPerson(userId: string) {
     return MatrixAccount.personsCache.get(userId);

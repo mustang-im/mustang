@@ -6,6 +6,16 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
 import { ArrayColl } from 'svelte-collections';
 
+/**
+ * Conversation between 2 or more people.
+ * Can be a 1:1 with a single other person, or with a group of people.
+ *
+ * Called, in various systems:
+ * - "chat" (WhatsApp 1:1, Teams 1:1)
+ * - "group" (WhatsApp 1:n)
+ * - "room" (Matrix)
+ * - "channel" (IRC, Teams, Slack)
+ */
 export class ChatRoom extends Observable {
   /** Protocol-specific ID. For Matrix, it's the event_id */
   id: string;
@@ -79,7 +89,7 @@ export class ChatRoom extends Observable {
   }
 
   async save(): Promise<void> {
-    await this.account.storage.saveChat(this);
+    await this.account.storage.saveRoom(this);
   }
 }
 

@@ -15,7 +15,7 @@ export class XMPPChat extends ChatRoom {
     jid = getJID(jid);
     this.id = jid;
     this.contact = new ChatPerson("xmpp", jid, jid);
-    this.account.chats.set(this.contact, this);
+    this.account.rooms.set(this.contact, this);
   }
 
   addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage | null {

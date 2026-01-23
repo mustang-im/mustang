@@ -18,10 +18,5 @@
 
 <script lang="ts">
   import AppBarM from "../AppsBar/AppBarM.svelte";
-  import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
-  import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import { t } from "../../l10n/l10n";
-
-  let isMenuOpen = false;
 </script>

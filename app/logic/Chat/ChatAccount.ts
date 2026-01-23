@@ -3,7 +3,7 @@ import type { ChatPerson } from "./ChatPerson";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
 import type { ChatMessage } from "./Message";
-import { SQLChat } from "./SQL/SQLChat";
+import { SQLChatRoom } from "./SQL/SQLChatRoom";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
@@ -14,21 +14,21 @@ export class ChatAccount extends TCPAccount {
   storage: ChatAccountStorage;
 
   readonly persons = new ArrayColl<ChatPerson>();
-  readonly chats = new MapColl<ChatPerson | Group, ChatRoom>;
+  readonly rooms = new MapColl<ChatPerson | Group, ChatRoom>;
 
   @notifyChangedProperty
   isOnline = false;
 
-  async listChats(): Promise<void> {
+  async listRooms(): Promise<void> {
     if (!this.dbID) {
       await this.save();
     }
-    if (this.chats.isEmpty) {
-      SQLChat.readAll(this);
+    if (this.rooms.isEmpty) {
+      SQLChatRoom.readAll(this);
     }
   }
 
-  newChat(): ChatRoom {
+  newRoom(): ChatRoom {
     return new ChatRoom(this);
   }
 
@@ -52,7 +52,7 @@ export class ChatAccount extends TCPAccount {
 
 export interface ChatAccountStorage {
   saveMessage(message: ChatMessage): Promise<void>;
-  saveChat(chat: ChatRoom): Promise<void>;
+  saveRoom(room: ChatRoom): Promise<void>;
   saveAccount(account: ChatAccount): Promise<void>;
   deleteAccount(account: ChatAccount): Promise<void>;
 }
