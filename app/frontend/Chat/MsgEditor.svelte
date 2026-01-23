@@ -30,7 +30,7 @@
 </FileDropTarget>
 
 <script lang="ts">
-  import type { Chat } from "../../logic/Chat/Chat";
+  import type { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { Attachment } from "../../logic/Abstract/Attachment";
   import { insertImage } from "../Shared/Editor/InsertImage";
@@ -44,7 +44,7 @@
   import type { Editor } from '@tiptap/core';
   import { ArrayColl } from "svelte-collections";
 
-  export let to: Chat;
+  export let to: ChatRoom;
 
   let editor: Editor;
 

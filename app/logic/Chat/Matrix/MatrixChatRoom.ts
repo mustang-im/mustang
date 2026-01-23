@@ -1,4 +1,4 @@
-import { Chat } from "../Chat";
+import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
 import { ChatPerson } from "../ChatPerson";
@@ -7,7 +7,7 @@ import { Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class MatrixChatRoom extends Chat {
+export class MatrixChatRoom extends ChatRoom {
   declare account: MatrixAccount;
   constructor(account: MatrixAccount) {
     super(account);

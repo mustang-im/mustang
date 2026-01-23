@@ -1,7 +1,7 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
 import type { ChatPerson } from "./ChatPerson";
 import type { Group } from "../Abstract/Group";
-import { Chat } from "./Chat";
+import { ChatRoom } from "./ChatRoom";
 import type { ChatMessage } from "./Message";
 import { SQLChat } from "./SQL/SQLChat";
 import { appGlobal } from "../app";
@@ -14,7 +14,7 @@ export class ChatAccount extends TCPAccount {
   storage: ChatAccountStorage;
 
   readonly persons = new ArrayColl<ChatPerson>();
-  readonly chats = new MapColl<ChatPerson | Group, Chat>;
+  readonly chats = new MapColl<ChatPerson | Group, ChatRoom>;
 
   @notifyChangedProperty
   isOnline = false;
@@ -28,8 +28,8 @@ export class ChatAccount extends TCPAccount {
     }
   }
 
-  newChat(): Chat {
-    return new Chat(this);
+  newChat(): ChatRoom {
+    return new ChatRoom(this);
   }
 
   async save(): Promise<void> {
@@ -52,7 +52,7 @@ export class ChatAccount extends TCPAccount {
 
 export interface ChatAccountStorage {
   saveMessage(message: ChatMessage): Promise<void>;
-  saveChat(chat: Chat): Promise<void>;
+  saveChat(chat: ChatRoom): Promise<void>;
   saveAccount(account: ChatAccount): Promise<void>;
   deleteAccount(account: ChatAccount): Promise<void>;
 }

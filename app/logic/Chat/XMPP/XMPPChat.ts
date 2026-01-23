@@ -1,4 +1,4 @@
-import { Chat } from "../Chat";
+import { ChatRoom } from "../ChatRoom";
 import { getJID, type XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { UserChatMessage, DeliveryStatus } from "../Message";
@@ -7,7 +7,7 @@ import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
 
-export class XMPPChat extends Chat {
+export class XMPPChat extends ChatRoom {
   declare account: XMPPAccount;
   lastMessage: XMPPChatMessage;
   constructor(account: XMPPAccount, jid: string) {

@@ -2,12 +2,12 @@
   <PersonsList persons={chatRooms} bind:selected={selectedChat} {doSearch}
     sortBy={chat => -chat.lastMessage?.sent}>
     <hbox slot="top-right" class="last-time" let:person={chatRoom}>
-      {#if chatRoom instanceof Chat && chatRoom.lastMessage}
+      {#if chatRoom instanceof ChatRoom && chatRoom.lastMessage}
         {getDateTimeString(chatRoom.lastMessage.sent)}
       {/if}
     </hbox>
     <hbox slot="second-row" flex class="last-msg font-smallest" let:person={chatRoom}>
-      {#if chatRoom instanceof Chat && chatRoom.lastMessage}
+      {#if chatRoom instanceof ChatRoom && chatRoom.lastMessage}
         {chatRoom.lastMessage.text?.substring(0, 50)}
       {/if}
     </hbox>
@@ -15,13 +15,13 @@
 </vbox>
 
 <script lang="ts">
-  import { Chat } from "../../logic/Chat/Chat";
+  import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import { getDateTimeString } from "../Util/date";
   import type { Collection } from "svelte-collections";
 
-  export let chatRooms: Collection<Chat>;
-  export let selectedChat: Chat;
+  export let chatRooms: Collection<ChatRoom>;
+  export let selectedChat: ChatRoom;
   export let doSearch = false;
 </script>
 

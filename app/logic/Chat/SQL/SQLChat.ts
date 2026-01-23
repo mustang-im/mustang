@@ -1,4 +1,4 @@
-import { Chat } from "../Chat";
+import { ChatRoom } from "../ChatRoom";
 import type { ChatAccount } from "../ChatAccount";
 import { Account } from "../../Abstract/Account";
 import { Person } from "../../Abstract/Person";
@@ -12,8 +12,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLChat extends Chat {
-  static async save(chat: Chat) {
+export class SQLChat extends ChatRoom {
+  static async save(chat: ChatRoom) {
     assert(chat.account, "Need chat account to save chat");
     assert(chat.account?.dbID, "Need chat account DB ID to save chat");
     if (!chat.contact.dbID) {
@@ -58,7 +58,7 @@ export class SQLChat extends Chat {
   }
 
   /** Also deletes all messages in this chat */
-  static async deleteIt(chat: Chat) {
+  static async deleteIt(chat: ChatRoom) {
     assert(chat.dbID, "Need chat DB ID to delete");
     await (await getDatabase()).run(sql`
       DELETE FROM chat
@@ -66,7 +66,7 @@ export class SQLChat extends Chat {
       `);
   }
 
-  static async read(dbID: number, chat: Chat, row?: any): Promise<Chat> {
+  static async read(dbID: number, chat: ChatRoom, row?: any): Promise<ChatRoom> {
     assert(dbID, "Need message DB ID to read it");
     if (!row) {
       row = await (await getDatabase()).get(sql`
@@ -98,7 +98,7 @@ export class SQLChat extends Chat {
       FROM chat
       WHERE accountID = ${account.dbID}
       `) as any;
-    let newChats = new ArrayColl<Chat>();
+    let newChats = new ArrayColl<ChatRoom>();
     for (let row of rows) {
       try {
         let chat = account.chats.find(chat => chat.dbID == row.id);

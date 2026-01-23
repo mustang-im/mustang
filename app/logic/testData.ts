@@ -8,7 +8,7 @@ import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
 import { StreetAddress } from './Contacts/StreetAddress';
-import { Chat } from './Chat/Chat';
+import { ChatRoom } from './Chat/ChatRoom';
 import { FileSharingAccount } from './Files/FileSharingAccount';
 import type { File } from './Files/File';
 import { Directory } from './Files/Directory';
@@ -391,7 +391,7 @@ export class FakeChatAccount extends ChatAccount {
   }
 }
 
-class FakeChat extends Chat {
+class FakeChat extends ChatRoom {
   constructor(account: FakeChatAccount) {
     super(account);
   }

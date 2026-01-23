@@ -22,7 +22,7 @@
 {/if}
 
 <script lang="ts">
-  import { Chat } from "../../logic/Chat/Chat";
+  import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedChat } from "./selected";
   import { appGlobal } from "../../logic/app";
@@ -36,7 +36,7 @@
   $: location = useLocation();
   $: params = getParams($location.state);
 
-  function findChatForPerson(person: Person): Chat | null {
+  function findChatForPerson(person: Person): ChatRoom | null {
     if (!person) {
       return null;
     }

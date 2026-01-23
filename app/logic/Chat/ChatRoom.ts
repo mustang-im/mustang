@@ -6,7 +6,7 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
 import { ArrayColl } from 'svelte-collections';
 
-export class Chat extends Observable {
+export class ChatRoom extends Observable {
   /** Protocol-specific ID. For Matrix, it's the event_id */
   id: string;
   dbID: number;

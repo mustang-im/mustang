@@ -1,5 +1,5 @@
 import type { ChatMessage } from "../Message";
-import type { Chat } from "../Chat";
+import type { ChatRoom } from "../ChatRoom";
 import type { Person } from "../../Abstract/Person";
 import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
 import { getDatabase } from "./SQLDatabase";
@@ -138,7 +138,7 @@ export class SQLChatMessage {
       `);
   }
 
-  static async readAll(chat: Chat): Promise<void> {
+  static async readAll(chat: ChatRoom): Promise<void> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id,

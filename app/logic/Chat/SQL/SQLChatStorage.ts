@@ -1,6 +1,6 @@
 import { SQLChatAccount } from "./SQLChatAccount";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
-import type { Chat } from "../Chat";
+import type { ChatRoom } from "../ChatRoom";
 import { SQLChat } from "./SQLChat";
 import type { ChatMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
@@ -16,7 +16,7 @@ export class SQLChatStorage implements ChatAccountStorage {
   async saveMessage(message: ChatMessage): Promise<void> {
     await SQLChatMessage.save(message);
   }
-  async saveChat(chat: Chat): Promise<void> {
+  async saveChat(chat: ChatRoom): Promise<void> {
     await SQLChat.save(chat);
   }
 

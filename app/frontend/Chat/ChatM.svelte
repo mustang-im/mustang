@@ -22,7 +22,7 @@
 {/if}
 
 <script lang="ts">
-  import { Chat } from "../../logic/Chat/Chat";
+  import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
@@ -35,7 +35,7 @@
   import ChatBarM from "./ChatBarM.svelte";
   import { catchErrors } from "../Util/error";
 
-  export let chat: Chat;
+  export let chat: ChatRoom;
 
   $: messages = $globalSearchTerm
     ? chat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
