@@ -118,7 +118,7 @@ export class MatrixChatRoom extends Chat {
         `</span>`;
       return msg;
     } else {
-      return this.account.getGenericChatRoomEvent(event);
+      return this.account.getShowRawChatRoomEvent(event);
     }
   }
 

@@ -11,6 +11,7 @@ import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
 import type { MatrixClient } from 'matrix-js-sdk';
 import type { MatrixCall, Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
+import { convertTextToHTML, sanitizeHTML } from '../../util/convertHTML';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -150,14 +151,29 @@ export class MatrixAccount extends ChatAccount {
       return await chatRoom.getEncryptedUserMessage(event);
     } else if (type == "m.room.member") {
       return chatRoom.getJoinLeaveInviteEvent(event);
+    } else if (type == "m.room.name") {
+      chatRoom.name = sanitize.nonemptylabel(event.name);
+      await chatRoom.save();
+      return null;
+    } else if (type == "m.room.topic") {
+      let textNode = event["@m.topic"]?.["@m.text"];
+      console.log("Room topic", event.topic, "node", textNode);
+      chatRoom.descriptionHTML =
+        textNode?.mimetype?.startsWith("text/html")
+        ? sanitizeHTML(textNode.body)
+        : convertTextToHTML(sanitize.nonemptystring(event.topic));
+      await chatRoom.save();
+      return null;
     } else if (type == "m.room.power_levels" ||
       type == "m.room.encryption" ||
       type == "m.room.join_rules" ||
+      type == "m.room.server_acl" ||
+      type == "m.room.third_party_invite" ||
       type == "m.room.history_visibility" ||
       type == "m.room.guest_access") {
       return null;
     } else {
-      return this.getGenericChatRoomEvent(event, chatRoom);
+      return this.getShowRawChatRoomEvent(event, chatRoom);
     }
   }
   fillMessage(event, msg: ChatMessage): void {
@@ -167,7 +183,7 @@ export class MatrixAccount extends ChatAccount {
     msg.contact = this.getExistingPerson(senderUserID);
     msg.outgoing = senderUserID == this.globalUserID;
   }
-  getGenericChatRoomEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
+  getShowRawChatRoomEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
     let msg = new ChatRoomEvent(chatRoom);
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);

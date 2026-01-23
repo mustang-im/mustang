@@ -11,10 +11,20 @@ export class Chat extends Observable {
   id: string;
   dbID: number;
   account: ChatAccount;
+  /** If `contact` is a `Group`, then this is a chat room with multiple people.
+   * If `contact` is a `ChatPerson` or `Person`, this is a 1:1 conversation
+   * between our user and one other person/account. */
   @notifyChangedProperty
   contact: ChatContact;
+  /** Chat room name/title. Only used for Groups.
+   * For 1:1 conversations, this is the name of the other person. */
   @notifyChangedProperty
   _name: string;
+  /** For groups, this is a longer description of the room's purpose and scope.
+   * It may contain URLs to resources which new members should read first.
+   * Contains sanitized HTML. Must be sanitized *before* setting it here. */
+  @notifyChangedProperty
+  descriptionHTML: string;
   /** The people in this chat room.
    * If this is a 1:1 chat, contains only 1.
    * Not including our own user. */
@@ -66,6 +76,10 @@ export class Chat extends Observable {
 
   newMessage(): ChatMessage {
     return new ChatMessage(this);
+  }
+
+  async save(): Promise<void> {
+    await this.account.storage.saveChat(this);
   }
 }
 
