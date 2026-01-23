@@ -1,8 +1,8 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdate, installUpdate } from '../../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../../backend/backend';
 import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater from 'electron-updater';
+import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
@@ -97,6 +97,8 @@ if (gotLock) {
   // Event 'second-instance' will be called within the primary instance
 }
 
+let update: UpdateCheckResult | null = null;
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -126,15 +128,15 @@ async function whenReady() {
   })
 
   try {
-    await autoUpdater.checkForUpdatesAndNotify();
+    update = await autoUpdater.checkForUpdatesAndNotify();
     setInterval(async () => {
       try {
-        if (["checking", "downloading"].includes(updateState.state)) {
+        if (update?.updateInfo.version) {
           console.log(`Already have update waiting.`);
           return; // `checkForUpdates()` downloads the update on every call
         }
         console.log("Routinely checking for app updates...");
-        await autoUpdater.checkForUpdatesAndNotify();
+        update = await autoUpdater.checkForUpdatesAndNotify();
       } catch (ex) {
         console.error(ex);
       }
@@ -156,40 +158,14 @@ app.on('window-all-closed', () => {
 });
 
 async function updateAndRestartNowIfNeeded() {
-  let haveUpdate = await checkForUpdate();
-  if (haveUpdate) {
-    await installUpdate();
+  await update?.downloadPromise;
+  if (update?.updateInfo.version) {
+    autoUpdater.autoRunAppAfterInstall = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.quitAndInstall();
     // TODO restart after install, but open only a background window
   } // else do nothing
 }
-
-function listenForUpdates() {
-  autoUpdater.on('checking-for-update', () => {
-    updateState.state = "checking";
-    updateState.error = null;
-  });
-
-  autoUpdater.on('update-available', () => {
-    updateState.state = "downloading";
-    updateState.error = null;
-  });
-
-  autoUpdater.on('update-downloaded', () => {
-    updateState.state = "downloaded";
-    updateState.error = null;
-  });
-
-  autoUpdater.on('update-not-available', () => {
-    updateState.state = "idle";
-    updateState.error = null;
-  });
-
-  autoUpdater.on('error', (err) => {
-    updateState.state = "error";
-    updateState.error = err;
-  });
-}
-listenForUpdates();
 
 // macOS: Capture URL during launch
 app.on("open-url", (_event, url) => {
