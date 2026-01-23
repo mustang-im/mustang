@@ -307,7 +307,7 @@ class UpdateState {
   update: UpdateCheckResult | null = null;
 
   get haveUpdate(): boolean {
-    return !!this.update?.updateInfo;
+    return !!this.update?.isUpdateAvailable;
   }
 
   async updateDownloaded(): Promise<boolean> {
@@ -320,16 +320,16 @@ export const updateState = new UpdateState();
 const checkForUpdateRunOnce = new RunOnce<boolean>();
 /** @returns have update */
 async function checkForUpdate(): Promise<boolean> {
+  if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    if (updateState.haveUpdate) return true;
     updateState.update = await autoUpdater.checkForUpdates();
     return updateState.haveUpdate;
   });
 }
 
 export async function checkForUpdateAndNotify(): Promise<boolean> {
+  if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    if (updateState.haveUpdate) return true;
     updateState.update = await autoUpdater.checkForUpdatesAndNotify();
     return updateState.haveUpdate;
   });
@@ -339,7 +339,7 @@ export async function installUpdate() {
   if (!await updateState.updateDownloaded()) {
     throw new Error("No update downloaded");
   }
-  autoUpdater.quitAndInstall();
+  autoUpdater.quitAndInstall(true, true);
 }
 
 function setTheme(theme: "system" | "light" | "dark") {
