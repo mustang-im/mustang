@@ -1,12 +1,13 @@
 import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
+import { MatrixPerson } from "./MatrixPerson";
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
 import { Group } from "../../Abstract/Group";
 import { ChatRoomEvent, Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { MatrixPerson } from "./MatrixPerson";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
+import type { MatrixEvent } from "matrix-js-sdk";
 
 export class MatrixRoom extends ChatRoom {
   declare account: MatrixAccount;
@@ -99,8 +100,22 @@ export class MatrixRoom extends ChatRoom {
     return msg;
   }
 
-  async getEncryptedUserMessage(event): Promise<ChatMessage | null> {
-    await this.account.client.decryptEventIfNeeded(event);
+  async getEncryptedUserMessage(event: MatrixEvent): Promise<ChatMessage | null> {
+    try {
+      await this.account.client.decryptEventIfNeeded(event);
+    } catch (ex) {
+      console.log("decryption failed with error code", ex.code, ex);
+      if (ex.code == "MEGOLM_UNKNOWN_INBOUND_SESSION_ID") {
+        // decryptEventIfNeeded() automatically requests the key, but doesn't wait for it
+        console.log("Room key missing, waiting for it");
+        await this.account.waitForEventMatching("crypto.room_key_received", (keyEvent: MatrixEvent) =>
+          keyEvent.getRoomId() == event.getRoomId());
+        console.log("Room key received, decrypting now");
+        await this.account.client.decryptEventIfNeeded(event);
+      } else {
+        throw ex;
+      }
+    }
     return this.getUserMessage(event);
   }
 

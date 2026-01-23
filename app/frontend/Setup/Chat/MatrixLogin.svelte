@@ -26,11 +26,12 @@
 <script lang="ts">
   import type { MatrixAccount } from "../../../logic/Chat/Matrix/MatrixAccount";
   import { appGlobal } from "../../../logic/app";
+  import MatrixVerify from "./MatrixVerify.svelte";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { t } from "../../../l10n/l10n";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { t } from "../../../l10n/l10n";
 
   /** in/out */
   export let config: MatrixAccount;
@@ -60,11 +61,12 @@
     try {
       error = null;
       config.password = password;
-      await config.login(true);
-      await config.save();
-      appGlobal.chatAccounts.add(config);
+      config.deleteAllKeys();
+      await config.loginOnly(true);
       showPage = null;
+      //showPage = MatrixVerify;
     } catch (ex) {
+      config.deleteAllKeys();
       error = ex;
     }
   }

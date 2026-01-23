@@ -1,4 +1,4 @@
-<div class="error">
+<div class="error value">
   {console.error(ex), logError(ex), ""}
   {ex.message ?? ex + ""}
 </div>

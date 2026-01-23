@@ -10,7 +10,7 @@ import { appName } from '../../build';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
 import type { MatrixClient } from 'matrix-js-sdk';
-import type { MatrixCall, Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
+import type { MatrixCall, MatrixEvent, Room, RoomMember, UIAuthCallback } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -23,10 +23,7 @@ export class MatrixAccount extends ChatAccount {
   globalUserID: string;
   static personsCache = new MapColl<string, MatrixPerson>();
 
-  /** Login to this account on the server. Opens network connection.
-   * You must call this after creating the object and having set its properties.
-   * This will populate `persons` and `chats`. */
-  async login(interactive: boolean) {
+  async loginOnly(interactive: boolean) {
     super.login(interactive);
     let accessToken: string;
     if (this.mainAccount?.oAuth2) {
@@ -65,21 +62,51 @@ export class MatrixAccount extends ChatAccount {
       userId: userID,
       deviceId: this.deviceID,
       accessToken: accessToken,
+      cryptoCallbacks: {
+        // getSecretStorageKey: async ({ keys }) => {}, TODO
+        // cacheSecretStorageKey: (keyId, keyInfo, key) => {},
+      },
     });
     await this.client.initRustCrypto({ cryptoDatabasePrefix: this.id });
+  }
+  /** Login to this account on the server. Opens network connection.
+   * You must call this after creating the object and having set its properties.
+   * This will populate `persons` and `chats`. */
+  async login(interactive: boolean) {
+    await this.loginOnly(interactive);
     //let crypto = this.client.getCrypto();
     //await crypto.requestOwnUserVerification();
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 
-    await this.listRooms(); // TODO Don't wait for it
+    this.listRooms()
+      .catch(this.errorCallback);
     this.listenToRoomMessages();
   };
-  async waitForEvent(eventName: string) {
-    await new Promise((resolve, reject) => {
-      this.client.once(eventName as any, (...results) => resolve(results));
+
+  /** Call this only once after setup
+   * TODO need to implement `getSecretStorageKey()` first */
+  async cryptoSetup() {
+    let crypto = this.client.getCrypto();
+    await crypto.bootstrapCrossSigning({
+      authUploadDeviceSigningKeys: async (makeRequest: UIAuthCallback) => {
+        return makeRequest({
+          // <copied from="loginBase()">
+          type: "m.login.password",
+          password: this.password,
+          identifier: {
+            type: "m.id.user",
+            user: this.username,
+          },
+          device_id: this.deviceID,
+          initial_device_display_name: appName,
+          // </copied>
+        });
+      },
     });
-  }
+    //await crypto.requestOwnUserVerification();
+  };
+
   async listRooms(): Promise<void> {
     // await super.listRooms(); TODO merge fresh list from server with old
     let allRooms = await this.client.getRooms();
@@ -181,6 +208,23 @@ export class MatrixAccount extends ChatAccount {
     }
   }
 
+  async waitForEvent(eventName: string): Promise<any> {
+    await new Promise((resolve, reject) => {
+      this.client.once(eventName as any, (...results) => resolve(results));
+    });
+  }
+
+  async waitForEventMatching(eventName: string, matches: ((event: MatrixEvent) => boolean)): Promise<MatrixEvent> {
+    return await new Promise((resolve, reject) => {
+      this.client.on(eventName as any, (event: MatrixEvent) => {
+        if (!matches(event)) {
+          return;
+        }
+        resolve(event);
+      });
+    });
+  }
+
   get isLoggedIn() {
     return !!this.client;
   }
@@ -192,7 +236,11 @@ export class MatrixAccount extends ChatAccount {
   }
 
   async deleteIt(): Promise<void> {
+    await this.deleteAllKeys();
     await super.deleteIt();
+  }
+
+  async deleteAllKeys(): Promise<void> {
     indexedDB.deleteDatabase(this.id + "::matrix-sdk-crypto");
   }
 
