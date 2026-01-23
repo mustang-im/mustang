@@ -621,7 +621,7 @@ function directory(type: string): string {
   return app.getPath(type as any);
 }
 
-const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"
+const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula" or "MustangDev"
 
 /**
  * Get the user config directory on disk.

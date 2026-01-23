@@ -8,6 +8,8 @@ import { URLPart } from "../../../frontend/Util/util";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
+/** Implements the Autoconfig protocol
+ * <https://www.ietf.org/archive/id/draft-ietf-mailmaint-autoconfig-04.html> */
 export async function fetchConfig(domain: string, emailAddress: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
 

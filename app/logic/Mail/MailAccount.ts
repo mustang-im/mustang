@@ -224,7 +224,7 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
   return null;
 }
 
-export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "harddisk" | "builtin" | null;
 
 export interface MailAccountStorage {
   saveAccount(account: MailAccount): Promise<void>;
