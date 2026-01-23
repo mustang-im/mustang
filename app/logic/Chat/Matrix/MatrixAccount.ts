@@ -1,28 +1,27 @@
 import { ChatAccount } from '../ChatAccount';
-import { MatrixChatRoom } from './MatrixChatRoom';
+import { MatrixRoom } from './MatrixRoom';
 import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
-import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
-import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
+import { UserChatMessage } from '../Message';
+import { IncomingCall } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
-import { ChatPerson } from '../ChatPerson';
+import { MatrixPerson } from './MatrixPerson';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
 import type { MatrixClient } from 'matrix-js-sdk';
 import type { MatrixCall, Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
-import { convertTextToHTML, sanitizeHTML } from '../../util/convertHTML';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
-  readonly chats = new MapColl<ChatPerson | Group, MatrixChatRoom>;
+  readonly chats = new MapColl<MatrixPerson | Group, MatrixRoom>;
   client: MatrixClient;
   baseURL = "https://matrix.org";
   username: string;
   password: string;
   deviceID: string;
   globalUserID: string;
-  static personsCache = new MapColl<string, ChatPerson>();
+  static personsCache = new MapColl<string, MatrixPerson>();
 
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
@@ -85,8 +84,11 @@ export class MatrixAccount extends ChatAccount {
     let allRooms = await this.client.getRooms();
     Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
-  async getNewRoom(room: Room) {
-    let chatRoom = new MatrixChatRoom(this);
+  async getRoom(room: Room): Promise<MatrixRoom> {
+    return this.getExistingRoom(room.roomId) ?? await this.getNewRoom(room);
+  }
+  async getNewRoom(room: Room): Promise<MatrixRoom> {
+    let chatRoom = new MatrixRoom(this);
     chatRoom.id = room.roomId;
     if (!this.globalUserID) {
       this.globalUserID = room.myUserId;
@@ -104,7 +106,7 @@ export class MatrixAccount extends ChatAccount {
 
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
-        let msg = await this.getEvent(event, chatRoom); // process system events
+        let msg = await chatRoom.getEvent(event); // process system events
         if (msg && true || msg instanceof UserChatMessage) { // when joining, we add only user messages
           chatRoom.messages.add(msg);
         }
@@ -113,88 +115,52 @@ export class MatrixAccount extends ChatAccount {
       }
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
+    return chatRoom;
   }
-  getExistingRoom(roomID: string): MatrixChatRoom {
+  getExistingRoom(roomID: string): MatrixRoom {
     return this.chats.find(chat => chat.id == roomID);
   }
   getExistingPerson(userId: string) {
     return MatrixAccount.personsCache.get(userId);
   }
-  getPerson(member: RoomMember): ChatPerson {
+  getPerson(member: RoomMember): MatrixPerson {
     let existing = this.getExistingPerson(member.userId);
     if (existing) {
       return existing;
     }
-    let person = new ChatPerson("matrix", member.userId, member.name);
-    let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
-    // let picMXC = member.getMxcAvatarUrl();
-    // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
-    person.picture = picURL;
-    MatrixAccount.personsCache.set(member.userId, person);
+    let person = new MatrixPerson(member.userId, member.name);
+    person.setAvatar(member, this);
+    MatrixAccount.personsCache.set(person.chatID, person);
     return person;
   }
   async createRoom(name: string) {
     // TODO create room on server
-    return new MatrixChatRoom(this);
+    return new MatrixRoom(this);
   }
-  async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
-    let type = event.getType();
-    if (type == "m.room.message") {
-      return chatRoom.getUserMessage(event);
-    } else if (type == "m.room.redaction") {
-      chatRoom.redactMessage(event, chatRoom);
-      return null;
-    } else if (type == "m.reaction") {
-      chatRoom.getReaction(event);
-      return null;
-    } else if (type == "m.room.encrypted") {
-      return await chatRoom.getEncryptedUserMessage(event);
-    } else if (type == "m.room.member") {
-      return chatRoom.getJoinLeaveInviteEvent(event);
-    } else if (type == "m.room.name") {
-      chatRoom.name = sanitize.nonemptylabel(event.name);
-      await chatRoom.save();
-      return null;
-    } else if (type == "m.room.topic") {
-      let textNode = event["@m.topic"]?.["@m.text"];
-      console.log("Room topic", event.topic, "node", textNode);
-      chatRoom.descriptionHTML =
-        textNode?.mimetype?.startsWith("text/html")
-        ? sanitizeHTML(textNode.body)
-        : convertTextToHTML(sanitize.nonemptystring(event.topic));
-      await chatRoom.save();
-      return null;
-    } else if (type == "m.room.power_levels" ||
-      type == "m.room.encryption" ||
-      type == "m.room.join_rules" ||
-      type == "m.room.server_acl" ||
-      type == "m.room.third_party_invite" ||
-      type == "m.room.history_visibility" ||
-      type == "m.room.guest_access") {
-      return null;
-    } else {
-      return this.getShowRawChatRoomEvent(event, chatRoom);
-    }
+
+  /** Listen to messages for all rooms */
+  listenToRoomMessages() {
+    this.client.on("Room.timeline", async (event, room, toStartOfTimeline) => {
+      try {
+        if (toStartOfTimeline) {
+          return; // no paginated results
+        }
+        let chatRoom = await this.getRoom(room.roomId);
+        let message = await chatRoom.getEvent(event);
+        if (!message) {
+          return;
+        }
+        chatRoom.messages.add(message);
+        chatRoom.lastMessage = message;
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    });
+    this.client.on("Call.incoming", (call: MatrixCall) => {
+      this.incomingCall(call);
+    });
   }
-  fillMessage(event, msg: ChatMessage): void {
-    msg.id = event.event?.event_id;
-    msg.sent = msg.received = new Date(event.getTs());
-    let senderUserID = event.getSender();
-    msg.contact = this.getExistingPerson(senderUserID);
-    msg.outgoing = senderUserID == this.globalUserID;
-  }
-  getShowRawChatRoomEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
-    let msg = new ChatRoomEvent(chatRoom);
-    this.fillMessage(event, msg);
-    let json = JSON.stringify(event.event?.content ?? event, null, 2);
-    msg.text = json.substring(2, json.length - 2);
-    msg.html =
-      `<div>
-        <h4>${event.getType()}</h4>
-        <pre>${msg.text}</pre>
-      </div>`;
-    return msg;
-  }
+
   async incomingCall(call: MatrixCall) {
     try {
       console.log("Incoming call", call.roomId, call);
@@ -212,28 +178,6 @@ export class MatrixAccount extends ChatAccount {
     } catch (ex) {
       this.errorCallback(ex);
     }
-  }
-  /** Listen to messages for all rooms */
-  listenToRoomMessages() {
-    this.client.on("Room.timeline", async (event, room, toStartOfTimeline) => {
-      try {
-        if (toStartOfTimeline) {
-          return; // no paginated results
-        }
-        let chatRoom = this.getExistingRoom(room.roomId);
-        let message = await this.getEvent(event, chatRoom);
-        if (!message) {
-          return;
-        }
-        chatRoom.messages.add(message);
-        chatRoom.lastMessage = message;
-      } catch (ex) {
-        this.errorCallback(ex);
-      }
-    });
-    this.client.on("Call.incoming", (call: MatrixCall) => {
-      this.incomingCall(call);
-    });
   }
 
   get isLoggedIn() {

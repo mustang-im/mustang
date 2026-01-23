@@ -1,13 +1,14 @@
 import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
-import { ChatPerson } from "../ChatPerson";
 import { Group } from "../../Abstract/Group";
-import { Invite, JoinLeave } from "../RoomEvent";
+import { ChatRoomEvent, Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { MatrixPerson } from "./MatrixPerson";
+import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
 
-export class MatrixChatRoom extends ChatRoom {
+export class MatrixRoom extends ChatRoom {
   declare account: MatrixAccount;
   constructor(account: MatrixAccount) {
     super(account);
@@ -18,6 +19,54 @@ export class MatrixChatRoom extends ChatRoom {
 
   async listMessages(): Promise<void> {
     let init = await this.account.client.roomInitialSync(this.id, 3000);
+  }
+
+  async getEvent(event): Promise<ChatMessage | null> {
+    let type = event.getType();
+    if (type == "m.room.message") {
+      return this.getUserMessage(event);
+    } else if (type == "m.room.redaction") {
+      this.redactMessage(event);
+      return null;
+    } else if (type == "m.reaction") {
+      this.getReaction(event);
+      return null;
+    } else if (type == "m.room.encrypted") {
+      return await this.getEncryptedUserMessage(event);
+    } else if (type == "m.room.member") {
+      return this.getJoinLeaveInviteEvent(event);
+    } else if (type == "m.room.name") {
+      this.name = sanitize.nonemptylabel(event.name);
+      await this.save();
+      return null;
+    } else if (type == "m.room.topic") {
+      let textNode = event["@m.topic"]?.["@m.text"];
+      console.log("Room topic", event.topic, "node", textNode);
+      this.descriptionHTML =
+        textNode?.mimetype?.startsWith("text/html")
+          ? sanitizeHTML(textNode.body)
+          : convertTextToHTML(sanitize.nonemptystring(event.topic));
+      await this.save();
+      return null;
+    } else if (type == "m.room.power_levels" ||
+      type == "m.room.encryption" ||
+      type == "m.room.avatar" || // TODO Handle `{ url: "mxc://matrix.org/5646" }`
+      type == "m.room.join_rules" ||
+      type == "m.room.server_acl" ||
+      type == "m.room.third_party_invite" ||
+      type == "m.room.history_visibility" ||
+      type == "m.room.guest_access") {
+      return null;
+    } else {
+      return this.getShowRawEvent(event);
+    }
+  }
+  fillMessage(event, msg: ChatMessage): void {
+    msg.id = event.event?.event_id;
+    msg.sent = msg.received = new Date(event.getTs());
+    let senderUserID = event.getSender();
+    msg.contact = this.account.getExistingPerson(senderUserID);
+    msg.outgoing = senderUserID == this.account.globalUserID;
   }
 
   getUserMessage(event): ChatMessage | null {
@@ -39,7 +88,7 @@ export class MatrixChatRoom extends ChatRoom {
       event = replacedBy;
     }
     let msg = new UserChatMessage(this);
-    this.account.fillMessage(event, msg);
+    this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
     if (replacedBy) {
@@ -55,7 +104,7 @@ export class MatrixChatRoom extends ChatRoom {
     return this.getUserMessage(event);
   }
 
-  redactMessage(event, chatRoom: MatrixChatRoom): void {
+  redactMessage(event): void {
     // TODO
   }
 
@@ -82,7 +131,7 @@ export class MatrixChatRoom extends ChatRoom {
     let senderUserID = event.getSender();
     let person = this.account.getExistingPerson(senderUserID);
     if (!person) {
-      person = new ChatPerson("matrix", senderUserID, event.displayname);
+      person = new MatrixPerson(senderUserID, event.displayname);
       person.picture = event.avatar_url; // may be null
     }
 
@@ -99,7 +148,7 @@ export class MatrixChatRoom extends ChatRoom {
       } else {
         // TODO change to group
       }
-      this.account.fillMessage(event, msg);
+      this.fillMessage(event, msg);
       msg.text = (msg.join ? "%person% joined" : "%person% left the room")
         .replace("%person%", person.name);
       msg.html = `<span class="joinleave">` +
@@ -109,7 +158,7 @@ export class MatrixChatRoom extends ChatRoom {
       return msg;
     } else if (data.membership == "invite") {
       let msg = new Invite(this);
-      this.account.fillMessage(event, msg);
+      this.fillMessage(event, msg);
       msg.text = "%person% is invited to this room"
         .replace("%person%", person.name);
       msg.html = `<span class="invite">` +
@@ -118,8 +167,21 @@ export class MatrixChatRoom extends ChatRoom {
         `</span>`;
       return msg;
     } else {
-      return this.account.getShowRawChatRoomEvent(event);
+      return this.getShowRawEvent(event);
     }
+  }
+
+  getShowRawEvent(event): ChatMessage {
+    let msg = new ChatRoomEvent(this);
+    this.fillMessage(event, msg);
+    let json = JSON.stringify(event.event?.content ?? event, null, 2);
+    msg.text = json.substring(2, json.length - 2);
+    msg.html =
+      `<div>
+        <h4>${event.getType()}</h4>
+        <pre>${msg.text}</pre>
+      </div>`;
+    return msg;
   }
 
   /** Our user wants to send this message out.
