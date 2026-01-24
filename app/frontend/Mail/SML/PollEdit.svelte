@@ -1,42 +1,41 @@
 <vbox class="poll-create" bind:this={pollE}>
   <hbox class="question">
     <hbox class="label">{$t`Question`}</hbox>
-    <input type="text" bind:value={choose.description} />
+    <input type="text" bind:value={poll.name} />
   </hbox>
   <hbox class="label answers">{$t`Possible answers`}</hbox>
-  {#each choose.actionOption as option}
+  {#each poll.options as option}
     <hbox class="option added">
       <input type="radio" name="poll" disabled>
       <vbox>
         <input type="text" class="title" bind:value={option.name} />
-        <input type="text" class="description" bind:value={option.description} />
       </vbox>
     </hbox>
   {/each}
-    <hbox class="option new">
-      <input type="radio" name="poll" disabled>
-      <vbox>
-        <input type="text" class="title" bind:value={newLine} on:input={onNewLine} />
-      </vbox>
-    </hbox>
+  <hbox class="option new">
+    <input type="radio" name="poll" disabled>
+    <vbox>
+      <input type="text" class="title" bind:value={newLine} on:input={onNewLine} />
+    </vbox>
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
-  import type { TSMLChooseAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
   import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";
 
   export let sml: SMLData;
-  $: choose = $sml.sml as any as TSMLChooseAction;
+  $: poll = $sml.sml as any as TSMLSimplePoll<TSMLThing>;
 
   function addOption(title?: string) {
-    choose.actionOption.push({
+    poll.options.push({
       "@type": "Answer",
       name: title,
       description: "",
     } as TSMLThing);
-    choose = choose;
+    poll = poll;
   }
 
   let newLine: string;

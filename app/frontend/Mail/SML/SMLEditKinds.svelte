@@ -4,7 +4,13 @@
   This file only contains conditional statements, and
   loads the specific UI components only when applicable. -->
 {#if sml}
-  {#if $sml.type == "ChooseAction"}
+  {#if $sml.type == "SimplePoll"}
+    <PollEdit {sml} />
+  {/if}
+  {#if $sml.type == "MeetingTimePoll"}
+    <PollEdit {sml} />
+  {/if}
+  {#if $sml.type == "BookMe"}
     <PollEdit {sml} />
   {/if}
 {/if}

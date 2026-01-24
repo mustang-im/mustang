@@ -9,18 +9,29 @@
       icon={PollIcon}
       onClick={addPoll}
       />
+    <Button
+      label={$t`Meeting time poll`}
+      icon={MeetingTimePollIcon}
+      onClick={addMeetingTimePoll}
+      />
+    <Button
+      label={$t`Book me`}
+      icon={BookMeIcon}
+      onClick={addBookMe}
+      />
   </hbox>
 </vbox>
 
 <script lang="ts">
   import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
-  import type { TSMLChooseAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import { createPoll, createMeetingTimePoll, createBookMe } from "../../../logic/Mail/SML/SMLCreateKind";
   import { SMLHTTPAccount } from "../../../logic/Mail/SML/SMLHTTPAccount";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import Button from "../../Shared/Button.svelte";
   import PollIcon from "lucide-svelte/icons/list-checks";
+  import MeetingTimePollIcon from "lucide-svelte/icons/calendar-clock";
+  import BookMeIcon from "lucide-svelte/icons/calendar-check";
   import { showError } from "../../Util/error";
-  import { assert, type Json } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ close: void }>();
@@ -29,24 +40,24 @@
   export let identity: MailIdentity;
 
   function addPoll() {
-    setSML("ChooseAction", {
-      description: "",
-      actionOption: [],
-      object: null,
-      agent: null,
-    } as TSMLChooseAction);
+    sml = createPoll(identity);
     registerSMLHTTP()
       .catch(showError);
     close();
   }
 
-  function setSML(type: string, json: TSMLThing) {
-    sml ??= new SMLData();
-    sml.type = type;
-    sml.context = "https://schema.org";
-    json["@context"] = sml.context;
-    json["@type"] = sml.type;
-    sml.sml = json as any;
+  function addMeetingTimePoll() {
+    sml = createMeetingTimePoll(identity);
+    registerSMLHTTP()
+      .catch(showError);
+    close();
+  }
+
+  function addBookMe() {
+    sml = createBookMe(identity);
+    registerSMLHTTP()
+      .catch(showError);
+    close();
   }
 
   /**
@@ -60,39 +71,6 @@
       acc.mailAccount = identity.account;
       await acc.login(); // waits for email, so often takes minutes or hangs entirely
     }
-
-    console.log("starting tests");
-    // Test
-    let bundle = crypto.randomUUID();
-    let mainRes = crypto.randomUUID();
-    let mainContent = { "question": "abs" };
-    let { resourceURL: mainURL } = await acc.saveResource(bundle, mainRes, false, mainContent);
-    let userRes = crypto.randomUUID();
-    let userContent = { "answer": 1 };
-    let { resourceURL: userURL } = await acc.saveResource(bundle, userRes, true, userContent);
-    console.log("User URL", userURL);
-
-    let mainContentResponse = await SMLHTTPAccount.getURL(mainURL);
-    assert(mainContentResponse.question == mainContent.question, "Main does not match");
-    let userContentResponse = await SMLHTTPAccount.getURL(userURL);
-    assert(userContentResponse.answer == userContent.answer, "Answer does not match");
-
-    let userContentChanged = { "answer": 2 };
-    await SMLHTTPAccount.saveURL(userURL, userContentChanged);
-    let userContentChangedResponse = await SMLHTTPAccount.getURL(userURL);
-    assert(userContentChangedResponse.answer == userContentChanged.answer, "New answer does not match");
-
-    let mainContentChanged = { "question": "2" };
-    try {
-      await SMLHTTPAccount.saveURL(mainURL, mainContentChanged);
-      throw new Error("Should not be able to write to main resource without auth");
-    } catch (ex) {
-    }
-    let { resourceURL: mainURLChanged } = await acc.saveResource(bundle, mainRes, false, mainContentChanged);
-    let mainContentChangedResponse = await SMLHTTPAccount.getURL(mainURL);
-    assert(mainContentChangedResponse.question == mainContentChanged.question, "New main does not match");
-    assert(mainURLChanged == mainURL, "URL should not change");
-    console.log("tests succeeded");
   }
 
   function close() {

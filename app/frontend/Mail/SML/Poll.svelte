@@ -1,7 +1,7 @@
 <vbox class="poll">
   <fieldset>
-    <legend class="question font-normal">{choose.description}</legend>
-    {#each choose.actionOption as option}
+    <legend class="question font-normal">{poll.name}</legend>
+    {#each ensureArray(poll.options) as option}
       <label class="option">
         <input type="radio" name="poll" value={option} on:change={() => onSelect(option)}>
         <vbox>
@@ -17,13 +17,14 @@
 
 <script lang="ts">
   import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
-  import type { TSMLChooseAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import { ensureArray } from "../../../logic/util/util";
 
   export let sml: SMLData;
-  $: choose = $sml.sml as any as TSMLChooseAction;
+  $: poll = $sml.sml as any as TSMLSimplePoll<TSMLThing>;
 
   function onSelect(option: TSMLThing) {
-    choose.object = option;
+    //poll.object = option;
   }
 </script>
 
