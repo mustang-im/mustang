@@ -1,9 +1,13 @@
 <vbox class="week-view" flex>
+
   <hbox class="range-header">
     <slot name="top-left" />
     <hbox flex />
-    <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
-    <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
+    {#if withTopHeader}
+      <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
+      <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
+    {/if}
+    <slot name="top-center" />
     <hbox flex />
     <slot name="top-right" />
   </hbox>
@@ -16,10 +20,13 @@
         <hbox class="top-left header" />
         {#each days as day}
           <vbox class="day-header header">
-            <vbox class="date-day">
-              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
-              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
-            </vbox>
+            {#if withDayHeader}
+              <vbox class="date-day">
+                <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
+                <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+              </vbox>
+            {/if}
+            <slot name="day-header" {day} />
             <vbox class="all-day-events">
               {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
                 <AllDayEvent {event} {start} />
@@ -39,7 +46,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
-  import { getToday, k1DayMS } from "../../Util/date";
+  import { getToday } from "../../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
@@ -57,6 +64,8 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
+  export let withTopHeader = true;
+  export let withDayHeader = true;
 
   let startHour = 0;
   let endHour = 24;

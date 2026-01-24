@@ -1,39 +1,57 @@
-<vbox class="invitation">
-  {#if $message.event}
-    <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
-  {:else if $message.invitationMessage}
-    {#await loadEvent(message)}
-      {$t`Loading event...`}
-    {:then}
-      {#if $message.event}
-        <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
-      {:else}
-        {$t`No event found`}
-      {/if}
-    {:catch ex}
-      {ex?.message ?? ex}
-    {/await}
-  {/if}
-  <hbox class="buttons">
-    {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
-      <InvitationButtons invitation={incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
-    {:else if $message.invitationMessage == InvitationMessage.CancelledEvent }
-      <hbox class="cancelled-text">
-        {$t`This meeting has been cancelled by the organizer`}
-      </hbox>
-    {/if}
-
-    {#if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
-      {#await event && onUpdate()}
-        <!-- Update processing -->
+<hbox class="invitation" bind:this={invitationE}>
+  <vbox class="appointment">
+    {#if $message.event}
+      <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+    {:else if $message.invitationMessage}
+      {#await loadEvent(message)}
+        {$t`Loading event...`}
       {:then}
-        <!-- Update processed -->
+        {#if $message.event}
+          <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+        {:else}
+          {$t`No event found`}
+        {/if}
       {:catch ex}
-        <ErrorMessageInline {ex} />
+        {ex?.message ?? ex}
       {/await}
     {/if}
-  </hbox>
-</vbox>
+    <hbox class="buttons">
+      {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
+        <InvitationButtons invitation={incomingInvitation} myParticipation={incomingInvitation.myParticipation} />
+      {:else if $message.invitationMessage == InvitationMessage.CancelledEvent }
+        <hbox class="cancelled-text">
+          {$t`This meeting has been cancelled by the organizer`}
+        </hbox>
+      {/if}
+
+      {#if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
+        {#await event && onUpdate()}
+          <!-- Update processing -->
+        {:then}
+          <!-- Update processed -->
+        {:catch ex}
+          <ErrorMessageInline {ex} />
+        {/await}
+      {/if}
+    </hbox>
+  </vbox>
+  {#if invitationE?.offsetWidth > 600}
+    <vbox class="calendar">
+      <WeekView
+        events={allEvents}
+        start={calendarStart}
+        showHours={4}
+        showDays={1}
+        defaultFocusHour={calendarStart.getHours() + calendarStart.getMinutes() / 60 - 1}
+        withTopHeader={false} withDayHeader={false}
+        >
+        <hbox class="date" flex slot="day-header" let:day>
+          {getFormattedDateString(day, { weekday: "short", day: "numeric", month: "short" })}
+        </hbox>
+      </WeekView>
+    </vbox>
+  {/if}
+</hbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -41,10 +59,13 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { appGlobal } from "../../../logic/app";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
+  import WeekView from "../DayView/WeekView.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
-  import type { Collection } from "svelte-collections";
+  import { getFormattedDateString } from "../../Util/date";
+  import { SetColl, type Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
@@ -52,6 +73,9 @@
   let selectedCalendar: Calendar | undefined; // undefined, because `null` means "All accounts" for `<AccountDropDown>`
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
+  $: calendarStart = new Date($message.event?.startTime?.getTime())
+  $: allEvents = mergeEvents($message.event);
+  let invitationE: HTMLDivElement;
 
   $: if (message.event) {
     loadCalendars();
@@ -85,11 +109,24 @@
       await incomingInvitation.updateFromOtherInvitationMessage();
     }
   }
+
+  function mergeEvents(newEvent: Event): Collection<Event> {
+    let all = new SetColl(appGlobal.calendarEvents);
+    if (newEvent) {
+      newEvent.color = "#20AE9E";
+      all.add(newEvent);
+    }
+    return all;
+  }
 </script>
 
 <style>
-  .invitation {
+  .appointment {
     padding: 24px 32px;
+    flex: 2 0 0;
+  }
+  .calendar {
+    flex: 1 0 0;
   }
   .buttons {
     align-items: center;
@@ -102,5 +139,17 @@
     padding: 8px 12px;
     border-radius: 3px;
     margin: 8px;
+  }
+  .date {
+    justify-content: center;
+  }
+  .calendar :global(.time.label) {
+    width: 1.1em;
+    max-height: 1.3em;
+    overflow: hidden;
+    font-size: 70%;
+  }
+  .calendar :global(.header) {
+    background-color: var(--leftbar-bg);
   }
 </style>
