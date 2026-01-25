@@ -19,7 +19,6 @@
 <style>
   .event {
     margin-block-end: 1px;
-    padding: 4px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

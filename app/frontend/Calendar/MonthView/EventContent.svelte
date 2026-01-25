@@ -2,7 +2,6 @@
   title={eventAsText}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
-      <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
       {startTime}
     </hbox>
   {/if}
@@ -20,7 +19,10 @@
   /** Time where the cell (not the event) starts */
   export let start: Date;
 
-  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), {
+    hour: "numeric",
+    minute: $event.startTime.getMinutes() != 0 ? "2-digit" : undefined,
+  });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
@@ -40,6 +42,7 @@
   .event {
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
+    padding-inline-start: 4px;
   }
   @media (prefers-color-scheme: dark) {
     .event {
