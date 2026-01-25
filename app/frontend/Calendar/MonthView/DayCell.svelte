@@ -1,9 +1,9 @@
 <vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if $displayEvents && !$displayEvents.isEmpty}
+  {#if $displayEvents?.hasItems}
     <Scroll>
       {#each $displayEvents.each as event (event.id)}
         {#if event.startTime && event.endTime}
-          <EventLine {event} {start} />
+          <EventContainer {event} {start} />
         {/if}
       {/each}
     </Scroll>
@@ -22,7 +22,7 @@
   import { selectedCalendar, selectedDate } from "../selected";
   import { openEventFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
-  import EventLine from "./EventLine.svelte";
+  import EventContainer from "./EventContainer.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";

@@ -1,9 +1,5 @@
 <hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
-  title={eventAsText}
-  style="--color: {event.color ?? event.calendar?.color}"
-  class:all-day={$event.allDay}
-  class:cancelled={$event.isCancelled}
-  class:selected={$selectedEvent == event}>
+  title={eventAsText}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
       <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
@@ -42,14 +38,6 @@
 
 <style>
   .event {
-    margin-block-end: 1px;
-    padding: 4px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-height: 1.4em;
-    min-height: 1.4em;
-
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
@@ -66,20 +54,12 @@
   .event:hover {
     background-color: #20AF9E70;
   }
-  .event.all-day {
-    margin-block-end: 6px;
-    padding: 0px 4px;
-    opacity: 85%;
-  }
-  .event.cancelled {
-    opacity: 30%;
-  }
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
   }
-  .cancelled .time,
-  .cancelled .title {
+  :global(.cancelled) .time,
+  :global(.cancelled) .title {
     text-decoration: line-through;
   }
 </style>

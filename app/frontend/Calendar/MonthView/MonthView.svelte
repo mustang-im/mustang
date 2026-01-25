@@ -23,7 +23,7 @@
         class:selected={day.getTime() == $selectedDate?.getTime()}
         >
         <DayLabel {day} />
-        <EventsLineCell start={day} events={filteredEvents} intervalInHours={24}
+        <DayCell start={day} events={filteredEvents} intervalInHours={24}
           withMonthOnFirst={true} withMonthOnMonday={true} />
       </vbox>
     {/each}
@@ -33,7 +33,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import DayLabel from "./DayLabel.svelte";
-  import EventsLineCell from "./EventsLineCell.svelte";
+  import DayCell from "./DayCell.svelte";
   import DateRange from "../DateRange.svelte";
   import { selectedDate } from "../selected";
   import { getWeekDays } from "../../Util/date";

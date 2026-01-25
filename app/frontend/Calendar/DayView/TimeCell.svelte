@@ -1,7 +1,7 @@
 <vbox flex class="events" on:dblclick={addEvent}>
-  {#if $displayEvents && !$displayEvents.isEmpty}
+  {#if $displayEvents?.hasItems}
     {#each $displayEvents.each as event (event.id)}
-      <EventBlock {event} {start} {end} conflicts={displayEvents} />
+      <EventContainer {event} {start} {end} conflicts={displayEvents} />
     {/each}
   {/if}
 </vbox>
@@ -12,7 +12,7 @@
   import { selectedCalendar } from "../selected";
   import { openEventFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
-  import EventBlock from "./EventBlock.svelte";
+  import EventContainer from "./EventContainer.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import type { ArrayColl, Collection } from "svelte-collections";
