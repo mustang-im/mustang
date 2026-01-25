@@ -28,12 +28,6 @@
   $: blockHeightInMS = end.getTime() - start.getTime();
   $: startPosInPercent = Math.max(0, ($event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
   $: heightInPercent = Math.min(100, ($event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
-
-
-  if (event) {
-    console.log("cell day start", start.getDate() + ".", start.toLocaleTimeString(), "end", end.toLocaleTimeString(), "event",
-      event.title + " start " + event.startTime.toLocaleTimeString() + " end " + event.endTime.toLocaleTimeString());
-  }
 </script>
 
 <style>
@@ -44,9 +38,8 @@
     text-overflow: ellipsis;
   }
   .event.conflict {
-    margin-block-start: -4px;
-    margin-inline-start: -2px;
-    border: 2px solid red;
+    outline: 2px solid red;
+    /* TODO use box-shadow */
   }
   .event.cancelled {
     opacity: 30%;

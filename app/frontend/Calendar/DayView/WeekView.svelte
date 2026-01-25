@@ -1,61 +1,27 @@
 <vbox class="week-view" flex>
-
   <hbox class="range-header">
     <slot name="top-left" />
     <hbox flex />
-    {#if withTopHeader}
+    <slot name="top-center">
       <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
       <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
-    {/if}
+    </slot>
     <slot name="top-center" />
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <vbox flex bind:offsetHeight={visibleHeight}>
-    <Scroll bind:this={scrollE}>
-      <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;"
-        on:swipeleft={onNextDay}
-        on:swiperight={onPreviousDay}
-        >
-        <hbox class="top-left header" />
-        {#each days as day}
-          <vbox class="day-header header">
-            {#if withDayHeader}
-              <vbox class="date-day">
-                <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
-                <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
-              </vbox>
-            {/if}
-            <slot name="day-header" {day} />
-            <vbox class="all-day-events">
-              {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
-                <AllDayEvent {event} {start} />
-              {/each}
-            </vbox>
-          </vbox>
-        {/each}
-        {#each startTimes as start}
-          <TimeLabel time={start} />
-          <TimeDayRow {days} time={start} events={visibleEvents} />
-        {/each}
-      </grid>
-    </Scroll>
-  </vbox>
+  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} />
 </vbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { appGlobal } from "../../../logic/app";
   import { getToday } from "../../Util/date";
-  import TimeLabel from "./TimeLabel.svelte";
-  import TimeDayRow from "./TimeDayRow.svelte";
-  import AllDayEvent from "./AllDayEvent.svelte";
+  import DayViewGrid from "./DayViewGrid.svelte";
   import DateRange from "../DateRange.svelte";
   import Button from "../../Shared/Button.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -64,137 +30,13 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
-  export let withTopHeader = true;
-  export let withDayHeader = true;
-
-  let startHour = 0;
-  let endHour = 24;
-  let intervalHour = 1;
-
-  let scrollE: Scroll;
-  let visibleHeight = 0;
-  $: pxPerHour =  visibleHeight / showHours;
-  $: scrollHeight = pxPerHour * (endHour - startHour);
-  $: focusHour = start.toDateString() == new Date().toDateString()
-    ? new Date().getHours()
-    : defaultFocusHour;
-  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
-
-  let startTimes: Date[] = [];
-  $: start, setStartTimes();
-  function setStartTimes() {
-    let startTime = new Date(start);
-    startTime.setMinutes(0, 0, 0);
-    startTimes = [];
-    for (let i = startHour; i < endHour; i += intervalHour) {
-      startTime.setHours(i);
-      startTimes.push(new Date(startTime));
-    }
-  }
-
-  let days: Date[] = [];
-  let visibleEvents: Collection<Event>;
-  let allDayEvents: Collection<Event>;
-  $: start, setDays();
-  function setDays() {
-    let startTime = new Date(start);
-    if (showDays > 3) {
-      startTime.setDate(startTime.getDate() - 1);
-    }
-    startTime.setHours(startHour, 0, 0, 0);
-    let filterStart = new Date(startTime);
-    days = [];
-    for (let i = 0; i < showDays; i++) {
-      days.push(new Date(startTime));
-      startTime.setDate(startTime.getDate() + 1);
-    }
-    let filterEnd = startTime;
-    let filtered = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
-    visibleEvents = filtered.filterObservable(ev => !ev.allDay);
-    allDayEvents = filtered.filterObservable(ev => ev.allDay);
-  }
 
   function goToToday() {
     start = getToday();
   }
-
-  function onNextDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
-    start.setDate(start.getDate() + pageDays);
-    start = start;
-  }
-
-  function onPreviousDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
-    start.setDate(start.getDate() - pageDays);
-    start = start;
-  }
 </script>
 
 <style>
-  .week {
-    display: grid;
-    grid-template-rows: max-content;
-    grid-auto-rows: 1fr;
-    container-type: size;
-  }
-  .week[columns="1"] {
-    grid-template-columns: max-content auto;
-  }
-  .week[columns="2"] {
-    grid-template-columns: max-content 3fr 1fr;
-  }
-  .week[columns="7"] {
-    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
-  }
-  .header {
-    position: sticky;
-    top: 0;
-    left: 0;
-    background-color: var(--bg);
-    z-index: 2;
-  }
-  .top-left {
-    height: calc(100% - 10px);
-  }
-  .day-header {
-    padding: 8px 16px;
-    border-top: 1px dotted var(--border);
-    border-left: 1px dotted var(--border);
-    border-bottom: 1px dotted var(--border);
-  }
-  .day-header .date {
-    font-size: 180%;
-    overflow-wrap: break-word;
-  }
-  .all-day-events {
-    margin: 10px -16px -10px -16px;
-    opacity: 85%;
-  }
-  .weekday {
-    margin-block-start: -4px;
-    margin-block-end: 4px;
-    max-height: 1.3em;
-    overflow: hidden;
-  }
-  @container (max-height: 1000px)  {
-    .day-header {
-      padding: 4px 8px;
-    }
-    .day-header .date {
-      font-size: 120%;
-    }
-    .day-header .weekday {
-      font-size: 90%;
-      align-items: center;
-      flex: 1 0 0;
-      margin-block-start: 1px;
-      margin-inline-start: 8px;
-    }
-    .day-header .date-day {
-      flex-direction: row;
-    }
-  }
   .range-header {
     align-items: center;
   }

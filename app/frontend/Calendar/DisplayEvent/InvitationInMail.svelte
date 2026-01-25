@@ -37,18 +37,18 @@
   </vbox>
   {#if invitationE?.offsetWidth > 600}
     <vbox class="calendar">
-      <WeekView
+      <hbox class="date">
+        {getFormattedDateString(calendarStart, { weekday: "short", day: "numeric", month: "short" })}
+      </hbox>
+      <DayViewGrid
         events={allEvents}
         start={calendarStart}
         showHours={4}
         showDays={1}
         defaultFocusHour={calendarStart.getHours() + calendarStart.getMinutes() / 60 - 1}
-        withTopHeader={false} withDayHeader={false}
         >
-        <hbox class="date" flex slot="day-header" let:day>
-          {getFormattedDateString(day, { weekday: "short", day: "numeric", month: "short" })}
-        </hbox>
-      </WeekView>
+        <slot slot="day-header" />
+      </DayViewGrid>
     </vbox>
   {/if}
 </hbox>
@@ -62,7 +62,7 @@
   import { appGlobal } from "../../../logic/app";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
-  import WeekView from "../DayView/WeekView.svelte";
+  import DayViewGrid from "../DayView/DayViewGrid.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { getFormattedDateString } from "../../Util/date";
   import { SetColl, type Collection } from "svelte-collections";
@@ -143,13 +143,14 @@
   .date {
     justify-content: center;
   }
+  .calendar :global(.header) {
+    background-color: var(--leftbar-bg);
+  }
   .calendar :global(.time.label) {
     width: 1.1em;
     max-height: 1.3em;
     overflow: hidden;
     font-size: 70%;
-  }
-  .calendar :global(.header) {
-    background-color: var(--leftbar-bg);
+    margin-inline-end: 6px;
   }
 </style>
