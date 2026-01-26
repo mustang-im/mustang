@@ -26,14 +26,16 @@
     </hbox>
     <hbox class="option" slot="event-overlay" let:start let:end>
       <EventProposal {start} {end}>
-        <hbox slot="buttons">
+        <hbox slot="end">
           <Button
             label={$t`Time option`}
             icon={AcceptedIcon}
-            iconOnly
+            iconOnly plain
             disabled={true}
             classes="accepted"
             />
+        </hbox>
+        <hbox slot="buttons">
           <Button
             label={$t`Remove time option`}
             icon={RemoveIcon}

@@ -7,11 +7,12 @@
     <hbox class="title">{title}</hbox>
   {/if}
   <hbox flex />
-  <vbox class="toolbar">
+  <hbox class="end">
+    <slot name="end" />
     <Toolbar border>
       <slot name="buttons" />
     </Toolbar>
-  </vbox>
+  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -47,8 +48,12 @@
     margin-block-start: 5px;
   }
 
-  .toolbar {
+  .end {
     margin: 8px;
+    align-self: start;
+  }
+  .end :global(.toolbar) {
+    margin-inline-start: 8px;
   }
   .event-proposal :global(button .label) {
     white-space: nowrap;

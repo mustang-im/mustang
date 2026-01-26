@@ -8,7 +8,7 @@
       </hbox>
     {/if}
 
-    <hbox class="option added" class:showEndTime>
+    <hbox class="option added" class:showEndTime on:click={() => dispatchEvent("optionclick", option)}>
       <hbox class="start-time">
         {getTimeString(option)}
       </hbox>
@@ -31,6 +31,8 @@
 <script lang="ts">
   import { getDateString, getTimeString } from "../../Util/date";
   import { Collection } from "svelte-collections";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ optionclick: Date }>();
 
   export let options: Collection<Date>;
   /** in minutes */
@@ -54,6 +56,7 @@
     color: var(--hover-fg);
     padding-inline: 8px;
     margin-block: 2px;
+    cursor: pointer;
   }
   .start-time {
     font-weight: 600;

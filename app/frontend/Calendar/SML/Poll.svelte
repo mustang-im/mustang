@@ -1,4 +1,4 @@
-<vbox class="meeting-time-poll">
+<vbox class="meeting-time-poll" flex>
   <vbox class="view-switcher">
     <IslandSwitcher large>
       <Button
@@ -17,21 +17,27 @@
   </vbox>
 
   {#if showCalendar}
-    <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} />
+    <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={7} />
   {:else}
-    <vbox class="list">
-      <DisplayList {options} duration={timePoll.duration} showEndTime={true}>
-        <Button
-          label={$t`Show in calendar`}
-          icon={CalendarIcon}
-          iconOnly plain
-          onClick={() => showOptionInCalendar(option)}
-          slot="center"
-          let:option
-          />
-        <PollTimeButtons slot="right" let:option time={option} {myVotes} />
-      </DisplayList>
-    </vbox>
+    <Splitter>
+      <Scroll slot="left">
+        <vbox class="list">
+          <DisplayList {options} duration={timePoll.duration} showEndTime={true}
+            on:optionclick={(ev) => { console.log("focus option", ev.detail); focusOption = ev.detail} }>
+            <!--<Button
+              label={$t`Show in calendar`}
+              icon={CalendarIcon}
+              iconOnly plain
+              onClick={() => showOptionInCalendar(option)}
+              slot="center"
+              let:option
+              />-->
+            <PollTimeButtons slot="right" let:option time={option} {myVotes} />
+          </DisplayList>
+        </vbox>
+      </Scroll>
+      <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={1} slot="right" />
+    </Splitter>
   {/if}
 </vbox>
 
@@ -47,6 +53,8 @@
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { syncArrayColl } from "../../../logic/util/collections";
   import { t } from "../../../l10n/l10n";
+  import Splitter from "../../Shared/Splitter.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let sml: SMLData;
   export let myReaction: TSMLAction;
@@ -57,10 +65,10 @@
 
   let showCalendar = false;
   $: focusOption = $options.first;
-  function showOptionInCalendar(option: Date) {
+  /*function showOptionInCalendar(option: Date) {
     focusOption = option;
     showCalendar = true;
-  }
+  }*/
 </script>
 
 <style>
@@ -69,9 +77,12 @@
   }
   .view-switcher {
     align-items: center;
+    margin-block-end: 8px;
   }
   .list {
     align-self: center;
-    width: 320px;
+    height: 100%;
+    width: 300px;
+    margin-inline: 32px;
   }
 </style>

@@ -35,9 +35,9 @@
   export let duration: number;
   export let myVotes: ArrayColl<TSMLMeetingTimeVote>;
   export let focusOption: Date = getToday();
+  export let showDays: 1 | 2 | 7 = 2;
 
-  let showDate = focusOption;
-  const showDays: 1 | 2 | 7 = 2;
+  $: showDate = focusOption;
 
   $: optionsAsEvents = $options.map(start => {
     let event = new Event();
@@ -49,7 +49,7 @@
 
 <style>
   .calendar {
-    height: 50vh;
+    height: 100%;
   }
   .range-header {
     justify-content: center;
