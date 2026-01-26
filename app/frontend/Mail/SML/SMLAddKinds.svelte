@@ -23,7 +23,7 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
+  import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import { createPoll, createMeetingTimePoll, createBookMe } from "../../../logic/Mail/SML/SMLCreateKind";
   import { SMLHTTPAccount } from "../../../logic/Mail/SML/SMLHTTPAccount";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
@@ -80,11 +80,14 @@
 
 <style>
   .title {
+    justify-content: center;
     font-weight: bold;
     margin-block-end: 16px;
   }
   .actions {
     flex-wrap: wrap;
+    gap: 18px;
+    max-width: 30em;
   }
   .actions :global(button.button) {
     padding: 12px 16px;

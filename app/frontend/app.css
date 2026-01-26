@@ -55,6 +55,7 @@
   --button-border: #B2ADB8;
   --button-secondary-line: #A1E4DA;
   --shadow-color: 22, 12, 39; /* #160C27 */
+  --border-radius: 5px;
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;

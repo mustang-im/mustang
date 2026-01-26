@@ -1,30 +1,10 @@
 import { EMailProcessor, EMailProcessorList, ProcessingStartOn } from "../EMailProcessor";
+import { SMLData, transformDatesDuringJSONParse } from "./SMLData";
 import { SMLProcessor } from "./SMLProcessor";
 import type { EMail } from "../EMail";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Observable, notifyChangedProperty } from "../../util/Observable";
 import { logError } from "../../../frontend/Util/error";
-import { assert, type Json } from "../../util/util";
+import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
-
-export class SMLData extends Observable {
-  /** `sml.@context`, normally `"https://schema.org"` */
-  context: string;
-  /** `sml.@type`, e.g. `"IceCreamShop"` ` */
-  type: string;
-  /** The complete SML JSON */
-  @notifyChangedProperty
-  sml: Json;
-
-  toJSON(): Json {
-    return this.sml;
-  }
-  fromJSON(json: Json): void {
-    this.context = sanitize.nonemptystring(json["@context"]);
-    this.type = sanitize.nonemptystring(json["@type"]);
-    this.sml = json;
-  }
-}
 
 /**
  * Reads the SML JSON at email parse time,
@@ -44,12 +24,10 @@ export abstract class SMLParseProcessor extends EMailProcessor {
     }
     assert(attachment.content, "Need SML attachment content to be loaded");
     let ldStr = await attachment.content.text();
-    let sml = JSON.parse(ldStr);
+    let sml = JSON.parse(ldStr, transformDatesDuringJSONParse);
 
     let data = new SMLData();
-    data.context = sml["@context"];
-    data.type = sml["@type"];
-    data.sml = sml;
+    data.fromJSON(sml);
     email.sml = data;
 
     let processors = EMailProcessorList.processors.filterOnce(p => p instanceof SMLProcessor) as Collection<SMLProcessor>;

@@ -56,7 +56,7 @@ export interface TSMLRequest extends TSMLThing {
 
 /** Asking a question. The responents need to choose
  * one or multiple from the predefined answers. */
-export interface TSMLSimplePoll<Response extends TSMLThing | Date> extends TSMLRequest {
+export interface TSMLSimplePoll<PollOption extends TSMLThing | Date> extends TSMLRequest {
   /** name: The question to answer with this choice */
   /** description: Further details about the question */
   /** false = respondent can only pick one of the options
@@ -69,7 +69,7 @@ export interface TSMLSimplePoll<Response extends TSMLThing | Date> extends TSMLR
    * Note: not @update.expires, which is when the data will be removed. */
   ends: Date;
   /** Which choices the respondents have. */
-  options: Response[];
+  options: PollOption[];
   /** potentialAction: must contain a `ChooseAction` */
   /** reactions: must be `ChooseAction`s */
 }
@@ -80,13 +80,8 @@ export interface TSMLSimplePoll<Response extends TSMLThing | Date> extends TSMLR
  * All `options` must be `DateTime`s in schema.org = ISO 8601 datetime strings in JSON =
  * `Date` objects in JavaScript. */
 export interface TSMLTimePoll extends TSMLSimplePoll<Date> {
-}
-
-/** When should the meeting of multiple people happen?
- * The responents need to choose one or better multiple from the predefined time slots.
- * This allows the organizer to pick a time that suits the group best. */
-export interface TSMLMeetingTimePoll extends TSMLTimePoll {
-  selectMultiple: true,
+  /** in minutes, integer only */
+  duration: number;
 }
 
 /** When should the meeting happen? The responent needs to choose
@@ -99,4 +94,28 @@ export interface TSMLMeetingTimePoll extends TSMLTimePoll {
  * TODO Define that final commitment exchange. iCal or SML? */
 export interface TSMLBookMe extends TSMLTimePoll {
   selectMultiple: false,
+}
+
+/** When should the meeting of multiple people happen?
+ * The responents need to choose one or better multiple from the predefined time slots.
+ * This allows the organizer to pick a time that suits the group best. */
+export interface TSMLMeetingTimePoll extends TSMLTimePoll {
+  selectMultiple: true,
+}
+
+/** Type of `TSMLMeetingTimePoll.reactions[n].object` */
+export interface TSMLMeetingTimeVote extends TSMLThing {
+  time: Date;
+  preference: TSMLMeetingTimePreference;
+}
+
+export enum TSMLMeetingTimePreference {
+  /** This time is OK */
+  Accept = "accept",
+  /** Cannot attend at this time */
+  Reject = "reject",
+  /** Not sure yet */
+  Maybe = "maybe",
+  /** Cannot attend at this time */
+  Bad = "bad",
 }

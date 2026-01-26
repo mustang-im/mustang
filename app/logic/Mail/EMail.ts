@@ -9,7 +9,7 @@ import type { MailIdentity } from "./MailIdentity";
 import type { Calendar } from "../Calendar/Calendar";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
-import type { SMLData } from "./SML/SMLParseProcessor";
+import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
@@ -211,6 +211,21 @@ export class EMail extends Message {
   }
 
   async removeTagOnServer(tag: Tag) {
+  }
+
+  /** Returns the identity which best matches the recipient/from
+   * of this email, out of the identities of the account where this email is. */
+  getIdentity(): MailIdentity {
+    let persons = [this.from, ...this.to, ...this.cc, ...this.bcc];
+    let identities = this.folder.account.identities;
+    for (let person of persons) {
+      for (let identity of identities) {
+        if (identity.isEMailAddress(person.emailAddress)) {
+          return identity;
+        }
+      }
+    }
+    return identities.first;
   }
 
   getUpdateCalendars(): Collection<Calendar> {

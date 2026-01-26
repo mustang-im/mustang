@@ -8,13 +8,12 @@
   class:conflict={conflicts.length > 1}
   class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
-  <EventContent {event} {start} {end} forceShowText={conflicts.length > 1} />
+  <slot />
 </hbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedEvent } from "../selected";
-  import EventContent from "./EventContent.svelte";
   import type { ArrayColl } from "svelte-collections";
 
   export let event: Event;

@@ -70,6 +70,9 @@ export class CreateMIME {
     if (!email.sml) {
       return;
     }
+    if (email.sml.sml?.reactions) { // TODO Allow SML usecase to prepare the SML on send
+      email.sml.sml.reactions = [];
+    }
     let att = email.attachments.find(att => att.mimeType == "application/ld+json");
     if (!att) {
       att = new Attachment();

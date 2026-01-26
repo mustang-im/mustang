@@ -10,12 +10,14 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
+  import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import { TSMLActionStatus, type TSMLAction } from "../../../logic/Mail/SML/TSML";
   import { ensureArray } from "../../../logic/util/util";
   import Checkbox from "../../Shared/Checkbox.svelte";
 
   export let sml: SMLData;
+  export let myReaction: TSMLAction;
+
   $: todolist = $sml.sml as any as TSMLAction;
   $: tasks = ensureArray(todolist.object) as TSMLAction[];
 

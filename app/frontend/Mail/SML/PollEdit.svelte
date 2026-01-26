@@ -21,7 +21,7 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
+  import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
   import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";

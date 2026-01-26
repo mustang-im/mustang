@@ -1,41 +1,67 @@
-<vbox flex class="events" on:dblclick={addEvent}>
+<vbox flex class="events"
+  on:dblclick={onDoubleClick}
+  on:pointerenter={() => hovering = true}
+  on:pointerleave={() => hovering = false}
+  >
   {#if $displayEvents?.hasItems}
     {#each $displayEvents.each as event (event.id)}
-      <EventContainer {event} {start} {end} conflicts={displayEvents} />
+      <EventContainer {event} {start} {end} {conflicts}>
+        <EventContent {event} {start} {end} forceShowText={conflicts.length > 1} />
+      </EventContainer>
     {/each}
+  {/if}
+
+  {#if $displayOverlayEvents.hasItems}
+    {#each $displayOverlayEvents.each as event}
+      <EventContainer event={event} {start} {end} {conflicts}>
+        <slot name="event-overlay" start={event.startTime} {end} events={displayEvents} />
+      </EventContainer>
+    {/each}
+  {/if}
+
+  {#if hovering}
+    <slot name="event-hover"
+      {start} {end}
+      empty={!$displayEvents?.hasItems && !$displayOverlayEvents.hasItems}
+      events={displayEvents}
+      />
   {/if}
 </vbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { setNewEventTime } from "../event";
-  import { selectedCalendar } from "../selected";
-  import { openEventFromOtherApp } from "../open";
-  import { appGlobal } from "../../../logic/app";
   import EventContainer from "./EventContainer.svelte";
-  import { assert } from "../../../logic/util/util";
-  import { t } from "../../../l10n/l10n";
-  import type { ArrayColl, Collection } from "svelte-collections";
+  import { ArrayColl, Collection } from "svelte-collections";
+  import EventContent from "./EventContent.svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, end: Date } }>();
 
   export let start: Date;
   export let intervalInHours: number;
   export let events: Collection<Event>;
+  export let overlayEvents: Collection<Event> | null = null;
 
   let displayEvents: ArrayColl<Event>;
+  let displayOverlayEvents = new ArrayColl<Event>();
   let end: Date;
-  $: start, intervalInHours, setEnd();
+  $: start, intervalInHours, $overlayEvents, setEnd();
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
     displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+    displayOverlayEvents = overlayEvents
+      ?.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay)
+      ?? new ArrayColl<Event>();
   }
 
-  function addEvent() {
-    $selectedCalendar ??= appGlobal.calendars.first;
-    assert($selectedCalendar, $t`Please set up a calendar first`);
-    let event = $selectedCalendar.newEvent();
-    setNewEventTime(event, true, start);
-    openEventFromOtherApp(event, true);
+  $: conflicts = overlayEvents
+        ? displayEvents.concat(displayOverlayEvents)
+        : displayEvents;
+
+  let hovering = false;
+
+  function onDoubleClick(event: MouseEvent) {
+    dispatchEvent("celldblclick", { start, end });
   }
 </script>
 

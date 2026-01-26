@@ -8,16 +8,17 @@
     <PollEdit {sml} />
   {/if}
   {#if $sml.type == "MeetingTimePoll"}
-    <PollEdit {sml} />
+    <MeetingTimePollEdit {sml} />
   {/if}
   {#if $sml.type == "BookMe"}
-    <PollEdit {sml} />
+    <MeetingTimePollEdit {sml} />
   {/if}
 {/if}
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
+  import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import PollEdit from "./PollEdit.svelte";
+  import MeetingTimePollEdit from "../../Calendar/SML/PollEdit.svelte";
 
   export let sml: SMLData;
 </script>

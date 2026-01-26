@@ -2,13 +2,13 @@
  loads the specific UI components only when applicable. -->
 {#if sml}
   {#if $sml.type == "SimplePoll"}
-    <Poll {sml} />
+    <Poll {sml} {myReaction} />
   {/if}
   {#if $sml.type == "MeetingTimePoll"}
-    <Poll {sml} />
+    <MeetingTimePoll {sml} {myReaction} />
   {/if}
   {#if $sml.type == "BookMe"}
-    <Poll {sml} />
+    <MeetingTimePoll {sml} {myReaction} />
   {/if}
 {/if}
 
@@ -18,11 +18,14 @@
 {/if}
 
 <script lang="ts">
-  import type { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
+  import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { EMail } from "../../../logic/Mail/EMail";
   import Poll from "./Poll.svelte";
+  import MeetingTimePoll from "../../Calendar/SML/Poll.svelte";
   import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
 
   export let sml: SMLData;
   export let message: EMail | null = null;
+
+  $: myReaction = sml.getMyReaction(message);
 </script>

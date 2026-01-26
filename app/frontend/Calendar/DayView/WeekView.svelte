@@ -10,11 +10,17 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} />
+  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour}
+    on:celldblclick={(param) => addEvent(param.detail.start)} />
 </vbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { setNewEventTime } from "../event";
+  import { selectedCalendar } from "../selected";
+  import { openEventFromOtherApp } from "../open";
+  import { appGlobal } from "../../../logic/app";
+  import { assert } from "../../../logic/util/util";
   import { getToday } from "../../Util/date";
   import DayViewGrid from "./DayViewGrid.svelte";
   import DateRange from "../DateRange.svelte";
@@ -33,6 +39,14 @@
 
   function goToToday() {
     start = getToday();
+  }
+
+  function addEvent(start: Date) {
+    $selectedCalendar ??= appGlobal.calendars.first;
+    assert($selectedCalendar, $t`Please set up a calendar first`);
+    let event = $selectedCalendar.newEvent();
+    setNewEventTime(event, true, start);
+    openEventFromOtherApp(event, true);
   }
 </script>
 

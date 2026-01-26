@@ -1,7 +1,7 @@
 {#if mail.sml}
   <vbox class="sml">
     {#if testSML}
-      <SMLDisplayKinds sml={mail.sml} />
+      <SMLDisplayKinds sml={mail.sml} message={mail} />
     {:else}
       <SMLEditKinds sml={mail.sml} />
     {/if}

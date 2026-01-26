@@ -16,15 +16,17 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLParseProcessor";
-  import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import { SMLData } from "../../../logic/Mail/SML/SMLData";
+  import type { TSMLSimplePoll, TSMLAction, TSMLThing } from "../../../logic/Mail/SML/TSML";
   import { ensureArray } from "../../../logic/util/util";
 
   export let sml: SMLData;
+  export let myReaction: TSMLAction;
+
   $: poll = $sml.sml as any as TSMLSimplePoll<TSMLThing>;
 
   function onSelect(option: TSMLThing) {
-    //poll.object = option;
+    myReaction.object = option;
   }
 </script>
 

@@ -24,8 +24,9 @@
         <slot name="time-label" {time}>
           <TimeLabel {time} />
         </slot>
-        <TimeDayRow {days} {time} events={visibleEvents}>
-          <slot name="event-content" />
+        <TimeDayRow {days} {time} events={visibleEvents} {overlayEvents} on:celldblclick>
+          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:events {events} />
+          <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} let:events {events} />
         </TimeDayRow>
       {/each}
     </grid>
@@ -39,11 +40,13 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;
+  /** UI elements that appear in the event slots. Optional */
+  export let overlayEvents: Collection<Event> | null = null;
   export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */

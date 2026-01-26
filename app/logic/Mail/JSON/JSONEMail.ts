@@ -4,11 +4,11 @@ import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName } from "../../Abstract/Tag";
 import { getFilesDir } from "../../../logic/util/backend-wrapper";
 import { EMailProcessorList } from "../EMailProcessor";
+import { SMLData } from "../SML/SMLData";
 import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
 import type { ArrayColl } from "svelte-collections";
-import { SMLData } from "../SML/SMLParseProcessor";
 
 export class JSONEMail {
   static filesDir: string | null = null;

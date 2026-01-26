@@ -1,7 +1,7 @@
+import { SMLData } from "./SMLData";
 import { TSMLActionStatus, type TSMLBookMe, type TSMLMeetingTimePoll, type TSMLPerson, type TSMLChooseAction, type TSMLSimplePoll, type TSMLThing } from "./TSML";
 import type { MailIdentity } from "../MailIdentity";
 import { assert } from "../../util/util";
-import { SMLData } from "./SMLParseProcessor";
 
 export function createPoll(identity: MailIdentity): SMLData {
   let end = new Date();
@@ -27,7 +27,7 @@ export function createPoll(identity: MailIdentity): SMLData {
     selectMultiple: false,
     reactions: [],
     organizer: {
-      name: identity.name,
+      name: identity.realname,
       email: identity.emailAddress,
     } as TSMLPerson,
     status: TSMLActionStatus.InProgress,
@@ -42,6 +42,7 @@ export function createMeetingTimePoll(identity: MailIdentity): SMLData {
     "@type": "MeetingTimePoll",
     name: "",
     options: [],
+    duration: 60,
     potentialReaction: [
       {
         "@type": "ChooseAction",
@@ -54,7 +55,7 @@ export function createMeetingTimePoll(identity: MailIdentity): SMLData {
     selectMultiple: true,
     reactions: [],
     organizer: {
-      name: identity.name,
+      name: identity.realname,
       email: identity.emailAddress,
     } as TSMLPerson,
     status: TSMLActionStatus.InProgress,
@@ -68,6 +69,7 @@ export function createBookMe(identity: MailIdentity): SMLData {
   return createSML({
     "@type": "BookMe",
     options: [],
+    duration: 60,
     potentialReaction: [
       {
         "@type": "ChooseAction",
@@ -80,7 +82,7 @@ export function createBookMe(identity: MailIdentity): SMLData {
     selectMultiple: false,
     reactions: [],
     organizer: {
-      name: identity.name,
+      name: identity.realname,
       email: identity.emailAddress,
     } as TSMLPerson,
     status: TSMLActionStatus.InProgress,
