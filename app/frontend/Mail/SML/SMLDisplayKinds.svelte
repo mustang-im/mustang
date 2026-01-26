@@ -27,5 +27,5 @@
   export let sml: SMLData;
   export let message: EMail | null = null;
 
-  $: myReaction = sml.getMyReaction(message);
+  $: myReaction = sml?.getMyReaction(message);
 </script>

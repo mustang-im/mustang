@@ -43,7 +43,7 @@
   import AcceptIcon from "lucide-svelte/icons/check";
   import MaybeIcon from "lucide-svelte/icons/badge-question-mark";
   import BadIcon from "lucide-svelte/icons/frown";
-  import RejectIcon from "lucide-svelte/icons/x";
+  import RejectIcon from "lucide-svelte/icons/ban";
   import { t } from "../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
 
@@ -65,4 +65,19 @@
 </script>
 
 <style>
+  .buttons :global(button.accept) {
+    color: rgb(0, 182, 0);
+  }
+  .buttons :global(button.accept svg) {
+    stroke-width: 3px;
+  }
+  .buttons :global(button.maybe) {
+    color: orange;
+  }
+  .buttons :global(button.bad) {
+    color: rgb(255, 102, 0);
+  }
+  .buttons :global(button.reject) {
+    color: red;
+  }
 </style>

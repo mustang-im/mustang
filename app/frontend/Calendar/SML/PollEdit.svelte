@@ -1,8 +1,8 @@
 <vbox class="time-poll-create">
-  <hbox class="question">
+  <!--<hbox class="question">
     <hbox class="label">{$t`Meeting objective`}</hbox>
     <input type="text" bind:value={timePoll.name} />
-  </hbox>
+  </hbox>-->
   <hbox class="length">
     <hbox class="label">{$t`Duration`}</hbox>
     <DurationSelector bind:duration={timePoll.duration} />
