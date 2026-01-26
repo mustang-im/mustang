@@ -27,7 +27,7 @@
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
   // #endif
-  import { stringToDataURL } from "../Util/util";
+  import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
@@ -104,7 +104,7 @@
       (autoSize ? autoSizeCSS: "") +
       displayHTML.substring(headPos);
     // console.log("html", displayHTML);
-    dataURL = await stringToDataURL("text/html", displayHTML);
+    dataURL = stringToBlobURL("text/html", displayHTML);
   }
 
   let webviewE: HTMLIFrameElement = null;

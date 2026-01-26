@@ -40,6 +40,11 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
   });
 }
 
+export function stringToBlobURL(mimetype: string, content: string): string {
+  const blob = new Blob([content], { type: mimetype });
+  return URL.createObjectURL(blob);
+}
+
 export function stringFromDataURL(dataURL: URLString, mimetype: string): string | null {
   console.log("altrep URL", dataURL);
   if (!dataURL || typeof (dataURL) != "string" ||
