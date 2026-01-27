@@ -62,7 +62,7 @@ export function stringToBlobURL(mimetype: string, content: string): BlobURL {
   const blob = new Blob([content], { type: mimetype + ";charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const blobURL: BlobURL = { url };
-  blobURLCache.setValue(cacheKey, blobURL, blob.size >> 2); // final param makes blobs >400 KB more like to be removed
+  blobURLCache.setValue(cacheKey, blobURL, blob.size >> 2); // final param makes blobs >400 KB more likely to be removed
   blobURLReleasers.register(blobURL, url);
   return blobURL;
 }
