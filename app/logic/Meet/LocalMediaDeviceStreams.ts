@@ -38,8 +38,7 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     await this.setCameraMicOn(this._cameraOn, on, this._cameraDevice, device);
   }
   async setCameraMicOn(cameraOn: boolean, micOn: boolean, cameraDevice: string = this._cameraDevice, micDevice: string = this._micDevice) {
-    let platform = await appGlobal.remoteApp.platform();
-    const isMac = platform == "darwin";
+    const isMac = navigator.platform?.includes("Mac");
     if (isMac) {
       if (cameraOn) {
         let cameraAccess = await appGlobal.remoteApp.askForMediaAccess('camera');
