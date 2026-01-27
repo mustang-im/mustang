@@ -1,5 +1,6 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../logic/util/util";
+import { WeakLRUCache } from "weak-lru-cache";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -40,9 +41,30 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
   });
 }
 
-export function stringToBlobURL(mimetype: string, content: string): string {
-  const blob = new Blob([content], { type: mimetype });
-  return URL.createObjectURL(blob);
+export interface BlobURL {
+  url: string;
+}
+
+function releaseBlobURL(url: string) {
+  console.log("Releasing blob URL", url);
+  URL.revokeObjectURL(url);
+}
+
+const blobURLReleasers = new FinalizationRegistry<string>(releaseBlobURL);
+const blobURLCache = new WeakLRUCache<string, BlobURL>({ cacheSize: 20 });
+
+export function stringToBlobURL(mimetype: string, content: string): BlobURL {
+  const cacheKey = `${mimetype}:${content}`;
+  let cached = blobURLCache.getValue(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const blob = new Blob([content], { type: mimetype + ";charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const blobURL: BlobURL = { url };
+  blobURLCache.setValue(cacheKey, blobURL, blob.size >> 2); // final param makes blobs >400 KB more like to be removed
+  blobURLReleasers.register(blobURL, url);
+  return blobURL;
 }
 
 export function stringFromDataURL(dataURL: URLString, mimetype: string): string | null {

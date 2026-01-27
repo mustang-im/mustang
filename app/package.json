@@ -66,6 +66,7 @@
     "tsdav": "^2.1.4",
     "vite-plugin-wasm": "^3.5.0",
     "volume-meter": "^2.0.1",
+    "weak-lru-cache": "^1.2.2",
     "ws": "^8.16.0"
   },
   "devDependencies": {
