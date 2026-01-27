@@ -46,6 +46,8 @@
   import RejectIcon from "lucide-svelte/icons/ban";
   import { t } from "../../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ changed: Date }>();
 
   export let time: Date;
   export let myVotes: ArrayColl<TSMLMeetingTimeVote>;
@@ -57,6 +59,7 @@
       time,
       preference,
     } as TSMLMeetingTimeVote);
+    dispatchEvent("changed", time);
   }
 
   function getPreference(myVotes: ArrayColl<TSMLMeetingTimeVote>, time: Date): TSMLMeetingTimePreference {

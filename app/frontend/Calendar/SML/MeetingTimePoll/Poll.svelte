@@ -25,7 +25,7 @@
       <Scroll slot="left">
         <vbox class="list">
           <DisplayList {options} duration={timePoll.duration} showEndTime={true}
-            on:optionclick={(ev) => focusOption = ev.detail}>
+            on:optionclick={ev => focusOption = ev.detail}>
             <!--<Button
               label={$t`Show in calendar`}
               icon={CalendarIcon}
@@ -34,7 +34,7 @@
               slot="center"
               let:option
               />-->
-            <PollTimeButtons time={option} {myVotes} slot="right" let:option />
+            <PollTimeButtons time={option} {myVotes} slot="right" let:option on:changed={() => focusOption = option} />
           </DisplayList>
         </vbox>
       </Scroll>
