@@ -1,7 +1,9 @@
-<div class="error value">
-  {console.error(ex), logError(ex), ""}
-  {ex.message ?? ex + ""}
-</div>
+{#if ex}
+  <div class="error value">
+    {console.error(ex), logError(ex), ""}
+    {ex.message ?? ex + ""}
+  </div>
+{/if}
 
 <script lang="ts">
   import { logError } from "../Util/error";
