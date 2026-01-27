@@ -35,7 +35,7 @@
       {/if}
     </hbox>
   </vbox>
-  {#if width > 600}
+  {#if $message.event && width > 600}
     <EventInDayView event={$message.event} />
   {/if}
 </hbox>

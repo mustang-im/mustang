@@ -23,7 +23,7 @@
       {getTimeString(time)}
     </vbox>
     <vbox class="duration font-small">
-      {getDurationString(bookMe.duration * 60 * 1000)}
+      {getDurationString(bookMe.duration * 60000)}
     </vbox>
   </vbox>
   <hbox flex />
@@ -46,7 +46,6 @@
   import { getDateString, getDurationString, getTimeString } from "../../../Util/date";
   import { t } from "../../../../l10n/l10n";
   import RoundButton from "../../../Shared/RoundButton.svelte";
-  import { onMount } from "svelte";
 
   export let bookMe: TSMLBookMe;
   export let time: Date;
@@ -62,12 +61,6 @@
     bookMe.state = TSMLBookMeState.Select;
     myReaction.state = bookMe.state; // TODO
   }
-
-  onMount(() => {
-    if (myReaction?.agent?.email == bookMe.organizer?.email) { // Preview in composer
-      setTimeout(onCancel, 1000);
-    }
-  });
 </script>
 
 <style>

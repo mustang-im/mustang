@@ -31,6 +31,9 @@
 </script>
 
 <style>
+  .poll {
+    align-items: center;
+  }
   fieldset {
     border: none;
     margin: 24px 12px 12px 12px;

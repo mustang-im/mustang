@@ -3,7 +3,7 @@ import type { URLString } from "../../util/util";
 export interface TSMLThing {
   /** Name of the class.
    * Without `TSML`, without `https://schema.org/`.
-   * E.g. `@type: "Foo"` = `https://schema.org/Foo` */
+   * E.g. `@type: "Foo"` = `https://schema.org/Foo` = `TSMLFoo` */
   "@type": string;
   /** UUID */
   "@id"?: string;
@@ -13,7 +13,8 @@ export interface TSMLThing {
 }
 
 export interface TSMLPerson extends TSMLThing {
-  /** name: full name of the person */
+  /* name = full name of the person */
+
   email: string;
 }
 
@@ -57,8 +58,11 @@ export interface TSMLRequest extends TSMLThing {
 /** Asking a question. The responents need to choose
  * one or multiple from the predefined answers. */
 export interface TSMLSimplePoll<PollOption extends TSMLThing | Date> extends TSMLRequest {
-  /** name: The question to answer with this choice */
-  /** description: Further details about the question */
+  /* name = The question to answer with this choice */
+  /* description = Further details about the question */
+  /* potentialAction = must contain a `ChooseAction` */
+  /* reactions = must be `ChooseAction`s */
+
   /** false = respondent can only pick one of the options
    *  true = respondent can choose multiple one of the options */
   selectMultiple: boolean,
@@ -70,8 +74,6 @@ export interface TSMLSimplePoll<PollOption extends TSMLThing | Date> extends TSM
   ends: Date;
   /** Which choices the respondents have. */
   options: PollOption[];
-  /** potentialAction: must contain a `ChooseAction` */
-  /** reactions: must be `ChooseAction`s */
 }
 
 /** When should the meeting happen? The responents need to choose
@@ -104,7 +106,7 @@ export enum TSMLMeetingTimePreference {
   Reject = "reject",
   /** Not sure yet */
   Maybe = "maybe",
-  /** Cannot attend at this time */
+  /** Problematic, i.e. possible only with difficulties */
   Bad = "bad",
 }
 

@@ -12,6 +12,7 @@
         {$t`Requested meeting`}
       </vbox>
     {/if}
+    <!--
     <vbox class="time font-large">
       {getDateString(time)}
     </vbox>
@@ -19,9 +20,9 @@
       {getTimeString(time)}
     </vbox>
     <vbox class="duration font-small">
-      {getDurationString(bookMe.duration)}
+      {getDurationString(bookMe.duration * 60000)}
     </vbox>
-    <hbox flex />
+    -->
     <hbox class="title selectable">
       {event.title ?? ""}
     </hbox>

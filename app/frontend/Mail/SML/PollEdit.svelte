@@ -8,7 +8,8 @@
     <hbox class="option added">
       <input type="radio" name="poll" disabled>
       <vbox>
-        <input type="text" class="title" bind:value={option.name} />
+        <input type="text" class="title" bind:value={option.name}
+          on:keydown={(event) => onKeyEnter(event, onNewLine)} />
       </vbox>
     </hbox>
   {/each}
@@ -23,6 +24,7 @@
 <script lang="ts">
   import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
+  import { onKeyEnter } from "../../Util/util";
   import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";
 
