@@ -86,6 +86,7 @@
 
   async function onContinue() {
     try {
+      await config.login(true);
       await config.save();
       appGlobal.chatAccounts.add(config);
       showPage = null;
