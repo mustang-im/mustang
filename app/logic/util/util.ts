@@ -36,6 +36,19 @@ export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }
 
+export function stringToShortHashKey(str: string): string {
+  let hash = 0x811c9dc5; // FNV offset basis
+
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    // 0x01000193 is the FNV prime
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  // Return as unsigned 32-bit base36 string for maximum compactness
+  return (hash >>> 0).toString(36);
+}
+
 export async function blobToBase64(blob: Blob): Promise<string> {
   let dataURL = await blobToDataURL(blob)
   return dataURL.split(",")[1];

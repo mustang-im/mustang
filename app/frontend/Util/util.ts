@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import type { URLString } from "../../logic/util/util";
+import { stringToShortHashKey, type URLString } from "../../logic/util/util";
 import { WeakLRUCache } from "weak-lru-cache";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
@@ -54,7 +54,7 @@ const blobURLReleasers = new FinalizationRegistry<string>(releaseBlobURL);
 const blobURLCache = new WeakLRUCache<string, BlobURL>({ cacheSize: 20 });
 
 export function stringToBlobURL(mimetype: string, content: string): BlobURL {
-  const cacheKey = `${mimetype}:${content}`;
+  const cacheKey = stringToShortHashKey(`${mimetype}:${content}`);
   let cached = blobURLCache.getValue(cacheKey);
   if (cached) {
     return cached;
