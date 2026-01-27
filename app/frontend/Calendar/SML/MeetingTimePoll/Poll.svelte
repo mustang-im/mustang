@@ -17,13 +17,15 @@
   </vbox>
 
   {#if showCalendar}
-    <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={7} />
+    <PollCalendar {options} duration={timePoll.duration} {focusOption} showDays={7}>
+      <PollTimeButtons time={start} {myVotes} slot="event-buttons" let:start />
+    </PollCalendar>
   {:else}
     <Splitter>
       <Scroll slot="left">
         <vbox class="list">
           <DisplayList {options} duration={timePoll.duration} showEndTime={true}
-            on:optionclick={(ev) => { console.log("focus option", ev.detail); focusOption = ev.detail} }>
+            on:optionclick={(ev) => focusOption = ev.detail}>
             <!--<Button
               label={$t`Show in calendar`}
               icon={CalendarIcon}
@@ -36,7 +38,7 @@
           </DisplayList>
         </vbox>
       </Scroll>
-      <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={1} slot="right">
+      <PollCalendar {options} duration={timePoll.duration} {focusOption} showDays={1} slot="right">
         <PollTimeButtons time={start} {myVotes} slot="event-buttons" let:start />
       </PollCalendar>
     </Splitter>

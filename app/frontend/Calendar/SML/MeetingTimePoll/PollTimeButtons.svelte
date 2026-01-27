@@ -65,19 +65,19 @@
 </script>
 
 <style>
-  .buttons :global(button.accept) {
-    color: rgb(0, 182, 0);
-  }
   .buttons :global(button.accept svg) {
     stroke-width: 3px;
   }
-  .buttons :global(button.maybe) {
+  .buttons :global(button.accept .icon) {
+    color: rgb(0, 182, 0);
+  }
+  .buttons :global(button.maybe .icon) {
     color: orange;
   }
-  .buttons :global(button.bad) {
+  .buttons :global(button.bad .icon) {
     color: rgb(255, 102, 0);
   }
-  .buttons :global(button.reject) {
+  .buttons :global(button.reject .icon) {
     color: red;
   }
 </style>

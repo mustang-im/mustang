@@ -22,8 +22,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import Poll from "./Poll.svelte";
   import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
-  import Book from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
-  //import Book from "../../Calendar/SML/BookMe/Book.svelte";
+  import Book from "../../Calendar/SML/BookMe/Book.svelte";
   import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
 
   export let sml: SMLData;

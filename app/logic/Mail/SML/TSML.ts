@@ -84,18 +84,6 @@ export interface TSMLTimePoll extends TSMLSimplePoll<Date> {
   duration: number;
 }
 
-/** When should the meeting happen? The responent needs to choose
- * one from the predefined time slots.
- * The organizer should be free at any of the proposed time slots,
- * at least at the time of asking.
- * Once the respondent picks a time slot and responds, the meeting should be set
- * immediately at that time slot,
- * unless the organizer was booked in the meantime between question and answer.
- * TODO Define that final commitment exchange. iCal or SML? */
-export interface TSMLBookMe extends TSMLTimePoll {
-  selectMultiple: false,
-}
-
 /** When should the meeting of multiple people happen?
  * The responents need to choose one or better multiple from the predefined time slots.
  * This allows the organizer to pick a time that suits the group best. */
@@ -118,4 +106,38 @@ export enum TSMLMeetingTimePreference {
   Maybe = "maybe",
   /** Cannot attend at this time */
   Bad = "bad",
+}
+
+/** When should the meeting happen? The responent needs to choose
+ * one from the predefined time slots.
+ * The organizer should be free at any of the proposed time slots,
+ * at least at the time of asking.
+ * Once the respondent picks a time slot and responds, the meeting should be set
+ * immediately at that time slot,
+ * unless the organizer was booked in the meantime between question and answer.
+ * TODO Define that final commitment exchange. iCal or SML? */
+export interface TSMLBookMe extends TSMLTimePoll {
+  selectMultiple: false,
+  state: TSMLBookMeState,
+}
+
+/** The states that the booking process can be in.
+ * The states are in a strict sequence and are listed in the order that they must happen. */
+export enum TSMLBookMeState {
+  /** Before: We have received suggestions from the sender when he is free.
+   * In this state: The user selects one of the options. */
+  Select = "select",
+  /** Before: The user selected one of the options
+   * In this state: The user needs to re-affirm us that he wants to
+   *   book that particular time option */
+  UserConfirm = "user-confirm",
+  /** Before: The user has confirmed that he wants this time option
+   * In this state: We are waiting for the sender to confirm that this option is still available
+   *   and that he booked that appointment.
+   *   TODO: Should this come in form of SML or in form of an classic iCal iMIP? */
+  UserConfirmed = "user-confirmed",
+  /** Before: The sender has sent us confirmation that one of the time options
+   * is also firmly booked on his side.
+   * In this state: The appointment is firm on both sides. */
+  BothConfirmed = "confirmed",
 }

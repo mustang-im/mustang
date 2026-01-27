@@ -1,5 +1,5 @@
 import { SMLData } from "./SMLData";
-import { TSMLActionStatus, type TSMLBookMe, type TSMLMeetingTimePoll, type TSMLPerson, type TSMLChooseAction, type TSMLSimplePoll, type TSMLThing } from "./TSML";
+import { TSMLActionStatus, type TSMLBookMe, type TSMLMeetingTimePoll, type TSMLPerson, type TSMLChooseAction, type TSMLSimplePoll, type TSMLThing, TSMLBookMeState } from "./TSML";
 import type { MailIdentity } from "../MailIdentity";
 import { assert } from "../../util/util";
 
@@ -70,6 +70,7 @@ export function createBookMe(identity: MailIdentity): SMLData {
     "@type": "BookMe",
     options: [],
     duration: 60,
+    state: TSMLBookMeState.Select,
     potentialReaction: [
       {
         "@type": "ChooseAction",

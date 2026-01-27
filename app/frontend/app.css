@@ -219,6 +219,9 @@ value,
 .font-normal {
   font-size: 16px;
 }
+.font-large {
+  font-size: 24px;
+}
 .mobile .font-smallest {
   font-size: 14px;
 }
