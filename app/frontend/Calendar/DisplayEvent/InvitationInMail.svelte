@@ -1,4 +1,4 @@
-<hbox class="invitation" bind:this={invitationE}>
+<hbox class="invitation" bind:offsetWidth={width}>
   <vbox class="appointment">
     {#if $message.event}
       <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
@@ -35,7 +35,7 @@
       {/if}
     </hbox>
   </vbox>
-  {#if invitationE?.offsetWidth > 600}
+  {#if width > 600}
     <vbox class="calendar">
       <hbox class="date">
         {getFormattedDateString(calendarStart, { weekday: "short", day: "numeric", month: "short" })}
@@ -75,7 +75,7 @@
   let event: Event | undefined;
   $: calendarStart = new Date($message.event?.startTime?.getTime())
   $: allEvents = mergeEvents($message.event);
-  let invitationE: HTMLDivElement;
+  let width: number;
 
   $: if (message.event) {
     loadCalendars();
