@@ -32,29 +32,31 @@
               slot="center"
               let:option
               />-->
-            <PollTimeButtons slot="right" let:option time={option} {myVotes} />
+            <PollTimeButtons time={option} {myVotes} slot="right" let:option />
           </DisplayList>
         </vbox>
       </Scroll>
-      <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={1} slot="right" />
+      <PollCalendar {options} duration={timePoll.duration} {myVotes} {focusOption} showDays={1} slot="right">
+        <PollTimeButtons time={start} {myVotes} slot="event-buttons" let:start />
+      </PollCalendar>
     </Splitter>
   {/if}
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLData";
-  import { type TSMLTimePoll, type TSMLMeetingTimeVote, TSMLMeetingTimePreference, type TSMLAction } from "../../../logic/Mail/SML/TSML";
-  import PollCalendar from "./PollCalendar.svelte";
+  import { SMLData } from "../../../../logic/Mail/SML/SMLData";
+  import type { TSMLTimePoll, TSMLMeetingTimeVote, TSMLAction } from "../../../../logic/Mail/SML/TSML";
+  import PollCalendar from "../Shared/PollCalendar.svelte";
   import PollTimeButtons from "./PollTimeButtons.svelte";
-  import DisplayList from "./DisplayList.svelte";
-  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import DisplayList from "../Shared/DisplayList.svelte";
+  import IslandSwitcher from "../../../Shared/IslandSwitcher.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import ListIcon from "lucide-svelte/icons/list";
   import CalendarIcon from "lucide-svelte/icons/calendar";
-  import { syncArrayColl } from "../../../logic/util/collections";
-  import { t } from "../../../l10n/l10n";
-  import Splitter from "../../Shared/Splitter.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
+  import { syncArrayColl } from "../../../../logic/util/collections";
+  import { t } from "../../../../l10n/l10n";
+  import Splitter from "../../../Shared/Splitter.svelte";
+  import Scroll from "../../../Shared/Scroll.svelte";
 
   export let sml: SMLData;
   export let myReaction: TSMLAction;

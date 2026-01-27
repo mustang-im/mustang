@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import DisplayList from "./DisplayList.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
   import { Collection } from "svelte-collections";
 
   export let options: Collection<Date>;

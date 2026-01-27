@@ -50,18 +50,18 @@
 </vbox>
 
 <script lang="ts">
-  import { Event } from "../../../logic/Calendar/Event";
-  import { getToday } from "../../Util/date";
-  import { appGlobal } from "../../../logic/app";
-  import DayViewGrid from "../DayView/DayViewGrid.svelte";
+  import { Event } from "../../../../logic/Calendar/Event";
+  import { getToday } from "../../../Util/date";
+  import { appGlobal } from "../../../../logic/app";
+  import DayViewGrid from "../../DayView/DayViewGrid.svelte";
   import EventProposal from "./EventProposal.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import DateRange from "../../DateRange.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import AcceptedIcon from "lucide-svelte/icons/check";
   import RemoveIcon from "lucide-svelte/icons/x";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
   import { Collection } from "svelte-collections";
-  import DateRange from "../DateRange.svelte";
 
   export let options: Collection<Date>;
   /** in minutes */

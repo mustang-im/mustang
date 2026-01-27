@@ -8,7 +8,7 @@
     <MeetingTimePoll {sml} {myReaction} />
   {/if}
   {#if $sml.type == "BookMe"}
-    <MeetingTimePoll {sml} {myReaction} />
+    <Book {sml} {myReaction} />
   {/if}
 {/if}
 
@@ -21,9 +21,10 @@
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { EMail } from "../../../logic/Mail/EMail";
   import Poll from "./Poll.svelte";
-  import MeetingTimePoll from "../../Calendar/SML/Poll.svelte";
+  import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
+  import Book from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
+  //import Book from "../../Calendar/SML/BookMe/Book.svelte";
   import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
 
   export let sml: SMLData;
   export let message: EMail | null = null;

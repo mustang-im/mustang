@@ -17,14 +17,14 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLData } from "../../../logic/Mail/SML/SMLData";
-  import type { TSMLTimePoll } from "../../../logic/Mail/SML/TSML";
+  import { SMLData } from "../../../../logic/Mail/SML/SMLData";
+  import type { TSMLTimePoll } from "../../../../logic/Mail/SML/TSML";
   import EditCalendar from "./EditCalendar.svelte";
   import EditList from "./EditList.svelte";
-  import DurationSelector from "../EditEvent/DurationSelector.svelte";
-  import Splitter from "../../Shared/Splitter.svelte";
-  import { syncArrayColl } from "../../../logic/util/collections";
-  import { t } from "../../../l10n/l10n";
+  import DurationSelector from "../../EditEvent/DurationSelector.svelte";
+  import Splitter from "../../../Shared/Splitter.svelte";
+  import { syncArrayColl } from "../../../../logic/util/collections";
+  import { t } from "../../../../l10n/l10n";
 
   export let sml: SMLData;
   $: timePoll = $sml.sml as any as TSMLTimePoll;

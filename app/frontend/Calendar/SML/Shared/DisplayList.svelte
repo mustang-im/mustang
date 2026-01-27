@@ -29,7 +29,7 @@
 </vbox>
 
 <script lang="ts">
-  import { getDateString, getTimeString } from "../../Util/date";
+  import { getDateString, getTimeString } from "../../../Util/date";
   import { Collection } from "svelte-collections";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ optionclick: Date }>();

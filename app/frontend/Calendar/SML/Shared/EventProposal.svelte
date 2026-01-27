@@ -16,8 +16,8 @@
 </hbox>
 
 <script lang="ts">
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
-  import Toolbar from "../../Shared/Toolbar/Toolbar.svelte";
+  import { getDateTimeFormatPref } from "../../../../l10n/l10n";
+  import Toolbar from "../../../Shared/Toolbar/Toolbar.svelte";
 
   export let start: Date;
   export let end: Date;

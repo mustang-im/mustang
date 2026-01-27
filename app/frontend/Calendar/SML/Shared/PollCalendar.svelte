@@ -13,27 +13,24 @@
     >
     <hbox class="option" slot="event-overlay" let:start let:end>
       <EventProposal {start} {end}>
-        <PollTimeButtons slot="buttons" time={start} {myVotes} />
+        <slot name="event-buttons" slot="buttons" {start} {end} />
       </EventProposal>
     </hbox>
   </DayViewGrid>
 </vbox>
 
 <script lang="ts">
-  import type { TSMLMeetingTimeVote } from "../../../logic/Mail/SML/TSML";
-  import { Event } from "../../../logic/Calendar/Event";
-  import { getToday } from "../../Util/date";
-  import { appGlobal } from "../../../logic/app";
-  import PollTimeButtons from "./PollTimeButtons.svelte";
-  import DayViewGrid from "../DayView/DayViewGrid.svelte";
+  import { Event } from "../../../../logic/Calendar/Event";
+  import { getToday } from "../../../Util/date";
+  import { appGlobal } from "../../../../logic/app";
+  import DayViewGrid from "../../DayView/DayViewGrid.svelte";
   import EventProposal from "./EventProposal.svelte";
-  import DateRange from "../DateRange.svelte";
-  import type { ArrayColl, Collection } from "svelte-collections";
+  import DateRange from "../../DateRange.svelte";
+  import type { Collection } from "svelte-collections";
 
   export let options: Collection<Date>;
   /** in minutes */
   export let duration: number;
-  export let myVotes: ArrayColl<TSMLMeetingTimeVote>;
   export let focusOption: Date = getToday();
   export let showDays: 1 | 2 | 7 = 2;
 

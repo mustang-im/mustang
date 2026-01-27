@@ -10,9 +10,11 @@
     <hbox class="buttons">
       <Button
         label={testSML ? $t`Edit` : $t`Preview`}
+        icon={testSML ? EditIcon : PreviewIcon}
         onClick={() => testSML = !testSML} />
       <Button
         label={$t`Remove`}
+        icon={RemoveIcon}
         onClick={onRemove} />
     </hbox>
   </vbox>
@@ -23,6 +25,9 @@
   import SMLEditKinds from "../SML/SMLEditKinds.svelte";
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import Button from "../../Shared/Button.svelte";
+  import PreviewIcon from "lucide-svelte/icons/check-line";
+  import EditIcon from "lucide-svelte/icons/pencil";
+  import RemoveIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;

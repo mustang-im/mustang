@@ -24,10 +24,10 @@
 {/if}
 
 <script lang="ts">
-  import RoundButton from "../../Shared/RoundButton.svelte";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import OKIcon from "lucide-svelte/icons/check";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
   import { Collection } from "svelte-collections";
 
   export let options: Collection<Date>;

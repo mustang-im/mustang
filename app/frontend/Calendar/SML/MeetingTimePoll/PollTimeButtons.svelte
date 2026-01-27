@@ -38,13 +38,13 @@
 </hbox>
 
 <script lang="ts">
-  import { type TSMLMeetingTimeVote, TSMLMeetingTimePreference } from "../../../logic/Mail/SML/TSML";
-  import Button from "../../Shared/Button.svelte";
+  import { type TSMLMeetingTimeVote, TSMLMeetingTimePreference } from "../../../../logic/Mail/SML/TSML";
+  import Button from "../../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check";
   import MaybeIcon from "lucide-svelte/icons/badge-question-mark";
   import BadIcon from "lucide-svelte/icons/frown";
   import RejectIcon from "lucide-svelte/icons/ban";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
 
   export let time: Date;
