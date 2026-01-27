@@ -1,7 +1,9 @@
 {#if mail.sml}
   <vbox class="sml">
     {#if testSML}
-      <SMLDisplayKinds sml={mail.sml} message={mail} />
+      <vbox class="preview">
+        <SMLDisplayKinds sml={mail.sml} message={mail} />
+      </vbox>
     {:else}
       <SMLEditKinds sml={mail.sml} />
     {/if}
@@ -39,5 +41,8 @@
   .sml .buttons {
     margin: 12px;
     gap: 12px;
+  }
+  .preview {
+    height: 50vh;
   }
 </style>

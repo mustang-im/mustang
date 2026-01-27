@@ -1,8 +1,8 @@
 <vbox class="poll-create" bind:this={pollE}>
-  <hbox class="question">
+  <!--<hbox class="question">
     <hbox class="label">{$t`Question`}</hbox>
     <input type="text" bind:value={poll.name} />
-  </hbox>
+  </hbox>-->
   <hbox class="label answers">{$t`Possible answers`}</hbox>
   {#each poll.options as option}
     <hbox class="option added">

@@ -7,7 +7,7 @@
     <hbox class="label">{$t`Duration`}</hbox>
     <DurationSelector bind:duration={timePoll.duration} />
   </hbox>
-  <Splitter initialRightRatio={0.3} leftMinWidth={600} rightMinWidth={300}>
+  <Splitter initialRightRatio={0.3} leftMinWidth={600} rightMinWidth={300} name="meeting-time-poll-edit">
     <EditCalendar {options} duration={timePoll.duration} slot="left" />
     <vbox class="list" slot="right">
       <hbox class="label answers">{$t`Possible times`}</hbox>
