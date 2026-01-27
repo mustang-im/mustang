@@ -33,7 +33,7 @@
   .buttons :global(button.accept svg) {
     stroke-width: 3px;
   }
-  .buttons :global(button.accept .icon) {
+  .buttons :global(button.accept:not(.selected) .icon) {
     color: rgb(0, 182, 0);
   }
 </style>

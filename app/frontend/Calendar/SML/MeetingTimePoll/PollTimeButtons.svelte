@@ -71,16 +71,16 @@
   .buttons :global(button.accept svg) {
     stroke-width: 3px;
   }
-  .buttons :global(button.accept .icon) {
+  .buttons :global(button.accept:not(.selected) .icon) {
     color: rgb(0, 182, 0);
   }
-  .buttons :global(button.maybe .icon) {
+  .buttons :global(button.maybe:not(.selected) .icon) {
     color: orange;
   }
-  .buttons :global(button.bad .icon) {
+  .buttons :global(button.bad:not(.selected) .icon) {
     color: rgb(255, 102, 0);
   }
-  .buttons :global(button.reject .icon) {
+  .buttons :global(button.reject:not(.selected) .icon) {
     color: red;
   }
 </style>
