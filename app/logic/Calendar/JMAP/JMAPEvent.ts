@@ -25,6 +25,7 @@ export class JMAPEvent extends Event {
   }
 
   async saveToServer() {
+    await this.prepareSaveToServer();
   }
 
   async deleteFromServer() {

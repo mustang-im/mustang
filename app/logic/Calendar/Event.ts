@@ -4,6 +4,7 @@ import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
+import type { MeetAccount } from "../Meet/MeetAccount";
 import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
@@ -196,6 +197,11 @@ export class Event extends Observable {
   onlineMeetingURL: string;
   @notifyChangedProperty
   isOnline = false;
+  /** When saving, if this is set and `onlineMeetingURL` is not,
+   * then use this account to create an online meeting and
+   * put the URL in `onlineMeetingURL` */
+  @notifyChangedProperty
+  createOnlineMeetingWithAccount: MeetAccount | null = null;
   @notifyChangedObservable
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
@@ -501,6 +507,13 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
+  async createOnlineMeeting() {
+    if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
+      return;
+    }
+    this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
@@ -590,7 +603,16 @@ export class Event extends Observable {
     }
   }
 
+  async prepareSaveToServer(): Promise<void> {
+    await this.createOnlineMeeting();
+  }
+
   async saveToServer(): Promise<void> {
+    await this.prepareSaveToServer();
+    await this.sendInvitationsDirectly();
+  }
+
+  async sendInvitationsDirectly(): Promise<void> {
     this.calUID ??= crypto.randomUUID();
     if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
       await this.outgoingInvitation.sendInvitations();

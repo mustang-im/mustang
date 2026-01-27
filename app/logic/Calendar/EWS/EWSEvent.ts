@@ -152,6 +152,8 @@ export class EWSEvent extends Event {
   }
 
   async saveToServer() {
+    await this.prepareSaveToServer();
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
