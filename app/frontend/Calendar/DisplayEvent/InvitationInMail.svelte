@@ -36,20 +36,7 @@
     </hbox>
   </vbox>
   {#if width > 600}
-    <vbox class="calendar">
-      <hbox class="date">
-        {getFormattedDateString(calendarStart, { weekday: "short", day: "numeric", month: "short" })}
-      </hbox>
-      <DayViewGrid
-        events={allEvents}
-        start={calendarStart}
-        showHours={4}
-        showDays={1}
-        defaultFocusHour={calendarStart.getHours() + calendarStart.getMinutes() / 60 - 1}
-        >
-        <slot slot="day-header" />
-      </DayViewGrid>
-    </vbox>
+    <EventInDayView event={$message.event} />
   {/if}
 </hbox>
 
@@ -59,22 +46,18 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { appGlobal } from "../../../logic/app";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
-  import DayViewGrid from "../DayView/DayViewGrid.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
-  import { getFormattedDateString } from "../../Util/date";
-  import { SetColl, type Collection } from "svelte-collections";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import EventInDayView from "./EventInDayView.svelte";
 
   export let message: EMail;
   let calendars: Collection<Calendar>;
   let selectedCalendar: Calendar | undefined; // undefined, because `null` means "All accounts" for `<AccountDropDown>`
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
-  $: calendarStart = new Date($message.event?.startTime?.getTime())
-  $: allEvents = mergeEvents($message.event);
   let width: number;
 
   $: if (message.event) {
@@ -109,24 +92,12 @@
       await incomingInvitation.updateFromOtherInvitationMessage();
     }
   }
-
-  function mergeEvents(newEvent: Event): Collection<Event> {
-    let all = new SetColl(appGlobal.calendarEvents);
-    if (newEvent) {
-      newEvent.color = "#20AE9E";
-      all.add(newEvent);
-    }
-    return all;
-  }
 </script>
 
 <style>
   .appointment {
     padding: 24px 32px;
     flex: 2 0 0;
-  }
-  .calendar {
-    flex: 1 0 0;
   }
   .buttons {
     align-items: center;
@@ -139,18 +110,5 @@
     padding: 8px 12px;
     border-radius: 3px;
     margin: 8px;
-  }
-  .date {
-    justify-content: center;
-  }
-  .calendar :global(.header) {
-    background-color: var(--leftbar-bg);
-  }
-  .calendar :global(.time.label) {
-    width: 1.1em;
-    max-height: 1.3em;
-    overflow: hidden;
-    font-size: 70%;
-    margin-inline-end: 6px;
   }
 </style>

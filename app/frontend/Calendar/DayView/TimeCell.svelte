@@ -13,8 +13,8 @@
 
   {#if $displayOverlayEvents.hasItems}
     {#each $displayOverlayEvents.each as event}
-      <EventContainer event={event} {start} {end} {conflicts}>
-        <slot name="event-overlay" start={event.startTime} {end} events={displayEvents} />
+      <EventContainer {event} {start} {end} {conflicts}>
+        <slot name="event-overlay" start={event.startTime} {end} {event} events={displayEvents} />
       </EventContainer>
     {/each}
   {/if}

@@ -25,7 +25,7 @@
           <TimeLabel {time} />
         </slot>
         <TimeDayRow {days} {time} events={visibleEvents} {overlayEvents} on:celldblclick>
-          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:events {events} />
+          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} let:events {events} />
           <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} let:events {events} />
         </TimeDayRow>
       {/each}

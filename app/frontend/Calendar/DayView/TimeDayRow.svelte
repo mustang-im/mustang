@@ -1,6 +1,6 @@
 {#each startTimes as start}
   <TimeCell {start} {events} {overlayEvents} intervalInHours={1} on:celldblclick>
-    <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:events {events} />
+    <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} let:events {events} />
     <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} let:events {events} />
   </TimeCell>
 {/each}
