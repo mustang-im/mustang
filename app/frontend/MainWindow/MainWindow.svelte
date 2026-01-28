@@ -32,16 +32,14 @@
         <NavigationM />
       </Router>
       // #else
-      {#if $selectedApp}
-        <Router {basepath} primary={false}>
-          <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
-            <AppContentRoutes slot="left"/>
-            <vbox flex class="sidebar" slot="right">
-              <svelte:component this={sidebar} />
-            </vbox>
-          </Splitter>
-        </Router>
-      {/if}
+      <Router {basepath} primary={false}>
+        <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
+          <AppContentRoutes slot="left"/>
+          <vbox flex class="sidebar" slot="right">
+            <svelte:component this={sidebar} />
+          </vbox>
+        </Splitter>
+      </Router>
       // #endif
     </vbox>
   </hbox>
