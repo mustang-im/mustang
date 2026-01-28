@@ -30,7 +30,15 @@ export function saveURLAsFile(url: URLString, filename: string) {
   a.href = '';
 }
 
-export async function stringToDataURL(mimetype: string, content: string): Promise<string> {
+/** Attention: You must call `URL.revokeObjectURL(), or we'll leak the entire blob. */
+export function stringToBlobURL(mimetype: string, content: string): URLString {
+  let blob = new Blob([content], { type: mimetype });
+  return URL.createObjectURL(blob);
+}
+
+/** Attention: Chrome doesn't support `data:` URLs larger than 2 MB.
+ * @see <https://groups.google.com/a/chromium.org/g/chromium-dev/c/zYYSVvn6a5M/m/WyZUweM4BAAJ> */
+export async function stringToDataURL(mimetype: string, content: string): Promise<URLString> {
   const bytes = new TextEncoder().encode(content);
   return await new Promise((resolve, reject) => {
     const reader = new FileReader();
