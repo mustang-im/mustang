@@ -1,6 +1,6 @@
 <hbox class="buttons">
   <Button
-    label={$t`Confirm`}
+    label={$t`Book *=> Confirm an appointmnet`}
     icon={AcceptIcon}
     onClick={() => onSelect(time)}
     classes="accept"
