@@ -69,9 +69,7 @@
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
-  import NavigationM from "./NavigationM.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
@@ -86,6 +84,8 @@
   import debounce from "lodash/debounce";
   import { Router } from "svelte-navigator";
   // #if [MOBILE]
+  import NavigationM from "./NavigationM.svelte";
+  import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import { SplashScreen } from '@capacitor/splash-screen';
   // #endif
 
