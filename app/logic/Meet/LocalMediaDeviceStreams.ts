@@ -3,6 +3,7 @@ import { appGlobal } from "../app";
 import { notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert } from "../util/util";
+import { webMail } from "../build";
 import { gt } from "../../l10n/l10n";
 
 /** Grabs the user's camera, mic or screen, and
@@ -38,7 +39,7 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     await this.setCameraMicOn(this._cameraOn, on, this._cameraDevice, device);
   }
   async setCameraMicOn(cameraOn: boolean, micOn: boolean, cameraDevice: string = this._cameraDevice, micDevice: string = this._micDevice) {
-    const isMac = navigator.platform?.includes("Mac");
+    const isMac = navigator.platform?.includes("Mac") && !webMail;
     if (isMac) {
       if (cameraOn) {
         let cameraAccess = await appGlobal.remoteApp.askForMediaAccess('camera');
