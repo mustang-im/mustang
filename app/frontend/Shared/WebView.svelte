@@ -1,8 +1,8 @@
 // #if [!WEBMAIL && !MOBILE]
-<webview bind:this={webviewE} src={url ?? blobURL?.url} {title} class:hidden {partition} />
+<webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden {partition} />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url ?? blobURL?.url} {title} class:hidden />
+<iframe bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
 // #endif
 
 <!--
@@ -27,7 +27,8 @@
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
   // #endif
-  import { type BlobURL, stringToBlobURL } from "../Util/util";
+  import { stringToDataURL } from "../Util/util";
+  import type { URLString } from "../../logic/util/util";
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -75,13 +76,13 @@
     }
   });
 
-  let blobURL: BlobURL;
+  let dataURL: URLString;
   $: html, setURL();
   async function setURL() {
     if (url) {
       return;
     }
-    blobURL = null;
+    dataURL = "";
     const autoSizeCSS = `<style>
       body {
         min-height: 0px !important;
@@ -103,7 +104,7 @@
       (autoSize ? autoSizeCSS: "") +
       displayHTML.substring(headPos);
     // console.log("html", displayHTML);
-    blobURL = stringToBlobURL("text/html", displayHTML);
+    dataURL = await stringToDataURL("text/html", displayHTML);
   }
 
   let webviewE: HTMLIFrameElement = null;
