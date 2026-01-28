@@ -32,7 +32,7 @@ export function saveURLAsFile(url: URLString, filename: string) {
 
 /** Attention: You must call `URL.revokeObjectURL(), or we'll leak the entire blob. */
 export function stringToBlobURL(mimetype: string, content: string): URLString {
-  let blob = new Blob([content], { type: mimetype });
+  let blob = new Blob([content], { type: mimetype + ";charset=utf-8" });
   return URL.createObjectURL(blob);
 }
 
