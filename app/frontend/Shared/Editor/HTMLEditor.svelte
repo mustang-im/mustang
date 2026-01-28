@@ -12,6 +12,7 @@
   import { Footer } from './Footer';
   import { BoldStar, ItalicSlash } from './StdConventions';
   import { ParagraphNewLine } from './ParagraphNewLine';
+  import { InsertLink } from './InsertLink';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -51,6 +52,9 @@
         BoldStar,
         ItalicSlash,
         ParagraphNewLine,
+        InsertLink.configure({
+          editorEl: rootEl,
+        }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),

@@ -26,6 +26,7 @@
     "@sentry/svelte": "^8.15.0",
     "@sentry/vite-plugin": "^2.22.6",
     "@tiptap/core": "^2.2.2",
+    "@tiptap/extension-bubble-menu": "^2.11.7",
     "@tiptap/extension-code": "^2.2.2",
     "@tiptap/extension-code-block-lowlight": "^2.2.2",
     "@tiptap/extension-image": "^2.2.4",
