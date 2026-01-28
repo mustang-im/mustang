@@ -21,17 +21,18 @@
     <vbox flex>
       <DemoBarTop />
       <NotificationBar notifications={$notifications} />
-      {#if appGlobal.isMobile}
-        <Router primary={false}>
-          <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
-            <vbox flex class="sidebar" slot="top">
-              <svelte:component this={sidebar} />
-            </vbox>
-            <AppContentRoutes slot="bottom" />
-          </SplitterHorizontal>
-          <NavigationM />
-        </Router>
-      {:else if $selectedApp}
+      // #if [MOBILE]
+      <Router primary={false}>
+        <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
+          <vbox flex class="sidebar" slot="top">
+            <svelte:component this={sidebar} />
+          </vbox>
+          <AppContentRoutes slot="bottom" />
+        </SplitterHorizontal>
+        <NavigationM />
+      </Router>
+      // #else
+      {#if $selectedApp}
         <Router {basepath} primary={false}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
@@ -41,6 +42,7 @@
           </Splitter>
         </Router>
       {/if}
+      // #endif
     </vbox>
   </hbox>
 </vbox>
