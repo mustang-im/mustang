@@ -28,7 +28,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   @notifyChangedProperty
   countNewArrived = 0;
   /**
-   * IMAP: modseq from CONDSTORE, as integer
+   * IMAP: modseq from CONDSTORE, as string
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;

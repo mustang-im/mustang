@@ -192,7 +192,7 @@ export class IMAPAccount extends MailAccount {
         assert(folder, `We don't know about this folder`);
         assert(!info.uid || typeof (info.uid) == "number", "Expected optional number for UID");
         assert(typeof (info.seq) == "number", "Expected number for seq");
-        assert(!info.modseq || typeof (info.modseq) == "number", "Expected number for modseq");
+        assert(!info.modseq || typeof (info.modseq) == "bigint", "Expected bigint for modseq");
         assert(info.flags instanceof Set, "Expected Set for flags");
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
