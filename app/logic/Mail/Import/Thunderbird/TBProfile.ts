@@ -1,9 +1,8 @@
 import type { MailAccount } from "../../MailAccount";
-import type { Account } from "../../../Abstract/Account";
 import { AuthMethod } from "../../../Abstract/Account";
 import { TLSSocketType } from "../../../Abstract/TCPAccount";
 import { MailIdentity } from "../../MailIdentity";
-import { SMTPAccount } from "../../SMTP/SMTPAccount";
+import type { SMTPAccount } from "../../SMTP/SMTPAccount";
 import { IMAPAccount } from "../../IMAP/IMAPAccount";
 import { POP3Account } from "../../POP3/POP3Account";
 import { EWSAccount } from "../../EWS/EWSAccount";
@@ -11,9 +10,7 @@ import { OWAAccount } from "../../OWA/OWAAccount";
 import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
-import { OAuth2URLs } from "../../../Auth/OAuth2URLs";
-import { OAuth2 } from "../../../Auth/OAuth2";
-import { OWAAuth } from "../../../Auth/OWAAuth";
+import { getOAuth2BuiltIn } from "../../../Auth/OAuth2Util";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, NotReached } from "../../../util/util";
@@ -104,18 +101,8 @@ export class ThunderbirdProfile {
         if (acc instanceof EWSAccount || acc instanceof OWAAccount || acc instanceof ActiveSyncAccount) {
           hostname = "outlook.office365.com";
         }
-        let url = OAuth2URLs.find(url => url.hostnames.includes(hostname));
-        assert(url, `${acc.name}: Need OAuth2 config for host ${hostname}`);
-        acc.oAuth2 = acc instanceof OWAAccount ? new OWAAuth(acc) : new OAuth2(
-          acc as any as Account,
-          url.tokenURL,
-          url.authURL,
-          url.authDoneURL,
-          url.scope,
-          url.clientID,
-          url.clientSecret,
-          url.doPKCE);
-        acc.oAuth2.setTokenURLPasswordAuth(url.tokenURLPasswordAuth);
+        acc.oAuth2 = getOAuth2BuiltIn(acc);
+        assert(acc.oAuth2, `${acc.name}: Need OAuth2 config for host ${hostname}`);
       }
 
       let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
