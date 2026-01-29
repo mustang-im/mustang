@@ -546,7 +546,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
       let cid = src.substring(4);
       let attachment = email.attachments.find(a => a.contentID == "<" + cid + ">");
       src = attachment?.content
-        ? await blobToDataURL(attachment.content)
+        ? attachment.blobURL
         : "";
       img.setAttribute("src", src);
     }
