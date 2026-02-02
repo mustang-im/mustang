@@ -20,6 +20,7 @@
     "@capacitor/file-viewer": "^2.0.0",
     "@capacitor/filesystem": "^7.1.4",
     "@capacitor/splash-screen": "^7.0.3",
+    "@capgo/inappbrowser": "^8.0.1",
     "@faker-js/faker": "^9.8.0",
     "@matrix-org/matrix-sdk-crypto-wasm": "^17.0.0",
     "@popperjs/core": "^2.11.8",
