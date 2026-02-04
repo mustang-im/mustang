@@ -80,8 +80,8 @@ export class IMAPFolder extends Folder {
         if (ex.code == "NoConnection") {
           conn = await this.account.reconnect(conn, purpose);
           if (doLock) {
-            lock = await this.account.connectionLock.get(conn).lock();
-            lockMailbox = await conn.getMailboxLock(this.path);
+            lock ??= await this.account.connectionLock.get(conn).lock();
+            lockMailbox ??= await conn.getMailboxLock(this.path);
           } else {
             await conn.mailboxOpen(this.path);
           }
