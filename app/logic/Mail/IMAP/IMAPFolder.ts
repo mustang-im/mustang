@@ -10,7 +10,7 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
-import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { ImapFlow, MailboxLockObject } from "../../../../backend/node_modules/imapflow";
 import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
@@ -62,14 +62,14 @@ export class IMAPFolder extends Folder {
   }
 
   async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
-    let lockMailbox;
-    let lock: Locked;
+    let mailboxLocks: MailboxLockObject[] = [];
+    let locks: Locked[] = [];
     try {
       let conn = connection ?? await this.account.connection(false, purpose);
       try {
         if (doLock) {
-          lock = await this.account.connectionLock.get(conn).lock();
-          lockMailbox = await conn.getMailboxLock(this.path);
+          locks.push(await this.account.connectionLock.get(conn).lock());
+          mailboxLocks.push(await conn.getMailboxLock(this.path));
         } else if (conn.mailbox.path == this.path) {
           // already open
         } else {
@@ -80,8 +80,8 @@ export class IMAPFolder extends Folder {
         if (ex.code == "NoConnection") {
           conn = await this.account.reconnect(conn, purpose);
           if (doLock) {
-            lock ??= await this.account.connectionLock.get(conn).lock();
-            lockMailbox ??= await conn.getMailboxLock(this.path);
+            locks.push(await this.account.connectionLock.get(conn).lock());
+            mailboxLocks.push(await conn.getMailboxLock(this.path));
           } else {
             await conn.mailboxOpen(this.path);
           }
@@ -100,8 +100,8 @@ export class IMAPFolder extends Folder {
         throw ex;
       }
     } finally {
-      lock?.release();
-      lockMailbox?.release();
+      locks.forEach(lock => lock.release());
+      mailboxLocks.forEach(mailboxLock => mailboxLock.release());
     }
   }
 
