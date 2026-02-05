@@ -39,7 +39,7 @@ export class IMAPFolder extends Folder {
 
   /** Last sequence number seen */
   get lastModSeq(): bigint {
-    return BigInt(this.syncState ?? 0);
+    return BigInt(this.syncState ?? 0n);
   }
   set lastModSeq(val: bigint) {
     assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
