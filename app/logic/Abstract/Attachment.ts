@@ -28,13 +28,30 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
-  /** Exists while editing or displaying.
-   * Created using `URL.createObjectURL(this.content)`.
-   * Must be cleared using `URL.revokeObjectURL()` when the window closes,
-   * otherwise we leak the entire attachment. */
-  blobURL: URLString;
+  protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
+
+  protected static urlFinalizer = new FinalizationRegistry((url: URLString) => {
+    URL.revokeObjectURL(url);
+  });
+
+  /** Exists while attachment is alive in memory.
+    * Don't `URL.revokeObjectURL()` manually because
+    * it will make the URL invalid somewhere else
+    * the FinalizationRegistry will take care of it.
+    */
+  get blobURL(): URLString {
+    if (this._blobURL) {
+      return this._blobURL;
+    }
+    if (!this.content) {
+      return null;
+    }
+    this._blobURL = URL.createObjectURL(this.content);
+    Attachment.urlFinalizer.register(this, this._blobURL, this);
+    return this._blobURL;
+  }
 
   static fromFile(file: File): Attachment {
     let attachment = new Attachment();

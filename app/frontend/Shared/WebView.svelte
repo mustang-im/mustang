@@ -97,7 +97,7 @@
     </style>`;
     let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-      style-src ${servers}; img-src data: ${servers}">\n\n` + headHTML + `\n\n`;
+      style-src ${servers}; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
     let displayHTML = html ?? "";
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
