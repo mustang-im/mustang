@@ -38,12 +38,12 @@ export class IMAPFolder extends Folder {
   }
 
   /** Last sequence number seen */
-  get lastModSeq(): number {
-    return this.syncState as number ?? 0;
+  get lastModSeq(): bigint {
+    return BigInt(this.syncState ?? 0n);
   }
-  set lastModSeq(val: number) {
-    assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
-    this.syncState = sanitize.integer(val);
+  set lastModSeq(val: bigint) {
+    assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
+    this.syncState = String(val);
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
@@ -412,8 +412,8 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  updateModSeq(modseq: number) {
-    if (typeof (modseq) != "number") {
+  updateModSeq(modseq: bigint) {
+    if (typeof (modseq) != "bigint") {
       return;
     }
     if (modseq > this.lastModSeq) {
@@ -479,7 +479,7 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * unread or flag status of an email changed */
-  async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number, connection?: ImapFlow): Promise<void> {
+  async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: bigint, connection?: ImapFlow): Promise<void> {
     // console.log("msg flags changed", "uid", uid, "seq", seq, "flags", flags, "modseq", newModSeq);
     if (this.deletions.has(uid)) {
       return;
