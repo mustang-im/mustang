@@ -441,7 +441,7 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[Number(day)])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
 }
 
 class EWSUpdateOccurrenceRequest {
