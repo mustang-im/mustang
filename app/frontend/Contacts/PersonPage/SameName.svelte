@@ -17,7 +17,7 @@
           <hbox class="addressbook-icon"
             style="color: {other.addressbook?.color ?? "black"}"
             title={other.addressbook?.name}>
-            {#if isEditing}
+            {#if isEditing || !appGlobal.isMobile}
               {#if typeof (other.addressbook?.icon) == "string"}
                 <Icon data={other.addressbook.icon} />
               {:else}
@@ -27,7 +27,7 @@
           </hbox>
           <hbox class="addressbook">{other.addressbook?.name}</hbox>
           <hbox class="buttons">
-            {#if isEditing}
+            {#if isEditing || !appGlobal.isMobile}
               <Button label={$t`Merge`} iconOnly icon={MergeIcon} plain onClick={() => merge(other)} />
             {/if}
           </hbox>
