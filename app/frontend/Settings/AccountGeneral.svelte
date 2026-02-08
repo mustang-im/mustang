@@ -40,6 +40,12 @@
   </HeaderGroupBox>
 </vbox>
 
+<vbox class="extra-settings">
+  {#each extraSettings.each as category}
+    <svelte:component this={category.windowContent} {account} />
+  {/each}
+</vbox>
+
 <!-- <copied to="WorkspaceBlock.svelte" /> -->
 <datalist id="proposed-colors">
   {#each accountColors as color}
@@ -49,6 +55,7 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
+  import { accountSettings } from "./SettingsCategory";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -64,6 +71,8 @@
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
+
+  $: extraSettings = accountSettings.filterObservable(cat => account instanceof cat.type && cat.isMain && cat.id != "acc-general");
 
   const onChange = debounce(() => catchErrors(onSave), 500);
   async function onSave() {
@@ -88,7 +97,8 @@
 </script>
 
 <style>
-  .account-general {
+  .account-general,
+  .extra-settings {
     max-width: 40em;
   }
 

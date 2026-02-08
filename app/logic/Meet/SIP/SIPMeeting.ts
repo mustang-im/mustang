@@ -51,14 +51,11 @@ export class SIPMeeting extends VideoConfMeeting {
     let urlParsed = new URL(url);
     assert(urlParsed.protocol == "tel:", gt`Only tel: URLs are supported`);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
-    let phoneNumber = sanitize.string(urlParsed.pathname);
-    assert(phoneNumber, gt`Need phone number in tel: URL`);
-    assert(phoneNumber[0] == "+", gt`Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000`);
-    phoneNumber = phoneNumber.replaceAll(/[^0-9\+]/g, ""); // Leave only numbers and leading +
-    this.remotePhoneNumber = phoneNumber;
+    this.remotePhoneNumber = getInternationalPhoneNumber(
+      sanitize.string(urlParsed.pathname), this.account.countryCode);
 
     let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
-    this.title = `Call ${phoneNumber} at ${time}`;
+    this.title = `Call ${this.remotePhoneNumber} at ${time}`;
     this.state = MeetingState.OutgoingCallConfirm;
   }
 
@@ -222,4 +219,25 @@ enum SessionState {
   Established = "Established",
   Terminating = "Terminating",
   Terminated = "Terminated"
+}
+
+/** Throws when number cannot be parsed.
+ * @returns e.g. "+49-123-000000" */
+export function getInternationalPhoneNumber(phoneNumber: string, myCountryCode: number): string {
+  phoneNumber = phoneNumber.replaceAll(/[^0-9\+]/g, ""); // Leave only numbers and leading +
+  assert(phoneNumber, gt`Need phone number`);
+  if (phoneNumber.startsWith("+")) {
+    // OK
+  } else if (phoneNumber.startsWith("00")) {
+    phoneNumber = "+" + phoneNumber.substring(2);
+  } else if (phoneNumber.startsWith("0")) {
+    phoneNumber = "+" + myCountryCode + phoneNumber.substring(1);
+  } else if (myCountryCode == 1 && phoneNumber.startsWith("011")) {
+    phoneNumber = "+" + phoneNumber.substring(3);
+  } else if (myCountryCode == 1 && !isNaN(phoneNumber[0] as any)) {
+    phoneNumber = "+1" + phoneNumber;
+  } else {
+    throw new Error(gt`Phone number not recognized. Supported formats: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000`);
+  }
+  return phoneNumber;
 }

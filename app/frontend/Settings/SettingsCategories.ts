@@ -41,6 +41,8 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
+import { SIPAccount } from "../../logic/Meet/SIP/SIPAccount";
+import SIP from "./Meet/SIP.svelte";
 // #endif
 import { gt } from "../../l10n/l10n";
 
@@ -131,6 +133,7 @@ settingsCategories.add(meetSettings);
 // #endif
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
+accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 
 // #if [DEV]
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
