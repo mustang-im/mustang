@@ -150,6 +150,10 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     for (let person of list) {
       if (person.emailAddress && person.name &&
         !recipients.find(prev => prev.emailAddress == person.emailAddress)) {
+        person.name = person.name.trim().replaceAll(`'"<>` + "`", "");
+        if (!person.name) {
+          continue;
+        }
         recipients.add(person);
       }
     }
@@ -159,8 +163,7 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
   for (let recipient of recipients) {
     let person = appGlobal.collectedAddressbook.newPerson();
     person.name = recipient.name;
-    let contact = new ContactEntry(recipient.emailAddress, "collected");
-    contact.protocol = "email";
+    let contact = new ContactEntry(recipient.emailAddress, "collected", "email");
     person.emailAddresses.add(contact);
     collected.add(person);
     await person.saveLocally();
