@@ -14,7 +14,7 @@ export async function getDatabase(): Promise<Database> {
   mailDatabase = await getSQLiteDatabase("mail.db");
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
-  await mailDatabase.pragma('journal_mode = DELETE');
+  await mailDatabase.pragma('journal_mode = WAL');
   return mailDatabase;
 }
 
@@ -28,6 +28,7 @@ export async function makeTestDatabase(): Promise<Database> {
   await deleteDatabase();
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
+  await mailDatabase.pragma('journal_mode = WAL');
   return mailDatabase;
 }
 

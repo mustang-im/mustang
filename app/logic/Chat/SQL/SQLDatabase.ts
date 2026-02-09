@@ -14,7 +14,7 @@ export async function getDatabase(): Promise<Database> {
   chatDatabase = await getSQLiteDatabase("chat.db");
   await chatDatabase.migrate(chatDatabaseSchema);
   await chatDatabase.pragma('foreign_keys = true');
-  await chatDatabase.pragma('journal_mode = DELETE');
+  await chatDatabase.pragma('journal_mode = WAL');
   return chatDatabase;
 }
 
