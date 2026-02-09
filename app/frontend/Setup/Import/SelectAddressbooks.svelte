@@ -126,12 +126,14 @@
   }
 
   async function onOK() {
-    for (let addressbook of addressbooks) {
-      if (!(addressbook as any).import) {
-        continue;
-      }
-      await addressbook.save();
+    let importAddressbooks = addressbooks.filterOnce((ab: any) => ab.import);
+    for (let addressbook of importAddressbooks) {
       appGlobal.addressbooks.add(addressbook);
+      await addressbook.save();
+      for (let person of addressbook.persons) {
+        // Slow, and the next `addressbook.save()` will block on it
+        await person.save();
+      }
     }
     onContinue();
   }
