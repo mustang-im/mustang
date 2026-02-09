@@ -21,8 +21,10 @@
   </grid>
 </vbox>
 
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
   canContinue={!!config.username && !!config.password && !!config.domain && !!config.hostname}
   canCancel={true}
   onCancel={onCancel}
@@ -34,6 +36,8 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { t } from "../../../l10n/l10n";
 
@@ -43,9 +47,11 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
+  let errorUI: ErrorMessageInline;
   config.port ??= 443;
 
   async function onContinue() {
+    errorUI.clearError();
     sanitize.hostname(config.domain);
     sanitize.hostname(config.hostname);
     sanitize.portTCP(config.port);

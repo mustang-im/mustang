@@ -20,8 +20,10 @@
   {ex?.message ?? ex + ""}
 {/await}
 
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
   canContinue={!!config.name}
   canCancel={true}
   onCancel={onCancel}
@@ -33,6 +35,8 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
   import type { DAVCalendar } from "tsdav";
@@ -45,6 +49,7 @@
 
   let calendars: Collection<DAVCalendar>;
   let selectedCalendar: DAVCalendar;
+  let errorUI: ErrorMessageInline;
 
   async function load() {
     calendars = await config.listCalendars();
@@ -55,6 +60,7 @@
   }
 
   async function onContinue() {
+    errorUI.clearError();
     config.calendarURL = selectedCalendar.url;
     await config.listEvents();
     appGlobal.calendars.add(config);
