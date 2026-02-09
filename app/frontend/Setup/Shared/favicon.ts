@@ -1,3 +1,4 @@
+import { appGlobal } from "../../../logic/app";
 import { assert, blobToDataURL, type URLString } from "../../../logic/util/util";
 
 /** Given a domain name, find the website's homepage favicon
@@ -67,10 +68,11 @@ const selectors = [
 
 /** @returns `data:` image URL */
 async function fetchIcon(url: URLString): Promise<URLString> {
+  let ky = await appGlobal.remoteApp.kyCreate();
   // console.log("fetching", url);
-  let response = await fetch(url);
-  assert(response.ok, `Favicon fetch failed for ${url}`);
-  //assert(response.type?.startsWith("image/"), `Favicon ${url} returned ${response.type}`); -- fails with "returned cors"
-  let blob = await response.blob();
+  let blob = await ky.get(url, {
+    result: "blob",
+    timeout: 3000,
+  });
   return await blobToDataURL(blob);
 }
