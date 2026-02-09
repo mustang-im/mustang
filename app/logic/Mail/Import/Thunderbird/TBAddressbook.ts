@@ -50,7 +50,7 @@ export class ThunderbirdAddressbook extends Addressbook {
     function getRow(name: string): string | null {
       return rows.find(row => row.name == name)?.value;
     }
-    function addContact(contact: string, protocol: string, purpose: string, preference: number, addTo: ArrayColl<ContactEntry>) {
+    function addContactInfo(contact: string, protocol: string, purpose: string, preference: number, addTo: ArrayColl<ContactEntry>) {
       if (!contact) {
         return;
       }
@@ -95,24 +95,24 @@ export class ThunderbirdAddressbook extends Addressbook {
     person.position = sanitize.nonemptystring(getRow("JobTitle"), null);
 
     // Mail
-    addContact(emailAddress, "email", "main", 0, person.emailAddresses);
-    addContact(sanitize.emailAddress(getRow("SecondEmail"), null), "email", "second", 1, person.emailAddresses);
+    addContactInfo(emailAddress, "email", "main", 0, person.emailAddresses);
+    addContactInfo(sanitize.emailAddress(getRow("SecondEmail"), null), "email", "second", 1, person.emailAddresses);
 
     // Phone
-    addContact(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("WorkPhone"), null), "phone", "work", 2, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("HomePhone"), null), "phone", "home", 3, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("FaxNumber"), null), "fax", "work", 100, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("WorkPhone"), null), "phone", "work", 2, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("HomePhone"), null), "phone", "home", 3, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("FaxNumber"), null), "fax", "work", 100, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
 
     // URLs
-    addContact(sanitize.url(getRow("WebPage1"), null), "url", "web", 1, person.urls);
-    addContact(sanitize.url(getRow("WebPage2"), null), "url", "web", 2, person.urls);
+    addContactInfo(sanitize.url(getRow("WebPage1"), null), "url", "web", 1, person.urls);
+    addContactInfo(sanitize.url(getRow("WebPage2"), null), "url", "web", 2, person.urls);
 
     // Chat
-    addContact(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
-    addContact(sanitize.nonemptystring(getRow("_Skype"), null), "skype", "main", 10, person.chatAccounts);
-    addContact(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_Skype"), null), "skype", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
 
     // Street addresses
     function addStreetAddress(street: string, street2: string, postalCode: string, city: string, state: string, country: string, purpose: string, preference: number) {
@@ -127,7 +127,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       address.state = state;
       address.country = country;
       try {
-        addContact(address.toString(), "address", purpose, preference, person.streetAddresses);
+        addContactInfo(address.toString(), "address", purpose, preference, person.streetAddresses);
       } catch (ex) {
         errorCallback(ex);
       }
@@ -157,16 +157,16 @@ export class ThunderbirdAddressbook extends Addressbook {
         month: birthMonth ? 'long' : undefined,
         day: birthDay ? 'numeric' : undefined,
       });
-      addContact(birthStr, "date-locale", "birthday", 0, person.custom);
-      addContact(`${birthYear || ""}-${birthMonth || ""}-${birthDay || ""}`, "date-iso", "birthday", 1, person.custom);
+      addContactInfo(birthStr, "date-locale", "birthday", 0, person.custom);
+      addContactInfo(`${birthYear || ""}-${birthMonth || ""}-${birthDay || ""}`, "date-iso", "birthday", 1, person.custom);
     }
 
     // Additional fields
-    addContact(sanitize.nonemptystring(getRow("NickName"), null), "name", "nick", 0, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom1"), null), "other", "1", 1, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom2"), null), "other", "2", 2, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom3"), null), "other", "3", 3, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom4"), null), "other", "4", 4, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("NickName"), null), "name", "nick", 0, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom1"), null), "other", "1", 1, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom2"), null), "other", "2", 2, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom3"), null), "other", "3", 3, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom4"), null), "other", "4", 4, person.custom);
 
     return person;
   }
