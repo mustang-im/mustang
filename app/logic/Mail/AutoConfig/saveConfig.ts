@@ -161,6 +161,9 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
   let collected = appGlobal.collectedAddressbook.persons;
   await appGlobal.collectedAddressbook.save();
   for (let recipient of recipients) {
+    if (appGlobal.persons.find(prev => !!prev.emailAddresses.find(c => c.value == recipient.emailAddress))) {
+      continue;
+    }
     let person = appGlobal.collectedAddressbook.newPerson();
     person.name = recipient.name;
     let contact = new ContactEntry(recipient.emailAddress, "collected", "email");
