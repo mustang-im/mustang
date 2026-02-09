@@ -2,9 +2,10 @@ import { Addressbook } from "../../../Contacts/Addressbook";
 import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { StreetAddress } from "../../../Contacts/StreetAddress";
+import { newAddressbookForProtocol } from "../../../Contacts/AccountsList/Addressbooks";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { NotReached, UserError, randomID } from "../../../util/util";
+import { UserError, randomID } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { type Database } from "../../../../../lib/rs-sqlite";
 import { getSQLiteDatabase } from "../../../util/backend-wrapper";
@@ -13,7 +14,7 @@ export class ThunderbirdAddressbook extends Addressbook {
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
     entryErrorCallback: (ex: Error) => void): Promise<ThunderbirdAddressbook> {
     //console.log("Reading ", name, "file", dbFilename);
-    let ab = new ThunderbirdAddressbook();
+    let ab = newAddressbookForProtocol("addressbook-local");
     ab.id = "tb-" + dbFilename.replace(/\..*/, "ä.").replace(/[^a-zA-Z0-9\-]/g, "");
     ab.name = name;
 
@@ -31,7 +32,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       try {
         id = sanitize.alphanumdash(id);
         let personRows = rows.filter(row => row.cardID == id);
-        let person = this.readCard(id, personRows, ab);
+        let person = this.readCard(id, personRows, ab, entryErrorCallback);
         ab.persons.add(person);
       } catch (ex) {
         entryErrorCallback(ex);
@@ -41,10 +42,11 @@ export class ThunderbirdAddressbook extends Addressbook {
     if (ab.persons.isEmpty) {
       throw new UserError("No persons found");
     }
+    // Don't save - let user select first what he wants to import
     return ab;
   }
 
-  protected static readCard(id: string, rows: any[], addressbook: Addressbook): Person {
+  protected static readCard(id: string, rows: any[], addressbook: Addressbook, errorCallback: (ex: Error) => void): Person {
     function getRow(name: string): string | null {
       return rows.find(row => row.name == name)?.value;
     }
@@ -77,14 +79,14 @@ export class ThunderbirdAddressbook extends Addressbook {
     } else if (emailAddress) {
       person.name = emailAddress;
     } else {
-      throw new NotReached("Need either name or email address for contact");
+      throw new UserError("Need either name or email address for contact");
     }
 
     person.notes = sanitize.nonemptystring(getRow("Notes"), null);
     person.popularity = sanitize.integer(getRow("PopularityIndex"), 0);
     let photo = getRow("PhotoURI");
     if (photo && getRow("PhotoType") != "generic" && !photo.startsWith("chrome:")) {
-      person.picture = sanitize.url(photo, null);
+      person.picture = sanitize.url(photo, null, ["https", "http", "data"]);
     }
 
     // Company
@@ -104,8 +106,8 @@ export class ThunderbirdAddressbook extends Addressbook {
     addContact(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
 
     // URLs
-    addContact(sanitize.nonemptystring(getRow("WebPage1"), null), "url", "web", 1, person.urls);
-    addContact(sanitize.nonemptystring(getRow("WebPage2"), null), "url", "web", 2, person.urls);
+    addContact(sanitize.url(getRow("WebPage1"), null), "url", "web", 1, person.urls);
+    addContact(sanitize.url(getRow("WebPage2"), null), "url", "web", 2, person.urls);
 
     // Chat
     addContact(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
@@ -124,7 +126,11 @@ export class ThunderbirdAddressbook extends Addressbook {
       address.postalCode = postalCode;
       address.state = state;
       address.country = country;
-      addContact(address.toString(), "address", purpose, preference, person.streetAddresses);
+      try {
+        addContact(address.toString(), "address", purpose, preference, person.streetAddresses);
+      } catch (ex) {
+        errorCallback(ex);
+      }
     }
     addStreetAddress(
       getRow("WorkAddress"), getRow("WorkAddress2"),
