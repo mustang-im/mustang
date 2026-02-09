@@ -28,7 +28,7 @@ export async function fetchConfig(domain: string, emailAddress: string, abort: A
 }
 
 const kISPDBURL = "https://v1.ispdb.net/";
-const kMXService = "https://mx.thunderbird.net/dns/mx/";
+const kDNSoverHTTPSService = "https://1.1.1.1/dns-query?";
 
 /**
  * Tries to get a configuration for this ISP from our central database.
@@ -101,20 +101,43 @@ async function getMX_node(domain: string, abort: AbortController): Promise<strin
  * @returns hostname of the first MX server
  */
 export async function getMX(domain: string, abort: AbortController): Promise<string> {
-  let mxStr = await fetchText(kMXService + domain, abort);
-  let mxs = mxStr.split("\n"); // last line might be empty
-  let mx = mxs[0];
+  // `curl -H "Accept: application/dns-json" "https://1.1.1.1/dns-query?name=knipp.de&type=MX" | json_pp`
+  let params = new URLSearchParams();
+  params.set("name", domain);
+  params.set("type", "MX");
+  let json = await fetchJSON(kDNSoverHTTPSService + params, "application/dns-json", abort);
+  let answers = json?.Answer?.filter(a => a.type == 15 || a.type == "MX");
+  let mxLine = answers?.[0]?.data as string; // e.g. "15 mx.knipp.de."
+  let mx = mxLine.split(" ")[1]?.slice(0, -1);
   assert(mx, `No MX found for domain ${domain}`);
   return sanitize.hostname(mx);
 }
 
 let ky;
 
-async function fetchText(url: URLString, abort: AbortController) {
+async function fetchText(url: URLString, abort: AbortController): Promise<string> {
   if (!ky) {
     ky = await appGlobal.remoteApp.kyCreate();
   }
-  let text = await makeAbortable(ky.get(url, { result: "text", retry: 0 }), abort);
+  let text = await makeAbortable(ky.get(url, {
+    result: "text",
+    retry: 0,
+  }), abort);
   assert(text && typeof (text) == "string", "Did not receive text");
+  return text;
+}
+
+async function fetchJSON(url: URLString, resultMIMEType: string, abort: AbortController): Promise<any> {
+  if (!ky) {
+    ky = await appGlobal.remoteApp.kyCreate();
+  }
+  let text = await makeAbortable(ky.get(url, {
+    result: "json",
+    headers: {
+      Accept: resultMIMEType,
+    },
+    retry: 0,
+  }), abort);
+  assert(text && typeof (text) == "object", "Did not receive JSON");
   return text;
 }
