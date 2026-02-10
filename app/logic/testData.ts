@@ -161,10 +161,10 @@ export class FakeChatPerson extends Person {
     this.firstName = faker.person.firstName(male ? "male" : "female");
     this.lastName = faker.person.lastName();
     this.name = this.firstName + " " + this.lastName;
-    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "work"));
-    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "home"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
+    this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "work"));
+    this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "home"));
+    this.phoneNumbers.add(new ContactEntry(faker.helpers.fromRegExp('+49-170-[0-9]{3} [0-9]{4}'), "mobile"));
+    this.phoneNumbers.add(new ContactEntry(faker.helpers.fromRegExp('+49-[0-9]{3}-[0-9]{6}'), "work"));
     this.chatAccounts.add(new ContactEntry(this.phoneNumbers.first.value, "WhatsApp"));
     this.chatAccounts.add(new ContactEntry(this.emailAddresses.first.value, "Teams"));
     this.groups.add(new ContactEntry(faker.company.name(), "Mustang"));

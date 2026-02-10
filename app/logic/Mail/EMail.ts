@@ -255,7 +255,7 @@ export class EMail extends Message {
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     // We may need access to internal PostalMIME data.
-    let postalMIME: any = new PostalMIME();
+    let postalMIME = new PostalMIME();
     let mail = await postalMIME.parse(this.mime);
 
     // Headers

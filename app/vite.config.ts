@@ -1,5 +1,5 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { defineConfig } from 'vite'
+import { defineConfig, defaultClientConditions } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import wasm from 'vite-plugin-wasm';
@@ -31,6 +31,10 @@ export default defineConfig({
       project: "mustang"
     })
   ],
+  resolve: {
+    // Explicitly set the resolve conditions for Vite 7+
+    conditions: [...defaultClientConditions],
+  },
   optimizeDeps: {
     exclude: ['@matrix-org/matrix-sdk-crypto-wasm'],
   },
