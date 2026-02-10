@@ -2,7 +2,7 @@ import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from '../../app/logic/build';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
-import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
+import { createType1Message, decodeType2Message, createType3Message } from "../../desktop/backend/ntlm"; // TODO move to lib/?
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";

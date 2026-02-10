@@ -32,7 +32,7 @@ $ yarn run dev
 (see src/main/index.ts `mainWindow.loadURL()`)
 
 ```bash
-$ cd e2/
+$ cd desktop/
 $ yarn dev
 ```
 

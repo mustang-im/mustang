@@ -4,8 +4,8 @@
     "electron.vite.config.*",
     "src/main/*",
     "src/preload/*",
-    "src/backend/*",
-    "../backend/*",
+    "src/renderer/*",
+    "./backend/*", "backend/ntlm.js",
   ],
   "compilerOptions": {
     "composite": true,

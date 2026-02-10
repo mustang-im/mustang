@@ -6,9 +6,9 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceRoot}/e2",
-      "runtimeExecutable": "${workspaceRoot}/e2/node_modules/.bin/electron-vite",
+      "runtimeExecutable": "${workspaceRoot}/desktop/node_modules/.bin/electron-vite",
       "windows": {
-        "runtimeExecutable": "${workspaceRoot}/e2/node_modules/.bin/electron-vite.cmd"
+        "runtimeExecutable": "${workspaceRoot}/desktop/node_modules/.bin/electron-vite.cmd"
       },
       "runtimeArgs": ["--sourcemap"],
       "env": {
@@ -20,7 +20,7 @@
       "port": 9222,
       "request": "attach",
       "type": "chrome",
-      "webRoot": "${workspaceFolder}/e2/src/renderer",
+      "webRoot": "${workspaceFolder}/desktop/src/renderer",
       "timeout": 60000,
       "presentation": {
         "hidden": true

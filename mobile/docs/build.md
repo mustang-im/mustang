@@ -5,7 +5,6 @@
 
 1. `cd app; yarn install`
 2. `cd lib; yarn install`
-3. `cd backend; yarn install`
 4. `cd mobile; yarn install`
 5. `cd mobile/backend; yarn install`
 6. `cd mobile; yarn build`
@@ -38,7 +37,6 @@ fails when there's no tag for the commit which fails when you manually trigger i
 1. Install Android NDK v28+ and set `ANDROID_NDK_HOME` env e.g. `/usr/local/lib/android/sdk/ndk/28.2.13676358`
 2. `cd app; yarn install`
 3. `cd lib; yarn install`
-4. `cd backend; yarn install`
 5. `cd mobile; yarn install`
 6. `cd mobile/backend; yarn install`
 7. `cd mobile; yarn build`
@@ -78,7 +76,6 @@ fails when there's no tag for the commit which fails when you manually trigger i
 ### Building with Xcode
 1. `cd app; yarn install`
 2. `cd lib; yarn install`
-3. `cd backend; yarn install`
 4. `cd mobile; yarn install`
 5. `cd mobile/backend; yarn install`
 6. `export MOBILE_ARCH=ios-arm64`
@@ -101,7 +98,6 @@ select a Development Team.
 ### Building with command line
 1. `cd app; yarn install`
 2. `cd lib; yarn install`
-3. `cd backend; yarn install`
 4. `cd mobile; yarn install`
 5. `cd mobile/backend; yarn install`
 6. `cd mobile; yarn build:ios`
