@@ -14,7 +14,7 @@ export async function getDatabase(): Promise<Database> {
   calendarDatabase = await getSQLiteDatabase("calendar.db");
   await calendarDatabase.migrate(calendarDatabaseSchema);
   await calendarDatabase.pragma('foreign_keys = true');
-  await calendarDatabase.pragma('journal_mode = DELETE');
+  await calendarDatabase.pragma('journal_mode = WAL');
   return calendarDatabase;
 }
 

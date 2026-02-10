@@ -5,7 +5,7 @@
       accounts={appGlobal.addressbooks}
       showAllOption={true}
       filterByWorkspace={true}
-      icon={AccountIcon}
+      icon={AddressbookIcon}
       />
   </vbox>
   <hbox flex />
@@ -36,7 +36,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
-  import AccountIcon from "lucide-svelte/icons/book-user";
+  import AddressbookIcon from "lucide-svelte/icons/book-user";
   import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";

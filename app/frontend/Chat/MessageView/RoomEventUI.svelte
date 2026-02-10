@@ -17,7 +17,7 @@
 <style>
   .chatroomevent {
     margin: 8px 32px 0 20px;
-    color: black;
+    color: var(--fg);
   }
   .incoming {
     align-self: flex-start;
@@ -29,6 +29,6 @@
   .text {
   }
   .text :global(.person) {
-    color: blue;
+    color: var(--link-fg);
   }
 </style>

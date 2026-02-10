@@ -1,12 +1,7 @@
 <hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
-  title={eventAsText}
-  style="--color: {event.color ?? event.calendar?.color}"
-  class:all-day={$event.allDay}
-  class:cancelled={$event.isCancelled}
-  class:selected={$selectedEvent == event}>
+  title={eventAsText}>
   {#if !$event.allDay && !isContinued}
     <hbox class="time">
-      <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
       {startTime}
     </hbox>
   {/if}
@@ -24,7 +19,10 @@
   /** Time where the cell (not the event) starts */
   export let start: Date;
 
-  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), {
+    hour: "numeric",
+    minute: $event.startTime.getMinutes() != 0 ? "2-digit" : undefined,
+  });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
@@ -42,16 +40,9 @@
 
 <style>
   .event {
-    margin-block-end: 1px;
-    padding: 4px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-height: 1.4em;
-    min-height: 1.4em;
-
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
+    padding-inline-start: 4px;
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -66,20 +57,12 @@
   .event:hover {
     background-color: #20AF9E70;
   }
-  .event.all-day {
-    margin-block-end: 6px;
-    padding: 0px 4px;
-    opacity: 85%;
-  }
-  .event.cancelled {
-    opacity: 30%;
-  }
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
   }
-  .cancelled .time,
-  .cancelled .title {
+  :global(.cancelled) .time,
+  :global(.cancelled) .title {
     text-decoration: line-through;
   }
 </style>

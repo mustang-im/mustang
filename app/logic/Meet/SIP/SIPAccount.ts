@@ -13,6 +13,11 @@ export class SIPAccount extends MeetAccount {
   mySIPID: string; /** e.g. "sip:fred@tele.com". Constructed from username + domain. */
   userAgent: UserAgent;
   registerer: Registerer;
+  /** Country phone prefix, e.g. 1 for USA+Kanada, 49 for Germany, 33 for France etc.
+   * Used to complete phone numbers in national notation.
+   * User setting.
+   * TODO add UI for the user setting */
+  countryCode = 49;
 
   canVideo = true;
   canAudio = true;
@@ -73,17 +78,19 @@ export class SIPAccount extends MeetAccount {
   }
 
   isMeetingURL(url: URL): boolean {
-    return url.protocol == "tel:" && url.pathname?.[0] == "+";
+    return url.protocol == "tel:";
   }
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.url = sanitize.url(json.url, null, ["wss", "ws", "sips", "sip-tcp", "sip-udp"]);
+    this.countryCode = sanitize.integerRange(json.countryCode, 1, 999, 1);
     this.domain = sanitize.hostname(json.domain);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.domain = this.domain;
+    json.countryCode = this.countryCode;
     return json;
   }
 }

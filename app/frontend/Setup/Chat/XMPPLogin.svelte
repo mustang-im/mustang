@@ -16,6 +16,10 @@
   </grid>
 </vbox>
 
+{#if error}
+  <ErrorMessageInline ex={error} />
+{/if}
+
 <ButtonsBottom
   onContinue={onContinue}
   canContinue={!!config.username && !!config.password}
@@ -26,8 +30,6 @@
 
 <script lang="ts">
   import type { XMPPAccount } from "../../../logic/Chat/XMPP/XMPPAccount";
-  import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
-  import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appGlobal } from "../../../logic/app";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
@@ -35,6 +37,7 @@
   import { t } from "../../../l10n/l10n";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import { logError } from "../../Util/error";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
 
   /** in/out */
   export let config: XMPPAccount;
@@ -42,6 +45,7 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
+  let error: Error | null = null;
   let jid: string;
   $: setUsername(jid);
   function setUsername(_dummy: any) {
@@ -59,10 +63,15 @@
   }
 
   async function onContinue() {
-    await config.verifyLogin();
-    await config.save();
-    appGlobal.chatAccounts.add(config);
-    showPage = null;
+    try {
+      error = null;
+      await config.login(true);
+      await config.save();
+      appGlobal.chatAccounts.add(config);
+      showPage = null;
+    } catch (ex) {
+      error = ex;
+    }
   }
 
   let errorMessage: string | null = null;

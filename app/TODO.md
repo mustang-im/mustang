@@ -46,7 +46,6 @@
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
     * Same name: Checkboxes
-  * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
@@ -63,6 +62,12 @@
     * Scroll inside dialog, not whole window
 
 # Feedback
+## Zucca
+* TB import: doppelte eigene Identity
+* Attachments einlesen mit email headers
+* Search server
+* CardDAV: Mehrere Addressbücher
+* CardDAV: "invalid string length" bei smartCollectionSync()
 ## Elena
 * Clear profile
 * Debug dump of settings

@@ -4,6 +4,7 @@ import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
+import type { MeetAccount } from "../Meet/MeetAccount";
 import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
@@ -196,6 +197,11 @@ export class Event extends Observable {
   onlineMeetingURL: string;
   @notifyChangedProperty
   isOnline = false;
+  /** When saving, if this is set and `onlineMeetingURL` is not,
+   * then use this account to create an online meeting and
+   * put the URL in `onlineMeetingURL` */
+  @notifyChangedProperty
+  createOnlineMeetingWithAccount: MeetAccount | null = null;
   @notifyChangedObservable
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
@@ -220,6 +226,11 @@ export class Event extends Observable {
   /** Includes changes to `alarm`, lastUpdateTime does not consider to be a change */
   @notifyChangedProperty
   lastMod = new Date();
+  /** The verbatim data we got from the server.
+   * For round-trips: Allows to keep unknown properties to be kept as-is, even during edit,
+   * instead of destroying everything unknown.
+   * @type JSON or string (Optional) */
+  original: Object | string | undefined;
   @notifyChangedProperty
   syncState: number | string | undefined;
   @notifyChangedProperty
@@ -248,6 +259,7 @@ export class Event extends Observable {
   @notifyChangedAccessor
   set duration(seconds: number) {
     assert(seconds >= 0, `Duration must be >= 0, but is ${seconds}, starttime ${this.startTime?.toLocaleTimeString()}, endtime ${this.endTime?.toLocaleTimeString()}`);
+    this.endTime ??= new Date(this.startTime);
     if (this.allDay) {
       this.endTime.setTime(this.startTime.getTime());
       // End date is non-inclusive next day. RFC 5545 section 3.6.1
@@ -495,6 +507,13 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
+  async createOnlineMeeting() {
+    if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
+      return;
+    }
+    this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
@@ -584,7 +603,16 @@ export class Event extends Observable {
     }
   }
 
+  async prepareSaveToServer(): Promise<void> {
+    await this.createOnlineMeeting();
+  }
+
   async saveToServer(): Promise<void> {
+    await this.prepareSaveToServer();
+    await this.sendInvitationsDirectly();
+  }
+
+  async sendInvitationsDirectly(): Promise<void> {
     this.calUID ??= crypto.randomUUID();
     if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
       await this.outgoingInvitation.sendInvitations();

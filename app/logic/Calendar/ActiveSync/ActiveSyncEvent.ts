@@ -140,6 +140,8 @@ export class ActiveSyncEvent extends Event {
   }
 
   async saveToServer(): Promise<void> {
+    await this.prepareSaveToServer();
+
     // Not supporting tasks for now.
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));

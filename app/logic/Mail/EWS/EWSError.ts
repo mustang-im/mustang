@@ -1,5 +1,6 @@
-import { XML2JSON, type Json } from "./XML2JSON";
+import { XML2JSON } from "./XML2JSON";
 import type { JsonRequest } from "./EWSAccount";
+import type { Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class EWSError extends Error {

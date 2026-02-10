@@ -117,13 +117,21 @@
         selected={$spellcheckEnabled.value}
         slot="before-undo"
         />
-      <Button
-        label={$t`Attachments`}
-        icon={AttachmentIcon}
-        iconOnly
-        onClick={onAddAttachment}
-        slot="end"
-        />
+      <hbox slot="end" bind:this={smlAddAnchor}>
+        <Button
+          label={$t`Actions`}
+          icon={SMLIcon}
+          iconOnly
+          onClick={() => showSMLAdd = true}
+          disabled={$mail.sml ? $t`You have already added an action` : false}
+          />
+        <Button
+          label={$t`Attachments`}
+          icon={AttachmentIcon}
+          iconOnly
+          onClick={onAddAttachment}
+          />
+      </hbox>
     </HTMLEditorToolbar>
     {#if loading}
       <Spinner size="64px" />
@@ -135,6 +143,7 @@
             <hbox class="subject">
               <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} class="font-normal" />
             </hbox>
+            <SMLComposer {mail} />
             <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
@@ -151,6 +160,17 @@
     </hbox>
   </vbox>
 </FileDropTarget>
+<Popup
+  bind:popupOpen={showSMLAdd}
+  popupAnchor={smlAddAnchor}
+  boundaryElSel=".mail-composer-window"
+  placement="bottom"
+  autoClose>
+  <vbox class="sml-add-dialog">
+    <SMLAddKinds bind:sml={mail.sml} identity={fromIdentity}
+      on:close={() => showSMLAdd = false} />
+  </vbox>
+</Popup>
 {#if $appGlobal.isMobile}
   <ComposerBarM message={mail} />
 {/if}
@@ -176,9 +196,12 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import SMLComposer from "./SMLComposer.svelte";
+  import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
+  import Popup from "../../Shared/Popup.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -186,6 +209,7 @@
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/save";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import SMLIcon from "lucide-svelte/icons/list-checks";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
@@ -344,6 +368,9 @@
     navigate(-1);
   }
 
+  let showSMLAdd = false;
+  let testSML = false;
+  let smlAddAnchor: HTMLElement;
   let showCCForce = false;
   let showBCCForce = false;
   let showAttachmentsForce = false;
@@ -432,5 +459,11 @@
   }
   .buttons :global(.send.disabled) {
     opacity: 30%;
+  }
+  .sml-add-dialog {
+    padding: 16px 24px;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+    z-index: 1000;
   }
 </style>

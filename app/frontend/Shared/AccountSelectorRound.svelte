@@ -95,5 +95,6 @@
     overflow: hidden;
     text-overflow: clip;
     max-height: 18px;
+    max-width: 100%;
   }
 </style>

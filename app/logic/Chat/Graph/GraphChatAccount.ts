@@ -3,12 +3,12 @@ import type { GraphAccount } from '../../Mail/Graph/GraphAccount';
 import { GraphChatRoom } from './GraphChatRoom';
 import type { TGraphChat } from './TGraphChat';
 import type { Group } from '../../Abstract/Group';
-import type { ChatPerson } from '../Person';
+import type { ChatPerson } from '../ChatPerson';
 import { MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {
   readonly protocol: string = "chat-graph";
-  readonly chats = new MapColl<ChatPerson | Group, GraphChatRoom>;
+  readonly rooms = new MapColl<ChatPerson | Group, GraphChatRoom>;
 
   get account(): GraphAccount {
     return this.mainAccount as GraphAccount;
@@ -23,23 +23,23 @@ export class GraphChatAccount extends ChatAccount {
       await this.account.login(interactive);
     }
     await this.afterConnect();
-    await this.listChats();
+    await this.listRooms();
   };
   protected async afterConnect() {
   }
 
-  async listChats(): Promise<void> {
-    await super.listChats();
+  async listRooms(): Promise<void> {
+    await super.listRooms();
     let chatsJSON = await this.account.graphGetAll<TGraphChat>("chats", { top: 50 });
     for (let chatJSON of chatsJSON) {
-      let chat = this.newChat();
-      chat.fromGraph(chatJSON);
-      await chat.listMembers();
-      this.chats.set(chat.contact, chat);
+      let room = this.newRoom();
+      room.fromGraph(chatJSON);
+      await room.listMembers();
+      this.rooms.set(room.contact, room);
     }
   }
 
-  newChat(): GraphChatRoom {
+  newRoom(): GraphChatRoom {
     return new GraphChatRoom(this);
   }
 }

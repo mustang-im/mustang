@@ -5,14 +5,16 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder } from "../Folder";
-import { assert, SpecificError } from "../../util/util";
+import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { assert, NotReached, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { Throttle } from "../../util/Throttle";
+import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
@@ -29,15 +31,17 @@ export class IMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
-  protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  protected connectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
   connectionLock = new MapColl<ImapFlow, Lock>();
-  throttle = new Throttle(50, 1);
+  protected throttle = new Throttle(50, 1);
+  protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
 
   constructor() {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
     for (let purpose of connectionPurposes) {
-      this.connectLock.set(purpose, new Lock());
+      this.connectRunOnce.set(purpose, new RunOnce<ImapFlow>());
+      this.reconnectRunOnce.set(purpose, new RunOnce<ImapFlow>());
     }
   }
 
@@ -73,9 +77,7 @@ export class IMAPAccount extends MailAccount {
     if (conn) {
       return conn;
     }
-    let lock = await this.connectLock.get(purpose).lock();
-    try {
-
+    return await this.connectRunOnce.get(purpose).runOnce(async () => {
       this.fatalError = null;
 
       // Auth method
@@ -150,9 +152,7 @@ export class IMAPAccount extends MailAccount {
         this.notifyObservers();
       }
       return connection;
-    } finally {
-      lock.release();
-    }
+    });
   }
 
   attachListeners(connection: ImapFlow): void {
@@ -192,7 +192,7 @@ export class IMAPAccount extends MailAccount {
         assert(folder, `We don't know about this folder`);
         assert(!info.uid || typeof (info.uid) == "number", "Expected optional number for UID");
         assert(typeof (info.seq) == "number", "Expected number for seq");
-        assert(!info.modseq || typeof (info.modseq) == "number", "Expected number for modseq");
+        assert(!info.modseq || typeof (info.modseq) == "bigint", "Expected bigint for modseq");
         assert(info.flags instanceof Set, "Expected Set for flags");
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
@@ -213,40 +213,42 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
+  async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
     // Note: Do not stop polling
-
     assert(connection, "Reconnect: Connection unknown");
-    try {
-      await connection.close();
-    } catch (ex) {
-      // Sometimes gives "Connection not available". Do nothing.
-    }
-    this.connectionLock.delete(connection);
 
-    let purpose = this.connections.getKeyForValue(connection);
+    purpose = this.connections.getKeyForValue(connection) ?? purpose;
     assert(purpose, "Connection purpose unknown");
-    this.connections.set(purpose, null);
-    this.notifyObservers();
 
-    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+    return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
+      try {
+        await connection.close();
+      } catch (ex) {
+        // Sometimes gives "Connection not available". Do nothing.
+      }
+      this.connectionLock.delete(connection);
+      this.connections.set(purpose, null);
+      this.notifyObservers();
+
+      if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {
-      await this.oAuth2.login(false);
-    }
-    if (!(this.password || this.oAuth2?.isLoggedIn)) {
-      throw new LoginError(new Error(), "Reconnect failed due to missing login");
-    }
+        await this.oAuth2.login(false);
+      }
+      if (!(this.password || this.oAuth2?.isLoggedIn)) {
+        throw new LoginError(new Error(), "Reconnect failed due to missing login");
+      }
 
-    return await this.connection(false, purpose);
+      return await this.connection(false, purpose);
+    });
   }
 
   async hasCapability(capa: string): Promise<boolean> {
     let conn = await this.connection();
     // conn.capabilities doesn't work; it's an object property,
     // and JPC doesn't notice direct changes to properties.
-    // Fortuantely `conn.run("CAPABILITY")` has its own cache,
+    // Fortunately `conn.run("CAPABILITY")` has its own cache,
     // and only makes a network request if absolutely necessary.
-    let capabilities = await conn.run('CAPABILITY');
+    let capabilities = await conn.run("CAPABILITY");
     return await capabilities.has(capa);
   }
 
@@ -409,6 +411,62 @@ export class IMAPAccount extends MailAccount {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
     email.isRead = true;
     await sentFolder.addMessage(email);
+  }
+
+  canShareWithPersons(): boolean {
+    return this.namespaces?.other?.length > 0;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
+    // well, some of them at least...
+    return await (this.inbox as IMAPFolder).getSharedPersons();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders() as ArrayColl<IMAPFolder>) {
+      await folder.removePermission(otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: IMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<IMAPFolder>([mailFolder])) as ArrayColl<IMAPFolder>;
+    let rights = "";
+    switch (access) {
+    case MailShareCombinedPermissions.Read:
+      rights = "lr";
+      break;
+    case MailShareCombinedPermissions.FlagChange:
+      rights = "lrsw";
+      break;
+    case MailShareCombinedPermissions.Modify:
+      rights = "lrswikxte";
+      break;
+    case MailShareCombinedPermissions.Custom:
+      if (permissions.includes(MailShareIndividualPermissions.Read)) {
+        rights += "r";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.FlagChange)) {
+        rights += "sw";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Delete)) {
+        rights += "te";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.Create)) {
+        rights += "i";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.DeleteFolder)) {
+        rights += "x";
+      }
+      if (permissions.includes(MailShareIndividualPermissions.CreateSubfolders)) {
+        rights += "k";
+      }
+      break;
+    default:
+      throw new NotReached();
+    }
+    for (let folder of foldersToShare) {
+      await folder.addPermission(otherPerson, rights);
+    }
   }
 
   fromConfigJSON(config: any) {

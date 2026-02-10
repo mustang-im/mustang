@@ -1,4 +1,5 @@
 <vbox flex class="device-setup">
+  <ErrorMessageInline {ex} />
   <vbox class="self-video" flex>
     <Video stream={$deviceStream?.cameraMicStream} muted={true} />
   </vbox>
@@ -26,15 +27,21 @@
   import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import DeviceButton from "./DeviceButton.svelte";
   import Video from "../View/Video/Video.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
+  import { gt } from "../../../l10n/l10n";
 
   let devices: MediaDeviceInfo[];
 
   let deviceStream: LocalMediaDeviceStreams;
   async function startCamMic() {
     deviceStream ??= new LocalMediaDeviceStreams();
-    await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+    try {
+      await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+    } catch (ex) {
+      showErrorInline(ex);
+    }
     await getDevices();
   }
 
@@ -52,7 +59,19 @@
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
 
-  $: catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value));
+  $: ex = null, catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value), showErrorInline);
+
+  let ex: Error | null = null;
+  function showErrorInline(error: Error) {
+    if (error?.name == "NotReadableError") {
+      let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
+      ex = new Error(cameras == 1
+        ? gt`Your camera is in use. Please stop the other video application.`
+        : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
+      return;
+    }
+    ex = error;
+  }
 
   onMount(async () => catchErrors(startCamMic));
   onDestroy(async () => catchErrors(stopCamMic));

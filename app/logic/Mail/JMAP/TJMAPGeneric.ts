@@ -1,5 +1,23 @@
 import type { URLString } from "../../util/util";
 
+/**
+ * String of 1-255 octets containing only URL and Filename Safe base64url
+ * alphabet characters (A-Za-z0-9, hyphen, underscore), excluding padding
+ */
+export type TID = string;
+
+/**
+ * TUnsignedInt: Integer in the range 0 to 2^53-1
+ */
+export type TInteger = number;
+
+/**
+ * String in RFC3339 "date-time" format with uppercase letters
+ * and "Z" time offset. Fractional seconds must not have trailing zeros.
+ * Example: "2010-10-10T10:10:10.003Z"
+ */
+export type TUTCDateTime = string;
+
 /** <https://www.rfc-editor.org/rfc/rfc8620.html#section-2> */
 export interface TJMAPSession {
   capabilities: Record<string, Record<string, any>>;

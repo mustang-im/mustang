@@ -1,7 +1,7 @@
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { EMail } from "../EMail";
 import { HTMLDataProcessor } from "./HTMLDataProcessor";
 import { DeliveryStatus, ProductPurchase, gPurchases } from "./ProductPurchase";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export abstract class AmazonPurchaseProcessor extends HTMLDataProcessor {
   // Domain after @ in the From: address
@@ -34,7 +34,7 @@ export abstract class AmazonPurchaseProcessor extends HTMLDataProcessor {
     "amazon.com.mx",
     "amazon.com.tr",
   ];
-  async processDOM(doc: Document, email: EMail): Promise<void> {
+  async processDOM(email: EMail, doc: Document): Promise<void> {
     // Delivered notification doesn't contain product list
     let orderNumberE = doc.querySelector(".rio_delivery_feedback_container .rio_15_heavy_black") ||
       !doc.querySelector(".rio-text-585, .rio-text-379") && doc.querySelector(".rio-text-577, .rio-text-372")?.lastElementChild

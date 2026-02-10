@@ -20,8 +20,10 @@
   {ex?.message ?? ex + ""}
 {/await}
 
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
   canContinue={!!config.name}
   canCancel={true}
   onCancel={onCancel}
@@ -33,6 +35,8 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
@@ -46,6 +50,7 @@
 
   let addressbooks: Collection<DAVAddressBook>;
   let selectedAddressbook: DAVAddressBook;
+  let errorUI: ErrorMessageInline;
 
   async function load() {
     addressbooks = await config.listAddressbooks();
@@ -57,6 +62,7 @@
   }
 
   async function onContinue() {
+    errorUI.clearError();
     config.addressbookURL = selectedAddressbook.url;
     await config.listContacts();
     appGlobal.addressbooks.add(config);

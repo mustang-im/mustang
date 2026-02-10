@@ -1,0 +1,53 @@
+name: Installers for Linux ARM
+
+on:
+  workflow_dispatch: # manually triggered
+  push:
+    tags: 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install FPM
+      # Work around <https://github.com/electron-userland/electron-builder/issues/9563>
+      run: |
+        sudo apt-get update
+        sudo apt-get install ruby ruby-dev build-essential
+        sudo gem install --no-document fpm
+
+    - name: Build installers for Linux ARM
+      uses: actions/setup-node@v3
+      with:
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: 24.x
+
+    - run: cd app/build; sh mustang-brand.sh
+    - run: cd app; yarn install
+    - run: cd lib; yarn install
+    - run: cd backend; yarn install
+    - run: cd e2; yarn install
+    - run: cd e2; yarn run build:release:linux
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Sentry source maps. Otherwise, vite build is out of memory
+        NODE_OPTIONS: '--max-old-space-size=32768'
+        # Work around <https://github.com/electron-userland/electron-builder/issues/9563>
+        USE_SYSTEM_FPM: true
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installers Linux ARM
+        path: |
+          e2/dist/*.deb
+          e2/dist/*.rpm
+          e2/dist/*.AppImage
+          e2/dist/*.flatpak
+          e2/dist/*.snap

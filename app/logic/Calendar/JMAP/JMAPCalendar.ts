@@ -38,7 +38,7 @@ export class JMAPCalendar extends Calendar {
   }
 
   getEventByID(id: string): JMAPEvent | undefined {
-    return this.events.find(p => p.itemID == id);
+    return this.events.find(p => p.id == id);
   }
 
   async getEvents(eventIDs: { Id: string }[], events: JMAPEvent[], parentEvent?: JMAPEvent) {

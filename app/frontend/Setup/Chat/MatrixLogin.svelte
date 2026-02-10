@@ -12,6 +12,10 @@
   </grid>
 </vbox>
 
+{#if error}
+  <ErrorMessageInline ex={error} />
+{/if}
+
 <ButtonsBottom
   onContinue={onContinue}
   canContinue={!!config.username && !!config.baseURL}
@@ -22,9 +26,11 @@
 <script lang="ts">
   import type { MatrixAccount } from "../../../logic/Chat/Matrix/MatrixAccount";
   import { appGlobal } from "../../../logic/app";
+  import MatrixVerify from "./MatrixVerify.svelte";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../l10n/l10n";
 
   /** in/out */
@@ -33,6 +39,7 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
+  let error: Error | null = null;
   let password: string;
   let userID: string;
   $: splitJID(userID);
@@ -46,15 +53,28 @@
     }
     config.username = sp[0];
     config.baseURL = sp[1] ? "https://" + sp[1] : "https://matrix.org";
-    config.password = password;
     config.name = userID;
     config.realname = appGlobal.me.name;
   }
 
   async function onContinue() {
-    await config.save();
-    appGlobal.chatAccounts.add(config);
-    showPage = null;
+    try {
+      error = null;
+      config.password = password;
+      config.deleteAllKeys();
+
+      //await config.loginOnly(true);
+      //showPage = MatrixVerify;
+
+      // or, until the crypto key recovery works:
+      await config.login(true);
+      await config.save();
+      appGlobal.chatAccounts.add(config);
+      showPage = null;
+    } catch (ex) {
+      config.deleteAllKeys();
+      error = ex;
+    }
   }
 </script>
 

@@ -281,6 +281,7 @@ export class ComposeActions {
       this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.realname);
     }
     let account = fromIdentity.account;
+    this.email.html ??= "";
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;

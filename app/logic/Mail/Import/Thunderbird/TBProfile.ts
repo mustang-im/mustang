@@ -171,7 +171,7 @@ export class ThunderbirdProfile {
       identity.emailAddress = sanitize.emailAddress(this.prefs[`${prefBranch}.useremail`]);
       let signatureHTML = sanitize.string(this.prefs[`${prefBranch}.htmlSigText`], null);
       if (signatureHTML) {
-        if (this.prefs[`${prefBranch}.htmlSigText`] === false) {
+        if (this.prefs[`${prefBranch}.htmlSigFormat`] === false) {
           signatureHTML = `<pre>${signatureHTML}</pre>`;
         }
         identity.signatureHTML = signatureHTML;

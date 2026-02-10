@@ -92,7 +92,7 @@ export class OAuth2 extends WebBasedAuth {
    */
   async login(interactive: boolean): Promise<string> {
     assert(this.account, "Need to set account first");
-    if (this.accessToken) {
+    if (this.isLoggedIn) {
       return this.accessToken;
     }
     this.refreshToken ??= await this.getRefreshTokenFromStorage();
@@ -164,7 +164,13 @@ export class OAuth2 extends WebBasedAuth {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.accessToken;
+    return !!this.accessToken && !this.isExpired;
+  }
+
+  get isExpired(): boolean {
+    return this.expiresAt
+      ? this.expiresAt.getTime() - 2000 < Date.now()
+      : false;
   }
 
   /**

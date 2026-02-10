@@ -11,6 +11,7 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
@@ -37,12 +38,12 @@ export class IMAPFolder extends Folder {
   }
 
   /** Last sequence number seen */
-  get lastModSeq(): number {
-    return this.syncState as number ?? 0;
+  get lastModSeq(): bigint {
+    return BigInt(this.syncState ?? 0n);
   }
-  set lastModSeq(val: number) {
-    assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
-    this.syncState = sanitize.integer(val);
+  set lastModSeq(val: bigint) {
+    assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
+    this.syncState = String(val);
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
@@ -77,10 +78,10 @@ export class IMAPFolder extends Folder {
       } catch (ex) {
         console.log("Opening IMAP folder failed", ex);
         if (ex.code == "NoConnection") {
-          conn = await this.account.reconnect(conn);
+          conn = await this.account.reconnect(conn, purpose);
           if (doLock) {
-            lock = await this.account.connectionLock.get(conn).lock();
-            lockMailbox = await conn.getMailboxLock(this.path);
+            lock ??= await this.account.connectionLock.get(conn).lock();
+            lockMailbox ??= await conn.getMailboxLock(this.path);
           } else {
             await conn.mailboxOpen(this.path);
           }
@@ -411,8 +412,8 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  updateModSeq(modseq: number) {
-    if (typeof (modseq) != "number") {
+  updateModSeq(modseq: bigint) {
+    if (typeof (modseq) != "bigint") {
       return;
     }
     if (modseq > this.lastModSeq) {
@@ -478,7 +479,7 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * unread or flag status of an email changed */
-  async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number, connection?: ImapFlow): Promise<void> {
+  async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: bigint, connection?: ImapFlow): Promise<void> {
     // console.log("msg flags changed", "uid", uid, "seq", seq, "flags", flags, "modseq", newModSeq);
     if (this.deletions.has(uid)) {
       return;
@@ -644,5 +645,37 @@ export class IMAPFolder extends Folder {
 
   newEMail(): IMAPEMail {
     return new IMAPEMail(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
+    if (!await this.account.hasCapability("ACL")) {
+      return undefined;
+    }
+    let conn = await this.account.connection();
+    let attributes: Array<{ type: string, value: string }>;
+    let persons = new ArrayColl<PersonUID>();
+    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+    await response.next();
+    for (let i = 1; i < attributes.length; i += 2) {
+      let name = sanitize.nonemptystring(attributes[i].value);
+      if (name == this.account.username) {
+        continue;
+      }
+      let emailAddress = name.includes('@') ? name : name + this.account.emailAddress.slice(this.account.emailAddress.indexOf('@'));
+      persons.add(new PersonUID(emailAddress, name));
+    }
+    return persons;
+  }
+
+  async addPermission(permission: PersonUID, rights: string) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
+    await response.next();
+  }
+
+  async removePermission(permission: PersonUID) {
+    let conn = await this.account.connection();
+    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+    await response.next();
   }
 }
