@@ -224,9 +224,6 @@ export class ComposeActions {
       return url;
     }
 
-    URL.revokeObjectURL(url);
-    attachment.blobURL = null;
-
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
   }
