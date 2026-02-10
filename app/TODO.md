@@ -63,6 +63,12 @@
     * Scroll inside dialog, not whole window
 
 # Feedback
+## Zucca
+* TB import: doppelte eigene Identity
+* Attachments einlesen mit email headers
+* Search server
+* CardDAV: Mehrere Addressbücher
+* CardDAV: "invalid string length" bei smartCollectionSync()
 ## Elena
 * Clear profile
 * Debug dump of settings
