@@ -244,7 +244,7 @@ async function streamHTTP(url: string, data: any, config: any) {
 }
 
 async function newHTTPServer() {
-  const { HTTPServer } = await import("../../backend/HTTPServer");
+  const { HTTPServer } = await import("../../desktop/backend/HTTPServer");
   return new HTTPServer();
 }
 
