@@ -188,6 +188,10 @@ export class JMAPAccount extends MailAccount {
       log.push(method[2], method[0], method[1]);
     }
 
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(false);
+    }
+
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
