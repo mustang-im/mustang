@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} serveri port",
   "vz++ya": "{0} telefonikonto",
-  "/dIm7W": "Vajalik telefoninumber tel: URL",
   "At5fs9": "Toetatakse ainult tel: URL-i",
-  "bZ0vJ3": "Telefoninumber peab olema rahvusvahelises numbriformaadis, nt tel:+49-611-00000000 või tel:+1-650-555-0000.",
   "JrKXWo": "Seadistage oma olemasolev {0} telefonikonto",
   "PNQbDm": "Konfiguratsiooni saate oma telefonioperaatorilt {0}.",
   "JK9y6G": "Teie {0} kasutaja",
@@ -961,5 +959,11 @@
   "VKZbQz": "Selleks, et pääseda ligi oma vanadele sõnumitele, peate kinnitama selle uue seadme, kasutades ühte oma olemasolevatest seadmetest, mis on sellesse Matrixi kontosse sisse logitud.",
   "07yKJu": "Kontrollida olemasoleva seadme abil",
   "UY+LcU": "Te tegite ettepaneku nende koosolekute toimumise aegade kohta",
-  "xN1dAz": "Broneeri"
+  "xN1dAz": "Broneeri",
+  "87bpog": "Riigi kood",
+  "URmyfc": "Üksikasjad",
+  "ggE0xH": "Ikooni toomine...",
+  "liUJLz": "Vajalik telefoninumber",
+  "EtcXq2": "Telefoninumber ei ole tuvastatud. Toetatud vormingud: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "aadressile"
 }

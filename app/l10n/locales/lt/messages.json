@@ -883,9 +883,7 @@
   "zVBfbv": "{0} serveris",
   "QZ9bsx": "{0} serverio prievadas",
   "vz++ya": "{0} telefono sąskaita",
-  "/dIm7W": "Reikia telefono numerio tel: URL",
   "At5fs9": "Palaikomi tik tel: URL adresai",
-  "bZ0vJ3": "Telefono numeris turi būti tarptautinio numerio formato, pvz., tel.:+49-611-000000 arba tel.:+1-650-555-0000.",
   "JrKXWo": "Nustatykite turimą {0} telefono paskyrą",
   "PNQbDm": "Konfigūraciją galite gauti iš {0} telefono operatoriaus.",
   "JK9y6G": "Jūsų {0} naudotojas",
@@ -961,5 +959,11 @@
   "VKZbQz": "Norėdami pasiekti senus pranešimus, turite patvirtinti šį naują įrenginį, naudodami vieną iš esamų įrenginių, prisijungusių prie šios \"Matrix\" paskyros.",
   "07yKJu": "Patikrinti naudojant esamą įrenginį",
   "UY+LcU": "Jūs pasiūlėte šiuos susitikimų laikus",
-  "xN1dAz": "Užsisakykite"
+  "xN1dAz": "Užsisakykite",
+  "87bpog": "Šalies kodas",
+  "URmyfc": "Išsami informacija",
+  "ggE0xH": "Parsisiunčiama piktograma...",
+  "liUJLz": "Reikia telefono numerio",
+  "EtcXq2": "Telefono numeris neatpažintas. Palaikomi formatai: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "į"
 }

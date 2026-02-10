@@ -883,9 +883,7 @@
   "zVBfbv": "{0} szerver",
   "QZ9bsx": "{0} kiszolgáló port",
   "vz++ya": "{0} telefonszámla",
-  "/dIm7W": "Telefonszámra van szükség a tel: URL-ben",
   "At5fs9": "Csak a tel: URL-ek támogatottak",
-  "bZ0vJ3": "A telefonszámnak nemzetközi formátumúnak kell lennie, pl. tel:+49-611-00000000 vagy tel:+1-650-555-0000.",
   "JrKXWo": "A meglévő {0} telefonszámla beállítása",
   "PNQbDm": "A konfigurációt a {0} telefonszolgáltatótól kaphatja meg.",
   "JK9y6G": "Az Ön {0} felhasználója",
@@ -961,5 +959,11 @@
   "VKZbQz": "A régi üzenetek eléréséhez meg kell erősítenie ezt az új eszközt az egyik meglévő eszközével, amelyik be van jelentkezve ebbe a Matrix-fiókba.",
   "07yKJu": "Ellenőrzés a meglévő eszközzel",
   "UY+LcU": "Ön javasolta ezeket az időpontokat",
-  "xN1dAz": "Foglaljon"
+  "xN1dAz": "Foglaljon",
+  "87bpog": "Országkód",
+  "URmyfc": "Részletek",
+  "ggE0xH": "Ikon lekérése...",
+  "liUJLz": "Telefonszámra van szükségem",
+  "EtcXq2": "A telefonszámot nem ismerik fel. Támogatott formátumok: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "a  címre"
 }

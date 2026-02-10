@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} port server",
   "vz++ya": "{0} cont telefonic",
-  "/dIm7W": "Aveți nevoie de număr de telefon în tel: URL",
   "At5fs9": "Doar tel: URL-urile sunt acceptate",
-  "bZ0vJ3": "Numărul de telefon trebuie să fie în format internațional, de ex. tel:+49-611-000000 sau tel:+1-650-555-0000",
   "JrKXWo": "Configurați contul dvs. de telefon existent {0} ",
   "PNQbDm": "Puteți obține configurația de la operatorul dvs. de telefonie {0}.",
   "JK9y6G": "Utilizatorul dumneavoastră {0} ",
@@ -961,5 +959,11 @@
   "VKZbQz": "Pentru a accesa mesajele dvs. vechi, trebuie să confirmați acest dispozitiv nou, utilizând unul dintre dispozitivele dvs. existente care sunt conectate la acest cont Matrix.",
   "07yKJu": "Verificare utilizând dispozitivul existent",
   "UY+LcU": "Ați propus aceste ore de întâlnire",
-  "xN1dAz": "Rezervare"
+  "xN1dAz": "Rezervare",
+  "87bpog": "Codul țării",
+  "URmyfc": "Detalii",
+  "ggE0xH": "Fetching icon...",
+  "liUJLz": "Aveți nevoie de un număr de telefon",
+  "EtcXq2": "Numărul de telefon nu este recunoscut. Formatele acceptate: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "la"
 }

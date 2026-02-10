@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} server port",
   "vz++ya": "{0} telephone account",
-  "/dIm7W": "Need phone number in tel: URL",
   "At5fs9": "Only tel: URLs are supported",
-  "bZ0vJ3": "Phone number needs to be in international number format, e.g. tel:+49-611-000000 or tel:+1-650-555-0000",
   "JrKXWo": "Set up your existing {0} telephone account",
   "PNQbDm": "You can get the configuration from your {0} phone operator.",
   "JK9y6G": "Your {0} user",
@@ -961,5 +959,11 @@
   "VKZbQz": "To access your old messages, you need to confirm this new device, using one of your existing devices that are logged in to this Matrix account.",
   "07yKJu": "Verify using existing device",
   "UY+LcU": "You proposed these meeting times",
-  "xN1dAz": "Book"
+  "xN1dAz": "Book",
+  "87bpog": "Country code",
+  "URmyfc": "Details",
+  "ggE0xH": "Fetching icon...",
+  "liUJLz": "Need phone number",
+  "EtcXq2": "Phone number not recognized. Supported formats: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "to"
 }

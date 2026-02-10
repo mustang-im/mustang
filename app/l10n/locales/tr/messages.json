@@ -883,9 +883,7 @@
   "zVBfbv": "{0} sunucu",
   "QZ9bsx": "{0} sunucu bağlantı noktası",
   "vz++ya": "{0} telefon hesabı",
-  "/dIm7W": "Tel: URL'sinde telefon numarasına ihtiyacınız var",
   "At5fs9": "Yalnızca tel: URL'ler desteklenir",
-  "bZ0vJ3": "Telefon numarasının uluslararası numara formatında olması gerekir, örneğin tel:+49-611-000000 veya tel:+1-650-555-0000",
   "JrKXWo": "Mevcut {0} telefon hesabınızı ayarlayın",
   "PNQbDm": "Yapılandırmayı {0} telefon operatörünüzden alabilirsiniz.",
   "JK9y6G": "{0} kullanıcınız",
@@ -961,5 +959,11 @@
   "VKZbQz": "Eski mesajlarınıza erişmek için, bu Matrix hesabında oturum açmış mevcut cihazlarınızdan birini kullanarak bu yeni cihazı onaylamanız gerekir.",
   "07yKJu": "Mevcut cihazı kullanarak doğrulayın",
   "UY+LcU": "Bu toplantı saatlerini siz önerdiniz",
-  "xN1dAz": "Kitap"
+  "xN1dAz": "Kitap",
+  "87bpog": "Ülke kodu",
+  "URmyfc": "Detaylar",
+  "ggE0xH": "Simge getiriliyor...",
+  "liUJLz": "Telefon numarasına ihtiyacım var",
+  "EtcXq2": "Telefon numarası tanınmıyor. Desteklenen formatlar: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "için"
 }

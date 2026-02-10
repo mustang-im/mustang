@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} port serveru",
   "vz++ya": "{0} telefonní účet",
-  "/dIm7W": "Potřebujete telefonní číslo v tel: URL",
   "At5fs9": "Podporovány jsou pouze tel: adresy URL",
-  "bZ0vJ3": "Telefonní číslo musí být v mezinárodním formátu, např. tel:+49-611-000000 nebo tel:+1-650-555-0000.",
   "JrKXWo": "Nastavení stávajícího telefonního účtu {0} ",
   "PNQbDm": "Konfiguraci získáte u svého telefonního operátora na adrese {0}.",
   "JK9y6G": "Váš uživatel {0} ",
@@ -961,5 +959,11 @@
   "VKZbQz": "Chcete-li získat přístup ke starým zprávám, musíte toto nové zařízení potvrdit pomocí jednoho ze svých stávajících zařízení, která jsou přihlášena k tomuto účtu Matrix.",
   "07yKJu": "Ověření pomocí stávajícího zařízení",
   "UY+LcU": "Navrhli jste tyto časy schůzek",
-  "xN1dAz": "Rezervace na"
+  "xN1dAz": "Rezervace na",
+  "87bpog": "Kód země",
+  "URmyfc": "Podrobnosti na",
+  "ggE0xH": "Přebírání ikony...",
+  "liUJLz": "Potřebujete telefonní číslo",
+  "EtcXq2": "Telefonní číslo nebylo rozpoznáno. Podporované formáty: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "na"
 }

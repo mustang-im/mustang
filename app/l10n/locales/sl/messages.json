@@ -883,9 +883,7 @@
   "zVBfbv": "{0} strežnik",
   "QZ9bsx": "{0} vrata strežnika",
   "vz++ya": "{0} telefonski račun",
-  "/dIm7W": "Potrebujete telefonsko številko v tel: URL",
   "At5fs9": "Podprti so samo tel: URL-ji",
-  "bZ0vJ3": "Telefonska številka mora biti v obliki mednarodne številke, npr. tel:+49-611-000000 ali tel:+1-650-555-0000.",
   "JrKXWo": "Nastavitev obstoječega telefonskega računa {0} ",
   "PNQbDm": "Konfiguracijo lahko dobite pri operaterju telefona {0}.",
   "JK9y6G": "Vaš uporabnik {0} ",
@@ -961,5 +959,11 @@
   "VKZbQz": "Če želite dostopati do starih sporočil, morate to novo napravo potrditi z eno od obstoječih naprav, ki so prijavljene v ta račun Matrix.",
   "07yKJu": "Preverjanje z uporabo obstoječe naprave",
   "UY+LcU": "Predlagali ste te ure srečanj.",
-  "xN1dAz": "Rezervirajte"
+  "xN1dAz": "Rezervirajte",
+  "87bpog": "Koda države",
+  "URmyfc": "Podrobnosti",
+  "ggE0xH": "Pridobivanje ikone...",
+  "liUJLz": "Potrebujete telefonsko številko",
+  "EtcXq2": "Telefonska številka ni prepoznana. Podprti formati: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "v"
 }

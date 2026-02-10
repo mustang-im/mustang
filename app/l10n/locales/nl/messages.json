@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} serverpoort",
   "vz++ya": "{0} telefoonrekening",
-  "/dIm7W": "Telefoonnummer nodig in tel: URL",
   "At5fs9": "Alleen tel: URL's worden ondersteund",
-  "bZ0vJ3": "Het telefoonnummer moet in internationaal formaat zijn, bijv. tel:+49-611-000000 of tel:+1-650-555-0000",
   "JrKXWo": "Uw bestaande {0} telefoonaccount instellen",
   "PNQbDm": "Je kunt de configuratie opvragen bij je provider {0}.",
   "JK9y6G": "Uw {0} gebruiker",
@@ -961,5 +959,11 @@
   "VKZbQz": "Als u toegang wilt krijgen tot uw oude berichten, moet u dit nieuwe apparaat bevestigen met een van uw bestaande apparaten die zijn aangemeld bij dit Matrix-account.",
   "07yKJu": "Controleren met bestaand apparaat",
   "UY+LcU": "Je hebt deze vergadertijden voorgesteld",
-  "xN1dAz": "Boek"
+  "xN1dAz": "Boek",
+  "87bpog": "Landcode",
+  "URmyfc": "Details",
+  "ggE0xH": "Pictogram ophalen...",
+  "liUJLz": "Telefoonnummer nodig",
+  "EtcXq2": "Telefoonnummer niet herkend. Ondersteunde formaten: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "naar"
 }

@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} serverport",
   "vz++ya": "{0} telefonkonto",
-  "/dIm7W": "Behöver telefonnummer i tel: URL",
   "At5fs9": "Endast tel: URL:er stöds",
-  "bZ0vJ3": "Telefonnumret måste vara i internationellt nummerformat, t.ex. tel:+49-611-000000 eller tel:+1-650-555-0000",
   "JrKXWo": "Konfigurera ditt befintliga {0} telefonkonto",
   "PNQbDm": "Du kan få konfigurationen från din telefonoperatör på {0}.",
   "JK9y6G": "Din {0} användare",
@@ -961,5 +959,11 @@
   "VKZbQz": "För att komma åt dina gamla meddelanden måste du bekräfta den här nya enheten med hjälp av en av dina befintliga enheter som är inloggade på det här Matrix-kontot.",
   "07yKJu": "Verifiera med hjälp av befintlig enhet",
   "UY+LcU": "Du föreslog dessa mötestider",
-  "xN1dAz": "Boka"
+  "xN1dAz": "Boka",
+  "87bpog": "Landskod",
+  "URmyfc": "Detaljer",
+  "ggE0xH": "Hämtar ikon...",
+  "liUJLz": "Behöver telefonnummer",
+  "EtcXq2": "Telefonnumret känns inte igen. Format som stöds: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "till"
 }

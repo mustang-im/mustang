@@ -883,9 +883,7 @@
   "zVBfbv": "{0} serveur",
   "QZ9bsx": "{0} port du serveur",
   "vz++ya": "{0} compte téléphonique",
-  "/dIm7W": "Besoin d'un numéro de téléphone dans l'URL tel :",
   "At5fs9": "Seuls les URL tel : sont pris en charge",
-  "bZ0vJ3": "Le numéro de téléphone doit être au format international, par exemple tel:+49-611-000000 ou tel:+1-650-555-0000",
   "JrKXWo": "Configurez votre compte téléphonique {0} ",
   "PNQbDm": "Vous pouvez obtenir la configuration auprès de votre opérateur téléphonique {0}.",
   "JK9y6G": "Votre utilisateur {0} ",
@@ -961,5 +959,11 @@
   "VKZbQz": "Pour accéder à vos anciens messages, vous devez confirmer ce nouvel appareil en utilisant l'un de vos appareils existants qui sont connectés à ce compte Matrix.",
   "07yKJu": "Vérifier en utilisant le dispositif existant",
   "UY+LcU": "Vous avez proposé ces horaires de réunion",
-  "xN1dAz": "Réserver"
+  "xN1dAz": "Réserver",
+  "87bpog": "Code pays",
+  "URmyfc": "Détails",
+  "ggE0xH": "Icône de recherche...",
+  "liUJLz": "Besoin d'un numéro de téléphone",
+  "EtcXq2": "Numéro de téléphone non reconnu. Formats pris en charge : +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "vers"
 }

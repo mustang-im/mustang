@@ -883,9 +883,7 @@
   "zVBfbv": "{0} server",
   "QZ9bsx": "{0} port server",
   "vz++ya": "{0} akun telepon",
-  "/dIm7W": "Perlu nomor telepon di tel: URL",
   "At5fs9": "Hanya tel: URL yang didukung",
-  "bZ0vJ3": "Nomor telepon harus dalam format nomor internasional, misalnya tel: +49-611-000000 atau tel: +1-650-555-0000",
   "JrKXWo": "Siapkan akun telepon {0} Anda yang sudah ada",
   "PNQbDm": "Anda dapat memperoleh konfigurasi dari {0} operator telepon Anda.",
   "JK9y6G": "Pengguna {0} Anda",
@@ -961,5 +959,11 @@
   "VKZbQz": "Untuk mengakses pesan lama Anda, Anda perlu mengonfirmasi perangkat baru ini, menggunakan salah satu perangkat yang sudah ada yang masuk ke akun Matrix ini.",
   "07yKJu": "Verifikasi menggunakan perangkat yang ada",
   "UY+LcU": "Anda mengusulkan waktu pertemuan ini",
-  "xN1dAz": "Pesan"
+  "xN1dAz": "Pesan",
+  "87bpog": "Kode negara",
+  "URmyfc": "Detail",
+  "ggE0xH": "Ikon pengambilan...",
+  "liUJLz": "Butuh nomor telepon",
+  "EtcXq2": "Nomor telepon tidak dikenali. Format yang didukung: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000",
+  "DASkg8": "ke"
 }
