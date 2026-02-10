@@ -3,6 +3,7 @@
   "include": [
     "../app/**/*",
     "./backend/**/*",
+    "../lib/**/*",
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.svelte",

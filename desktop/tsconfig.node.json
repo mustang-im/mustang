@@ -5,7 +5,8 @@
     "src/main/*",
     "src/preload/*",
     "src/renderer/*",
-    "./backend/*", "backend/ntlm.js",
+    "./backend/*",
+    "../lib/**/*",
   ],
   "compilerOptions": {
     "composite": true,
