@@ -46,7 +46,6 @@
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
     * Same name: Checkboxes
-  * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree

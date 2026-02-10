@@ -3,6 +3,7 @@ import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { StreetAddress } from "../../../Contacts/StreetAddress";
 import { newAddressbookForProtocol } from "../../../Contacts/AccountsList/Addressbooks";
+import { convertVCardToPerson } from "../../../Contacts/VCard/VCard";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { UserError, randomID } from "../../../util/util";
@@ -63,7 +64,20 @@ export class ThunderbirdAddressbook extends Addressbook {
 
     let person = addressbook.newPerson();
     person.id = id ?? randomID();
+
     let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
+    let emailAddressSecond = sanitize.emailAddress(getRow("SecondEmail"), null);
+
+    // TB CardDAV addressbooks store data only in vCard
+    let vCard = getRow("_vCard");
+    if (vCard) {
+      convertVCardToPerson(vCard, person);
+
+      // Thunderbird adds only name and first 2 email addresses, the other fields are only in vCard
+      // Avoid duplicating email addresses, below they have "primary"
+      person.emailAddresses.removeAll(person.emailAddresses.filterOnce(c =>
+        c.value == emailAddress || c.value == emailAddressSecond));
+    }
 
     // Name
     person.firstName = sanitize.nonemptystring(getRow("FirstName"), null);
@@ -96,7 +110,7 @@ export class ThunderbirdAddressbook extends Addressbook {
 
     // Mail
     addContactInfo(emailAddress, "email", "main", 0, person.emailAddresses);
-    addContactInfo(sanitize.emailAddress(getRow("SecondEmail"), null), "email", "second", 1, person.emailAddresses);
+    addContactInfo(emailAddressSecond, "email", "second", 1, person.emailAddresses);
 
     // Phone
     addContactInfo(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
