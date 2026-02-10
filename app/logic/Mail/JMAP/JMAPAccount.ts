@@ -86,7 +86,7 @@ export class JMAPAccount extends MailAccount {
   async verifyLogin(): Promise<void> {
     await this.loginOAuth2(true);
     await this.getSession();
-    await this.logout();
+    this.stopPolling(); // Don't log out, because we want to keep the OAuth2 refresh token
   }
 
   protected async loginOAuth2(interactive: boolean): Promise<void> {
