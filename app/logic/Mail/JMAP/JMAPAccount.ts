@@ -61,16 +61,24 @@ export class JMAPAccount extends MailAccount {
     assert(inbox, "Inbox not found");
     inbox.startPolling();
 
-    await this.listAddressbooks();
-    await this.listCalendars();
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        await addressbook.listContacts();
+    if (this.haveContacts) {
+      await this.listAddressbooks();
+    }
+    if (this.haveCalendar) {
+      await this.listCalendars();
+    }
+    if (this.haveContacts) {
+      for (let addressbook of appGlobal.addressbooks) {
+        if (addressbook.mainAccount == this) {
+          await addressbook.listContacts();
+        }
       }
     }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        await calendar.listEvents();
+    if (this.haveCalendar) {
+      for (let calendar of appGlobal.calendars) {
+        if (calendar.mainAccount == this) {
+          await calendar.listEvents();
+        }
       }
     }
   }
@@ -112,6 +120,13 @@ export class JMAPAccount extends MailAccount {
     this.session = session;
   }
 
+  get haveContacts(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:contacts"];
+  }
+  get haveCalendar(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:calendars"];
+  }
+
   /** A single API call, with a single result */
   async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
     let responses = await this.makeCalls([[ method, argumentsJSON ]]);
@@ -151,9 +166,16 @@ export class JMAPAccount extends MailAccount {
    * @returns Results from the calls.
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
-  async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
+  async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
+    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
+    if (this.haveContacts) {
+      using.push("urn:ietf:params:jmap:contacts");
+    }
+    if (this.haveCalendar) {
+      using.push("urn:ietf:params:jmap:calendars");
+    }
     let requestJSON: TJMAPAPIRequest = {
-      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars"],
+      using: using,
       methodCalls: [],
     };
     let callCounter = 0;
