@@ -13,7 +13,7 @@ import { RunOnce } from "../../util/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
-import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { ImapFlow } from "../../../../desktop/backend/node_modules/imapflow";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { gt } from "../../../l10n/l10n";
 

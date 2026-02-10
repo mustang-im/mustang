@@ -16,7 +16,7 @@ export class OAuth2Window extends OAuth2UI {
    */
   async login(): Promise<string> {
     let url = await this.oAuth2.getAuthURL();
-    // Ends up in e2/src/main/index.ts setWindowOpenHandler(). Features are overridden there.
+    // Ends up in desktop/src/main/index.ts setWindowOpenHandler(). Features are overridden there.
     let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
     return await new Promise((resolve, reject) => {

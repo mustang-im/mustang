@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# run from dir: mobile/
 
 export NODE_OPTIONS="--max-old-space-size=32768"
 

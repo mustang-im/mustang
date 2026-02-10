@@ -2,14 +2,15 @@
   "extends": "@electron-toolkit/tsconfig/tsconfig.json",
   "include": [
     "../app/**/*",
-    "../backend/**/*",
+    "./backend/**/*",
+    "../lib/**/*",
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.svelte",
     "../electron/src/logic.ts",
     "../electron/src/logic/**/*",
     "src/preload/*.d.ts"
-  ],
+, "backend/ntlm.js"  ],
   "compilerOptions": {
     "verbatimModuleSyntax": true,
     "useDefineForClassFields": true,

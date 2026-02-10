@@ -33,7 +33,7 @@ jobs:
     - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
+    - run: cd desktop/backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
 

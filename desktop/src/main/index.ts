@@ -1,4 +1,4 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
 import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'

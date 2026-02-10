@@ -12,7 +12,7 @@ perl -p -i \
   -e "s|https://mustang.im|https://parula.beonex.com|g;" \
   -e "s|\"name\": \"mustang\"|\"name\": \"parula\"|;" \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
-  ../../e2/package.json
+  ../../desktop/package.json
 perl -p -i \
   -e "s|Mustang|Parula|g;" \
   -e "s|https://mustang.im|https://parula.beonex.com|g;" \
@@ -29,7 +29,7 @@ perl -p -i \
   -e "s|Mustang|Parula|g;" \
   -e "s|mustang-mail|parula|g;" \
   -e "s|mustang|parula|g;" \
-  ../../e2/electron-builder.yml
+  ../../desktop/electron-builder.yml
 
 perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
@@ -72,10 +72,10 @@ perl -p -i \
   ../../mobile/ios/archive.plist
 
 perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
-perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
+perl -MFile::Copy -e "copy('../../desktop/build/icon-parula.png', '../../desktop/build/icon.png')"
 
 # Mobile Icons
 perl -MFile::Path -e "mkpath('../../mobile/assets')"
-perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../mobile/assets/icon.png')"
+perl -MFile::Copy -e "copy('../../desktop/build/icon-parula.png', '../../mobile/assets/icon.png')"
 
 perl -MFile::Copy -e "copy('../../mobile/parula/ios/apple-dist.mobileprovision', '../../mobile/ios/apple-dist.mobileprovision')"

@@ -1,14 +1,14 @@
 import { HTTPServer } from './HTTPServer';
-import JPCWebSocket from '../lib/jpc-ws';
+import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
-import { appName, production } from '../app/logic/build';
+import { appName, production } from '../../app/logic/build';
 import { WebContents } from './WebContents';
-import { Observable, notifyChangedProperty } from '../lib/util/Observable';
+import { Observable, notifyChangedProperty } from '../../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, systemPreferences } from "electron";
 import electronUpdater from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';

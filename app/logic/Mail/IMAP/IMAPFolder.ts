@@ -10,7 +10,7 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
-import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { ImapFlow } from "../../../../desktop/backend/node_modules/imapflow";
 import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {

@@ -22,12 +22,12 @@ jobs:
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
-    - run: cd e2; yarn install
+    - run: cd desktop; yarn install
+    - run: cd desktop/backend; yarn install
     - run: |
         mkdir -p ~/private_keys/
         echo '${{ secrets.APPLE_API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-    - run: cd e2; yarn run build:release:mac
+    - run: cd desktop; yarn run build:release:mac
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -43,4 +43,4 @@ jobs:
       with:
         name: Installers Mac
         path: |
-          e2/dist/*.dmg
+          desktop/dist/*.dmg
