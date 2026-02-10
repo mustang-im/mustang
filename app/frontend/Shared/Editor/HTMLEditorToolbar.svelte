@@ -127,14 +127,14 @@ block
     </Button>
     <Button
       label={$t`Link to webpage`}
-      onClick={onLinkOpen}
+      onClick={() => editor.commands.toggleLinkUI()}
       selected={editor.isActive('link')}
       icon={LinkIcon}
       iconOnly
       />
     <Button
       label={$t`Remove link`}
-      onClick={() => { editor.chain().focus().unsetLink().run(); isEditingLink = false; }}
+      onClick={() => { editor.chain().focus().unsetLink().run()}}
       disabled={!editor.can().chain().focus().unsetLink().run()}
       icon={LinkRemoveIcon}
       iconOnly
@@ -177,29 +177,6 @@ block
   </Toolbar>
 {/if}
 
-{#if isEditingLink}
-  <Toolbar>
-    <hbox flex class="link-dialog">
-      <!-- <label for="linktext">Link text</label>
-      <input type="text" bind:value={linkText} id="linktext" /> -->
-      <label for="linktargeturl">Link target URL</label>
-      <input type="url" bind:value={linkTargetURL} id="linktargeturl" />
-      <Button
-        onClick={onLinkOK}
-        label={$t`OK`}
-        icon={OKIcon}
-        iconOnly
-        />
-      <Button
-        label={$t`Remove link`}
-        onClick={() => { editor.chain().focus().unsetLink().run(); isEditingLink = false; }}
-        disabled={!editor.can().chain().focus().unsetLink().run()}
-        icon={LinkRemoveIcon}
-        iconOnly
-        />
-    </hbox>
-  </Toolbar>
-{/if}
 {#if isEditingImage}
   <Toolbar>
     <hbox flex class="link-dialog">
@@ -237,17 +214,6 @@ block
 
   /* in only */
   export let editor: Editor;
-
-  let isEditingLink = false;
-  let linkTargetURL: string = null;
-  function onLinkOpen() {
-    isEditingLink = true;
-    linkTargetURL = editor.getAttributes('link').href
-  }
-  function onLinkOK() {
-    editor.chain().focus().setLink({ href: linkTargetURL }).run();
-    isEditingLink = false;
-  }
 
   let isEditingImage = false;
   let imageURL: string = null;
