@@ -16,7 +16,7 @@ let scrapedAuth: Record<string, string> = {};
  * Used by the front end to tell whether this is Hotmail or Office 365.
  * @returns HTTP `Authentication` header
  */
-export function getAnyScrapedAuth(partition: string) {
+export function getAnyScrapedAuth(partition: string): string {
   return scrapedAuth[partition];
 }
 
