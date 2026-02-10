@@ -1,4 +1,4 @@
-# e2
+# Desktop
 
 An Electron application with Svelte and TypeScript
 
