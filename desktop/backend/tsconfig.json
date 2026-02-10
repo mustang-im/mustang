@@ -1,0 +1,23 @@
+{
+  "include": [
+    "./*",
+    "../../app/logic/*"
+  ],
+  // <copied from="../tsconfig.json">
+  // <copied from="../tsconfig.node.json">
+  "compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "useDefineForClassFields": true,
+    "strict": false,
+    "allowJs": true,
+    "checkJs": true,
+    "composite": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ]
+  },
+}
