@@ -5,7 +5,7 @@
       "name": "Debug Main Process",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceRoot}/e2",
+      "cwd": "${workspaceRoot}/desktop",
       "runtimeExecutable": "${workspaceRoot}/desktop/node_modules/.bin/electron-vite",
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/desktop/node_modules/.bin/electron-vite.cmd"
