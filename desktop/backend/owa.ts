@@ -4,12 +4,17 @@ import { Readable } from 'stream';
 const kCanaryName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
 
-// To log in to Hotmail or Office 365 environments, we need to
-// scrape the Authorization header from the startupdata request.
+/**
+ * To log in to Hotmail or Office 365 environments, we need to
+ * scrape the Authorization header from the startupdata request.
+ *
+ * Cookie partition name -> HTTP `Authentication` header
+ */
 let scrapedAuth: Record<string, string> = {};
 
 /**
  * Used by the front end to tell whether this is Hotmail or Office 365.
+ * @returns HTTP `Authentication` header
  */
 export function getAnyScrapedAuth(partition: string) {
   return scrapedAuth[partition];

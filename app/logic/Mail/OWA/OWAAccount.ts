@@ -340,12 +340,12 @@ export class OWAAccount extends MailAccount {
     if ([401, 440].includes(response.status)) {
       try {
         if (authRepeat) { // Don't loop on errors
-          throw new Error();
+          throw new LoginError(null, "Please login");
         }
-        await this.loginCommon(false);
+        await this.loginCommon(false); // throws on login failure
       } catch (ex) {
         await this.logout();
-        throw new LoginError(null, "Please login");
+        throw ex;
       }
       // retry
       return await this.callOWA(aRequest, { authRepeat: true });
