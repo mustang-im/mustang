@@ -76,7 +76,7 @@
     margin-block-end: 32px;
   }
   .time {
-    font-weight: 600;;
+    font-weight: 600;
   }
   .duration {
     margin-block-start: 16px;
