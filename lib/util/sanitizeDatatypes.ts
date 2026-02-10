@@ -48,6 +48,13 @@ class Sanitize {
     return r;
   }
 
+  bigint(unchecked: bigint | string | null | undefined, fallback: bigint | null | Symbol = throwErrors): bigint {
+    if (typeof (unchecked) == "bigint") {
+      return unchecked;
+    }
+    return haveError("Not a bigint", unchecked, fallback);
+  }
+
   boolean(unchecked: boolean | string | number | null | undefined, fallback: boolean | null | Symbol = throwErrors): boolean {
     if (typeof (unchecked) == "boolean") {
       return unchecked;
