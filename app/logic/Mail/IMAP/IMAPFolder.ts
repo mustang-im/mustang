@@ -43,7 +43,7 @@ export class IMAPFolder extends Folder {
   }
   set lastModSeq(val: bigint) {
     assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
-    this.syncState = String(val);
+    this.syncState = String(sanitize.bigint(val));
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
