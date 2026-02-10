@@ -316,6 +316,11 @@ export class EWSAccount extends MailAccount {
     }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
+
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(false);
+    }
+
     let response: any;
     try {
       response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
