@@ -259,7 +259,7 @@ export class ActiveSyncAccount extends MailAccount {
     };
     if (this.oAuth2) {
       if (!this.oAuth2.isLoggedIn) {
-        throw new LoginError(null, "Please login");
+        await this.oAuth2.login(false);
       }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {

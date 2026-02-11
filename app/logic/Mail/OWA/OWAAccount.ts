@@ -290,13 +290,13 @@ export class OWAAccount extends MailAccount {
     await this.callOWA(request);
   }
 
-  async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
+  async callOWA(aRequest: any, { mailbox = null, authRepeat = false } = {}): Promise<any> {
     if (this.mainAccount) {
       let mainAccount = this.mainAccount as OWAAccount;
       return await mainAccount.callOWA(aRequest, { mailbox: this.username });
     }
     if (!this.hasLoggedIn) {
-      throw new LoginError(null, "Please login");
+      throw new LoginError(null, gt`Please login`);
     }
     let url = this.url + 'service.svc';
     let options = {
@@ -338,8 +338,17 @@ export class OWAAccount extends MailAccount {
       lock.release();
     }
     if ([401, 440].includes(response.status)) {
-      await this.logout();
-      throw new LoginError(null, "Please login");
+      try {
+        if (authRepeat) { // Don't loop on errors
+          throw new LoginError(null, gt`Please login`);
+        }
+        await this.loginCommon(false); // throws on login failure
+      } catch (ex) {
+        await this.logout();
+        throw ex;
+      }
+      // retry
+      return await this.callOWA(aRequest, { authRepeat: true });
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);

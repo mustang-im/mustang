@@ -288,7 +288,7 @@ export class EWSAccount extends MailAccount {
     };
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2.isLoggedIn) {
-        throw new LoginError(null, "Please login");
+        throw new LoginError(null, gt`Please login`);
       }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else if (this.authMethod == AuthMethod.NTLM) {
@@ -316,6 +316,11 @@ export class EWSAccount extends MailAccount {
     }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
+
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(false);
+    }
+
     let response: any;
     try {
       response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
