@@ -1,4 +1,5 @@
 import './app.css';
+import { mount } from 'svelte';
 import MainWindow from './MainWindow/MainWindow.svelte';
 import { appName, appVersion, production } from '../logic/build';
 import { getLocalStorage } from './Util/LocalStorage';
@@ -16,9 +17,7 @@ if (production) {
   });
 }
 
-const app = new MainWindow({
-  target: document.getElementById('app'),
-});
+const app = mount(MainWindow, { target: document.getElementById('app') });
 
 export default app;
 

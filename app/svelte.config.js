@@ -3,7 +3,7 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 export default {
   // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
   // for more information about preprocessors
-  preprocess: vitePreprocess(),
+  preprocess: vitePreprocess({ script: true }),
   // <https://github.com/sveltejs/language-tools/issues/650#issuecomment-1181354795>
   onwarn: (warning, handler) => {
     if (ignoreSvelteCompilerWarnings.includes(warning.code)) {

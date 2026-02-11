@@ -60,7 +60,7 @@
     {#if showTimezone}
       <vbox class="timezone">
         <hbox class="timezone-selector">
-          <TimezonePicker bind:timezone={event.timezone} />
+          <!-- <TimezonePicker bind:timezone={event.timezone} /> -->
           <hbox class="buttons">
             <RoundButton
               label={$t`Back to local timezone`}
@@ -113,7 +113,7 @@
   import GlobeIcon from "lucide-svelte/icons/globe";
   import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus";
   import XIcon from "lucide-svelte/icons/x";
-  import TimezonePicker from "timezone-picker-svelte";
+  // import TimezonePicker from "timezone-picker-svelte";
   import { myTimezone, isSameTimezone } from "../../Util/date";
   import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
