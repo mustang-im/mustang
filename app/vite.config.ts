@@ -4,7 +4,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import wasm from 'vite-plugin-wasm';
 import conditionalCompile from "vite-plugin-conditional-compile";
-import { webMail, isMobile, includeProprietary } from './logic/build';
+import { webMail, isMobile, includeProprietary, production } from './logic/build';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +21,7 @@ export default defineConfig({
         WEBMAIL: !!webMail && includeProprietary ? !!webMail : undefined,
         MOBILE: isMobile,
         PROPRIETARY: includeProprietary ? true : undefined,
+        PRODUCTION: production ? true : undefined,
       },
     }),
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),

@@ -28,7 +28,7 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
-// #if [MOBILE]
+// #if [MOBILE || !PRODUCTION]
 import Debug from "./About/Debug.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
@@ -162,7 +162,7 @@ about.subCategories.addAll([
 ]);
 settingsCategories.add(about);
 
-// #if [MOBILE]
+// #if [MOBILE || !PRODUCTION]
 about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
 // #endif
 
