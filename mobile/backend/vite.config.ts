@@ -47,6 +47,7 @@ export default defineConfig(({}) => {
       // Required for proper error messages
       esmShim(),
       viteStaticCopy({
+        environment: 'ssr',
         targets: [
           {
             src: 'dist/*',
