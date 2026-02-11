@@ -3,7 +3,7 @@ import { fetchConfig } from "./fetchConfig";
 import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON, fetchV1, ConfirmExchangeRedirect } from "./exchangeConfig";
 import { guessConfig } from "./guessConfig";
 import { localConfig } from "./localConfig";
-import { PriorityAbortable } from "../../util/Abortable";
+import { PriorityAbortable } from "../../util/flow/Abortable";
 import { UserCancelled } from "../../util/util";
 import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../util/netUtil";
 import { ArrayColl } from "svelte-collections";

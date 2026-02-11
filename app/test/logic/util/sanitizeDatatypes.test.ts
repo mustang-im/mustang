@@ -1,4 +1,4 @@
-import { sanitize } from '../../../lib/util/sanitizeDatatypes';
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { expect, test } from 'vitest';
 
 test("Check Latin email addresses", () => {

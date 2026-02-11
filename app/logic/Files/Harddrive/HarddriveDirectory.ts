@@ -2,7 +2,7 @@ import { Directory } from "../Directory";
 import type { File } from "../File";
 import type { HarddriveAccount } from "./HarddriveAccount";
 import { appGlobal } from "../../app";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { AbstractFunction } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 

@@ -1,5 +1,5 @@
-import { Semaphore } from './Semaphore';
-import { sleep } from './util';
+import { Semaphore } from '../../../../logic/util/flow/Semaphore';
+import { sleep } from '../../../../logic/util/util';
 import { expect, test } from 'vitest';
 
 class WithSemaphore {

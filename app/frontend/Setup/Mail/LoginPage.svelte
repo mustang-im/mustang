@@ -25,7 +25,7 @@
   import OAuth2Login from "../Shared/OAuth2Login.svelte";
   import Header from "../Shared/Header.svelte";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
-  import { Cancelled } from "../../../logic/util/Abortable";
+  import { Cancelled } from "../../../logic/util/flow/Abortable";
   import { catchErrors, logError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 

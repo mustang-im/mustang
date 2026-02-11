@@ -1,4 +1,4 @@
-import { assert } from "./util";
+import { assert } from "../util";
 
 /**
  * Allows a function to ensure that it will never run in parallel

@@ -1,5 +1,5 @@
 import { ArrayColl, MapColl } from "svelte-collections";
-import { assert } from "./util";
+import { assert } from "../util";
 
 export class Cancelled extends Error {
   constructor(reason: string) {

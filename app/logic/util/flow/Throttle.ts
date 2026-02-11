@@ -1,4 +1,4 @@
-import { sleep } from "./util";
+import { sleep } from "../util";
 
 /**
  * Limits the number of tasks per second.

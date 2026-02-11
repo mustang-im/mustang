@@ -1,4 +1,4 @@
-import { Throttle } from './Throttle';
+import { Throttle } from '../../../../logic/util/flow/Throttle';
 import { expect, test } from 'vitest';
 
 class WithThrottle {

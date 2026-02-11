@@ -1,6 +1,6 @@
 import { ArrayColl, SortedCollection } from 'svelte-collections';
-import { PromiseAllDone } from '../../util/PromiseAllDone';
-import { RunOnce } from '../../util/RunOnce';
+import { PromiseAllDone } from '../../util/flow/PromiseAllDone';
+import { RunOnce } from '../../util/flow/RunOnce';
 import type { EMail } from '../EMail';
 import type { Folder } from '../Folder';
 

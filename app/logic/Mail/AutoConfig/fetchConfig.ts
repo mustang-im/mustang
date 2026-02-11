@@ -1,7 +1,7 @@
 import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
 import { appGlobal } from "../../app";
-import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
+import { PriorityAbortable, makeAbortable } from "../../util/flow/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getBaseDomainFromHost } from "../../util/netUtil";
 import { URLPart } from "../../../frontend/Util/util";

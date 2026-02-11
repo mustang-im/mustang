@@ -6,7 +6,7 @@ import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPEMailHeaders, TJMAPFolder } from "./TJMAPMail";
 import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { Semaphore } from "../../util/Semaphore";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";

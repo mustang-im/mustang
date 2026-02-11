@@ -1,4 +1,4 @@
-import { assert } from "./util";
+import { assert } from "../util";
 
 /**
  * Waits until all promises finished.

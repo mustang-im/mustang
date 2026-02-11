@@ -17,9 +17,9 @@ import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } fro
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { PromiseAllDone } from "../util/PromiseAllDone";
+import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { notifyChangedProperty } from "../util/Observable";
-import { Lock } from "../util/Lock";
+import { Lock } from "../util/flow/Lock";
 import { logError } from "../../frontend/Util/error";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
