@@ -1,5 +1,6 @@
 import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
+import { CreateMIME } from "./SMTP/CreateMIME";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
@@ -313,7 +314,7 @@ export class ComposeActions {
   }
 
   async saveAsDraft(): Promise<void> {
-    let account = this.email.folder?.account ?? this.email.identity?.account;
+    let account = this.email.identity.account;
     assert(account, "Need mail account to save draft");
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
     if (!draftFolder) {
@@ -324,6 +325,7 @@ export class ComposeActions {
     let previousDrafts = this.getDrafts();
 
     this.email.isDraft = true;
+    this.email.mime = await CreateMIME.getMIME(this.email);
     await draftFolder.addMessage(this.email);
 
     await this.deleteDrafts(previousDrafts);
