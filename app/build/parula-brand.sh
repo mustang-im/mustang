@@ -32,7 +32,7 @@ perl -p -i \
   ../../desktop/electron-builder.yml
 
 # Include arm in artifact name
-#  Use Runner variables <https://docs.github.com/en/actions/reference/workflows-and-actions/variables>
+# Use Runner variables <https://docs.github.com/en/actions/reference/workflows-and-actions/variables>
 if [ "$RUNNER_ARCH" = "ARM64" ] || [ "$RUNNER_ARCH" = "ARM" ]; then
   perl -p -i \
     -e 'if (/appImage:/ ... /artifactName:/) { s|(\$\{name\}-\$\{version\})\.(\$\{ext\})|$1-\${arch}.$2|g }' \
