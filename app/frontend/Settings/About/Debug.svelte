@@ -3,7 +3,7 @@
   <Scroll>
     <div class="log-history" bind:this={logHistoryEl}>
       {#each $logHistory.each as log}
-        <div class="line selectable">
+        <div class="line selectable value">
           <span class="time">{log.time.toISOString().substring(11, 23)}</span>
           <span class="message">{log.message()}</span>
         </div>
