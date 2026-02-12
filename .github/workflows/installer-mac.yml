@@ -18,6 +18,16 @@ jobs:
       with:
         node-version: 24.x
 
+    - name: Check for release
+      run: |
+        cd desktop
+        VERSION=$(jq -r '.version' package.json)
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
+
     - run: sudo -H pip install setuptools
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
@@ -27,7 +37,10 @@ jobs:
     - run: |
         mkdir -p ~/private_keys/
         echo '${{ secrets.APPLE_API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-    - run: cd desktop; yarn run build:release:mac
+
+    - name: Build only
+      if: env.RELEASE == 'false'
+      run: cd desktop; yarn run build:mac
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -38,6 +51,21 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
+
+    - name: Build and Release
+      if: env.RELEASE == 'true'
+      run: cd desktop; yarn run build:release:mac
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+        APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+        APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Sentry source maps. Otherwise, vite build is out of memory
+        NODE_OPTIONS: '--max-old-space-size=32768'
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:

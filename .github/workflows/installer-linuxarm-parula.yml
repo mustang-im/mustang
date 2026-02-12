@@ -27,12 +27,36 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 24.x
 
+    - name: Check for release
+      run: |
+        cd desktop
+        VERSION=$(jq -r '.version' package.json)
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
+
     - run: cd app/build; bash parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - run: cd desktop; yarn run build:release:linux
+
+    - name: Build only
+      if: env.RELEASE == 'false'
+      run: cd desktop; yarn run build:linux
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Sentry source maps. Otherwise, vite build is out of memory
+        NODE_OPTIONS: '--max-old-space-size=32768'
+        # Work around <https://github.com/electron-userland/electron-builder/issues/9563>
+        USE_SYSTEM_FPM: true
+
+    - name: Build and Release
+      if: env.RELEASE == 'true'
+      run: cd desktop; yarn run build:release:linux
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
