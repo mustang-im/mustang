@@ -42,7 +42,7 @@
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/node": "^18.17.5",
     "electron": "^32.0.1",
-    "electron-builder": "^24.6.3",
+    "electron-builder": "^26.7.0",
     "electron-vite": "^2.3.0",
     "eslint": "^9.39.2",
     "eslint-plugin-svelte": "^3.14.0",

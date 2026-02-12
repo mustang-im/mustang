@@ -31,6 +31,22 @@ perl -p -i \
   -e "s|mustang|parula|g;" \
   ../../desktop/electron-builder.yml
 
+# Include arm in artifact name
+# Use Runner variables <https://docs.github.com/en/actions/reference/workflows-and-actions/variables>
+if [ "$RUNNER_ARCH" = "ARM64" ] || [ "$RUNNER_ARCH" = "ARM" ]; then
+  perl -p -i \
+    -e 'if (/appImage:/ ... /artifactName:/) { s|(\$\{name\}-\$\{version\})\.(\$\{ext\})|$1-\${arch}.$2|g }' \
+    -e 's|\$\{name\}-\$\{version\}-setup\.\$\{ext\}|\$\{name\}-\$\{version\}-\${arch}-setup.\$\{ext\}|g' \
+    ../../desktop/electron-builder.yml
+
+  # Change channel name for windows only
+  if [ "$RUNNER_OS" = "Windows" ]; then
+    perl -p -i \
+      -e "s|(channel: parula)|\$1-windows-arm64|g" \
+      ../../desktop/electron-builder.yml
+  fi
+fi
+
 perl -p -i \
   -e "s|im.mustang.capa|com.beonex.parula|;" \
   -e "s|"Mustang"|"Parula"|;" \
