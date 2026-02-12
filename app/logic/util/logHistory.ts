@@ -25,8 +25,7 @@ export class ConsoleLogEntry extends LogEntry {
     this.args = args;
   }
   message() {
-    //return this.args.map(arg => safeStringify(arg)).join(" ");
-    return this.args.map(arg => String(arg)).join(" ");
+    return this.args.map(arg => safeStringify(arg)).join(" ");
   }
 }
 
@@ -53,6 +52,9 @@ console.debug = function (...args: any[]) {
 };
 
 export function safeStringify(obj: any): string {
+  if (typeof (obj) == "string") {
+    return obj;
+  }
   try {
     const seen = new WeakSet();
     return JSON.stringify(obj, (key, value) => {

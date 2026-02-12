@@ -1,9 +1,12 @@
-<vbox flex>
+<vbox class="dialog" flex>
   <h1>{$t`Debug log`}</h1>
   <Scroll>
     <div class="log-history" bind:this={logHistoryEl}>
-      {#each $logHistory.each as log, i}
-        <div class="line selectable">{i}. {log.time.toISOString().substring(11, 23)}: {log.message()}</div>
+      {#each $logHistory.each as log}
+        <div class="line selectable">
+          <span class="time">{log.time.toISOString().substring(11, 23)}</span>
+          <span class="message">{log.message()}</span>
+        </div>
       {/each}
     </div>
   </Scroll>
@@ -13,10 +16,6 @@
       onClick={copyLogHistory}
     />
     <Button
-      label={$t`Add test data`}
-      onClick={() => logHistory.add(new ConsoleLogEntry(LogLevel.log, ["Test"]))}
-    />
-    <Button
       label={$t`Clear log history`}
       onClick={() => logHistory.clear()}
     />
@@ -24,7 +23,7 @@
 </vbox>
 
 <script lang="ts">
-  import { logHistory, ConsoleLogEntry, LogLevel } from "../../../logic/util/logHistory";
+  import { logHistory } from "../../../logic/util/logHistory";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { t } from "../../../l10n/l10n";
@@ -36,8 +35,15 @@
 </script>
 
 <style>
+  .dialog {
+    margin-block-start: -32px;
+  }
   .line {
     white-space: pre-wrap;
+  }
+  .time {
+    font-family: monospace;
+    margin-inline-end: 8px;
   }
   .buttons {
     margin-block-start: 16px;
