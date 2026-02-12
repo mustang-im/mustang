@@ -477,10 +477,11 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * number of emails in the folder changed */
-  async countChanged(newCount: number, oldCount: number): Promise<void> {
+  async countChanged(newCount: number, oldCount: number, connection: ImapFlow): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
     if (hasChanged) {
+      this.account.log(this, connection, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
       await this.getNewMessages();
     }
   }
@@ -495,6 +496,7 @@ export class IMAPFolder extends Folder {
     let query = uid && this.getEMailByUID(uid)
       ? { uid: uid }
       : { seq: seq }; // needs to happen on the same IMAP connection where we got the seq number from
+    this.account.log(this, connection, "notify: message flags changed", "uid", uid, "seq", seq, "found email UID", uid);
     let { updatedMessages } = await this.fetchFlags(query, {}, connection);
     await this.saveMsgUpdates(updatedMessages);
   }
@@ -502,10 +504,12 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number, connection: ImapFlow): Promise<void> {
+    this.account.log(this, connection, "notify: message deleted", "seq", seq);
+
     // We need to map from msg sequence number to UID
     // Ask server to list all known messages (as UID) from 1 msg before seq to seq.
     // (whereas `seq` is now the message after (!) the deleted msg,
-    // given that seq are order numbers are therefore get re-assigned on delete.)
+    // given that seq are order numbers and therefore get re-assigned on delete.)
     // This should return exactly 2 messages (unless we're at the end or start).
     // Any UIDs between those 2 UIDs are deleted messages.
     // We should purge them from our cache.
@@ -518,13 +522,14 @@ export class IMAPFolder extends Folder {
     // needs to happen on the same IMAP connection where we got the seq number from
     let remainingUIDs = await this.fetchUIDList({ seq: (seq - 1) + ":" + seq }, connection);
     if (remainingUIDs.length != 2) {
+      this.account.log(this, connection, "newest message deleted", "TODO handle this");
       return; // TODO Handle start and end
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
     let deletedMsgs = this.messages.filterOnce(msg => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
-      //console.log(`Deleted msg ${deletedMsg.subject}`);
+      this.account.log(this, connection, "Deleted msg", deletedMsg.subject);
       await deletedMsg.deleteMessageLocally();
     }
   }

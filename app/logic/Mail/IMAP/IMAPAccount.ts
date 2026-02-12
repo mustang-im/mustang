@@ -35,6 +35,10 @@ export class IMAPAccount extends MailAccount {
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
+  /** High level logging about the commands we issue, logged by us */
+  logCommands = true;
+  /** Logs by ImapFlow */
+  logLibrary = true;
 
   constructor() {
     super();
@@ -122,6 +126,7 @@ export class IMAPAccount extends MailAccount {
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
         socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
         logger: false, // true, // Run backend using: `yarn run dev | npx pino-pretty -i time,msg`
+        emitLogs: this.logLibrary,
       }
       // console.log("IMAP connection", options);
 
@@ -160,7 +165,7 @@ export class IMAPAccount extends MailAccount {
   attachListeners(connection: ImapFlow): void {
     connection.on("close", async () => {
       try {
-        console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
+        console.warn(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
@@ -169,7 +174,7 @@ export class IMAPAccount extends MailAccount {
     });
     connection.on("error", async (ex) => {
       try {
-        console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
+        console.warn(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}. Reconnecting...`);
         await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
@@ -198,7 +203,7 @@ export class IMAPAccount extends MailAccount {
         assert(info.flags instanceof Set, "Expected Set for flags");
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
-        console.log("Error", ex, "in processing server event", info);
+        console.error("Error", ex, "in processing server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
@@ -209,10 +214,15 @@ export class IMAPAccount extends MailAccount {
         assert(typeof (info.seq) == "number", "seq must be a number");
         await folder.messageDeletedNotification(info.seq, connection);
       } catch (ex) {
-        console.log("Server event", info);
+        console.error("Server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
+    if (this.logLibrary) {
+      connection.on("log", async (entry) => {
+        this.log(null, connection, "ImapFlow", entry.msg);
+      });
+    }
   }
 
   async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
@@ -474,11 +484,19 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  log(folder: IMAPFolder | null, connection: ImapFlow, command: string, ...args: any[]) {
-    let purpose = connection === null ? "" :
-      this.connections.getKeyForValue(connection)
+  log(folder: IMAPFolder | string | null, connection: ImapFlow, command: string, ...args: any[]) {
+    let purpose = connection === null
+      ? ""
+      : this.connections.getKeyForValue(connection)
       ?? "unknown";
-    console.log("IMAP", this.name, folder?.id ?? "no-folder", purpose ? "p-" + purpose : "", connection?.id.substring(0, 4) ?? "", command, ...args);
+    purpose = purpose ? "p-" + purpose : "";
+    let folderID = folder instanceof IMAPFolder
+      ? folder?.id
+      : typeof (folder) == "string"
+        ? folder
+        : "-";
+    let connID = connection?.id.substring(0, 4) ?? "";
+    console.log("IMAP", this.name, folderID, purpose, connID, command, ...args);
   }
 
   fromConfigJSON(config: any) {
