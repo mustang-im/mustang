@@ -549,7 +549,9 @@ export class IMAPFolder extends Folder {
       this.account.log(this, conn, "move message from", sourceFolder.id, ids);
       await conn.messageMove(ids, this.path, { uid: true });
     });
-    await this.listNewMessages();
+    if (![SpecialFolder.Trash, SpecialFolder.Spam].includes(this.specialFolder)) {
+      await this.listNewMessages();
+    }
   }
 
   async copyMessagesHere(messages: Collection<IMAPEMail>) {
