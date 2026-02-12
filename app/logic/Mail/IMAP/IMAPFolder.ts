@@ -73,8 +73,8 @@ export class IMAPFolder extends Folder {
       } catch (ex) {
         this.account.log(this, conn, "open mailbox failed", ex);
         if (ex.code == "NoConnection") {
-          lockMailbox.release();
-          lock.release(); // reconnect() uses runOnce()
+          lockMailbox?.release();
+          lock?.release(); // reconnect() uses runOnce()
           conn = await this.account.reconnect(conn, purpose);
           this.account.log(this, conn, "open mailbox after reconnect");
           lock = await this.account.connectionLock.get(conn).lock();
@@ -95,8 +95,8 @@ export class IMAPFolder extends Folder {
         throw ex;
       }
     } finally {
-      lock.release();
-      lockMailbox.release();
+      lock?.release();
+      lockMailbox?.release();
       this.account.log(this, null, "released lock");
     }
   }
