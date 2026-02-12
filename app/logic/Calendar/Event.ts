@@ -355,7 +355,10 @@ export class Event extends Observable {
         init.weekdays = [this.startTime.getDay()]; // e.g. 3rd Wednesday of month
       }
     }
-    this.recurrenceRule = new RecurrenceRule(init);
+    let recurrenceRule = new RecurrenceRule(init);
+    if (!recurrenceRule.timesMatch(this.recurrenceRule)) {
+      this.recurrenceRule = recurrenceRule;
+    }
   }
 
   /** Create a new instance of the same event.
@@ -467,8 +470,11 @@ export class Event extends Observable {
       return;
     }
     this.timezone ||= myTimezone();
-    this.unedited = this.calendar.newEvent();
+    // Use a raw event to avoid automatic instance generation.
+    this.unedited = new Event();
     this.unedited.copyFrom(this);
+    // Instead, just shallow clone our instances (needed for `seriesStatus`)
+    this.unedited.instances.replaceAll(this.instances);
   }
   finishEditing() {
     if (this.unedited?.recurrenceCase == RecurrenceCase.Master) {
