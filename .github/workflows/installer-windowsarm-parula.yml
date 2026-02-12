@@ -64,4 +64,3 @@ jobs:
         path: |
           desktop/dist/*.exe
           desktop/dist/*.msi
-          desktop/dist/*.yml

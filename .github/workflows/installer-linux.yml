@@ -63,4 +63,3 @@ jobs:
           desktop/dist/*.AppImage
           desktop/dist/*.flatpak
           desktop/dist/*.snap
-          desktop/dist/*.yml
