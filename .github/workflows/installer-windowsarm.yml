@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: 24.x
 
-    - name: Check to release
+    - name: Check for release
       shell: bash
       run: |
         cd desktop

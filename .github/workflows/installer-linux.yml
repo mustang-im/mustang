@@ -19,6 +19,16 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 24.x
 
+    - name: Check for release
+      run: |
+        cd desktop
+        VERSION=$(jq -r '.version' package.json)
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
+
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
@@ -40,3 +50,4 @@ jobs:
           desktop/dist/*.AppImage
           desktop/dist/*.flatpak
           desktop/dist/*.snap
+          desktop/dist/*.yml

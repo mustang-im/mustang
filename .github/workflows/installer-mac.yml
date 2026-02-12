@@ -18,6 +18,16 @@ jobs:
       with:
         node-version: 24.x
 
+    - name: Check for release
+      run: |
+        cd desktop
+        VERSION=$(jq -r '.version' package.json)
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
+
     - run: sudo -H pip install setuptools
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
@@ -44,3 +54,4 @@ jobs:
         name: Installers Mac
         path: |
           desktop/dist/*.dmg
+          desktop/dist/*.yml

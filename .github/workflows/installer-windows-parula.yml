@@ -18,6 +18,17 @@ jobs:
       with:
         node-version: 24.x
 
+    - name: Check for release
+      shell: bash
+      run: |
+        cd desktop
+        VERSION=$(jq -r '.version' package.json)
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
+
     - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
@@ -36,3 +47,4 @@ jobs:
         path: |
           desktop/dist/*.exe
           desktop/dist/*.msi
+          desktop/dist/*.yml
