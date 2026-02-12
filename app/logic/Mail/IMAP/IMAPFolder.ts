@@ -116,7 +116,7 @@ export class IMAPFolder extends Folder {
         await this.storage.saveFolderProperties(this);
       }
       let newMsgs: ArrayColl<IMAPEMail>;
-      if (await this.account.hasCapability("CONDSTORE")) {
+      if (await this.account.hasCapability("CONDSTORE") && this.lastModSeq) {
         newMsgs = await this.listChangedMessages();
       } else {
         newMsgs = await this.listAllUnknownMessages();
