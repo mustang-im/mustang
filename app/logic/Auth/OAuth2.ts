@@ -227,25 +227,25 @@ export class OAuth2 extends WebBasedAuth {
       });
       let data = response.data;
       if (data.error) {
-        throw new OAuth2ServerError(data);
+        throw new OAuth2ServerError(this.account.name, data);
       }
       if (!data.access_token) {
-        throw new OAuth2Error(data);
+        throw new OAuth2Error(`${this.account.name}: OAuth2: No access token`);
       }
-      this.accessToken = data.access_token;
+      this.accessToken = sanitize.nonemptystring(data.access_token);
       if (data.id_token) {
-        this.idToken = data.id_token;
+        this.idToken = sanitize.nonemptystring(data.id_token);
         if (this.idTokenCallback) {
           // Allows to set `this.account.username`, needed by `storeRefreshToken()`
           this.idTokenCallback(this.idToken, this);
         }
       }
       if (data.refresh_token) {
-        this.refreshToken = data.refresh_token;
+        this.refreshToken = sanitize.nonemptystring(data.refresh_token);
         await this.storeRefreshToken(this.refreshToken);
       }
       if (data.expires_in) {
-        let seconds = parseInt(data.expires_in);
+        let seconds = sanitize.integer(data.expires_in);
         if (seconds) {
           this.refreshInSeconds(seconds - 5);
           let expiresAt = new Date();
@@ -305,7 +305,7 @@ export class OAuth2 extends WebBasedAuth {
     if (authCode) {
       return authCode;
     } else {
-      throw new OAuth2ServerError(urlParams);
+      throw new OAuth2ServerError(this.account.name, urlParams);
     }
   }
 
