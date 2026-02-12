@@ -26,6 +26,7 @@ jobs:
       shell: bash
       run: |
         cd desktop
+        VERSION=$(jq -r '.version' package.json)
         if [[ "$VERSION" == *dev ]]; then
           echo "RELEASE=false" >> $GITHUB_ENV
         else
