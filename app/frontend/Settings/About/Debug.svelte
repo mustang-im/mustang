@@ -3,7 +3,7 @@
   <Scroll>
     <div class="log-history" bind:this={logHistoryEl}>
       {#each $logHistory.each as log, i}
-        <div class="line selectable">{i}. {log.time.toISOString()}: {log.message()}</div>
+        <div class="line selectable">{i}. {log.time.toISOString().substring(11, 23)}: {log.message()}</div>
       {/each}
     </div>
   </Scroll>
@@ -24,8 +24,7 @@
 </vbox>
 
 <script lang="ts">
-  import { logHistory } from "../../../logic/util/logging/logHistory";
-  import { ConsoleLogEntry, LogLevel } from "../../../logic/util/logging/ConsoleLogEntry";
+  import { logHistory, ConsoleLogEntry, LogLevel } from "../../../logic/util/logHistory";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { t } from "../../../l10n/l10n";

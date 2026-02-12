@@ -1,16 +1,20 @@
-import { LogEntry, logHistory } from "./logHistory";
+import { ArrayColl } from "svelte-collections";
 
-const originalLog = console.log;
-const originalError = console.error;
+export abstract class LogEntry {
+  time = new Date();
+  abstract message(): string;
+}
 
-console.log = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.log, args));
-  originalLog.apply(console, args);
-};
-console.error = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.error, args));
-  originalError.apply(console, args);
-};
+export const logHistory = new ArrayColl<LogEntry>();
+
+// console log
+
+export enum LogLevel {
+  debug = 1,
+  log = 2,
+  warn = 4,
+  error = 5,
+}
 
 export class ConsoleLogEntry extends LogEntry {
   level: LogLevel;
@@ -25,10 +29,27 @@ export class ConsoleLogEntry extends LogEntry {
   }
 }
 
-export enum LogLevel {
-  log = 1,
-  error = 5,
-}
+const originalLog = console.log;
+const originalError = console.error;
+const originalDebug = console.debug;
+const originalWarn = console.warn;
+
+console.log = function (...args: any[]) {
+  logHistory.push(new ConsoleLogEntry(LogLevel.log, args));
+  originalLog.apply(console, args);
+};
+console.error = function (...args: any[]) {
+  logHistory.push(new ConsoleLogEntry(LogLevel.error, args));
+  originalError.apply(console, args);
+};
+console.warn = function (...args: any[]) {
+  logHistory.push(new ConsoleLogEntry(LogLevel.warn, args));
+  originalWarn.apply(console, args);
+};
+console.debug = function (...args: any[]) {
+  logHistory.push(new ConsoleLogEntry(LogLevel.debug, args));
+  originalDebug.apply(console, args);
+};
 
 export function safeStringify(obj: any): string {
   try {
