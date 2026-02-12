@@ -214,6 +214,7 @@ export class OAuth2 extends WebBasedAuth {
         assert(!!this.codeVerifierPKCE, "Missing code verifier");
         params.code_verifier = this.codeVerifierPKCE;
       }
+      console.log("OAuth2", this.account.name, "get new access token", tokenURL, params);
 
       let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
         headers: {
