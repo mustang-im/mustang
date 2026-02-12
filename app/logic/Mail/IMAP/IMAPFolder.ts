@@ -5,7 +5,6 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Locked } from "../../util/flow/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -62,23 +61,19 @@ export class IMAPFolder extends Folder {
   }
 
   async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null): Promise<T> {
-    let lockMailbox: MailboxLockObject;
-    let lock: Locked;
+    let lock: MailboxLockObject;
     try {
       let conn = connection ?? await this.account.connection(false, purpose);
       try {
         this.account.log(this, conn, "open mailbox");
-        lock = await this.account.connectionLock.get(conn).lock();
-        lockMailbox = await conn.getMailboxLock(this.path);
+        lock = await conn.getMailboxLock(this.path);
       } catch (ex) {
         this.account.log(this, conn, "open mailbox failed", ex);
         if (ex.code == "NoConnection") {
-          lockMailbox.release();
           lock.release(); // reconnect() uses runOnce()
           conn = await this.account.reconnect(conn, purpose);
           this.account.log(this, conn, "open mailbox after reconnect");
-          lock = await this.account.connectionLock.get(conn).lock();
-          lockMailbox = await conn.getMailboxLock(this.path);
+          lock = await conn.getMailboxLock(this.path);
           // Re-try only once (to open mailbox)
         } else {
           throw ex;
@@ -96,7 +91,6 @@ export class IMAPFolder extends Folder {
       }
     } finally {
       lock.release();
-      lockMailbox.release();
       this.account.log(this, null, "released lock");
     }
   }

@@ -32,7 +32,6 @@ export class IMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
   protected connectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
-  connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
   /** High level logging about the commands we issue, logged by us */
@@ -153,7 +152,6 @@ export class IMAPAccount extends MailAccount {
         }
       }
       this.connections.set(purpose, connection);
-      this.connectionLock.set(connection, new Lock());
       if (purpose == ConnectionPurpose.Main) {
         this.notifyObservers();
       }
@@ -239,7 +237,6 @@ export class IMAPAccount extends MailAccount {
       } catch (ex) {
         // Sometimes gives "Connection not available". Do nothing.
       }
-      this.connectionLock.delete(connection);
       this.connections.set(purpose, null);
       this.notifyObservers();
 
@@ -309,20 +306,14 @@ export class IMAPAccount extends MailAccount {
 
     // listTree() doesn't return the message count and is not well-implemented
     let conn = await this.connection();
-    let lock = await this.connectionLock.get(conn).lock();
-    let foldersInfo;
-    try {
-      this.log(null, conn, "list folders");
-      foldersInfo = await conn.list({
-        statusQuery: {
-          messages: true, // Total msg count
-          recent: true, // \Recent msg count
-          unseen: true, // Unseen msg count
-        },
-      });
-    } finally {
-      lock?.release();
-    }
+    this.log(null, conn, "list folders");
+    let foldersInfo = await conn.list({
+      statusQuery: {
+        messages: true, // Total msg count
+        recent: true, // \Recent msg count
+        unseen: true, // Unseen msg count
+      },
+    });
     // console.log("folders", foldersFlat);
     let currentFolders = new ArrayColl<IMAPFolder>();
     let subFoldersInfo = foldersInfo.filter(folderInfo => folderInfo.parentPath == "");
@@ -406,7 +397,6 @@ export class IMAPAccount extends MailAccount {
       this.log(null, conn, "logout");
       conn.logout();
       this.connections.delete(purpose);
-      this.connectionLock.delete(conn);
     }
     if (this.oAuth2 && alsoOAuth2) {
       await this.oAuth2.logout();
