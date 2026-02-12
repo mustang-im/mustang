@@ -34,12 +34,25 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - run: cd desktop; yarn run build:release:win
+
+    - name: Build only
+      if: env.RELEASE == 'false'
+      run: cd desktop; yarn run build:win
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
+
+    - name: Build and Release
+      if: env.RELEASE == 'true'
+      run: cd desktop; yarn run build:release:win
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Sentry source maps. Otherwise, vite build is out of memory
+        NODE_OPTIONS: '--max-old-space-size=32768'
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
