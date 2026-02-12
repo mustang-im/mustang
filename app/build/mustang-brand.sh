@@ -10,12 +10,19 @@ perl -p -i \
   ../../desktop/package.json
 
 # Include arm in artifact name
-ARCH=$(uname -m)
-if [[ "$ARCH" == "arm64" || "$ARCH" == "aarch64" ]]; then
+#  Use Runner variables <https://docs.github.com/en/actions/reference/workflows-and-actions/variables>
+if [ "$RUNNER_ARCH" = "ARM64" ] || [ "$RUNNER_ARCH" = "ARM" ]; then
   perl -p -i \
     -e 'if (/appImage:/ ... /artifactName:/) { s|(\$\{name\}-\$\{version\})\.(\$\{ext\})|$1-\${arch}.$2|g }' \
     -e 's|\$\{name\}-\$\{version\}-setup\.\$\{ext\}|\$\{name\}-\$\{version\}-\${arch}-setup.\$\{ext\}|g' \
     ../../desktop/electron-builder.yml
+
+  # Change channel name for windows only
+  if [ "$RUNNER_OS" = "Windows" ]; then
+    perl -p -i \
+      -e "s|(channel: mustang)|\$1-windows-arm64|g" \
+      ../../desktop/electron-builder.yml
+  fi
 fi
 
 perl -p -i \
