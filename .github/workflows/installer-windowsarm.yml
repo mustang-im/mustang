@@ -2,8 +2,8 @@ name: Installers for Windows ARM
 
 on:
   workflow_dispatch: # manually triggered
-  push:
-    tags: 'v*'
+#  push:
+#    tags: 'v*'
 
 jobs:
   build:
