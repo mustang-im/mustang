@@ -23,6 +23,7 @@ jobs:
         node-version: 24.x
 
     - name: Check to release
+      shell: bash
       run: |
         cd desktop
         if [[ "$VERSION" == *dev ]]; then
