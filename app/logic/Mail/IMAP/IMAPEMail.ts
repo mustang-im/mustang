@@ -87,7 +87,9 @@ export class IMAPEMail extends EMail {
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
-    this.mime = msgInfo.source;
+    if (msgInfo.source) {
+      this.mime = msgInfo.source;
+    }
   }
 
   /** Can happen when another client deleted the email and we didn't get the news yet. */
