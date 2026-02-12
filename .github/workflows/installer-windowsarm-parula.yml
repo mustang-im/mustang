@@ -22,7 +22,8 @@ jobs:
       with:
         node-version: 24.x
 
-    - run: cd app/build; bash parula-brand.sh
+    - shell: bash
+      run: cd app/build; bash parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
