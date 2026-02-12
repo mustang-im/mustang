@@ -140,7 +140,7 @@ export class IMAPAccount extends MailAccount {
         } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
           throw this.fatalError = new LoginError(ex,
             "Check your login, username, and password.\n" + msg);
-        } else if (ex.code == "NoConn" || msg == "Command failed.") {
+        } else if (ex.code == "NoConnection" || ex.code == "NoConn" || msg == "Command failed.") {
           throw this.fatalError = new ConnectError(ex,
             "Failed to connect to server " + this.hostname + " for account " + this.name);
         } else {
