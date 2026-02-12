@@ -1,14 +1,13 @@
 import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
+import { ConnectionPurpose } from "./IMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ConnectionPurpose } from "./IMAPAccount";
 
 export class IMAPEMail extends EMail {
   declare folder: IMAPFolder;
@@ -32,6 +31,7 @@ export class IMAPEMail extends EMail {
     let msgInfo: any;
     try {
       msgInfo = await this.folder.runCommand(async (conn) => {
+        this.folder.account.log(this.folder, conn, "download email", this.uid, this.subject);
         return await conn.fetchOne(this.uid + "", {
           uid: true,
           size: true,
@@ -178,6 +178,7 @@ export class IMAPEMail extends EMail {
   async setFlagServer(name: string, set = true) {
     this.flagsChanging = true;
     await this.folder.runCommand(async (conn) => {
+      this.folder.account.log(this.folder, conn, set ? "set" : "remove" + " email flag", this.uid, name, this.subject);
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
       } else {
@@ -204,6 +205,7 @@ export class IMAPEMail extends EMail {
       let strategy = this.folder.account.deleteStrategy;
       if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
         await this.folder.runCommand(async (conn) => {
+          this.folder.account.log(this.folder, conn, "delete email flag", this.uid, this.subject);
           await conn.messageDelete(this.uid, { uid: true });
         });
       } else if (strategy == DeleteStrategy.MoveToTrash) {

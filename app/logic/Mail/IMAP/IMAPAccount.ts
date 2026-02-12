@@ -125,9 +125,10 @@ export class IMAPAccount extends MailAccount {
       }
       // console.log("IMAP connection", options);
 
-      let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
+      let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options) as ImapFlow;
       assert(connection, `Connection is null\n${this.hostname} IMAP server`);
       this.attachListeners(connection);
+      this.log(null, connection, "connect", purpose);
 
       try {
         await connection.connect();
@@ -151,6 +152,7 @@ export class IMAPAccount extends MailAccount {
       if (purpose == ConnectionPurpose.Main) {
         this.notifyObservers();
       }
+      this.log(null, connection, "connected");
       return connection;
     });
   }
@@ -219,6 +221,7 @@ export class IMAPAccount extends MailAccount {
 
     purpose = this.connections.getKeyForValue(connection) ?? purpose;
     assert(purpose, "Connection purpose unknown");
+    this.log(null, connection, "reconnect", purpose);
 
     return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
       try {
@@ -299,6 +302,7 @@ export class IMAPAccount extends MailAccount {
     let lock = await this.connectionLock.get(conn).lock();
     let foldersInfo;
     try {
+      this.log(null, conn, "list folders");
       foldersInfo = await conn.list({
         statusQuery: {
           messages: true, // Total msg count
@@ -389,6 +393,7 @@ export class IMAPAccount extends MailAccount {
       if (!conn) {
         continue;
       }
+      this.log(null, conn, "logout");
       conn.logout();
       this.connections.delete(purpose);
       this.connectionLock.delete(conn);
@@ -467,6 +472,13 @@ export class IMAPAccount extends MailAccount {
     for (let folder of foldersToShare) {
       await folder.addPermission(otherPerson, rights);
     }
+  }
+
+  log(folder: IMAPFolder | null, connection: ImapFlow, command: string, ...args: any[]) {
+    let purpose = connection === null ? "" :
+      this.connections.getKeyForValue(connection)
+      ?? "unknown";
+    console.log("IMAP", this.name, folder?.id ?? "no-folder", purpose ? "p-" + purpose : "", connection?.id.substring(0, 4) ?? "", command, ...args);
   }
 
   fromConfigJSON(config: any) {
