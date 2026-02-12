@@ -10,7 +10,7 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
-import type { ImapFlow } from "../../../../desktop/backend/node_modules/imapflow";
+import type { ImapFlow, MailboxLockObject } from "../../../../desktop/backend/node_modules/imapflow";
 import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
@@ -61,32 +61,22 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
-    let lockMailbox;
+  async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null): Promise<T> {
+    let lockMailbox: MailboxLockObject;
     let lock: Locked;
     try {
       let conn = connection ?? await this.account.connection(false, purpose);
       try {
         this.account.log(this, conn, "open mailbox");
-        if (doLock) {
-          lock = await this.account.connectionLock.get(conn).lock();
-          lockMailbox = await conn.getMailboxLock(this.path);
-        } else if (conn.mailbox.path == this.path) {
-          // already open
-        } else {
-          await conn.mailboxOpen(this.path);
-        }
+        lock = await this.account.connectionLock.get(conn).lock();
+        lockMailbox = await conn.getMailboxLock(this.path);
       } catch (ex) {
         this.account.log(this, conn, "open mailbox failed", ex);
         if (ex.code == "NoConnection") {
           conn = await this.account.reconnect(conn, purpose);
           this.account.log(this, conn, "open mailbox after reconnect");
-          if (doLock) {
-            lock = await this.account.connectionLock.get(conn).lock();
-            lockMailbox = await conn.getMailboxLock(this.path);
-          } else {
-            await conn.mailboxOpen(this.path);
-          }
+          lock = await this.account.connectionLock.get(conn).lock();
+          lockMailbox = await conn.getMailboxLock(this.path);
           // Re-try only once (to open mailbox)
         } else {
           throw ex;
