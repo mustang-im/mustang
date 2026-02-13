@@ -11,6 +11,9 @@ export default {
     }
     handler(warning);
   },
+  compilerOptions: {
+    runes: false,
+  },
 }
 
 const ignoreSvelteCompilerWarnings = [
