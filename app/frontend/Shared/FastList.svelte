@@ -159,7 +159,7 @@
         return;
       }
       //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight);
-      rowHeight = contentRow.offsetHeight;
+      rowHeight = Math.max(contentRow.offsetHeight ?? 0, rowHeight);
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
       showRows = Math.ceil(availableHeight / rowHeight);
