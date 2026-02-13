@@ -27,7 +27,7 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - run: cd desktop; yarn run build:release:win
+    - run: cd desktop; yarn run build:release:win:arm
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
