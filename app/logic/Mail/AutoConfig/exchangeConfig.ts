@@ -8,7 +8,7 @@ import { appGlobal } from "../../app";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import JXON from "../../../../lib/util/JXON";
-import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
+import { PriorityAbortable, makeAbortable } from "../../util/flow/Abortable";
 import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 

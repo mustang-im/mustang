@@ -1,7 +1,7 @@
 import { NotImplemented } from "util/util";
 import ky from "ky";
 
-/** Implements the same functions as backend/backend.ts ,
+/** Implements the same functions as desktop/backend/backend.ts ,
  * but for the web browser.
  * Some of the functions are disabled in this case.
  */

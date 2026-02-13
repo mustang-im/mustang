@@ -14,7 +14,7 @@ export async function getDatabase(): Promise<Database> {
   meetDatabase = await getSQLiteDatabase("meet.db");
   await meetDatabase.migrate(meetDatabaseSchema);
   await meetDatabase.pragma('foreign_keys = true');
-  await meetDatabase.pragma('journal_mode = DELETE');
+  await meetDatabase.pragma('journal_mode = WAL');
   return meetDatabase;
 }
 

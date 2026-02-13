@@ -1,8 +1,8 @@
 // #if [!WEBMAIL && !MOBILE]
-<webview bind:this={webviewE} src={url ?? dataURL} {title} class:hidden {partition} />
+<webview bind:this={webviewE} src={url ?? blobURL} {title} class:hidden {partition} />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url ?? dataURL} {title} class:hidden />
+<iframe bind:this={webviewE} src={url ?? blobURL} {title} class:hidden />
 // #endif
 
 <!--
@@ -27,11 +27,11 @@
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
   // #endif
-  import { stringToDataURL } from "../Util/util";
+  import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
   const dispatch = createEventDispatcher();
 
@@ -76,13 +76,16 @@
     }
   });
 
-  let dataURL: URLString;
+  let blobURL: URLString;
   $: html, setURL();
   async function setURL() {
     if (url) {
       return;
     }
-    dataURL = "";
+    if (blobURL) {
+      URL.revokeObjectURL(blobURL);
+    }
+    blobURL = "";
     const autoSizeCSS = `<style>
       body {
         min-height: 0px !important;
@@ -94,7 +97,7 @@
     </style>`;
     let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-      style-src ${servers}; img-src data: ${servers}">\n\n` + headHTML + `\n\n`;
+      style-src ${servers}; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
     let displayHTML = html ?? "";
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
@@ -104,8 +107,14 @@
       (autoSize ? autoSizeCSS: "") +
       displayHTML.substring(headPos);
     // console.log("html", displayHTML);
-    dataURL = await stringToDataURL("text/html", displayHTML);
+    blobURL = stringToBlobURL("text/html", displayHTML);
   }
+
+  onDestroy(() => {
+    if (blobURL) {
+      URL.revokeObjectURL(blobURL);
+    }
+  });
 
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();

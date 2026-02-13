@@ -180,6 +180,14 @@ export class Person extends ContactBase {
     await newPerson.save();
   }
 
+  async copyToAddressbook(newAddressbook: Addressbook): Promise<void> {
+    let newPerson = newAddressbook.newPerson();
+    newPerson.copyFrom(this);
+    newPerson.addressbook = newAddressbook;
+    newAddressbook.persons.add(newPerson);
+    await newPerson.save();
+  }
+
   copyFrom(other: Person): void {
     this.name = other.name;
     this.firstName = other.firstName;

@@ -5,7 +5,7 @@ import { JMAPIncomingInvitation } from "./JMAPIncomingInvitation";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { JMAPEMail } from "../../Mail/JMAP/JMAPEMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class JMAPCalendar extends Calendar {
   readonly protocol: string = "calendar-jmap";
@@ -21,6 +21,11 @@ export class JMAPCalendar extends Calendar {
     return new JMAPEvent(this, parentEvent);
   }
 
+  fromJMAP(jmap: any) {
+    this.id = sanitize.nonemptystring(jmap.id);
+    this.name = sanitize.nonemptystring(jmap.name);
+  }
+
   getIncomingInvitationForEMail(message: JMAPEMail) {
     return new JMAPIncomingInvitation(this, message);
   }
@@ -29,18 +34,11 @@ export class JMAPCalendar extends Calendar {
   }
 
   async listEvents() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
-    await this.save();
+    await super.listEvents();
   }
 
-  getEventByItemID(id: string): JMAPEvent | undefined {
-    return this.events.find(p => p.itemID == id);
-  }
-
-  async listFolder(folder: string, events: JMAPEvent[]) {
+  getEventByID(id: string): JMAPEvent | undefined {
+    return this.events.find(p => p.id == id);
   }
 
   async getEvents(eventIDs: { Id: string }[], events: JMAPEvent[], parentEvent?: JMAPEvent) {
@@ -49,13 +47,15 @@ export class JMAPCalendar extends Calendar {
     }
   }
 
-  fromConfigJSON(json: any) {
+  async fetchChangedEventsForAllCalendars(): Promise<ArrayColl<JMAPEvent>> {
+    return new ArrayColl();
+  }
+
+  /*fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
-    this.folderID = sanitize.string(json.folderID, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
-    json.folderID = this.folderID;
     return json;
-  }
+  }*/
 }

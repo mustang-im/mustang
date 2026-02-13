@@ -53,6 +53,7 @@ export class CreateMIME {
     };
   }
   protected static async getAttachments(email: EMail): Promise<NMAttachment[]> {
+    await CreateMIME.addSML(email);
     return await Promise.all(email.attachments.contents.map((a) => CreateMIME.getAttachment(a)));
   }
   protected static async getAttachment(a: Attachment): Promise<NMAttachment> {
@@ -64,5 +65,24 @@ export class CreateMIME {
       contentDisposition: a.disposition == ContentDisposition.inline ? 'inline' : 'attachment',
       cid: a.contentID,
     };
+  }
+  protected static async addSML(email: EMail): Promise<void> {
+    if (!email.sml) {
+      return;
+    }
+    if (email.sml.sml?.reactions) { // TODO Allow SML usecase to prepare the SML on send
+      email.sml.sml.reactions = [];
+    }
+    let att = email.attachments.find(att => att.mimeType == "application/ld+json");
+    if (!att) {
+      att = new Attachment();
+      att.filename = "SML.json";
+      att.mimeType = "application/ld+json";
+      att.disposition = ContentDisposition.inline;
+      att.contentID = "sml"; // triggers multipart/related in nodemailer, required by <https://www.ietf.org/archive/id/draft-ietf-sml-structured-email-05.html#name-partial-representation>
+      email.attachments.add(att);
+    }
+    att.content = new File([JSON.stringify(email.sml.sml, null, 2)], att.filename, { type: att.mimeType });
+    att.size = att.content.size;
   }
 }

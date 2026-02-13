@@ -1,10 +1,10 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { defineConfig } from 'vite'
+import { defineConfig, defaultClientConditions } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import wasm from 'vite-plugin-wasm';
 import conditionalCompile from "vite-plugin-conditional-compile";
-//import { olm } from './build/olm';
-import { webMail, isMobile, includeProprietary } from './logic/build';
+import { webMail, isMobile, includeProprietary, production } from './logic/build';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,17 +21,24 @@ export default defineConfig({
         WEBMAIL: !!webMail && includeProprietary ? !!webMail : undefined,
         MOBILE: isMobile,
         PROPRIETARY: includeProprietary ? true : undefined,
+        PRODUCTION: production ? true : undefined,
       },
     }),
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
-    // olm,
+    wasm(),
     sentryVitePlugin({
       org: "mustang-jq",
       project: "mustang"
     })
   ],
-
+  resolve: {
+    // Explicitly set the resolve conditions for Vite 7+
+    conditions: [...defaultClientConditions],
+  },
+  optimizeDeps: {
+    exclude: ['@matrix-org/matrix-sdk-crypto-wasm'],
+  },
   build: {
     sourcemap: true
   },

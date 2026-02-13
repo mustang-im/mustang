@@ -10,14 +10,14 @@ perl -p -i \
   package.json
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
-  ../e2/package.json
+  ../desktop/package.json
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../mobile/package.json
 perl -p -i \
   -e "s|appVersion: .*|appVersion: string = '$VERSION';|;" \
   ./logic/build.ts
-git commit package.json ../e2/package.json ../mobile/package.json ./logic/build.ts -m "Version $VERSION"
+git commit package.json ../desktop/package.json ../mobile/package.json ./logic/build.ts -m "Version $VERSION"
 git tag -s "v$VERSION" -m $VERSION
 
 NEXTVERSION=`node -e "let v = process.argv[1].split('.'); let last = parseInt(v.pop()) + 1; console.log(v.join('.') + '.' + last);" $VERSION`-dev
@@ -26,11 +26,11 @@ perl -p -i \
   package.json
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$NEXTVERSION\"|;" \
-  ../e2/package.json
+  ../desktop/package.json
 perl -p -i \
   -e "s|appVersion: .*|appVersion: string = '$NEXTVERSION';|;" \
   ./logic/build.ts
-git commit package.json ../e2/package.json ./logic/build.ts -m "Starting version $NEXTVERSION"
+git commit package.json ../desktop/package.json ./logic/build.ts -m "Starting version $NEXTVERSION"
 
 git push
 git push --tags

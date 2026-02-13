@@ -7,7 +7,7 @@ import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
@@ -23,16 +23,27 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   /** ActiveSync ServerId for this calendar */
   serverID: string;
 
+  newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
+    return new ActiveSyncEvent(this, parentEvent);
+  }
+
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
   }
 
-  async ping() {
-    await this.listEvents();
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
   }
 
-  newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
-    return new ActiveSyncEvent(this, parentEvent);
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
+  async ping() {
+    await this.listEvents();
   }
 
   getIncomingInvitationForEMail(message: ActiveSyncEMail) {
@@ -114,10 +125,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   async listEvents() {
-    if (!this.dbID || !this.serverID) {
-      this.serverID ??= new URL(this.url).searchParams.get("serverID");
-      await this.save();
-    }
+    await super.listEvents();
 
     let data = {
       WindowSize: String(kMaxCount),

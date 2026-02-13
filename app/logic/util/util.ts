@@ -1,5 +1,5 @@
 
-export function assert(test: boolean | Object | null, errorMessage: string): asserts test {
+export function assert(test: boolean | Object | null | undefined, errorMessage: string): asserts test {
   if (!test) {
     throw new Error(errorMessage);
   }
@@ -138,3 +138,5 @@ export class AbstractFunction extends Error {
 }
 
 export type URLString = string;
+export type Json = { [key: string]: JsonValue } | JsonValue[];
+type JsonValue = string | number | boolean | null | Json;

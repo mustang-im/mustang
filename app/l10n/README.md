@@ -40,9 +40,7 @@ We chose lingui and svelte-18n-lingui, because:
   t and gt functions, and adds the new strings to
   `l10n/locales/en/messages.json`.
 3. Send the translation files `l10n/locales/*/messages.json`
-   (including the above English source file) to
-   crowdin (for AI translation) and/or weblate (online tools for
-   human translators).
+   (including the above English source file) to translation.
 4. The tools will find which strings are not yet translated, and
   trigger translation for those.
 5. Translation (AI or humans)
@@ -60,14 +58,6 @@ We chose lingui and svelte-18n-lingui, because:
   for fast parsing.
 10. Test
 11. Ship it
-
-# Crowdin AI Translation
-
-1. Run the `Crowdin Upload` workflow to upload the sources for translation
-2. Go the the Crowdin project on the Crowdin website
-3. Click `Pre-translate` and wait for translation to complete
-4. Run the `Crowdin Download` workflow to download the translations
-5. Go to the `translation` GitHub branch to see the translations
 
 # Instructions for translators
 

@@ -1,7 +1,7 @@
 import { SQLChatAccount } from "./SQLChatAccount";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
-import type { Chat } from "../Chat";
-import { SQLChat } from "./SQLChat";
+import type { ChatRoom } from "../ChatRoom";
+import { SQLChatRoom } from "./SQLChatRoom";
 import type { ChatMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
 import type { Collection } from "svelte-collections";
@@ -16,15 +16,11 @@ export class SQLChatStorage implements ChatAccountStorage {
   async saveMessage(message: ChatMessage): Promise<void> {
     await SQLChatMessage.save(message);
   }
-  async saveChat(chat: Chat): Promise<void> {
-    await SQLChat.save(chat);
+  async saveRoom(room: ChatRoom): Promise<void> {
+    await SQLChatRoom.save(room);
   }
 
   static async readChatAccounts(): Promise<Collection<ChatAccount>> {
-    let chatAccounts = await SQLChatAccount.readAll();
-    for (let chatAccount of chatAccounts) {
-      SQLChat.readAll(chatAccount);
-    }
-    return chatAccounts;
+    return await SQLChatAccount.readAll();
   }
 }

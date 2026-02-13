@@ -2,9 +2,11 @@ import { Addressbook } from "../../../Contacts/Addressbook";
 import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { StreetAddress } from "../../../Contacts/StreetAddress";
+import { newAddressbookForProtocol } from "../../../Contacts/AccountsList/Addressbooks";
+import { convertVCardToPerson } from "../../../Contacts/VCard/VCard";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { NotReached, UserError, randomID } from "../../../util/util";
+import { UserError, randomID } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { type Database } from "../../../../../lib/rs-sqlite";
 import { getSQLiteDatabase } from "../../../util/backend-wrapper";
@@ -13,7 +15,7 @@ export class ThunderbirdAddressbook extends Addressbook {
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
     entryErrorCallback: (ex: Error) => void): Promise<ThunderbirdAddressbook> {
     //console.log("Reading ", name, "file", dbFilename);
-    let ab = new ThunderbirdAddressbook();
+    let ab = newAddressbookForProtocol("addressbook-local");
     ab.id = "tb-" + dbFilename.replace(/\..*/, "ä.").replace(/[^a-zA-Z0-9\-]/g, "");
     ab.name = name;
 
@@ -31,7 +33,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       try {
         id = sanitize.alphanumdash(id);
         let personRows = rows.filter(row => row.cardID == id);
-        let person = this.readCard(id, personRows, ab);
+        let person = this.readCard(id, personRows, ab, entryErrorCallback);
         ab.persons.add(person);
       } catch (ex) {
         entryErrorCallback(ex);
@@ -41,14 +43,15 @@ export class ThunderbirdAddressbook extends Addressbook {
     if (ab.persons.isEmpty) {
       throw new UserError("No persons found");
     }
+    // Don't save - let user select first what he wants to import
     return ab;
   }
 
-  protected static readCard(id: string, rows: any[], addressbook: Addressbook): Person {
+  protected static readCard(id: string, rows: any[], addressbook: Addressbook, errorCallback: (ex: Error) => void): Person {
     function getRow(name: string): string | null {
       return rows.find(row => row.name == name)?.value;
     }
-    function addContact(contact: string, protocol: string, purpose: string, preference: number, addTo: ArrayColl<ContactEntry>) {
+    function addContactInfo(contact: string, protocol: string, purpose: string, preference: number, addTo: ArrayColl<ContactEntry>) {
       if (!contact) {
         return;
       }
@@ -61,7 +64,20 @@ export class ThunderbirdAddressbook extends Addressbook {
 
     let person = addressbook.newPerson();
     person.id = id ?? randomID();
+
     let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
+    let emailAddressSecond = sanitize.emailAddress(getRow("SecondEmail"), null);
+
+    // TB CardDAV addressbooks store data only in vCard
+    let vCard = getRow("_vCard");
+    if (vCard) {
+      convertVCardToPerson(vCard, person);
+
+      // Thunderbird adds only name and first 2 email addresses, the other fields are only in vCard
+      // Avoid duplicating email addresses, below they have "primary"
+      person.emailAddresses.removeAll(person.emailAddresses.filterOnce(c =>
+        c.value == emailAddress || c.value == emailAddressSecond));
+    }
 
     // Name
     person.firstName = sanitize.nonemptystring(getRow("FirstName"), null);
@@ -77,14 +93,14 @@ export class ThunderbirdAddressbook extends Addressbook {
     } else if (emailAddress) {
       person.name = emailAddress;
     } else {
-      throw new NotReached("Need either name or email address for contact");
+      throw new UserError("Need either name or email address for contact");
     }
 
     person.notes = sanitize.nonemptystring(getRow("Notes"), null);
     person.popularity = sanitize.integer(getRow("PopularityIndex"), 0);
     let photo = getRow("PhotoURI");
     if (photo && getRow("PhotoType") != "generic" && !photo.startsWith("chrome:")) {
-      person.picture = sanitize.url(photo, null);
+      person.picture = sanitize.url(photo, null, ["https", "http", "data"]);
     }
 
     // Company
@@ -93,24 +109,24 @@ export class ThunderbirdAddressbook extends Addressbook {
     person.position = sanitize.nonemptystring(getRow("JobTitle"), null);
 
     // Mail
-    addContact(emailAddress, "email", "main", 0, person.emailAddresses);
-    addContact(sanitize.emailAddress(getRow("SecondEmail"), null), "email", "second", 1, person.emailAddresses);
+    addContactInfo(emailAddress, "email", "main", 0, person.emailAddresses);
+    addContactInfo(emailAddressSecond, "email", "second", 1, person.emailAddresses);
 
     // Phone
-    addContact(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("WorkPhone"), null), "phone", "work", 2, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("HomePhone"), null), "phone", "home", 3, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("FaxNumber"), null), "fax", "work", 100, person.phoneNumbers);
-    addContact(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("WorkPhone"), null), "phone", "work", 2, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("HomePhone"), null), "phone", "home", 3, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("FaxNumber"), null), "fax", "work", 100, person.phoneNumbers);
+    addContactInfo(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
 
     // URLs
-    addContact(sanitize.nonemptystring(getRow("WebPage1"), null), "url", "web", 1, person.urls);
-    addContact(sanitize.nonemptystring(getRow("WebPage2"), null), "url", "web", 2, person.urls);
+    addContactInfo(sanitize.url(getRow("WebPage1"), null), "url", "web", 1, person.urls);
+    addContactInfo(sanitize.url(getRow("WebPage2"), null), "url", "web", 2, person.urls);
 
     // Chat
-    addContact(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
-    addContact(sanitize.nonemptystring(getRow("_Skype"), null), "skype", "main", 10, person.chatAccounts);
-    addContact(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_Skype"), null), "skype", "main", 10, person.chatAccounts);
+    addContactInfo(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
 
     // Street addresses
     function addStreetAddress(street: string, street2: string, postalCode: string, city: string, state: string, country: string, purpose: string, preference: number) {
@@ -124,7 +140,11 @@ export class ThunderbirdAddressbook extends Addressbook {
       address.postalCode = postalCode;
       address.state = state;
       address.country = country;
-      addContact(address.toString(), "address", purpose, preference, person.streetAddresses);
+      try {
+        addContactInfo(address.toString(), "address", purpose, preference, person.streetAddresses);
+      } catch (ex) {
+        errorCallback(ex);
+      }
     }
     addStreetAddress(
       getRow("WorkAddress"), getRow("WorkAddress2"),
@@ -151,16 +171,16 @@ export class ThunderbirdAddressbook extends Addressbook {
         month: birthMonth ? 'long' : undefined,
         day: birthDay ? 'numeric' : undefined,
       });
-      addContact(birthStr, "date-locale", "birthday", 0, person.custom);
-      addContact(`${birthYear || ""}-${birthMonth || ""}-${birthDay || ""}`, "date-iso", "birthday", 1, person.custom);
+      addContactInfo(birthStr, "date-locale", "birthday", 0, person.custom);
+      addContactInfo(`${birthYear || ""}-${birthMonth || ""}-${birthDay || ""}`, "date-iso", "birthday", 1, person.custom);
     }
 
     // Additional fields
-    addContact(sanitize.nonemptystring(getRow("NickName"), null), "name", "nick", 0, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom1"), null), "other", "1", 1, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom2"), null), "other", "2", 2, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom3"), null), "other", "3", 3, person.custom);
-    addContact(sanitize.nonemptystring(getRow("Custom4"), null), "other", "4", 4, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("NickName"), null), "name", "nick", 0, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom1"), null), "other", "1", 1, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom2"), null), "other", "2", 2, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom3"), null), "other", "3", 3, person.custom);
+    addContactInfo(sanitize.nonemptystring(getRow("Custom4"), null), "other", "4", 4, person.custom);
 
     return person;
   }

@@ -3,8 +3,11 @@ import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/P
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName } from "../../Abstract/Tag";
 import { getFilesDir } from "../../../logic/util/backend-wrapper";
+import { EMailProcessorList } from "../EMailProcessor";
+import { SMLData } from "../SML/SMLData";
 import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { logError } from "../../../frontend/Util/error";
 import type { ArrayColl } from "svelte-collections";
 
 export class JSONEMail {
@@ -45,6 +48,28 @@ export class JSONEMail {
     json.isDraft = email.isDraft;
     json.threadID = email.threadID;
     json.downloadComplete = email.downloadComplete;
+    this.saveExtraData(email, json);
+  }
+
+  static saveExtraData(email: EMail, json: any) {
+    let extraDataJSON = [];
+    email.extraData.forEach((extraData, type) => {
+      let json = extraData.toJSON() as any;
+      if (json == null) {
+        return;
+      }
+      json.type = type;
+      extraDataJSON.push(json);
+    });
+    if (extraDataJSON.length) {
+      json.extraData = extraDataJSON;
+    }
+
+    json.sml = email.sml?.toJSON();
+
+    if (email.invitationMessage) {
+      json.invitationMessage = email.invitationMessage;
+    }
   }
 
   protected static saveRecipients(email: EMail, json: any) {
@@ -115,6 +140,7 @@ export class JSONEMail {
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
     this.readAttachments(email, json);
+    this.readExtraData(email, json);
     this.readTags(email, json);
     email.contact = email.outgoing ? email.to.first : email.from;
     return email;
@@ -155,6 +181,27 @@ export class JSONEMail {
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
     email.downloadComplete = sanitize.boolean(json.downloadComplete, false);
     this.readTags(email, json);
+  }
+
+  static readExtraData(email: EMail, json: any): void {
+    if (json.extraData) {
+      for (let extra of json.extraData) {
+        try {
+          let type = sanitize.alphanumdash(extra.type);
+          let ExtraDataSubclass = EMailProcessorList.extraDataTypes.get(type);
+          let data = new ExtraDataSubclass();
+          data.fromJSON(extra);
+          email.extraData.set(type, data);
+        } catch (ex) {
+          logError(ex);
+        }
+      }
+    }
+    if (json.sml) {
+      email.sml = new SMLData();
+      email.sml.fromJSON(json.sml);
+    }
+    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
   }
 
   static readRecipients(email: EMail, json: any): void {

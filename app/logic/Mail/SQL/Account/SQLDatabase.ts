@@ -1,4 +1,3 @@
-import { appGlobal } from "../../../app";
 import sql, { type Database } from "../../../../../lib/rs-sqlite/index";
 import { accountsDatabaseSchema } from "./createDatabase";
 import { migrateToAccountsDB } from "./SQLAccountsMigrate";

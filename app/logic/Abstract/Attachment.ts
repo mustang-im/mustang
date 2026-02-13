@@ -2,6 +2,7 @@ import { File as FileEntry } from "../Files/File";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
+import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
 
 export class Attachment extends Observable {
@@ -27,13 +28,30 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
-  /** Exists while editing or displaying.
-   * Created using `URL.createObjectURL(this.content)`.
-   * Must be cleared using `URL.revokeObjectURL()` when the window closes,
-   * otherwise we leak the entire attachment. */
-  blobURL: URLString;
+  protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
+
+  protected static urlFinalizer = new FinalizationRegistry((url: URLString) => {
+    URL.revokeObjectURL(url);
+  });
+
+  /** Exists while attachment is alive in memory.
+    * Don't `URL.revokeObjectURL()` manually because
+    * it will make the URL invalid somewhere else
+    * the FinalizationRegistry will take care of it.
+    */
+  get blobURL(): URLString {
+    if (this._blobURL) {
+      return this._blobURL;
+    }
+    if (!this.content) {
+      return null;
+    }
+    this._blobURL = URL.createObjectURL(this.content);
+    Attachment.urlFinalizer.register(this, this._blobURL, this);
+    return this._blobURL;
+  }
 
   static fromFile(file: File): Attachment {
     let attachment = new Attachment();
@@ -71,7 +89,7 @@ export class Attachment extends Observable {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
-    await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
+    await openOSAppForFile(this.filepathLocal);
   }
   /** Open the native file manager with the folder
    * where this file is, and select this file. */
@@ -102,6 +120,7 @@ export enum ContentDisposition {
 }
 
 const kHiddenMIMETypes = [
+  "application/ld+json", // SML
   "application/ics", // calendar invitation
   "text/vcard", // vCard
   "text/calendar", // vCard

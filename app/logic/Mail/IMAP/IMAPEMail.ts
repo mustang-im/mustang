@@ -1,14 +1,13 @@
 import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
+import { ConnectionPurpose } from "./IMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ConnectionPurpose } from "./IMAPAccount";
 
 export class IMAPEMail extends EMail {
   declare folder: IMAPFolder;
@@ -32,6 +31,7 @@ export class IMAPEMail extends EMail {
     let msgInfo: any;
     try {
       msgInfo = await this.folder.runCommand(async (conn) => {
+        this.folder.account.log(this.folder, conn, "download email", this.uid, this.subject);
         return await conn.fetchOne(this.uid + "", {
           uid: true,
           size: true,
@@ -87,7 +87,9 @@ export class IMAPEMail extends EMail {
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
-    this.mime = msgInfo.source;
+    if (msgInfo.source) {
+      this.mime = msgInfo.source;
+    }
   }
 
   /** Can happen when another client deleted the email and we didn't get the news yet. */
@@ -178,6 +180,7 @@ export class IMAPEMail extends EMail {
   async setFlagServer(name: string, set = true) {
     this.flagsChanging = true;
     await this.folder.runCommand(async (conn) => {
+      this.folder.account.log(this.folder, conn, set ? "set" : "remove" + " email flag", this.uid, name, this.subject);
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
       } else {
@@ -204,6 +207,7 @@ export class IMAPEMail extends EMail {
       let strategy = this.folder.account.deleteStrategy;
       if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
         await this.folder.runCommand(async (conn) => {
+          this.folder.account.log(this.folder, conn, "delete email flag", this.uid, this.subject);
           await conn.messageDelete(this.uid, { uid: true });
         });
       } else if (strategy == DeleteStrategy.MoveToTrash) {

@@ -88,6 +88,13 @@ export class Account extends Observable {
   }
 
   /**
+   * Used to request that any long-lived connections be disconnected,
+   * e.g. due to app shutdown.
+   */
+  async disconnect(): Promise<void> {
+  }
+
+  /**
    * If the main account is loaded, this child account should be loaded automatically after.
    * If the main account is deleted, then this account should be deleted as well.
    * Child accounts share the OAuth2 login with their main accounts.
@@ -145,6 +152,7 @@ export class Account extends Observable {
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
+    await this.logout();
     for (let dependent of this.dependentAccounts()) {
       await dependent.deleteIt();
     }

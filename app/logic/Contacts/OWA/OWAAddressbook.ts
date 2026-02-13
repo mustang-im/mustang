@@ -1,9 +1,12 @@
-import { Addressbook } from "../Addressbook";
+import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addressbook";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
-import { RunOnce } from "../../util/RunOnce";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -14,7 +17,7 @@ export class OWAAddressbook extends Addressbook {
   canSync: boolean = true;
   declare readonly persons: ArrayColl<OWAPerson>;
   declare readonly groups: ArrayColl<OWAGroup>;
-  listContactsOnce = new RunOnce(() => this.listContactsSlow());
+  protected listContactsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -33,8 +36,20 @@ export class OWAAddressbook extends Addressbook {
     return new OWAGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
   async listContacts() {
-    await this.listContactsOnce.maybeRun();
+    await super.listContacts();
+    await this.listContactsRunOnce.runOnce(() => this.listContactsSlow());
   }
 
   async listContactsSlow() {
@@ -127,6 +142,28 @@ export class OWAAddressbook extends Addressbook {
 
   getGroupByPersonaID(id: string): OWAGroup | undefined {
     return this.groups.find(p => p.personaID == id);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return getSharedPersons(result.Folders[0].PermissionSet.Permissions, this.account.emailAddress);
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return result.Folders[0].PermissionSet.Permissions.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    await this.account.callOWA(owaSetFolderPermissionsRequest(this.folderID, permissions));
   }
 
   fromConfigJSON(json: any) {

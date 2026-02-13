@@ -3,15 +3,24 @@ import { fetchConfig } from "./fetchConfig";
 import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON, fetchV1, ConfirmExchangeRedirect } from "./exchangeConfig";
 import { guessConfig } from "./guessConfig";
 import { localConfig } from "./localConfig";
-import { PriorityAbortable } from "../../util/Abortable";
+import { PriorityAbortable } from "../../util/flow/Abortable";
 import { UserCancelled } from "../../util/util";
 import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../util/netUtil";
 import { ArrayColl } from "svelte-collections";
 
+/**
+ * Use various methods and sources to find a server configuration for this email address.
+ *
+ * In order of preference:
+ * 1. Autoconfig
+ * 2. Exchange AutoDiscover V2 JSON
+ * 3. Exchange AutoDiscover V1 XML
+ * 4. Guessing common hostnames
+ */
 export async function findConfig(emailAddress: string, password: string, exchangeConfirmCallback: (emailAddress: string, redirectDomain: string) => Promise<boolean> | null, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let domain = getDomainForEmailAddress(emailAddress);
   try {
-    return localConfig(domain);
+    return await localConfig(domain);
   } catch (ex) {
   }
   try {

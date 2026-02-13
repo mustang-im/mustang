@@ -6,7 +6,7 @@ import { getTagByName, Tag } from "../../Abstract/Tag";
 import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./SQLDatabase";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
@@ -86,12 +86,12 @@ export class SQLEMail {
     assert(email.dbID, "Need Email DB ID to save props");
     let lock = doLock ? await email.storageLock.lock() : null;
     try {
-      let jsonStr: string | null = null;
-      if (email.invitationMessage) {
-        let json = {} as any;
-        json.invitationMessage = email.invitationMessage;
-        jsonStr = JSON.stringify(json, null, 2);
-      }
+      let json = {} as any;
+      JSONEMail.saveExtraData(email, json);
+      let jsonStr = Object.keys(json).length
+        ? JSON.stringify(json, null, 2)
+        : null;
+
       await (await getDatabase()).run(sql`
         UPDATE email SET
           isRead = ${email.isRead ? 1 : 0},
@@ -366,8 +366,7 @@ export class SQLEMail {
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
     let json = sanitize.json(row.json, {});
-    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
-
+    JSONEMail.readExtraData(email, json);
     await this.readTags(email);
   }
 

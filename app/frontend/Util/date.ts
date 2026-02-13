@@ -37,7 +37,7 @@ export function getDateTimeString(date: Date): string {
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date, fullDate: Intl.DateTimeFormatOptions = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
+export function getDateString(date: Date, fullDate?: Intl.DateTimeFormatOptions): string {
   if (!date) {
     return "";
   }
@@ -50,8 +50,12 @@ export function getDateString(date: Date, fullDate: Intl.DateTimeFormatOptions =
     dateDetails = { weekday: "long" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit" };
+    if (fullDate) {
+      dateDetails = Object.assign({}, fullDate);
+      dateDetails.year = undefined;
+    }
   } else { // full date
-    dateDetails = fullDate;
+    dateDetails = fullDate ?? { year: "numeric", month: "2-digit", day: "2-digit" };
   }
   return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
 }

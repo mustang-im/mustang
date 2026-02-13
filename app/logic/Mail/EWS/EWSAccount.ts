@@ -3,7 +3,8 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import { EWSFolder, getEWSItem } from "./EWSFolder";
+import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -19,13 +20,14 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { XML2JSON, type Json, JSON2XML } from "./XML2JSON";
+import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
-import { Throttle } from "../../util/Throttle";
-import { Semaphore } from "../../util/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, ensureArray, NotReached, NotSupported } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -39,6 +41,10 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  // JPC remoted AbortControllers for all currently streaming notifications
+  notificationAbort = new Set<AbortController>();
+  // Subscription IDs for all subscribed notificaions
+  subscriptions: string[] = [];
 
   constructor() {
     super();
@@ -94,6 +100,7 @@ export class EWSAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.mainAccount) {
       await this.mainAccount.login(interactive);
+      await this.listFolders();
       return;
     }
     await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
@@ -127,7 +134,12 @@ export class EWSAccount extends MailAccount {
       await this.mainAccount.logout();
       return;
     }
+    await this.unsubscribeAllNotifications();
     await this.oAuth2?.logout();
+  }
+
+  async disconnect(): Promise<void> {
+    await this.unsubscribeAllNotifications();
   }
 
   needsLicense(): boolean {
@@ -214,6 +226,11 @@ export class EWSAccount extends MailAccount {
     let freebusy = responseXML.querySelector("FreeBusyResponseArray");
     if (freebusy) {
       return ensureArray(getEWSItem(XML2JSON(freebusy)));
+    }
+    // GetDelegate returns a possibly missing array of responses
+    let delegate = responseXML.querySelector("GetDelegateResponse");
+    if (delegate?.getAttribute("ResponseClass") == "Success") {
+      return [...responseXML.querySelectorAll("DelegateUser")].map(user => XML2JSON(user));
     }
     let messages = responseXML.querySelector("ResponseMessages");
     if (!messages) {
@@ -358,7 +375,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
-    let lastAttempt;
+    let lastAttempt: number;
+    let abort: AbortController;
     do {
       try {
         lastAttempt = Date.now();
@@ -374,6 +392,8 @@ export class EWSAccount extends MailAccount {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
+        abort = response.abort;
+        this.notificationAbort.add(abort);
         for await (let chunk of response.body) {
           data += chunk;
           while (data.includes(endEnvelope)) {
@@ -410,8 +430,31 @@ export class EWSAccount extends MailAccount {
         }
         this.errorCallback(ex);
         break;
+      } finally {
+        this.notificationAbort.delete(abort);
       }
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+  }
+
+  async unsubscribeAllNotifications() {
+    for (let abort of this.notificationAbort) {
+      abort.abort();
+    }
+    this.notificationAbort.clear();
+    if (!this.subscriptions.length) {
+      return;
+    }
+    let unsubscribe = {
+      m$Unsubscribe: {
+        m$SubscriptionId: this.subscriptions,
+      },
+    };
+    try {
+      await this.callEWS(unsubscribe);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+    this.subscriptions.length = 0;
   }
 
   async streamNotifications(folderID?: string) {
@@ -454,6 +497,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
+    this.subscriptions.push(response.SubscriptionId);
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
@@ -834,6 +878,29 @@ export class EWSAccount extends MailAccount {
     return calendar;
   }
 
+  canShareWithPersons(): boolean {
+    return true;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    return await (this.inbox as EWSFolder).getSharedPersons();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders()) {
+      await deleteExchangePermissions(folder as EWSFolder, otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: EWSFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    // XXX Need root folder to share all mail
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
+    for (let folder of foldersToShare) {
+      await setExchangePermissions(folder as EWSFolder, otherPerson, access, ...permissions);
+    }
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
@@ -845,7 +912,6 @@ export class EWSAccount extends MailAccount {
     return json;
   }
 }
-
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 

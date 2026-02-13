@@ -19,6 +19,7 @@ export class LiveKitConf extends VideoConfMeeting {
   webSocketURL: URLString;
   room: Room | null = null;
   invitationURL: URLString;
+  myOrganizerToken: string;
   encryptionKey: string | null = null;
   mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
@@ -62,8 +63,11 @@ export class LiveKitConf extends VideoConfMeeting {
       name: forName ?? "",
       key: this.encryptionKey ?? "",
     });*/
-    assert(this.invitationURL, "The invitation token has to be created together with the meeting, or in the join URL");
     await ensureLicensed();
+    // The invitation token has to be created together with the meeting, or in the join URL
+    if (!this.invitationURL) {
+      await this.createMyParticipant();
+    }
     let urlObj = new URL(this.invitationURL);
     // add/replace key= and name= after #
     let anchor = new URLSearchParams(urlObj.hash?.substring(1));
@@ -168,15 +172,16 @@ export class LiveKitConf extends VideoConfMeeting {
       participantName: myName,
     }));
     this.webSocketURL = sanitize.url(response.serverUrl);
-    let participantToken = sanitize.nonemptystring(response.participantToken);
+    this.myOrganizerToken = sanitize.nonemptystring(response.participantToken);
     // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(participantToken)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
-    return participantToken;
+    return this.myOrganizerToken;
   }
 
   async start() {
     assert(this.id, "Need to create the conference first");
     await super.start();
-    await this.joinAfterStart(await this.createMyParticipant());
+    this.myOrganizerToken ??= await this.createMyParticipant();
+    await this.joinAfterStart(this.myOrganizerToken);
   }
 
   protected async joinAfterStart(participantToken: string) {

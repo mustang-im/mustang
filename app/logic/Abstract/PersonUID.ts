@@ -9,7 +9,6 @@ import { ArrayColl } from "svelte-collections";
 export class PersonUID extends Observable {
   @notifyChangedProperty
   name: string;
-  /** or user ID, for chat and other systems (despite the property name) */
   @notifyChangedProperty
   emailAddress: string;
   @notifyChangedProperty
@@ -47,10 +46,7 @@ export class PersonUID extends Observable {
   }
 
   matchesPerson(person: Person): boolean {
-    return person && (
-      !!person.emailAddresses.find(e => e.value == this.emailAddress) ||
-      !!person.chatAccounts.find(e => e.value == this.emailAddress)
-    );
+    return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
   }
 
   /** The email address does not belong to the end user,

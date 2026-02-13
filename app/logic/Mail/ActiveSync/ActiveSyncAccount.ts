@@ -16,8 +16,8 @@ import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Throttle } from "../../util/Throttle";
-import { Semaphore } from "../../util/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -431,11 +431,8 @@ export class ActiveSyncAccount extends MailAccount {
         // We're syncing from scratch, so we may have stale folders.
         missingFolders = this.getAllFolders();
       }
-      let url = new URL(this.url);
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
         try {
-          url.searchParams.set("serverID", change.ServerId);
-          let folderURL = url.toString();
           switch (change.Type) {
           case FolderType.Inbox:
           case FolderType.Drafts:
@@ -457,35 +454,36 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Contacts:
           case FolderType.UserContacts:
-            let haveAddressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this);
-            let isMainAddressbook = !haveAddressbook; // TODO Determine default addressbook
-            if (!haveAddressbook) {
-              let addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
+            let isMainAddressbook = change.Type == FolderType.Contacts;
+            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && addressbook.serverID == change.ServerId) as ActiveSyncAddressbook | null;
+            if (!addressbook) {
+              addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.initFromMainAccount(this);
-              if (!isMainAddressbook) {
-                addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
-              }
-              addressbook.url = sanitize.url(folderURL);
               addressbook.serverID = sanitize.nonemptystring(change.ServerId);
-              await addressbook.save();
               appGlobal.addressbooks.add(addressbook);
             }
+            if (!isMainAddressbook) {
+              // Rename and new address books
+              addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
+            }
+            // ActiveSync doesn't list all folders, only the changed ones.
+            // So, if we're here, then the address book changed.
+            await addressbook.save();
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let haveCalendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this);
-            let isMainCalendar = !haveCalendar; // TODO Determine default calendar
-            if (!haveCalendar) {
-              let calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
+            let isMainCalendar = change.Type == FolderType.Calendar;
+            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && calendar.serverID == change.ServerId) as ActiveSyncCalendar | null;
+            if (!calendar) {
+              calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.initFromMainAccount(this);
-              if (!isMainCalendar) {
-                calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
-              }
-              calendar.url = sanitize.url(folderURL);
               calendar.serverID = sanitize.nonemptystring(change.ServerId);
-              await calendar.save();
               appGlobal.calendars.add(calendar);
             }
+            if (!isMainCalendar) {
+              calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
+            }
+            await calendar.save();
             break;
           case FolderType.Tasks:
           case FolderType.UserTasks:
@@ -504,8 +502,6 @@ export class ActiveSyncAccount extends MailAccount {
             await this.storage.deleteFolder(folder);
             folder.removeFromParent();
           }
-          let url = new URL(this.url);
-          url.searchParams.set("serverID", deletion.ServerId);
           let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && addressbook.serverID == deletion.ServerId) as ActiveSyncAddressbook | undefined;
           if (addressbook) {
             this.removePingable(addressbook);

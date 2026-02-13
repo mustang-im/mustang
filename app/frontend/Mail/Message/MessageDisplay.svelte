@@ -4,9 +4,7 @@
   >
   <MessageHeader bind:message />
   <MessageAttachments {message} />
-  {#if $message.event || $message.invitationMessage}
-    <InvitationInMail {message} />
-  {/if}
+  <SMLDisplayKinds {message} sml={message.sml} />
   <vbox class="body" flex>
     <Paper>
       <MessageBody {message} />
@@ -24,7 +22,7 @@
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
-  import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
+  import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import MessageDisplayBarM from "./MessageDisplayBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import { catchErrors } from "../../Util/error";

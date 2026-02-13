@@ -7,7 +7,7 @@ perl -p -i \
   ../logic/build.ts
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
-  ../../e2/package.json
+  ../../desktop/package.json
 
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
@@ -28,4 +28,4 @@ perl -p -i \
 
 # Mobile Icons
 perl -MFile::Path -e "mkpath('../../mobile/assets')"
-perl -MFile::Copy -e "copy('../../e2/build/icon.png', '../../mobile/assets/icon.png')"
+perl -MFile::Copy -e "copy('../../desktop/build/icon.png', '../../mobile/assets/icon.png')"

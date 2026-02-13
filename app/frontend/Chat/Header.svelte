@@ -31,7 +31,6 @@
   import NewGroupIcon from "lucide-svelte/icons/plus";
   import ChatIcon from "lucide-svelte/icons/message-square-text";
   import LoginIcon from "lucide-svelte/icons/key-round";
-  import { catchErrors } from "../Util/error";
   import { NotImplemented } from "../../logic/util/util";
   import { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";

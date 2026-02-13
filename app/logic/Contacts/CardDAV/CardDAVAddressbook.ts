@@ -4,7 +4,7 @@ import { CardDAVGroup } from "./CardDAVGroup";
 import { AuthMethod } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -74,9 +74,7 @@ export class CardDAVAddressbook extends Addressbook {
   }
 
   async listContacts() {
-    if (!this.dbID) {
-      await this.save();
-    }
+    await super.listContacts();
 
     if (!this.davAddressbook) {
       let addressbooks = await this.listAddressbooks();

@@ -2,7 +2,7 @@
 
 1. Install
 ```
-(cd app; yarn); (cd e2; yarn); (cd backend/; yarn); (cd lib/jpc-ws/; yarn)
+(cd app/; yarn); (cd desktop/; yarn); (cd desktop/backend/; yarn); (cd lib/jpc-ws/; yarn)
 ```
 
 2. In terminal 1:
@@ -13,7 +13,7 @@ yarn run dev
 
 3. In terminal 2:
 ```
-cd e2/
+cd desktop/
 yarn run dev
 ```
 

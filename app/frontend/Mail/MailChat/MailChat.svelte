@@ -24,19 +24,18 @@
         </MessageList>
       </vbox>
       <vbox class="editor">
-        <MsgEditor to={chat} />
+        <MsgEditor to={chatRoom} />
       </vbox>
     {/if}
   </vbox>
 </Splitter>
 
 <script lang="ts">
+  import { MailChatRoom } from "./MailChatRoom";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { UserChatMessage } from "../../../logic/Chat/Message";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { Chat } from "../../../logic/Chat/Chat";
   import { selectedAccount } from "../Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
@@ -53,7 +52,6 @@
   import PaymentBar from "../../Shared/Empty.svelte";
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
-  import { randomID } from "../../../logic/util/util";
   import { Collection, mergeColls } from 'svelte-collections';
 
   export let accounts: Collection<MailAccount>; /** in */
@@ -67,22 +65,8 @@
   $: filteredMessages = $globalSearchTerm
     ? personMessages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : personMessages;
-  $: chat = new MailChatRoom(selectedPerson);
-
-  class MailChatRoom extends Chat {
-    declare account: MailAccount;
-    constructor(person: PersonUID) {
-      let account = personMessages.first?.folder.account ?? accounts.first;
-      super(account);
-      this.id = randomID();
-      this.contact = person;
-      this.messages.addAll(personMessages);
-      this.lastMessage = personMessages.last;
-    }
-    async sendMessage(message: UserChatMessage): Promise<void> {
-      this.account.send(message);
-    }
-  }
+  $: account = $personMessages.first?.folder.account ?? $accounts.first;
+  $: chatRoom = new MailChatRoom(account, selectedPerson, personMessages);
 </script>
 
 <style>

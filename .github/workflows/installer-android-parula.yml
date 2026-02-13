@@ -33,7 +33,7 @@ jobs:
     - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
+    - run: cd desktop/backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
 
@@ -75,10 +75,9 @@ jobs:
 
     - name: Upload to GitHub release
       uses: softprops/action-gh-release@v2
+      if: env.RELEASE == 'true'
       with:
         tag_name: ${{ env.APP_VERSION }}
-        make_latest: ${{ env.RELEASE }}
-        prerelease: ${{ env.RELEASE == 'false' }}
         files: |
           mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab

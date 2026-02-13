@@ -1,9 +1,10 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
 import { MailIdentity } from "./MailIdentity";
-import { Folder, SpecialFolder } from "./Folder";
+import { Folder, SpecialFolder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
@@ -132,6 +133,20 @@ export class MailAccount extends TCPAccount {
     return this.rootFolders.first;
   }
 
+  canShareWithPersons(): boolean {
+    return false;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
+  }
+
+  async addSharedPerson(person: PersonUID, mailFolder: Folder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
@@ -209,7 +224,7 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
   return null;
 }
 
-export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "harddisk" | "builtin" | null;
 
 export interface MailAccountStorage {
   saveAccount(account: MailAccount): Promise<void>;

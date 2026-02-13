@@ -3,6 +3,7 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
+import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
@@ -17,17 +18,19 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
+import { deleteExchangePermissions, setExchangePermissions } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Semaphore } from "../../util/Semaphore";
-import { Throttle } from "../../util/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 export class OWAAccount extends MailAccount {
@@ -164,6 +167,7 @@ export class OWAAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.mainAccount) {
       await this.mainAccount.login(interactive);
+      await this.listFolders();
       return;
     }
     await ensureLicensed();
@@ -172,10 +176,6 @@ export class OWAAccount extends MailAccount {
     this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     this.hasLoggedIn = true;
     await this.listFolders();
-
-    if (this.sharedFolderRoot) {
-      return;
-    }
 
     // `listFolders()` will subscribe to new user-added calendars
 
@@ -583,6 +583,29 @@ export class OWAAccount extends MailAccount {
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
     return calendar;
+  }
+
+  canShareWithPersons(): boolean {
+    return true;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    // well, some of them at least...
+    return await (this.inbox as OWAFolder).getSharedPersons();
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    for (let folder of this.getAllFolders()) {
+      await deleteExchangePermissions(folder as OWAFolder, otherPerson);
+    }
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: OWAFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    // XXX Need root folder to share all mail
+    let foldersToShare = (!mailFolder ? this.getAllFolders() : includeSubfolders ? mailFolder.getInclusiveDescendants() : new ArrayColl<Folder>([mailFolder]));
+    for (let folder of foldersToShare) {
+      await setExchangePermissions(folder as OWAFolder, otherPerson, access, ...permissions);
+    }
   }
 
   fromConfigJSON(json: any) {

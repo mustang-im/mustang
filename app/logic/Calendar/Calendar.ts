@@ -1,12 +1,15 @@
 import { Account } from "../Abstract/Account";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
+import { SQLEvent } from "./SQL/SQLEvent";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 import { recurrenceColl } from "./RecurrenceColl";
+import { gt } from "../../l10n/l10n";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -23,6 +26,11 @@ export class Calendar extends Account {
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
+  }
+
+  get isLoggedIn(): boolean {
+    // Please override in subclasses
+    return true; // for local calendar
   }
 
   /** Calculated from `events`. Returns
@@ -44,6 +52,12 @@ export class Calendar extends Account {
   }
 
   async listEvents() {
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.events.isEmpty) {
+      await SQLEvent.readAll(this);
+    }
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -58,6 +72,16 @@ export class Calendar extends Account {
     await super.deleteIt();
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
+  }
+
+  async addSharedPerson(person: PersonUID, access: CalendarShareCombinedPermissions) {
   }
 
   fromConfigJSON(json: any) {
@@ -79,3 +103,20 @@ export interface CalendarStorage {
 }
 
 ICalEMailProcessor.hookup();
+
+export enum CalendarShareCombinedPermissions {
+  /** Can see whether the user is busy or not, but not the title nor details of the meeting */
+  ReadAvailability = "read-busy",
+  /** Can see the times and titles of the meeting, but nothing else */
+  ReadTitle = "read-title",
+  /** Can see all details of all meetings */
+  ReadAll = "read-all",
+  /** Full access: Modify meeting details, and add and delete meetings */
+  Modify = "modify",
+}
+export const calendarShareCombinedPermissionsLabels: Record<string, string> = {
+  [CalendarShareCombinedPermissions.ReadAvailability]: gt`See availability only`,
+  [CalendarShareCombinedPermissions.ReadTitle]: gt`See titles only`,
+  [CalendarShareCombinedPermissions.ReadAll]: gt`See all meetings with details`,
+  [CalendarShareCombinedPermissions.Modify]: gt`Modify, add and delete meetings`,
+};

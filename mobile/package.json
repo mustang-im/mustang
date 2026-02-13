@@ -1,6 +1,6 @@
 {
   "name": "mustang",
-  "version": "0.9.10",
+  "version": "0.9.16",
   "description": "Mustang - Video conference, chat, mail, calendar, files, contacts",
   "type": "module",
   "scripts": {
@@ -23,6 +23,7 @@
     "@capacitor/browser": "^7.0.2",
     "@capacitor/camera": "^7.0.0",
     "@capacitor/core": "^7.0.0",
+    "@capacitor/file-viewer": "^2.0.0",
     "@capacitor/filesystem": "^7.1.4",
     "@capacitor/ios": "^7.0.0",
     "@capacitor/splash-screen": "^7.0.3",
@@ -34,8 +35,8 @@
     "@capacitor/cli": "^7.0.0",
     "tar": "^7.4.3",
     "typescript": "^5.9.2",
-    "vite": "^5.4.2",
-    "vite-node": "^3.2.4"
+    "vite": "^7.3.1",
+    "vite-node": "^5.2.0"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,182 @@
+<vbox class="day-view-grid" flex bind:offsetHeight={visibleHeight}>
+  <Scroll bind:this={scrollE}>
+    <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;"
+      on:swipeleft={onNextDay}
+      on:swiperight={onPreviousDay}
+      >
+      <hbox class="top-left header" /><!-- needed for grid -->
+      {#each days as day}
+        <vbox class="day-header header">
+          <slot name="day-header" {day}>
+            <vbox class="date-day">
+              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
+              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+            </vbox>
+          </slot>
+          <vbox class="all-day-events">
+            {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
+              <AllDayEvent {event} {start} />
+            {/each}
+          </vbox>
+        </vbox>
+      {/each}
+      {#each startTimes as time}
+        <slot name="time-label" {time}>
+          <TimeLabel {time} />
+        </slot>
+        <TimeDayRow {days} {time} events={visibleEvents} {overlayEvents} on:celldblclick>
+          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} let:events {events} />
+          <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} let:events {events} />
+        </TimeDayRow>
+      {/each}
+    </grid>
+  </Scroll>
+</vbox>
+
+<script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { appGlobal } from "../../../logic/app";
+  import TimeLabel from "./TimeLabel.svelte";
+  import TimeDayRow from "./TimeDayRow.svelte";
+  import AllDayEvent from "./AllDayEvent.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
+
+  export let start: Date;
+  export let events: Collection<Event>;
+  /** UI elements that appear in the event slots. Optional */
+  export let overlayEvents: Collection<Event> | null = null;
+  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  /* Number of hours visible at the same time. Larger range reduces size per hour.
+   * Other hours are available on scroll. */
+  export let showHours = 10;
+  export let defaultFocusHour = 8;
+
+  let startHour = 0;
+  let endHour = 24;
+  let intervalHour = 1;
+
+  let scrollE: Scroll;
+  let visibleHeight = 0;
+  $: pxPerHour =  visibleHeight / showHours;
+  $: scrollHeight = pxPerHour * (endHour - startHour);
+  $: focusHour = start.toDateString() == new Date().toDateString()
+    ? new Date().getHours()
+    : defaultFocusHour;
+  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
+
+  let startTimes: Date[] = [];
+  $: start, setStartTimes();
+  function setStartTimes() {
+    let startTime = new Date(start);
+    startTime.setMinutes(0, 0, 0);
+    startTimes = [];
+    for (let i = startHour; i < endHour; i += intervalHour) {
+      startTime.setHours(i);
+      startTimes.push(new Date(startTime));
+    }
+  }
+
+  let days: Date[] = [];
+  let visibleEvents: Collection<Event>;
+  let allDayEvents: Collection<Event>;
+  $: start, setDays();
+  function setDays() {
+    let startTime = new Date(start);
+    if (showDays > 3) {
+      startTime.setDate(startTime.getDate() - 1);
+    }
+    startTime.setHours(startHour, 0, 0, 0);
+    let filterStart = new Date(startTime);
+    days = [];
+    for (let i = 0; i < showDays; i++) {
+      days.push(new Date(startTime));
+      startTime.setDate(startTime.getDate() + 1);
+    }
+    let filterEnd = startTime;
+    let filtered = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
+    visibleEvents = filtered.filterObservable(ev => !ev.allDay);
+    allDayEvents = filtered.filterObservable(ev => ev.allDay);
+  }
+
+  function onNextDay() {
+    let pageDays = showDays == 7 ? 7 : 1;
+    start.setDate(start.getDate() + pageDays);
+    start = start;
+  }
+
+  function onPreviousDay() {
+    let pageDays = showDays == 7 ? 7 : 1;
+    start.setDate(start.getDate() - pageDays);
+    start = start;
+  }
+</script>
+
+<style>
+  .week {
+    display: grid;
+    grid-template-rows: max-content;
+    grid-auto-rows: 1fr;
+    container-type: size;
+  }
+  .week[columns="1"] {
+    grid-template-columns: max-content auto;
+  }
+  .week[columns="2"] {
+    grid-template-columns: max-content 3fr 1fr;
+  }
+  .week[columns="7"] {
+    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
+  }
+  .header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: var(--bg);
+    z-index: 2;
+  }
+  .top-left {
+    height: calc(100% - 10px);
+  }
+  .day-header {
+    border-top: 1px dotted var(--border);
+    border-left: 1px dotted var(--border);
+    border-bottom: 1px dotted var(--border);
+  }
+  .date-day {
+    padding: 8px 16px;
+  }
+  .day-header .date {
+    font-size: 180%;
+    overflow-wrap: break-word;
+  }
+  .all-day-events {
+    margin: 10px -16px -10px -16px;
+    opacity: 85%;
+  }
+  .weekday {
+    margin-block-start: -4px;
+    margin-block-end: 4px;
+    max-height: 1.3em;
+    overflow: hidden;
+  }
+  @container (max-height: 1000px)  {
+    .day-header {
+      padding: 4px 8px;
+    }
+    .day-header .date {
+      font-size: 120%;
+    }
+    .day-header .weekday {
+      font-size: 90%;
+      align-items: center;
+      flex: 1 0 0;
+      margin-block-start: 1px;
+      margin-inline-start: 8px;
+    }
+    .day-header .date-day {
+      flex-direction: row;
+    }
+  }
+</style>

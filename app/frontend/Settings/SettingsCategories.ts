@@ -28,13 +28,11 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
-// #if [MOBILE]
+// #if [MOBILE || !PRODUCTION]
 import Debug from "./About/Debug.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
-import { EWSAccount } from "../../logic/Mail/EWS/EWSAccount";
-import { OWAAccount } from "../../logic/Mail/OWA/OWAAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
@@ -43,6 +41,8 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
+import { SIPAccount } from "../../logic/Meet/SIP/SIPAccount";
+import SIP from "./Meet/SIP.svelte";
 // #endif
 import { gt } from "../../l10n/l10n";
 
@@ -77,8 +77,7 @@ accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, Accou
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
 accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
-accountSettings.add(new AccSetting(EWSAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
-accountSettings.add(new AccSetting(OWAAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
+accountSettings.add(new AccSetting(MailAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
 
 // #if [DEV]
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
@@ -134,6 +133,7 @@ settingsCategories.add(meetSettings);
 // #endif
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
+accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 
 // #if [DEV]
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
@@ -162,7 +162,7 @@ about.subCategories.addAll([
 ]);
 settingsCategories.add(about);
 
-// #if [MOBILE]
+// #if [MOBILE || !PRODUCTION]
 about.subCategories.add(new SettingsCategory("debug", gt`Debug`, Debug));
 // #endif
 

@@ -1,11 +1,11 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
     <Header bind:selectedAccount={$selectedAccount} {accounts} />
-    <ChatRoomList {chatRooms} bind:selectedChat={$selectedChat} />
+    <RoomList {rooms} bind:selectedRoom={$selectedRoom} />
   </vbox>
   <vbox class="right-pane" slot="right">
-    {#if messages && $selectedChat }
-      <PersonHeader person={$selectedChat.contact} />
+    {#if messages && $selectedRoom }
+      <PersonHeader person={$selectedRoom.contact} />
       <vbox flex class="messages background-pattern">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
@@ -18,7 +18,7 @@
         </MessageList>
       </vbox>
       <vbox class="editor">
-        <MsgEditor to={$selectedChat} />
+        <MsgEditor to={$selectedRoom} />
       </vbox>
     {/if}
   </vbox>
@@ -28,45 +28,45 @@
   import { Person } from "../../logic/Abstract/Person";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
-  import { selectedAccount, selectedChat } from "./selected";
+  import { selectedAccount, selectedRoom } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
-  import ChatRoomEventUI from "./MessageView/ChatRoomEventUI.svelte";
+  import ChatRoomEventUI from "./MessageView/RoomEventUI.svelte";
   import MsgEditor from "./MsgEditor.svelte";
   import Header from "./Header.svelte";
   import PersonHeader from "./PersonHeader.svelte";
-  import ChatRoomList from "./ChatRoomList.svelte";
+  import RoomList from "./RoomList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";
 
-  $: accounts = appGlobal.chatAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
-  $: chatRooms = $selectedAccount ? $selectedAccount.chats : mergeColls(accounts.map(a => a.chats));
+  $: accounts = appGlobal.chatAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
+  $: rooms = $selectedAccount ? $selectedAccount.rooms : mergeColls(accounts.map(a => a.rooms));
   $: messages = $globalSearchTerm
-    ? $selectedChat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
-    : $selectedChat?.messages;
+    ? $selectedRoom?.messages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
+    : $selectedRoom?.messages;
 
-  $: $selectedChat && catchErrors(loadMessages)
+  $: $selectedRoom && catchErrors(loadMessages)
   async function loadMessages() {
-    await $selectedChat?.listMembers();
-    await $selectedChat?.listMessages();
+    await $selectedRoom?.listMembers();
+    await $selectedRoom?.listMessages();
   }
 
   onMount(() => {
-    $selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);
+    $selectedRoom = $selectedPerson && rooms.find(room => room.contact == $selectedPerson);
   });
-  $: if ($selectedChat?.contact instanceof Person) {
-    $selectedPerson = $selectedChat.contact;
+  $: if ($selectedRoom?.contact instanceof Person) {
+    $selectedPerson = $selectedRoom.contact;
   }
-  $: chatRooms, clearSelectedChat()
+  $: rooms, clearSelectedChat()
   function clearSelectedChat() {
-    if (!chatRooms.contains($selectedChat)) {
-      $selectedChat = chatRooms.last;
+    if (!rooms.contains($selectedRoom)) {
+      $selectedRoom = rooms.last;
     }
   }
 </script>

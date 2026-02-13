@@ -63,7 +63,7 @@
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
-  import { Cancelled } from "../../../logic/util/Abortable";
+  import { Cancelled } from "../../../logic/util/flow/Abortable";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
   import FindConfig from "./FindConfig.svelte";
   import FoundConfig from "./FoundConfig.svelte";

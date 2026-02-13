@@ -22,9 +22,9 @@ jobs:
     - run: cd app/build; sh mustang-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
-    - run: cd e2; yarn install
-    - run: cd e2; yarn run build:release:linux
+    - run: cd desktop; yarn install
+    - run: cd desktop/backend; yarn install
+    - run: cd desktop; yarn run build:release:linux
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -35,8 +35,8 @@ jobs:
       with:
         name: Installers Linux
         path: |
-          e2/dist/*.deb
-          e2/dist/*.rpm
-          e2/dist/*.AppImage
-          e2/dist/*.flatpak
-          e2/dist/*.snap
+          desktop/dist/*.deb
+          desktop/dist/*.rpm
+          desktop/dist/*.AppImage
+          desktop/dist/*.flatpak
+          desktop/dist/*.snap

@@ -95,7 +95,7 @@ export class GraphAccount extends MailAccount {
     }
     for (let chatAccount of appGlobal.chatAccounts) {
       if (chatAccount.mainAccount == this) {
-        await chatAccount.listChats()
+        await chatAccount.listRooms()
           .catch(this.errorCallback);
       }
     }

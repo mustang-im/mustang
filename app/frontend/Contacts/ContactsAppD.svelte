@@ -1,7 +1,8 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
-    <PersonsList {persons} bind:selected={$selectedPerson} bind:searchTerm={$globalSearchTerm} />
+    <PersonsActionToolbar bind:selectedAddressbook {selectedPersons} />
+    <PersonsList {persons} bind:selected={$selectedPerson} bind:searchTerm={$globalSearchTerm} bind:selectedPersons />
   </vbox>
   <vbox flex class="right-pane background-pattern" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}
@@ -14,16 +15,18 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { Addressbook } from "../../logic/Contacts/Addressbook";
+  import type { PersonOrGroup } from "./Person/PersonOrGroup";
+  import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedPerson } from "./Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonDetails from "./PersonPage/PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
+  import PersonsActionToolbar from "./PersonsActionToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import type { Collection } from "svelte-collections";
+  import type { ArrayColl, Collection } from "svelte-collections";
 
   let selectedAddressbook: Addressbook | null = null; /** null = show all */
 
@@ -34,6 +37,7 @@
   }
 
   $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
+  let selectedPersons: ArrayColl<PersonOrGroup>;
 </script>
 
 <style>

@@ -1,4 +1,4 @@
-import { Chat } from "../Chat";
+import { ChatRoom } from "../ChatRoom";
 import { GraphChatMessage } from "./GraphChatMessage";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
@@ -9,7 +9,7 @@ import { ContactEntry } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class GraphChatRoom extends Chat {
+export class GraphChatRoom extends ChatRoom {
   declare account: GraphChatAccount;
   info: TGraphChat;
   lastReadTime: Date;

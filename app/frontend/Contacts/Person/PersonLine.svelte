@@ -56,8 +56,8 @@
   .main {
     justify-content: center;
     margin-block-start: 0px;
-    padding: 1px 20px 0px 0px;
-    max-width: 70%; /* HACK */
+    padding: 1px 6px 0px 0px;
+    max-width: calc(100% - 42px - 2 * 6px); /* HACK Fix long names overdrawing into avatar column */
   }
   :global(.mobile) .main {
     min-height: 44px;
@@ -69,6 +69,7 @@
     align-items: center;
     white-space: nowrap;
     max-height: 1.3em;
+    overflow: hidden;
   }
   .second-row:first-child {
     max-height: 1.3em;

@@ -11,14 +11,14 @@
     {#if $sharedWith.isEmpty}
       <hbox class="nothing">{$t`You have not granted access to anyone`}</hbox>
     {:else}
-      {#each $sharedWith.each as otherAccount}
+      {#each $sharedWith.each as otherPerson}
         <hbox class="existing-person">
-          <hbox class="name" flex>{otherAccount.name}</hbox>
+          <hbox class="name" flex>{otherPerson.name}</hbox>
           <!-- Show access level -->
           <RoundButton
             label={$t`Delete`}
             icon={DeleteIcon}
-            onClick={() => onDelete(otherAccount)}
+            onClick={() => onDelete(otherPerson)}
             border={false}
             classes="plain"
             />
@@ -36,22 +36,18 @@
         onClick={onCloseAddDialog}
         slot="buttons-top-right"
         />
-      <vbox>
+      <vbox class="add-dialog">
         <hbox class="person-input">
           <PersonsAutocomplete
             placeholder={$t`Mail address of your colleague`}
             onAddPerson={checkForShares}
             persons={newPersons} />
         </hbox>
-        {#if addPerson}
-          <hbox class="name">{addPerson.name ?? ""}</hbox>
-          <hbox class="email-address font-small">{addPerson.emailAddress}</hbox>
-        {/if}
         {#if errorMessage}
           <StatusMessage message={errorMessage} status="warning" />
         {/if}
 
-        {#if addPerson}
+        {#if $newPersons.hasItems}
           <hbox class="mail enable" flex>
             <Checkbox
               label={$t`Share all mail`}
@@ -89,76 +85,79 @@
               </hbox>
               {#if mailAccess == MailShareCombinedPermissions.Custom}
                 <vbox class="custom-access">
-                  <Checkbox label={$t`Read mail`} checked={true} />
-                  <Checkbox label={$t`Change mail flags`} checked={false} />
-                  <Checkbox label={$t`Delete mails`} checked={false} />
-                  <Checkbox label={$t`Add new mails`} checked={false} />
+                  <Checkbox bind:checked={shareRead} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.Read]} />
+                  <Checkbox bind:checked={shareFlags} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.FlagChange]} />
+                  <Checkbox bind:checked={shareDelete} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.Delete]} />
+                  <Checkbox bind:checked={shareCreate} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.Create]} />
+                  <Checkbox bind:checked={shareDeleteFolder} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.DeleteFolder]} />
+                  <Checkbox bind:checked={shareCreateSubfolders} label={mailShareIndividualPermissionsLabels[MailShareIndividualPermissions.CreateSubfolders]} />
                 </vbox>
               {/if}
             </vbox>
           {/if}
 
-        <hbox class="enable">
-          <Checkbox
-            label={$t`Share calendar`}
-            bind:checked={shareCalendar}
-            allowFalse />
-        </hbox>
-        {#if shareCalendar}
-          <vbox class="checkbox-details">
-            <!--
-            {#each calendars.each as cal}
-              <Checkbox label={cal.name} checked={true} />
-            {/each}
-            -->
-            <hbox class="account-name">{calendars.first?.name}</hbox>
-            <hbox>
-              <hbox class="label">{$t`Access`}</hbox>
-              <select bind:value={mailAccess}>
-                <option value={MailShareCombinedPermissions.Read}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Read]}</option>
-                <option value={MailShareCombinedPermissions.FlagChange}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.FlagChange]}</option>
-                <option value={MailShareCombinedPermissions.Modify}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Modify]}</option>
-                <option value={MailShareCombinedPermissions.Custom}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Custom]}</option>
-              </select>
+          {#if !(account instanceof IMAPAccount)}
+            <hbox class="enable">
+              <Checkbox
+                label={$t`Share calendar`}
+                bind:checked={shareCalendar}
+                allowFalse />
             </hbox>
-          </vbox>
+            {#if shareCalendar}
+              <vbox class="checkbox-details">
+                <!--
+                {#each calendars.each as cal}
+                  <Checkbox label={cal.name} checked={true} />
+                {/each}
+                -->
+                <hbox class="account-name">{calendars.first?.name}</hbox>
+                <hbox>
+                  <hbox class="label">{$t`Access`}</hbox>
+                  <select bind:value={calendarAccess}>
+                    <option value={CalendarShareCombinedPermissions.ReadAvailability}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAvailability]}</option>
+                    <option value={CalendarShareCombinedPermissions.ReadTitle}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadTitle]}</option>
+                    <option value={CalendarShareCombinedPermissions.ReadAll}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAll]}</option>
+                    <option value={CalendarShareCombinedPermissions.Modify}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.Modify]}</option>
+                  </select>
+                </hbox>
+              </vbox>
+            {/if}
+
+            <hbox class="enable">
+              <Checkbox
+                label={$t`Share addressbook`}
+                bind:checked={shareAddressbook}
+                allowFalse />
+            </hbox>
+            {#if shareAddressbook}
+              <vbox class="checkbox-details">
+                <!--
+                {#each addressbooks.each as ab}
+                  <Checkbox label={ab.name} checked={true} />
+                {/each}
+                -->
+                <hbox class="account-name">{addressbooks.first?.name}</hbox>
+                <hbox>
+                  <hbox class="label">{$t`Access`}</hbox>
+                  <select bind:value={addressbookAccess}>
+                    <option value={AddressbookShareCombinedPermissions.Read}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Read]}</option>
+                    <option value={AddressbookShareCombinedPermissions.Modify}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Modify]}</option>
+                  </select>
+                </hbox>
+              </vbox>
+            {/if}
+            <hbox class="buttons">
+              <Button
+                label={$t`Add`}
+                onClick={() => onAddPersons()}
+                disabled={errorMessage}
+                classes="primary filled"
+                />
+            </hbox>
+          {/if}
         {/if}
 
-        <hbox class="enable">
-          <Checkbox
-            label={$t`Share addressbook`}
-            bind:checked={shareAddressbook}
-            allowFalse />
-        </hbox>
-        {#if shareAddressbook}
-          <vbox class="checkbox-details">
-            <!--
-            {#each addressbooks.each as ab}
-              <Checkbox label={ab.name} checked={true} />
-            {/each}
-            -->
-            <hbox class="account-name">{addressbooks.first?.name}</hbox>
-            <hbox>
-              <hbox class="label">{$t`Access`}</hbox>
-              <select bind:value={mailAccess}>
-                <option value={MailShareCombinedPermissions.Read}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Read]}</option>
-                <option value={MailShareCombinedPermissions.FlagChange}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.FlagChange]}</option>
-                <option value={MailShareCombinedPermissions.Modify}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Modify]}</option>
-                <option value={MailShareCombinedPermissions.Custom}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Custom]}</option>
-              </select>
-            </hbox>
-          </vbox>
-        {/if}
-        <hbox class="buttons">
-          <Button
-            label={$t`Add`}
-            onClick={() => onAddPerson(addPerson)}
-            disabled={!addPerson || errorMessage}
-            classes="primary filled"
-            />
-        </hbox>
-      {/if}
-
+      </vbox>
     </HeaderGroupBox>
   {/if}
 </vbox>
@@ -169,9 +168,9 @@
   import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
   import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
   import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
-  import { Addressbook } from "../../../logic/Contacts/Addressbook";
-  import { Calendar } from "../../../logic/Calendar/Calendar";
-  import type { Folder } from "../../../logic/Mail/Folder";
+  import { Addressbook, AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
+  import { Calendar, CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
+  import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appName } from "../../../logic/build";
@@ -189,34 +188,47 @@
   import { ArrayColl, Collection } from "svelte-collections";
 
   export let account: MailAccount;
-  $: sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
-  $: skipPersons = sharedWith.map(account => new PersonUID(account.username));
-  let newPersons = new ArrayColl<PersonUID>();
+  let sharedWith = new ArrayColl<PersonUID>();
+  $: (async() => { sharedWith = new ArrayColl<PersonUID>(); findSharedPersons(account); })();
 
-  async function onDelete(otherAccount: Account) {
-    let confirmed = confirm($t`Are you sure that you want to delete the account ${otherAccount.name} and all related data from ${appName}?`);
+  async function findSharedPersons(account: MailAccount) {
+    mergePersons(await account.getSharedPersons());
+    mergePersons(await calendars.first?.getSharedPersons());
+    mergePersons(await addressbooks.first?.getSharedPersons());
+  }
+
+  async function mergePersons(persons?: ArrayColl<PersonUID>) {
+    for (let person of persons) {
+      if (!sharedWith.some(otherPerson => otherPerson.emailAddress == person.emailAddress)) {
+        sharedWith.add(person);
+      }
+    }
+  }
+
+  async function onDelete(otherPerson: PersonUID) {
+    let confirmed = confirm($t`Are you sure that you want to remove all access to your data from the account ${otherPerson.name}?`);
     if (!confirmed) {
       return;
     }
-    await otherAccount.deleteIt();
-    sharedWith.remove(otherAccount);
+    await account.deleteSharedPerson(otherPerson);
+    await calendars.first?.deleteSharedPerson(otherPerson);
+    await addressbooks.first?.deleteSharedPerson(otherPerson);
+    sharedWith.remove(otherPerson);
   }
 
   let showAddDialog = false;
   let errorMessage: string | null = null;
-  let addPerson: PersonUID | null = null;
-  let sharedFolders: string[] = [];
+  let newPersons = new ArrayColl<PersonUID>();
 
   function resetAddDialog() {
     errorMessage = null;
-    addPerson = null;
-    sharedFolders = [];
+    newPersons.clear();
   }
 
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (!(account instanceof EWSAccount || account instanceof OWAAccount || IMAPAccount)) {
+      if (!(account instanceof EWSAccount || account instanceof OWAAccount || account instanceof IMAPAccount)) {
         return;
       }
       if (getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress)) !=
@@ -224,78 +236,51 @@
         errorMessage = gt`You can only share with users in your company`;
         return;
       }
-      addPerson = person;
+      newPersons.add(person);
     } catch (ex) {
       errorMessage = ex.message;
     }
   }
 
-  async function onAddPerson(person: PersonUID) {
-    assert(account instanceof EWSAccount || account instanceof OWAAccount, "Not supported");
-    addPerson = null;
-    if (sharedFolders.includes("msgfolderroot")) {
-      await account.addSharedFolders(person, "msgfolderroot");
-    } else if (sharedFolders.includes("inbox")) {
-      await account.addSharedFolders(person, "inbox");
+  async function onAddPersons() {
+    for (let person of newPersons) {
+      if (shareAllMail || shareMailFolder) {
+        let customPermissions: MailShareIndividualPermissions[] = [];
+        if (shareRead) {
+          customPermissions.push(MailShareIndividualPermissions.Read);
+        }
+        if (shareFlags) {
+          customPermissions.push(MailShareIndividualPermissions.FlagChange);
+        }
+        if (shareDelete) {
+          customPermissions.push(MailShareIndividualPermissions.Delete);
+        }
+        if (shareCreate) {
+          customPermissions.push(MailShareIndividualPermissions.Create);
+        }
+        if (shareDeleteFolder) {
+          customPermissions.push(MailShareIndividualPermissions.DeleteFolder);
+        }
+        if (shareCreateSubfolders) {
+          customPermissions.push(MailShareIndividualPermissions.CreateSubfolders);
+        }
+        await account.addSharedPerson(person, shareMailFolder ? mailFolder : null, includeSubfolders, mailAccess, ...customPermissions);
+      }
+      if (shareCalendar) {
+        await calendars.first?.addSharedPerson(person, calendarAccess);
+      }
+      if (shareAddressbook) {
+        await addressbooks.first?.addSharedPerson(person, addressbookAccess);
+      }
+      sharedWith.add(person);
     }
-    if (sharedFolders.includes("contacts")) {
-      await account.addSharedAddressbook(person);
-    }
-    if (sharedFolders.includes("calendar")) {
-      await account.addSharedCalendar(person);
-    }
+    newPersons.clear();
   }
 
   function onCloseAddDialog() {
     showAddDialog = false;
     resetAddDialog();
   }
-
-  enum MailShareCombinedPermissions {
-    Read = "read",
-    /** Can read messages, and change the flags and tags,
-     * but not add and delete emails */
-    FlagChange = "flags-change",
-    /** Full access, read, add and delete emails, and flag changes */
-    Modify = "modify",
-    Custom = "custom",
-  }
-  const mailShareCombinedPermissionsLabels: Record<string, string> = {
-    [MailShareCombinedPermissions.Read]: gt`Read`,
-    [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
-    [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
-    [MailShareCombinedPermissions.Custom]: gt`Custom`,
-  };
-  enum MailShareIndividualPermissions {
-  }
-
-  enum CalendarShareCombinedPermissions {
-    /** Can see whether the user is busy or not, but not the title nor details of the meeting */
-    ReadAvailability = "read-busy",
-    /** Can see the times and titles of the meeting, but nothing else */
-    ReadTitle = "read-title",
-    /** Can see all details of all meetings */
-    ReadAll = "read-all",
-    /** Full access: Modify meeting details, and add and delete meetings */
-    Modify = "modify",
-  }
-  const calendarShareCombinedPermissionsLabels: Record<string, string> = {
-    [CalendarShareCombinedPermissions.ReadAvailability]: gt`See availability only`,
-    [CalendarShareCombinedPermissions.ReadTitle]: gt`See titles only`,
-    [CalendarShareCombinedPermissions.ReadAll]: gt`See all meetings with details`,
-    [CalendarShareCombinedPermissions.Modify]: gt`Modify, add and delete meetings`,
-  };
-
-  enum AddressbookShareCombinedPermissions {
-    /** Can see all contacts details, but not modify */
-    Read = "read",
-    /** Can see and modify all details of all contacts, and add and delete contacts */
-    Modify = "modify",
-  }
-  const addressbookShareCombinedPermissionsLabels: Record<string, string> = {
-    [AddressbookShareCombinedPermissions.Read]: gt`See all contact details`,
-    [AddressbookShareCombinedPermissions.Modify]: gt`Modify, add and delete contacts`,
-  };
 
   let shareAllMail = true;
   let shareMailFolder = false;
@@ -306,9 +291,15 @@
   let mailFolder = account.inbox;
   let selectedFolders: ArrayColl<Folder>;
   let includeSubfolders = true;
+  let shareRead = true;
+  let shareFlags = false;
+  let shareDelete = false;
+  let shareCreate = false;
+  let shareDeleteFolder = false;
+  let shareCreateSubfolders = false;
   // calendars and addressbooks
-  $: calendars = (showAddDialog ? account.dependentAccounts().filterObservable(acc => acc instanceof Calendar) : new ArrayColl()) as Collection<Calendar>;
-  $: addressbooks = (showAddDialog ? account.dependentAccounts().filterObservable(acc => acc instanceof Addressbook) : new ArrayColl()) as Collection<Addressbook>;
+  $: calendars = account.dependentAccounts().filterObservable(acc => acc instanceof Calendar);
+  $: addressbooks = account.dependentAccounts().filterObservable(acc => acc instanceof Addressbook);
   let calendarAccess = CalendarShareCombinedPermissions.ReadAvailability;
   let addressbookAccess = AddressbookShareCombinedPermissions.Read;
 </script>
@@ -329,10 +320,10 @@
   .person-input {
     margin-block-end: 8px;
   }
-  .name {
+  .add-person .name {
     margin-block-start: 32px;
   }
-  .email-address {
+  .add-person .email-address {
     opacity: 70%;
   }
   .enable {

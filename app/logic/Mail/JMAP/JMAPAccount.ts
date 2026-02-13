@@ -4,6 +4,10 @@ import { JMAPFolder } from "./JMAPFolder";
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
+import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
@@ -12,10 +16,10 @@ import { basicAuth } from "../../Auth/httpAuth";
 import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { assert, SpecificError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -57,14 +61,24 @@ export class JMAPAccount extends MailAccount {
     assert(inbox, "Inbox not found");
     inbox.startPolling();
 
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        await addressbook.listContacts();
+    if (this.haveContacts) {
+      await this.listAddressbooks();
+    }
+    if (this.haveCalendar) {
+      await this.listCalendars();
+    }
+    if (this.haveContacts) {
+      for (let addressbook of appGlobal.addressbooks) {
+        if (addressbook.mainAccount == this) {
+          await addressbook.listContacts();
+        }
       }
     }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        await calendar.listEvents();
+    if (this.haveCalendar) {
+      for (let calendar of appGlobal.calendars) {
+        if (calendar.mainAccount == this) {
+          await calendar.listEvents();
+        }
       }
     }
   }
@@ -72,7 +86,7 @@ export class JMAPAccount extends MailAccount {
   async verifyLogin(): Promise<void> {
     await this.loginOAuth2(true);
     await this.getSession();
-    await this.logout();
+    this.stopPolling(); // Don't log out, because we want to keep the OAuth2 refresh token
   }
 
   protected async loginOAuth2(interactive: boolean): Promise<void> {
@@ -106,6 +120,13 @@ export class JMAPAccount extends MailAccount {
     this.session = session;
   }
 
+  get haveContacts(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:contacts"];
+  }
+  get haveCalendar(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:calendars"];
+  }
+
   /** A single API call, with a single result */
   async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
     let responses = await this.makeCalls([[ method, argumentsJSON ]]);
@@ -126,7 +147,7 @@ export class JMAPAccount extends MailAccount {
    *     list: [ { id: "", subject: "" }, ... ]
    *   }
    *   If a call returns multiple results, only the last result of that call is returned. */
-  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
+  async makeCombinedCall(calls: [ string, Record<string, any>, string? ][]): Promise<Record<string, any>> {
     let responses = await this.makeCalls(calls);
     let results: Record<string, any> = {};
     for (let response of responses) {
@@ -145,9 +166,16 @@ export class JMAPAccount extends MailAccount {
    * @returns Results from the calls.
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
-  async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
+  async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
+    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
+    if (this.haveContacts) {
+      using.push("urn:ietf:params:jmap:contacts");
+    }
+    if (this.haveCalendar) {
+      using.push("urn:ietf:params:jmap:calendars");
+    }
     let requestJSON: TJMAPAPIRequest = {
-      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
+      using: using,
       methodCalls: [],
     };
     let callCounter = 0;
@@ -158,6 +186,10 @@ export class JMAPAccount extends MailAccount {
     let log: any[] = [ "Calling" ];
     for (let method of requestJSON?.methodCalls) {
       log.push(method[2], method[0], method[1]);
+    }
+
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(false);
     }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
@@ -465,6 +497,14 @@ export class JMAPAccount extends MailAccount {
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
+    if (type == "ContactCard") {
+      let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
+      await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
+    }
+    if (type == "CalendarEvent") {
+      let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+      await calendars.first?.fetchChangedEventsForAllCalendars();
+    }
   }
 
   /** Starts push mail
@@ -474,7 +514,7 @@ export class JMAPAccount extends MailAccount {
     assert(url, "Need event source URL");
     url = url
       .replace("{accountId}", this.accountID)
-      .replace("{types}", "Email") // TJMAPObjectTypes.join(","))
+      .replace("{types}", "Email,ContactCard") // TJMAPObjectTypes.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
     while (this.isLoggedIn) {
@@ -507,6 +547,32 @@ export class JMAPAccount extends MailAccount {
         }
       }
     }
+  }
+
+  async listAddressbooks() {
+    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:contacts"];
+    if (!primaryID) {
+      return;
+    }
+    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.id == primaryID).hasItems) {
+      return;
+    }
+    let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
+    ab.initFromMainAccount(this);
+    ab.id = primaryID;
+  }
+
+  async listCalendars() {
+    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:calendars"];
+    if (!primaryID) {
+      return;
+    }
+    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.id == primaryID).hasItems) {
+      return;
+    }
+    let cal = newCalendarForProtocol("calendar-jmap") as JMAPCalendar;
+    cal.initFromMainAccount(this);
+    cal.id = primaryID;
   }
 
   hasCapability(capa: string): boolean {

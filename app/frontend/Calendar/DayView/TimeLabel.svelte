@@ -1,4 +1,4 @@
-<hbox class="time">
+<hbox class="time label">
   {time.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric" })}
 </hbox>
 
