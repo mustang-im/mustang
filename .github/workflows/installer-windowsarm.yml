@@ -41,7 +41,7 @@ jobs:
 
     - name: Build only
       if: env.RELEASE == 'false'
-      run: cd desktop; yarn run build:win
+      run: cd desktop; yarn run build:win:arm
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
