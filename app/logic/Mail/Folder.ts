@@ -304,6 +304,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return false;
   }
 
+  fromExtraJSON(json: any) {
+  }
+  toExtraJSON(): any {
+    return {};
+  }
+
   newEMail(): EMail {
     return new EMail(this);
   }

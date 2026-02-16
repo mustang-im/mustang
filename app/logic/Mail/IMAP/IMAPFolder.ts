@@ -686,4 +686,14 @@ export class IMAPFolder extends Folder {
     let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
     await response.next();
   }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.uidvalidity = sanitize.integer(json.uidvalidity, 0);
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.uidvalidity = this.uidvalidity;
+    return json;
+  }
 }
