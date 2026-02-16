@@ -41,11 +41,6 @@ export class IMAPFolder extends Folder {
   get lastModSeq(): bigint {
     return BigInt(this.syncState ?? 0n);
   }
-  set lastModSeq(val: bigint) {
-    assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
-    this.syncState = String(sanitize.bigint(val));
-    this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
-  }
 
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
@@ -225,6 +220,7 @@ export class IMAPFolder extends Folder {
       };
       this.account.log(this, conn, "fetchMessageList", range);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
+      let modseq: bigint;
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.envelope || this.deletions.has(msgInfo.uid)) {
           continue;
@@ -238,8 +234,9 @@ export class IMAPFolder extends Folder {
           msg.fromFlow(msgInfo);
           newMessages.add(msg);
         }
-        this.updateModSeq(msgInfo.modseq);
+        modseq = msgInfo.modseq
       }
+      await this.updateModSeq(modseq);
     }, ConnectionPurpose.Fetch);
     return { newMessages, updatedMessages };
   }
@@ -339,7 +336,7 @@ export class IMAPFolder extends Folder {
               continue;
             } else if (msg) {
               msg.fromFlow(msgInfo);
-              this.updateModSeq(msgInfo.modseq);
+              await this.updateModSeq(msgInfo.modseq);
               await msg.parseMIME();
               await msg.saveCompleteMessage();
               downloadedMsgs.add(msg);
@@ -412,12 +409,14 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  updateModSeq(modseq: bigint) {
-    if (typeof (modseq) != "bigint") {
+  async updateModSeq(modseq: bigint) {
+    if (!modseq) {
       return;
     }
+    assert(typeof (modseq) == "bigint", "IMAP Folder modseq must be a bigint");
     if (modseq > this.lastModSeq) {
-      this.lastModSeq = modseq;
+      this.syncState = String(sanitize.bigint(modseq));
+      await this.storage.saveFolderProperties(this);
     }
   }
 
