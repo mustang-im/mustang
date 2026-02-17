@@ -1,7 +1,9 @@
 {#if popupOpen}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <vbox class="popup"
     on:close
     on:click={onClickInside} on:mousewheel={onClickInside}
+    bind:this={popupEl}
     use:popupContent={popupOptions}>
     <slot />
   </vbox>
@@ -35,7 +37,7 @@
   export let boundaryElSel: string;
   export let autoClose: boolean = true;
 
-  const [popupRef, popupContent] = createPopperActions({
+  const [popupRef, popupContent, getInstance] = createPopperActions({
     placement: placement,
     strategy: 'fixed',
   });
@@ -59,6 +61,7 @@
       },
     ],
   };
+  let contentObserver: ResizeObserver;
 
   // popupRef is not yet defined when use: hook in parent is invoked, so do it manually
   let popupHook: { destroy?(); };
@@ -69,6 +72,7 @@
   $: popupAnchor && popupRef && (popupHook = popupRef(popupAnchor));
   onDestroy(() => {
     popupHook?.destroy();
+    contentObserver?.disconnect();
   });
 
   function onClickOutside() {
@@ -82,6 +86,18 @@
       return;
     }
     event.stopPropagation();
+  }
+
+  // Re-position popup when popup content changes
+  let popupEl: HTMLDivElement;
+  $: popupEl && createResizeObserver();
+  function createResizeObserver() {
+    contentObserver?.disconnect();
+    contentObserver = new ResizeObserver(async () => {
+      let popper = getInstance();
+      await popper?.update();
+    });
+    contentObserver.observe(popupEl);
   }
 </script>
 

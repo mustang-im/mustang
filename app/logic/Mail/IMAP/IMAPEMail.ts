@@ -198,13 +198,12 @@ export class IMAPEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       if (!this.uid) {
         return;
       }
       this.folder.deletions.add(this.uid);
-      let strategy = this.folder.account.deleteStrategy;
       if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
         await this.folder.runCommand(async (conn) => {
           this.folder.account.log(this.folder, conn, "delete email flag", this.uid, this.subject);

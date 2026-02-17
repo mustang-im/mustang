@@ -1,6 +1,7 @@
 import type { MailAccount } from "./MailAccount";
 import { PersonUID } from "../Abstract/PersonUID";
 import type { EMail } from "./EMail";
+import { SMLHTTPAccount } from "./SML/SMLHTTPAccount";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -29,6 +30,7 @@ export class MailIdentity extends Observable {
   /** email addresses that should be CCed on every outgoing email */
   @notifyChangedProperty
   sendBCC = new ArrayColl<string>();
+  smlAccount: SMLHTTPAccount;
 
   constructor(account: MailAccount) {
     super();
@@ -83,6 +85,7 @@ export class MailIdentity extends Observable {
       !!sanitize.emailAddress(e, null)));
     thiss.sendBCC.addAll(sanitize.array(config.sendBCC).filter(e =>
       !!sanitize.emailAddress(e, null)));
+    thiss.smlAccount = SMLHTTPAccount.fromJSON(sanitize.json(config.smlAccount, null), thiss);
     return thiss;
   }
   toConfigJSON(): any {
@@ -95,6 +98,7 @@ export class MailIdentity extends Observable {
       signatureHTML: this.signatureHTML,
       sendCC: this.sendCC.contents,
       sendBCC: this.sendBCC.contents,
+      smlAccount: this.smlAccount?.toJSON(),
     };
   }
 

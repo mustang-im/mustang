@@ -118,6 +118,18 @@ export class MailAccount extends TCPAccount {
       this.identities.some(id => id.isEMailAddress(emailAddress));
   }
 
+  /**
+   * @returns `MailIdentity` of *this* account, for the given email address.
+   * @see also global function `findIdentityForEMailAddress()`, which searches all accounts. */
+  findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+    for (let identity of this.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+    return null;
+  }
+
   /** Get the `specialFolder` in this account. */
   getSpecialFolder(specialFolder: SpecialFolder): Folder {
     let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);

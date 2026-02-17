@@ -1,9 +1,9 @@
 import { Account } from "../../Abstract/Account";
 import type { MailAccount } from "../MailAccount";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import type { MailIdentity } from "../MailIdentity";
 import { notifyChangedProperty } from "../../util/Observable";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, type Json, type URLString } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
 
 export class SMLHTTPAccount extends Account {
   //////////////////////
@@ -11,6 +11,7 @@ export class SMLHTTPAccount extends Account {
 
   @notifyChangedProperty
   protected accessToken: string | null = null;
+  protected mailAccount: MailAccount;
 
   get emailAddress(): string | null {
     return this.username;
@@ -61,16 +62,21 @@ export class SMLHTTPAccount extends Account {
     });
   }
 
-  mailAccount: MailAccount;
   protected pollForNewEMails(): NodeJS.Timeout | null {
     if (!this.mailAccount) {
       return null;
     }
-    const pollFrequency = 3; // in seconds
-    return setInterval(() => {
+    const pollFrequencyInSeconds = 5;
+    const maxPollTimeInMinutes = 10;
+    let pollLimit = Math.floor(maxPollTimeInMinutes * 60 / pollFrequencyInSeconds);
+    let poller = setInterval(() => {
+      if (pollLimit-- <= 0) {
+        clearInterval(poller);
+      }
       this.checkForNewEMails()
         .catch(console.error);
-    }, pollFrequency * 1000);
+    }, pollFrequencyInSeconds * 1000);
+    return poller;
   }
   protected async checkForNewEMails() {
     console.log("Check messages for", this.mailAccount.name, "for registration");
@@ -175,7 +181,7 @@ export class SMLHTTPAccount extends Account {
    * @param url The absolute URL of the resource
    * @param accessToken_internal Do not set this, only for internal use by this.getURL()/getResource().
    */
-  static async getURL(url: URLString, accessToken_internal?: string): Promise<any> {
+  protected static async getURL(url: URLString, accessToken_internal?: string): Promise<any> {
     let response = await fetch(url, {
       headers: {
         "Authorization": accessToken_internal ? "Bearer " + accessToken_internal : undefined,
@@ -189,28 +195,47 @@ export class SMLHTTPAccount extends Account {
     return result;
   }
 
+  async save() {
+    // `MailIdentity.smlAccount == this`, and `MailIdentity.toConfigJSON()` saves it to DB
+    await this.mailAccount.save();
+  }
+
+  toJSON(): any {
+    let json = {} as any;
+    json.url = this.url;
+    json.emailAddress = this.emailAddress;
+    json.accessToken = this.accessToken;
+    return json;
+  }
+  static fromJSON(json: any, identity: MailIdentity): SMLHTTPAccount | null {
+    if (!json || !Object.keys(json).length) {
+      return null;
+    }
+    let thiss = new SMLHTTPAccount();
+    thiss.url = sanitize.url(json.url);
+    thiss.emailAddress = sanitize.emailAddress(json.emailAddress);
+    thiss.accessToken = sanitize.nonemptystring(json.accessToken, null);
+    thiss.mailAccount = identity.account;
+    return thiss;
+  }
+
   //////////////////////
   // Accounts management
+  // SML accounts are in `MailIdentity.smlAccount` and saved in DB with the `MailAccount`
 
-  protected static accounts = new ArrayColl<SMLHTTPAccount>;
-  static getAccount(emailAddress: string): SMLHTTPAccount {
-    return SMLHTTPAccount.accounts.find(acc => acc.emailAddress == emailAddress);
+  static async getOrCreateAccount(identity: MailIdentity): Promise<SMLHTTPAccount> {
+    return identity.smlAccount ?? await SMLHTTPAccount.createAccount(identity);
   }
-  static getOrCreateAccount(emailAddress: string, realname: string): SMLHTTPAccount {
-    let acc = SMLHTTPAccount.getAccount(emailAddress);
-    if (acc) {
-      return acc;
-    }
-    acc = SMLHTTPAccount.createDefaultServer(emailAddress, realname);
-    SMLHTTPAccount.accounts.add(acc);
-    return acc;
-  }
-  static createDefaultServer(emailAddress: string, realname: string): SMLHTTPAccount {
+  protected static async createAccount(identity: MailIdentity): Promise<SMLHTTPAccount> {
+    assert(!identity.smlAccount, "Already have an SML account");
     let acc = new SMLHTTPAccount();
     // TODO Support provider servers in Autoconfig file
     acc.url = "https://sml.mustang.im";
-    acc.emailAddress = emailAddress;
-    acc.realname = realname;
+    acc.emailAddress = identity.emailAddress;
+    acc.realname = identity.realname;
+    acc.mailAccount = identity.account;
+    identity.smlAccount = acc;
+    await acc.save();
     return acc;
   }
 }

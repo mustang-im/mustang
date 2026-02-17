@@ -76,7 +76,6 @@ function convertDateInObject(json: any): any {
 }
 
 export function transformDatesDuringJSONParse(key: string, value: any): any {
-  console.log("value", value);
   if (typeof (value) == "string" && regexpDateISO8601.test(value)) {
     console.log("  is Date", new Date(value));
     return new Date(value);
