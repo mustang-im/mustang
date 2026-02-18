@@ -7,7 +7,7 @@ import type { TJMAPContact } from "./TJSContact";
 import type { TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 export class JMAPAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-jmap";
@@ -172,28 +172,36 @@ export class JMAPAddressbook extends Addressbook {
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPContact>;
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPContact>;
 
-      // Now, split the responses by folder
-      let addedResponseByAB = new Map<string, TJMAPContact[]>();
-      let changedResponseByAB = new Map<string, TJMAPContact[]>();
+      // Split the responses by addressbook: map Addressbook JMAP ID -> JMAP Contact
+      let addedByAB = new Map<string, TJMAPContact[]>();
+      let changedByAB = new Map<string, TJMAPContact[]>();
       let newPersonsOfThisAB = new ArrayColl<JMAPPerson>();
-      splitByAddressbook(addedResponse.list, addedResponseByAB);
-      splitByAddressbook(changedResponse.list, changedResponseByAB);
+      splitByAddressbook(addedResponse.list, addedByAB);
+      splitByAddressbook(changedResponse.list, changedByAB);
 
       let allAddressbooks = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       for (let addressbook of allAddressbooks) {
-        let removedPersons = await addressbook.parseRemovedPersons(changes.destroyed)
-        if (!addedResponseByAB.get(addressbook.id) && !changedResponseByAB.get(addressbook.id)) {
-          continue;
+        // addressbooks are read on startup
+        let removed = this.findMovedAway(changedResponse.list, addressbook);
+        let addedThisAB = addedByAB.get(addressbook.id);
+        let changedThisAB = changedByAB.get(addressbook.id);
+        if (!(addedThisAB || changedThisAB ||
+              removed.hasItems || changes.destroyed?.length)) {
+              continue;
         }
-        let addedResult = addressbook.parsePersonsList(addedResponseByAB.get(addressbook.id) ?? [], false);
-        let changedResult = addressbook.parsePersonsList(changedResponseByAB.get(addressbook.id) ?? []);
+        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed));
+        let addedResult = addressbook.parsePersonsList(addedThisAB ?? [], false);
+        let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);
         addedResult.newPersons.addAll(changedResult.newPersons);
         //console.log(addressbook.name, "added persons", addedResult.newPersons.contents.map(p => p.subject));
         //console.log(addressbook.name, "updates persons", changedResult.updatedPersons.contents.map(p => p.subject));
         //console.log(addressbook.name, "removed persons", removedPersons.contents.map(p => p.name));
 
-        addressbook.persons.removeAll(removedPersons);
+        addressbook.persons.removeAll(removed);
         addressbook.persons.addAll(addedResult.newPersons);
+        for (let person of removed) {
+          await person.deleteLocally();
+        }
         await this.savePersons(changedResult.updatedPersons);
         await this.savePersons(addedResult.newPersons);
         if (this === addressbook) {
@@ -202,6 +210,7 @@ export class JMAPAddressbook extends Addressbook {
       }
 
       this.account.syncState.set("ContactCard", changes.newState);
+      await this.account.save();
       if (changes.hasMoreChanges) {
         lock.release();
         await this.fetchChangedPersonsForAllAddressbooks();
@@ -220,9 +229,28 @@ export class JMAPAddressbook extends Addressbook {
         continue;
       }
       removedPersons.add(person);
-      await person.deleteLocally();
     }
     return removedPersons;
+  }
+
+  /**
+   * Find `persons` that were moved away from `addressbooks`.
+   *
+   * To handle copy of the same contact object to a second addressbook, and then deleting it from only one of the addressbooks,
+   * we need to check *all* addressbooks for *every* changed contact, even if the addressbook didn't change, because
+   * JMAP doesn't tell us about moves or removals of the second copy. :-(
+   * @return removed contacts. It's the caller's obligation to remove them from the addressbook
+   */
+  protected findMovedAway(persons: TJMAPContact[], addressbook: JMAPAddressbook): SetColl<JMAPPerson> {
+    let removed = new SetColl<JMAPPerson>();
+    for (let person of persons) {
+      let existing = addressbook.getPersonByID(person.id);
+      // added persons are handled by `addressbook.parsePersonsList(changedThisAB...`
+      if (existing && !person.addressBookIds[addressbook.id]) {
+        removed.add(existing);
+      }
+    }
+    return removed;
   }
 
   protected parsePersonsList(msgs: TJMAPContact[], checkUpdates = true): UpdateResult<JMAPPerson> {
@@ -243,7 +271,7 @@ export class JMAPAddressbook extends Addressbook {
         newPersons.add(msg);
       }
     }
-    return { newPersons: newPersons, updatedPersons: updatedPersons };
+    return { newPersons, updatedPersons };
   }
 
   protected async savePersons(persons: Collection<JMAPPerson>) {

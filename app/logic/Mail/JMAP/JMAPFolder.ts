@@ -170,7 +170,7 @@ export class JMAPFolder extends Folder {
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
-      // Now, split the responses by folder: map Folder JMAP ID -> JMAP EMail
+      // Split the responses by folder: map Folder JMAP ID -> JMAP EMail
       let addedByFolder = new Map<string, TJMAPEMailHeaders[]>();
       let changedByFolder = new Map<string, TJMAPEMailHeaders[]>();
       let newMessagesOfThisFolder = new ArrayColl<JMAPEMail>();
@@ -179,11 +179,11 @@ export class JMAPFolder extends Folder {
 
       let allFolders = this.account.getAllFolders() as ArrayColl<JMAPFolder>;
       for (let folder of allFolders) {
-        let removedMessages = this.findMovedToHere(changedResponse.list, folder); // catches deletes e.g. from Inbox, which we read anyways
+        let removed = this.findMovedAway(changedResponse.list, folder); // catches deletes e.g. from Inbox, which we read anyways
         let addedThisFolder = addedByFolder.get(folder.id);
         let changedThisFolder = changedByFolder.get(folder.id);
         if (!(addedThisFolder || changedThisFolder ||
-              removedMessages.hasItems ||
+              removed.hasItems ||
               changes.destroyed?.length && [SpecialFolder.Trash, SpecialFolder.Spam].includes(folder.specialFolder))) {
           continue;
         }
@@ -192,8 +192,8 @@ export class JMAPFolder extends Folder {
          * - moves only from folders that we already read
          * This is a tradeoff. */
         await folder.readFolder();
-        removedMessages = this.findMovedToHere(changedResponse.list, folder); // repeat after reading the folder
-        removedMessages.addAll(await folder.parseRemovedMessages(changes.destroyed));
+        removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
+        removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
         let addedResult = folder.parseMessageList(addedThisFolder ?? [], false);
         let changedResult = folder.parseMessageList(changedThisFolder ?? []);
         addedResult.newMessages.addAll(changedResult.newMessages);
@@ -201,10 +201,10 @@ export class JMAPFolder extends Folder {
         //console.log(folder.name, "updated messages", changedResult.updatedMessages.contents.map(e => e.subject));
         //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
 
-        folder.messages.removeAll(removedMessages);
+        folder.messages.removeAll(removed);
         folder.messages.addAll(addedResult.newMessages);
-        for (let removed of removedMessages) {
-          await removed.deleteMessageLocally();
+        for (let msg of removed) {
+          await msg.deleteMessageLocally();
         }
         await folder.storage.saveFolderProperties(folder);
         await folder.saveMsgUpdates(changedResult.updatedMessages);
@@ -215,6 +215,7 @@ export class JMAPFolder extends Folder {
       }
 
       this.account.syncState.set("Email", changes.newState);
+      await this.account.save();
       if (changes.hasMoreChanges) {
         lock.release();
         await this.fetchChangedMessagesForAllFolders();
@@ -238,13 +239,14 @@ export class JMAPFolder extends Folder {
   }
 
   /**
-   * Find messages (`msgs`) that were moved to `folder`.
+   * Find messages (`msgs`) that were moved away from `folder`.
    *
-   * To handle copy of the same email object to second folder, and then deleting it only from one of the folders,
-   * we need to check *all* folders for *all* changed messages, even if the mailbox didn't change, because
+   * To handle copy of the same email object to a second folder, and then deleting it from only one of the folders,
+   * we need to check *all* folders for *every* changed message, even if the folder didn't change (!), because
    * JMAP doesn't tell us about moves or removals of the second copy. :-(
+   * @return removed emails. It's the caller's obligation to remove them from the folder
    */
-  protected findMovedToHere(msgs: TJMAPEMailHeaders[], folder: JMAPFolder): SetColl<JMAPEMail> {
+  protected findMovedAway(msgs: TJMAPEMailHeaders[], folder: JMAPFolder): SetColl<JMAPEMail> {
     let removed = new SetColl<JMAPEMail>();
     for (let msg of msgs) {
       let existing = folder.getEMailByPID(msg.id);
@@ -276,24 +278,6 @@ export class JMAPFolder extends Folder {
     }
     return { newMessages, updatedMessages };
   }
-
-  /*
-  protected findFoldersForMsgs(msgs: TJMAPEMailHeaders[]):
-    ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }> {
-    let results = new ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }>();
-    for (let msgJSON of msgs) {
-      for (let mailboxId in msgJSON.mailboxIds) {
-        let folder = this.account.getFolderByID(mailboxId);
-        if (!folder) {
-          continue;
-        }
-        let msg = this.getEMailByPID(msgJSON.id);
-        results.push({ folder, msg, msgJSON });
-      }
-    }
-    return results;
-  }
-  */
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {
