@@ -59,9 +59,11 @@ export class ActiveSyncEMail extends EMail {
     this.received = sanitize.date(wbxmljs.DateReceived, new Date());
     this.sent = this.received; // ActiveSync only supports received date
     this.setFlags(wbxmljs);
-    let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || { name: "Unknown", address: "unknown@invalid" }) as ParsedMailbox;
-    this.from = findOrCreatePersonUID(from.address, from.name);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || {}) as ParsedMailbox;
+    this.from = findOrCreatePersonUID(
+      sanitize.emailAddress(from.address, null),
+      sanitize.nonemptylabel(from.name, null));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     setPersons(this.to, wbxmljs.To);
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
@@ -228,5 +230,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, addresses: string): void {
   if (!list) {
     return;
   }
-  targetList.replaceAll(list.map(mailbox => findOrCreatePersonUID(mailbox.address, mailbox.name)));
+  targetList.replaceAll(list.map(mailbox => findOrCreatePersonUID(
+    sanitize.emailAddress(mailbox.address, null),
+    sanitize.label(mailbox.name, null))));
 }

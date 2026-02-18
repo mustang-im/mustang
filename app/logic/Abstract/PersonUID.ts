@@ -63,6 +63,9 @@ export class PersonUID extends Observable {
 const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
 
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
+  if (!emailAddress && !realname) {
+    return kDummyPerson;
+  }
   let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
   if (cached) {
     return cached;

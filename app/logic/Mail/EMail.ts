@@ -273,17 +273,21 @@ export class EMail extends Message {
     this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
     if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
       this.from = mail.from?.address
-        ? findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null))
+        ? findOrCreatePersonUID(
+            sanitize.emailAddress(mail.from.address, null),
+            sanitize.nonemptylabel(mail.from.name, null))
         : kDummyPerson;
     }
     setPersons(this.to, mail.to);
     setPersons(this.cc, mail.cc);
     setPersons(this.bcc, mail.bcc);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
       let p = mail.replyTo[0];
-      this.replyTo = findOrCreatePersonUID(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
+      this.replyTo = findOrCreatePersonUID(
+        sanitize.emailAddress(p.address, null),
+        sanitize.nonemptylabel(p.name, null));
     }
     if (!this.inReplyTo) {
       this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
@@ -562,6 +566,7 @@ export function setPersons(targetList: ArrayColl<PersonUID>, personList: { addre
   if (!personList?.length) {
     return;
   }
-  targetList.addAll(personList.map(p =>
-    findOrCreatePersonUID(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null))));
+  targetList.addAll(personList.map(p => findOrCreatePersonUID(
+    sanitize.emailAddress(p.address, null),
+    sanitize.label(p.name, null))));
 }

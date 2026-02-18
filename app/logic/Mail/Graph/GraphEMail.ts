@@ -43,7 +43,7 @@ export class GraphEMail extends EMail {
     setPersons(this.to, json.toRecipients);
     setPersons(this.cc, json.ccRecipients);
     setPersons(this.bcc, json.bccRecipients);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     // Content, attachments etc will be parsed from RFC822 MIME
   }
@@ -246,5 +246,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TGraphPersonUI
 }
 
 function getPersonUID(p: TGraphPersonUID): PersonUID {
-  return findOrCreatePersonUID(sanitize.string(p?.emailAddress.address, null), sanitize.label(p?.emailAddress.name, null));
+  return findOrCreatePersonUID(
+    sanitize.emailAddress(p?.emailAddress.address, null),
+    sanitize.nonemptylabel(p?.emailAddress.name, null));
 }

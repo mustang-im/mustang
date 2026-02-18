@@ -1,5 +1,5 @@
 import type { EMail } from "../EMail";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName, Tag } from "../../Abstract/Tag";
@@ -342,8 +342,8 @@ export class SQLEMail {
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
 
     email.contact = findOrCreatePersonUID(
-      sanitize.emailAddress(row.contactEmail, "must@n.g"),
-      sanitize.label(row.contactName, " "));
+      sanitize.emailAddress(row.contactEmail, kDummyPerson.emailAddress),
+      sanitize.nonemptylabel(row.contactName, " "));
   }
 
   static async readWritableProps(email: EMail, row?: any) {
@@ -387,9 +387,9 @@ export class SQLEMail {
     email.replyTo = null;
     for (let row of recipientRows) {
       try {
-        let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
-        let name = sanitize.label(row.name, null);
-        let uid = findOrCreatePersonUID(addr, name);
+        let uid = findOrCreatePersonUID(
+          sanitize.emailAddress(row.emailAddress, null),
+          sanitize.nonemptylabel(row.name, null));
         if (row.recipientType == 1) {
           email.from = uid;
           continue;

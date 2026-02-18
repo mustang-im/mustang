@@ -4,7 +4,7 @@ import type { JMAPAccount } from "./JMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
 import type { TJMAPGetResponse } from "./TJMAPGeneric";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
@@ -36,11 +36,11 @@ export class JMAPEMail extends EMail {
     this.sent = sanitize.date(json.sentAt, this.received);
     this.inReplyTo = sanitize.string(json.inReplyTo, null);
     this.threadID = sanitize.string(json.threadId, null);
-    this.from = getPersonUID(json.from[0]);
+    this.from = getPersonUID(json.from?.[0] ?? {} as TJMAPPerson);
     setPersons(this.to, json.to);
     setPersons(this.cc, json.cc);
     setPersons(this.bcc, json.bcc);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     this.size = sanitize.integer(json.size, null);
     this.mimeBlobId = sanitize.string(json.blobId, null);
@@ -256,5 +256,5 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TJMAPPerson[])
 }
 
 function getPersonUID(p: TJMAPPerson): PersonUID {
-  return findOrCreatePersonUID(sanitize.string(p.email, null), sanitize.label(p.name, null));
+  return findOrCreatePersonUID(sanitize.emailAddress(p.email, null), sanitize.nonemptylabel(p.name, null));
 }

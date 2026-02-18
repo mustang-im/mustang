@@ -7,7 +7,7 @@ import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import type { Calendar } from "../../Calendar/Calendar";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -64,14 +64,22 @@ export class EWSEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.ReplyTo.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.From.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.From.Mailbox.Name, null));
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(getEmailAddressOrX400(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.Sender.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.Sender.Mailbox.Name, null));
+    } else {
+      this.from = kDummyPerson;
     }
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from?.emailAddress);
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
@@ -268,7 +276,9 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(getEmailAddressOrX400(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(
+    getEmailAddressOrX400(mailbox.EmailAddress),
+    sanitize.nonemptylabel(mailbox.Name, null))));
 }
 
 /**
@@ -279,7 +289,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
  * @throws when not valid
  */
 export function getEmailAddressOrX400(emailAddress: string): string {
-  if (emailAddress.toLowerCase().startsWith("/o=")) {
+  if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
   return sanitize.emailAddress(emailAddress);
@@ -325,7 +335,7 @@ export function convertX400ToEmailAddress(x400: string): string {
       username = ensureAlphaNum(part);
     }
   }
-  return sanitize.emailAddress(username + "@" + domain, "must@ng");
+  return sanitize.emailAddress(username + "@" + domain, kDummyPerson.emailAddress);
 }
 
 function ensureAlphaNum(str: string): string {

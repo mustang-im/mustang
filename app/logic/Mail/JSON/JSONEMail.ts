@@ -226,9 +226,9 @@ export class JSONEMail {
     if (!json) {
       return null;
     }
-    let addr = sanitize.emailAddress(json.emailAddress, kDummyPerson.emailAddress);
-    let name = sanitize.label(json.name, null);
-    return findOrCreatePersonUID(addr, name);
+    return findOrCreatePersonUID(
+      sanitize.emailAddress(json.emailAddress, null),
+      sanitize.nonemptylabel(json.name, null));
   }
 
   protected static readAttachments(email: EMail, emailJSON: any): void {

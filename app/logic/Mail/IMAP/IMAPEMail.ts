@@ -4,7 +4,7 @@ import { ConnectionPurpose } from "./IMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
-import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -77,14 +77,16 @@ export class IMAPEMail extends EMail {
     this.threadID = sanitize.string(env.threadId, null); // Only if server supports OBJECTID or X-GM-EXT-1 IMAP extension
     if (env.from?.length && env.from[0]?.address) {
       let firstFrom = env.from[0];
-      this.from = findOrCreatePersonUID(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
+      this.from = findOrCreatePersonUID(
+        sanitize.emailAddress(firstFrom.address, null),
+        sanitize.nonemptylabel(firstFrom.name, null));
     } else {
-      this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
+      this.from = kDummyPerson;
     }
     setPersons(this.to, env.to);
     setPersons(this.cc, env.cc);
     setPersons(this.bcc, env.bcc);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
     if (msgInfo.source) {

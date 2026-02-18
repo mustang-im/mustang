@@ -51,6 +51,7 @@ export class OWAAccount extends MailAccount {
    * In future it might be possible to perform requests from the front end?
    */
   authorizationHeader: string | undefined;
+  /** requests only work after the login form has been successfully submitted */
   @notifyChangedProperty
   hasLoggedIn = false;
   protected notifications: OWANotifications;

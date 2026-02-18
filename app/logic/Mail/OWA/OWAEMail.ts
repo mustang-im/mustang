@@ -6,7 +6,7 @@ import { OWADeleteItemRequest } from "./Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { Calendar } from "../../Calendar/Calendar";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
@@ -44,14 +44,22 @@ export class OWAEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(json.InReplyTo, null);
     this.references = sanitize.nonemptystring(json.References, null)?.split(" ");
     /*if ("ReplyTo" in json) {
-      this.replyTo = findOrCreatePersonUID(sanitize.emailAddress(json.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(json.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(
+        sanitize.emailAddress(json.ReplyTo.Mailbox.EmailAddress, null),
+        sanitize.nonemptylabel(json.ReplyTo.Mailbox.Name, null));
     }*/
     if ("From" in json) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(json.From.Mailbox.EmailAddress), sanitize.nonemptystring(json.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        sanitize.emailAddress(json.From.Mailbox.EmailAddress, null),
+        sanitize.nonemptylabel(json.From.Mailbox.Name, null));
     } else if ("Sender" in json) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(json.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(json.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        sanitize.emailAddress(json.Sender.Mailbox.EmailAddress, null),
+        sanitize.nonemptylabel(json.Sender.Mailbox.Name, null));
+    } else {
+      this.from = kDummyPerson;
     }
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from?.emailAddress);
     setPersons(this.to, json.ToRecipients);
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
@@ -171,5 +179,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes?: { EmailAddress
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(mailboxes.map(mailbox => findOrCreatePersonUID(sanitize.emailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(mailboxes.map(mailbox => findOrCreatePersonUID(
+    sanitize.emailAddress(mailbox.EmailAddress, null),
+    sanitize.nonemptylabel(mailbox.Name, null))));
 }
