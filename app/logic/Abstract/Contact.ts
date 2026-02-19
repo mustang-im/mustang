@@ -4,7 +4,7 @@ import type { Addressbook } from '../Contacts/Addressbook';
 import { appGlobal } from '../app';
 import { Observable, notifyChangedProperty } from '../util/Observable';
 import { Lock } from '../util/flow/Lock';
-import { randomID, type URLString } from '../util/util';
+import { assert, randomID, type URLString } from '../util/util';
 
 export type Contact = Person | Group;
 
@@ -16,6 +16,8 @@ export class ContactBase extends Observable {
   name: string;
   @notifyChangedProperty
   picture: URLString | null; /** URL */
+  @notifyChangedProperty
+  syncState: number | string | undefined;
   readonly storageLock = new Lock();
 
   constructor(addressbook: Addressbook | null = null) {
@@ -28,5 +30,15 @@ export class ContactBase extends Observable {
     if (!this.addressbook) {
       this.addressbook = appGlobal.collectedAddressbook; // personal address book?
     }
+  }
+
+  fromExtraJSON(json: any) {
+    assert(typeof (json) == "object", "Must be a JSON object");
+    this.syncState = json.syncState;
+  }
+  toExtraJSON(): any {
+    let json: any = {};
+    json.syncState = this.syncState;
+    return json;
   }
 }

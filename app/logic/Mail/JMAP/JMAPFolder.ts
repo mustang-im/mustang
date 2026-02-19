@@ -5,6 +5,7 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPEMailHeaders, TJMAPFolder } from "./TJMAPMail";
 import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
+import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -229,7 +230,7 @@ export class JMAPFolder extends Folder {
   protected async parseRemovedMessages(messageIDs: string[]): Promise<SetColl<JMAPEMail>> {
     let removedMessages = new SetColl<JMAPEMail>();
     for (let removedID of messageIDs) {
-      let msg = this.getEMailByPID(removedID);
+      let msg = this.getEMailByJMAPID(removedID);
       if (!msg) {
         continue;
       }
@@ -249,7 +250,7 @@ export class JMAPFolder extends Folder {
   protected findMovedAway(msgs: TJMAPEMailHeaders[], folder: JMAPFolder): SetColl<JMAPEMail> {
     let removed = new SetColl<JMAPEMail>();
     for (let msg of msgs) {
-      let existing = folder.getEMailByPID(msg.id);
+      let existing = folder.getEMailByJMAPID(msg.id);
       // added messages are handled by `folder.parseMessageList(changedThisFolder...`
       if (existing && !msg.mailboxIds[folder.id]) {
         removed.add(existing);
@@ -262,11 +263,11 @@ export class JMAPFolder extends Folder {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
-      let pID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(pID)) {
+      let jmapID = sanitize.nonemptystring(json.id);
+      if (this.deletions.has(jmapID)) {
         continue;
       }
-      let msg = checkUpdates && this.getEMailByPID(pID);
+      let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
       if (msg) {
         msg.fromJMAP(json);
         updatedMessages.add(msg);
@@ -320,8 +321,8 @@ export class JMAPFolder extends Folder {
     return downloadedMsgs;
   }
 
-  protected getEMailByPID(pID: string): JMAPEMail {
-    return this.messages.find((m: JMAPEMail) => m.pID == pID) as JMAPEMail;
+  protected getEMailByJMAPID(jmapID: string): JMAPEMail {
+    return this.messages.find((m: JMAPEMail) => m.jmapID == jmapID) as JMAPEMail;
   }
 
   protected async saveNewMsgs(msgs: Collection<JMAPEMail>) {
@@ -405,11 +406,8 @@ export class JMAPFolder extends Folder {
           receivedAt: email.received?.toISOString(),
         },
       },
-    }) as TJMAPChangeResponse;
-    let error = createResponse["notCreated"] as any;
-    if (error) {
-      throw new Error("Upload of message to server failed: " + (error.addMessage?.description ?? "") + " " + (error.addMessage?.properties?.join(", ") ?? ""));
-    }
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(createResponse);
     // TODO need to clone email into a new JMAPEMail, esp. when copying (not moving) from EWS to JMAP.
     email.pID = createResponse.created["addMessage"].id;
     email.folder = this;
@@ -425,11 +423,8 @@ export class JMAPFolder extends Folder {
       create: {
         "addMessage": await JMAPEMail.getJMAPEmailObject(email, this.account),
       },
-    }) as TJMAPChangeResponse;
-    let error = createResponse["notCreated"] as any;
-    if (error) {
-      throw new Error("Upload of message to server failed: " + (error.addMessage?.description ?? "") + " " + (error.addMessage?.properties?.join(", ") ?? ""));
-    }
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(createResponse);
     // need to clone email -- see above
     email.pID = createResponse.created["addMessage"].id;
     // this.messages.add(email); -- see above
@@ -454,7 +449,7 @@ export class JMAPFolder extends Folder {
     let targetFolderID = this.id;
     let updates: Record<string, Record<string, boolean>> = {};
     for (let msg of messages) {
-      let id = msg.pID;
+      let id = msg.jmapID;
       let sourceFolderID = msg.folder.id;
       updates[id] = {
         [`mailboxIds/${targetFolderID}`]: true,
@@ -503,7 +498,8 @@ export class JMAPFolder extends Folder {
           isSubscribed: true,
         },
       },
-    }) as TJMAPChangeResponse;
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
     this.account.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);

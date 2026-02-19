@@ -143,7 +143,7 @@ class Sanitize {
     if (!str) { // in case of fallback
       return haveError("URL is empty", unchecked, fallback);
     }
-    if (!allowedURLSchemes.find(scheme => str.startsWith(scheme))) {
+    if (!allowedURLSchemes.find(scheme => str.startsWith(scheme + ":") || scheme == "*")) {
       return haveError("URL scheme", unchecked, fallback);
     }
     //TODO security-check URL

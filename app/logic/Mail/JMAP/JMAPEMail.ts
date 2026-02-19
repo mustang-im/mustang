@@ -14,7 +14,6 @@ import { gt } from "../../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 
 export class JMAPEMail extends EMail {
-  pID: string | null = null;
   declare folder: JMAPFolder;
   mimeBlobId: string | null = null; // TODO Save in DB
   protected flagsChanging = false;
@@ -23,14 +22,21 @@ export class JMAPEMail extends EMail {
     super(folder);
   }
 
+  get jmapID(): string {
+    return this.pID as string;
+  }
+  set jmapID(val: string) {
+    this.pID = val;
+  }
+
   fromJMAP(json: TJMAPEMailHeaders) {
     this.setFlagsLocal(json.keywords);
     // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1>
-    this.pID = sanitize.nonemptystring(json.id, null);
+    this.jmapID = sanitize.nonemptystring(json.id, null);
     if (this.downloadComplete) {
       return;
     }
-    this.id = sanitize.nonemptystring(json.messageId, this.pID);
+    this.id = sanitize.nonemptystring(json.messageId, this.jmapID);
     this.subject = sanitize.string(json.subject, null);
     this.received = sanitize.date(json.receivedAt, this.received ?? new Date());
     this.sent = sanitize.date(json.sentAt, this.received);
@@ -146,7 +152,7 @@ export class JMAPEMail extends EMail {
       let response = await account.makeSingleCall(
         "Email/get", {
         accountId: account.accountID,
-        "ids": [this.pID],
+        "ids": [this.jmapID],
         properties: ["blobId"],
       },
       ) as TJMAPGetResponse<TJMAPEMailHeaders>;
@@ -209,7 +215,7 @@ export class JMAPEMail extends EMail {
     await this.folder.account.makeSingleCall("Email/set", {
       accountId: this.folder.account.accountID,
       update: {
-        [this.pID]: {
+        [this.jmapID]: {
           [`keywords/${name}`]: set ? true : null,
         },
       },
@@ -227,12 +233,12 @@ export class JMAPEMail extends EMail {
 
   async deleteMessageOnServer() {
     try {
-      this.folder.deletions.add(this.pID);
+      this.folder.deletions.add(this.jmapID);
       let strategy = this.folder.account.deleteStrategy;
       if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
         await this.folder.account.makeSingleCall("Email/set", {
           accountId: this.folder.account.accountID,
-          destroy: [ this.pID ],
+          destroy: [ this.jmapID ],
         });
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
@@ -242,7 +248,7 @@ export class JMAPEMail extends EMail {
         throw new NotReached("Unknown delete strategy");
       }
     } finally {
-      this.folder.deletions.delete(this.pID);
+      this.folder.deletions.delete(this.jmapID);
     }
   }
 }

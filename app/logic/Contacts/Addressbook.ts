@@ -30,6 +30,10 @@ export class Addressbook extends Account {
   }
 
   async listContacts() {
+    await this.readContactsFromDB();
+  }
+
+  async readContactsFromDB() {
     if (!this.dbID) {
       await this.save();
     }

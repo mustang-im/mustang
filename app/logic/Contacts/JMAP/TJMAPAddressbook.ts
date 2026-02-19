@@ -2,14 +2,14 @@
 export interface TJMAPAddressbook {
   readonly id: string;
   name: string;
-  description: string | null;
+  description?: string;
   sortOrder: number;
   readonly isDefault: boolean;
   isSubscribed: boolean;
-  shareWith: Record<string, TJMAPAddressbookRights> | null;
+  shareWith?: Record<string, TJMAPAddressbookRights>;
   readonly myRights: TJMAPAddressbookRights;
   onDestroyRemoveContents: boolean;
-  onSuccessSetIsDefault: string | null;
+  onSuccessSetIsDefault?: string;
 }
 
 /** <https://www.rfc-editor.org/rfc/rfc9610.html#name-addressbooks> */

@@ -34,7 +34,7 @@ type TDuration = string;
 /** SignedDuration: Duration with optional +/- sign prefix */
 type TSignedDuration = string;
 /** TimeZoneId: IANA timezone name or custom identifier */
-type TTimeZoneID = string;
+export type TTimeZoneID = string;
 /**
  * PatchObject: Unordered set of patches using JSON Pointer paths
  * Keys are JSON Pointer paths (implicitly prefixed with /)

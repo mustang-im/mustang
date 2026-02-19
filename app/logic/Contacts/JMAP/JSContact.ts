@@ -1,12 +1,14 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
-import type { TEmailAddress, TID, TJSContact, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './TJSContact';
-import type { StreetAddress } from '../StreetAddress';
+import type { TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './TJSContact';
+import type { JMAPPerson } from './JMAPPerson';
+import type { TID } from '../../Mail/JMAP/TJMAPGeneric';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { ensureArray } from '../../util/util';
 import type { ArrayColl } from 'svelte-collections';
 
 export class JSContact {
   static toPerson(jscontact: TJSContact, person: Person) {
+    (person as JMAPPerson).uid = sanitize.nonemptystring(jscontact.uid, person.id);
     person.name = sanitize.nonemptystring(jscontact.name?.full, "");
     if (!jscontact.name?.full && jscontact.name?.components) {
       let nameConcat = ensureArray(jscontact.name?.components)
@@ -32,7 +34,13 @@ export class JSContact {
       JSContact.fromContextToPurpose(o.contexts),
       o.service,
       sanitize.integerRange(o.pref, 0, 100))));
-    //this.streetAddresses.replaceAll(objValues(jmap.addresses).map(a => new ContactEntry(
+    person.urls.replaceAll(objValues(jscontact.links).map(o => new ContactEntry(
+      sanitize.url(o.uri, null, ["https", "http", "mailto", "tel", "fax"]), // ["*"] ?
+      new URL(o.uri).protocol,
+      undefined,
+      sanitize.integerRange(o.pref, 0, 100))));
+
+    person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
     person.notes = sanitize.nonemptystring(objValues(jscontact.notes)[0]?.note, "");
     let company = objValues(jscontact.organizations)[0];
@@ -41,20 +49,20 @@ export class JSContact {
     person.position = sanitize.nonemptystring(objValues(jscontact.titles)[0]?.name, "");
   }
 
-  protected static fromContextToPurpose(contexts: TPrivateOrWork): string | null {
+  protected static fromContextToPurpose(contexts: Record<string, true>): string | null {
     return contexts?.private
       ? "home"
       : contexts?.work
         ? "work"
-        : null;
+        : Object.keys(contexts)[0];
   }
 
-  protected static fromPurposeToContext(purpose: string): TPrivateOrWork {
+  protected static fromPurposeToContext(purpose: string): Record<string, true> {
     return purpose == "home"
-      ? { private: true } as TPrivateOrWork
+      ? { private: true }
       : purpose == "work"
-        ? { work: true } as TPrivateOrWork
-        : null;
+        ? { work: true }
+        : { [purpose]: true };
   }
 
   protected static fromPhoneFeatureToProtocol(features: TPhoneFeature): string | null {
@@ -77,6 +85,7 @@ export class JSContact {
   /** Updates `jscontact` with the properties from `person`,
    * leaving any unsupported properties in jscontact as-is. */
   static fromPerson(person: Person, jscontact: TJSContact) {
+    jscontact.uid = (person as JMAPPerson).uid ?? person.id;
     jscontact.name ??= {};
     jscontact.name.full = person.name;
     if (person.firstName || person.lastName) {
@@ -100,19 +109,32 @@ export class JSContact {
     }
 
     jscontact.emails ??= {};
-    JSContact.updateContactEntries(jscontact.emails, person.emailAddresses,
-      "TEmailAddress", "address", () => {});
+    JSContact.updateContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses,
+      "address", () => {});
     jscontact.phones ??= {};
-    JSContact.updateContactEntries(jscontact.phones, person.phoneNumbers,
-      "TEmailAddress", "address", (entry: any, personEntry: ContactEntry) => {
+    JSContact.updateContactEntries<TPhone>(jscontact.phones, person.phoneNumbers,
+      "number", (entry: any, personEntry: ContactEntry) => {
         entry.features = JSContact.fromProtocolToPhoneFeature(personEntry.protocol);
       });
     jscontact.onlineServices ??= {};
-    JSContact.updateContactEntries(jscontact.onlineServices, person.chatAccounts,
-      "TEmailAddress", "address", (entry: any, personEntry: ContactEntry) => {
+    JSContact.updateContactEntries<TOnlineService>(jscontact.onlineServices, person.chatAccounts,
+      "user", (entry: any, personEntry: ContactEntry) => {
         entry.service = personEntry.protocol;
       });
-    //this.streetAddresses
+    jscontact.links ??= {};
+    JSContact.updateContactEntries<TLink>(jscontact.links, person.urls,
+      "uri", () => { });
+    // TODO
+    // person.streetAddresses
+    // person.popularity
+
+    if (person.picture) {
+      jscontact.media ??= {};
+      jscontact.media.avatar = {
+        uri: person.picture,
+        kind: "photo",
+      };
+    }
 
     person.notes = sanitize.nonemptystring(objValues(jscontact.notes)[0]?.note, "");
     let company = objValues(jscontact.organizations)[0];
@@ -121,10 +143,9 @@ export class JSContact {
     person.position = sanitize.nonemptystring(objValues(jscontact.titles)[0]?.name, "");
   }
 
-  protected static updateContactEntries(
-      jscontactRecords: Record<TID, TEmailAddress | TPhone | TOnlineService>,
+  protected static updateContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
+      jscontactRecords: Record<TID, T>,
       personEntries: ArrayColl<ContactEntry>,
-      type: string,
       valueProp: string,
       otherPropsFunc: (entry: any, personEntry: ContactEntry) => void
     ) {
@@ -132,9 +153,7 @@ export class JSContact {
     for (let personEntry of personEntries) {
       let entry = jscontactArray.find(entry => entry[valueProp] == personEntry.value);
       if (!entry) {
-        entry = {
-          "@type": type,
-        } as TEmailAddress | TPhone | TOnlineService;
+        entry = {} as T;
         jscontactRecords[crypto.randomUUID()] = entry;
       }
       entry[valueProp] = personEntry.value;

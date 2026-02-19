@@ -30,7 +30,7 @@ export interface TJSContact {
   organizations?: Record<TID, TOrganization>;
   /** Job titles and roles */
   titles?: Record<TID, {
-    "@type"?: "TTitle";
+    "@type"?: "Title";
     /** The title or role */
     name: string;
     /** Kind of title */
@@ -39,7 +39,7 @@ export interface TJSContact {
     organizationId?: string;
   }>;
   speakToAs?: {
-    "@type"?: "TSpeakToAs";
+    "@type"?: "SpeakToAs";
     grammaticalGender?: "common" | "masculine" | "feminine";
   };
 
@@ -47,6 +47,7 @@ export interface TJSContact {
   emails?: Record<TID, TEmailAddress>;
   phones?: Record<TID, TPhone>;
   onlineServices?: Record<TID, TOnlineService>;
+  links?: Record<TID, TLink>;
   preferredLanguages?: Record<TID, TLanguagePref>;
 
   /** Postal street addresses */
@@ -57,7 +58,6 @@ export interface TJSContact {
 
   /** Photos, logos, sounds */
   media?: Record<TID, TMedia>;
-  links?: Record<TID, TLink>;
   cryptoKeys?: Record<TID, TCryptoKey>;
   directories?: Record<TID, TDirectory>;
 
@@ -98,7 +98,7 @@ export type TNameComponentKind =
   | "title";
 
 export interface TNameComponent {
-  "@type"?: "TNameComponent";
+  "@type"?: "NameComponent";
   kind: TNameComponentKind;
   value: string;
   phonetic?: string;
@@ -111,7 +111,7 @@ export type TPhoneticSystem =
   | "script";
 
 export interface TName {
-  "@type"?: "TName";
+  "@type"?: "Name";
   full?: string;
   /** Name components making up this name */
   components?: TNameComponent[];
@@ -142,14 +142,14 @@ export type TAddressComponentKind =
   | "subdistrict";
 
 export interface TAddressComponent {
-  "@type"?: "TAddressComponent";
+  "@type"?: "AddressComponent";
   kind: TAddressComponentKind;
   value: string;
   phonetic?: string;
 }
 
 export interface TAddress {
-  "@type"?: "TAddress";
+  "@type"?: "Address";
   full?: string;
   /** Address components making up this address */
   components?: TAddressComponent[];
@@ -177,7 +177,7 @@ export interface TAddress {
 export type TPrivateOrWork = Record<"private" | "work", true>;
 
 export interface TEmailAddress {
-  "@type"?: "TEmailAddress";
+  "@type"?: "EmailAddress";
   address: string;
   /** Contexts in which to use this email */
   contexts?: TPrivateOrWork;
@@ -189,7 +189,7 @@ export interface TEmailAddress {
 export type TPhoneFeature = Record<"voice" | "mobile" | "main-number" | "fax" | "pager" | "text" | "textphone" | "video", true>;
 
 export interface TPhone {
-  "@type"?: "TPhone";
+  "@type"?: "Phone";
   /** Phone number, either URI or free-form, e.g.
    * `tel:+1-650-555-1234;ext=1234` or
    * `650-555-1234 x 1234`
@@ -204,7 +204,7 @@ export interface TPhone {
 }
 
 export interface TOnlineService {
-  "@type"?: "TOnlineService";
+  "@type"?: "OnlineService";
   /** URI of the user, e.g.
    * `xmpp:alice@example.com` or
    *  `https://example2.com/@alice` */
@@ -221,7 +221,7 @@ export interface TOnlineService {
 }
 
 export interface TLanguagePref {
-  "@type"?: "TLanguagePref";
+  "@type"?: "LanguagePref";
   /** Language tag (RFC 5646) */
   language: string;
   contexts?: Record<string, true>;
@@ -229,10 +229,10 @@ export interface TLanguagePref {
 }
 
 export interface TOrganization {
-  "@type"?: "TOrganization";
+  "@type"?: "Organization";
   name?: string;
   units?: {
-    "@type"?: "TOrgUnit";
+    "@type"?: "OrgUnit";
     name: string;
     sortAs?: string;
   }[];
@@ -241,21 +241,21 @@ export interface TOrganization {
 }
 
 export interface TNickname {
-  "@type"?: "TNickname";
+  "@type"?: "Nickname";
   name: string;
   contexts?: TPrivateOrWork;
   pref?: TInteger;
 }
 
 export interface TAnniversary {
-  "@type"?: "TAnniversary";
+  "@type"?: "Anniversary";
   kind?: "birth" | "death" | "wedding";
   /** Date of the anniversary */
   date: {
-    "@type": "TTimestamp";
+    "@type": "Timestamp";
     utc: TUTCDateTime;
   } | {
-    "@type"?: "TPartialDate";
+    "@type"?: "PartialDate";
     /** Year */
     year?: TInteger;
     /** Month (1-12) */
@@ -270,34 +270,34 @@ export interface TAnniversary {
 }
 
 export interface TMedia extends TResource {
-  "@type"?: "TMedia";
+  "@type"?: "Media";
   kind: "logo" | "photo" | "sound";
 }
 
 export interface TLink extends TResource {
-  "@type"?: "TLink";
+  "@type"?: "Link";
   kind?: "contact";
 }
 
 export interface TCryptoKey extends TResource {
-  "@type"?: "TCryptoKey";
+  "@type"?: "CryptoKey";
   /** Kind of cryptographic key */
   kind: string;
 }
 
 export interface TDirectory extends TResource {
-  "@type"?: "TDirectory";
+  "@type"?: "Directory";
   kind: "directory" | "entry";
   listAs?: TInteger;
 }
 
 export interface TCalendar extends TResource {
-  "@type"?: "TCalendar";
+  "@type"?: "Calendar";
   kind: "calendar" | "freeBusy";
 }
 
 export interface TSchedulingAddress {
-  "@type"?: "TSchedulingAddress";
+  "@type"?: "SchedulingAddress";
   uri: string;
   contexts?: Record<string, true>;
   pref?: TInteger;
@@ -305,10 +305,10 @@ export interface TSchedulingAddress {
 }
 
 export interface TNote {
-  "@type"?: "TNote";
+  "@type"?: "Note";
   note: string;
   author?: {
-    "@type"?: "TAuthor";
+    "@type"?: "Author";
     name?: string;
     uri?: string;
   };
@@ -316,7 +316,7 @@ export interface TNote {
 }
 
 export interface TPersonalInfo {
-  "@type"?: "TPersonalInfo";
+  "@type"?: "PersonalInfo";
   kind: "expertise" | "hobby" | "interest";
   value: string;
   /** Level of expertise or engagement */
@@ -348,7 +348,7 @@ export type TRelationType =
   | "sweetheart";
 
 export interface TRelation {
-  "@type"?: "TRelation";
+  "@type"?: "Relation";
   relation: Record<TRelationType, true>;
   /** URI of the related person's card */
   uri: string;

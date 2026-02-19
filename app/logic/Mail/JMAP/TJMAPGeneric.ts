@@ -78,14 +78,17 @@ export interface TJMAPQueryResponse {
 }
 
 /** <https://www.rfc-editor.org/rfc/rfc8620#section-5.2> */
-export interface TJMAPChangeResponse {
+export interface TJMAPChangeResponse<T> {
   accountId: string;
-  oldState: string;
+  oldState?: string;
   newState: string;
   hasMoreChanges: boolean;
-  created: string[];
-  updated: string[];
-  destroyed: string[];
+  created?: Record<string, T>,
+  updated?: Record<string, T | null>;
+  destroyed?: string[];
+  notCreated?: Record<string, TJMAPSetError>,
+  notUpdated?: Record<string, TJMAPSetError>;
+  notDestroyed?: Record<string, TJMAPSetError>;
 }
 
 /** <https://www.rfc-editor.org/rfc/rfc8620.html#section-3.6.1> */
@@ -96,11 +99,20 @@ export interface TJMAPAPIErrorResponse {
   limit?: number;
 }
 
-/** <https://www.rfc-editor.org/rfc/rfc8620.html#section-3.6.2> */
-export interface TJMAPAPICallError {
+export interface TJMAPError {
   type: string;
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc8620.html#section-3.6.2> */
+export interface TJMAPAPICallError extends TJMAPError {
   status: number;
   detail: string;
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc8620.html#section-5.3> */
+export interface TJMAPSetError extends TJMAPError {
+  description?: string;
+  properties: string[];
 }
 
 /** Contents: method name, arguments, call number */

@@ -1,13 +1,17 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
-import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
+import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
+import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
+import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
+import { checkChangeError } from "./JMAPError";
+import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
@@ -17,15 +21,16 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
-import { assert, SpecificError } from "../../util/util";
+import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
+  /** ID in JMAP (`.id` is the ID our database) */
+  accountID: string;
   @notifyChangedProperty
   session: TJMAPSession;
-  accountID: string;
   allFolders = new MapColl<string, JMAPFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -167,6 +172,14 @@ export class JMAPAccount extends MailAccount {
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
+    if (!this.isLoggedIn) {
+      if (this.session) {
+        await this.oAuth2.login(false);
+      }
+      if (!this.isLoggedIn) {
+        await this.login(false);
+      }
+    }
     let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
     if (this.haveContacts) {
       using.push("urn:ietf:params:jmap:contacts");
@@ -186,10 +199,6 @@ export class JMAPAccount extends MailAccount {
     let log: any[] = [ "Calling" ];
     for (let method of requestJSON?.methodCalls) {
       log.push(method[2], method[0], method[1]);
-    }
-
-    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
-      await this.oAuth2.login(false);
     }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
@@ -391,7 +400,8 @@ export class JMAPAccount extends MailAccount {
           isSubscribed: true,
         },
       },
-    }) as TJMAPChangeResponse;
+    }) as TJMAPChangeResponse<TJMAPFolder>;
+    checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
     this.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
@@ -408,6 +418,7 @@ export class JMAPAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.stopPolling();
+    this.session = null;
     if (this.oAuth2) {
       await this.oAuth2.logout();
     }
@@ -550,29 +561,47 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listAddressbooks() {
-    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:contacts"];
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:contacts"]);
     if (!primaryID) {
       return;
     }
-    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.id == primaryID).hasItems) {
-      return;
+    let response = await this.makeSingleCall("AddressBook/get", {
+      accountId: primaryID,
+    });
+    let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;
+    for (let jmap of listResponse.list) {
+      if (!jmap.isSubscribed && !jmap.isDefault ||
+          this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.jmapID == jmap.id).hasItems) {
+        continue;
+      }
+      let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
+      ab.initFromMainAccount(this);
+      ab.fromJMAP(jmap)
+      appGlobal.addressbooks.add(ab);
+      await ab.save();
     }
-    let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
-    ab.initFromMainAccount(this);
-    ab.id = primaryID;
   }
 
   async listCalendars() {
-    let primaryID = this.session.primaryAccounts["urn:ietf:params:jmap:calendars"];
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:calendars"]);
     if (!primaryID) {
       return;
     }
-    if (this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.id == primaryID).hasItems) {
-      return;
+    let response = await this.makeSingleCall("Calendar/get", {
+      accountId: primaryID,
+    });
+    let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
+    for (let jmap of listResponse.list) {
+      if (!jmap.isSubscribed && !jmap.isDefault ||
+        this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.jmapID == jmap.id).hasItems) {
+        continue;
+      }
+      let cal = newCalendarForProtocol("calendar-jmap") as JMAPCalendar;
+      cal.initFromMainAccount(this);
+      cal.fromJMAP(jmap)
+      appGlobal.calendars.add(cal);
+      await cal.save();
     }
-    let cal = newCalendarForProtocol("calendar-jmap") as JMAPCalendar;
-    cal.initFromMainAccount(this);
-    cal.id = primaryID;
   }
 
   hasCapability(capa: string): boolean {
@@ -589,15 +618,16 @@ export class JMAPAccount extends MailAccount {
     return this.session.capabilities[capa];
   }
 
-  fromConfigJSON(config: any) {
-    super.fromConfigJSON(config);
-    this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.accountID = sanitize.alphanumdash(json.accountID, null);
+    this.pollIntervalMinutes = sanitize.integer(json.pollIntervalMinutes, this.pollIntervalMinutes);
 
-    if (config.syncState && config.syncState instanceof Object) {
-      for (let typeName in config.syncState) {
+    if (json.syncState && json.syncState instanceof Object) {
+      for (let typeName in json.syncState) {
         try {
           let type = sanitize.enum(typeName, TJMAPObjectTypes) as TJMAPObjectType;
-          this.syncState.set(type, sanitize.string(config.syncState[type]));
+          this.syncState.set(type, sanitize.string(json.syncState[type]));
         } catch (ex) {
           this.errorCallback(ex);
         }
@@ -606,6 +636,7 @@ export class JMAPAccount extends MailAccount {
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
+    json.accountID = this.accountID;
     json.pollIntervalMinutes = this.pollIntervalMinutes;
     json.syncState = this.syncState.contentKeyValues();
     return json;
@@ -614,7 +645,4 @@ export class JMAPAccount extends MailAccount {
   newFolder(): JMAPFolder {
     return new JMAPFolder(this);
   }
-}
-
-export class JMAPCommandError extends SpecificError {
 }

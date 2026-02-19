@@ -35,8 +35,6 @@ export class Person extends ContactBase {
    * Higher is more popular. */
   @notifyChangedProperty
   popularity: number = 0;
-  @notifyChangedProperty
-  syncState: number | string | undefined;
 
   /**
    * Saves the contact to the server and to the database.
@@ -96,16 +94,6 @@ export class Person extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local persons
-  }
-
-  fromExtraJSON(json: any) {
-    assert(typeof (json) == "object", "Must be a JSON object");
-    this.syncState = json.syncState;
-  }
-  toExtraJSON(): any {
-    let json: any = {};
-    json.syncState = this.syncState;
-    return json;
   }
 
   toString() {
