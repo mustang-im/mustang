@@ -212,7 +212,7 @@ function findFreeAccountID(): string {
   let allAccounts = getAllAccounts();
 
   for (let i = ++lastID; true; i++) {
-    let id = "account" + i;
+    let id = "account" + i + Math.floor(Math.random() * 100);
     if (allAccounts.find(acc => acc.id == id) || usedIDs.has(id)) {
       continue;
     }
@@ -224,7 +224,7 @@ function findFreeAccountID(): string {
 export function getAllAccounts(): Collection<Account> {
   let allAccounts = new ArrayColl<Account>();
   allAccounts.addAll(appGlobal.emailAccounts);
-  allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filter(o => !!o));
+  allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filterOnce(o => !!o));
   allAccounts.addAll(appGlobal.chatAccounts);
   allAccounts.addAll(appGlobal.addressbooks);
   allAccounts.addAll(appGlobal.calendars);
