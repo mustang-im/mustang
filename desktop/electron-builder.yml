@@ -47,8 +47,6 @@ linux:
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Network
   icon: build/icon.icns
-appImage:
-  artifactName: ${name}-${version}.${ext}
 deb:
   packageName: mustang-mail
 protocols:
