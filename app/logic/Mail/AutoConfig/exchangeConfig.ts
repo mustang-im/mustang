@@ -3,7 +3,7 @@ import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { kStandardPorts } from "./configInfo";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { appGlobal } from "../../app";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -255,7 +255,8 @@ function newURLAccount(url: URLString, protocol: string, source: ConfigSource): 
   acc.hostname = new URL(acc.url).hostname;
   acc.port = 443;
   acc.tls = TLSSocketType.TLS;
-  acc.authMethod = OAuth2URLs.some(oauth => oauth.domains.includes(acc.hostname))
+  acc.oAuth2 = getOAuth2BuiltIn(acc);
+  acc.authMethod = acc.oAuth2
     ? AuthMethod.OAuth2
     : protocol == "ews"
       ? AuthMethod.Unknown
