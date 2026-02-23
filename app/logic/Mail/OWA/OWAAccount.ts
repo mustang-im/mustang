@@ -174,6 +174,10 @@ export class OWAAccount extends MailAccount {
     await this.loginCommon(interactive);
     this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
     this.hasLoggedIn = true;
+    await this.startup();
+  }
+
+  async startup() {
     await this.listFolders();
 
     // `listFolders()` will subscribe to new user-added calendars
@@ -199,19 +203,6 @@ export class OWAAccount extends MailAccount {
       }
     }
 
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .catch(this.errorCallback);
-      }
-    }
-
     await this.callOWA(new OWASubscribeToNotificationRequest());
 
     this.notifications = this.isOffice365()
@@ -219,6 +210,8 @@ export class OWAAccount extends MailAccount {
       : new OWAExchangeNotifications(this);
     this.notifications.start()
       .catch(this.errorCallback);
+
+    await super.startup();
   }
 
   async logout(): Promise<void> {

@@ -16,6 +16,11 @@ export class FileSharingAccount extends Account {
     return dir;
   }
 
+  async startup() {
+    await this.sync();
+    await super.startup();
+  }
+
   async sync() {
   }
 }

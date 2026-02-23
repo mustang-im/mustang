@@ -48,6 +48,10 @@ export class GraphAccount extends MailAccount {
     assert([AuthMethod.OAuth2].includes(this.authMethod), "MS Graph supports only OAuth2");
 
     await this.loginOAuth2(interactive);
+    await this.startup();
+  }
+
+  async startup() {
     await this.listFolders();
     let inbox = this.inbox as GraphFolder;
     assert(inbox, "Inbox not found");
@@ -80,25 +84,8 @@ export class GraphAccount extends MailAccount {
       await chatAccount.save();
       appGlobal.chatAccounts.add(chatAccount);
     }
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        await calendar.listEvents()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let chatAccount of appGlobal.chatAccounts) {
-      if (chatAccount.mainAccount == this) {
-        await chatAccount.listRooms()
-          .catch(this.errorCallback);
-      }
-    }
+    
+    await super.startup();
   }
 
   async verifyLogin(): Promise<void> {

@@ -58,8 +58,20 @@ export class Account extends Observable {
     this.color = randomAccountColor();
   }
 
+  /**
+   * Perform one-time post-login actions, such as performing an initial sync
+   * and/or setting up polling or notifications.
+   * By default all we do is to asynchronously notify dependent accounts.
+   * N.B. We can't make this `protected` because EWS needs to call it.
+   */
+  async startup() {
+    for (let dependent of this.dependentAccounts()) {
+      dependent.startup().catch(dependent.errorCallback);
+    }
+  }
+
   get isLoggedIn(): boolean {
-    return false;
+    return this.isDependentAccount && this.mainAccount.isLoggedIn;
   }
 
   /**
@@ -77,6 +89,10 @@ export class Account extends Observable {
    */
   async login(interactive: boolean): Promise<void> {
     this.errors.clear();
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.mainAccount?.login(interactive);
   }
 
   /** For setup only. Test that the login works. */

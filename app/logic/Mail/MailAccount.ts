@@ -39,6 +39,11 @@ export class MailAccount extends TCPAccount {
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
 
+  async startup() {
+    await this.inbox.getNewMessages();
+    await super.startup();
+  }
+
   async listFolders(): Promise<void> {
     throw new AbstractFunction();
   }

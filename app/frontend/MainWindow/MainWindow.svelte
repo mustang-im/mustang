@@ -119,7 +119,7 @@
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
-      await loginOnStartup(console.error, backgroundError);
+      await loginOnStartup();
       // Setting $selectedApp late would overwrite commandline/URL handlers
       $selectedAccount = appGlobal.emailAccounts.first;
       $selectedFolder = $selectedAccount.inbox;

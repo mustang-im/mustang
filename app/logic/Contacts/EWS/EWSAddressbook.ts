@@ -28,17 +28,6 @@ export class EWSAddressbook extends Addressbook {
     return new EWSGroup(this);
   }
 
-  get isLoggedIn(): boolean {
-    return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   async listContacts() {
     await super.listContacts();
 

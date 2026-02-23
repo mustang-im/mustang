@@ -51,6 +51,11 @@ export class Calendar extends Account {
     return new ICalIncomingInvitation(this, message);
   }
 
+  async startup() {
+    await this.listEvents();
+    await super.startup();
+  }
+
   async listEvents() {
     await this.readEventsFromDB();
   }

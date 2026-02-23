@@ -59,6 +59,10 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
+    await this.startup();
+  }
+
+  async startup() {
     await this.listFolders();
     this.startPushListener()
       .catch(this.errorCallback);
@@ -72,20 +76,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveCalendar) {
       await this.listCalendars();
     }
-    if (this.haveContacts) {
-      for (let addressbook of appGlobal.addressbooks) {
-        if (addressbook.mainAccount == this) {
-          await addressbook.listContacts();
-        }
-      }
-    }
-    if (this.haveCalendar) {
-      for (let calendar of appGlobal.calendars) {
-        if (calendar.mainAccount == this) {
-          await calendar.listEvents();
-        }
-      }
-    }
+    await super.startup();
   }
 
   async verifyLogin(): Promise<void> {

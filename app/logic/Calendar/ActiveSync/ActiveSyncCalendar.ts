@@ -31,17 +31,6 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     return this.mainAccount as ActiveSyncAccount;
   }
 
-  get isLoggedIn(): boolean {
-    return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   async ping() {
     await this.listEvents();
   }

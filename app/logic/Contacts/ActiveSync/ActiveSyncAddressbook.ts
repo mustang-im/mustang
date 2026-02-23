@@ -32,17 +32,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     throw new NotSupported("ActiveSync does not support distribution lists");
   }
 
-  get isLoggedIn(): boolean {
-    return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   /**
    * Makes a `Sync` (synchronization) request to the server.
    * @param data information about the request
