@@ -13,7 +13,7 @@
   </vbox>
   <slot name="after-name" />
 </hbox>
-<Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
+<Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window" autoClose={false}>
   <PersonPopup personUID={person}
     {onRemovePerson}
     on:close={onPopupClose}
@@ -26,6 +26,7 @@
 <vbox class="context-menu" class:open>
   <slot name="context-menu" {person} />
 </vbox>
+<svelte:window on:click={clickOutside} />
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -52,7 +53,13 @@
 
   function onPopupToggle(event: MouseEvent) {
     popupOpen = !popupOpen;
-    event.stopPropagation();
+  }
+
+  function clickOutside(event: MouseEvent) {
+    if (popupAnchor?.contains(event.target as Node)) {
+      return;
+    }
+    popupOpen = false;
   }
 
   function onPopupClose() {
