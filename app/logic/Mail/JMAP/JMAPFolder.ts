@@ -15,6 +15,7 @@ import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
 
 export class JMAPFolder extends Folder {
+  // id: JMAP ID
   declare account: JMAPAccount;
   declare readonly messages: EMailCollection<JMAPEMail>;
   declare readonly subFolders: ArrayColl<JMAPFolder>;

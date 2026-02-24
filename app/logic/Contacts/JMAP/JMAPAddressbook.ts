@@ -256,7 +256,7 @@ export class JMAPAddressbook extends Addressbook {
     for (let person of persons) {
       let existing = addressbook.getPersonByJMAPID(person.id);
       // added persons are handled by `addressbook.parsePersonsList(changedThisAB...`
-      if (existing && !person.addressBookIds[addressbook.id]) {
+      if (existing && !person.addressBookIds[addressbook.jmapID]) {
         removed.add(existing);
       }
     }
