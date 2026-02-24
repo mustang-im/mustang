@@ -25,7 +25,7 @@
    * inside so the click event still propagates to other popups
    * for autoclosing
    * in */
-  export let toggleButton: HTMLElement;
+  export let toggleButton: HTMLElement = null;
   /** Where the popup should appear in relation to the anchor.
    * above/below ("top"/"bottom") and left/right ("start"/"end")
    * in */
