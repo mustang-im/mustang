@@ -37,11 +37,10 @@ export class JMAPPerson extends Person {
         [isNew ? this.id : this.jmapID]: jscontact,
       },
     }) as TJMAPChangeResponse<TJMAPContact>;
-    console.log("server responded", results);
     checkChangeError(results);
 
+    this.original = jscontact;
     if (isNew) {
-      this.original = jscontact;
       this.jmapID = this.original.id = sanitize.alphanumdash(results.created[this.id].id);
       await this.saveLocally();
     }

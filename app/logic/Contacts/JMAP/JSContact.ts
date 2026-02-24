@@ -1,4 +1,4 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { type Person, ContactEntry } from '../../Abstract/Person';
 import type { TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './TJSContact';
 import type { JMAPPerson } from './JMAPPerson';
 import type { TID } from '../../Mail/JMAP/TJMAPGeneric';
@@ -19,26 +19,18 @@ export class JSContact {
     person.firstName = sanitize.nonemptystring(jscontact.name?.components?.find(c => c.kind == "given")?.value, "");
     person.lastName = sanitize.nonemptystring(jscontact.name?.components?.find(c => c.kind == "surname")?.value, "");
 
-    person.emailAddresses.replaceAll(objValues(jscontact.emails).map(e => new ContactEntry(
+    JSContact.toContactEntries(person.emailAddresses, jscontact.emails, e => new ContactEntry(
       sanitize.emailAddress(e.address),
-      JSContact.fromContextToPurpose(e.contexts),
-      "mailto",
-      sanitize.integerRange(e.pref, 0, 100))));
-    person.phoneNumbers.replaceAll(objValues(jscontact.phones).map(p => new ContactEntry(
-      sanitize.nonemptystring(p.number),
-      JSContact.fromContextToPurpose(p.contexts),
-      JSContact.fromPhoneFeatureToProtocol(p.features),
-      sanitize.integerRange(p.pref, 0, 100))));
-    person.chatAccounts.replaceAll(objValues(jscontact.onlineServices).map(o => new ContactEntry(
-      sanitize.nonemptystring(o.uri, sanitize.nonemptystring(o.user)),
-      JSContact.fromContextToPurpose(o.contexts),
-      o.service,
-      sanitize.integerRange(o.pref, 0, 100))));
-    person.urls.replaceAll(objValues(jscontact.links).map(o => new ContactEntry(
-      sanitize.url(o.uri, null, ["https", "http", "mailto", "tel", "fax"]), // ["*"] ?
-      new URL(o.uri).protocol,
-      undefined,
-      sanitize.integerRange(o.pref, 0, 100))));
+      "mailto"));
+    JSContact.toContactEntries(person.phoneNumbers, jscontact.phones, e => new ContactEntry(
+      sanitize.nonemptystring(e.number),
+      JSContact.fromPhoneFeatureToProtocol(e.features)));
+    JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
+      sanitize.nonemptystring(e.uri, sanitize.nonemptystring(e.user)),
+      e.service));
+    JSContact.toContactEntries(person.urls, jscontact.links, e => new ContactEntry(
+      sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]), // ["*"] ?
+      new URL(e.uri).protocol));
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
@@ -109,21 +101,21 @@ export class JSContact {
     }
 
     jscontact.emails ??= {};
-    JSContact.updateContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses,
-      "address", () => {});
     jscontact.phones ??= {};
-    JSContact.updateContactEntries<TPhone>(jscontact.phones, person.phoneNumbers,
-      "number", (entry: any, personEntry: ContactEntry) => {
+    jscontact.onlineServices ??= {};
+    jscontact.links ??= {};
+    JSContact.fromContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses, "address",
+      () => {});
+    JSContact.fromContactEntries<TPhone>(jscontact.phones, person.phoneNumbers, "number",
+      (entry: any, personEntry: ContactEntry) => {
         entry.features = JSContact.fromProtocolToPhoneFeature(personEntry.protocol);
       });
-    jscontact.onlineServices ??= {};
-    JSContact.updateContactEntries<TOnlineService>(jscontact.onlineServices, person.chatAccounts,
-      "user", (entry: any, personEntry: ContactEntry) => {
+    JSContact.fromContactEntries<TOnlineService>(jscontact.onlineServices, person.chatAccounts, "user",
+      (entry: any, personEntry: ContactEntry) => {
         entry.service = personEntry.protocol;
       });
-    jscontact.links ??= {};
-    JSContact.updateContactEntries<TLink>(jscontact.links, person.urls,
-      "uri", () => { });
+    JSContact.fromContactEntries<TLink>(jscontact.links, person.urls, "uri",
+      () => {});
     // TODO
     // person.streetAddresses
     // person.popularity
@@ -134,32 +126,69 @@ export class JSContact {
         uri: person.picture,
         kind: "photo",
       };
+    } else {
+      delete jscontact.media?.avatar;
     }
 
-    person.notes = sanitize.nonemptystring(objValues(jscontact.notes)[0]?.note, "");
-    let company = objValues(jscontact.organizations)[0];
-    person.company = sanitize.nonemptystring(company?.name, "");
-    person.department = sanitize.nonemptystring(company?.units[0]?.name, "");
-    person.position = sanitize.nonemptystring(objValues(jscontact.titles)[0]?.name, "");
+    // TODO Save notes, position, company
   }
 
-  protected static updateContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
-      jscontactRecords: Record<TID, T>,
-      personEntries: ArrayColl<ContactEntry>,
+  protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
+    personEntriesAbstract: ArrayColl<ContactEntry>,
+    jscontactEntries: Record<TID, T>,
+    getValues: (e: T) => ContactEntry,
+  ) {
+    let personEntries = personEntriesAbstract as ArrayColl<ContactEntry>;
+    for (let jmapID in jscontactEntries) {
+      let jscontactEntry = jscontactEntries[jmapID];
+      let newCE = getValues(jscontactEntry);
+      newCE.purpose = JSContact.fromContextToPurpose(jscontactEntry.contexts);
+      newCE.preference = sanitize.integerRange(jscontactEntry.pref, 0, 100);
+      let existing = personEntries.find(p => getJMAPID(p) == jmapID);
+      if (existing) {
+        existing.value = newCE.value;
+        existing.protocol = newCE.protocol;
+        existing.purpose = newCE.purpose;
+        existing.preference = newCE.preference;
+      } else {
+        setJMAPID(newCE, sanitize.alphanumdash(jmapID));
+        personEntries.add(newCE);
+      }
+    }
+    // Delete old entries
+    for (let p of personEntries) {
+      let jmapID = getJMAPID(p);
+      if (!jmapID || !jscontactEntries[jmapID]) {
+        personEntries.remove(p);
+      }
+    }
+  }
+
+  protected static fromContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
+      jscontactEntries: Record<TID, T>,
+      personEntriesAbstract: ArrayColl<ContactEntry>,
       valueProp: string,
       otherPropsFunc: (entry: any, personEntry: ContactEntry) => void
     ) {
-    let jscontactArray = objValues(jscontactRecords);
+    let personEntries = personEntriesAbstract as ArrayColl<ContactEntry>;
     for (let personEntry of personEntries) {
-      let entry = jscontactArray.find(entry => entry[valueProp] == personEntry.value);
-      if (!entry) {
-        entry = {} as T;
-        jscontactRecords[crypto.randomUUID()] = entry;
+      let jmapID = getJMAPID(personEntry);
+      if (!jmapID) {
+        jmapID = crypto.randomUUID();
+        setJMAPID(personEntry, jmapID);
       }
-      entry[valueProp] = personEntry.value;
-      entry.pref = personEntry.preference;
-      entry.contexts = JSContact.fromPurposeToContext(personEntry.purpose);
-      otherPropsFunc(entry, personEntry);
+      let jscontactEntry = jscontactEntries[jmapID] ??= {} as T;
+      jscontactEntry[valueProp] = personEntry.value;
+      jscontactEntry.pref = personEntry.preference;
+      jscontactEntry.contexts = JSContact.fromPurposeToContext(personEntry.purpose);
+      otherPropsFunc(jscontactEntry, personEntry);
+    }
+    // Delete old entries
+    for (let jmapID in jscontactEntries) {
+      if (personEntries.find(p => getJMAPID(p) == jmapID)) {
+        continue;
+      }
+      delete jscontactEntries[jmapID];
     }
   }
 }
@@ -169,4 +198,14 @@ function objValues<TValue>(obj: Record<string, TValue>): TValue[] {
     return [];
   }
   return Object.values(obj);
+}
+
+/** The right solution would be a `JMAPContactEntry` subclass, but then we would need to
+ * adapt *all* places that create `new ContactEntry` to do `person.newContactEntry()`. */
+function getJMAPID(contactEntry: ContactEntry): TID {
+  return contactEntry.json?.jmapID;
+}
+function setJMAPID(contactEntry: ContactEntry, jmapID: TID) {
+  contactEntry.json ??= {} as any;
+  contactEntry.json.jmapID = jmapID;
 }
