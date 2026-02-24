@@ -93,9 +93,7 @@ interface TJSCalendarEventBase {
   /** Timezone of recurrenceId (required if recurrenceId is set) */
   recurrenceIdTimeZone?: TTimeZoneID | null;
   /** Rules generating recurrence dates */
-  recurrenceRules?: TJSCalendarRecurrenceRule[];
-  /** Rules removing recurrence dates */
-  excludedRecurrenceRules?: TJSCalendarRecurrenceRule[];
+  recurrenceRule?: TJSCalendarRecurrenceRule;
   /** Overrides for specific recurrence instances */
   recurrenceOverrides?: Record<TLocalDateTime, TPatchObject | boolean>;
   /** Mark excluded dates in recurrence */
@@ -128,8 +126,8 @@ interface TJSCalendarEventBase {
   // Time Zone Properties (4.7)
   /** Default timezone for floating times */
   timeZone?: TTimeZoneID;
-  /** Custom timezone definitions */
-  timeZones?: Record<TTimeZoneID, TJSCalendarTimeZone>;
+  /** timezone of the end time */
+  endTimeZone?: TTimeZoneID;
 }
 
 /**
@@ -164,8 +162,6 @@ export interface TJSCalendarTask extends TJSCalendarEventBase {
   percentComplete?: TInteger;
   /** Task progress status */
   progress?: "needs-action" | "in-process" | "completed" | "failed" | "cancelled" | string;
-  /** When progress was last updated */
-  progressUpdated?: TUTCDateTime;
 }
 
 /**
@@ -201,10 +197,6 @@ export interface TJSCalendarLocation {
   description?: string;
   /** Location types from IANA registry */
   locationTypes?: Record<string, true>;
-  /** Relation to event timing: "start" or "end" */
-  relativeTo?: "start" | "end" | string;
-  /** Timezone for this location */
-  timeZone?: TTimeZoneID;
   /** Geographic coordinates as "geo:" URI */
   coordinates?: string;
   /** Links associated with this location */
@@ -233,8 +225,6 @@ export interface TJSCalendarLink {
   "@type": "Link";
   /** URI to fetch the resource */
   href: string;
-  /** Content-ID for embedded resources */
-  cid?: string;
   /** Media type of the resource */
   contentType?: string;
   /** Size in octets when fully decoded */
@@ -373,34 +363,6 @@ interface TJSCalendarAbsoluteTrigger {
   "@type": "AbsoluteTrigger";
   /** Absolute trigger time */
   when: TUTCDateTime;
-}
-
-/**
- * TimeZone: Custom timezone definition
- */
-export interface TJSCalendarTimeZone {
-  /** Timezone name */
-  name?: string;
-  /** Timezone standard abbreviation */
-  standard?: TJSCalendarTimeZoneRule[];
-  /** Daylight saving rules */
-  daylight?: TJSCalendarTimeZoneRule[];
-}
-
-/**
- * TimeZoneRule: Rules for timezone transitions
- */
-interface TJSCalendarTimeZoneRule {
-  /** Start of rule */
-  start?: TLocalDateTime;
-  /** UTC offset */
-  offsetFromUTC?: TSignedDuration;
-  /** Daylight saving offset */
-  daylightSavings?: TSignedDuration;
-  /** Recurrence rules for transitions */
-  recurrenceRules?: TJSCalendarRecurrenceRule[];
-  /** Timezone name */
-  tzName?: string;
 }
 
 /**
