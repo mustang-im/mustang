@@ -30,9 +30,9 @@ export class JSCalendarEvent {
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
 
     // Recurrence
-    if (jmap.recurrenceRules?.length) {
+    if (jmap.recurrenceRule) {
       event.recurrenceCase = RecurrenceCase.Master;
-      let r = jmap.recurrenceRules[0];
+      let r = jmap.recurrenceRule;
       let rrinit = {} as RecurrenceInit;
       rrinit.interval = r.interval;
       rrinit.frequency =
@@ -100,7 +100,8 @@ export class JSCalendarEvent {
     // ID and metadata
     Object.assign(jmap, event.original);
     jmap.uid = event.calUID;
-    jmap.updated = event.lastUpdateTime?.toISOString();
+    jmap.updated = (event.lastUpdateTime ?? new Date()).toISOString();
+    jmap.sequence ??= -1;
     jmap.sequence++;
 
     // Text
@@ -129,8 +130,7 @@ export class JSCalendarEvent {
 
     // Recurrence
     if (event.recurrenceCase == RecurrenceCase.Master) {
-      jmap.recurrenceRules ??= [];
-      let jr = jmap.recurrenceRules[0] ??= {
+      let jr = jmap.recurrenceRule ??= {
         frequency: "yearly",
       };
       let er = event.recurrenceRule;

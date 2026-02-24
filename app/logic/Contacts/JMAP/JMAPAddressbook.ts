@@ -58,7 +58,6 @@ export class JMAPAddressbook extends Addressbook {
     if (!this.account.isLoggedIn) {
       await this.account.login(false);
     }
-    // Reading from DB happens on startup, in `Addressbooks.ts readAddressbooks()`
 
     this.persons.isEmpty
       ? await this.listAllPersons()
@@ -144,7 +143,6 @@ export class JMAPAddressbook extends Addressbook {
         console.log("JMAP fetch changes for addressbook", this.name, "already in progress");
         return new ArrayColl();
       }
-      //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
         [
@@ -176,7 +174,6 @@ export class JMAPAddressbook extends Addressbook {
           "changed",
         ],
       ]);
-      //console.log("sync response", response);
 
       let changes = response["changes"] as TJMAPChangeResponse<TJMAPContact>;
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPContact>;
@@ -203,9 +200,6 @@ export class JMAPAddressbook extends Addressbook {
         let addedResult = addressbook.parsePersonsList(addedThisAB ?? [], false);
         let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);
         addedResult.newPersons.addAll(changedResult.newPersons);
-        //console.log(addressbook.name, "added persons", addedResult.newPersons.contents.map(p => p.subject));
-        //console.log(addressbook.name, "updates persons", changedResult.updatedPersons.contents.map(p => p.subject));
-        //console.log(addressbook.name, "removed persons", removedPersons.contents.map(p => p.name));
 
         addressbook.persons.removeAll(removed);
         addressbook.persons.addAll(addedResult.newPersons);
@@ -231,16 +225,10 @@ export class JMAPAddressbook extends Addressbook {
     }
   }
 
-  protected async parseRemovedPersons(personIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
-    let removedPersons = new ArrayColl<JMAPPerson>();
-    for (let removedID of personIDs) {
-      let person = this.getPersonByJMAPID(removedID);
-      if (!person) {
-        continue;
-      }
-      removedPersons.add(person);
-    }
-    return removedPersons;
+  protected async parseRemovedPersons(jmapIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
+    return new ArrayColl<JMAPPerson>(jmapIDs
+      .map(jmapID => this.getPersonByJMAPID(jmapID))
+      .filter(ev => ev));
   }
 
   /**
@@ -263,22 +251,22 @@ export class JMAPAddressbook extends Addressbook {
     return removed;
   }
 
-  protected parsePersonsList(msgs: TJMAPContact[], checkUpdates = true): UpdateResult<JMAPPerson> {
+  protected parsePersonsList(persons: TJMAPContact[], checkUpdates = true): UpdateResult<JMAPPerson> {
     let newPersons = new ArrayColl<JMAPPerson>();
     let updatedPersons = new ArrayColl<JMAPPerson>();
-    for (let json of msgs) {
+    for (let json of persons) {
       let id = sanitize.nonemptystring(json.id);
       if (this.deletions.has(id)) {
         continue;
       }
-      let msg = checkUpdates && this.getPersonByJMAPID(id);
-      if (msg) {
-        msg.fromJMAP(json);
-        updatedPersons.add(msg);
+      let person = checkUpdates && this.getPersonByJMAPID(id);
+      if (person) {
+        person.fromJMAP(json);
+        updatedPersons.add(person);
       } else {
-        msg = this.newPerson();
-        msg.fromJMAP(json);
-        newPersons.add(msg);
+        person = this.newPerson();
+        person.fromJMAP(json);
+        newPersons.add(person);
       }
     }
     return { newPersons, updatedPersons };

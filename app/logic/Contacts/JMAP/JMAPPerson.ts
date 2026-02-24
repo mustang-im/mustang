@@ -26,7 +26,7 @@ export class JMAPPerson extends Person {
   async saveToServer() {
     let isNew = !this.original;
     let jscontact = this.original ?? {} as TJMAPContact;
-    JSContact.fromPerson(this, jscontact);
+    JSContact.fromPerson(this, jscontact); // overwrites `jscontact`, so must be first
     jscontact.addressBookIds ??= {};
     jscontact.addressBookIds[this.addressbook.jmapID] = true;
     assert(this.id, "ContactBase ctor should set this");

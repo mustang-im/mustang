@@ -52,6 +52,10 @@ export class Calendar extends Account {
   }
 
   async listEvents() {
+    await this.readEventsFromDB();
+  }
+
+  async readEventsFromDB() {
     if (!this.dbID) {
       await this.save();
     }
