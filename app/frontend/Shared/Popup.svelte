@@ -21,6 +21,11 @@
    * The popup will not cover this element, but be just above/below it.
    * in */
   export let popupAnchor: HTMLElement;
+  /** The element which should also be considered as clicking
+   * inside so the click event still propagates to other popups
+   * for autoclosing
+   * in */
+  export let toggleButton: HTMLElement;
   /** Where the popup should appear in relation to the anchor.
    * above/below ("top"/"bottom") and left/right ("start"/"end")
    * in */
@@ -75,8 +80,8 @@
     contentObserver?.disconnect();
   });
 
-  function onClickOutside() {
-    if (!autoClose || !popupOpen) {
+  function onClickOutside(event: Event) {
+    if (!autoClose || !popupOpen || toggleButton?.contains(event.target as Node)) {
       return;
     }
     popupOpen = false;

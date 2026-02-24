@@ -13,7 +13,7 @@
   </vbox>
   <slot name="after-name" />
 </hbox>
-<Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
+<Popup bind:popupOpen {popupAnchor} toggleButton={popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
   <PersonPopup personUID={person}
     {onRemovePerson}
     on:close={onPopupClose}
@@ -52,7 +52,6 @@
 
   function onPopupToggle(event: MouseEvent) {
     popupOpen = !popupOpen;
-    event.stopPropagation();
   }
 
   function onPopupClose() {
