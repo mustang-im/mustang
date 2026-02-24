@@ -123,6 +123,7 @@
     let inputE = inputWrapperEl.querySelector("input")
       ?? inputWrapperEl.querySelector("textarea");
     inputE?.focus();
+    $selectedContactEntry = null; // Allow user to click elsewhere
   }
 
   async function copyValue() {

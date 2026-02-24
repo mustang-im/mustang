@@ -229,6 +229,7 @@
   function addNotes() {
     person.notes = " ";
     isEditing = true;
+    $selectedContactEntry = null;
   }
 
   async function save() {
