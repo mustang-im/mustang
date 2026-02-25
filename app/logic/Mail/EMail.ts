@@ -77,8 +77,6 @@ export class EMail extends Message {
   /** Body hasn't been loaded yet */
   @notifyChangedProperty
   needToLoadBody = true;
-  /** For SQLEMail and alternatives only */
-  readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
 
