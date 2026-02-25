@@ -289,9 +289,9 @@ export class IMAPFolder extends Folder {
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<Collection<IMAPEMail>> {
-    await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);
+    await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     return newMsgs;
   }
 
