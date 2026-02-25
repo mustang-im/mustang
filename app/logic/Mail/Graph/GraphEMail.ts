@@ -227,7 +227,7 @@ export class GraphEMail extends EMail {
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
-        trash.moveMessageHere(this);
+        await trash.moveMessageHere(this);
       } else {
         throw new NotReached("Unknown delete strategy");
       }

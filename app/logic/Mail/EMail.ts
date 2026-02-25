@@ -133,11 +133,11 @@ export class EMail extends Message {
         /** Immediate reaction for end user */
         await this.deleteMessageLocally();
         await this.markSpam(isSpam);
-        spamFolder.moveMessageHere(this);
+        await spamFolder.moveMessageHere(this);
       } else {
         await this.markSpam(isSpam);
         if (this.folder == spamFolder) {
-          this.folder.account.inbox.moveMessageHere(this);
+          await this.folder.account.inbox.moveMessageHere(this);
         }
       }
     } else if (strategy == DeleteStrategy.DeleteImmediately) {
@@ -178,7 +178,7 @@ export class EMail extends Message {
       archive = await account.inbox.createSubFolder(gt`Archive`);
       archive.specialFolder = SpecialFolder.Archive; // TODO set on server
     }
-    archive.moveMessageHere(this);
+    await archive.moveMessageHere(this);
   }
 
   async deleteMessage() {
