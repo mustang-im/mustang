@@ -202,7 +202,7 @@ export class SQLEMail {
       `);
   }
 
-  static async saveTags(email: EMail, doLock = true) {
+  static async saveTags(email: EMail) {
     assert(email.dbID, "Need Email DB ID");
     await (await getDatabase()).run(sql`
       DELETE FROM emailTag
