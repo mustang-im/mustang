@@ -1,5 +1,5 @@
 <vbox flex class="message-body">
-  {#if message.needToLoadBody}
+  {#if $message.needToLoadBody}
     {#await message.loadBody()}
       {#await sleep(1)}
         <hbox></hbox>
@@ -43,7 +43,6 @@
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
-
   $: message.loadExternalImages = mode == DisplayMode.HTMLWithExternal;
 
   function getSource(message: EMail): string {
