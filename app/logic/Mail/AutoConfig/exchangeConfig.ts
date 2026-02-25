@@ -272,7 +272,9 @@ let ky;
  */
 async function fetchJSON(url: URLString, abort: AbortController): Promise<any> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   let params = {
     result: "json",
@@ -317,7 +319,9 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
  */
 async function fetchHTTP(url: URLString, params: any, abort: AbortController): Promise<Response> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   params = Object.assign({ throwHttpErrors: false }, params);
   return await makeAbortable(ky.post(url, params), abort);
