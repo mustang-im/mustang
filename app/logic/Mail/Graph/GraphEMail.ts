@@ -218,11 +218,11 @@ export class GraphEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.pID);
-      let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.account.graphDelete(this.path);
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);

@@ -206,7 +206,8 @@ export class IMAPEMail extends EMail {
         return;
       }
       this.folder.deletions.add(this.uid);
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.runCommand(async (conn) => {
           this.folder.account.log(this.folder, conn, "delete email flag", this.uid, this.subject);
           await conn.messageDelete(this.uid, { uid: true });

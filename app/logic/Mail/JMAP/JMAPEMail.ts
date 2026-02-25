@@ -231,11 +231,11 @@ export class JMAPEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.jmapID);
-      let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.account.makeSingleCall("Email/set", {
           accountId: this.folder.account.accountID,
           destroy: [ this.jmapID ],
