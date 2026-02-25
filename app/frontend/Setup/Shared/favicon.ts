@@ -1,78 +1,47 @@
-import { appGlobal } from "../../../logic/app";
-import { assert, blobToDataURL, type URLString } from "../../../logic/util/util";
+import { blobToDataURL, type URLString } from "../../../logic/util/util";
+import favicon from "@victr/favicon-fetcher";
 
 /** Given a domain name, find the website's homepage favicon
  * Uses server-side API: beonex.com proxies to google.com
+ * @param site domain, without "https://"
  * @returns `data:` image URL */
 export async function getFavIcon(site: string): Promise<URLString | null> {
+  return await getFavIconLocal(site);
+}
+
+/** Given a domain name, find the website's homepage favicon
+ * Uses server-side API: beonex.com proxies to google.com
+ * @param site domain, without "https://"
+ * @returns `data:` image URL */
+export async function getFavIconFromService(site: string): Promise<URLString | null> {
   try {
-    let imageURL = `https://parula.beonex.com/favicon/${site}`;
-    console.log("get favicon for", site, "at", imageURL);
+    //let imageURL = `https://parula.beonex.com/favicon/${site}`;
+    let imageURL = `https://favicon.im/${site}`;
     return await fetchIcon(imageURL);
   } catch (ex) {
-    console.error(ex);
+    console.warn(`Could not fetch favicon for ${site}:`, ex);
     return null;
   }
 }
 
 /** Given a domain name, find the website's homepage favicon
- * TODO Cannot decode .ico files
+ * @param site domain, without "https://"
  * @returns `data:` image URL */
 export async function getFavIconLocal(site: string): Promise<URLString | null> {
   try {
-    let response;
-    let pageURL = `https://${site}`;
-    try {
-      console.log("get favicon for", site, "at", pageURL);
-      response = await fetch(pageURL);
-      assert(response.ok, `Favicon fetch failed for ${pageURL}`);
-    } catch (ex) {
-      pageURL = `https://www.${site}`;
-      console.log("get favicon for", site, "at", pageURL);
-      response = await fetch(pageURL);
-    }
-    assert(response.ok, `Favicon fetch failed for ${pageURL}`);
-    let htmlStr = await response.text();
-    let htmlDoc = new DOMParser().parseFromString(htmlStr, "text/html");
-    console.log("favicon: got doc", htmlDoc);
-    for (let selector of selectors) {
-      try {
-        let node = htmlDoc.querySelector(selector.sel);
-        let url = selector.href && node?.getAttribute("href") ||
-          selector.content && node?.getAttribute("content");
-        if (!url) {
-          continue;
-        }
-        let urlAbsolute = new URL(url, pageURL).href;
-        return await fetchIcon(urlAbsolute);
-      } catch (ex) {
-        console.error(ex);
-      }
-    }
-    return null;
+    let blob = await favicon.blob("https://" + site);
+    return await blobToDataURL(blob);
   } catch (ex) {
-    console.error(ex);
+    console.warn(`Could not fetch favicon for ${site}:`, ex);
     return null;
   }
 }
 
-const selectors = [
-  { sel: `link[rel="apple-touch-icon"]`, href: true },
-  { sel: `link[rel="apple-touch-icon-precomposed"]`, href: true },
-  { sel: `link[rel="shortcut icon"]`, href: true },
-  { sel: `link[rel="icon"]`, href: true },
-  { sel: `meta[property="og:image"]`, content: true },
-  { sel: `meta[name="twitter:image"]`, content: true },
-  { sel: `meta[name="msapplication-TileImage"]`, content: true },
-];
-
 /** @returns `data:` image URL */
 async function fetchIcon(url: URLString): Promise<URLString> {
-  let ky = await appGlobal.remoteApp.kyCreate();
-  // console.log("fetching", url);
-  let blob = await ky.get(url, {
-    result: "blob",
-    timeout: 3000,
+  let response = await fetch(url, {
+    signal: AbortSignal.timeout(3000),
   });
+  let blob = await response.blob();
   return await blobToDataURL(blob);
 }
