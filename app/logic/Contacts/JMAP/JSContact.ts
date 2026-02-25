@@ -46,7 +46,7 @@ export class JSContact {
       ? "home"
       : contexts?.work
         ? "work"
-        : Object.keys(contexts)[0];
+        : firstPropertyName(contexts);
   }
 
   protected static fromPurposeToContext(purpose: string): Record<string, true> {
@@ -198,6 +198,20 @@ function objValues<TValue>(obj: Record<string, TValue>): TValue[] {
     return [];
   }
   return Object.values(obj);
+}
+
+function firstValue<TValue>(obj: Record<string, TValue>): TValue | null {
+  if (!obj || typeof(obj) != "object") {
+    return null;
+  }
+  return Object.values(obj)[0];
+}
+
+function firstPropertyName(obj: Record<string, any>): string | null {
+  if (!obj || typeof (obj) != "object") {
+    return null;
+  }
+  return Object.keys(obj)[0];
 }
 
 /** The right solution would be a `JMAPContactEntry` subclass, but then we would need to
