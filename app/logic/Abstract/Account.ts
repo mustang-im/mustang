@@ -59,10 +59,13 @@ export class Account extends Observable {
   }
 
   /**
-   * Perform one-time post-login actions, such as performing an initial sync
-   * and/or setting up polling or notifications.
-   * By default all we do is to asynchronously notify dependent accounts.
-   * N.B. We can't make this `protected` because EWS needs to call it.
+   * For local accounts, this is the startup entry point. It is overridden
+   * e.g. for contacts and calendar to load data from the database.
+   * Startup for accounts that need to log in will attempt to use a
+   * noninteractive `login` call instead. However if this is successful
+   * then the account's login code should finish by running its startup code.
+   * All accounts should finish startup by calling `super.startup()` so that
+   * dependent accounts can start up once their parent account has.
    */
   async startup() {
     for (let dependent of this.dependentAccounts()) {

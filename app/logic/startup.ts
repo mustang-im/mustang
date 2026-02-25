@@ -42,15 +42,22 @@ export async function getStartObjects(): Promise<void> {
 
 /**
  * Logs in to all accounts for which we have the credentials stored.
+ *
+ * @param startupErrorCallback Called for login errors.
+ *   May be called multiple times, e.g. once per account.
  */
-export function loginOnStartup(): void {
+export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void {
   let allAccounts = getAllAccounts();
   for (let account of allAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
   }
   for (let account of allAccounts) {
-    if (!account.isDependentAccount && account.loginOnStartup) {
-      account.login(false).catch(account.errorCallback);
+    if (!account.isDependentAccount) {
+      if (account.isLoggedIn) {
+        account.startup().catch(startupErrorCallback);
+      } else if (account.loginOnStartup) {
+        account.login(false).catch(startupErrorCallback);
+      }
     }
   }
 }
