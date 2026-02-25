@@ -215,7 +215,7 @@ export async function exchangeAutoDiscoverV2JSON(domain: string, emailAddress: s
 }
 
 async function fetchV2AllProtocols(urlPrefix: URLString, abort: AbortController): Promise<ArrayColl<MailAccount>> {
-  let protocols = ["ews", "activesync"];
+  let protocols = ["ews", "activesync", "owa"];
   let results = await Promise.allSettled<MailAccount>(protocols.map(protocol =>
     fetchV2SingleProtocol(urlPrefix, protocol, abort)
   ));
@@ -232,6 +232,7 @@ async function fetchV2SingleProtocol(urlPrefix: URLString, protocol: string, abo
   let exchangeProtocol = sanitize.translate(protocol, {
     "ews": "Ews",
     "activesync": "ActiveSync",
+    "owa": "REST",
   });
   let json = await fetchJSON(urlPrefix + exchangeProtocol, abort);
   return readAutoDiscoverV2JSON(json, protocol);
@@ -244,15 +245,21 @@ function readAutoDiscoverV2JSON(json: any, protocol: string): MailAccount {
   }
   let url = json?.Url;
   assert(url, "No URL found");
+  url = sanitize.url(url, null, ["https"]);
+  assert(url, `Invalid URL found: <${url}>`);
   return newURLAccount(url, protocol, "autodiscover-json");
 }
 
 /** @param protocol Like `Account.protocol` */
 function newURLAccount(url: URLString, protocol: string, source: ConfigSource): MailAccount {
   assert(url.startsWith("https://"), "URL must be https:");
+  let urlObj = new URL(url);
+  if (urlObj.pathname == "/api") {
+    urlObj.pathname = "/owa/";
+  }
   let acc = newAccountForProtocol(protocol);
-  acc.url = url;
-  acc.hostname = new URL(acc.url).hostname;
+  acc.url = urlObj.href;
+  acc.hostname = urlObj.hostname;
   acc.port = 443;
   acc.tls = TLSSocketType.TLS;
   acc.authMethod = OAuth2URLs.some(oauth => oauth.domains.includes(acc.hostname))
