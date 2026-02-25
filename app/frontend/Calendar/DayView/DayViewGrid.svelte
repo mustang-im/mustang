@@ -152,7 +152,7 @@
     overflow-wrap: break-word;
   }
   .all-day-events {
-    margin: 10px -16px -10px -16px;
+    margin: 0px -1px -2px 0px;
     opacity: 85%;
   }
   .weekday {
