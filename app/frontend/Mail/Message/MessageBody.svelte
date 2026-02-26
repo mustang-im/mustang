@@ -1,5 +1,5 @@
 <vbox flex class="message-body">
-  {#if $message.needToLoadBody}
+  {#if !$message.loadedBody}
     {#await message.loadBody()}
       {#await sleep(1)}
         <hbox></hbox>

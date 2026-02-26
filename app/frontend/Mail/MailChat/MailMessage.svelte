@@ -12,7 +12,7 @@
         {$message.subject}
       </h2>
     {/if}
-    {#if $message.needToLoadBody}
+    {#if !$message.loadedBody}
       {#await message.loadBody()}
         <!---->
       {:catch ex}

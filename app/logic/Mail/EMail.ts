@@ -74,9 +74,9 @@ export class EMail extends Message {
   /** Was just downloaded, but wasn't saved to local disk yet.
    * Set only temporarily. */
   needSave = false;
-  /** Body hasn't been loaded yet */
+  /** Body has been loaded already */
   @notifyChangedProperty
-  needToLoadBody = true;
+  loadedBody = false;
   /** For SQLEMail and alternatives only */
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
@@ -407,7 +407,7 @@ export class EMail extends Message {
   }
 
   async loadBody() {
-    if (!this.needToLoadBody) {
+    if (this.loadedBody) {
       return;
     }
     if (!this._rawHTML && !this._text) {
@@ -423,7 +423,7 @@ export class EMail extends Message {
     if (html?.includes("cid:")) {
       this._sanitizedHTML = await addCID(html, this);
     }
-    this.needToLoadBody = false; // triggers UI reload
+    this.loadedBody = true; // triggers UI reload
   }
 
   get html(): string {
@@ -431,14 +431,14 @@ export class EMail extends Message {
   }
   set html(val: string) {
     super.html = val;
-    this.needToLoadBody = true;
+    this.loadedBody = false;
   }
 
   get loadExternalImages(): boolean {
     return super.loadExternalImages;
   }
   set loadExternalImages(val: boolean) {
-    this.needToLoadBody = true;
+    this.loadedBody = false;
     super.loadExternalImages = val;
   }
 
