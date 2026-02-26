@@ -24,7 +24,6 @@
 # Polish
 * Contacts History
   * Now bar
-  * Hide all recurring events more than 1 week in the future
   * Make icon clickable
 
 # Next
@@ -109,15 +108,12 @@
   * Start with email setup, not selection screen
   * Don't exit setup
 * gmx.net / web.de unable to verify the first certificate on macOS 14.5
-* Contacts: Add (+) when "All" selected: add to personal addressbook
 * Demo: Files: Add Files for persons
 * Chat: selected person not shown
 * Mail: Get out of Folder settings mode
- ## Freshness
-* Account colors
+## Freshness
 * Icons for accounts: user-set
 * Pic for users, in identities
-* Unified inbox: Show account as tag or icon
 
 
 # WebApps
