@@ -213,6 +213,9 @@ export class OWAFolder extends Folder {
       return;
     }
     await this.moveOrCopyMessagesOnServer("Move", messages as Collection<OWAEMail>);
+    for (let msg of messages) {
+      await msg.deleteMessageLocally();
+    }
   }
 
   async copyMessagesHere(messages: Collection<EMail>) {

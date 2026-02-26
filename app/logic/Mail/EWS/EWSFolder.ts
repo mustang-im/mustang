@@ -388,6 +388,9 @@ export class EWSFolder extends Folder {
       return;
     }
     await this.moveOrCopyMessagesOnServer("Move", messages as Collection<EWSEMail>);
+    for (let msg of messages) {
+      await msg.deleteMessageLocally();
+    }
   }
 
   async copyMessagesHere(messages: Collection<EMail>) {

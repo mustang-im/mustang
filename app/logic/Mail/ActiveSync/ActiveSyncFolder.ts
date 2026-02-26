@@ -248,7 +248,11 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       // "3" is success for a Move operation... go figure.
       if (response.Status != "3") {
         console.error(`ActiveSync MoveItems status ${response.Status}`);
+        return;
       }
+    }
+    for (let msg of messages) {
+      await msg.deleteMessageLocally();
     }
   }
 
