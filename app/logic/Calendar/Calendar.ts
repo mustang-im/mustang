@@ -53,7 +53,6 @@ export class Calendar extends Account {
 
   async startup() {
     await this.listEvents();
-    await super.startup();
   }
 
   async listEvents() {

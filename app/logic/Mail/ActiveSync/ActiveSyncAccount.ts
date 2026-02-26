@@ -103,7 +103,7 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async startup() {
-    await this.listFolders();
+    await super.startup();
 
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
@@ -113,7 +113,7 @@ export class ActiveSyncAccount extends MailAccount {
     // is in sync, so each pingable registers with the account when
     // it's ready to be specified in the Ping operation.
 
-    await super.startup();
+    this.startupDependentAccounts();
   }
 
   async logout(): Promise<void> {

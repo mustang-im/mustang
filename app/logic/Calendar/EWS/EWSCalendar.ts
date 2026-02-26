@@ -29,6 +29,10 @@ export class EWSCalendar extends Calendar {
     return new EWSEvent(this, parentEvent);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
   getIncomingInvitationForEMail(message: EWSEMail) {
     return new EWSIncomingInvitation(this, message);
   }

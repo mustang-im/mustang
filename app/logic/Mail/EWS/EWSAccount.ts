@@ -106,11 +106,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async startup() {
-    await this.listFolders();
+    await super.startup();
 
-    // We can't use `super.startup()` here because we need to special-case
+    // We can't use `startupDependentAccounts()` here because we need to special-case
     // notifications which we only want to happen once the sync completes.
-    await this.inbox.getNewMessages();
 
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
     for (let dependent of this.dependentAccounts()) {

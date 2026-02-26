@@ -33,6 +33,10 @@ export class JMAPAddressbook extends Addressbook {
     return new JMAPGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
   fromJMAP(jmap: TJMAPAddressbook) {
     this.jmapID = sanitize.nonemptystring(jmap.id);
     this.isDefault = sanitize.boolean(jmap.isDefault, false);

@@ -178,7 +178,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async startup() {
-    await this.listFolders();
+    await super.startup();
 
     // `listFolders()` will subscribe to new user-added calendars
 
@@ -211,7 +211,7 @@ export class OWAAccount extends MailAccount {
     this.notifications.start()
       .catch(this.errorCallback);
 
-    await super.startup();
+    await this.startupDependentAccounts();
   }
 
   async logout(): Promise<void> {

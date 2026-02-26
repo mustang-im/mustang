@@ -16,7 +16,6 @@ export class GraphChatAccount extends ChatAccount {
 
   async startup() {
     await this.listRooms();
-    await super.startup();
   }
 
   async listRooms(): Promise<void> {

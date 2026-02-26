@@ -40,9 +40,8 @@ export class MailAccount extends TCPAccount {
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
 
   async startup() {
-    // SMTP accounts are mail accounts but don't have an inbox.
-    await this.inbox?.getNewMessages();
-    await super.startup();
+    await this.listFolders();
+    await this.inbox.getNewMessages();
   }
 
   async listFolders(): Promise<void> {

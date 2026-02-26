@@ -64,17 +64,22 @@ export class Account extends Observable {
    * Startup for accounts that need to log in will attempt to use a
    * noninteractive `login` call instead. However if this is successful
    * then the account's login code should finish by running its startup code.
-   * All accounts should finish startup by calling `super.startup()` so that
-   * dependent accounts can start up once their parent account has.
    */
   async startup() {
+  }
+
+  /**
+   * Convenience method for accounts to use to start up dependent accounts.
+   * This should be called after the account has finished its own startup.
+   */
+  protected startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
       dependent.startup().catch(dependent.errorCallback);
     }
   }
 
   get isLoggedIn(): boolean {
-    return this.isDependentAccount && this.mainAccount.isLoggedIn;
+    return false;
   }
 
   /**

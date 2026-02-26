@@ -36,6 +36,10 @@ export class OWAAddressbook extends Addressbook {
     return new OWAGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
   async listContacts() {
     await super.listContacts();
     await this.listContactsRunOnce.runOnce(() => this.listContactsSlow());

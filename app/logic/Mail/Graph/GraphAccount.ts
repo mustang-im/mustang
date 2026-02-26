@@ -52,7 +52,7 @@ export class GraphAccount extends MailAccount {
   }
 
   async startup() {
-    await this.listFolders();
+    await super.startup();
     let inbox = this.inbox as GraphFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();
@@ -85,7 +85,7 @@ export class GraphAccount extends MailAccount {
       appGlobal.chatAccounts.add(chatAccount);
     }
     
-    await super.startup();
+    await this.startupDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {

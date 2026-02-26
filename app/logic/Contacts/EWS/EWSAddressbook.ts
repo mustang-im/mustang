@@ -28,6 +28,10 @@ export class EWSAddressbook extends Addressbook {
     return new EWSGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
   async listContacts() {
     await super.listContacts();
 

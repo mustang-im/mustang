@@ -69,10 +69,9 @@ export class IMAPAccount extends MailAccount {
     if (await this.hasCapability('NAMESPACE')) {
       this.namespaces = await this.getNamespaces();
     }
-    await this.listFolders();
+    await super.startup();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
-    await super.startup();
   }
 
   async verifyLogin(): Promise<void> {
