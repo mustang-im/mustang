@@ -373,23 +373,26 @@ export class EMail extends Message {
     await this.loadMIME();
   }
 
+  protected loadMIMERunOnce = new RunOnce();
   async loadMIME() {
     if (this.mime) {
       return;
     }
-    if (this.dbID) {
-      try {
-        await this.storage.readMessage(this);
-        await this.folder.account.contentStorage.first.read(this);
-        if (this.mime) {
-          await this.parseMIME();
-          return;
+    await this.loadMIMERunOnce.runOnce(async () => {
+      if (this.dbID) {
+        try {
+          await this.storage.readMessage(this);
+          await this.folder.account.contentStorage.first.read(this);
+          if (this.mime) {
+            await this.parseMIME();
+            return;
+          }
+        } catch (ex) {
+          console.error(ex);
         }
-      } catch (ex) {
-        console.error(ex);
       }
-    }
-    await this.download();
+      await this.download();
+    });
   }
 
   async loadAttachments() {
@@ -411,6 +414,8 @@ export class EMail extends Message {
     if (this.loadedBody) {
       return;
     }
+    // Wait for MIME if loading is in progress
+    await this.loadMIMERunOnce.runOnce(async () => {});
     if (!this._rawHTML && !this._text) {
       if (this.dbID) {
         await this.storage.readMessageBody(this);
