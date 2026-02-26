@@ -438,6 +438,9 @@ export class EMail extends Message {
     return super.loadExternalImages;
   }
   set loadExternalImages(val: boolean) {
+    if (this.loadExternalImages == val) {
+      return;
+    }
     this.loadedBody = false;
     super.loadExternalImages = val;
   }
