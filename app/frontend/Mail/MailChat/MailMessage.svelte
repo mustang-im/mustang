@@ -12,11 +12,13 @@
         {$message.subject}
       </h2>
     {/if}
-    {#await message.loadBody()}
-      <!---->
-    {:catch ex}
-      {ex.message ?? ex + ""}
-    {/await}
+    {#if $message.needToLoadBody}
+      {#await message.loadBody()}
+        <!---->
+      {:catch ex}
+        {ex.message ?? ex + ""}
+      {/await}
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="menu">
     <Toolbar {message} />

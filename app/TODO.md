@@ -22,7 +22,6 @@
 * Calendar: Find identity #682
 
 # Polish
-* Account icons
 * Contacts History
   * Now bar
   * Hide all recurring events more than 1 week in the future
@@ -73,7 +72,6 @@
 * Debug dump of settings
 * Composer
   * PersonEntry: Delete key
-  * Remove added attachment (needs menu item)
   * Open attachment
 * Setup
   * OAuth2 login: Close window. Login button disabled.
