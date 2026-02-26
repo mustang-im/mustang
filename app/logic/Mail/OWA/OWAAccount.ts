@@ -3,7 +3,7 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
@@ -246,8 +246,17 @@ export class OWAAccount extends MailAccount {
     if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
     }
-    assert(email.folder?.id, "Need folder to save the sent email in");
-    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
+    let folder = email.folder as OWAFolder;
+    assert(folder?.id, "Need folder to save the sent email in");
+    assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
+    if (folder.account.mainAccount) {
+      let mainAccount = folder.account.mainAccount as OWAAccount;
+      let permissions = (await folder.getPermissions()).find(permissions => permissions.emailAddress == mainAccount.emailAddress);
+      if (!permissions.exchangePermissions.CanCreateItems) {
+        folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as OWAFolder;
+      }
+    }
+    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
     request.addField("Message", "Body", {
