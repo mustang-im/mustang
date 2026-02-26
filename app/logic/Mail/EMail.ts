@@ -13,7 +13,7 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -77,6 +77,8 @@ export class EMail extends Message {
   /** Body has been loaded already */
   @notifyChangedProperty
   loadedBody = false;
+  /** For read from DB, fetch from server etc. */
+  readonly readLock = new Lock();
   /** For SQLEMail and alternatives only */
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
@@ -240,6 +242,7 @@ export class EMail extends Message {
   }
 
   async loadEvent() {
+    // TODO Save the event in this.json, instead of loading it from raw MIME every time
     assert(this.invitationMessage, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
     if (this.mime) {
@@ -251,6 +254,15 @@ export class EMail extends Message {
   }
 
   async parseMIME() {
+    let lock = await this.readLock.lock();
+    try {
+      await this.parseMIMELocked();
+    } finally {
+      lock.release();
+    }
+  }
+
+  protected async parseMIMELocked() {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
@@ -264,7 +276,7 @@ export class EMail extends Message {
       try {
         this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
       } catch (ex) {
-        this.folder.account.errorCallback(ex);
+        this.folder?.account.errorCallback(ex);
       }
     }*/
 
@@ -319,7 +331,7 @@ export class EMail extends Message {
         attachment.size = sanitize.integer(attachment.content.size, -1);
         return attachment;
       } catch (ex) {
-        this.folder.account.errorCallback(ex);
+        this.folder?.account.errorCallback(ex);
         return null;
       }
     }).filter(attachment => !!attachment));
@@ -376,33 +388,49 @@ export class EMail extends Message {
     if (this.mime) {
       return;
     }
-    if (this.dbID) {
-      try {
-        await this.storage.readMessage(this);
-        await this.folder.account.contentStorage.first.read(this);
-        if (this.mime) {
-          await this.parseMIME();
-          return;
-        }
-      } catch (ex) {
-        console.error(ex);
+    let lock = await this.readLock.lock();
+    try {
+      if (this.mime) {
+        return;
       }
+      if (this.dbID) {
+        try {
+          await this.storage.readMessage(this);
+          await this.folder.account.contentStorage.first.read(this);
+          if (this.mime) {
+            await this.parseMIMELocked();
+            return;
+          }
+        } catch (ex) {
+          this.folder?.account.errorCallback(ex);
+        }
+      }
+      await this.download();
+    } finally {
+      lock.release();
     }
-    await this.download();
   }
 
   async loadAttachments() {
     if (this.attachments.every(a => a.content)) {
       return;
     }
+    let lock = await this.readLock.lock();
     try {
-      let att = this.folder.account.contentStorage.find(store => (store as any).readAttachment); // RawFilesAttachment
-      assert(att, "Raw attachment storage not configured");
-      await att.read(this);
-    } catch (ex) {
-      console.error(ex);
-      // fallback
-      await this.loadMIME();
+      if (this.attachments.every(a => a.content)) {
+        return;
+      }
+      try {
+        let att = this.folder.account.contentStorage.find(store => (store as any).readAttachment); // RawFilesAttachment
+        assert(att, "Raw attachment storage not configured");
+        await att.read(this);
+      } catch (ex) {
+        this.folder?.account.errorCallback(ex);
+        // fallback
+        await this.loadMIME();
+      }
+    } finally {
+      lock.release();
     }
   }
 
@@ -410,20 +438,28 @@ export class EMail extends Message {
     if (this.loadedBody) {
       return;
     }
-    if (!this._rawHTML && !this._text) {
-      if (this.dbID) {
-        await this.storage.readMessageBody(this);
+    let lock = await this.readLock.lock();
+    try {
+      if (this.loadedBody) {
+        return;
       }
       if (!this._rawHTML && !this._text) {
-        await this.download();
+        if (this.dbID) {
+          await this.storage.readMessageBody(this);
+        }
+        if (!this._rawHTML && !this._text) {
+          await this.download();
+        }
       }
-    }
 
-    let html = this.html;
-    if (html?.includes("cid:")) {
-      this._sanitizedHTML = await addCID(html, this);
+      let html = this.html;
+      if (html?.includes("cid:")) {
+        this._sanitizedHTML = await addCID(html, this);
+      }
+      this.loadedBody = true; // triggers UI reload
+    } finally {
+      lock.release();
     }
-    this.loadedBody = true; // triggers UI reload
   }
 
   get html(): string {
@@ -562,7 +598,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
     }
     html = new XMLSerializer().serializeToString(doc);
   } catch (ex) {
-    email.folder.account.errorCallback(ex);
+    email.folder?.account.errorCallback(ex);
   }
   return html;
 }
