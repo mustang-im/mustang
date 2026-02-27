@@ -12,6 +12,10 @@ export class JMAPPerson extends Person {
   original: TJMAPContact;
   uid: string;
   jmapID: TID;
+  /** For a given Person property, where JSContact supports multiple values indexed by ID,
+   * but we support only one value, remember the ID we took, so that we write the same one back.
+   * Person property name, e.g. `notes` -> JSContact ID in the map, e.g. `abc` in `jscontact.notes.abc.name` */
+  propertyFieldIDs: Record<string, string> = {};
 
   get account() {
     return this.addressbook.account;
@@ -55,15 +59,21 @@ export class JMAPPerson extends Person {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
+    this.uid = sanitize.nonemptystring(json.uid, null);
     this.original = sanitize.json(json.original, {}); // as object, not string
     this.jmapID = sanitize.alphanumdash(json.jmapID, null);
-    this.uid = sanitize.nonemptystring(json.uid, null);
+    this.propertyFieldIDs = {};
+    for (let propName in sanitize.object(json.propertyFieldIDs, {})) {
+      sanitize.alphanumdash(propName);
+      this.propertyFieldIDs[propName] = sanitize.string(json.propertyFieldIDs[propName], null);
+    }
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();
+    json.uid = this.uid;
     json.original = this.original;
     json.jmapID = this.jmapID;
-    json.uid = this.uid;
+    json.propertyFieldIDs = this.propertyFieldIDs;
     return json;
   }
 }

@@ -1,9 +1,9 @@
 import { type Person, ContactEntry } from '../../Abstract/Person';
-import type { TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TPrivateOrWork } from './TJSContact';
+import type { TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TOrganization, TOrgUnit } from './TJSContact';
 import type { JMAPPerson } from './JMAPPerson';
 import type { TID } from '../../Mail/JMAP/TJMAPGeneric';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
-import { ensureArray } from '../../util/util';
+import { assert, ensureArray, randomID } from '../../util/util';
 import type { ArrayColl } from 'svelte-collections';
 
 export class JSContact {
@@ -34,11 +34,11 @@ export class JSContact {
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
-    person.notes = sanitize.nonemptystring(objValues(jscontact.notes)[0]?.note, "");
-    let company = objValues(jscontact.organizations)[0];
-    person.company = sanitize.nonemptystring(company?.name, "");
-    person.department = sanitize.nonemptystring(company?.units[0]?.name, "");
-    person.position = sanitize.nonemptystring(objValues(jscontact.titles)[0]?.name, "");
+    person.notes = sanitize.nonemptystring(getOneValue(person, jscontact, jscontact.notes, "notes", entry => entry.note), "");
+    person.position = sanitize.nonemptylabel(getOneValue(person, jscontact, jscontact.titles, "titles", entry => entry.name), "");
+    let company = sanitize.object(getOneValue(person, jscontact, jscontact.organizations, "organizations", entry => entry), null) as TOrganization;
+    person.company = sanitize.nonemptylabel(company?.name, "");
+    person.department = sanitize.nonemptylabel(company?.units?.[0]?.name, "");
   }
 
   protected static fromContextToPurpose(contexts: Record<string, true>): string | null {
@@ -105,7 +105,7 @@ export class JSContact {
     jscontact.onlineServices ??= {};
     jscontact.links ??= {};
     JSContact.fromContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses, "address",
-      () => {});
+      () => { });
     JSContact.fromContactEntries<TPhone>(jscontact.phones, person.phoneNumbers, "number",
       (entry: any, personEntry: ContactEntry) => {
         entry.features = JSContact.fromProtocolToPhoneFeature(personEntry.protocol);
@@ -115,7 +115,7 @@ export class JSContact {
         entry.service = personEntry.protocol;
       });
     JSContact.fromContactEntries<TLink>(jscontact.links, person.urls, "uri",
-      () => {});
+      () => { });
     // TODO
     // person.streetAddresses
     // person.popularity
@@ -130,7 +130,21 @@ export class JSContact {
       delete jscontact.media?.avatar;
     }
 
-    // TODO Save notes, position, company
+    setOneValue(person, jscontact, jscontact.notes, "notes", (entry) => entry.note = person.notes);
+    setOneValue(person, jscontact, jscontact.titles, "titles", (entry) => entry.name = person.position);
+    let company = {} as TOrganization;
+    if (person.company || person.department) {
+      company = sanitize.object(getOneValue(person, jscontact, jscontact.organizations, "organizations", entry => entry), {});
+      company.name = person.company;
+      if (person.department) {
+        company.units ??= [];
+        company.units[0] ??= {} as TOrgUnit;
+        company.units[0].name = person.department;
+      } else {
+        delete company.units[0];
+      }
+    }
+    setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry) => entry = company);
   }
 
   protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
@@ -200,21 +214,17 @@ function objValues<TValue>(obj: Record<string, TValue>): TValue[] {
   return Object.values(obj);
 }
 
-function firstValue<TValue>(obj: Record<string, TValue>): TValue | null {
-  if (!obj || typeof(obj) != "object") {
-    return null;
-  }
-  return Object.values(obj)[0];
-}
-
 function firstPropertyName(obj: Record<string, any>): string | null {
   if (!obj || typeof (obj) != "object") {
     return null;
   }
-  return Object.keys(obj)[0];
+  return sanitize.alphanumdash(Object.keys(obj)[0], null);
 }
 
-/** The right solution would be a `JMAPContactEntry` subclass, but then we would need to
+/** In order to write back the same ContactEntry to JSContact,
+ * we need to save the ID, given that the value may change.
+ * `jmapID` here is the ID of the property entry in JSContact, not the ID of the entire JSContact.
+ * The right solution would be a `JMAPContactEntry` subclass, but then we would need to
  * adapt *all* places that create `new ContactEntry` to do `person.newContactEntry()`. */
 function getJMAPID(contactEntry: ContactEntry): TID {
   return contactEntry.json?.jmapID;
@@ -222,4 +232,41 @@ function getJMAPID(contactEntry: ContactEntry): TID {
 function setJMAPID(contactEntry: ContactEntry, jmapID: TID) {
   contactEntry.json ??= {} as any;
   contactEntry.json.jmapID = jmapID;
+}
+
+/**
+ * Many JSContact properties support multiple values, indexed by ID,
+ * but we support only one, e.g. notes, corporate position etc.
+ * By default, we read the first one, but the order of values in a JS Object changes
+ * when you set a value, so we need to remember which ID we were reading,
+ * so that we write back the correct one.
+ * Rant: If JMAP used proper arrays instead of ID-based maps, we wouldn't have this problem,
+ * we could simply use the index 0 all the time. This is very annoying.
+ * @param jscontactEntries `= jscontact[propName]`
+ */
+function setOneValue<TValueObject>(personGeneric: Person, jscontact: JSContact, jscontactEntries: Record<string, TValueObject>, propName: string, setter: (obj: TValueObject) => void) {
+  assert(jscontact[propName] == jscontactEntries, "propName needs to match the entries");
+  if (!jscontactEntries) {
+    jscontactEntries = jscontact[propName] ??= {};
+  }
+  let person = personGeneric as JMAPPerson;
+  person.propertyFieldIDs ??= {};
+  let id = person.propertyFieldIDs[propName] ??= firstPropertyName(jscontactEntries) ?? randomID();
+  jscontactEntries[id] ??= {} as TValueObject;
+  setter(jscontactEntries[id]);
+}
+
+function getOneValue<TValueObject, TValue>(personGeneric: Person, jscontact: JSContact, jscontactEntries: Record<string, TValueObject>, propName: string, getter: (obj: TValueObject) => TValue | null): TValue | null {
+  assert(jscontact[propName] == jscontactEntries, "propName needs to match the entries");
+  if (!jscontactEntries) {
+    return null;
+  }
+  let person = personGeneric as JMAPPerson;
+  person.propertyFieldIDs ??= {};
+  let firstID = firstPropertyName(jscontactEntries);
+  if (!firstID) {
+    return null;
+  }
+  let id = person.propertyFieldIDs[propName] ??= firstID;
+  return getter(jscontactEntries[id]);
 }

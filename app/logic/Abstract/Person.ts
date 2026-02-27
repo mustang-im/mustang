@@ -136,7 +136,7 @@ export class Person extends ContactBase {
     this.company = this.company ?? other.company;
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
-    this.notes = ((this.notes || "") + (other.notes || "")) || null;
+    this.notes = ((this.notes || "") + (this.notes && other.notes ? "\n\n" : "") + (other.notes || "")) || null;
     this.emailAddresses.addAll(other.emailAddresses.filterOnce(o => !this.emailAddresses.find(t => t.value == o.value)));
     this.chatAccounts.addAll(other.chatAccounts.filterOnce(o => !this.chatAccounts.find(t => t.value == o.value)));
     this.phoneNumbers.addAll(other.phoneNumbers.filterOnce(o => !this.phoneNumbers.find(t => t.value == o.value)));

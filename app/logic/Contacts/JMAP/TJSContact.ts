@@ -231,13 +231,15 @@ export interface TLanguagePref {
 export interface TOrganization {
   "@type"?: "Organization";
   name?: string;
-  units?: {
-    "@type"?: "OrgUnit";
-    name: string;
-    sortAs?: string;
-  }[];
+  units?: TOrgUnit[];
   sortAs?: string;
   contexts?: TPrivateOrWork;
+}
+
+export interface TOrgUnit {
+  "@type"?: "OrgUnit";
+  name: string;
+  sortAs?: string;
 }
 
 export interface TNickname {

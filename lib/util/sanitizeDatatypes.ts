@@ -254,14 +254,22 @@ class Sanitize {
     }
   }
 
-  /**
-   * A value which should be shown to the user in the UI as label
-   */
   array(unchecked: [] | null | undefined, fallback: [] | null | Symbol = throwErrors): [] | null {
     if (unchecked && Array.isArray(unchecked)) {
       return unchecked;
     } else {
       return haveError("Not an array", unchecked, fallback);
+    }
+  }
+
+  /**
+   * A JS Object with property -> value
+   */
+  object(unchecked: Object | null | undefined, fallback: Object | null | Symbol = throwErrors): Object | null {
+    if (unchecked && typeof(unchecked) == "object") {
+      return unchecked;
+    } else {
+      return haveError("Not an object", unchecked, fallback);
     }
   }
 
