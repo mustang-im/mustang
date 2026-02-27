@@ -157,7 +157,7 @@ export class JSContact {
       let jscontactEntry = jscontactEntries[jmapID];
       let newCE = getValues(jscontactEntry);
       newCE.purpose = JSContact.fromContextToPurpose(jscontactEntry.contexts);
-      newCE.preference = sanitize.integerRange(jscontactEntry.pref, 0, 100);
+      newCE.preference = sanitize.integerRange(jscontactEntry.pref, 0, 100, 100);
       let existing = personEntries.find(p => getJMAPID(p) == jmapID);
       if (existing) {
         existing.value = newCE.value;
