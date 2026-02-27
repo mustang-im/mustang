@@ -221,6 +221,9 @@ export class GraphFolder extends Folder {
     let semaphore = new Semaphore(kMaxParallelCount);
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
+      if (msg.downloadRunOnce.running) {
+        continue;
+      }
       let lock = await semaphore.lock();
       (async () => {
         try {
