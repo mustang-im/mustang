@@ -188,7 +188,6 @@
       }
       step = Step.FoundConfig;
       await onContinue();
-      return;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
     } else if (step == Step.FinalizeConfig) {

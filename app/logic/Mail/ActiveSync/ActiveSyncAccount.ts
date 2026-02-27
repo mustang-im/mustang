@@ -80,6 +80,7 @@ export class ActiveSyncAccount extends MailAccount {
     await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
       this.oAuth2 ??= getOAuth2BuiltIn(this);
+      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
