@@ -37,6 +37,8 @@ import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
+import { Addressbook } from "../../logic/Contacts/Addressbook";
+import ContactsImportExport from "./Contacts/ImportExport.svelte";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
@@ -115,6 +117,7 @@ contactsSettings.newAccountURL = "/setup/contacts";
 // #endif
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
+accountSettings.add(new AccSetting(Addressbook, "contacts-import", gt`Import/Export`, ContactsImportExport, true));
 
 // #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);

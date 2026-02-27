@@ -316,10 +316,8 @@
   async function onAddAttachment() {
     let file = await fileSelector.selectFile();
     if (!file) {
-      console.log("no file selected");
       return;
     }
-    console.log("Selected attachment file", file);
     mail.attachments.add(Attachment.fromFile(file));
   }
 
