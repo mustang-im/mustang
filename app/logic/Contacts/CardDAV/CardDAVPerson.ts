@@ -1,6 +1,6 @@
 import { Person } from '../../Abstract/Person';
 import type { CardDAVAddressbook } from './CardDAVAddressbook';
-import { personToVCard, convertVCardToPerson, getUpdatedVCard, parse } from '../VCard/VCard';
+import { personToVCard, convertVCardToPerson, getUpdatedVCard, parseContact } from '../VCard/VCard';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";
@@ -44,7 +44,7 @@ export class CardDAVPerson extends Person {
   async saveToServer() {
     this.id ??= crypto.randomUUID();
     if (this.url) {
-      let vCard = getUpdatedVCard(this, parse(this.originalVCard));
+      let vCard = getUpdatedVCard(this, parseContact(this.originalVCard));
       // TODO Update doesn't work, if the contact was deleted on the server
       console.log("updating", this.url, "with vCard", vCard);
       await this.addressbook.client.updateVCard({
