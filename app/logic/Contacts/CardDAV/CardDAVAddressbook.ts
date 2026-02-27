@@ -170,11 +170,18 @@ export class CardDAVAddressbook extends Addressbook {
     super.fromConfigJSON(json);
     this.addressbookURL = sanitize.url(json.addressbookURL);
     this.ctag = sanitize.string(json.ctag, null);
+
+    let davAB = this.davAddressbook = {} as DAVAddressBook;
+    davAB.url = this.addressbookURL;
+    davAB.ctag = this.ctag;
+    davAB.syncToken = sanitize.string(json.syncToken, null);
+    davAB.displayName = this.name;
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.addressbookURL = this.addressbookURL;
     json.ctag = this.ctag;
+    json.syncToken = this.davAddressbook?.syncToken;
     return json;
   }
 }
