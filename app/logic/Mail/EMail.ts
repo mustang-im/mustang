@@ -21,7 +21,6 @@ import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { RunOnce } from "../util/flow/RunOnce";
-import { logError } from "../../frontend/Util/error";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
 
