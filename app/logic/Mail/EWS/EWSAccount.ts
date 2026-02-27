@@ -108,23 +108,22 @@ export class EWSAccount extends MailAccount {
   async startup() {
     await super.startup();
 
-    // We can't use `startupDependentAccounts()` here because we need to special-case
-    // notifications which we only want to happen once the sync completes.
-
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
+    // We can't use `startupDependentAccounts()` here, because we need to special-case
+    // notifications, which we only want to happen once the sync completes.
     for (let dependent of this.dependentAccounts()) {
-      if (dependent instanceof EWSAddressbook) {
-        dependent.listContacts()
-          .then(() => dependent.username != this.username && this.streamNotifications(dependent.folderID))
-          .catch(dependent.errorCallback);
-      } else if (dependent instanceof EWSCalendar) {
-        dependent.listEvents()
-          .then(() => dependent.username != this.username && this.streamNotifications(dependent.folderID))
-          .catch(dependent.errorCallback);
-      } else {
-        dependent.startup().catch(dependent.errorCallback);
-      }
+      dependent.startup()
+        .then(() => {
+          // delegated account of another user
+          if (dependent.username != this.username &&
+              (dependent instanceof EWSAddressbook || dependent instanceof EWSCalendar)) {
+            this.streamNotifications(dependent.folderID);
+          }
+        })
+        .catch(dependent.errorCallback);
     }
+
     await this.streamNotifications();
   }
 

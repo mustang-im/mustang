@@ -74,7 +74,8 @@ export class Account extends Observable {
    */
   protected startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
-      dependent.startup().catch(dependent.errorCallback);
+      dependent.startup()
+        .catch(dependent.errorCallback);
     }
   }
 
@@ -97,10 +98,10 @@ export class Account extends Observable {
    */
   async login(interactive: boolean): Promise<void> {
     this.errors.clear();
-    if (this.isLoggedIn) {
-      return;
+
+    if (this.isDependentAccount && !this.isLoggedIn) {
+      await this.mainAccount.login(interactive);
     }
-    await this.mainAccount?.login(interactive);
   }
 
   /** For setup only. Test that the login works. */

@@ -178,9 +178,8 @@ export class OWAAccount extends MailAccount {
   }
 
   async startup() {
-    await super.startup();
-
     // `listFolders()` will subscribe to new user-added calendars
+    await super.startup();
 
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {

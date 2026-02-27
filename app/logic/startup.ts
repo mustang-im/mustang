@@ -8,10 +8,6 @@ import { readFileSharingAccounts } from './Files/AccountsList/FileSharingAccount
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
-import type { MailAccount } from './Mail/MailAccount';
-import type { Addressbook } from './Contacts/Addressbook';
-import type { Calendar } from './Calendar/Calendar';
-import type { FileSharingAccount } from './Files/FileSharingAccount';
 import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from './build';
@@ -52,14 +48,25 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
   }
   for (let account of allAccounts) {
-    if (!account.isDependentAccount) {
-      if (account.isLoggedIn) {
-        account.startup().catch(startupErrorCallback);
-      } else if (account.loginOnStartup) {
-        account.login(false).catch(startupErrorCallback);
-      }
+    if (account.loginOnStartup && !account.isDependentAccount) {
+      (async () => {
+        if (!account.isLoggedIn) {
+          await account.login(false);
+        }
+        await account.startup();
+      })().catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
+}
+
+function errorWithAccountName(account: Account, errorCallback: (ex: Error) => void) {
+  return (ex: Error) => {
+    account.errors.add(ex);
+    if (ex?.message) {
+      ex.message = `${account.name}: ${ex.message}`;
+    }
+    errorCallback(ex);
+  };
 }
 
 function backgroundErrorInAccount(ex: Error, account: Account) {

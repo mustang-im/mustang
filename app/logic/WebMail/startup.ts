@@ -46,9 +46,6 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void):
 
 function backgroundErrorInAccount(ex: Error, account: Account) {
   account.errors.add(ex);
-  if (ex?.message) {
-    ex.message = `${account.name}: ${ex.message}`;
-  }
   console.error(ex);
   logError(ex);
 }

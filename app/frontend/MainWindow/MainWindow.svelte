@@ -77,7 +77,7 @@
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
   import DemoBarLeft from "./DemoBarLeft.svelte";
   import DemoBarTop from "./DemoBarTop.svelte";
-  import { catchErrors, backgroundError } from "../Util/error";
+  import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
