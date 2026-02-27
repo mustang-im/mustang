@@ -1,5 +1,6 @@
 # Bugs
-* IMAP Message download race condition (see IMAPEmail)
+* Mail: Move multiple mails (desktop) - UI and backend buggy
+* Composer: Bulleted lists - Paragraphs vs. lines
 * Mobile
   * Composer
   * Contacts Person page
@@ -28,6 +29,8 @@
 
 # Next
   * JMAP Calendar and Contacts
+    * Fix bugs
+    * Calendar: Recurrence
   * Graph Calendar and Contacts
   * PGP
   * SML
