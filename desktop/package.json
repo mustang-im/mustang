@@ -12,6 +12,7 @@
     "typecheck": "npm run typecheck:node && npm run svelte-check",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
+    "debug": "electron-vite --inspect=9222 --sourcemap dev",
     "build-org": "npm run typecheck && electron-vite build",
     "build": "electron-vite build",
     "build:win": "npm run build && electron-builder --win --config",
