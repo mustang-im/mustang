@@ -146,13 +146,18 @@ export class GraphEMail extends EMail {
     return e;
   }
 
-  async download() {
-    let account = this.folder.account;
-    let mime = await account.graphCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
-    assert(mime, "EMail no longer on server");
-    this.mime = new TextEncoder().encode(mime);
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+  async download(doLock = true) {
+    let lock = doLock ? await this.readLock.lock() : null;
+    try {
+      let account = this.folder.account;
+      let mime = await account.graphCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
+      assert(mime, "EMail no longer on server");
+      this.mime = new TextEncoder().encode(mime);
+      await this.parseMIMEUnlocked();
+      await this.saveCompleteMessage();
+    } finally {
+      lock?.release();
+    }
   }
 
   async markRead(read = true) {

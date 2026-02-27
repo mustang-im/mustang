@@ -27,36 +27,41 @@ export class IMAPEMail extends EMail {
     this.pID = val;
   }
 
-  async download() {
-    let msgInfo: any;
+  async download(doLock = true) {
+    let lock = doLock ? await this.readLock.lock() : null;
     try {
-      msgInfo = await this.folder.runCommand(async (conn) => {
-        this.folder.account.log(this.folder, conn, "download email", this.uid, this.subject);
-        return await conn.fetchOne(this.uid + "", {
-          uid: true,
-          size: true,
-          threadId: true,
-          envelope: true,
-          source: true,
-          flags: true,
-        }, { uid: true });
-      }, ConnectionPurpose.Display);
-    } catch (ex) {
-      if (ex.message == "IMAP UID FETCH: Invalid uidset") {
+      let msgInfo: any;
+      try {
+        msgInfo = await this.folder.runCommand(async (conn) => {
+          this.folder.account.log(this.folder, conn, "download email", this.uid, this.subject);
+          return await conn.fetchOne(this.uid + "", {
+            uid: true,
+            size: true,
+            threadId: true,
+            envelope: true,
+            source: true,
+            flags: true,
+          }, { uid: true });
+        }, ConnectionPurpose.Display);
+      } catch (ex) {
+        if (ex.message == "IMAP UID FETCH: Invalid uidset") {
+          await this.disappeared();
+          return;
+        } else {
+          throw ex;
+        }
+      }
+      if (!msgInfo.envelope) {
         await this.disappeared();
         return;
-      } else {
-        throw ex;
       }
+      this.fromFlow(msgInfo);
+      this.mime ??= msgInfo.source; // Temp HACK when `downloadComplete` == true, but mime is not there
+      await this.parseMIMEUnlocked();
+      await this.saveCompleteMessage();
+    } finally {
+      lock?.release();
     }
-    if (!msgInfo.envelope) {
-      await this.disappeared();
-      return;
-    }
-    this.fromFlow(msgInfo);
-    this.mime ??= msgInfo.source; // Temp HACK when `downloadComplete` == true, but mime is not there
-    await this.parseMIME();
-    await this.saveCompleteMessage();
   }
 
   fromFlow(msgInfo: any) {

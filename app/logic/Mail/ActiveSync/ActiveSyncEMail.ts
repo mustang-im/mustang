@@ -31,27 +31,32 @@ export class ActiveSyncEMail extends EMail {
     this.pID = val;
   }
 
-  async download() {
-    let request = {
-      Fetch: {
-        Store: "Mailbox",
-        ServerId: this.serverID,
-        CollectionId: this.folder.id,
-        Options: {
-          MIMESupport: "2",
-          BodyPreference: {
-            Type: "4",
+  async download(doLock = true) {
+    let lock = doLock ? await this.readLock.lock() : null;
+    try {
+      let request = {
+        Fetch: {
+          Store: "Mailbox",
+          ServerId: this.serverID,
+          CollectionId: this.folder.id,
+          Options: {
+            MIMESupport: "2",
+            BodyPreference: {
+              Type: "4",
+            },
           },
         },
-      },
-    };
-    let response = await this.folder.account.callEAS("ItemOperations", request);
-    if (response.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
+      };
+      let response = await this.folder.account.callEAS("ItemOperations", request);
+      if (response.Response.Fetch.Status != "1") {
+        throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
+      }
+      this.mime = response.Response.Fetch.Properties.Body.RawData;
+      await this.parseMIMEUnlocked();
+      await this.saveCompleteMessage();
+    } finally {
+      lock?.release();
     }
-    this.mime = response.Response.Fetch.Properties.Body.RawData;
-    await this.parseMIME();
-    await this.saveCompleteMessage();
   }
 
   fromWBXML(wbxmljs: any) {

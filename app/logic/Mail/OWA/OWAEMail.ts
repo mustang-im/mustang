@@ -26,12 +26,17 @@ export class OWAEMail extends EMail {
     this.pID = val;
   }
 
-  async download() {
-    let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
-    let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+  async download(doLock = true) {
+    let lock = doLock ? await this.readLock.lock() : null;
+    try {
+      let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
+      let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
+      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      await this.parseMIMEUnlocked();
+      await this.saveCompleteMessage();
+    } finally {
+      lock?.release();
+    }
   }
 
   fromJSON(json: Record<string, any>) {

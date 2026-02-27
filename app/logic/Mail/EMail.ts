@@ -256,13 +256,13 @@ export class EMail extends Message {
   async parseMIME() {
     let lock = await this.readLock.lock();
     try {
-      await this.parseMIMELocked();
+      await this.parseMIMEUnlocked();
     } finally {
       lock.release();
     }
   }
 
-  protected async parseMIMELocked() {
+  protected async parseMIMEUnlocked() {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
@@ -398,14 +398,14 @@ export class EMail extends Message {
           await this.storage.readMessage(this);
           await this.folder.account.contentStorage.first.read(this);
           if (this.mime) {
-            await this.parseMIMELocked();
+            await this.parseMIMEUnlocked();
             return;
           }
         } catch (ex) {
           this.folder?.account.errorCallback(ex);
         }
       }
-      await this.download();
+      await this.download(false);
     } finally {
       lock.release();
     }
@@ -448,7 +448,7 @@ export class EMail extends Message {
           await this.storage.readMessageBody(this);
         }
         if (!this._rawHTML && !this._text) {
-          await this.download();
+          await this.download(false);
         }
       }
 
@@ -481,7 +481,7 @@ export class EMail extends Message {
     super.loadExternalImages = val;
   }
 
-  async download() {
+  async download(doLock = true) {
     throw new AbstractFunction();
     //this.mime = await SMTPAccount.getMIME(this);
   }
