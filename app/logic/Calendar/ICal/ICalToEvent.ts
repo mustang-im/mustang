@@ -2,31 +2,53 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
-import { ICalParser } from "./ICalParser";
+import { ICalContainer, ICalParser } from "./ICalParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
+import { gt } from "../../../l10n/l10n";
 
 /**
- * @param ics iCal / ICS contents to be parsed
- * @param event Output: Put the ics data into this object
- * @returns whether ics indeed contained an event
+ * @param ics iCal .ics contents to be parsed
+ * @param event Output: Put the iCal data into this object
+ * @returns whether an iCal event is indeed contained an event
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
-  return convertICalParserToEvent(new ICalParser(ics), event);
+  let parsed = new ICalParser(ics);
+  let vevent = parsed.containers.vevent?.[0];
+  if (!vevent) {
+    return false;
+  }
+  convertICalContainerToEvent(vevent, event);
+  return true;
+}
+
+/**
+ * Takes a iCal .ics calendar file with events (multiple iCal events concatenated) and
+ * returns Event objects for it.
+ * @param iCalFile file contents
+ * @param newEvent Factory function to create the subclass of Event that you need
+ */
+export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Event[] {
+  let events = [];
+  let parsed = new ICalParser(iCalFile);
+  if (!parsed.containers.vevent) {
+    throw new Error(gt`No iCal found`);
+  }
+  for (let iCal of parsed.containers.vevent) {
+    let event = newEvent();
+    convertICalContainerToEvent(iCal, event);
+    events.push(event);
+  }
+  return events;
 }
 
 /**
  * @param ics iCal / ICS, already parsed
  * @param event Output: Put the ics data into this object
- * @returns whether ics indeed contained an event
  * TODO need to handle more removed properties
  */
-export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean {
-  if (!ics.containers.vevent) {
-    return false;
-  }
-  let vevent = ics.containers.vevent[0];
+export function convertICalContainerToEvent(vevent: ICalContainer, event: Event): void {
   if (vevent.entries.uid) {
     event.calUID = vevent.entries.uid[0].value;
   }
@@ -119,7 +141,6 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
       event.participants.add(participant);
     }
   }
-  return true;
 }
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;

@@ -39,6 +39,8 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
 import { Addressbook } from "../../logic/Contacts/Addressbook";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
+import { Calendar } from "../../logic/Calendar/Calendar";
+import CalendarImportExport from "./Calendar/ImportExport.svelte";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
@@ -107,6 +109,7 @@ calendarSettings.newAccountURL = "/setup/calendar";
 // #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
+accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
 
 const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, true);
 contactsSettings.subCategories.addAll([

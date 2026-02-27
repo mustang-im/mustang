@@ -40,7 +40,7 @@
   </HeaderGroupBox>
 </vbox>
 
-<vbox class="extra-settings">
+<vbox class="extra-settings" flex>
   {#each extraSettings.each as category}
     <svelte:component this={category.windowContent} {account} />
   {/each}

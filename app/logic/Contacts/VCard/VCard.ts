@@ -28,11 +28,11 @@ import { gt } from "../../../l10n/l10n";
  */
 export function convertVCardToPerson(vCard: string, person: Person) {
   let parsed = new ICalParser(vCard);
-  if (!parsed.containers.vcard) {
+  let first = parsed.containers.vcard?.[0];
+  if (!first) {
     throw new Error(gt`No vCard found`);
   }
-  let vcard = parsed.containers.vcard[0];
-  updatePerson(vcard, person);
+  updatePerson(first, person);
 }
 
 /**
@@ -117,6 +117,7 @@ export function updatePerson(vcard: ICalContainer, person: Person) {
 /**
  * Takes a vCard file with many contacts (multiple vCards concatenated) and
  * returns Person objects for it.
+ * @param vcardFile file contents
  * @param newPerson Factory function to create the subclass of Person that you need
  */
 export function convertVCardsToPersons(vcardFile: string, newPerson: () => Person): Person[] {
