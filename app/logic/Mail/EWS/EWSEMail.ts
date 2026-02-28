@@ -34,24 +34,26 @@ export class EWSEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$IncludeMimeContent: true,
-        },
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
+    await this.downloadRunOnce.runOnce(async () => {
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$IncludeMimeContent: true,
+          },
+          m$ItemIds: {
+            t$ItemId: {
+              Id: this.itemID,
+            },
           },
         },
-      },
-    };
-    let result = await this.folder.account.callEWS(request);
-    let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      };
+      let result = await this.folder.account.callEWS(request);
+      let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromXML(xmljs: Record<string, any>) {
