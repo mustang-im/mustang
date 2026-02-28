@@ -110,8 +110,6 @@
   </GroupBox>
   -->
 
-  <SameName bind:person {isEditing} />
-
   {#if showExpanders}
     <vbox class="expanders font-small">
       <ExpanderButtons>
@@ -132,6 +130,9 @@
       </ExpanderButtons>
     </vbox>
   {/if}
+
+  <SameName bind:person {isEditing} />
+  <Encryption bind:person {isEditing} />
 
   {#if showNotes}
     <vbox flex class="notes">
@@ -161,6 +162,7 @@
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import SameName from "./SameName.svelte";
+  import Encryption from "./Encryption.svelte";
   import ExpanderButtons from "../../Shared/ExpanderButtons.svelte";
   import ExpanderButton from "../../Shared/ExpanderButton.svelte";
   import Button from "../../Shared/Button.svelte";

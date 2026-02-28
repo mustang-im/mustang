@@ -15,7 +15,9 @@ export function getDateTimeString(date: Date): string {
   }
   let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
+  if (date > today) { // future
+    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
+  } else if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
   } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
       today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
@@ -43,7 +45,9 @@ export function getDateString(date: Date, fullDate?: Intl.DateTimeFormatOptions)
   }
   let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
+  if (date > today) { // future
+    dateDetails = fullDate ?? { year: "numeric", month: "2-digit", day: "2-digit" };
+  } else if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
   } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
       today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
