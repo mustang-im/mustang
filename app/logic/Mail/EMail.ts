@@ -430,6 +430,9 @@ export class EMail extends Message {
     return super.html;
   }
   set html(val: string) {
+    if (this._rawHTML == val) {
+      return;
+    }
     super.html = val;
     this.loadedBody = false;
   }
