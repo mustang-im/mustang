@@ -22,7 +22,7 @@
         </hbox>
         {#if showObsolete}
           <hbox class="subtitle font-smallest" flex>
-            {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still are necessary to validate the signatures of previous emails that you have received and stored.`}
+            {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to validate the signatures of previous emails that you have received and stored.`}
           </hbox>
         {/if}
       </vbox>

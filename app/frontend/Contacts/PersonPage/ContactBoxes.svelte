@@ -132,7 +132,7 @@
   {/if}
 
   <SameName bind:person {isEditing} />
-  <Encryption bind:person {isEditing} />
+  <!--<Encryption bind:person {isEditing} />-->
 
   {#if showNotes}
     <vbox flex class="notes">
