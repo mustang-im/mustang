@@ -92,9 +92,10 @@
         <hbox class="buttons">
           <Button
             label={$t`Export…`}
+            icon={ExportIcon}
             onClick={onExport}
             />
-          <Button
+          <RoundButton
             label={$t`Delete`}
             icon={DeleteIcon}
             onClick={onDelete}
@@ -106,11 +107,13 @@
 </vbox>
 
 <script lang="ts">
-  import { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
+  import type { PrivateKey, PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
+  import ExportIcon from "lucide-svelte/icons/file-down";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
@@ -119,14 +122,20 @@
   import { t } from "../../../../l10n/l10n";
   import Button from "../../../Shared/Button.svelte";
 
-  export let key: PublicKey;
+  export let key: PublicKey & PrivateKey;
+  export let identity: MailIdentity;
 
   let isExpanded = false;
 
   async function onExport() {
+    alert("TODO Export…");
     // TODO
   }
   async function onDelete() {
+    if (!confirm(`WARNING\nYou will not be able to read your own emails which are encrypted with this key - both old and new emails.\nMake sure that you have a backup of the key.\nDo you want to delete your own private key?`)) {
+      return;
+    }
+    identity.encryptionPrivateKeys.remove(key);
     // TODO
   }
 </script>

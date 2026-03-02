@@ -107,9 +107,10 @@
         <hbox class="buttons">
           <Button
             label={$t`Export…`}
+            icon={ExportIcon}
             onClick={onExport}
             />
-          <Button
+          <RoundButton
             label={$t`Delete`}
             icon={DeleteIcon}
             onClick={onDelete}
@@ -128,6 +129,7 @@
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
+  import ExportIcon from "lucide-svelte/icons/file-down";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
@@ -140,9 +142,14 @@
   let isExpanded = false;
 
   async function onExport() {
+    alert("TODO Export…");
     // TODO
   }
   async function onDelete() {
+    if (!confirm(`Do you want to delete this public key for ${person.name}? You will not be able to validate emails signed with this key.`)) {
+      return;
+    }
+    person.encryptionPublicKeys.remove(key);
     // TODO
   }
 </script>
