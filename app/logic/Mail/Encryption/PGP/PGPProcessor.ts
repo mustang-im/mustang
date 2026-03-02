@@ -1,10 +1,10 @@
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { EMail } from "../EMail";
+import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
+import { EMail } from "../../EMail";
 import * as openPGP from "openpgp";
 import type { Email as MIME } from "postal-mime";
-import { MailIdentity } from "../MailIdentity";
-import { assert } from "../../util/util";
+import { MailIdentity } from "../../MailIdentity";
+import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 /*
@@ -19,9 +19,12 @@ const isLogging = true;
 export class PGPProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   async process(email: EMail, mime: MIME) {
-    if (isLogging) console.log("MIME", mime);
     let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content;
-    if (isLogging) console.log("encrypted", encrypted);
+    let detachedSignature = email.attachments.find(a => a.mimeType == "multipart/signed")?.content;
+    if (!encrypted && !detachedSignature) {
+      return;
+    }
+    if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;
     let senderCerts = await this.getCertificatesForEmailAddress(email.from.emailAddress, email.sent);
     if (encrypted) {
@@ -44,7 +47,6 @@ export class PGPProcessor extends EMailProcessor {
       await this.updateMIME(email, decryptedResult.data, outerFrom);
       await email.saveCompleteMessage();
     }
-    let detachedSignature = email.attachments.find(a => a.mimeType == "multipart/signed")?.content;
     if (detachedSignature) {
       let firstPartTODO = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content; // TODO only the first part
       // TODO normalization for line endings - does openPGP do that?
