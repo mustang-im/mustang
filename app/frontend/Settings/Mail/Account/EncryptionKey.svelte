@@ -2,14 +2,14 @@
   <hbox class="main-row"
     on:click={() => isExpanded = !isExpanded}>
     <hbox class="usage"
-      style:background-color={trustColor[$key.trustLevel] ?? "grey"}
-      style:color={trustColorFG[$key.trustLevel] ?? "black"}>
-      {#if $key.trustLevel == TrustLevel.Distrusted}
-        <DistrustIcon title={$t`Untrusted`} size="16px" />
+      style:background-color={$key.obsolete ? "grey" : "green"}
+      style:color={$key.obsolete ? "black" : "white"}>
+      {#if $key.obsolete}
+        <DistrustIcon title={$t`Obsolete`} size="16px" />
       {:else if $key.useToEncrypt}
-        <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
+        <EncryptIcon title={$t`Use for encryption and signing`} size="16px" />
       {:else}
-        <SignIcon title={$t`Use only for checking signatures`} size="16px" />
+        <SignIcon title={$t`Use only for signing messages`} size="16px" />
       {/if}
     </hbox>
     <hbox class="name" flex>{$key.name}</hbox>
@@ -27,7 +27,7 @@
     <vbox class="details">
       <hbox>
         <hbox class="label" />
-        <hbox>{$t`Public key certificate for ${key.system}`}</hbox>
+        <hbox>{$t`Secret key for ${key.system}`}</hbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
@@ -49,45 +49,30 @@
         <hbox class="label">{$t`Verification code`}</hbox>
         <hbox class="value">{key.fingerprint}</hbox>
       </hbox>
-      <hbox class="acceptance">
-        <hbox class="label">{$t`Acceptance`}</hbox>
-        <vbox>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Personal}
-              bind:group={key.trustLevel} />
-            {$t`I have personally checked that this key really belongs to ${person?.name ?? $t`this person`}`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.ThirdParty}
-              disabled={!key.caName}
-              bind:group={key.trustLevel} />
-            {key.caName
-             ? $t`${key.caName} claims that this is correct`
-             : $t`No known third-party verification`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Sender}
-              bind:group={key.trustLevel} />
-            {$t`Not checked`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Distrusted}
-              bind:group={key.trustLevel} />
-            {$t`This key is bad`}
-          </label>
-        </vbox>
-      </hbox>
-      <hbox class="usage-detail">
-        <hbox class="label">{$t`Usage`}</hbox>
+      {#if !$key.obsolete}
+        <hbox class="usage-detail">
+          <hbox class="label">{$t`Usage`}</hbox>
+          <vbox>
+            <label>
+              <input type="checkbox"
+                bind:checked={key.useToEncrypt}
+                disabled={$key.obsolete} />
+              {$t`I want to receive encrypted emails`}
+            </label>
+            {#if $key.useToEncrypt}
+              <div class="note">{$t`This is merely a request to your correspondents. The sender also needs to have encryption enabled for messages between you two to be encrypted.`}</div>
+              <div class="warning note">{$t`Please save your private key, on a different device. If you lose the key, you will not be able to read your own encrypted emails anymore.`}</div>
+              <div class="warning note">{$t`To read encrypted emails, you need to use ${appName} (or another app that supports ${key.system}) on your other devices as well.`}</div>
+            {/if}
+          </vbox>
+        </hbox>
+        {/if}
+      <hbox class="obsolete-detail">
+        <hbox class="label">{$t`Obsolete`}</hbox>
         <label>
           <input type="checkbox"
-            bind:checked={key.useToEncrypt}
-            disabled={$key.trustLevel == TrustLevel.Distrusted} />
-          {$t`Encrypt my emails to ${person.name} with this key`}
+            bind:checked={key.obsolete} />
+          {$t`Do not use this key for new messages`}
         </label>
       </hbox>
       <hbox>
@@ -121,21 +106,20 @@
 </vbox>
 
 <script lang="ts">
-  import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
-  import { Person } from "../../../logic/Abstract/Person";
-  import RoundButton from "../../Shared/RoundButton.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { getDateString, getDateTimeString } from "../../Util/date";
-  import { t } from "../../../l10n/l10n";
+  import { appName } from "../../../../logic/build";
+  import { getDateString, getDateTimeString } from "../../../Util/date";
+  import { t } from "../../../../l10n/l10n";
+  import Button from "../../../Shared/Button.svelte";
 
   export let key: PublicKey;
-  export let person: Person;
 
   let isExpanded = false;
 
@@ -200,7 +184,6 @@
     display: flex;
     align-items: start;
   }
-  .details label input[type=radio],
   .details label input[type=checkbox] {
     margin-inline-end: 8px;
   }
@@ -218,11 +201,19 @@
     font-weight: 500;
     letter-spacing: 0.05em;
   }
-  .acceptance {
-    padding-block: 16px;
+  .warning {
+    background-color: yellow;
+    color: darkred;
+  }
+  .note {
+    padding: 6px 12px;
   }
   .usage-detail {
+    padding-block-start: 24px;
     padding-block-end: 12px;
+  }
+  .obsolete-detail {
+    padding-block: 6px;
   }
   .buttons {
     gap: 8px;

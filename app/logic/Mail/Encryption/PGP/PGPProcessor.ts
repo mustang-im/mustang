@@ -1,11 +1,14 @@
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
-import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { EMail } from "../../EMail";
-import * as openPGP from "openpgp";
-import type { Email as MIME } from "postal-mime";
 import { MailIdentity } from "../../MailIdentity";
+import { PGPPrivateKey } from "./PGPPrivateKey";
+import { PGPPublicKey } from "./PGPPublicKey";
+import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
+import type { Email as MIME } from "postal-mime";
+import type OpenPGP from "openpgp";
+import { appGlobal } from "../../../app";
 
 /*
 https://github.com/openpgpjs/openpgpjs?tab=readme-ov-file#encrypt-and-decrypt-uint8array-data-with-a-password
@@ -24,6 +27,7 @@ export class PGPProcessor extends EMailProcessor {
     if (!encrypted && !detachedSignature) {
       return;
     }
+    let openPGP = await import("openpgp");
     if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;
     let senderCerts = await this.getCertificatesForEmailAddress(email.from.emailAddress, email.sent);
@@ -32,7 +36,7 @@ export class PGPProcessor extends EMailProcessor {
       assert(identity, "Did not find identity for " + email.from.emailAddress);
       let encryptedMessage = await openPGP.readMessage({ binaryMessage: encrypted });
 
-      let privateKey = await this.getPrivateKeyForIdentity(identity);
+      let privateKey = await this.getPrivateKeysForIdentity(identity, openPGP);
 
       let decryptedResult = await openPGP.decrypt({
         message: encryptedMessage,
@@ -66,8 +70,8 @@ export class PGPProcessor extends EMailProcessor {
     }
   }
 
-  async checkSignatures(signatures: openPGP.VerificationResult[], forDate: Date): Promise<ArrayColl<openPGP.VerificationResult>> {
-    let validSignatures = new ArrayColl<openPGP.VerificationResult>();
+  async checkSignatures(signatures: OpenPGP.VerificationResult[], forDate: Date): Promise<ArrayColl<OpenPGP.VerificationResult>> {
+    let validSignatures = new ArrayColl<OpenPGP.VerificationResult>();
     for (let sig of signatures) {
       try {
         await sig.verified; // throws for invalid signature
@@ -87,32 +91,38 @@ export class PGPProcessor extends EMailProcessor {
 
   /** Replace the email with this new decrypted email */
   async updateMIME(email: EMail, content: Uint8Array, outerFrom: string) {
-    let update = email.folder.newEMail();
-    update.mime = content;
-    await update.parseMIME();
-    email.subject = update.subject;
     if (email.from.emailAddress.toLowerCase() != outerFrom.toLowerCase()) {
       // Treat as phishing
     }
+    email.mime = content;
+    email.downloadComplete = false;
+    await email.parseMIME();
+    await email.saveCompleteMessage();
   }
 
-  async getPrivateKeyForIdentity(identity: MailIdentity): Promise<Collection<openPGP.PrivateKey>> {
-    let result = new ArrayColl<openPGP.PrivateKey>();
-    let privateKeys = new ArrayColl<string>(); // TODO
-    for (let keyStr of privateKeys) {
-      let encryptedKeys = await openPGP.readPrivateKeys({ armoredKeys: keyStr });
-      for (let encryptedKey of encryptedKeys) {
-        let password: string; // TODO
-        let key = await openPGP.decryptKey({ privateKey: encryptedKey, passphrase: password });
-        result.add(key);
+  async getPrivateKeysForIdentity(identity: MailIdentity, openPGP: any): Promise<Collection<OpenPGP.PrivateKey>> {
+    let result = new ArrayColl<OpenPGP.PrivateKey>();
+    for (let privateKey of identity.encryptionPrivateKeys.each) {
+      if (!(privateKey instanceof PGPPrivateKey && privateKey.privateKeyArmored)) {
+        continue;
       }
+      let encryptedKey = await openPGP.readPrivateKey({ armoredKey: privateKey.privateKeyArmored });
+      let password = ""; // TODO
+      let key = await openPGP.decryptKey({ privateKey: encryptedKey, passphrase: password });
+      result.add(key);
     }
     return result;
   }
 
-  async getCertificatesForEmailAddress(emailAddress: string, date: Date): Promise<Collection<openPGP.PublicKey>> {
+  async getCertificatesForEmailAddress(emailAddress: string, date: Date): Promise<Collection<OpenPGP.PublicKey>> {
+    let result = new ArrayColl<OpenPGP.PublicKey>();
+    let contacts = appGlobal.persons.filterOnce(p => p.emailAddresses.some(ce => ce.value == emailAddress));
+    for (let contact of contacts.each) {
+      contact.
+    }
+    return result;
   }
 
-  async verifySignature(signedContent: any, detachedSignature: any, certs: Collection<openPGP.PublicKey>): Promise<{ ok: boolean, cert: Collection<openPGP.PublicKey>, date: Date }> {
+  async verifySignature(signedContent: any, detachedSignature: any, certs: Collection<OpenPGP.PublicKey>): Promise<{ ok: boolean, cert: Collection<OpenPGP.PublicKey>, date: Date }> {
   }
 }
