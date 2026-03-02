@@ -1,4 +1,5 @@
 import { Observable, notifyChangedProperty } from "../../util/Observable";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 
 export class PublicKey extends Observable {
@@ -6,6 +7,7 @@ export class PublicKey extends Observable {
   name: string;
   readonly id: string;
   readonly fingerprint: string;
+  /** Must be set by subclass */
   readonly system: EncryptionSystem;
   readonly created: Date;
   readonly expires: Date;
@@ -15,14 +17,18 @@ export class PublicKey extends Observable {
   useToEncrypt = false;
   /** expired, disabled by our user, revoked by owner etc. */
   @notifyChangedProperty
-  obsolete = false;
+  _obsolete = false;
   @notifyChangedProperty
   caName: string | null;
   readonly userIDs = new ArrayColl<string>;
+  /**
+   * Armored (base64-encoded) public PGP key for storage.
+   * null, if this is a private key, or the system doesn't support armored string keys.
+   */
+  publicKeyArmored: string | null;
 
-  constructor(system: EncryptionSystem) {
+  constructor() {
     super();
-    this.system = system;
     this.trustLevel = TrustLevel.Sender;
     // Fake data
     this.id = "0x" + crypto.randomUUID().toUpperCase().replaceAll("-", "").substring(0, 16);
@@ -52,6 +58,32 @@ export class PublicKey extends Observable {
       this.useToEncrypt = false;
     }
   }
+
+  get obsolete(): boolean {
+    return this._obsolete;
+  }
+  set obsolete(val: boolean) {
+    this._obsolete = val;
+    if (this._obsolete) {
+      this.useToEncrypt = false;
+    }
+  }
+
+  toJSON() {
+    let json = {} as any;
+    json.publicKeyArmored = this.publicKeyArmored;
+    return json;
+  }
+  fromJSON(json: any) {
+    this.publicKeyArmored = sanitize.nonemptystring(json.publicKeyArmored, null);
+  }
+}
+
+/** Added to `PublicKey` */
+export interface PrivateKey {
+  /** Armored (base64-encoded) private key
+   * This is super secret and should never leak. */
+  privateKeyArmored: string;
 }
 
 /**

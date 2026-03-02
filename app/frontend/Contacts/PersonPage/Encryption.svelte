@@ -1,4 +1,4 @@
-<GroupBox classes="encryption" headerName={$t`Encryption`}>
+<GroupBox classes="encryption" headerName={$t`Encryption`} addFunc={onImportFile}>
   <EcryptionIcon size="16px" slot="icon" />
   <hbox class="subtitle font-smallest">{$t`The encryption public keys allow you to send encrypted emails, and whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these keys really belong to ${person.name}.`}</hbox>
   <vbox class="encryption" slot="content">
@@ -6,26 +6,28 @@
       {#each $keys.filterObservable(key => !key.obsolete).each as key}
         <EncryptionKey {key} {person} />
       {/each}
-      <vbox class="expired-header"
-        class:expanded={showObsolete}
-        on:click={() => showObsolete = !showObsolete}>
-        <hbox class="first-row">
-          <hbox class="label font-smallest" flex>
-            {$t`Expired`}
+      {#if $keys.filterObservable(key => key.obsolete).hasItems}
+        <vbox class="expired-header"
+          class:expanded={showObsolete}
+          on:click={() => showObsolete = !showObsolete}>
+          <hbox class="first-row">
+            <hbox class="label font-smallest" flex>
+              {$t`Expired`}
+            </hbox>
+            <RoundButton
+              label={showObsolete ? $t`Collapse` : $t`Expand`}
+              icon={showObsolete ? ChevronUp : ChevronDown}
+              border={false}
+              classes="plain"
+              />
           </hbox>
-          <RoundButton
-            label={showObsolete ? $t`Collapse` : $t`Expand`}
-            icon={showObsolete ? ChevronUp : ChevronDown}
-            border={false}
-            classes="plain"
-            />
-        </hbox>
-        {#if showObsolete}
-          <hbox class="subtitle font-smallest" flex>
-            {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to validate the signatures of previous emails that you have received and stored.`}
-          </hbox>
-        {/if}
-      </vbox>
+          {#if showObsolete}
+            <hbox class="subtitle font-smallest" flex>
+              {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to validate the signatures of previous emails that you have received and stored.`}
+            </hbox>
+          {/if}
+        </vbox>
+      {/if}
       {#if showObsolete}
         {#each $keys.filterObservable(key => key.obsolete).each as key}
           <EncryptionKey {key} {person} />
@@ -51,7 +53,9 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { EncryptionSystem, PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
+  import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import EncryptionKey from "./EncryptionKey.svelte";
   import GroupBox from "./GroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -75,8 +79,7 @@
   }
 
   function makeKey(): PublicKey {
-    let system = Math.random() > 0.5 ? EncryptionSystem.PGP : EncryptionSystem.SMIME;
-    let key = new PublicKey(system);
+    let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
     key.obsolete = Math.random() > 0.2;
     key.useToEncrypt = Math.random() > 0.5;
     if (Math.random() < 0.2) {
@@ -91,9 +94,11 @@
   }
 
   async function onImportFile() {
+    alert("import…");
   }
 
   async function onQueryKeyservers() {
+    alert("query keyservers…");
     while (Math.random() < 0.5) {
       makeKey().obsolete = false;
     }
@@ -123,5 +128,12 @@
   .expired-header .first-row:hover {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
+  }
+  .buttons {
+    gap: 8px;
+    margin-block-start: 16px;
+    margin-block-end: 4px;
+    width: 100%;
+    justify-content: end;
   }
 </style>

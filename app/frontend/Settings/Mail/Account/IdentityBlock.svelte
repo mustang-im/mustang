@@ -74,10 +74,15 @@
       </vbox>
     {/if}
 
+    {#if showEncryption}
+      <Encryption {identity} />
+    {/if}
+
     <ExpanderButtons>
       <ExpanderButton bind:expanded={showReplyTo} label={$t`Reply-To`} />
       <ExpanderButton bind:expanded={showOrganisation} label={$t`Organisation`} />
       <ExpanderButton bind:expanded={showSignature} label={$t`Signature`} />
+      <ExpanderButton bind:expanded={showEncryption} label={$t`Encryption`} />
     </ExpanderButtons>
   </vbox>
 </HeaderGroupBox>
@@ -88,6 +93,7 @@
   import SentByExplainer from "./SentByExplainer.svelte";
   import HTMLEditor from "../../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import Encryption from "./Encryption.svelte";
   import ExpanderButton from "../../../Shared/ExpanderButton.svelte";
   import ExpanderButtons from "../../../Shared/ExpanderButtons.svelte";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
@@ -95,7 +101,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import type { Editor } from "@tiptap/core";
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
   import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
@@ -108,6 +114,7 @@
   let showSignature = !!identity.signatureHTML;
   let showSentBy = !gLicense.license;
   let showSentByExplainer = false;
+  let showEncryption = identity.encryptionPrivateKeys.hasItems;
   let editor: Editor;
 
   function onDelete() {

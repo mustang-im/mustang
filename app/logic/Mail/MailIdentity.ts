@@ -2,6 +2,8 @@ import type { MailAccount } from "./MailAccount";
 import { PersonUID } from "../Abstract/PersonUID";
 import type { EMail } from "./EMail";
 import { SMLHTTPAccount } from "./SML/SMLHTTPAccount";
+import type { PublicKey, PrivateKey } from "./Encryption/PublicKey";
+import { privateKeyFromJSON } from "./Encryption/KeyFromJSON";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -31,6 +33,7 @@ export class MailIdentity extends Observable {
   @notifyChangedProperty
   sendBCC = new ArrayColl<string>();
   smlAccount: SMLHTTPAccount;
+  readonly encryptionPrivateKeys = new ArrayColl<PublicKey & PrivateKey>();
 
   constructor(account: MailAccount) {
     super();
@@ -86,6 +89,8 @@ export class MailIdentity extends Observable {
     thiss.sendBCC.addAll(sanitize.array(config.sendBCC).filter(e =>
       !!sanitize.emailAddress(e, null)));
     thiss.smlAccount = SMLHTTPAccount.fromJSON(sanitize.json(config.smlAccount, null), thiss);
+    thiss.encryptionPrivateKeys.replaceAll(sanitize.array(config.encryptionPrivateKeys, []).map(keyJSON =>
+      privateKeyFromJSON(sanitize.json(keyJSON, null))));
     return thiss;
   }
   toConfigJSON(): any {
@@ -99,6 +104,7 @@ export class MailIdentity extends Observable {
       sendCC: this.sendCC.contents,
       sendBCC: this.sendBCC.contents,
       smlAccount: this.smlAccount?.toJSON(),
+      encryptionPrivateKeys: this.encryptionPrivateKeys.contents.map(key => key.toJSON()),
     };
   }
 
