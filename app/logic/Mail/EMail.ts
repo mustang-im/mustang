@@ -13,7 +13,8 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import type { PublicKey } from "./Encryption/PublicKey";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -81,6 +82,19 @@ export class EMail extends Message {
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+
+  /** This email was end-to-end encrypted on the wire.
+   * It has now been decrypted and stored in decrypted form. */
+  @notifyChangedProperty
+  wasEncrypted = false;
+  /** This email was correctly signed. */
+  @notifyChangedProperty
+  signed = false;
+  /** This email was correctly signed with this public key.
+   * The signature was valid and the public key matches `From:`.
+   * This gives you the specific public key was used to sign. */
+  @notifyChangedProperty
+  signedWithKey: PublicKey | null = null;
 
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
