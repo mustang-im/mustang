@@ -1,5 +1,6 @@
 import { PublicKey, EncryptionSystem } from "../PublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
+import type OpenPGP from "openpgp";
 
 export class PGPPublicKey extends PublicKey {
   system = EncryptionSystem.PGP;
@@ -9,6 +10,7 @@ export class PGPPublicKey extends PublicKey {
    * `-----END PGP PUBLIC KEY BLOCK-----`
    */
   publicKeyArmored: string;
+  pgpKey: OpenPGP.PublicKey | null = null;
 
   toJSON() {
     let json = super.toJSON();
