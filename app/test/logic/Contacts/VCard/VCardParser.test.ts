@@ -29,6 +29,7 @@ END:VCARD
 `.replace(/\n/g, "\r\n");
 
 function toJSON(person: Person) {
+  person.id = undefined;
   person.addressbook = { id: true };
   return JSONPerson.saveContacts(person, JSONPerson.save(person));
 }
@@ -39,7 +40,7 @@ const testFiles = allFiles.filter(name => name.endsWith(".vcf")).map(name => nam
 test.each(testFiles)("Parse %s", async name => {
   // Read the test cases from disk
   const vcf = await fs.readFile(new URL(name + ".vcf", dataDir), { encoding: 'utf-8' });
-  const card = vCard.parse(vcf);
+  const card = vCard.parseContact(vcf);
   const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir), { encoding: 'utf-8' }));
   json.addressbookID = true;
   json.popularity = 0;
@@ -48,7 +49,7 @@ test.each(testFiles)("Parse %s", async name => {
   expect(toJSON(person)).toEqual(json);
 
   // Replace the test data with new data and serialise the result
-  vCard.updatePerson(vCard.parse(replacement), person);
+  vCard.updatePerson(vCard.parseContact(replacement), person);
   const serialised = vCard.getUpdatedVCard(person, card);
 
   // Check that the serialisation contains the new data
@@ -66,7 +67,7 @@ test.each(testFiles)("Parse %s", async name => {
 
   // Check that parsing the new serialisation returns the same result
   const updated = new Person();
-  vCard.updatePerson(vCard.parse(serialised), updated);
+  vCard.updatePerson(vCard.parseContact(serialised), updated);
   expect(toJSON(updated)).toEqual(toJSON(person));
 });
 
