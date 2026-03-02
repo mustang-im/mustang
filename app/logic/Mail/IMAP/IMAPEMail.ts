@@ -50,7 +50,7 @@ export class IMAPEMail extends EMail {
           throw ex;
         }
       }
-      if (!msgInfo.envelope) {
+      if (!msgInfo.envelope || this.folder.deletions.has(msgInfo.uid)) {
         await this.disappeared();
         return;
       }
