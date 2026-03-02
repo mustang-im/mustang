@@ -1,14 +1,13 @@
-import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
+import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey } from "./PGPPublicKey";
-import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
+import { appGlobal } from "../../../app";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { Email as MIME } from "postal-mime";
 import type OpenPGP from "openpgp";
-import { appGlobal } from "../../../app";
 
 /*
 https://github.com/openpgpjs/openpgpjs?tab=readme-ov-file#encrypt-and-decrypt-uint8array-data-with-a-password
@@ -30,7 +29,7 @@ export class PGPProcessor extends EMailProcessor {
     let openPGP = await import("openpgp");
     if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;
-    let senderCerts = await this.getCertificatesForEmailAddress(email.from.emailAddress, email.sent);
+    let senderCerts = await this.getCertificatesForEmailAddress(email.from.emailAddress, email.sent, openPGP);
     if (encrypted) {
       let identity = MailIdentity.findIdentity([...email.to.contents, ...email.cc.contents], email.folder?.account)?.identity;
       assert(identity, "Did not find identity for " + email.from.emailAddress);
@@ -70,8 +69,8 @@ export class PGPProcessor extends EMailProcessor {
     }
   }
 
-  async checkSignatures(signatures: OpenPGP.VerificationResult[], forDate: Date): Promise<ArrayColl<OpenPGP.VerificationResult>> {
-    let validSignatures = new ArrayColl<OpenPGP.VerificationResult>();
+  async checkSignatures(signatures: VerificationResult[], forDate: Date): Promise<ArrayColl<VerificationResult>> {
+    let validSignatures = new ArrayColl<VerificationResult>();
     for (let sig of signatures) {
       try {
         await sig.verified; // throws for invalid signature
@@ -114,15 +113,27 @@ export class PGPProcessor extends EMailProcessor {
     return result;
   }
 
-  async getCertificatesForEmailAddress(emailAddress: string, date: Date): Promise<Collection<OpenPGP.PublicKey>> {
-    let result = new ArrayColl<OpenPGP.PublicKey>();
+  async getCertificatesForEmailAddress(emailAddress: string, date: Date, openPGP: any): Promise<Collection<OpenPGP.PublicKey>> {
+    let keys = new ArrayColl<OpenPGP.PublicKey>();
     let contacts = appGlobal.persons.filterOnce(p => p.emailAddresses.some(ce => ce.value == emailAddress));
     for (let contact of contacts.each) {
-      contact.
+      for (let publicKey of contact.encryptionPublicKeys.each) {
+        if (!(publicKey instanceof PGPPublicKey && publicKey.publicKeyArmored)) {
+          continue;
+        }
+        let pgpKey = await openPGP.readKey({ armoredKey: publicKey.publicKeyArmored });
+        keys.add(pgpKey);
+      }
     }
-    return result;
+    return keys;
   }
 
   async verifySignature(signedContent: any, detachedSignature: any, certs: Collection<OpenPGP.PublicKey>): Promise<{ ok: boolean, cert: Collection<OpenPGP.PublicKey>, date: Date }> {
   }
 }
+
+type VerificationResult = {
+  keyID: OpenPGP.KeyID,
+  verified: Promise<boolean>,
+  signature: Promise<OpenPGP.Signature>,
+};
