@@ -8,8 +8,10 @@
         <DistrustIcon title={$t`Obsolete`} size="16px" />
       {:else if $key.useToEncrypt}
         <EncryptIcon title={$t`Use for encryption and signing`} size="16px" />
-      {:else}
+      {:else if $key.useToSign}
         <SignIcon title={$t`Use only for signing messages`} size="16px" />
+      {:else}
+        <UnusedIcon title={$t`Used only on demand`} size="16px" />
       {/if}
     </hbox>
     <hbox class="name" flex>{$key.name}</hbox>
@@ -53,6 +55,12 @@
         <hbox class="usage-detail">
           <hbox class="label">{$t`Usage`}</hbox>
           <vbox>
+            <label>
+              <input type="checkbox"
+                bind:checked={key.useToSign}
+                disabled={$key.obsolete} />
+              {$t`Sign emails that I send`}
+            </label>
             <label>
               <input type="checkbox"
                 bind:checked={key.useToEncrypt}
@@ -112,6 +120,7 @@
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
+  import UnusedIcon from "lucide-svelte/icons/circle-dashed";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
   import ExportIcon from "lucide-svelte/icons/file-down";
   import DeleteIcon from "lucide-svelte/icons/trash-2";

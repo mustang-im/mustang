@@ -14,7 +14,7 @@ export class PublicKey extends Observable {
   @notifyChangedProperty
   _trustLevel: TrustLevel;
   @notifyChangedProperty
-  useToEncrypt = false;
+  _useToEncrypt = false;
   /** expired, disabled by our user, revoked by owner etc. */
   @notifyChangedProperty
   _obsolete = false;
@@ -59,6 +59,13 @@ export class PublicKey extends Observable {
     }
   }
 
+  get useToEncrypt(): boolean {
+    return this._useToEncrypt;
+  }
+  set useToEncrypt(val: boolean) {
+    this._useToEncrypt = val;
+  }
+
   get obsolete(): boolean {
     return this._obsolete;
   }
@@ -84,6 +91,7 @@ export interface PrivateKey {
   /** Armored (base64-encoded) private key
    * This is super secret and should never leak. */
   privateKeyArmored: string;
+  useToSign: boolean;
 }
 
 /**

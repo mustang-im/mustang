@@ -113,6 +113,7 @@
   .keys {
     margin-block-start: 16px;
     align-self: center;
+    /*width: 100%;*/
   }
   .expired-header {
     padding: 0px 8px;
