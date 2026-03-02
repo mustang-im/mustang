@@ -5,7 +5,7 @@
   <hbox class="subtitle font-smallest">{$t`Private keys allow you to send encrypted emails, and to sign your own emails.`}</hbox>
   <vbox class="keys">
     {#each $keys.filterObservable(key => !key.obsolete).each as key}
-      <EncryptionKey {key} />
+      <EncryptionKey {key} {identity} />
     {/each}
     {#if $keys.filterObservable(key => key.obsolete).hasItems}
       <vbox class="expired-header"
@@ -31,7 +31,7 @@
     {/if}
     {#if showObsolete}
       {#each $keys.filterObservable(key => key.obsolete).each as key}
-        <EncryptionKey {key} />
+        <EncryptionKey {key} {identity} />
       {/each}
     {/if}
   </vbox>
@@ -51,11 +51,10 @@
 
 <script lang="ts">
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
-  import { PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
-  import { PGPPublicKey } from "../../../../logic/Mail/Encryption/PGP/PGPPublicKey";
-  import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+  import { type PublicKey, type PrivateKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
+  import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import EncryptionKey from "./EncryptionKey.svelte";
-  import GroupBox from "../../../Contacts/PersonPage/GroupBox.svelte";
   import Button from "../../../Shared/Button.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import EcryptionIcon from "lucide-svelte/icons/lock";
@@ -70,13 +69,14 @@
 
   let showObsolete = false;
 
-  let keys = new ArrayColl<PublicKey>();
+  $: keys = identity.encryptionPrivateKeys;
+
   for (let i = 0; i < 5; i++) {
     //makeKey();
   }
 
   function makeKey(): PublicKey {
-    let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
+    let key = Math.random() > 0.5 ? new PGPPrivateKey() : new SMIMEPrivateKey();
     key.obsolete = Math.random() > 0.2;
     key.useToEncrypt = Math.random() > 0.5;
     if (Math.random() < 0.2) {

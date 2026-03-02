@@ -1,5 +1,5 @@
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
-import { EncryptionSystem, PrivateKey } from "../PublicKey";
+import { EncryptionSystem, type PrivateKey } from "../PublicKey";
 
 export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   system = EncryptionSystem.PGP;
