@@ -300,21 +300,7 @@ export class GraphFolder extends Folder {
     this.messages.add(email as GraphEMail);
   }
 
-  async moveMessagesHere(messages: Collection<GraphEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("move", messages);
-  }
-
-  async copyMessagesHere(messages: Collection<GraphEMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("copy", messages);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<GraphEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<GraphEMail>) {
     for (let msg of messages) {
       this.account.graphPost(msg.path + "/" + action, {
         destinationId: this.id,

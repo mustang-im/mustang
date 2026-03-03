@@ -375,32 +375,17 @@ export class EWSFolder extends Folder {
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>) {
     // We can copy messages to and from shared folders for the main account.
-    let mainAccount = this.account.mainAccount || this.account;
-    if (messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount)) {
-      return false;
-    }
-    return await super.moveOrCopyMessages(action, messages);
+    let mainAccount = this.account.mainAccount ?? this.account;
+    let sameServer = messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount);
+    await super.moveOrCopyMessagesHere(action, messages, sameServer);
   }
 
-  async moveMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<EWSEMail>);
-  }
-
-  async copyMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<EWSEMail>);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<EWSEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EWSEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let request = {
-      ["m$" + action + "Item"]: {
+      ["m$" + actionVerb + "Item"]: {
         m$ToFolderId: {
           t$FolderId: {
             Id: this.id,

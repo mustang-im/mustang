@@ -198,34 +198,19 @@ export class OWAFolder extends Folder {
     return this.messages.find((m: OWAEMail) => m.itemID == id) as OWAEMail | undefined;
   }
 
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>) {
     // We can copy messages to and from shared folders for the main account,
     // but the messages all have to be from the same account.
     let sourceAccount = messages.first.folder.account;
-    if ((sourceAccount.mainAccount ?? sourceAccount) == (this.account.mainAccount ?? this.account) &&
-        messages.contents.every(msg => msg.folder.account == sourceAccount)) {
-      return false;
-    }
-    return await super.moveOrCopyMessages(action, messages);
+    let sameServer = (sourceAccount.mainAccount ?? sourceAccount) == (this.account.mainAccount ?? this.account) &&
+      messages.contents.every(msg => msg.folder.account == sourceAccount);
+    await super.moveOrCopyMessagesHere(action, messages, sameServer);
   }
 
-  async moveMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<OWAEMail>);
-  }
-
-  async copyMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<OWAEMail>);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<OWAEMail>) {
-    // This function must be called using the source account.
-    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(action, this.id, messages.contents));
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<OWAEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" }) as "Move" | "Copy";
+    // This function must be called using the source account
+    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
   }
 
   async addMessage(message: EMail) {

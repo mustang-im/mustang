@@ -129,26 +129,33 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {
-    throw new AbstractFunction();
+    await this.moveOrCopyMessagesHere("move", messages);
   }
 
   async copyMessagesHere(messages: Collection<EMail>) {
-    throw new AbstractFunction();
+    await this.moveOrCopyMessagesHere("copy", messages);
   }
 
   /**
-   * Helper function for `copyMessagesHere()` and `moveMessagesHere()`
-   * @returns
-   * true = Move has already been done (across accounts)
-   * false = Caller needs to move messages (within the same account) */
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+   * Helper function for `copyMessagesHere()` and `moveMessagesHere()`.
+   * Calls `moveOrCopyMessagesOnServer()` as needed.
+   *
+   * @param sameServer
+   *   true = source and target folder are on the same server, and we can move the email directly on the server and locally
+   *   false = we need to upload the full email to the target and hard delete it on the source
+   *   default: true, if target and source folder are the same account, otherwise false
+   *   You may want to override that to true for delegate accounts or dependent accounts.
+   */
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>, sameServer?: boolean) {
     let sourceFolder = messages.first.folder;
+    sameServer ??= this.account == sourceFolder.account;
     assert(sourceFolder, "Need source folder");
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
+
     if (action == "move") {
       sourceFolder.messages.removeAll(messages);
     }
-    if (this.account != sourceFolder.account) {
+    if (!sameServer) {
       for (let message of messages) {
         await message.loadMIME();
         await this.addMessage(message);
@@ -156,10 +163,22 @@ export class Folder extends Observable implements TreeItem<Folder> {
           await message.deleteMessage();
         }
       }
-      return true;
+      return;
     }
-    // Both folders need refresh
-    return false;
+
+    this.countTotal += messages.length;
+    if (action == "move") {
+      sourceFolder.countTotal -= messages.length;
+      for (let sourceMsg of messages) {
+        await sourceMsg.deleteMessageLocally();
+      }
+    }
+
+    await this.moveOrCopyMessagesOnServer(action, messages);
+  }
+
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EMail>) {
+    throw new AbstractFunction();
   }
 
   /**
