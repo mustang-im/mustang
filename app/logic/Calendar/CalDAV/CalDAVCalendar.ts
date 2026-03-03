@@ -1,7 +1,7 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
-import { AuthMethod } from "../../Abstract/Account";
+import { AuthMethod, type Account } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
@@ -15,7 +15,6 @@ export class CalDAVCalendar extends Calendar {
   declare readonly events: ArrayColl<CalDAVEvent>;
   /** URL of the specific calendar - a CalDAV account can contain multiple calendars */
   calendarURL: URLString;
-  davCalendar: DAVCalendar | null = null;
   ctag: string | null = null;
   client: DAVClient;
   protected readonly syncLock = new Lock();
@@ -24,13 +23,17 @@ export class CalDAVCalendar extends Calendar {
     return new CalDAVEvent(this, parentEvent);
   }
 
-  async login(interactive: true) {
+  async login(interactive: boolean) {
     let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
     let usePassword = this.authMethod == AuthMethod.Password;
     if (useOAuth2) {
-      assert(this.oAuth2, gt`Need OAuth2 configuration`);
-      if (!this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(interactive);
+      if (this.isDependentAccount) {
+        await this.mainAccount.login(interactive);
+      } else {
+        assert(this.oAuth2, gt`Need OAuth2 configuration`);
+        if (!this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(interactive);
+        }
       }
     }
     assert(usePassword || useOAuth2, gt`Unknown authentication method`);
@@ -51,6 +54,9 @@ export class CalDAVCalendar extends Calendar {
 
   get isLoggedIn(): boolean {
     if (this.authMethod == AuthMethod.OAuth2) {
+      if (this.isDependentAccount) {
+        return this.mainAccount.isLoggedIn;
+      }
       return this.oAuth2.isLoggedIn;
     } else if (this.authMethod == AuthMethod.Password) {
       return !!this.password;
@@ -58,6 +64,15 @@ export class CalDAVCalendar extends Calendar {
       throw new NotReached(gt`Unknown authentication method`);
     }
   }
+
+  get davCalendar(): DAVCalendar {
+    let davAB = {} as DAVCalendar;
+    davAB.url = this.calendarURL;
+    davAB.ctag = this.ctag;
+    davAB.syncToken = this.syncState;
+    davAB.displayName = this.name;
+    return davAB;
+  };
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
     return [];
@@ -74,17 +89,10 @@ export class CalDAVCalendar extends Calendar {
 
   async listEvents() {
     await super.listEvents();
-
-    if (!this.davCalendar) {
-        let calendars = await this.listCalendars();
-        assert(calendars.hasItems, "No CalDAV calendars found");
-        this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
-        assert(this.davCalendar, "Selected CalDAV calendar URL not found");
-        // console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
+    if (!this.isLoggedIn) {
+      await this.login(false);
     }
-
     await this.sync();
-
     await this.save();
   }
 
@@ -175,7 +183,22 @@ export class CalDAVCalendar extends Calendar {
     return this.events.find(e => e.url == url);
   }
 
+  initFromMainAccount(main: Account): void {
+    super.initFromMainAccount(main);
+    this.authMethod = main.authMethod;
+    this.username = main.username;
+    this.password = main.password;
+  }
+
+  /**
+   * Lists the calendars that are not set up yet.
+   *
+   * Note: Only during setup, CardDAV/CalDAV special case: The config account has
+   * no calendarURL and is therefore a dummy, and this function returns all the calendars.
+   * If you are in settings (not setup), this function lists the calendars are that not set up yet.
+   */
   async listPossibleSubAccounts(): Promise<ArrayColl<CalDAVCalendar>> {
+    assert(!this.isDependentAccount, "Call this on the main account");
     let calendars = await this.listCalendars();
     let newCalendars = calendars.filterOnce(ab =>
       this.calendarURL != ab.url &&
@@ -187,7 +210,9 @@ export class CalDAVCalendar extends Calendar {
       let account = new CalDAVCalendar();
       account.initFromMainAccount(this);
       account.calendarURL = sanitize.url(newCal.url);
-      account.name = sanitize.nonemptylabel(newCal.displayName as string, this.name + " " + ++i);
+      account.name = this.name + " " + sanitize.nonemptylabel(newCal.displayName as string, "" + ++i);
+      account.ctag = sanitize.string(newCal.ctag, null);
+      account.syncState = sanitize.string(newCal.syncToken, null);
       newAccounts.add(account);
     }
     return newAccounts;

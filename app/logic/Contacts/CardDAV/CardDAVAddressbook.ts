@@ -1,7 +1,7 @@
 import { Addressbook } from "../Addressbook";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
-import { AuthMethod } from "../../Abstract/Account";
+import { AuthMethod, type Account } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
@@ -17,7 +17,6 @@ export class CardDAVAddressbook extends Addressbook {
   declare readonly groups: ArrayColl<CardDAVGroup>;
   /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */
   addressbookURL: URLString;
-  davAddressbook: DAVAddressBook;
   ctag: string | null = null;
   client: DAVClient;
   protected readonly syncLock = new Lock();
@@ -29,13 +28,17 @@ export class CardDAVAddressbook extends Addressbook {
     return new CardDAVGroup(this);
   }
 
-  async login(interactive: true) {
+  async login(interactive: boolean) {
     let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
     let usePassword = this.authMethod == AuthMethod.Password;
     if (useOAuth2) {
-      assert(this.oAuth2, gt`Need OAuth2 configuration`);
-      if (!this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(interactive);
+      if (this.isDependentAccount) {
+        await this.mainAccount.login(interactive);
+      } else {
+        assert(this.oAuth2, gt`Need OAuth2 configuration`);
+        if (!this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(interactive);
+        }
       }
     }
     assert(usePassword || useOAuth2, gt`Unknown authentication method`);
@@ -56,6 +59,9 @@ export class CardDAVAddressbook extends Addressbook {
 
   get isLoggedIn(): boolean {
     if (this.authMethod == AuthMethod.OAuth2) {
+      if (this.isDependentAccount) {
+        return this.mainAccount.isLoggedIn;
+      }
       return this.oAuth2.isLoggedIn;
     } else if (this.authMethod == AuthMethod.Password) {
       return !!this.password;
@@ -75,19 +81,21 @@ export class CardDAVAddressbook extends Addressbook {
 
   async listContacts() {
     await super.listContacts();
-
-    if (!this.davAddressbook) {
-      let addressbooks = await this.listAddressbooks();
-      assert(addressbooks.hasItems, "No CardDAV addressbooks found");
-      // console.log("Found CardDAV address books", addressbooks.contents);
-      this.davAddressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
-      assert(this.davAddressbook, "Selected CardDAV addressbook URL not found");
+    if (!this.isLoggedIn) {
+      await this.login(false);
     }
-
     await this.sync();
-
     await this.save();
   }
+
+  get davAddressbook(): DAVAddressBook {
+    let davAB = {} as DAVAddressBook;
+    davAB.url = this.addressbookURL;
+    davAB.ctag = this.ctag;
+    davAB.syncToken = this.syncState;
+    davAB.displayName = this.name;
+    return davAB;
+  };
 
   protected async fetchAll() {
     let lock = await this.syncLock.lock();
@@ -161,7 +169,27 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
+  getPersonByURL(relativeURL: URLString): CardDAVPerson | undefined {
+    let url = new URL(relativeURL, this.addressbookURL).href;
+    return this.persons.find(p => p.url == url);
+  }
+
+  initFromMainAccount(main: Account): void {
+    super.initFromMainAccount(main);
+    this.authMethod = main.authMethod;
+    this.username = main.username;
+    this.password = main.password;
+  }
+
+  /**
+   * Lists the addressbooks/calendars that are not set up yet.
+   *
+   * Note: Only during setup, CardDAV/CalDAV special case: The config account has
+   * no addressbookURL and is therefore a dummy, and this function returns all the addressbooks.
+   * If you are in settings (not setup), this function lists the addressbooks are that not set up yet.
+   */
   async listPossibleSubAccounts(): Promise<ArrayColl<CardDAVAddressbook>> {
+    assert(!this.isDependentAccount, "Call this on the main account");
     let addressbooks = await this.listAddressbooks();
     let newAddressbooks = addressbooks.filterOnce(ab =>
       this.addressbookURL != ab.url &&
@@ -173,7 +201,9 @@ export class CardDAVAddressbook extends Addressbook {
       let account = new CardDAVAddressbook();
       account.initFromMainAccount(this);
       account.addressbookURL = sanitize.url(newAB.url);
-      account.name = sanitize.nonemptylabel(newAB.displayName as string, this.name + " " + ++i);
+      account.name = this.name + " " + sanitize.nonemptylabel(newAB.displayName as string, "" + ++i);
+      account.ctag = sanitize.string(newAB.ctag, null);
+      account.syncState = sanitize.string(newAB.syncToken, null);
       newAccounts.add(account);
     }
     return newAccounts;
@@ -183,27 +213,15 @@ export class CardDAVAddressbook extends Addressbook {
     return !this.isDependentAccount;
   }
 
-  getPersonByURL(relativeURL: URLString): CardDAVPerson | undefined {
-    let url = new URL(relativeURL, this.addressbookURL).href;
-    return this.persons.find(p => p.url == url);
-  }
-
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.addressbookURL = sanitize.url(json.addressbookURL);
     this.ctag = sanitize.string(json.ctag, null);
-
-    let davAB = this.davAddressbook = {} as DAVAddressBook;
-    davAB.url = this.addressbookURL;
-    davAB.ctag = this.ctag;
-    davAB.syncToken = sanitize.string(json.syncToken, null);
-    davAB.displayName = this.name;
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.addressbookURL = this.addressbookURL;
     json.ctag = this.ctag;
-    json.syncToken = this.davAddressbook?.syncToken;
     return json;
   }
 }

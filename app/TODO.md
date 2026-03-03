@@ -66,7 +66,6 @@
 * TB import: doppelte eigene Identity
 * Attachments einlesen mit email headers
 * Search server
-* CardDAV: Mehrere Addressbücher
 ## Elena
 * Clear profile
 * Debug dump of settings
