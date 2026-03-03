@@ -43,6 +43,7 @@ export class Addressbook extends Account {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAddressbook(this);
   }
 

@@ -196,6 +196,7 @@ export class SMLHTTPAccount extends Account {
   }
 
   async save() {
+    await super.save();
     // `MailIdentity.smlAccount == this`, and `MailIdentity.toConfigJSON()` saves it to DB
     await this.mailAccount.save();
   }

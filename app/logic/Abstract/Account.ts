@@ -137,7 +137,6 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
-    throw new AbstractFunction();
   }
 
   /** Saves the config in this account and its dependent accounts to disk. */
