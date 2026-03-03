@@ -48,5 +48,6 @@ export function openSettingsCategoryForAccount(account: Account) {
   assert(cat, "Account not found in settings");
   selectedAccount.set(account);
   selectedCategory.set(cat);
+  // TODO Mobile? goTo(URLPart`/settings/account/${account.id}`, { category, account }); or goTo(URLPart`/settings/account/${account.id}/${category.id}`, { category, account });
   openApp(settingsMustangApp, { category: cat, account: account });
 }

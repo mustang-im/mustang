@@ -20,6 +20,7 @@ import MailRules from "./Mail/Rules.svelte";
 import MailSharing from "./Mail/Sharing.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
+import AccountSubAccounts from "./AccountSubAccounts.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
 import AccountFolders from "./Mail/Account/Folders.svelte";
 import AccountIdentity from "./Mail/Account/Identity.svelte";
@@ -51,6 +52,7 @@ import SIP from "./Meet/SIP.svelte";
 import { gt } from "../../l10n/l10n";
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
+accountSettings.add(new AccSetting(Account, "acc-sub", gt`Sub-Accounts`, AccountSubAccounts, true));
 
 const globalSettings = new SettingsCategory("global", gt`General`, null, true);
 globalSettings.subCategories.addAll([

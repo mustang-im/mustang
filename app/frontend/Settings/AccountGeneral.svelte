@@ -10,6 +10,19 @@
     </svelte:fragment>
     <vbox class="content">
       <grid>
+        {#if account.isDependentAccount}
+          <label for="mainaccount">{$t`Part of account`}</label>
+          <hbox class="account-button" name="mainaccount">
+            <Button
+              label={account.mainAccount.name}
+              icon={AccountIcon}
+              onClick={() => openSettingsCategoryForAccount(account.mainAccount)}
+              plain={true}
+              />
+          </hbox>
+          <hbox />
+          <hbox />
+        {/if}
         <label for="name">{$t`Account name`}</label>
         <input type="text" bind:value={account.name} name="name" on:change={onChange} />
         <input type="color" bind:value={account.color} name="color" on:change={onChange} list="proposed-colors" />
@@ -57,6 +70,7 @@
   import type { Account } from "../../logic/Abstract/Account";
   import { accountSettings } from "./SettingsCategory";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -66,7 +80,9 @@
   import { catchErrors } from "../Util/error";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import AccountIcon from "lucide-svelte/icons/server";
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
