@@ -37,6 +37,7 @@
   import Spinner from "../../Shared/Spinner.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { t } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
   import type { DAVCalendar } from "tsdav";
@@ -61,7 +62,7 @@
 
   async function onContinue() {
     errorUI.clearError();
-    config.calendarURL = selectedCalendar.url;
+    config.calendarURL = sanitize.url(selectedCalendar.url);
     await config.listEvents();
     appGlobal.calendars.add(config);
     await config.save();

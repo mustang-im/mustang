@@ -11,7 +11,9 @@ import { meetMustangApp } from "../../Meet/MeetMustangApp";
 import { chatMustangApp } from "../../Chat/ChatMustangApp";
 import { mailMustangApp } from "../../Mail/MailMustangApp";
 import { filesMustangApp } from "../../Files/FilesMustangApp";
+import { appGlobal } from "../../../logic/app";
 import AccountIcon from "lucide-svelte/icons/server";
+import { NotReached } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";
 
 export function getAccountIcon(acc: Account) {
@@ -49,3 +51,20 @@ export function getAccountMainTypeLabel(acc: Account) {
     return gt`Account`;
   }
 }
+
+export function getAppGlobalListForAccount(account: Account) {
+  for (let [AccountClass, appGlobalList] of accountTypeToAppGlobalList.entries()) {
+    if (account instanceof AccountClass) {
+      return appGlobalList;
+    }
+  }
+  throw new NotReached("Unknown account type");
+}
+
+export const accountTypeToAppGlobalList = new Map();
+accountTypeToAppGlobalList.set(MailAccount, appGlobal.emailAccounts);
+accountTypeToAppGlobalList.set(ChatAccount, appGlobal.chatAccounts);
+accountTypeToAppGlobalList.set(MeetAccount, appGlobal.meetAccounts);
+accountTypeToAppGlobalList.set(Calendar, appGlobal.calendars);
+accountTypeToAppGlobalList.set(Addressbook, appGlobal.addressbooks);
+accountTypeToAppGlobalList.set(FileSharingAccount, appGlobal.fileSharingAccounts);

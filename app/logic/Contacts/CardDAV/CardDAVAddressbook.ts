@@ -161,6 +161,28 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
+  async listPossibleSubAccounts(): Promise<ArrayColl<CardDAVAddressbook>> {
+    let addressbooks = await this.listAddressbooks();
+    let newAddressbooks = addressbooks.filterOnce(ab =>
+      this.addressbookURL != ab.url &&
+      !this.dependentAccounts().find(sub => sub instanceof CardDAVAddressbook && sub.addressbookURL == ab.url));
+    let newAccounts = new ArrayColl<CardDAVAddressbook>();
+    let i = 0;
+    for (let newAB of newAddressbooks) {
+      i++;
+      let account = new CardDAVAddressbook();
+      account.initFromMainAccount(this);
+      account.addressbookURL = sanitize.url(newAB.url);
+      account.name = sanitize.nonemptylabel(newAB.displayName as string, this.name + " " + ++i);
+      newAccounts.add(account);
+    }
+    return newAccounts;
+  }
+
+  get mayHaveSubAccounts() {
+    return !this.isDependentAccount;
+  }
+
   getPersonByURL(relativeURL: URLString): CardDAVPerson | undefined {
     let url = new URL(relativeURL, this.addressbookURL).href;
     return this.persons.find(p => p.url == url);

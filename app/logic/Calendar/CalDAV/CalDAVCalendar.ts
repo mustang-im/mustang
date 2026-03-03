@@ -175,6 +175,28 @@ export class CalDAVCalendar extends Calendar {
     return this.events.find(e => e.url == url);
   }
 
+  async listPossibleSubAccounts(): Promise<ArrayColl<CalDAVCalendar>> {
+    let calendars = await this.listCalendars();
+    let newCalendars = calendars.filterOnce(ab =>
+      this.calendarURL != ab.url &&
+      !this.dependentAccounts().find(sub => sub instanceof CalDAVCalendar && sub.calendarURL == ab.url));
+    let newAccounts = new ArrayColl<CalDAVCalendar>();
+    let i = 0;
+    for (let newCal of newCalendars) {
+      i++;
+      let account = new CalDAVCalendar();
+      account.initFromMainAccount(this);
+      account.calendarURL = sanitize.url(newCal.url);
+      account.name = sanitize.nonemptylabel(newCal.displayName as string, this.name + " " + ++i);
+      newAccounts.add(account);
+    }
+    return newAccounts;
+  }
+
+  get mayHaveSubAccounts() {
+    return !this.isDependentAccount;
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.calendarURL = sanitize.url(json.calendarURL);

@@ -37,6 +37,7 @@
   import Spinner from "../../Shared/Spinner.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
@@ -63,7 +64,7 @@
 
   async function onContinue() {
     errorUI.clearError();
-    config.addressbookURL = selectedAddressbook.url;
+    config.addressbookURL = sanitize.url(selectedAddressbook.url);
     await config.listContacts();
     appGlobal.addressbooks.add(config);
     await config.save();

@@ -2,7 +2,7 @@ import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { SpecificError, AbstractFunction, assert } from "../util/util";
+import { SpecificError, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -122,6 +122,15 @@ export class Account extends Observable {
     this.icon = main.icon;
     this.workspace = main.workspace;
     this.username = main.username;
+  }
+  /** Checks the available server resources and lists all possible sub-accounts that
+   * a) could be found automatically and
+   * b) are not yet `dependentAccounts()`. */
+  async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
+    return new ArrayColl<Account>();
+  }
+  get mayHaveSubAccounts(): boolean {
+    return false;
   }
 
   /** The cookie store to use when loading this account. For `<webview partition="persist:...">` */
