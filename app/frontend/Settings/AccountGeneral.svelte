@@ -68,8 +68,9 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { accountSettings } from "./SettingsCategory";
-  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { accountSettings, settingsCategories } from "./SettingsCategory";
+  import { selectedCategory } from "./Window/selected";
+  import { selectedAccount as selectedMailAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
   import { openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -103,9 +104,14 @@
     await account.deleteIt();
 
     // Reset selected
-    if ($selectedAccount == account) {
-      $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount?.inbox;
+    if (account.mainAccount) {
+      openSettingsCategoryForAccount(account.mainAccount);
+    } else {
+      $selectedCategory = settingsCategories.first;
+    }
+    if ($selectedMailAccount == account) {
+      $selectedMailAccount = appGlobal.emailAccounts.first;
+      $selectedFolder = $selectedMailAccount?.inbox;
       $selectedMessage = null;
       $selectedMessages.clear();
     }

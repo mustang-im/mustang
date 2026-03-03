@@ -28,6 +28,11 @@ export class SettingsCategory extends Observable {
   /** If `isMain && !isAccountSpecific`, can have the app that these settings are for */
   forApp: MustangApp;
 
+  /** Note: Does not work for Account settings, because they are a separate hierarchy. */
+  get parentCategory(): SettingsCategory {
+    return settingsCategories.find(cat => !!cat.subCategories.find(sub => sub == this));
+  }
+
   constructor(id: string, name: string, content?: ConstructorOfATypedSvelteComponent, isMain = false) {
     super();
     this.id = id;

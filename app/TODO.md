@@ -59,7 +59,6 @@
   * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
   * Setup mail
-    * After account delete: remove general panel
     * Scroll inside dialog, not whole window
 
 # Feedback
@@ -68,7 +67,6 @@
 * Attachments einlesen mit email headers
 * Search server
 * CardDAV: Mehrere Addressbücher
-* CardDAV: "invalid string length" bei smartCollectionSync()
 ## Elena
 * Clear profile
 * Debug dump of settings
