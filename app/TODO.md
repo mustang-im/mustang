@@ -28,6 +28,9 @@
   * Make icon clickable
 
 # Next
+  * CardDAV/CalDAV
+    * Subaccounts not saved, despite save()
+    * Subaccounts list fails with this.client being null
   * JMAP Calendar and Contacts
     * Fix bugs
     * Calendar: Recurrence
@@ -63,9 +66,9 @@
 
 # Feedback
 ## Zucca
-* TB import: doppelte eigene Identity
-* Attachments einlesen mit email headers
-* Search server
+* TB import: Duplicated own Identity
+* Attachments list: Fetch with email headers (not only during full download)
+* Mail: Search on server
 ## Elena
 * Clear profile
 * Debug dump of settings

@@ -60,6 +60,7 @@ export class CardDAVPerson extends Person {
         filename,
       });
       this.url = new URL(filename, this.addressbook.addressbookURL).href;
+      this.originalVCard = vCard;
     }
     await super.saveToServer();
   }
