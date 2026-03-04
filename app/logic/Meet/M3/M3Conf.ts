@@ -2,11 +2,12 @@ import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant as Participant, ParticipantRole } from "../Participant";
 import { M3Account } from "./M3Account";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
+import { VideoStream } from "../VideoStream";
 import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { assert, sleep, type URLString } from "../../util/util";
 import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
-import { VideoStream } from "../VideoStream";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -100,8 +101,8 @@ export class M3Conf extends VideoConfMeeting {
       is_adhoc: true,
     });
     console.log("new conference", event);
-    this.eventID = event.id;
-    this.roomID = event.room.id;
+    this.eventID = sanitize.alphanumdash(event.id);
+    this.roomID = sanitize.alphanumdash(event.room.id);
   }
 
   /**
@@ -116,13 +117,14 @@ export class M3Conf extends VideoConfMeeting {
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
     assert(this.account.isMeetingURL(urlParsed), gt`This meeting URL is not supported`);
     let inviteCode = urlParsed.pathname.replace("/invite/", "");
-    assert(inviteCode.match(/^[a-f0-9\-]*$/), "Not a valid invitation URL");
+    assert(inviteCode.match(/^[a-f0-9\-]*$/i), "Not a valid invitation URL");
+    sanitize.alphanumdash(inviteCode);
     let roomID: string;
     try {
       let response = await this.httpPost(`invite/verify`, {
         invite_code: inviteCode,
       });
-      roomID = response.room_id;
+      roomID = sanitize.alphanumdash(response.room_id);
       assert(roomID, "Room ID missing");
     } catch (ex) {
       ex.message = "This invitation is not valid anymore. Please request a new invitation from the organizer of the meeting.";
@@ -132,27 +134,25 @@ export class M3Conf extends VideoConfMeeting {
     this.roomID = roomID;
     // uh... protocol doesn't give any way to find the controller (e.g. of a third-party server)
     urlParsed.hostname = "controller." + urlParsed.hostname.replace("www.", "");
-    this.controllerBaseURL = urlParsed.origin;
-    this.controllerWebSocketURL = `wss://${urlParsed.host}/signalling`;
+    this.controllerBaseURL = sanitize.url(urlParsed.origin);
+    this.controllerWebSocketURL = sanitize.url(`wss://${urlParsed.host}/signalling`, null, [ "wss" ]);
     this.state = MeetingState.JoinConference;
   }
 
   async createInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
     let response = await this.httpPost(`rooms/${this.roomID}/invites`, {});
-    return `${this.account.webFrontendBaseURL}/invite/${response.invite_code}`;
+    return `${this.account.webFrontendBaseURL}/invite/${sanitize.alphanumdash(response.invite_code)}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
     if (this.account.oauth2) {
       let me = await this.httpGet("users/me");
-      me.name = me.display_name;
-      me.picture
       return {
-        name: me.display_name || appGlobal.me.name,
-        email: me.email,
-        picture: me.avatar_url,
-        id: me.id,
+        name: sanitize.nonemptylabel(me.display_name, gt`me`) || appGlobal.me.name,
+        email: sanitize.emailAddress(me.email),
+        picture: sanitize.url(me.avatar_url, null, ["https", "data", "blob"]),
+        id: sanitize.string(me.id),
       };
     } else {
       let me = appGlobal.me;
@@ -202,15 +202,15 @@ export class M3Conf extends VideoConfMeeting {
         invite_code: this.inviteCode,
         breakout_room: null,
       });
-      roomTicket = response.ticket;
-      this.resumptionTicket = response.resumption;
+      roomTicket = sanitize.nonemptystring(response.ticket);
+      this.resumptionTicket = sanitize.nonemptystring(response.resumption);
     } else {
       await this.httpGet(`turn`);
       let response = await this.httpPost(`rooms/${this.roomID}/start`, {
         breakout_room: null,
       });
-      roomTicket = response.ticket;
-      this.resumptionTicket = response.resumption;
+      roomTicket = sanitize.nonemptystring(response.ticket);
+      this.resumptionTicket = sanitize.nonemptystring(response.resumption);
     }
     assert(roomTicket, "Failed to get authentication for the conference room");
 
@@ -232,10 +232,10 @@ export class M3Conf extends VideoConfMeeting {
     });
     let info = await this.waitForMessage("control", "join_success") as JoinInfoJSON;
     this.myParticipant = new Participant();
-    this.myParticipant.id = info.id;
-    this.myParticipant.name = name;
-    this.myParticipant.role = info.role;
-    await Promise.all(info.participants.map(p => this.participantJoined(p)));
+    this.myParticipant.id = sanitize.alphanumdash(info.id);
+    this.myParticipant.name = sanitize.nonemptylabel(name, this.myParticipant.id);
+    this.myParticipant.role = sanitize.nonemptystring(info.role) as ParticipantRole;
+    await Promise.all(sanitize.array(info.participants).map(p => this.participantJoined(p)));
     this.state = MeetingState.Ongoing;
 
     if (this.camera && this.camera.active) {
@@ -252,8 +252,8 @@ export class M3Conf extends VideoConfMeeting {
       return;
     }
     let participant = new Participant();
-    participant.id = json.id;
-    participant.name = json.control.display_name;
+    participant.id = sanitize.alphanumdash(json.id);
+    participant.name = sanitize.nonemptylabel(json.control.display_name, participant.id);
     this.setParticipateInfo(participant, json);
     this.participants.add(participant);
     if (participant.cameraOn || participant.micOn) {
@@ -265,8 +265,8 @@ export class M3Conf extends VideoConfMeeting {
   protected participantVideoStopped(json: any) {
     // normally, we have already removed the video from participantUpdate(),
     // but just in case...
-    let participantId = json.source;
-    let isScreen = json.media_session_type == "screen";
+    let participantId = sanitize.alphanumdash(json.source);
+    let isScreen = sanitize.string(json.media_session_type, null) == "screen";
     let video = this.videos.find(v =>
       (!isScreen && !v.isScreenShare ||
         isScreen && v.isScreenShare) &&
@@ -279,7 +279,7 @@ export class M3Conf extends VideoConfMeeting {
 
   /** Handles control.update */
   protected async participantUpdate(json: any) {
-    let participantID = json.id;
+    let participantID = sanitize.alphanumdash(json.id);
     let participant = this.participants.find(p => p.id == participantID);
     assert(participant, "Got participant update before joined");
     this.setParticipateInfo(participant, json);
@@ -301,21 +301,21 @@ export class M3Conf extends VideoConfMeeting {
   }
 
   protected setParticipateInfo(participant: Participant, json: any) {
-    participant.handUp = !!json.control?.hand_is_up;
+    participant.handUp = sanitize.boolean(json.control?.hand_is_up);
     if (json.media?.video) {
-      participant.cameraOn = json.media?.video?.video;
-      participant.micOn = json.media?.video?.audio;
+      participant.cameraOn = sanitize.boolean(json.media?.video?.video);
+      participant.micOn = sanitize.boolean(json.media?.video?.audio);
     }
-    participant.screenSharing = json.media?.screen?.video;
+    participant.screenSharing = sanitize.boolean(json.media?.screen?.video);
   }
 
   /** Handles control.left */
   protected async participantLeft(json: any) {
-    let participantId = json.id;
+    let participantId = sanitize.alphanumdash(json.id);
     let participant = this.participants.find(p => p.id == participantId);
     assert(participant, "Participant left, but we didn't know about him.");
     this.participants.remove(participant);
-    let videos = this.videos.filter(v =>
+    let videos = this.videos.filterOnce(v =>
       v.participant == participant);
     for (let video of videos) {
       await this.stopVideoFromParticipant(video);
