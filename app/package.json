@@ -11,6 +11,7 @@
     "l10n:extract": "npx tsx l10n/extractor/extractor.ts",
     "l10n:placeholder": "npx mustang-autotranslate --input l10n/locales --service dry-run --delete-unused-strings --type key-based --exclude **/*.template.json",
     "l10n:auto-translate": "npx mustang-autotranslate --input l10n/locales --service deepl-free --config $DEEPL_API_KEY,default,1000 --delete-unused-strings --type key-based --template messages.template.json --decode-escapes=dynamic",
+    "lint": "eslint",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
@@ -71,10 +72,12 @@
   },
   "devDependencies": {
     "@composi/gestures": "^1.0.9",
+    "@eslint/js": "^10.0.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "@typescript-eslint/typescript-estree": "^8.52.0",
     "adm-zip": "^0.5.16",
+    "eslint": "^10.0.2",
     "estree-walker-ts": "^1.1.0",
     "glob": "^13.0.0",
     "happy-dom": "^20.1.0",
@@ -87,6 +90,7 @@
     "tslib": "^2.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
     "vite-plugin-conditional-compile": "^1.4.5",
     "vite-plugin-node-polyfills": "^0.24.0",
