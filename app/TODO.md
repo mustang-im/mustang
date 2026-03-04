@@ -29,7 +29,6 @@
 
 # Next
   * CardDAV/CalDAV
-    * Subaccounts not saved, despite save()
     * Subaccounts list fails with this.client being null
   * JMAP Calendar and Contacts
     * Fix bugs

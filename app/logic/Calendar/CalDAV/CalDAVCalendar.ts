@@ -2,6 +2,7 @@ import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
@@ -207,7 +208,7 @@ export class CalDAVCalendar extends Calendar {
     let i = 0;
     for (let newCal of newCalendars) {
       i++;
-      let account = new CalDAVCalendar();
+      let account = newCalendarForProtocol(this.protocol) as CalDAVCalendar; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.calendarURL = sanitize.url(newCal.url);
       account.name = this.name + " " + sanitize.nonemptylabel(newCal.displayName as string, "" + ++i);

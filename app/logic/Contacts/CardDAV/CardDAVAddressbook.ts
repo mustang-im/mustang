@@ -2,6 +2,7 @@ import { Addressbook } from "../Addressbook";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
@@ -198,7 +199,7 @@ export class CardDAVAddressbook extends Addressbook {
     let i = 0;
     for (let newAB of newAddressbooks) {
       i++;
-      let account = new CardDAVAddressbook();
+      let account = newAddressbookForProtocol(this.protocol) as CardDAVAddressbook; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.addressbookURL = sanitize.url(newAB.url);
       account.name = this.name + " " + sanitize.nonemptylabel(newAB.displayName as string, "" + ++i);

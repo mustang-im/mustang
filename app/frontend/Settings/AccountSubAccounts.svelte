@@ -10,7 +10,7 @@
           />
       </hbox>
       <grid class="content">
-        {#each subAccounts.each as subAccount}
+        {#each $subAccounts.each as subAccount}
           <Button
             label={subAccount.name}
             icon={getAccountIcon(subAccount)}
