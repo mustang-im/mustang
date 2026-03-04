@@ -110,7 +110,16 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
-  is.dev && enableNetworkDebugging();
+  is.dev && enableNetworkDebugging({
+    intercept: {
+      fetch: true,
+      normal: true,
+      undici: {
+        fetch: true,
+        normal: true,
+      }
+    }
+  });
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
