@@ -233,7 +233,7 @@ export class GraphFolder extends Folder {
         } finally {
           lock.release();
         }
-      })();
+      })().catch(this.account.errorCallback);
     }
     return downloadedMsgs;
   }
@@ -302,23 +302,15 @@ export class GraphFolder extends Folder {
 
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<GraphEMail>) {
     for (let msg of messages) {
-      this.account.graphPost(msg.path + "/" + action, {
+      await this.account.graphPost(msg.path + "/" + action, {
         destinationId: this.id,
       });
     }
 
-    this.countTotal += messages.length;
-    let sourceFolder = messages.first.folder;
-    if (action == "move") {
-      sourceFolder.countTotal -= messages.length;
-      for (let sourceMsg of messages) {
-        await sourceMsg.deleteMessageLocally();
-      }
-    }
-
     await this.listChangedMessages();
     if (action == "move") {
-      sourceFolder.listChangedMessages();
+      let sourceFolder = messages.first.folder;
+      await sourceFolder.listChangedMessages();
     }
   }
 
