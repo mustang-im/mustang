@@ -24,7 +24,7 @@ export class ChatAccount extends TCPAccount {
       await this.save();
     }
     if (this.rooms.isEmpty) {
-      SQLChatRoom.readAll(this);
+      await SQLChatRoom.readAll(this);
     }
   }
 

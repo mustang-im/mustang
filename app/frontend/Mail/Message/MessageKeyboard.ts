@@ -45,7 +45,7 @@ export async function onKeyOnList(event: KeyboardEvent) {
 }
 
 export async function onKeyOnMessage(event: KeyboardEvent) {
-  onKeyOnList(event);
+  await onKeyOnList(event);
 
   let message = get(selectedMessage);
   let selectedMessagesColl = get(selectedMessages);

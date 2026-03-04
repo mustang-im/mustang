@@ -411,7 +411,7 @@ export class EWSAccount extends MailAccount {
               if (message.ConnectionStatus == "Closed") {
                 continue; // Re-open connection
               }
-              responseCallback(message);
+              await responseCallback(message);
             } catch (ex) {
               this.errorCallback(ex);
             }
@@ -803,7 +803,7 @@ export class EWSAccount extends MailAccount {
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);
-    account.save();
+    await account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
     return account;

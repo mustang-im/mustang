@@ -38,7 +38,7 @@ export class Addressbook extends Account {
       await this.save();
     }
     if (this.persons.isEmpty && this.groups.isEmpty) {
-      SQLGroup.readAll(this); // also reads persons
+      await SQLGroup.readAll(this); // also reads persons
     }
   }
 

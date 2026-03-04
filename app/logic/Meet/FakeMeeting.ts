@@ -50,7 +50,7 @@ export class FakeMeeting extends VideoConfMeeting {
 
   async hangup() {
     for (let participant of this.participants) {
-      this.removeParticipant(participant);
+      await this.removeParticipant(participant);
     }
     await super.hangup();
   }

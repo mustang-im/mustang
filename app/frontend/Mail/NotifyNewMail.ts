@@ -7,7 +7,7 @@ import { appGlobal } from "../../logic/app";
 import { getLocalStorage } from "../Util/LocalStorage";
 import { sleep } from "../../logic/util/util";
 import MailIcon from '../asset/icon/appBar/mail.svg?raw';
-import { backgroundError, showError } from "../Util/error";
+import { backgroundError, logError, showError } from "../Util/error";
 import { CollectionObserver, type Collection } from "svelte-collections";
 
 export async function newMailListener(emailAccounts: Collection<MailAccount>) {
@@ -164,7 +164,8 @@ function bubbleImageURL(count: number) {
 
 class NewMessageObserver extends CollectionObserver<EMail> {
   added(messages: EMail[]) {
-    showNewMail(messages);
+    showNewMail(messages)
+      .catch(logError);
   }
   removed(messages: EMail[]) {
     // do nothing

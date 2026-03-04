@@ -177,10 +177,10 @@ export class SIPMeeting extends VideoConfMeeting {
           await this.invitation.reject();
         } else if (this.inviter) {
           console.log("inviter cancel");
-          this.inviter.cancel();
+          await this.inviter.cancel();
         }
       }
-      this.session.dispose();
+      await this.session.dispose();
     }
     console.log("hanging up");
     await super.hangup();

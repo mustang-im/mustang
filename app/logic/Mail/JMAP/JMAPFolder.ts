@@ -320,7 +320,7 @@ export class JMAPFolder extends Folder {
         } finally {
           lock.release();
         }
-      })();
+      })().catch(this.account.errorCallback);
     }
     return downloadedMsgs;
   }

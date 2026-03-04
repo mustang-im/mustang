@@ -34,7 +34,7 @@ import { gLicense } from "./License";
 import { siteRoot } from "../build";
 import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
 import { appGlobal } from "../app";
-import { logError } from "../../frontend/Util/error";
+import { catchErrors, logError } from "../../frontend/Util/error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 import { openExternalURL } from "./os-integration";
@@ -283,7 +283,8 @@ async function startTrial(emailAddresses: string[], name: string) {
   saveTicket(signedTicket);
 
   if (isFirstRun()) {
-    openPurchasePage(null, "welcome");
+    openPurchasePage(null, "welcome")
+      .catch(logError);
   }
 }
 
@@ -451,9 +452,10 @@ async function startup() {
     gLicense.license = null;
   });
 
-  nextPoll();
+  nextPoll()
+    .catch(logError);
   const kSoonExpiringPollInterval = k1DayMS; // 1 day
-  setInterval(nextPoll, kSoonExpiringPollInterval);
+  setInterval(() => catchErrors(nextPoll, logError), kSoonExpiringPollInterval);
 }
 startup() // Hack, to avoid that Open-Source code depends on this file
-  .catch(console.error);
+  .catch(logError);

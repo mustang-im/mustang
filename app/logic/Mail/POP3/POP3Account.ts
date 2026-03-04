@@ -8,7 +8,7 @@ export class POP3Account extends MailAccount {
   readonly protocol: string = "pop3";
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     throw new NotImplemented("POP3 is coming soon. For now, use IMAP instead.");
   }
 

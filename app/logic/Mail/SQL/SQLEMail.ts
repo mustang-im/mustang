@@ -312,7 +312,7 @@ export class SQLEMail {
         email.html = html;
       }
     }
-    this.readWritableProps(email, row);
+    await this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
     await this.readAttachments(email, attachmentRows);
     await this.readTags(email, tagRows);

@@ -194,7 +194,7 @@ export class OWAAccount extends MailAccount {
         }
         addressbook.folderID = ab.FolderId.Id;
         appGlobal.addressbooks.add(addressbook);
-        addressbook.save();
+        await addressbook.save();
         isMainAB = false;
       }
     }
@@ -465,7 +465,8 @@ export class OWAAccount extends MailAccount {
       let inbox = this.inbox as OWAFolder;
       let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
       inbox.messages.addAll(newMessages);
-      inbox.downloadMessages(newMessages);
+      inbox.downloadMessages(newMessages)
+        .catch(this.errorCallback);
       inbox.dirty = false; // probably
     }
   }
@@ -538,7 +539,7 @@ export class OWAAccount extends MailAccount {
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);
-    account.save();
+    await account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
     return account;

@@ -144,7 +144,7 @@ export class ActiveSyncEvent extends Event {
 
     // Not supporting tasks for now.
     if (this.parentEvent) {
-      this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
+      await this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
       if (!this.calUID) {

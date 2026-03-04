@@ -44,7 +44,7 @@ class FakeIncomingCall extends VideoConfMeeting {
     this.state = MeetingState.IncomingCall;
   }
   async answer(): Promise<void> {
-    super.answer();
+    await super.answer();
     this.myParticipant = new MeetingParticipant();
     this.state = MeetingState.Ongoing;
   }

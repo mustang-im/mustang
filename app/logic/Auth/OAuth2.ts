@@ -154,7 +154,7 @@ export class OAuth2 extends WebBasedAuth {
   /** clearLogin(), and also actively log out from the server.
    * The latter is currently not implemented */
   async logout(): Promise<void> {
-    this.reset();
+    await this.reset();
   }
 
   /** Forgets the current login and deletes the refresh token */
@@ -162,7 +162,7 @@ export class OAuth2 extends WebBasedAuth {
     this.stop();
     this.accessToken = undefined;
     this.refreshToken = undefined;
-    this.deleteRefreshTokenFromStorage();
+    await this.deleteRefreshTokenFromStorage();
   }
 
   get isLoggedIn(): boolean {

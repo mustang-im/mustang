@@ -195,7 +195,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipant.id = this.room.localParticipant.sid;
     this.myParticipant.name = this.room.localParticipant.name || appGlobal.me.name;
     this.myParticipant.role = ParticipantRole.User;
-    this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
+    this.myParticipant.subscribe((_obj, propName) => catchErrors(() => this.myUserChanged(propName), this.errorCallback));
     this.state = MeetingState.Ongoing;
 
     this.room.localParticipant.registerRpcMethod("handUp", async (data: RpcInvocationData) => {
@@ -221,7 +221,7 @@ export class LiveKitConf extends VideoConfMeeting {
     }*/
   }
 
-  protected async participantJoined(remoteParticipant: RemoteParticipant): Promise<void> {
+  protected participantJoined(remoteParticipant: RemoteParticipant) {
     let participant = new LiveKitRemoteParticipant(remoteParticipant, this);
     this.participants.add(participant);
   }
@@ -235,10 +235,10 @@ export class LiveKitConf extends VideoConfMeeting {
 
   readonly canHandUp = true;
 
-  protected myUserChanged(propName: string) {
+  protected async myUserChanged(propName: string) {
     console.log("My participant changed", propName, "to", this.myParticipant[propName]);
     if (propName == "handUp") {
-      this.setMyHandUp(this.myParticipant.handUp);
+      await this.setMyHandUp(this.myParticipant.handUp);
     }
   }
 

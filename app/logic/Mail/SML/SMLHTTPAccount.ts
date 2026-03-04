@@ -35,7 +35,7 @@ export class SMLHTTPAccount extends Account {
   async login(): Promise<void> {
     this.accessToken = null;
     console.log("Registering", this.emailAddress, "for SML HTTP");
-    fetch(this.url + "/register", {
+    await fetch(this.url + "/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",

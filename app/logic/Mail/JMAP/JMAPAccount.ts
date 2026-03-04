@@ -51,7 +51,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }

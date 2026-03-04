@@ -124,7 +124,7 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    this.oAuth2?.logout();
+    await this.oAuth2?.logout();
   }
 
   needsLicense(): boolean {
@@ -196,7 +196,7 @@ export class ActiveSyncAccount extends MailAccount {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
-        this.oAuth2.reset();
+        await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         await repeat();
         return;
@@ -306,7 +306,7 @@ export class ActiveSyncAccount extends MailAccount {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
-        this.oAuth2.reset();
+        await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
@@ -523,7 +523,8 @@ export class ActiveSyncAccount extends MailAccount {
     this.pingsMRU.remove(pingable);
     this.pingsMRU.add(pingable);
     if (!this.listening) {
-      this.listenForPings();
+      this.listenForPings()
+        .catch(this.errorCallback); // TODO restart on error (with throttle)?
     }
   }
 
