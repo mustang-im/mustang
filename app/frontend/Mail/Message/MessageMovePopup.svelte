@@ -84,6 +84,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { selectedMessage } from "../Selected";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { appGlobal } from "../../../logic/app";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
@@ -103,14 +104,13 @@
   const dispatch = createEventDispatcher<{ close: void }>();
 
   export let messages: Collection<EMail>;
-  /** out */
-  export let selectedMessage: EMail;
 
   let sourceFolder = messages.first.folder;
   let selectedFolder = sourceFolder;
   let selectedFolders = new ArrayColl<Folder>();
   let selectedAccount = sourceFolder.account;
   let selectedMessageIndex = sourceFolder.messages.getKeyForValue(messages.first);
+  let wasSelected = $selectedMessage == messages.first; // just safety measure
   let showAccounts = false;
 
   function onClose() {
@@ -150,7 +150,11 @@
   }
 
   function goToNextMessage() {
-    selectedMessage = sourceFolder.messages.getIndex(selectedMessageIndex) ??
+    if (!wasSelected) {
+      return;
+    }
+    $selectedMessage =
+      sourceFolder.messages.getIndex(selectedMessageIndex) ??
       sourceFolder.messages.first ??
       sourceFolder.account.inbox.messages.first ??
       sourceFolder.newEMail();

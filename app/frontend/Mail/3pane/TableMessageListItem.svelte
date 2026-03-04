@@ -97,9 +97,9 @@
 </ContextMenu>
 <Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
   {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
-    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} bind:selectedMessage={$selectedMessage} />
+    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} />
   {:else}
-    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={$selectedMessage} />
+    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
   {/if}
 </Popup>
 
@@ -107,7 +107,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
-  import { selectedMessage, selectedMessages } from "../Selected";
+  import { selectedMessages } from "../Selected";
   import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
