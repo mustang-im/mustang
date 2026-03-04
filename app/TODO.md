@@ -28,8 +28,6 @@
   * Make icon clickable
 
 # Next
-  * CardDAV/CalDAV
-    * Subaccounts list fails with this.client being null
   * JMAP Calendar and Contacts
     * Fix bugs
     * Calendar: Recurrence

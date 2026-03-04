@@ -6,6 +6,7 @@ import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -19,38 +20,10 @@ export class CalDAVCalendar extends Calendar {
   ctag: string | null = null;
   client: DAVClient;
   protected readonly syncLock = new Lock();
+  protected readonly loginRunOnce = new RunOnce();
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
     return new CalDAVEvent(this, parentEvent);
-  }
-
-  async login(interactive: boolean) {
-    let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
-    let usePassword = this.authMethod == AuthMethod.Password;
-    if (useOAuth2) {
-      if (this.isDependentAccount) {
-        await this.mainAccount.login(interactive);
-      } else {
-        assert(this.oAuth2, gt`Need OAuth2 configuration`);
-        if (!this.oAuth2.isLoggedIn) {
-          await this.oAuth2.login(interactive);
-        }
-      }
-    }
-    assert(usePassword || useOAuth2, gt`Unknown authentication method`);
-    let options = {
-      serverUrl: this.url,
-      authType: useOAuth2 ? "Oauth" : "Basic",
-      credentials: useOAuth2 ? {
-        access_token: this.oAuth2.accessToken,
-      } : {
-        username: this.username,
-        password: usePassword ? this.password : undefined,
-      },
-      defaultAccountType: "caldav",
-    };
-    this.client = await appGlobal.remoteApp.createWebDAVClient(options);
-    await this.client.login();
   }
 
   get isLoggedIn(): boolean {
@@ -64,6 +37,37 @@ export class CalDAVCalendar extends Calendar {
     } else {
       throw new NotReached(gt`Unknown authentication method`);
     }
+  }
+
+  async login(interactive: boolean) {
+    await this.loginRunOnce.runOnce(async () => {
+      let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
+      let usePassword = this.authMethod == AuthMethod.Password;
+      if (useOAuth2) {
+        if (this.isDependentAccount) {
+          await this.mainAccount.login(interactive);
+        } else {
+          assert(this.oAuth2, gt`Need OAuth2 configuration`);
+          if (!this.oAuth2.isLoggedIn) {
+            await this.oAuth2.login(interactive);
+          }
+        }
+      }
+      assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      let options = {
+        serverUrl: this.url,
+        authType: useOAuth2 ? "Oauth" : "Basic",
+        credentials: useOAuth2 ? {
+          access_token: this.oAuth2.accessToken,
+        } : {
+          username: this.username,
+          password: usePassword ? this.password : undefined,
+        },
+        defaultAccountType: "caldav",
+      };
+      this.client = await appGlobal.remoteApp.createWebDAVClient(options);
+      await this.client.login();
+    });
   }
 
   get davCalendar(): DAVCalendar {
@@ -90,9 +94,6 @@ export class CalDAVCalendar extends Calendar {
 
   async listEvents() {
     await super.listEvents();
-    if (!this.isLoggedIn) {
-      await this.login(false);
-    }
     await this.sync();
     await this.save();
   }
@@ -113,6 +114,9 @@ export class CalDAVCalendar extends Calendar {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
+      if (!this.client) {
+        await this.login(false);
+      }
       /* For multiple calendars:
       let { created, updated, deleted } = await this.client.syncCalendars({
         oldCalendars: [this.davCalendar],

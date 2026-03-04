@@ -6,6 +6,7 @@ import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -21,41 +22,13 @@ export class CardDAVAddressbook extends Addressbook {
   ctag: string | null = null;
   client: DAVClient;
   protected readonly syncLock = new Lock();
+  protected readonly loginRunOnce = new RunOnce();
 
   newPerson(): CardDAVPerson {
     return new CardDAVPerson(this);
   }
   newGroup(): CardDAVGroup {
     return new CardDAVGroup(this);
-  }
-
-  async login(interactive: boolean) {
-    let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
-    let usePassword = this.authMethod == AuthMethod.Password;
-    if (useOAuth2) {
-      if (this.isDependentAccount) {
-        await this.mainAccount.login(interactive);
-      } else {
-        assert(this.oAuth2, gt`Need OAuth2 configuration`);
-        if (!this.oAuth2.isLoggedIn) {
-          await this.oAuth2.login(interactive);
-        }
-      }
-    }
-    assert(usePassword || useOAuth2, gt`Unknown authentication method`);
-    let options = {
-      serverUrl: this.url,
-      authType: useOAuth2 ? "Oauth" : "Basic",
-      credentials: useOAuth2 ? {
-        access_token: this.oAuth2.accessToken,
-      } : {
-        username: this.username,
-        password: usePassword ? this.password : undefined,
-      },
-      defaultAccountType: "carddav",
-    };
-    this.client = await appGlobal.remoteApp.createWebDAVClient(options);
-    await this.client.login();
   }
 
   get isLoggedIn(): boolean {
@@ -71,6 +44,37 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
+  async login(interactive: boolean) {
+    await this.loginRunOnce.runOnce(async () => {
+      let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
+      let usePassword = this.authMethod == AuthMethod.Password;
+      if (useOAuth2) {
+        if (this.isDependentAccount) {
+          await this.mainAccount.login(interactive);
+        } else {
+          assert(this.oAuth2, gt`Need OAuth2 configuration`);
+          if (!this.oAuth2.isLoggedIn) {
+            await this.oAuth2.login(interactive);
+          }
+        }
+      }
+      assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      let options = {
+        serverUrl: this.url,
+        authType: useOAuth2 ? "Oauth" : "Basic",
+        credentials: useOAuth2 ? {
+          access_token: this.oAuth2.accessToken,
+        } : {
+          username: this.username,
+          password: usePassword ? this.password : undefined,
+        },
+        defaultAccountType: "carddav",
+      };
+      this.client = await appGlobal.remoteApp.createWebDAVClient(options);
+      await this.client.login();
+    });
+  }
+
   async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
     let lock = await this.syncLock.lock();
     try {
@@ -82,9 +86,6 @@ export class CardDAVAddressbook extends Addressbook {
 
   async listContacts() {
     await super.listContacts();
-    if (!this.isLoggedIn) {
-      await this.login(false);
-    }
     await this.sync();
     await this.save();
   }
@@ -115,6 +116,9 @@ export class CardDAVAddressbook extends Addressbook {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
+      if (!this.client) {
+        await this.login(false);
+      }
       let localObjects = this.persons.contents.map(e => ({
         url: e.url,
         etag: e.etag,
