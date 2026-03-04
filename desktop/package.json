@@ -31,6 +31,7 @@
     "better-sqlite3": "^12.5.0",
     "bufferutil": "^4.1.0",
     "electron-updater": "^6.3.3",
+    "node-network-devtools": "^1.0.29",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.19.0"
   },
