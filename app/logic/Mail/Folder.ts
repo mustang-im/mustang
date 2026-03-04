@@ -128,10 +128,28 @@ export class Folder extends Observable implements TreeItem<Folder> {
     await this.copyMessagesHere(new ArrayColl([message]));
   }
 
+  /**
+   * To move messages from one folder to another, call this function
+   * on the target folder. The `messages` are in the source folder.
+   *
+   * All messages must be from the same source folder.
+   *
+   * Attention:
+   * Always pass in a copy of the array, not the live `selectedMessages` array from the UI.
+   * If the user deletes or moves messages, they will be removed from the UI
+   * instantly, which changes the current selection, so the wrong emails get deleted.
+   * (Alternatively, all implementations here would need to make a copy of the array at start.)
+   */
   async moveMessagesHere(messages: Collection<EMail>) {
     await this.moveOrCopyMessagesHere("move", messages);
   }
 
+  /**
+   * To copy messages from one folder to another, call this function
+   * on the target folder. The `messages` are in the source folder.
+   *
+   * All messages must be from the same source folder.
+   */
   async copyMessagesHere(messages: Collection<EMail>) {
     await this.moveOrCopyMessagesHere("copy", messages);
   }

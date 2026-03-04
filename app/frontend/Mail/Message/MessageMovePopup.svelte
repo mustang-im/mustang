@@ -103,6 +103,10 @@
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void }>();
 
+  /** Attention
+   * Always pass in a copy of the array, not the live `selectedMessages` array from the UI.
+   * If the user deletes or moves messages, they will be removed from the UI
+   * instantly, which changes the current selection, so the wrong emails get deleted. */
   export let messages: Collection<EMail>;
 
   let sourceFolder = messages.first.folder;
