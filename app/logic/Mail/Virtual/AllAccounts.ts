@@ -25,13 +25,13 @@ export class AllAccounts extends MailAccount {
     this.accounts = accounts;
     this.allRootFolders = mergeColls(this.accounts.map(account => account.rootFolders));
 
-    let all = new AllFolders(this);
+    /*let all = new AllFolders(this);
     all.name = gt`All messages`;
     all.specialFolder = SpecialFolder.All;
     //all.followSpecialFolder(SpecialFolder.All);
     all.folders = mergeColls(this.accounts.map(account => account.getAllFolders().
       filterObservable(folder => folder.specialFolder != SpecialFolder.Trash && folder.specialFolder != SpecialFolder.Spam)));
-    this.specialFolders.add(all as any as Folder);
+    this.specialFolders.add(all as any as Folder);*/
 
     let inbox = new AllFolders(this);
     inbox.name = gt`Inbox`;
