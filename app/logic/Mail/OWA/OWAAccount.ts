@@ -282,7 +282,7 @@ export class OWAAccount extends MailAccount {
     if (email.replyTo) {
       addRecipients(request, "ReplyTo", [email.replyTo]);
     }
-    request.addField("Message", "From", { Name: email.from.name, EmailAddress: email.from.emailAddress }, "message:From");
+    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
     addRecipients(request, "ToRecipients", email.to.contents);
     addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
