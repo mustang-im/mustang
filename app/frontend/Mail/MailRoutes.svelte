@@ -40,10 +40,8 @@
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
   import type { Folder } from "../../logic/Mail/Folder";
   import type { EMail } from "../../logic/Mail/EMail";
-  import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
-  import { selectedPerson } from "../Contacts/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { appGlobal } from "../../logic/app";
   import MailApp from "./MailApp.svelte";
@@ -84,23 +82,6 @@
         folder.account.errorCallback(ex);
       }
     }
-  }
-
-  $: $selectedMessage && selectPerson($selectedMessage)
-  function selectPerson(message: EMail) {
-    if (view == "chat") {
-      return;
-    }
-    if (message.contact instanceof Person) {
-      $selectedPerson = message.contact;
-      return;
-    }
-    let personUID = message.outgoing ? message.to.first : message.from;
-    let person = personUID?.findPerson();
-    if (!person) {
-      return;
-    }
-    $selectedPerson = person;
   }
 
   let viewSetting = getLocalStorage("mail.view", "vertical");
