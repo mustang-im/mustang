@@ -526,21 +526,6 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  /*
-  async moveMessagesHere(messages: Collection<IMAPEMail>) {
-    await this.moveOrCopyMessages("move", messages);
-
-    if (![SpecialFolder.Trash, SpecialFolder.Spam].includes(this.specialFolder)) {
-      await this.listNewMessages();
-    }
-  }
-
-  async copyMessagesHere(messages: Collection<IMAPEMail>) {
-    await this.moveOrCopyMessages("copy", messages);
-    await this.listNewMessages();
-  }
-  */
-
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<IMAPEMail>) {
     let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let sourceFolder = messages.first.folder;

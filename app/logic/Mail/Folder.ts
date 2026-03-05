@@ -185,14 +185,15 @@ export class Folder extends Observable implements TreeItem<Folder> {
     }
 
     this.countTotal += messages.length;
+
+    await this.moveOrCopyMessagesOnServer(action, messages);
+
     if (action == "move") {
       sourceFolder.countTotal -= messages.length;
       for (let sourceMsg of messages) {
         await sourceMsg.deleteMessageLocally();
       }
     }
-
-    await this.moveOrCopyMessagesOnServer(action, messages);
   }
 
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EMail>) {
