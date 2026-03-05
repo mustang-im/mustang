@@ -29,6 +29,10 @@ export class Addressbook extends Account {
     return true; // for local addressbook
   }
 
+  async startup() {
+    await this.listContacts();
+  }
+
   async listContacts() {
     await this.readContactsFromDB();
   }

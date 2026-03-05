@@ -10,9 +10,10 @@ import { OAuth2 } from "../Auth/OAuth2";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction } from "../util/util";
+import { AbstractFunction, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl } from 'svelte-collections';
+import { gt } from "../../l10n/l10n";
 
 export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
@@ -38,6 +39,12 @@ export class MailAccount extends TCPAccount {
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
+
+  async startup() {
+    await this.listFolders();
+    assert(this.inbox, gt`Inbox not found`);
+    await this.inbox.getNewMessages();
+  }
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();

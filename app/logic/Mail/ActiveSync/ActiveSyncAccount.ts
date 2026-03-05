@@ -99,28 +99,21 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
 
-    await this.listFolders();
+    await this.startup();
+  }
+
+  async startup() {
+    await super.startup();
 
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .catch(this.errorCallback);
-      }
-    }
 
     // ActiveSync doesn't have streaming notifications, instead it
     // provides the Ping operation which will tell us when a pingable
     // has gone out of sync. This only makes sense once the pingable
     // is in sync, so each pingable registers with the account when
     // it's ready to be specified in the Ping operation.
+
+    this.startupDependentAccounts();
   }
 
   async logout(): Promise<void> {
