@@ -8,7 +8,7 @@
     <MsgListM
       messages={searchMessages ?? params?.messages ?? $selectedFolder?.messages ?? requiredParam()}
       bind:searchMessages
-      bind:selectedFolder={$selectedFolder}
+      selectedFolder={$selectedFolder}
       bind:selectedMessage={$selectedMessage}
       bind:selectedMessages={$selectedMessages} />
   </Route>

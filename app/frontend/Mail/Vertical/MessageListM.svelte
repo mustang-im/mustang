@@ -29,7 +29,7 @@
 
   export let messages: ArrayColl<EMail>; /** in */
   export let searchMessages: ArrayColl<EMail> | null; /** out */
-  export let selectedFolder: Folder; /** in/out */
+  export let selectedFolder: Folder; /** in */
   export let selectedMessage: EMail; /** in/out */
   export let selectedMessages: ArrayColl<EMail>; /** in/out */
 
