@@ -180,22 +180,10 @@ export class OWAAccount extends MailAccount {
 
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      let isMainAB = true;
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      for (let ab of response) {
-        // Exclude internal contacts folders.
-        if (ab.IsReadOnly || !ab.FolderId?.Id) {
-          continue;
-        }
-        let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-        addressbook.initFromMainAccount(this);
-        if (!isMainAB) {
-          addressbook.name = `${this.name} ${ab.DisplayName}`;
-        }
-        addressbook.folderID = ab.FolderId.Id;
-        appGlobal.addressbooks.add(addressbook);
+      let contacts = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
+      for (let addressbook of this.createAddressbookAccounts(contacts)) {
         await addressbook.save();
-        isMainAB = false;
       }
     }
 
@@ -536,13 +524,21 @@ export class OWAAccount extends MailAccount {
         }
       }
     }
+    accounts.addAll(this.createAddressbookAccounts(contacts));
+    accounts.addAll(this.createCalendarAccounts(calendars));
+    return accounts;
+  }
+
+  private createAddressbookAccounts(contacts: any[]): OWAAddressbook[] {
+    let isMainAddressbook = true;
+    let accounts = [];
     for (let folder of contacts) {
       if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
+        isMainAddressbook = false;
         continue;
       }
       let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
       addressbook.initFromMainAccount(this);
-      let isMainAddressbook = !folder.account && folder.DistinguishedFolderId == "contacts";
       if (!isMainAddressbook && folder.DisplayName) {
         addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
       }
@@ -550,8 +546,14 @@ export class OWAAccount extends MailAccount {
         addressbook.username = folder.account.username;
       }
       addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.add(addressbook);
+      accounts.push(addressbook);
+      isMainAddressbook = false;
     }
+    return accounts;
+  }
+
+  private createCalendarAccounts(calendars: any[]): OWACalendar[] {
+    let accounts = [];
     for (let folder of calendars) {
       if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
         continue;
@@ -568,7 +570,7 @@ export class OWAAccount extends MailAccount {
         calendar.username = folder.account.username;
       }
       calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.add(calendar);
+      accounts.push(calendar);
     }
     return accounts;
   }

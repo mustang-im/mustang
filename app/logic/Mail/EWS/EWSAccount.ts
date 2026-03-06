@@ -695,37 +695,16 @@ export class EWSAccount extends MailAccount {
     }
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-        // ExtendedProperty is the internal "Hidden" property
-        if (folder.ExtendedProperty.Value == "false") {
-          let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.initFromMainAccount(this);
-          let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
-          if (!isMainAddressbook && folder.DisplayName) {
-            addressbook.name = `${this.name} ${folder.DisplayName}`;
-          }
-          addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await addressbook.save();
-          appGlobal.addressbooks.add(addressbook);
-        }
+      for (let addressbook of this.createAddressbookAccounts(ensureArray(result.RootFolder.Folders.ContactsFolder))) {
+        await addressbook.save();
+        appGlobal.addressbooks.add(addressbook);
       }
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-        if (folder.FolderClass == "IPF.Appointment") {
-          let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.initFromMainAccount(this);
-          let isMainCalendar = folder.DistinguishedFolderId == "calendar";
-          if (isMainCalendar) {
-            calendar.useForInvitations = true;
-          } else if (folder.DisplayName) {
-            calendar.name = `${this.name} ${folder.DisplayName}`;
-          }
-          calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await calendar.save();
-          appGlobal.calendars.add(calendar);
-        }
+      for (let calendar of this.createCalendarAccounts(ensureArray(result.RootFolder.Folders.CalendarFolder))) {
+        await calendar.save();
+        appGlobal.calendars.add(calendar);
       }
     }
   }
@@ -846,6 +825,13 @@ export class EWSAccount extends MailAccount {
         }
       }
     }
+    accounts.addAll(this.createAddressbookAccounts(contacts));
+    accounts.addAll(this.createCalendarAccounts(calendars));
+    return accounts;
+  }
+
+  private createAddressbookAccounts(contacts: any[]): EWSAddressbook[] {
+    let accounts = [];
     for (let folder of contacts) {
       if (folder.ExtendedProperty.Value == "true") {
         continue;
@@ -863,8 +849,13 @@ export class EWSAccount extends MailAccount {
         addressbook.username = folder.account.username;
       }
       addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.add(addressbook);
+      accounts.push(addressbook);
     }
+    return accounts;
+  }
+
+  private createCalendarAccounts(calendars: any[]): EWSCalendar[] {
+    let accounts = [];
     for (let folder of calendars) {
       if (folder.FolderClass != "IPF.Appointment") {
         continue;
@@ -884,7 +875,7 @@ export class EWSAccount extends MailAccount {
         calendar.username = folder.account.username;
       }
       calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.add(calendar);
+      accounts.push(calendar);
     }
     return accounts;
   }
