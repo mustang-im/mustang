@@ -1,6 +1,6 @@
 import { MailAccount } from "../MailAccount";
 import { MailIdentity } from "../MailIdentity";
-import { AuthMethod } from "../../Abstract/Account";
+import { AuthMethod, type Account } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
@@ -648,6 +648,10 @@ export class EWSAccount extends MailAccount {
               }, {
                 FieldURI: "folder:DistinguishedFolderId",
               }],
+              t$ExtendedFieldURI: {
+                PropertyTag: "4340",
+                PropertyType: "Boolean",
+              },
             },
           },
           m$FolderIds: {
@@ -691,40 +695,16 @@ export class EWSAccount extends MailAccount {
     }
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-        /* EWS has some internal contacts folders that we don't want to display.
-           Fortunately, they all have distinguished folder IDs,
-           so we are only interested in the primary user address book ("contacts")
-           or a additional user-created address books (which have no distinguished ID). */
-        if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
-          let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.initFromMainAccount(this);
-          let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
-          if (!isMainAddressbook && folder.DisplayName) {
-            addressbook.name = `${this.name} ${folder.DisplayName}`;
-          }
-          addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await addressbook.save();
-          appGlobal.addressbooks.add(addressbook);
-        }
+      for (let addressbook of this.createAddressbookAccounts(ensureArray(result.RootFolder.Folders.ContactsFolder))) {
+        await addressbook.save();
+        appGlobal.addressbooks.add(addressbook);
       }
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-        if (folder.FolderClass == "IPF.Appointment") {
-          let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.initFromMainAccount(this);
-          let isMainCalendar = folder.DistinguishedFolderId == "calendar";
-          if (isMainCalendar) {
-            calendar.useForInvitations = true;
-          } else if (folder.DisplayName) {
-            calendar.name = `${this.name} ${folder.DisplayName}`;
-          }
-          calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await calendar.save();
-          appGlobal.calendars.add(calendar);
-        }
+      for (let calendar of this.createCalendarAccounts(ensureArray(result.RootFolder.Folders.CalendarFolder))) {
+        await calendar.save();
+        appGlobal.calendars.add(calendar);
       }
     }
   }
@@ -764,6 +744,140 @@ export class EWSAccount extends MailAccount {
     let folder = await super.createToplevelFolder(name) as EWSFolder;
     folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
     return folder;
+  }
+
+  get mayHaveSubAccounts(): boolean {
+    return true;
+  }
+
+  async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
+    let accounts = await super.listPossibleSubAccounts();
+    if (this.mainAccount) {
+      return accounts;
+    }
+    let query = {
+      m$FindFolder: {
+        Traversal: "Deep",
+        m$FolderShape: {
+          t$BaseShape: "Default",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "folder:FolderClass",
+            }, {
+              FieldURI: "folder:DistinguishedFolderId",
+            }],
+            t$ExtendedFieldURI: {
+              PropertyTag: "4340",
+              PropertyType: "Boolean",
+            },
+          },
+        },
+        m$ParentFolderIds: {
+          t$DistinguishedFolderId: {
+            Id: "msgfolderroot",
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(query);
+    let contacts = ensureArray(result.RootFolder.Folders.ContactsFolder);
+    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder);
+    for (let account of this.dependentAccounts()) {
+      if (account instanceof EWSAccount) {
+        let request = {
+          m$GetFolder: {
+            m$FolderShape: {
+              t$BaseShape: "Default",
+              t$AdditionalProperties: {
+                t$FieldURI: [{
+                  FieldURI: "folder:FolderClass",
+                }, {
+                  FieldURI: "folder:DistinguishedFolderId",
+                }],
+                t$ExtendedFieldURI: {
+                  PropertyTag: "4340",
+                  PropertyType: "Boolean",
+                },
+              },
+            },
+            m$FolderIds: {
+              t$DistinguishedFolderId: ["contacts", "calendar"].map(folder => ({
+                Id: folder,
+                t$Mailbox: {
+                  t$EmailAddress: account.username,
+                },
+              })),
+            },
+          },
+        };
+        let results = await this.callEWS(request);
+        for (let result of results.filter(result => result.ResponseClass == "Success")) {
+          if (result.Folders.ContactsFolder) {
+            let folder = result.Folders.ContactsFolder;
+            folder.account = account;
+            contacts.push(folder);
+          }
+          if (result.Folders.CalendarFolder) {
+            let folder = result.Folders.CalendarFolder;
+            folder.account = account;
+            calendars.push(folder);
+          }
+        }
+      }
+    }
+    accounts.addAll(this.createAddressbookAccounts(contacts));
+    accounts.addAll(this.createCalendarAccounts(calendars));
+    return accounts;
+  }
+
+  private createAddressbookAccounts(contacts: any[]): EWSAddressbook[] {
+    let accounts = [];
+    for (let folder of contacts) {
+      if (folder.ExtendedProperty.Value == "true") {
+        continue;
+      }
+      if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
+        continue;
+      }
+      let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
+      addressbook.initFromMainAccount(this);
+      let isMainAddressbook = !folder.account && folder.DistinguishedFolderId == "contacts";
+      if (!isMainAddressbook && folder.DisplayName) {
+        addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      }
+      if (folder.account) {
+        addressbook.username = folder.account.username;
+      }
+      addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+      accounts.push(addressbook);
+    }
+    return accounts;
+  }
+
+  private createCalendarAccounts(calendars: any[]): EWSCalendar[] {
+    let accounts = [];
+    for (let folder of calendars) {
+      if (folder.FolderClass != "IPF.Appointment") {
+        continue;
+      }
+      if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
+        continue;
+      }
+      let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+      calendar.initFromMainAccount(this);
+      let isMainCalendar = !folder.account && folder.DistinguishedFolderId == "calendar";
+      if (isMainCalendar) {
+        calendar.useForInvitations = true;
+      } else if (folder.DisplayName) {
+        calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      }
+      if (folder.account) {
+        calendar.username = folder.account.username;
+      }
+      calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+      accounts.push(calendar);
+    }
+    return accounts;
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
