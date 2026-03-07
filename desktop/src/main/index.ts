@@ -4,6 +4,7 @@ import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { register as enableNetworkDebugging } from 'node-network-devtools'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
 
@@ -109,6 +110,16 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
+  is.dev && enableNetworkDebugging({
+    intercept: {
+      fetch: true,
+      normal: true,
+      undici: {
+        fetch: true,
+        normal: true,
+      }
+    }
+  });
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -218,6 +229,3 @@ function allowCrossDomainRequestsFromFrontend() {
     }
   );
 }
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
