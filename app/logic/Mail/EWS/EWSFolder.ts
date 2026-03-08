@@ -16,6 +16,11 @@ import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
 
+// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/77844470-22ca-43fb-993d-c53e96cf9cd6
+const PidTagMessageFlags = "0x0E07";
+// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/eeca3a02-14e7-419b-8918-986275a2fac0
+const PidTagIconIndex = "0x1080";
+
 export class EWSFolder extends Folder {
   declare account: EWSAccount;
   declare readonly messages: EMailCollection<EWSEMail>;
@@ -76,7 +81,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: PidTagIconIndex,
                 PropertyType: "Integer",
               },
             },
@@ -177,7 +182,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: PidTagIconIndex,
                 PropertyType: "Integer",
               },
             },
@@ -285,7 +290,7 @@ export class EWSFolder extends Folder {
               */
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: PidTagIconIndex,
                 PropertyType: "Integer",
               },
             },
@@ -410,7 +415,7 @@ export class EWSFolder extends Folder {
       request.addField("Message", "Categories", { t$String: message.tags.contents.map(tag => tag.name) });
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, t$Value: 0 });
+      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: PidTagMessageFlags, PropertyType: "Integer" }, t$Value: 0 });
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {

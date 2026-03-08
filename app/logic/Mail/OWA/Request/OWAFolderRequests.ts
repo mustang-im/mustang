@@ -2,6 +2,9 @@ import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 import type { ExchangePermission } from "../../EWS/EWSFolder";
 
+// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/eeca3a02-14e7-419b-8918-986275a2fac0
+const PidTagIconIndex = "0x1080";
+
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
     __type: "FindItemRequest:#Exchange",
@@ -23,7 +26,7 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: PidTagIconIndex,
             PropertyType: "Integer",
           },*/
       }],
@@ -117,7 +120,7 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: PidTagIconIndex,
             PropertyType: "Integer",
           },*/
       }],

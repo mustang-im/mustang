@@ -20,6 +20,9 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
+// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/77844470-22ca-43fb-993d-c53e96cf9cd6
+const PidTagMessageFlags = "0x0E07";
+
 export class OWAFolder extends Folder {
   declare account: OWAAccount;
   declare readonly messages: EMailCollection<OWAEMail>;
@@ -221,7 +224,7 @@ export class OWAFolder extends Folder {
       request.addField("Message", "Categories", message.tags.contents.map(tag => tag.name));
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, Value: "0" }]);
+      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: PidTagMessageFlags, PropertyType: "Integer" }, Value: "0" }]);
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
