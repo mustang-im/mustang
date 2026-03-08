@@ -5,7 +5,6 @@ import type { OAuth2UI } from "./UI/OAuth2UI";
 import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordLocalStorage";
-import { appGlobal } from "../app";
 import { production } from "../build";
 import { notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -216,16 +215,17 @@ export class OAuth2 extends WebBasedAuth {
       }
       console.log("OAuth2", this.account.name, "get new access token", tokenURL, params);
 
-      let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
+      let response = await fetch(tokenURL, {
+        body: new URLSearchParams(params),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
           ...additionalHeaders,
         },
-        timeout: 3000,
-        throwHttpErrors: false,
+        method: "POST",
+        signal: AbortSignal.timeout(3000),
       });
-      let data = response.data;
+      let data = await response.json();
       if (data.error) {
         throw new OAuth2ServerError(this.account.name, data);
       }
