@@ -19,6 +19,7 @@ function toJSON(event: Event) {
     calUID: event.calUID,
     location: event.location,
     descriptionText: event.descriptionText || undefined,
+    descriptionHTML: event.hasHTML ? event.descriptionHTML : undefined,
     recurrenceRule: event.recurrenceRule?.getCalString(event.allDay),
     participants: event.participants.contents.map(participant => participant._properties),
   };
@@ -40,6 +41,9 @@ test.each(testFiles)("Parse %s", async name => {
         }
       }
     }],
+    getUpdateCalendars() {
+      return [];
+    },
   };
   await processor.process(email, null);
   expect(email.invitationMessage).toEqual(invitationMessage);
