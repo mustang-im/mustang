@@ -1,4 +1,4 @@
-import { ICalParser } from "./ICalParser";
+import { ICalParser } from "../../util/VParser";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";

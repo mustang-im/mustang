@@ -1,5 +1,5 @@
-import { gt } from "../../../l10n/l10n";
-import { assert } from "../../util/util";
+import { gt } from "../../l10n/l10n";
+import { assert } from "./util";
 
 function unescaped(value: string): string {
   return value.replace(/\\n|\\(.)/gi, (_, c) => c || "\n");

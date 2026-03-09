@@ -2,7 +2,7 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
-import { ICalContainer, ICalParser } from "./ICalParser";
+import { ICalContainer, ICalParser } from "../../util/VParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
