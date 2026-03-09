@@ -1,7 +1,7 @@
 import { Event } from "../Event";
 import type { CalDAVCalendar } from "./CalDAVCalendar";
 import { convertICalToEvent } from "../ICal/ICalToEvent";
-import { getICal } from "../ICal/ICalGenerator";
+import { getICal } from "../ICal/EventToICal";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";

@@ -20,7 +20,7 @@
 <script lang="ts">
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { convertICalToEvents } from "../../../logic/Calendar/ICal/ICalToEvent";
-  import { eventsToICalFile } from "../../../logic/Calendar/ICal/ICalGenerator";
+  import { eventsToICalFile } from "../../../logic/Calendar/ICal/EventToICal";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
