@@ -16,7 +16,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     let ics = new ICalParser(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
     let event = new InvitationEvent();
-    let vevent = ics.containers.vevent?.[0];
+    let vevent = ics.objects.vevent?.[0];
     if (!vevent) {
       return;
     }
@@ -40,7 +40,7 @@ export class ICalEMailProcessor extends EMailProcessor {
 
 /* Find the iTIP method from a parsed vcalendar part */
 function iTIPMethod(ics: any): InvitationMessage {
-  switch (ics.containers.vcalendar?.[0].entries.method?.[0].value) {
+  switch (ics.objects.vcalendar?.[0].entries.method?.[0].value) {
   case "CANCEL":
     return InvitationMessage.CancelledEvent;
   case "REQUEST":

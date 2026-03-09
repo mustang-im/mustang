@@ -2,7 +2,7 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
-import { ICalContainer, ICalParser } from "../../util/VParser";
+import { ICalParser, VObject } from "../../util/VParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
@@ -15,7 +15,7 @@ import { gt } from "../../../l10n/l10n";
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
   let parsed = new ICalParser(ics);
-  let vevent = parsed.containers.vevent?.[0];
+  let vevent = parsed.objects.vevent?.[0];
   if (!vevent) {
     return false;
   }
@@ -32,10 +32,10 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
 export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Event[] {
   let events = [];
   let parsed = new ICalParser(iCalFile);
-  if (!parsed.containers.vevent) {
+  if (!parsed.objects.vevent) {
     throw new Error(gt`No iCal found`);
   }
-  for (let iCal of parsed.containers.vevent) {
+  for (let iCal of parsed.objects.vevent) {
     let event = newEvent();
     convertICalContainerToEvent(iCal, event);
     events.push(event);
@@ -48,7 +48,7 @@ export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Ev
  * @param event Output: Put the ics data into this object
  * TODO need to handle more removed properties
  */
-export function convertICalContainerToEvent(vevent: ICalContainer, event: Event): void {
+export function convertICalContainerToEvent(vevent: VObject, event: Event): void {
   if (vevent.entries.uid) {
     event.calUID = vevent.entries.uid[0].value;
   }

@@ -26,33 +26,33 @@ export class VEntry {
   }
 }
 
-export class ICalContainer {
+export class VObject {
   entries: Record<string, VEntry[]> = Object.create(null);
-  parent: ICalContainer | ICalParser;
-  constructor(parent: ICalContainer | ICalParser) {
+  parent: VObject | ICalParser;
+  constructor(parent: VObject | ICalParser) {
     this.parent = parent;
   }
 }
 
 export class ICalParser {
-  containers: Record<string, ICalContainer[]> = Object.create(null);
+  objects: Record<string, VObject[]> = Object.create(null);
   constructor(textFile: string) {
-    let current: ICalContainer | ICalParser = this;
+    let current: VObject | ICalParser = this;
     let lines = textFile.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n");
     let i = 0;
     for (let line of lines) {
       i++;
       if (/^BEGIN:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        current = new ICalContainer(current);
-        this.containers[name] = append(this.containers[name], current);
+        current = new VObject(current);
+        this.objects[name] = append(this.objects[name], current);
       } else if (/^END:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        assert(this.containers[name] && this.containers[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
-        assert(current instanceof ICalContainer, "END without BEGIN");
+        assert(this.objects[name] && this.objects[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
+        assert(current instanceof VObject, "END without BEGIN");
         current = current.parent;
       } else {
-        assert(current instanceof ICalContainer, gt`Item outside container` + gt`. Line ${i}: ${line}`);
+        assert(current instanceof VObject, gt`Item outside container` + gt`. Line ${i}: ${line}`);
         let item = new VEntry(line);
         current.entries[item.name] = append(current.entries[item.name], item);
       }
