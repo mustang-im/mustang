@@ -2,108 +2,17 @@ import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import type { VObject } from "../../util/VParser";
 import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
-export function getICal(event: Event, method?: iCalMethod): string | null {
+export function getICal(event: Event, method?: iCalMethod): string {
   assert(event, "Need event");
-  /* We have to special-case RRULE as it contains ";"s
-   * which must not be escaped as normal text values would */
-  const lines: (string | string[])[] = [];
-  lines.push(["BEGIN", "VCALENDAR"]);
-  if (method) {
-    lines.push(["METHOD", method]);
-  }
-  lines.push(["VERSION", "2.0"]);
-  lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
-  lines.push(["BEGIN", "VEVENT"]);
-  lines.push(["DTSTAMP", utc2ical(new Date())]);
-  lines.push(["UID", event.calUID]);
-  if (event.title) {
-    lines.push(["SUMMARY", event.title]);
-  }
-  if (event.location) {
-    lines.push(["LOCATION", event.location]);
-  }
-  if (event.isOnline && event.onlineMeetingURL) {
-    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
-    lines.push(["CONFERENCE", event.onlineMeetingURL]);
-    if (!event.location) {
-      // Backwards compat, because other clients don't know `CONFERENCE`
-      lines.push(["LOCATION", event.onlineMeetingURL]);
-    }
-    // Maybe also add to the end of descriptionText and HTML?
-    // if (!event.descriptionHTML.includes(event.onlineMeetingURL)) { ...
-  }
-  if (event.descriptionText) {
-    if (event.hasHTML) {
-      // Plaintext, and HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
-      // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
-      // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
-    lines.push(["DESCRIPTION", "ALTREP", "data:text/html," + encodeURIComponent(event.descriptionHTML), event.descriptionText]);
-      // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
-      lines.push(["STYLED-DESCRIPTION", "VALUE", "TEXT", "FMTTYPE", "text/html", event.descriptionHTML]);
-      // HTML Outlook
-      lines.push(["X-ALT-DESC", "FMTTYPE", "text/html", event.descriptionHTML]);
-    } else {
-      // Plaintext
-      lines.push(["DESCRIPTION", event.descriptionText]);
-    }
-  }
-  if (event.allDay) {
-    lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
-    lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
-    if (event.recurrenceStartTime) {
-      lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
-    }
-  } else {
-    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (timezone == "UTC") {
-      lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
-      lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
-      if (event.recurrenceStartTime) {
-        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", utc2ical(event.recurrenceStartTime)]);
-      }
-    } else {
-      lines.push(["DTSTART", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.startTime, timezone)]);
-      lines.push(["DTEND", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.endTime, timezone)]);
-      if (event.recurrenceStartTime) {
-        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.recurrenceStartTime, timezone)]);
-      }
-    }
-  }
-  if (event.isCancelled) {
-    lines.push(["STATUS", "CANCELLED"]);
-  }
-  let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
-  if (organizer) {
-    lines.push(["ORGANIZER", "MAILTO:" + organizer.emailAddress]);
-  }
-  if (event.recurrenceRule) {
-    lines.push(event.recurrenceRule.getCalString(event.allDay) + "\r\n");
-  }
-  for (let participant of event.participants) {
-    switch (participant.response) {
-    case InvitationResponse.Organizer:
-      lines.push(["ATTENDEE", "ROLE", "CHAIR", "PARTSTAT", "ACCEPTED", "CN", participant.name, "MAILTO:" + participant.emailAddress]);
-      break;
-    case InvitationResponse.Tentative:
-    case InvitationResponse.Accept:
-    case InvitationResponse.Decline:
-      lines.push(["ATTENDEE", "PARTSTAT", ParticipationStatus[participant.response], "CN", participant.name, "MAILTO:" + participant.emailAddress]);
-      break;
-    default:
-      lines.push(["ATTENDEE", "RSVP", "TRUE", "CN", participant.name, "MAILTO:" + participant.emailAddress]);
-      break;
-    }
-  }
-  lines.push(["END", "VEVENT"]);
-  lines.push(["END", "VCALENDAR"]);
-  return lines.map(line2ical).join("");
+  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${eventToVEvent(event)}END:VCALENDAR\r\n`;
 }
 
 /**
- * Exports the given events into a single large iCal .ics file with all contacts
+ * Exports the given events into a single large iCal .ics file with all events
  * concatenated
  * @param events what to export
  * @param filenameWithoutExt a suggested filename, without extension.
@@ -111,43 +20,119 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
  * @returns iCal file contents, as UTF8 text file
  */
 export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
-  let fileContents = "";
-  for (let event of events) {
-    // TODO Don't wrap *each* `VEVENT` with `VCALENDAR`, but all with a single one
-    fileContents += getICal(event);
-  }
+  let fileContents = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${events.contents.map(event => eventToVEvent(event)).join("")}END:VCALENDAR\r\n`;
   let filename = sanitize.filename(filenameWithoutExt) + ".ics";
   let file = new File([fileContents], filename, { type: "text/calendar" });
   return file;
 }
 
-function line2ical(line: string | string[]): string {
-  if (typeof line == "string") {
-    return line;
+export function eventToVEvent(event: Event, container: Record<string, string[]> = Object.create(null)): string {
+  updateContainerFromEvent(event, container);
+  return containerToVEvent(container);
+}
+
+export function getUpdatedVEvent(event: Event, vevent: VObject): string {
+  let container = vEventToContainer(vevent);
+  updateContainerFromEvent(event, container);
+  return containerToVEvent(container);
+}
+
+export function vEventToContainer(vevent: VObject): Record<string, string[]> {
+  let container: Record<string, string[]> = Object.create(null);
+  for (let key in vevent.entries) {
+    container[key] = vevent.entries[key].map(entry => entry.line);
   }
-  let text = line.shift();
-  let value = line.pop();
-  while (line.length) {
-    text += ";" + line.shift() + "=" + escaped(line.shift(), true);
+  return container;
+}
+
+export function updateContainerFromEvent(event: Event, container: Record<string, string[]>) {
+  setValue(container, "dtstamp", datetime2ical(new Date()));
+  setValue(container, "uid", event.calUID);
+  setValue(container, "summary", event.title);
+  setValue(container, "location", event.location || event.isOnline && event.onlineMeetingURL);
+  setValue(container, "conference", event.onlineMeetingURL);
+  if (event.hasHTML) {
+    setValue(container, "description", event.descriptionText, { altrep: `"data:text/html,${encodeURIComponent(event.descriptionHTML)}"` });
+    setValue(container, "styled-description", event.descriptionHTML, { value: "TEXT", fmttype: "text/html" });
+    setValue(container, "x-alt-desc", event.descriptionHTML, { fmttype: "text/html" });
+  } else {
+    setValue(container, "description", event.descriptionText);
+    setValue(container, "styled-description", "");
+    setValue(container, "x-alt-desc", "");
   }
-  text += ":" + escaped(value, false);
-  // Lines longer than 75 octets should be folded.
-  // XXX should use TextEncoder to count octets.
-  return text.match(/.{1,75}/gu).join("\r\n ") + "\r\n";
+  let timeZone = event.allDay ? null : Intl.DateTimeFormat(undefined, { timeZone: event.timezone || "UTC" }).resolvedOptions().timeZone;
+  let properties = event.allDay ? { value: "DATE" } : timeZone == "UTC" ? { value: "DATE-TIME" } : { value: "DATE-TIME", tzid: timeZone };
+  setValue(container, "dtstart", datetime2ical(event.startTime, timeZone), properties);
+  setValue(container, "dtend", datetime2ical(event.endTime, timeZone), properties);
+  setValue(container, "recurrence-id", datetime2ical(event.recurrenceStartTime, timeZone), properties);
+  if (event.recurrenceRule) {
+    container.rrule = [event.recurrenceRule.getCalString(event.allDay)];
+  } else {
+    delete container.rrule;
+  }
+  setValue(container, "status", event.isCancelled ? "CANCELLED" : "");
+  let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
+  setValue(container, "organizer", organizer ? "MAILTO:" + organizer.emailAddress : "");
+  if (event.participants.hasItems) {
+    let attendees = container.attendee = [];
+    for (let participant of event.participants) {
+      let line = "ATTENDEE";
+      switch (participant.response) {
+      case InvitationResponse.Organizer:
+        line += ";ROLE=CHAIR;PARTSTAT=ACCEPTED";
+        break;
+      case InvitationResponse.Tentative:
+      case InvitationResponse.Accept:
+      case InvitationResponse.Decline:
+        line += ";PARTSTAT=" + ParticipationStatus[participant.response];
+        break;
+      default:
+        line += ";RSVP=TRUE";
+      }
+      if (participant.name) {
+        line += ";CN=" + escaped(participant.name, true);
+      }
+      line += ":MAILTO:" + participant.emailAddress;
+      attendees.push(line);
+    }
+  } else {
+    delete container.attendee;
+  }
 }
 
-function utc2ical(date: Date): string {
-  return date.toISOString().replace(/-|:|\..../g, "");
+function containerToVEvent(container: Record<string, string[]>): string {
+  return "BEGIN:VEVENT\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VEVENT\r\n";
 }
 
-function date2ical(date: Date): string {
-  return String(date.getFullYear()) + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0");
+function setValue(container: Record<string, string[]>, key: string, value: string | null, parameters: Record<string, string> = {}) {
+  if (!value) {
+    delete container[key];
+    return;
+  }
+  let line = key.toUpperCase();
+  for (let parameter in parameters) {
+    // We control parameters, no need to escape
+    line += ";" + parameter.toUpperCase() + "=" + parameters[parameter];
+  }
+  line += ":";
+  line += value.split(";").map(value => escaped(value, false)).join(";");
+  container[key.replace("-", "")] = [line];
 }
 
-function datetime2ical(date: Date, timeZone: string): string {
-  // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
-  // which we can easily convert into iCal format.
-  return date.toLocaleString("lt", { timeZone }).replace(" ", "T").replace(/-|:/g, "");
+function datetime2ical(date: Date | null, timeZone: string | null = "UTC"): string | null {
+  if (!date) {
+    return null;
+  }
+  switch (timeZone) {
+  case null:
+    return String(date.getFullYear()) + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0");
+  case "UTC":
+    return date.toISOString().replace(/-|:|\..../g, "");
+  default:
+    // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
+    // which we can easily convert into iCal format.
+    return date.toLocaleString("lt", { timeZone }).replace(" ", "T").replace(/-|:/g, "");
+  }
 }
 
 function escaped(s: string, quote: boolean): string {
