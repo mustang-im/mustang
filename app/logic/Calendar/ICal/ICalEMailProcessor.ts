@@ -3,7 +3,7 @@ import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProcessor";
-import { convertICalContainerToEvent } from "./ICalToEvent";
+import { convertVEventToEvent } from "./ICalToEvent";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
@@ -20,7 +20,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     if (!vevent) {
       return;
     }
-    convertICalContainerToEvent(vevent, event);
+    convertVEventToEvent(vevent, event);
     event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;

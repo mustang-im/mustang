@@ -19,7 +19,7 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
   if (!vevent) {
     return false;
   }
-  convertICalContainerToEvent(vevent, event);
+  convertVEventToEvent(vevent, event);
   return true;
 }
 
@@ -37,7 +37,7 @@ export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Ev
   }
   for (let iCal of parsed.objects.vevent) {
     let event = newEvent();
-    convertICalContainerToEvent(iCal, event);
+    convertVEventToEvent(iCal, event);
     events.push(event);
   }
   return events;
@@ -48,7 +48,7 @@ export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Ev
  * @param event Output: Put the ics data into this object
  * TODO need to handle more removed properties
  */
-export function convertICalContainerToEvent(vevent: VObject, event: Event): void {
+export function convertVEventToEvent(vevent: VObject, event: Event): void {
   if (vevent.entries.uid) {
     event.calUID = vevent.entries.uid[0].value;
   }
