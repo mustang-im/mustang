@@ -5,7 +5,7 @@ function unescaped(value: string): string {
   return value.replace(/\\n|\\(.)/gi, (_, c) => c || "\n");
 }
 
-export class ICalEntry {
+export class VEntry {
   properties: Record<string, string> = Object.create(null);
   name: string;
   value: string;
@@ -27,7 +27,7 @@ export class ICalEntry {
 }
 
 export class ICalContainer {
-  entries: Record<string, ICalEntry[]> = Object.create(null);
+  entries: Record<string, VEntry[]> = Object.create(null);
   parent: ICalContainer | ICalParser;
   constructor(parent: ICalContainer | ICalParser) {
     this.parent = parent;
@@ -53,7 +53,7 @@ export class ICalParser {
         current = current.parent;
       } else {
         assert(current instanceof ICalContainer, gt`Item outside container` + gt`. Line ${i}: ${line}`);
-        let item = new ICalEntry(line);
+        let item = new VEntry(line);
         current.entries[item.name] = append(current.entries[item.name], item);
       }
     }

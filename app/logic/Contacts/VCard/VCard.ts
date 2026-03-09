@@ -1,4 +1,4 @@
-import { ICalParser, type ICalEntry, type ICalContainer } from "../../util/VParser";
+import { ICalParser, type ICalContainer, type VEntry } from "../../util/VParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
 import { StreetAddress } from "../StreetAddress";
@@ -220,7 +220,7 @@ function containerToVCard(container: Record<string, string[]>): string {
   return "BEGIN:VCARD\r\nVERSION:4.0\r\nPRODID:-//Beonex//appName//EN\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VCARD\r\n";
 }
 
-function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, stripProtocol = false) {
+function makeContactEntry(entry: VEntry, protocol?: string, isURI = true, stripProtocol = false) {
   let value = entry.value;
   if (isURI && /^(\w+):/.test(value)) {
     protocol = RegExp.$1.toLowerCase();
