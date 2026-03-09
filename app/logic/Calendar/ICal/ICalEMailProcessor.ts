@@ -1,4 +1,4 @@
-import { ICalParser } from "../../util/VParser";
+import { VContainer } from "../../util/VParser";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
@@ -13,7 +13,7 @@ export class ICalEMailProcessor extends EMailProcessor {
       return;
     }
     let invitationStr = await invitationBlob.text();
-    let ics = new ICalParser(invitationStr);
+    let ics = new VContainer(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
     let event = new InvitationEvent();
     let vevent = ics.objects.vevent?.[0];

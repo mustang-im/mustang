@@ -1,4 +1,4 @@
-import { ICalParser, type VObject, type VEntry } from "../../util/VParser";
+import { VContainer, type VObject, type VEntry } from "../../util/VParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
 import { StreetAddress } from "../StreetAddress";
@@ -27,7 +27,7 @@ import { gt } from "../../../l10n/l10n";
  * @throws if no vCard could be found
  */
 export function parseAddressbook(text: string): VObject[] {
-  let parsed = new ICalParser(text);
+  let parsed = new VContainer(text);
   if (!parsed.objects.vcard) {
     throw new Error(gt`No vCard found`);
   }

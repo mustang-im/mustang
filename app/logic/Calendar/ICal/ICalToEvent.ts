@@ -2,7 +2,7 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
-import { ICalParser, VObject } from "../../util/VParser";
+import { VContainer, VObject } from "../../util/VParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
@@ -14,7 +14,7 @@ import { gt } from "../../../l10n/l10n";
  * @returns whether an iCal event is indeed contained an event
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
-  let parsed = new ICalParser(ics);
+  let parsed = new VContainer(ics);
   let vevent = parsed.objects.vevent?.[0];
   if (!vevent) {
     return false;
@@ -31,7 +31,7 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
  */
 export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Event[] {
   let events = [];
-  let parsed = new ICalParser(iCalFile);
+  let parsed = new VContainer(iCalFile);
   if (!parsed.objects.vevent) {
     throw new Error(gt`No iCal found`);
   }

@@ -28,16 +28,16 @@ export class VEntry {
 
 export class VObject {
   entries: Record<string, VEntry[]> = Object.create(null);
-  parent: VObject | ICalParser;
-  constructor(parent: VObject | ICalParser) {
+  parent: VObject | VContainer;
+  constructor(parent: VObject | VContainer) {
     this.parent = parent;
   }
 }
 
-export class ICalParser {
+export class VContainer {
   objects: Record<string, VObject[]> = Object.create(null);
   constructor(textFile: string) {
-    let current: VObject | ICalParser = this;
+    let current: VObject | VContainer = this;
     let lines = textFile.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n");
     let i = 0;
     for (let line of lines) {
