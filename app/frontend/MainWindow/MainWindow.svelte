@@ -8,7 +8,7 @@
 
 <vbox flex class="main-window"
   dir={rtl}
-  class:mobile={$appGlobal.isMobile}
+  class:mobile={true || $appGlobal.isMobile}
   class:desktop={!$appGlobal.isMobile}>
   {#if !appGlobal.isMobile}
     <WindowHeader selectedApp={$selectedApp} />

@@ -1,9 +1,9 @@
 <GroupBox classes="encryption" headerName={$t`Encryption`} addFunc={onImportFile}>
   <EcryptionIcon size="16px" slot="icon" />
-  <hbox class="subtitle font-smallest">{$t`The encryption public keys allow you to send encrypted emails, and whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these keys really belong to ${person.name}.`}</hbox>
+  <hbox class="subtitle font-small">{$t`The encryption public keys allow you to send encrypted emails, and whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these keys really belong to ${person.name}.`}</hbox>
   <vbox class="encryption" slot="content">
     <vbox class="keys">
-      {#each $keys.filterObservable(key => !key.obsolete).each as key}
+      {#each $keys.filterObservable(key => !key.obsolete).sortBy(key => key.sortOrder).each as key}
         <EncryptionKey {key} {person} />
       {/each}
       {#if $keys.filterObservable(key => key.obsolete).hasItems}

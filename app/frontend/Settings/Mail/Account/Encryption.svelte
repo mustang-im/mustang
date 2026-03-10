@@ -2,9 +2,9 @@
   <hbox class="header">
     <hbox class="title">{$t`Encryption`}</hbox>
   </hbox>
-  <hbox class="subtitle font-smallest">{$t`Private keys allow you to send encrypted emails, and to sign your own emails.`}</hbox>
+  <hbox class="subtitle font-small">{$t`Private keys allow you to send encrypted emails, and to sign your own emails.`}</hbox>
   <vbox class="keys">
-    {#each $keys.filterObservable(key => !key.obsolete).each as key}
+    {#each $keys.filterObservable(key => !key.obsolete).sortBy(key => key.sortOrder).each as key}
       <EncryptionKey {key} {identity} />
     {/each}
     {#if $keys.filterObservable(key => key.obsolete).hasItems}
@@ -51,18 +51,16 @@
 
 <script lang="ts">
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
-  import { type PublicKey, type PrivateKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { type PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
   import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
   import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import EncryptionKey from "./EncryptionKey.svelte";
   import Button from "../../../Shared/Button.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
-  import EcryptionIcon from "lucide-svelte/icons/lock";
   import ImportFileIcon from "lucide-svelte/icons/file-lock";
   import PlusIcon from "lucide-svelte/icons/plus";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
   export let identity: MailIdentity;
@@ -77,8 +75,6 @@
 
   function makeKey(): PublicKey {
     let key = Math.random() > 0.5 ? new PGPPrivateKey() : new SMIMEPrivateKey();
-    key.obsolete = Math.random() > 0.2;
-    key.useToEncrypt = Math.random() > 0.5;
     if (Math.random() < 0.2) {
       key.trustLevel = TrustLevel.Personal;
     }

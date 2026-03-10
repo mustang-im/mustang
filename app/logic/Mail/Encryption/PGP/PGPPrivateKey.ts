@@ -12,7 +12,9 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
   privateKeyArmored: string;
 
   @notifyChangedProperty
-  useToSign = true;
+  useToSign = false;
+  @notifyChangedProperty
+  didBackup = false;
 
   get useToEncrypt(): boolean {
     return this._useToEncrypt;
@@ -28,11 +30,13 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     let json = super.toJSON();
     json.privateKeyArmored = this.privateKeyArmored;
     json.useToSign = this.useToSign;
+    json.didBackup = this.didBackup;
     return json;
   }
   fromJSON(json: any) {
     super.fromJSON(json);
     this.privateKeyArmored = sanitize.nonemptystring(json.privateKeyArmored, null);
     this.useToSign = sanitize.boolean(json.useToSign, null);
+    this.didBackup = sanitize.boolean(json.didBackup, null);
   }
 }

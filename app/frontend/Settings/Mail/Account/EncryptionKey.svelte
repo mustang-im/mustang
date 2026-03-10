@@ -14,7 +14,12 @@
         <UnusedIcon title={$t`Used only on demand`} size="16px" />
       {/if}
     </hbox>
-    <hbox class="name" flex>{$key.name}</hbox>
+    <hbox class="name">{$key.name}</hbox>
+    {#if isExpanded}
+      <hbox class="keytype" flex>{$t`Secret key`}</hbox>
+    {:else}
+      <hbox flex />
+    {/if}
     <hbox class="system font-small">
       {key.system}
     </hbox>
@@ -27,9 +32,36 @@
   </hbox>
   {#if isExpanded}
     <vbox class="details">
-      <hbox>
-        <hbox class="label" />
-        <hbox>{$t`Secret key for ${key.system}`}</hbox>
+      {#if $key.obsolete}
+        <hbox class="obsolete-detail">
+          <hbox class="label">{$t`Obsolete`}</hbox>
+          <hbox>{$t`Do not use this key for new messages`}</hbox>
+        </hbox>
+      {:else}
+        <hbox class="usage-detail">
+          <hbox class="label">{$t`Usage`}</hbox>
+          <vbox>
+            <Checkbox toggle
+              bind:checked={key.useToSign}
+              disabled={$key.obsolete}
+              label={$t`Sign emails that I send`} />
+            <Checkbox toggle
+                bind:checked={key.useToEncrypt}
+                disabled={$key.obsolete}
+                label={$t`I want to receive encrypted emails`} />
+            {#if $key.useToEncrypt}
+              <div class="note">{$t`This is merely a request to your correspondents. The sender also needs to have encryption enabled for messages between you two to be encrypted.`}</div>
+              {#if !$key.didBackup}
+                <div class="warning note">{$t`Please save your private key, on a different device. If you lose the key, you will not be able to read your own encrypted emails anymore.`}</div>
+                <div class="warning note">{$t`To read encrypted emails, you need to use ${appName} (or another app that supports ${key.system}) on your other devices as well.`}</div>
+              {/if}
+            {/if}
+          </vbox>
+        </hbox>
+      {/if}
+      <hbox class="verification-code" class:obsolete={$key.obsolete}>
+        <hbox class="label">{$t`Verification code`}</hbox>
+        <hbox class="value">{key.fingerprint}</hbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
@@ -47,42 +79,6 @@
         <hbox class="label-2-column">{$t`Length`}</hbox>
         <hbox>{4096} {$t`bits`}</hbox>
       </hbox>
-      <hbox class="verification-code">
-        <hbox class="label">{$t`Verification code`}</hbox>
-        <hbox class="value">{key.fingerprint}</hbox>
-      </hbox>
-      {#if !$key.obsolete}
-        <hbox class="usage-detail">
-          <hbox class="label">{$t`Usage`}</hbox>
-          <vbox>
-            <label>
-              <input type="checkbox"
-                bind:checked={key.useToSign}
-                disabled={$key.obsolete} />
-              {$t`Sign emails that I send`}
-            </label>
-            <label>
-              <input type="checkbox"
-                bind:checked={key.useToEncrypt}
-                disabled={$key.obsolete} />
-              {$t`I want to receive encrypted emails`}
-            </label>
-            {#if $key.useToEncrypt}
-              <div class="note">{$t`This is merely a request to your correspondents. The sender also needs to have encryption enabled for messages between you two to be encrypted.`}</div>
-              <div class="warning note">{$t`Please save your private key, on a different device. If you lose the key, you will not be able to read your own encrypted emails anymore.`}</div>
-              <div class="warning note">{$t`To read encrypted emails, you need to use ${appName} (or another app that supports ${key.system}) on your other devices as well.`}</div>
-            {/if}
-          </vbox>
-        </hbox>
-        {/if}
-      <hbox class="obsolete-detail">
-        <hbox class="label">{$t`Obsolete`}</hbox>
-        <label>
-          <input type="checkbox"
-            bind:checked={key.obsolete} />
-          {$t`Do not use this key for new messages`}
-        </label>
-      </hbox>
       <hbox>
         <hbox class="label">{$t`Name`}</hbox>
         <input type="text" bind:value={key.name} spellcheck={false} />
@@ -98,15 +94,23 @@
       <hbox>
         <hbox class="label" />
         <hbox class="buttons">
+          {#if key.obsolete}
+            <RoundButton
+              label={$t`Delete`}
+              icon={DeleteIcon}
+              onClick={onDelete}
+              />
+          {:else}
+            <Button
+              label={$t`Export…`}
+              icon={ExportIcon}
+              onClick={onExport}
+              />
+          {/if}
           <Button
-            label={$t`Export…`}
-            icon={ExportIcon}
-            onClick={onExport}
-            />
-          <RoundButton
-            label={$t`Delete`}
-            icon={DeleteIcon}
-            onClick={onDelete}
+            label={key.obsolete ? $t`Restore` : $t`Obsolete`}
+            icon={ObsoleteIcon}
+            onClick={() => key.obsolete = !key.obsolete}
             />
         </hbox>
       </hbox>
@@ -123,6 +127,7 @@
   import UnusedIcon from "lucide-svelte/icons/circle-dashed";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
   import ExportIcon from "lucide-svelte/icons/file-down";
+  import ObsoleteIcon from "lucide-svelte/icons/octagon-x";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
@@ -130,6 +135,7 @@
   import { getDateString, getDateTimeString } from "../../../Util/date";
   import { t } from "../../../../l10n/l10n";
   import Button from "../../../Shared/Button.svelte";
+  import Checkbox from "../../../Shared/Checkbox.svelte";
 
   export let key: PublicKey & PrivateKey;
   export let identity: MailIdentity;
@@ -138,6 +144,7 @@
 
   async function onExport() {
     alert("TODO Export…");
+    key.didBackup = true;
     // TODO
   }
   async function onDelete() {
@@ -173,6 +180,9 @@
     margin-inline: 16px;
     font-weight: bold;
   }
+  .keytype {
+    justify-content: center;
+  }
   .key.obsolete {
     opacity: 70%;
   }
@@ -184,40 +194,35 @@
     justify-content: end;
   }
   .details {
-    margin: 6px 24px 12px 48px;
-  }
-  .details > hbox {
-    margin-block-end: 2px;
+    margin: 12px 24px 0px 48px;
   }
   .details .label {
     min-width: 8em;
     margin-inline-end: 8px;
     flex-wrap: wrap;
+    opacity: 65%;
   }
   .details .label-2-column {
     margin-inline-start: 32px;
     margin-inline-end: 8px;
+    opacity: 65%;
   }
-  .details label {
-    display: flex;
-    align-items: start;
-  }
-  .details label input[type=checkbox] {
-    margin-inline-end: 8px;
-  }
-  .verification-code {
-    margin-block: 12px;
+  .verification-code:not(.obsolete) {
+    margin-block: 24px;
   }
   .verification-code .label {
     padding-block: 7px;
   }
   .verification-code .value {
+    padding-block: 8px;
+    letter-spacing: 0.05em;
+  }
+  .verification-code:not(.obsolete) .value {
     background-color: var(--bg);
     color: var(--fg);
 
-    padding: 8px 12px;
+    padding-inline: 12px;
     font-weight: 500;
-    letter-spacing: 0.05em;
   }
   .warning {
     background-color: yellow;
@@ -227,11 +232,7 @@
     padding: 6px 12px;
   }
   .usage-detail {
-    padding-block-start: 24px;
-    padding-block-end: 12px;
-  }
-  .obsolete-detail {
-    padding-block: 6px;
+    padding-block-start: 6px;
   }
   .buttons {
     gap: 8px;

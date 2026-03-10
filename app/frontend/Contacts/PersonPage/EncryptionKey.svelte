@@ -12,7 +12,12 @@
         <SignIcon title={$t`Use only for checking signatures`} size="16px" />
       {/if}
     </hbox>
-    <hbox class="name" flex>{$key.name}</hbox>
+    <hbox class="name">{$key.name}</hbox>
+    {#if isExpanded}
+      <hbox class="keytype" flex>{$t`Public key certificate`}</hbox>
+    {:else}
+      <hbox flex />
+    {/if}
     <hbox class="system font-small">
       {key.system}
     </hbox>
@@ -25,9 +30,49 @@
   </hbox>
   {#if isExpanded}
     <vbox class="details">
-      <hbox>
-        <hbox class="label" />
-        <hbox>{$t`Public key certificate for ${key.system}`}</hbox>
+      <hbox class="acceptance">
+        <hbox class="label">{$t`Acceptance`}</hbox>
+        <vbox>
+          <label>
+            <input type="radio"
+              value={TrustLevel.Personal}
+              bind:group={key.trustLevel} />
+            {$t`I have personally checked that this key really belongs to ${person?.name ?? $t`this person`}`}
+          </label>
+          {#if key.caName}
+            <label>
+              <input type="radio"
+                value={TrustLevel.ThirdParty}
+                disabled={!key.caName}
+                bind:group={key.trustLevel} />
+              {`${key.caName} claims that this is correct`}
+            </label>
+          {:else}
+            <label>
+              <input type="radio"
+                value={TrustLevel.Sender}
+                bind:group={key.trustLevel} />
+              {$t`Not checked`}
+            </label>
+          {/if}
+          <label>
+            <input type="radio"
+              value={TrustLevel.Distrusted}
+              bind:group={key.trustLevel} />
+            {$t`This key is bad`}
+          </label>
+        </vbox>
+      </hbox>
+      <hbox class="usage-detail">
+        <hbox class="label">{$t`Usage`}</hbox>
+        <Checkbox toggle
+          bind:checked={key.useToEncrypt}
+          disabled={$key.trustLevel == TrustLevel.Distrusted}
+          label={$t`Encrypt my emails to ${person.name} with this key`} />
+      </hbox>
+      <hbox class="verification-code">
+        <hbox class="label">{$t`Verification code`}</hbox>
+        <hbox class="value">{key.fingerprint}</hbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
@@ -44,51 +89,6 @@
         <hbox class="value">DSA</hbox>
         <hbox class="label-2-column">{$t`Length`}</hbox>
         <hbox>{4096} {$t`bits`}</hbox>
-      </hbox>
-      <hbox class="verification-code">
-        <hbox class="label">{$t`Verification code`}</hbox>
-        <hbox class="value">{key.fingerprint}</hbox>
-      </hbox>
-      <hbox class="acceptance">
-        <hbox class="label">{$t`Acceptance`}</hbox>
-        <vbox>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Personal}
-              bind:group={key.trustLevel} />
-            {$t`I have personally checked that this key really belongs to ${person?.name ?? $t`this person`}`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.ThirdParty}
-              disabled={!key.caName}
-              bind:group={key.trustLevel} />
-            {key.caName
-             ? $t`${key.caName} claims that this is correct`
-             : $t`No known third-party verification`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Sender}
-              bind:group={key.trustLevel} />
-            {$t`Not checked`}
-          </label>
-          <label>
-            <input type="radio"
-              value={TrustLevel.Distrusted}
-              bind:group={key.trustLevel} />
-            {$t`This key is bad`}
-          </label>
-        </vbox>
-      </hbox>
-      <hbox class="usage-detail">
-        <hbox class="label">{$t`Usage`}</hbox>
-        <label>
-          <input type="checkbox"
-            bind:checked={key.useToEncrypt}
-            disabled={$key.trustLevel == TrustLevel.Distrusted} />
-          {$t`Encrypt my emails to ${person.name} with this key`}
-        </label>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Name`}</hbox>
@@ -124,6 +124,7 @@
 <script lang="ts">
   import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { Person } from "../../../logic/Abstract/Person";
+  import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
@@ -178,6 +179,9 @@
     margin-inline: 16px;
     font-weight: bold;
   }
+  .keytype {
+    justify-content: center;
+  }
   .key.obsolete {
     opacity: 70%;
   }
@@ -189,47 +193,51 @@
     justify-content: end;
   }
   .details {
-    margin: 6px 24px 12px 48px;
+    margin: 12px 24px 0px 48px;
   }
   .details > hbox {
     margin-block-end: 2px;
   }
   .details .label {
     min-width: 8em;
-    margin-inline-end: 8px;
     flex-wrap: wrap;
+    margin-inline-end: 8px;
+    opacity: 65%;
   }
   .details .label-2-column {
     margin-inline-start: 32px;
     margin-inline-end: 8px;
+    opacity: 65%;
   }
   .details label {
     display: flex;
     align-items: start;
   }
-  .details label input[type=radio],
-  .details label input[type=checkbox] {
+  .details label input[type=radio] {
     margin-inline-end: 8px;
   }
-  .verification-code {
-    margin-block: 12px;
+  .verification-code:not(.obsolete) {
+    margin-block: 20px;
   }
   .verification-code .label {
     padding-block: 7px;
   }
   .verification-code .value {
+    letter-spacing: 0.05em;
+    padding-block: 8px;
+  }
+  .verification-code:not(.obsolete) .value {
     background-color: var(--bg);
     color: var(--fg);
 
-    padding: 8px 12px;
     font-weight: 500;
-    letter-spacing: 0.05em;
+    padding-inline: 12px;
   }
   .acceptance {
-    padding-block: 16px;
+    padding-block: 4px;
   }
   .usage-detail {
-    padding-block-end: 12px;
+    padding-block-start: 8px;
   }
   .buttons {
     gap: 8px;

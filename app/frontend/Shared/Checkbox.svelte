@@ -139,7 +139,7 @@
   }
   .knob {
     position: absolute;
-    top: 14px;
+    top: 4px;
     height: 16px;
     width: 16px;
     border-radius: 100px;
@@ -180,6 +180,9 @@
   }
   :global(.mobile) .checkbox {
     min-height: 44px;
+  }
+  :global(.mobile) .knob {
+    top: 14px;
   }
   :global(.mobile) .knob-wrapper {
     height: 44px;

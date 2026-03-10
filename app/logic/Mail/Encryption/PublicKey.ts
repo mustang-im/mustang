@@ -76,6 +76,13 @@ export class PublicKey extends Observable {
     }
   }
 
+  get sortOrder(): number {
+    return -(
+      sanitize.translate(this.system, { [EncryptionSystem.PGP]: 2, [EncryptionSystem.SMIME]: 1 }, 0) +
+      (this.useToEncrypt ? 20 : (this as any as PrivateKey).useToSign ? 10 : 0) +
+      (this.obsolete ? -100 : 0));
+  }
+
   toJSON() {
     let json = {} as any;
     json.publicKeyArmored = this.publicKeyArmored;
@@ -112,6 +119,7 @@ export interface PrivateKey {
    * This is super secret and should never leak. */
   privateKeyArmored: string;
   useToSign: boolean;
+  didBackup: boolean;
 }
 
 /**
@@ -119,13 +127,13 @@ export interface PrivateKey {
  * for display to the user in the UI.
  */
 export enum EncryptionSystem {
-  PGP = "PGP",
+  PGP = "OpenPGP",
   SMIME = "S/MIME",
   MLS = "MLS",
   Matrix = "Matrix",
   WhatsApp = "WhatsApp",
   Signal = "Signal",
-  OMEMO = "XMPP-OMEMO",
+  OMEMO = "XMPP/OMEMO",
 }
 
 export enum TrustLevel {
