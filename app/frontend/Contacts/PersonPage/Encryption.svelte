@@ -1,7 +1,10 @@
-<GroupBox classes="encryption" headerName={$t`Encryption`} addFunc={onImportFile}>
+<GroupBox classes="encryption" headerName={$t`Encryption`} addFunc={() => showImportOverride = true}>
   <EcryptionIcon size="16px" slot="icon" />
   <hbox class="subtitle font-small">{$t`The encryption public keys allow you to send encrypted emails, and whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these keys really belong to ${person.name}.`}</hbox>
   <vbox class="encryption" slot="content">
+    {#if showImport}
+      <EncryptionImport {person} bind:isOpen={showImportOverride} />
+    {/if}
     <vbox class="keys">
       {#each $keys.filterObservable(key => !key.obsolete).sortBy(key => key.sortOrder).each as key}
         <EncryptionKey {key} {person} />
@@ -29,87 +32,37 @@
         </vbox>
       {/if}
       {#if showObsolete}
-        {#each $keys.filterObservable(key => key.obsolete).each as key}
+        {#each keys.filterObservable(key => key.obsolete).each as key}
           <EncryptionKey {key} {person} />
         {/each}
       {/if}
     </vbox>
-    {#if isEditing}
-      <hbox class="buttons">
-        <Button
-          label={$t`Import from file…`}
-          icon={ImportFileIcon}
-          onClick={onImportFile}
-          />
-        <Button
-          label={$t`Query keyservers`}
-          icon={KeyserverIcon}
-          onClick={onQueryKeyservers}
-          />
-      </hbox>
-    {/if}
   </vbox>
 </GroupBox>
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
-  import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
-  import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import EncryptionKey from "./EncryptionKey.svelte";
   import GroupBox from "./GroupBox.svelte";
-  import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import EcryptionIcon from "lucide-svelte/icons/lock";
-  import ImportFileIcon from "lucide-svelte/icons/file-lock";
-  import KeyserverIcon from "lucide-svelte/icons/cloud-download";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import EncryptionImport from "./EncryptionImport.svelte";
 
   export let person: Person;
-  export let isEditing: boolean;
+  export let showImportOverride: boolean;
 
+  $: keys = $person.encryptionPublicKeys;
+  $: showImport = $keys.isEmpty || showImportOverride;
   let showObsolete = false;
-
-  let keys = new ArrayColl<PublicKey>();
-  for (let i = 0; i < 10; i++) {
-    makeKey();
-  }
-
-  function makeKey(): PublicKey {
-    let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
-    key.obsolete = Math.random() > 0.2;
-    key.useToEncrypt = Math.random() > 0.5;
-    if (Math.random() < 0.2) {
-      key.trustLevel = TrustLevel.Personal;
-    }
-    console.log("mails", person.emailAddresses.contents)
-    for (let contact of person.emailAddresses) {
-      key.userIDs.add(contact.value);
-    }
-    keys.add(key);
-    return key;
-  }
-
-  async function onImportFile() {
-    alert("import…");
-  }
-
-  async function onQueryKeyservers() {
-    alert("query keyservers…");
-    while (Math.random() < 0.5) {
-      makeKey().obsolete = false;
-    }
-  }
 </script>
 
 <style>
   .encryption {
     align-items: center;
     margin-block-end: 4px;
-    flex-wrap: wrap;
   }
   .subtitle {
     opacity: 70%;
