@@ -1,7 +1,7 @@
 import { Event } from "../Event";
 import type { CalDAVCalendar } from "./CalDAVCalendar";
 import { convertICalToEvent } from "../ICal/ICalToEvent";
-import { getICal } from "../ICal/EventToICal";
+import { getICal, getUpdatedICal } from "../ICal/EventToICal";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";
@@ -49,14 +49,14 @@ export class CalDAVEvent extends Event {
 
   async saveToServer() {
     this.calUID ??= crypto.randomUUID();
-    let iCal = getICal(this);
     if (this.url) {
-      // TODO take `originalICal` and update only the properties we know about
+      let iCal = getUpdatedICal(this, this.originalICal);
       console.log("updating", this, this.url, "with ICS", iCal);
       await this.calendar.client.updateCalendarObject({
         calendarObject: this.getDAVObject(iCal),
       });
     } else {
+      let iCal = getICal(this);
       console.log("creating", this, "with ICS", iCal);
       let filename = this.calUID + ".ics";
       await this.calendar.client.createCalendarObject({

@@ -2,13 +2,18 @@ import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { VObject } from "../../util/VParser";
+import { VContainer, type VObject } from "../../util/VParser";
 import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
 export function getICal(event: Event, method?: iCalMethod): string {
   assert(event, "Need event");
   return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${eventToVEvent(event)}END:VCALENDAR\r\n`;
+}
+
+export function getUpdatedICal(event: Event, original: string, method?: iCalMethod) {
+  let parsed = new VContainer(original);
+  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${getUpdatedVEvent(event, parsed.objects.vevent[0])}END:VCALENDAR\r\n`;
 }
 
 /**
