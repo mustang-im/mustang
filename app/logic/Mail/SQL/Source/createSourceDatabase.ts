@@ -6,7 +6,7 @@ export const mailSourceDatabaseSchema = sql`
   CREATE TABLE "emailMIME" (
     "id" INTEGER PRIMARY KEY,
     -- FOREIGN KEY to mail.db email.id
-    "emailID" INTEGER not null,
+    "emailID" INTEGER not null UNIQUE,
     -- RFC822 header
     "messageID" TEXT default null,
     "mime" ANY not null
