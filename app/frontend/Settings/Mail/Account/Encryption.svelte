@@ -1,9 +1,22 @@
 <vbox class="encryption">
-  <hbox class="header">
+  <hbox class="header" flex>
     <hbox class="title">{$t`Encryption`}</hbox>
+    <hbox flex />
+    <hbox class="buttons">
+      <RoundButton
+        label={$t`Import or Create new…`}
+        icon={PlusIcon}
+        onClick={() => showCreate = true}
+        border={false}
+        classes="plain"
+        />
+    </hbox>
   </hbox>
   <hbox class="subtitle font-small">{$t`Private keys allow you to send encrypted emails, and to sign your own emails.`}</hbox>
   <vbox class="keys">
+    {#if showCreate || showCreateOverride}
+      <EncryptionImport {identity} bind:isOpen={showCreateOverride} />
+    {/if}
     {#each $keys.filterObservable(key => !key.obsolete).sortBy(key => key.sortOrder).each as key}
       <EncryptionKey {key} {identity} />
     {/each}
@@ -35,73 +48,40 @@
       {/each}
     {/if}
   </vbox>
-  <hbox class="buttons" flex>
-    <Button
-      label={$t`Import from file…`}
-      icon={ImportFileIcon}
-      onClick={onImportFile}
-      />
-    <Button
-      label={$t`Create new…`}
-      icon={PlusIcon}
-      onClick={onCreateNew}
-      />
-  </hbox>
 </vbox>
 
 <script lang="ts">
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
-  import { type PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
-  import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
-  import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import EncryptionKey from "./EncryptionKey.svelte";
-  import Button from "../../../Shared/Button.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
-  import ImportFileIcon from "lucide-svelte/icons/file-lock";
   import PlusIcon from "lucide-svelte/icons/plus";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../../l10n/l10n";
+  import EncryptionImport from "./EncryptionImport.svelte";
 
   export let identity: MailIdentity;
-
-  let showObsolete = false;
+  export let showCreateOverride: boolean;
 
   $: keys = identity.encryptionPrivateKeys;
-
-  for (let i = 0; i < 5; i++) {
-    //makeKey();
-  }
-
-  function makeKey(): PublicKey {
-    let key = Math.random() > 0.5 ? new PGPPrivateKey() : new SMIMEPrivateKey();
-    if (Math.random() < 0.2) {
-      key.trustLevel = TrustLevel.Personal;
-    }
-    key.userIDs.add(identity.emailAddress);
-    keys.add(key);
-    return key;
-  }
-
-  async function onImportFile() {
-    makeKey().obsolete = false;
-  }
-
-  async function onCreateNew() {
-    makeKey().obsolete = false;
-  }
+  $: showCreate = $keys.isEmpty;
+  let showObsolete = false;
 </script>
 
 <style>
   .encryption {
     align-items: start;
+    margin-block-start: 24px;
     margin-block-end: 4px;
     flex-wrap: wrap;
   }
   .header {
-    justify-content: start;
     align-items: center;
-    margin-block-start: 24px;
+    width: 100%;
+  }
+  .header .buttons {
+    gap: 12px;
+    align-items: center;
   }
   .subtitle {
     opacity: 70%;
@@ -109,7 +89,7 @@
   .keys {
     margin-block-start: 16px;
     align-self: center;
-    /*width: 100%;*/
+    width: 100%;
   }
   .expired-header {
     padding: 0px 8px;
@@ -125,9 +105,5 @@
   .expired-header .first-row:hover {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
-  }
-  .buttons {
-    gap: 12px;
-    margin-block-start: 24px;
   }
 </style>

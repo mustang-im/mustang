@@ -238,11 +238,8 @@
     $selectedContactEntry = entry;
   }
   function addKey() {
-    console.log("add key");
     showEncryptionOverride = true;
-    console.log("show encryption", showEncryption, $keys.contents);
   }
-  $: console.log("show encryption", showEncryption, $keys.contents);
   function addNotes() {
     person.notes = " ";
     isEditing = true;

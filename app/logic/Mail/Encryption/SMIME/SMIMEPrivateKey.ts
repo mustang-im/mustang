@@ -13,6 +13,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   useToSign = false;
   @notifyChangedProperty
   didBackup = false;
+  justCreated = false;
 
   get useToEncrypt(): boolean {
     return this._useToEncrypt;

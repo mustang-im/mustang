@@ -2,11 +2,6 @@
   <hbox class="import">
     <hbox class="label">{$t`Import from`}</hbox>
     <hbox class="buttons">
-      <Button
-        label={$t`Key server`}
-        icon={CloudIcon}
-        onClick={onQueryKeyserver}
-        />
       <hbox bind:this={appsButton}>
         <Button
           label={$t`App`}
@@ -30,6 +25,13 @@
         />
     </hbox>
   </hbox>
+  <hbox class="create buttons">
+    <Button
+      label={$t`Create new`}
+      icon={PlusIcon}
+      onClick={onCreateNew}
+      />
+  </hbox>
 </vbox>
 
 <FileSelector {acceptFileTypes} bind:this={fileSelector} />
@@ -42,27 +44,29 @@
 </Menu>
 
 <script lang="ts">
-  import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
-  import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
-  import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
-  import { Person } from "../../../logic/Abstract/Person";
-  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
-  import Menu from "../../Shared/Menu/Menu.svelte";
-  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
-  import Button from "../../Shared/Button.svelte";
-  import CloudIcon from "lucide-svelte/icons/cloud-download";
+  import { PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
+  import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+  import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
+  import Menu from "../../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
+  import Button from "../../../Shared/Button.svelte";
+  import PlusIcon from "lucide-svelte/icons/plus";
   import FileIcon from "lucide-svelte/icons/file-lock";
   import AppIcon from "lucide-svelte/icons/app-window";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
 
-  export let person: Person;
+  export let identity: MailIdentity;
   /** in/out */
   export let isOpen: boolean;
 
+  $: console.log("open", isOpen);
+
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-keys", "application/x-x509-user-cert", "application/x-x509-ca-cert", "application/pkcs7-mime", "application/pkcs7-certificates" ];
+  const acceptFileTypes = [ "application/pgp-keys", "application/pgp-encrypted" ];
   async function onImportFile() {
     let file = await fileSelector.selectFile();
     if (!file) {
@@ -88,26 +92,23 @@
   async function onImportFromAppleMail() {
     isOpen = false;
   }
-  async function onQueryKeyserver() {
+
+  async function onCreateNew() {
     makeKey().obsolete = false;
     isOpen = false;
   }
 
   function makeKey(): PublicKey {
-    let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
-    key.obsolete = Math.random() > 0.2;
-    key.useToEncrypt = Math.random() > 0.5;
+    let key = Math.random() > 0.5 ? new PGPPrivateKey() : new SMIMEPrivateKey();
     if (Math.random() < 0.2) {
       key.trustLevel = TrustLevel.Personal;
     }
-    console.log("mails", person.emailAddresses.contents)
-    for (let contact of person.emailAddresses) {
-      key.userIDs.add(contact.value);
-    }
-    person.encryptionPublicKeys.add(key);
+    key.userIDs.add(identity.emailAddress);
+    identity.encryptionPrivateKeys.add(key);
+    key.justCreated = true;
     return key;
   }
-</script>
+  </script>
 
 <style>
   .key-import {
@@ -122,6 +123,12 @@
   }
   .import {
     align-items: center;
+    margin-block-start: 8px;
+    margin-block-end: 8px;
+  }
+  .create {
+    justify-content: end;
+    margin-block-end: 4px;
   }
   .label {
     margin-inline-end: 12px;
@@ -129,6 +136,8 @@
   .buttons {
     gap: 8px;
     flex-wrap: wrap;
+  }
+  .import .buttons {
     justify-content: end;
     flex: 1 1 0;
   }

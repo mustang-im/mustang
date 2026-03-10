@@ -82,11 +82,4 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .buttons {
-    gap: 8px;
-    margin-block-start: 16px;
-    margin-block-end: 4px;
-    width: 100%;
-    justify-content: end;
-  }
 </style>

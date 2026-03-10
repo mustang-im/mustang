@@ -120,6 +120,9 @@ export interface PrivateKey {
   privateKeyArmored: string;
   useToSign: boolean;
   didBackup: boolean;
+  /** Set when the key is created.
+   * Do not save this property. It should be false on load. */
+  justCreated: boolean;
 }
 
 /**

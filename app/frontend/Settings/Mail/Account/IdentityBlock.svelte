@@ -74,15 +74,15 @@
       </vbox>
     {/if}
 
-    {#if showEncryption}
-      <Encryption {identity} />
+    {#if showEncryption || showEncryptionOverride}
+      <Encryption {identity} bind:showCreateOverride={showEncryptionOverride} />
     {/if}
 
     <ExpanderButtons>
       <ExpanderButton bind:expanded={showReplyTo} label={$t`Reply-To`} />
       <ExpanderButton bind:expanded={showOrganisation} label={$t`Organisation`} />
       <ExpanderButton bind:expanded={showSignature} label={$t`Signature`} />
-      <ExpanderButton bind:expanded={showEncryption} label={$t`Encryption`} />
+      <ExpanderButton bind:expanded={showEncryption} label={$t`Encryption`} on:expand={addEcryption} />
     </ExpanderButtons>
   </vbox>
 </HeaderGroupBox>
@@ -114,8 +114,14 @@
   let showSignature = !!identity.signatureHTML;
   let showSentBy = !gLicense.license;
   let showSentByExplainer = false;
-  let showEncryption = identity.encryptionPrivateKeys.hasItems;
+  $: keys = identity.encryptionPrivateKeys;
+  $: showEncryption = $keys.hasItems;
+  let showEncryptionOverride = false;
   let editor: Editor;
+
+  function addEcryption() {
+    showEncryptionOverride = true;
+  }
 
   function onDelete() {
     dispatchEvent("delete", identity);

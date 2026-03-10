@@ -94,13 +94,7 @@
       <hbox>
         <hbox class="label" />
         <hbox class="buttons">
-          {#if key.obsolete}
-            <RoundButton
-              label={$t`Delete`}
-              icon={DeleteIcon}
-              onClick={onDelete}
-              />
-          {:else}
+          {#if !key.obsolete}
             <Button
               label={$t`Export…`}
               icon={ExportIcon}
@@ -112,6 +106,13 @@
             icon={ObsoleteIcon}
             onClick={() => key.obsolete = !key.obsolete}
             />
+          {#if key.obsolete || key.justCreated}
+            <RoundButton
+              label={$t`Delete`}
+              icon={DeleteIcon}
+              onClick={onDelete}
+              />
+          {/if}
         </hbox>
       </hbox>
     </vbox>
@@ -148,8 +149,10 @@
     // TODO
   }
   async function onDelete() {
-    if (!confirm(`WARNING\nYou will not be able to read your own emails which are encrypted with this key - both old and new emails.\nMake sure that you have a backup of the key.\nDo you want to delete your own private key?`)) {
-      return;
+    if (!key.justCreated) {
+      if (!confirm(`WARNING\nYou will not be able to read your own emails which are encrypted with this key - both old and new emails.\nMake sure that you have a backup of the key.\nDo you want to delete your own private key?`)) {
+        return;
+      }
     }
     identity.encryptionPrivateKeys.remove(key);
     // TODO
