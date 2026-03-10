@@ -1,5 +1,6 @@
 import { PGPPublicKey } from "./PGPPublicKey";
 import type { PrivateKey } from "../PublicKey";
+import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../../util/Observable";
 
 export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
@@ -21,5 +22,17 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     if (this._useToEncrypt) {
       this.useToSign = true;
     }
+  }
+
+  toJSON() {
+    let json = super.toJSON();
+    json.privateKeyArmored = this.privateKeyArmored;
+    json.useToSign = this.useToSign;
+    return json;
+  }
+  fromJSON(json: any) {
+    super.fromJSON(json);
+    this.privateKeyArmored = sanitize.nonemptystring(json.privateKeyArmored, null);
+    this.useToSign = sanitize.boolean(json.useToSign, null);
   }
 }

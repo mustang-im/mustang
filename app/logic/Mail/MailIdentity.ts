@@ -89,8 +89,15 @@ export class MailIdentity extends Observable {
     thiss.sendBCC.addAll(sanitize.array(config.sendBCC).filter(e =>
       !!sanitize.emailAddress(e, null)));
     thiss.smlAccount = SMLHTTPAccount.fromJSON(sanitize.json(config.smlAccount, null), thiss);
-    thiss.encryptionPrivateKeys.replaceAll(sanitize.array(config.encryptionPrivateKeys, []).map(keyJSON =>
-      privateKeyFromJSON(sanitize.json(keyJSON, null))));
+    thiss.encryptionPrivateKeys.clear();
+    for (let keyJSON of sanitize.array(config.encryptionPrivateKeys, [])) {
+      try {
+        let key = privateKeyFromJSON(sanitize.json(keyJSON, null));
+        thiss.encryptionPrivateKeys.add(key);
+      } catch (ex) {
+        thiss.account.errorCallback;
+      }
+    }
     return thiss;
   }
   toConfigJSON(): any {

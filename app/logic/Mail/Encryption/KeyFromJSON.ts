@@ -1,12 +1,14 @@
-import type { PublicKey, PrivateKey } from "./PublicKey";
+import { type PublicKey, type PrivateKey, EncryptionSystem } from "./PublicKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
+import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
+import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export function publicKeyFromJSON(json: any): PublicKey {
-  let PublicKeyClass = sanitize.translate(json.type, {
-    pgp: PGPPublicKey,
-    //smime: SMIMEPublicKey,
+  let PublicKeyClass = sanitize.translate(json.system, {
+    [EncryptionSystem.PGP]: PGPPublicKey,
+    [EncryptionSystem.SMIME]: SMIMEPublicKey,
   });
   let publicKey = new PublicKeyClass();
   publicKey.fromJSON(json);
@@ -14,9 +16,9 @@ export function publicKeyFromJSON(json: any): PublicKey {
 }
 
 export function privateKeyFromJSON(json: any): PublicKey & PrivateKey {
-  let PrivateKeyClass = sanitize.translate(json.type, {
-    pgp: PGPPrivateKey,
-    //smime: SMIMEPrivateKey,
+  let PrivateKeyClass = sanitize.translate(json.system, {
+    [EncryptionSystem.PGP]: PGPPrivateKey,
+    [EncryptionSystem.SMIME]: SMIMEPrivateKey,
   });
   let privateKey = new PrivateKeyClass();
   privateKey.fromJSON(json);

@@ -5,12 +5,12 @@ import { ArrayColl } from "svelte-collections";
 export class PublicKey extends Observable {
   @notifyChangedProperty
   name: string;
-  readonly id: string;
-  readonly fingerprint: string;
+  id: string;
+  fingerprint: string;
   /** Must be set by subclass */
-  readonly system: EncryptionSystem;
-  readonly created: Date;
-  readonly expires: Date;
+  system: EncryptionSystem;
+  created: Date;
+  expires: Date;
   @notifyChangedProperty
   _trustLevel: TrustLevel;
   @notifyChangedProperty
@@ -79,10 +79,30 @@ export class PublicKey extends Observable {
   toJSON() {
     let json = {} as any;
     json.publicKeyArmored = this.publicKeyArmored;
+    json.system = this.system;
+    json.id = this.id;
+    json.fingerprint = this.fingerprint;
+    json.created = this.created.toISOString();
+    json.expires = this.expires.toISOString();
+    json.trustLevel = this.trustLevel;
+    json.caName = this.caName;
+    json.userIDs = this.userIDs.contents;
+    json.useToEncrypt = this.useToEncrypt;
+    json.obsolete = this.obsolete;
     return json;
   }
   fromJSON(json: any) {
     this.publicKeyArmored = sanitize.nonemptystring(json.publicKeyArmored, null);
+    this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
+    this.id = sanitize.alphanumdash(json.id);
+    this.fingerprint = sanitize.alphanumdash(json.fingerprint);
+    this.created = sanitize.date(json.created);
+    this.expires = sanitize.date(json.expires);
+    this.trustLevel = sanitize.enum<TrustLevel>(json.trustLevel, Object.values(TrustLevel), TrustLevel.Sender);
+    this.caName = sanitize.nonemptystring(json.caName, null);
+    this.userIDs.replaceAll(sanitize.array(json.userIDs).map(userID => sanitize.nonemptystring(userID)));
+    this.useToEncrypt = sanitize.boolean(json.useToEncrypt, false);
+    this.obsolete = sanitize.boolean(json.obsolete, false);
   }
 }
 
