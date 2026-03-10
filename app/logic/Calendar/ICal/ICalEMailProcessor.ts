@@ -1,9 +1,9 @@
-import { ICalParser } from "./ICalParser";
+import { VContainer } from "../../util/VParser";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProcessor";
-import { convertICalContainerToEvent } from "./ICalToEvent";
+import { convertVEventToEvent } from "./ICalToEvent";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
@@ -13,14 +13,14 @@ export class ICalEMailProcessor extends EMailProcessor {
       return;
     }
     let invitationStr = await invitationBlob.text();
-    let ics = new ICalParser(invitationStr);
+    let ics = new VContainer(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
     let event = new InvitationEvent();
-    let vevent = ics.containers.vevent?.[0];
+    let vevent = ics.objects.vevent?.[0];
     if (!vevent) {
       return;
     }
-    convertICalContainerToEvent(vevent, event);
+    convertVEventToEvent(vevent, event);
     event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
@@ -40,7 +40,7 @@ export class ICalEMailProcessor extends EMailProcessor {
 
 /* Find the iTIP method from a parsed vcalendar part */
 function iTIPMethod(ics: any): InvitationMessage {
-  switch (ics.containers.vcalendar?.[0].entries.method?.[0].value) {
+  switch (ics.objects.vcalendar?.[0].entries.method?.[0].value) {
   case "CANCEL":
     return InvitationMessage.CancelledEvent;
   case "REQUEST":

@@ -8,7 +8,7 @@ export class Participant extends PersonUID {
   /** DTSTAMP when the status was sent that is captured in this object.
    * Used during auto-update to avoid overwriting with older info.
    * We don't need to track local changes, only those sent by others.
-   * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
+   * Local changes sent to others will always get the current timestamp in `EventToICal` */
   lastUpdateTime: Date | null;
 
   constructor(emailAddress: string | null | undefined, name: string | null | undefined, response: InvitationResponse) {

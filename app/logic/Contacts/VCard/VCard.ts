@@ -1,4 +1,4 @@
-import { ICalParser, type ICalEntry, type ICalContainer } from "../../Calendar/ICal/ICalParser";
+import { VContainer, type VObject, type VEntry } from "../../util/VParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
 import { StreetAddress } from "../StreetAddress";
@@ -26,19 +26,19 @@ import { gt } from "../../../l10n/l10n";
  * Parses an addressbook vCard string to an array of rich intermediate vCard objects.
  * @throws if no vCard could be found
  */
-export function parseAddressbook(text: string): ICalContainer[] {
-  let parsed = new ICalParser(text);
-  if (!parsed.containers.vcard) {
+export function parseAddressbook(text: string): VObject[] {
+  let parsed = new VContainer(text);
+  if (!parsed.objects.vcard) {
     throw new Error(gt`No vCard found`);
   }
-  return parsed.containers.vcard;
+  return parsed.objects.vcard;
 }
 
 /**
  * Parses a contact vCard string to a rich intermediate vCard object.
  * @throws if no vCard could be found
  */
-export function parseContact(text: string): ICalContainer {
+export function parseContact(text: string): VObject {
   return parseAddressbook(text)[0];
 }
 
@@ -52,7 +52,7 @@ export function convertVCardToPerson(vcard: string, person: Person) {
 /**
  * Writes a rich intermediate vCard object to a Person object.
  */
-export function updatePerson(vcard: ICalContainer, person: Person) {
+export function updatePerson(vcard: VObject, person: Person) {
   person.name = vcard.entries.fn?.[0].value ?? "";
   if (vcard.entries.photo) {
     let photo = vcard.entries.photo[0];
@@ -169,7 +169,7 @@ export function personsToVCardFile(persons: Collection<Person>, filenameWithoutE
  * Generates a VCard as a string of text from a Person object, carrying over
  * unrecognised properites from a rich intermediate VCard object.
  */
-export function getUpdatedVCard(person: Person, vcard: ICalContainer): string {
+export function getUpdatedVCard(person: Person, vcard: VObject): string {
   let container = vCardToContainer(vcard);
   updateContainerFromPerson(person, container);
   return containerToVCard(container);
@@ -178,7 +178,7 @@ export function getUpdatedVCard(person: Person, vcard: ICalContainer): string {
 /**
  * Creates a record object from properties of a rich intermediate VCard object.
  */
-export function vCardToContainer(vcard: ICalContainer): Record<string, string[]> {
+export function vCardToContainer(vcard: VObject): Record<string, string[]> {
   let container: Record<string, string[]> = Object.create(null);
   for (let key in vcard.entries) {
     if (key != "version" && key != "prodid") {
@@ -220,7 +220,7 @@ function containerToVCard(container: Record<string, string[]>): string {
   return "BEGIN:VCARD\r\nVERSION:4.0\r\nPRODID:-//Beonex//appName//EN\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VCARD\r\n";
 }
 
-function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, stripProtocol = false) {
+function makeContactEntry(entry: VEntry, protocol?: string, isURI = true, stripProtocol = false) {
   let value = entry.value;
   if (isURI && /^(\w+):/.test(value)) {
     protocol = RegExp.$1.toLowerCase();

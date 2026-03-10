@@ -1,11 +1,11 @@
-import { gt } from "../../../l10n/l10n";
-import { assert } from "../../util/util";
+import { gt } from "../../l10n/l10n";
+import { assert } from "./util";
 
 function unescaped(value: string): string {
   return value.replace(/\\n|\\(.)/gi, (_, c) => c || "\n");
 }
 
-export class ICalEntry {
+export class VEntry {
   properties: Record<string, string> = Object.create(null);
   name: string;
   value: string;
@@ -26,34 +26,34 @@ export class ICalEntry {
   }
 }
 
-export class ICalContainer {
-  entries: Record<string, ICalEntry[]> = Object.create(null);
-  parent: ICalContainer | ICalParser;
-  constructor(parent: ICalContainer | ICalParser) {
+export class VObject {
+  entries: Record<string, VEntry[]> = Object.create(null);
+  parent: VObject | VContainer;
+  constructor(parent: VObject | VContainer) {
     this.parent = parent;
   }
 }
 
-export class ICalParser {
-  containers: Record<string, ICalContainer[]> = Object.create(null);
+export class VContainer {
+  objects: Record<string, VObject[]> = Object.create(null);
   constructor(textFile: string) {
-    let current: ICalContainer | ICalParser = this;
+    let current: VObject | VContainer = this;
     let lines = textFile.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n");
     let i = 0;
     for (let line of lines) {
       i++;
       if (/^BEGIN:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        current = new ICalContainer(current);
-        this.containers[name] = append(this.containers[name], current);
+        current = new VObject(current);
+        this.objects[name] = append(this.objects[name], current);
       } else if (/^END:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        assert(this.containers[name] && this.containers[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
-        assert(current instanceof ICalContainer, "END without BEGIN");
+        assert(this.objects[name] && this.objects[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
+        assert(current instanceof VObject, "END without BEGIN");
         current = current.parent;
       } else {
-        assert(current instanceof ICalContainer, gt`Item outside container` + gt`. Line ${i}: ${line}`);
-        let item = new ICalEntry(line);
+        assert(current instanceof VObject, gt`Item outside container` + gt`. Line ${i}: ${line}`);
+        let item = new VEntry(line);
         current.entries[item.name] = append(current.entries[item.name], item);
       }
     }

@@ -1,7 +1,7 @@
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../../Abstract/Attachment";
-import { getICal } from "../../Calendar/ICal/ICalGenerator";
+import { getICal } from "../../Calendar/ICal/EventToICal";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { fixNewlines } from "../../util/convertHTML";
