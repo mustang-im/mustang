@@ -15,5 +15,6 @@ export async function getDatabase(): Promise<Database> {
   let file = await appGlobal.remoteApp.path.join("backup", "mail-backup.db");
   mailSourceDatabase = await getSQLiteDatabase(file);
   await mailSourceDatabase.migrate(mailSourceDatabaseSchema);
+  await mailSourceDatabase.pragma('journal_mode = WAL');
   return mailSourceDatabase;
 }
