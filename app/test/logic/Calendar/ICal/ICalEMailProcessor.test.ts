@@ -3,7 +3,8 @@ import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import type { Event } from "../../../../logic/Calendar/Event.ts";
 import type { EMail } from "../../../../logic/Mail/EMail.ts";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
-import { getICal } from "../../../../logic/Calendar/ICal/EventToICal";
+import { VContainer } from "../../../../logic/util/VParser";
+import { getICal, getUpdatedVEvent } from "../../../../logic/Calendar/ICal/EventToICal";
 import * as fs from "node:fs/promises";
 
 // Not using JSONEvent because it's really hard to use
@@ -53,4 +54,12 @@ test.each(testFiles)("Parse %s", async name => {
   text = getICal(email.event);
   await processor.process(email, null);
   expect(toJSON(email.event as Event)).toEqual(event);
+  let parsed = new VContainer(calendar);
+  text = getUpdatedVEvent(email.event, parsed.objects.vevent[0]);
+  for (let line of calendar.match(/^BEGIN:VEVENT$.*^END:VEVENT$/ims)[0].match(/^\w.+/gm)) {
+    // Ignore lines that we know we will have rewritten
+    if (!/\b(begin|method|end|version|prodid|dtstamp|summary|location|description|styled-description|x-alt-desc|dtstart|dtend|recurrence-id|rrule|status|organizer|attendee)\b/i.test(line)) {
+      expect(text).toContain(line);
+    }
+  }
 });
