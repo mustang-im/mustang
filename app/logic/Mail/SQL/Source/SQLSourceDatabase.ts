@@ -1,6 +1,7 @@
 import { appGlobal } from "../../../app";
 import type { Database } from "../../../../../lib/rs-sqlite/index";
 import { mailSourceDatabaseSchema } from "./createSourceDatabase";
+import { migrateToNewSchema } from "./SQLSourceEmailMigrate";
 import { getConfigDir, getSQLiteDatabase } from "../../../util/backend-wrapper";
 
 let mailSourceDatabase: Database;
@@ -15,6 +16,7 @@ export async function getDatabase(): Promise<Database> {
   let file = await appGlobal.remoteApp.path.join("backup", "mail-backup.db");
   mailSourceDatabase = await getSQLiteDatabase(file);
   await mailSourceDatabase.migrate(mailSourceDatabaseSchema);
+  await migrateToNewSchema(mailSourceDatabase);
   await mailSourceDatabase.pragma('journal_mode = WAL');
   return mailSourceDatabase;
 }
