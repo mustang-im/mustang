@@ -37,7 +37,7 @@
             <input type="radio"
               value={TrustLevel.Personal}
               bind:group={key.trustLevel} />
-            {$t`I have personally checked that this key really belongs to ${person?.name ?? $t`this person`}`}
+            {$t`I have personally checked the verification code with ${person?.name ?? $t`this person`}`}
           </label>
           {#if key.caName}
             <label>
@@ -70,10 +70,36 @@
           disabled={$key.trustLevel == TrustLevel.Distrusted}
           label={$t`Encrypt my emails to ${person.name} with this key`} />
       </hbox>
-      <hbox class="verification-code">
-        <hbox class="label">{$t`Verification code`}</hbox>
-        <hbox class="value">{key.fingerprint}</hbox>
-      </hbox>
+      <vbox class="verification-code">
+        <hbox title={$t`To communicate securely, you first need to establish that this key really belongs to ${person.name}. Meet or call ${person.name} on a secure channel, and have him read his verification code, and compare that it matches what you see.`}>
+          <hbox class="label">{$t`Verification code`}</hbox>
+          <hbox>
+            <RoundButton
+              icon={InfoIcon}
+              border={false}
+              classes="plain"
+              disabled={true}
+              />
+          </hbox>
+        </hbox>
+        <hbox>
+          <hbox class="label">
+            <hbox class="name-label">{person.name}</hbox>
+          </hbox>
+          <hbox class="value">{key.fingerprint}</hbox>
+        </hbox>
+        {#if myPrivateKey}
+          <hbox>
+            <hbox class="label">
+              <hbox class="name-label">{myIdentity.realname}</hbox>
+              <!--<hbox class="dropdown">
+                <IdentitySelector bind:selectedIdentity={myIdentity} identities={allIdentitiesWithKeys} fromAddress="" fromName="" />
+              </hbox>-->
+            </hbox>
+            <hbox class="value">{myPrivateKey.fingerprint}</hbox>
+          </hbox>
+        {/if}
+      </vbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
         <hbox class="value">{getDateString(key.created)}</hbox>
@@ -124,6 +150,8 @@
 <script lang="ts">
   import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { Person } from "../../../logic/Abstract/Person";
+  import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
+  import IdentitySelector from "../../Mail/Composer/IdentitySelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -132,6 +160,7 @@
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
   import ExportIcon from "lucide-svelte/icons/file-down";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
@@ -141,6 +170,10 @@
   export let person: Person;
 
   let isExpanded = false;
+
+  $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.useToEncrypt || key.useToSign)));
+  $: myIdentity = $allIdentitiesWithKeys.first;
+  $: myPrivateKey = myIdentity?.encryptionPrivateKeys.find(key => !key.obsolete && (key.useToEncrypt || key.useToSign));
 
   async function onExport() {
     alert("TODO Export…");
@@ -193,13 +226,14 @@
     justify-content: end;
   }
   .details {
-    margin: 12px 24px 0px 48px;
+    margin: 12px 24px 0px 24px;
   }
   .details > hbox {
     margin-block-end: 2px;
   }
   .details .label {
     min-width: 8em;
+    max-width: 8em;
     flex-wrap: wrap;
     margin-inline-end: 8px;
     opacity: 65%;
@@ -232,6 +266,10 @@
 
     font-weight: 500;
     padding-inline: 12px;
+  }
+  .verification-code .name-label,
+  .verification-code .dropdown {
+    padding-inline-start: 16px;
   }
   .acceptance {
     padding-block: 4px;
