@@ -34,13 +34,15 @@
     {/if}
   {/if}
 
-  <hbox class="state-icon-wrapper">
-    {#if checked === true}
-      <CheckIcon strokeWidth={5} size={12} />
-    {:else if checked == false && allowIndetermined}
-      <MinusIcon strokeWidth={5} size={12} />
-    {/if}
-  </hbox>
+  {#if !toggle || allowIndetermined}
+    <hbox class="state-icon-wrapper">
+      {#if checked === true}
+        <CheckIcon strokeWidth={5} size={12} />
+      {:else if checked == false && allowIndetermined}
+        <MinusIcon strokeWidth={5} size={12} />
+      {/if}
+    </hbox>
+  {/if}
 
   <label for={id}>
     <slot name="icon" />
