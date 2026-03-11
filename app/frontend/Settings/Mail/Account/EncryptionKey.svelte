@@ -99,13 +99,17 @@
         </vbox>
       </hbox>
       <hbox>
-        <hbox class="label" />
         <hbox class="buttons">
           {#if !key.obsolete}
             <Button
-              label={$t`Export…`}
-              icon={ExportIcon}
-              onClick={onExport}
+              label={$t`Export public…`}
+              icon={ExportPublicIcon}
+              onClick={onExportPublic}
+              />
+            <Button
+              label={$t`Export secret…`}
+              icon={ExportPrivateIcon}
+              onClick={onExportPrivate}
               />
           {/if}
           <Button
@@ -138,7 +142,8 @@
   import EncryptIcon from "lucide-svelte/icons/lock";
   import UnusedIcon from "lucide-svelte/icons/circle-dashed";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
-  import ExportIcon from "lucide-svelte/icons/file-down";
+  import ExportPublicIcon from "lucide-svelte/icons/share-2";
+  import ExportPrivateIcon from "lucide-svelte/icons/key-round";
   import ObsoleteIcon from "lucide-svelte/icons/octagon-x";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
@@ -151,10 +156,13 @@
 
   let isExpanded = false;
 
-  async function onExport() {
+  async function onExportPrivate() {
     await saveBlobAsFile(key.privateKeyAsFile());
     key.didBackup = true;
     await identity.account.save();
+  }
+  async function onExportPublic() {
+    await saveBlobAsFile(key.publicKeyAsFile());
   }
   async function onDelete() {
     if (!key.justCreated) {
