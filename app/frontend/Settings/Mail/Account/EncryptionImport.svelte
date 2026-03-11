@@ -118,8 +118,6 @@
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;
     padding: 12px 16px;
-    width: calc(100% - 32px); /* TODO use flex */
-    flex: 1 1 0;
   }
   .import {
     align-items: center;

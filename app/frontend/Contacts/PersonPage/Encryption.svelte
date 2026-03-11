@@ -61,7 +61,7 @@
 
 <style>
   .encryption {
-    align-items: center;
+    align-items: stretch;
     margin-block-end: 4px;
   }
   .subtitle {
