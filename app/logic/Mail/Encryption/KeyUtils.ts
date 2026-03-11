@@ -17,12 +17,12 @@ export function getPublicKeyForID(id: string | null): PublicKey | null {
   return null;
 }
 
-/** For composer, which own key to use for signing the outgoing email */
-export function getKeyForSigning(identity: MailIdentity): PublicKey & PrivateKey | null {
-  return identity.encryptionPrivateKeys.find(key => key.useToSign);
+/** For composer, which recipient key to use for encrypting the outgoing email */
+export function getPublicKeyForPerson(person: Person): PublicKey | null {
+  return person.encryptionPublicKeys.find(key => key.useToEncrypt);
 }
 
-/** For composer, which recipient key to use for encrypting the outgoing email */
-export function getKeyForEncryption(person: Person): PublicKey | null {
-  return person.encryptionPublicKeys.find(key => key.useToEncrypt);
+/** For composer, which own key to use for signing the outgoing email */
+export function getMyPrivateKey(identity: MailIdentity): PublicKey & PrivateKey | null {
+  return identity.encryptionPrivateKeys.find(key => key.useToSign);
 }

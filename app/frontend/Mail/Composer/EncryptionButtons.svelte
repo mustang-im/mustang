@@ -29,7 +29,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { getKeyForSigning, getKeyForEncryption } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
@@ -42,7 +42,7 @@
   export let identity: MailIdentity;
 
   $: privateKeys = identity.encryptionPrivateKeys;
-  $: signDisabledReason = $privateKeys.hasItems && getKeyForSigning(identity)?.id ? null : gt`No secret keys enabled for signing`;
+  $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity)?.id ? null : gt`No secret keys enabled for signing`;
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
@@ -58,7 +58,7 @@
     if (mail.signed) {
       mail.signed = null;
     } else {
-      mail.signed = getKeyForSigning(identity)?.id;
+      mail.signed = getMyPrivateKey(identity)?.id;
       assert(mail.signed, "No signing key found");
     }
   }
@@ -78,6 +78,7 @@
   .buttons {
     align-items: center;
     margin-inline-start: 4px;
+    gap: 4px;
   }
   .buttons  :global(.button:not(.selected)) {
     color: #595065;

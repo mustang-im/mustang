@@ -1,4 +1,4 @@
-<vbox class="key" class:obsolete={$key.obsolete}>
+<vbox class="key" class:obsolete={$key.obsolete} class:short>
   <hbox class="main-row"
     on:click={() => isExpanded = !isExpanded}>
     <hbox class="usage"
@@ -63,13 +63,15 @@
           </label>
         </vbox>
       </hbox>
-      <hbox class="usage-detail">
-        <hbox class="label">{$t`Usage`}</hbox>
-        <Checkbox toggle
-          bind:checked={key.useToEncrypt}
-          disabled={$key.trustLevel == TrustLevel.Distrusted}
-          label={$t`Encrypt my emails to ${person.name} with this key`} />
-      </hbox>
+      {#if !short}
+        <hbox class="usage-detail">
+          <hbox class="label">{$t`Usage`}</hbox>
+          <Checkbox toggle
+            bind:checked={key.useToEncrypt}
+            disabled={$key.trustLevel == TrustLevel.Distrusted}
+            label={$t`Encrypt my emails to ${person.name} with this key`} />
+        </hbox>
+      {/if}
       <vbox class="verification-code">
         <hbox title={$t`To communicate securely, you first need to establish that this key really belongs to ${person.name}. Meet or call ${person.name} on a secure channel, and have him read his verification code, and compare that it matches what you see.`}>
           <hbox class="label">{$t`Verification code`}</hbox>
@@ -79,6 +81,7 @@
               border={false}
               classes="plain"
               disabled={true}
+              padding="3px"
               />
           </hbox>
         </hbox>
@@ -100,49 +103,51 @@
           </hbox>
         {/if}
       </vbox>
-      <hbox>
-        <hbox class="label">{$t`Created`}</hbox>
-        <hbox class="value">{getDateString(key.created)}</hbox>
-        <hbox class="label-2-column">{$t`Expires`}</hbox>
-        <hbox class="value" title={getDateTimeString(key.expires)}>{getDateString(key.expires)}</hbox>
-      </hbox>
-      <hbox>
-        <hbox class="label">{$t`ID`}</hbox>
-        <hbox class="value">{key.id}</hbox>
-      </hbox>
-      <hbox>
-        <hbox class="label">{$t`Cipher`}</hbox>
-        <hbox class="value">DSA</hbox>
-        <hbox class="label-2-column">{$t`Length`}</hbox>
-        <hbox>{4096} {$t`bits`}</hbox>
-      </hbox>
-      <hbox>
-        <hbox class="label">{$t`Name`}</hbox>
-        <input type="text" bind:value={key.name} spellcheck={false} />
-      </hbox>
-      <hbox class="valid-for">
-        <hbox class="label">{$t`User IDs`}</hbox>
-        <vbox>
-          {#each key.userIDs.each as userID}
-            <hbox class="userid">{userID}</hbox>
-          {/each}
-        </vbox>
-      </hbox>
-      <hbox>
-        <hbox class="label" />
-        <hbox class="buttons">
-          <Button
-            label={$t`Export…`}
-            icon={ExportIcon}
-            onClick={onExport}
-            />
-          <RoundButton
-            label={$t`Delete`}
-            icon={DeleteIcon}
-            onClick={onDelete}
-            />
+      {#if !short}
+        <hbox>
+          <hbox class="label">{$t`Created`}</hbox>
+          <hbox class="value">{getDateString(key.created)}</hbox>
+          <hbox class="label-2-column">{$t`Expires`}</hbox>
+          <hbox class="value" title={getDateTimeString(key.expires)}>{getDateString(key.expires)}</hbox>
         </hbox>
-      </hbox>
+        <hbox>
+          <hbox class="label">{$t`ID`}</hbox>
+          <hbox class="value">{key.id}</hbox>
+        </hbox>
+        <hbox>
+          <hbox class="label">{$t`Cipher`}</hbox>
+          <hbox class="value">DSA</hbox>
+          <hbox class="label-2-column">{$t`Length`}</hbox>
+          <hbox>{4096} {$t`bits`}</hbox>
+        </hbox>
+        <hbox>
+          <hbox class="label">{$t`Name`}</hbox>
+          <input type="text" bind:value={key.name} spellcheck={false} />
+        </hbox>
+        <hbox class="valid-for">
+          <hbox class="label">{$t`User IDs`}</hbox>
+          <vbox>
+            {#each key.userIDs.each as userID}
+              <hbox class="userid">{userID}</hbox>
+            {/each}
+          </vbox>
+        </hbox>
+        <hbox>
+          <hbox class="label" />
+          <hbox class="buttons">
+            <Button
+              label={$t`Export…`}
+              icon={ExportIcon}
+              onClick={onExport}
+              />
+            <RoundButton
+              label={$t`Delete`}
+              icon={DeleteIcon}
+              onClick={onDelete}
+              />
+          </hbox>
+        </hbox>
+      {/if}
     </vbox>
   {/if}
 </vbox>
@@ -168,8 +173,9 @@
 
   export let key: PublicKey;
   export let person: Person;
-
-  let isExpanded = false;
+  /** short = for message pane, long = in contacts app */
+  export let short = false;
+  export let isExpanded = false;
 
   $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.useToEncrypt || key.useToSign)));
   $: myIdentity = $allIdentitiesWithKeys.first;
@@ -252,6 +258,9 @@
   }
   .verification-code:not(.obsolete) {
     margin-block: 20px;
+  }
+  .short .verification-code:not(.obsolete) {
+    margin-block-start: 6px;
   }
   .verification-code .label {
     padding-block: 7px;
