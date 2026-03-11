@@ -1,18 +1,18 @@
 {#if $privateKeys.hasItems}
   <hbox class="encryption buttons">
     <RoundButton
-      label={signDisabledReason ?? $t`Sign digitally`}
+      label={signDisabledReason ?? $t`Sign digitally\nThis proves that I wrote this email`}
       icon={SignIcon}
       selected={!!mail.signed}
       onClick={toggleSigned}
-      classes="sign e {signDisabledReason ? "disabled" : "d"} plain"
+      classes="sign {signDisabledReason ? "disabled" : ""} plain"
       border={false}
       iconSize="16px"
       padding="4px"
       tabindex={2}
       />
     <RoundButton
-      label={encryptDisabledReason ?? $t`Encrypt`}
+      label={encryptDisabledReason ?? $t`Encrypt\nThis ensures that only the recipient can read the email`}
       icon={EncryptIcon}
       selected={mail.shouldEncrypt}
       onClick={toggleEncrypted}
@@ -29,7 +29,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
