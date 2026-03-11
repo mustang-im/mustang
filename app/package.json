@@ -72,6 +72,7 @@
   },
   "devDependencies": {
     "@composi/gestures": "^1.0.9",
+    "@openpgp/web-stream-tools": "^0.3.0",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "@typescript-eslint/typescript-estree": "^8.52.0",

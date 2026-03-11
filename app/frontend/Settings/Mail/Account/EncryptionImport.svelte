@@ -63,8 +63,6 @@
   /** in/out */
   export let isOpen: boolean;
 
-  $: console.log("open", isOpen);
-
   let fileSelector: FileSelector;
   const acceptFileTypes = [ "application/pgp-keys", "application/pgp-encrypted" ];
   async function onImportFile() {
