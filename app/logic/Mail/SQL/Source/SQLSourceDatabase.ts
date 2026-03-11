@@ -1,7 +1,7 @@
 import { appGlobal } from "../../../app";
 import type { Database } from "../../../../../lib/rs-sqlite/index";
 import { mailSourceDatabaseSchema } from "./createSourceDatabase";
-import { migrateToNewSchema } from "./SQLSourceEMailMigrate";
+import { migrateToNewSchema } from "./SQLSourceEmailMigrate";
 import { getConfigDir, getSQLiteDatabase } from "../../../util/backend-wrapper";
 
 let mailSourceDatabase: Database;
