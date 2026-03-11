@@ -19,7 +19,10 @@ export async function migrateToNewSchema(database: Database) {
       ALTER TABLE emailMIME RENAME TO emailMIME_old;
       $${mailSourceDatabaseSchema}
 
-      INSERT INTO emailMIME SELECT * FROM emailMIME_old;
+      -- Don't copy DB IDs, generate new IDs
+      INSERT INTO emailMIME (emailID, messageID, mime)
+      SELECT emailID, messageID, mime FROM emailMIME_old;
+
       DROP TABLE emailMIME_old;
 
       END TRANSACTION;
