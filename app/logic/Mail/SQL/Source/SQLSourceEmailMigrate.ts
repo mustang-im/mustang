@@ -1,39 +1,33 @@
 import { mailSourceDatabaseSchema } from "./createSourceDatabase";
-import { RunOnce } from "../../../util/flow/RunOnce";
 import sql, { type Database } from "../../../../../lib/rs-sqlite";
 
-const runOnce = new RunOnce<void>();
-
 export async function migrateToNewSchema(database: Database) {
-  // Run in runOnce because this seems to be called multiple times in parallel
-  await runOnce.runOnce(async () => {
-    if (await isEmailIDUnique(database)) {
-      return;
-    }
-    try {
-      await database.execute(sql`
-        BEGIN TRANSACTION;
+  if (await isEmailIDUnique(database)) {
+    return;
+  }
+  try {
+    await database.execute(sql`
+      BEGIN TRANSACTION;
 
-        -- Delete duplicates from the DB, keep the latest version
-        DELETE FROM emailMIME
-        WHERE id NOT IN
-          (SELECT MAX(id)
-            FROM emailMIME
-            GROUP BY emailID);
+      -- Delete duplicates from the DB, keep the latest version
+      DELETE FROM emailMIME
+      WHERE id NOT IN
+        (SELECT MAX(id)
+          FROM emailMIME
+          GROUP BY emailID);
 
-        ALTER TABLE emailMIME RENAME TO emailMIME_old;
-        $${mailSourceDatabaseSchema}
+      ALTER TABLE emailMIME RENAME TO emailMIME_old;
+      $${mailSourceDatabaseSchema}
 
-        INSERT INTO emailMIME SELECT * FROM emailMIME_old;
-        DROP TABLE emailMIME_old;
+      INSERT INTO emailMIME SELECT * FROM emailMIME_old;
+      DROP TABLE emailMIME_old;
 
-        END TRANSACTION;
-      `);
-    } catch(ex) {
-      await database.run(sql`ROLLBACK TRANSACTION`);
-      throw ex;
-    }
-  });
+      END TRANSACTION;
+    `);
+  } catch(ex) {
+    await database.run(sql`ROLLBACK TRANSACTION`);
+    throw ex;
+  }
 }
 
 export async function isEmailIDUnique(database: Database) {
