@@ -83,18 +83,23 @@ export class EMail extends Message {
   /** For composer only. Optional. */
   identity: MailIdentity;
 
+  /** For composer/send only: This email should be end-to-end encrypted. */
+  @notifyChangedProperty
+  shouldEncrypt = false;
+  /** For composer/send only: This email must be end-to-end encrypted, e.g.
+   * because it quotes from an encrypted email. */
+  @notifyChangedProperty
+  _mustEncrypt = false;
   /** This email was end-to-end encrypted on the wire.
    * It has now been decrypted and stored in decrypted form. */
   @notifyChangedProperty
   wasEncrypted = false;
-  /** This email was correctly signed. */
-  @notifyChangedProperty
-  signed = false;
   /** This email was correctly signed with this public key.
    * The signature was valid and the public key matches `From:`.
-   * This gives you the specific public key was used to sign. */
+   * This gives you the specific public key that was used to sign.
+   * Format: `PublicKey.id` */
   @notifyChangedProperty
-  signedWithKey: PublicKey | null = null;
+  signed: string | null = null;
 
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
@@ -128,6 +133,18 @@ export class EMail extends Message {
 
   get storage(): MailAccountStorage {
     return this.folder.account.storage;
+  }
+
+  get mustEncrypt(): boolean {
+    return this._mustEncrypt;
+  }
+  set mustEncrypt(val: boolean) {
+    if (!val) {
+      // cannot disable once enforced
+      return;
+    }
+    this._mustEncrypt = val;
+    this.shouldEncrypt = val;
   }
 
   allRecipients(): Collection<PersonUID> {
@@ -529,6 +546,11 @@ export class EMail extends Message {
     other.folder = this.folder;
     other.threadID = this.threadID;
     other.identity = this.identity;
+
+    other.mustEncrypt = this.mustEncrypt;
+    other.shouldEncrypt = this.shouldEncrypt;
+    other.wasEncrypted = this.wasEncrypted;
+    other.signed = this.signed;
   }
 
   /**

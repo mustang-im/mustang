@@ -68,6 +68,7 @@ export class ComposeActions {
     reply.inReplyTo = original.messageID;
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
+    reply.mustEncrypt = original.wasEncrypted;
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
@@ -126,6 +127,7 @@ export class ComposeActions {
     await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     forward.html = `<p></p>
     <p></p>
     <p></p>
@@ -157,6 +159,7 @@ export class ComposeActions {
     await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     let a = new Attachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;

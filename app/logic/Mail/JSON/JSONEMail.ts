@@ -33,9 +33,10 @@ export class JSONEMail {
     json.plaintext = email.rawText;
     json.html = email.rawHTMLDangerous;
 
-    json.wasEncrypted = email.wasEncrypted;
     json.signed = email.signed;
-    json.signedWithKeyID = email.signedWithKey?.id;
+    json.wasEncrypted = email.wasEncrypted;
+    json.mustEncrypt = email.mustEncrypt;
+    json.shouldEncrypt = email.shouldEncrypt;
 
     this.saveWritableProps(email, json);
     this.saveRecipients(email, json);
@@ -141,9 +142,10 @@ export class JSONEMail {
         email.html = html;
       }
     }
+    email.signed = sanitize.alphanumdash(json.signedPublicKeyID, null);
     email.wasEncrypted = sanitize.boolean(json.wasEncrypted, false);
-    email.signed = sanitize.boolean(json.signed, false);
-    //email.signedWithKey = appGlobal.persons…emailPublicKey.find(key => key.id == sanitize.alphanumdash(json.signedPublicKeyID, null);
+    email.shouldEncrypt = sanitize.boolean(json.shouldEncrypt, false);
+    email.mustEncrypt = sanitize.boolean(json.mustEncrypt, false);
 
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
