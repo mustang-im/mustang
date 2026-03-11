@@ -7,13 +7,6 @@
         icon={CloudIcon}
         onClick={onQueryKeyserver}
         />
-      <hbox bind:this={appsButton}>
-        <Button
-          label={$t`App`}
-          icon={AppIcon}
-          onClick={onImportFromApps}
-          />
-      </hbox>
       <Button
         label={$t`File`}
         icon={FileIcon}
@@ -34,13 +27,6 @@
 
 <FileSelector {acceptFileTypes} bind:this={fileSelector} />
 
-<Menu bind:isMenuOpen={isAppsMenuOpen} anchor={appsButton}>
-  <MenuItem label="Thunderbird" onClick={onImportFromThunderbird} />
-  <MenuItem label="Outlook" onClick={onImportFromOutlook} />
-  <MenuItem label="Apple Mail" onClick={onImportFromAppleMail} />
-  <MenuItem label="GnuPG" onClick={onImportFromGnuPG} />
-</Menu>
-
 <script lang="ts">
   import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
@@ -48,15 +34,13 @@
   import { Person } from "../../../logic/Abstract/Person";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
-  import Menu from "../../Shared/Menu/Menu.svelte";
-  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import CloudIcon from "lucide-svelte/icons/cloud-download";
   import FileIcon from "lucide-svelte/icons/file-lock";
-  import AppIcon from "lucide-svelte/icons/app-window";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
+  import { NotImplemented } from "../../../logic/util/util";
 
   export let person: Person;
   /** in/out */
@@ -76,29 +60,12 @@
     await person.save();
   }
 
-  let isAppsMenuOpen = false;
-  let appsButton: HTMLElement;
-  async function onImportFromApps() {
-    isAppsMenuOpen = true;
-  }
-  async function onImportFromThunderbird() {
-    isOpen = false;
-  }
-  async function onImportFromGnuPG() {
-    isOpen = false;
-  }
-  async function onImportFromOutlook() {
-    isOpen = false;
-  }
-  async function onImportFromAppleMail() {
-    isOpen = false;
-  }
   async function onQueryKeyserver() {
-    makeKey().obsolete = false;
+    throw new NotImplemented();
     isOpen = false;
   }
 
-  function makeKey(): PublicKey {
+  function makeFakeKey(): PublicKey {
     let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
     key.obsolete = Math.random() > 0.2;
     key.useToEncrypt = Math.random() > 0.5;
