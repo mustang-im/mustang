@@ -63,14 +63,14 @@
     }
   }
   function toggleEncrypted() {
-    if (encryptDisabledReason) {
-      showError(new UserError(encryptDisabledReason)); // TODO open UI to fix the reason
-      return;
-    }
     if (mail.mustEncrypt) {
       return;
     }
     mail.shouldEncrypt = !mail.shouldEncrypt;
+    if (mail.shouldEncrypt && encryptDisabledReason) {
+      showError(new UserError(encryptDisabledReason)); // TODO open UI to fix the reason
+      return;
+    }
   }
 </script>
 
