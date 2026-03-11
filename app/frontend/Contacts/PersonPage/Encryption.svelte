@@ -1,6 +1,13 @@
 <GroupBox classes="encryption" headerName={$t`Encryption`} addFunc={() => showImportOverride = true}>
   <EcryptionIcon size="16px" slot="icon" />
-  <hbox class="subtitle font-small">{$t`The encryption public keys allow you to send encrypted emails, and whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these keys really belong to ${person.name}.`}</hbox>
+  <RoundButton
+    tooltip={$t`Certificates allow you to send encrypted emails, and see whether signed emails come from ${person.name}. Trust in the messages and encryption relies in your confidence that these certificates really belong to ${person.name}.`}
+    icon={InfoIcon}
+    disabled
+    border={false}
+    classes="plain"
+    slot="buttons-top-right"
+    />
   <vbox class="encryption" slot="content">
     {#if showImport}
       <EncryptionImport {person} bind:isOpen={showImportOverride} />
@@ -46,6 +53,7 @@
   import GroupBox from "./GroupBox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import EcryptionIcon from "lucide-svelte/icons/lock";
+  import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";

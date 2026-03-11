@@ -14,7 +14,7 @@
     </hbox>
     <hbox class="name">{$key.name}</hbox>
     {#if isExpanded}
-      <hbox class="keytype" flex>{$t`Public key certificate`}</hbox>
+      <hbox class="keytype" flex>{$t`Certificate`}</hbox>
     {:else}
       <hbox flex />
     {/if}
