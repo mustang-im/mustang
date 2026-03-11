@@ -89,7 +89,10 @@
           <hbox class="label">
             <hbox class="name-label">{person.name}</hbox>
           </hbox>
-          <hbox class="value">{key.fingerprint}</hbox>
+          <vbox class="value">
+            <hbox>{key.fingerprintDisplay.substring(0, 24)}</hbox>
+            <hbox>{key.fingerprintDisplay.substring(25)}</hbox>
+          </vbox>
         </hbox>
         {#if myPrivateKey}
           <hbox>
@@ -99,7 +102,10 @@
                 <IdentitySelector bind:selectedIdentity={myIdentity} identities={allIdentitiesWithKeys} fromAddress="" fromName="" />
               </hbox>-->
             </hbox>
-            <hbox class="value">{myPrivateKey.fingerprintDisplay}</hbox>
+            <vbox class="value">
+              <hbox>{myPrivateKey.fingerprintDisplay.substring(0, 24)}</hbox>
+              <hbox>{myPrivateKey.fingerprintDisplay.substring(25)}</hbox>
+            </vbox>
           </hbox>
         {/if}
       </vbox>
@@ -167,7 +173,7 @@
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
-  import ExportIcon from "lucide-svelte/icons/file-down";
+  import ExportIcon from "lucide-svelte/icons/share-2";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";

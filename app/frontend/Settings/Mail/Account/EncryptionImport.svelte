@@ -66,14 +66,14 @@
   export let isOpen: boolean;
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-secret-keys", "application/pkcs8", "application/x-pem-file" ];
+  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", "text/plain" ];
   async function onImportFile() {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
     let fileContent = await file.text();
-    let passphrase = prompt(gt`Passphrase for this file`);
+    let passphrase = null; // prompt(gt`Passphrase for this file`); TODO
     let key = await importPrivateKey(fileContent, passphrase);
     identity.encryptionPrivateKeys.add(key);
     isOpen = false;
