@@ -61,7 +61,10 @@
       {/if}
       <hbox class="verification-code" class:obsolete={$key.obsolete}>
         <hbox class="label">{$t`Verification code`}</hbox>
-        <hbox class="value">{key.fingerprint}</hbox>
+        <vbox class="value">
+          <hbox>{key.fingerprintDisplay.substring(0, 24)}</hbox>
+          <hbox>{key.fingerprintDisplay.substring(25)}</hbox>
+        </vbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
@@ -73,12 +76,16 @@
         <hbox class="label">{$t`ID`}</hbox>
         <hbox class="value">{key.id}</hbox>
       </hbox>
-      <hbox>
-        <hbox class="label">{$t`Cipher`}</hbox>
-        <hbox class="value">DSA</hbox>
-        <hbox class="label-2-column">{$t`Length`}</hbox>
-        <hbox>{4096} {$t`bits`}</hbox>
-      </hbox>
+      {#if key.cipher}
+        <hbox>
+          <hbox class="label">{$t`Cipher`}</hbox>
+          <hbox class="value">{key.cipher}</hbox>
+          {#if key.keyLengthInBits}
+            <hbox class="label-2-column">{$t`Length`}</hbox>
+            <hbox>{key.keyLengthInBits} {$t`bits`}</hbox>
+          {/if}
+        </hbox>
+      {/if}
       <hbox>
         <hbox class="label">{$t`Name`}</hbox>
         <input type="text" bind:value={key.name} spellcheck={false} />
@@ -122,7 +129,11 @@
 <script lang="ts">
   import type { PrivateKey, PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import { saveBlobAsFile } from "../../../Util/util";
+  import { appName } from "../../../../logic/build";
+  import Checkbox from "../../../Shared/Checkbox.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import UnusedIcon from "lucide-svelte/icons/circle-dashed";
@@ -132,11 +143,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { appName } from "../../../../logic/build";
   import { getDateString, getDateTimeString } from "../../../Util/date";
   import { t } from "../../../../l10n/l10n";
-  import Button from "../../../Shared/Button.svelte";
-  import Checkbox from "../../../Shared/Checkbox.svelte";
 
   export let key: PublicKey & PrivateKey;
   export let identity: MailIdentity;
@@ -144,9 +152,9 @@
   let isExpanded = false;
 
   async function onExport() {
-    alert("TODO Export…");
+    await saveBlobAsFile(key.privateKeyAsFile());
     key.didBackup = true;
-    // TODO
+    await identity.account.save();
   }
   async function onDelete() {
     if (!key.justCreated) {
@@ -155,7 +163,7 @@
       }
     }
     identity.encryptionPrivateKeys.remove(key);
-    // TODO
+    await identity.account.save();
   }
 </script>
 
@@ -219,6 +227,8 @@
   .verification-code .value {
     padding-block: 8px;
     letter-spacing: 0.05em;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
   }
   .verification-code:not(.obsolete) .value {
     background-color: var(--bg);

@@ -48,6 +48,7 @@
   import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
   import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import { importPrivateKey } from "../../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
   import Menu from "../../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
@@ -57,20 +58,26 @@
   import FileIcon from "lucide-svelte/icons/file-lock";
   import AppIcon from "lucide-svelte/icons/app-window";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { t } from "../../../../l10n/l10n";
+  import { assert } from "../../../../logic/util/util";
+  import { gt, t } from "../../../../l10n/l10n";
 
   export let identity: MailIdentity;
   /** in/out */
   export let isOpen: boolean;
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-keys", "application/pgp-encrypted" ];
+  const acceptFileTypes = [ "application/pgp-secret-keys", "application/pkcs8", "application/x-pem-file" ];
   async function onImportFile() {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
+    let fileContent = await file.text();
+    let passphrase = prompt(gt`Passphrase for this file`);
+    let key = await importPrivateKey(fileContent, passphrase);
+    identity.encryptionPrivateKeys.add(key);
     isOpen = false;
+    await identity.account.save();
   }
 
   let isAppsMenuOpen = false;
@@ -92,8 +99,14 @@
   }
 
   async function onCreateNew() {
-    makeKey().obsolete = false;
+    assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
+    let key = await PGPPrivateKey.createNewPrivateKey({
+      realname: identity.realname,
+      emailAddress: identity.emailAddress,
+    });
+    identity.encryptionPrivateKeys.add(key);
     isOpen = false;
+    await identity.account.save();
   }
 
   function makeKey(): PublicKey {

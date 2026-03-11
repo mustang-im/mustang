@@ -46,6 +46,7 @@
   import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
   import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import { Person } from "../../../logic/Abstract/Person";
+  import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -62,13 +63,17 @@
   export let isOpen: boolean;
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-keys", "application/x-x509-user-cert", "application/x-x509-ca-cert", "application/pkcs7-mime", "application/pkcs7-certificates" ];
+  const acceptFileTypes = [ "application/pgp-keys", "application/pkix-cert", "application/pkcs7-certificates", "application/x-x509-user-cert", "application/x-x509-ca-cert" ];
   async function onImportFile() {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
+    let fileContent = await file.text();
+    let key = await importPublicKey(fileContent);
+    person.encryptionPublicKeys.add(key);
     isOpen = false;
+    await person.save();
   }
 
   let isAppsMenuOpen = false;

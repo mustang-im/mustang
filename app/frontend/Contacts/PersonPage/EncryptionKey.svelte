@@ -99,7 +99,7 @@
                 <IdentitySelector bind:selectedIdentity={myIdentity} identities={allIdentitiesWithKeys} fromAddress="" fromName="" />
               </hbox>-->
             </hbox>
-            <hbox class="value">{myPrivateKey.fingerprint}</hbox>
+            <hbox class="value">{myPrivateKey.fingerprintDisplay}</hbox>
           </hbox>
         {/if}
       </vbox>
@@ -114,12 +114,16 @@
           <hbox class="label">{$t`ID`}</hbox>
           <hbox class="value">{key.id}</hbox>
         </hbox>
-        <hbox>
-          <hbox class="label">{$t`Cipher`}</hbox>
-          <hbox class="value">DSA</hbox>
-          <hbox class="label-2-column">{$t`Length`}</hbox>
-          <hbox>{4096} {$t`bits`}</hbox>
-        </hbox>
+        {#if key.cipher}
+          <hbox>
+            <hbox class="label">{$t`Cipher`}</hbox>
+            <hbox class="value">{key.cipher}</hbox>
+            {#if key.keyLengthInBits}
+              <hbox class="label-2-column">{$t`Length`}</hbox>
+              <hbox>{key.keyLengthInBits} {$t`bits`}</hbox>
+            {/if}
+          </hbox>
+        {/if}
         <hbox>
           <hbox class="label">{$t`Name`}</hbox>
           <input type="text" bind:value={key.name} spellcheck={false} />
@@ -170,6 +174,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
+  import { saveBlobAsFile } from "../../Util/util";
 
   export let key: PublicKey;
   export let person: Person;
@@ -182,15 +187,14 @@
   $: myPrivateKey = myIdentity?.encryptionPrivateKeys.find(key => !key.obsolete && (key.useToEncrypt || key.useToSign));
 
   async function onExport() {
-    alert("TODO Export…");
-    // TODO
+    await saveBlobAsFile(key.publicKeyAsFile());
   }
   async function onDelete() {
     if (!confirm(`Do you want to delete this public key for ${person.name}? You will not be able to validate emails signed with this key.`)) {
       return;
     }
     person.encryptionPublicKeys.remove(key);
-    // TODO
+    await person.save();
   }
 </script>
 

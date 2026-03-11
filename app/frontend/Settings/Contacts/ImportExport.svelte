@@ -19,12 +19,12 @@
 
 <script lang="ts">
   import { Addressbook } from "../../../logic/Contacts/Addressbook";
-  import { convertVCardsToPersons, personsToVCardFile, personToVCard } from "../../../logic/Contacts/VCard/VCard";
+  import { convertVCardsToPersons, personsToVCardFile } from "../../../logic/Contacts/VCard/VCard";
+  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
-  import { t } from "../../../l10n/l10n";
-  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import { saveBlobAsFile } from "../../Util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let account: Addressbook;
 
@@ -43,9 +43,9 @@
     await account.save();
   }
 
-  function exportVCard() {
+  async function exportVCard() {
     let file = personsToVCardFile(account.persons, account.name);
-    saveBlobAsFile(file);
+    await saveBlobAsFile(file);
   }
 </script>
 

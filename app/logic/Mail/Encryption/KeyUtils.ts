@@ -2,6 +2,10 @@ import type { PrivateKey, PublicKey } from "./PublicKey";
 import type { Person } from "../../Abstract/Person";
 import type { MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
+import { UserError, assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
+import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
+import { PGPPublicKey } from "./PGP/PGPPublicKey";
 
 export function getPublicKeyForID(id: string | null): PublicKey | null {
   if (!id) {
@@ -25,4 +29,24 @@ export function getPublicKeyForPerson(person: Person): PublicKey | null {
 /** For composer, which own key to use for signing the outgoing email */
 export function getMyPrivateKey(identity: MailIdentity): PublicKey & PrivateKey | null {
   return identity.encryptionPrivateKeys.find(key => key.useToSign);
+}
+
+export async function importPrivateKey(fileContent: string, passphrase: string): Promise<PublicKey & PrivateKey> {
+  assert(fileContent.includes("---BEGIN ") && fileContent.includes("---END "), gt`Could not find a key in this file`);
+  assert(!fileContent.includes("PUBLIC KEY"), gt`This is a public key. If this is your key, you should also have the secret key in another file.`);
+  if (fileContent.includes("-----BEGIN PGP PRIVATE KEY BLOCK-----")) {
+    return await PGPPrivateKey.importPrivateKey(fileContent, passphrase);
+  } else if (fileContent.includes("-----BEGIN PRIVATE KEY BLOCK-----")) {
+  }
+  throw new UserError(gt`Could not find a key in this file`);
+}
+
+export async function importPublicKey(fileContent: string): Promise<PublicKey> {
+  assert(fileContent.includes("---BEGIN ") && fileContent.includes("---END "), gt`Could not find a key in this file`);
+  assert(!fileContent.includes("PRIVATE KEY"), gt`This is a secret key. If this is your key, go to Settings | Mail | Identity | Encryption and import it there.`);
+  if (fileContent.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
+    return await PGPPublicKey.importPublicKey(fileContent);
+  } else if (fileContent.includes("-----BEGIN PUBLIC KEY BLOCK-----")) {
+  }
+  throw new UserError(gt`Could not find a key in this file`);
 }

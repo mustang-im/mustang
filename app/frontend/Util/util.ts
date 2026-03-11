@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import type { URLString } from "../../logic/util/util";
+import { blobToDataURL, type URLString } from "../../logic/util/util";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -8,13 +8,37 @@ export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   }
 }
 
-export function saveBlobAsFile(blob: Blob, filename?: string) {
+export async function saveBlobAsFile(blob: Blob, filename?: string) {
+  if (!window.showSaveFilePicker) { // Fallback
+    saveBlobAsFileViaA(blob, filename);
+    return;
+  }
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  const handle = await window.showSaveFilePicker({
+    suggestedName: filename,
+  });
+  const writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+export function saveBlobAsFileViaA(blob: Blob, filename?: string) {
   if (blob instanceof File) {
     filename = blob.name;
   }
   let url = URL.createObjectURL(blob);
   saveURLAsFile(url, filename);
   URL.revokeObjectURL(url); // otherwise we leak the entire blob
+}
+
+export async function saveBlobAsDataAsFile(blob: Blob, filename?: string) {
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  let url = await blobToDataURL(blob);
+  saveURLAsFile(url, filename);
 }
 
 /** Opens a "Save as..." file picker dialog, with the `filename` prefilled,

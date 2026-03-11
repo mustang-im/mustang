@@ -1,5 +1,6 @@
 import { Observable, notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { AbstractFunction } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class PublicKey extends Observable {
@@ -11,8 +12,10 @@ export class PublicKey extends Observable {
   system: EncryptionSystem;
   created: Date;
   expires: Date;
+  cipher: string;
+  keyLengthInBits: number | null = null;
   @notifyChangedProperty
-  _trustLevel: TrustLevel;
+  _trustLevel: TrustLevel = TrustLevel.Sender;
   @notifyChangedProperty
   _useToEncrypt = false;
   /** expired, disabled by our user, revoked by owner etc. */
@@ -26,23 +29,6 @@ export class PublicKey extends Observable {
    * null, if this is a private key, or the system doesn't support armored string keys.
    */
   publicKeyArmored: string | null;
-
-  constructor() {
-    super();
-    this.trustLevel = TrustLevel.Sender;
-    // Fake data
-    this.id = "0x" + crypto.randomUUID().toUpperCase().replaceAll("-", "").substring(0, 16);
-    this.fingerprint = crypto.randomUUID().toUpperCase().replaceAll("-", " ");
-    this.name = this.id.substring(2, 6);
-    this.caName = Math.random() > 0.5 ? "Verisign" : null;
-    if (this.caName && this.trustLevel == TrustLevel.Sender) {
-      this.trustLevel = TrustLevel.ThirdParty;
-    }
-    this.created = new Date();
-    this.created.setDate(this.created.getDate() - Math.random() * 365 * 10);
-    this.expires = new Date();
-    this.expires.setFullYear(this.created.getFullYear() + Math.ceil(Math.random() * 20));
-  }
 
   get trustLevel(): TrustLevel {
     return this._trustLevel;
@@ -76,6 +62,27 @@ export class PublicKey extends Observable {
     }
   }
 
+  /** Formats fingerprint as batches of 4 uppercase chars, separated by spaces.
+   * Replace the space at position 25 with a newline. */
+  get fingerprintDisplay(): string {
+    const batchLength = 4;
+    let batches: string[] = [];
+    let fingerprint = this.fingerprint.toUpperCase();
+    for (let i = 0; i < fingerprint.length; i += batchLength) {
+      batches.push(fingerprint.substring(i, i + batchLength));
+    }
+    return batches.join(" ");
+  }
+
+  publicKeyAsFile(): File {
+    // Implement using this.keyAsFile()
+    throw new AbstractFunction();
+  }
+  protected keyAsFile(armored: string, mimetype: string, filenamePrefix: string, fileExt: string): File {
+    let filename = filenamePrefix + "-" + this.userIDs.first + "-" + this.name + "." + fileExt;
+    return new File([armored], filename, { type: mimetype });
+  }
+
   get sortOrder(): number {
     return -(
       sanitize.translate(this.system, { [EncryptionSystem.PGP]: 2, [EncryptionSystem.SMIME]: 1 }, 0) +
@@ -87,10 +94,14 @@ export class PublicKey extends Observable {
     let json = {} as any;
     json.publicKeyArmored = this.publicKeyArmored;
     json.system = this.system;
+    json.name = this.name;
     json.id = this.id;
     json.fingerprint = this.fingerprint;
     json.created = this.created.toISOString();
     json.expires = this.expires.toISOString();
+    json.cipher = this.cipher;
+    json.keyLengthInBits = this.keyLengthInBits;
+    json.fingerprint = this.fingerprint;
     json.trustLevel = this.trustLevel;
     json.caName = this.caName;
     json.userIDs = this.userIDs.contents;
@@ -101,10 +112,13 @@ export class PublicKey extends Observable {
   fromJSON(json: any) {
     this.publicKeyArmored = sanitize.nonemptystring(json.publicKeyArmored, null);
     this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
+    this.name = sanitize.label(json.name);
     this.id = sanitize.alphanumdash(json.id);
     this.fingerprint = sanitize.alphanumdash(json.fingerprint);
     this.created = sanitize.date(json.created);
     this.expires = sanitize.date(json.expires);
+    this.cipher = sanitize.nonemptylabel(json.cipher, null);
+    this.keyLengthInBits = sanitize.integer(json.keyLengthInBits, null);
     this.trustLevel = sanitize.enum<TrustLevel>(json.trustLevel, Object.values(TrustLevel), TrustLevel.Sender);
     this.caName = sanitize.nonemptystring(json.caName, null);
     this.userIDs.replaceAll(sanitize.array(json.userIDs).map(userID => sanitize.nonemptystring(userID)));
@@ -123,6 +137,8 @@ export interface PrivateKey {
   /** Set when the key is created.
    * Do not save this property. It should be false on load. */
   justCreated: boolean;
+
+  privateKeyAsFile(): File;
 }
 
 /**

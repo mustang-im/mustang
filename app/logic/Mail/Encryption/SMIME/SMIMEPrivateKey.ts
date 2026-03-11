@@ -25,6 +25,10 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     }
   }
 
+  privateKeyAsFile(): File {
+    return this.keyAsFile(this.privateKeyArmored, "application/pkcs8", "SecretKey", "p8");
+  }
+
   toJSON() {
     let json = super.toJSON();
     json.privateKeyArmored = this.privateKeyArmored;
