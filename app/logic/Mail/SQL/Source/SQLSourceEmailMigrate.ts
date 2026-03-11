@@ -5,32 +5,23 @@ export async function migrateToNewSchema(database: Database) {
   if (await isEmailIDUnique(database)) {
     return;
   }
-  try {
-    await database.execute(sql`
-      BEGIN TRANSACTION;
+  await database.execute(sql`
+    -- Delete duplicates from the DB, keep the latest version
+    DELETE FROM emailMIME
+    WHERE id NOT IN
+      (SELECT MAX(id)
+        FROM emailMIME
+        GROUP BY emailID);
 
-      -- Delete duplicates from the DB, keep the latest version
-      DELETE FROM emailMIME
-      WHERE id NOT IN
-        (SELECT MAX(id)
-          FROM emailMIME
-          GROUP BY emailID);
+    ALTER TABLE emailMIME RENAME TO emailMIME_old;
+    $${mailSourceDatabaseSchema}
 
-      ALTER TABLE emailMIME RENAME TO emailMIME_old;
-      $${mailSourceDatabaseSchema}
+    -- Don't copy DB IDs, generate new IDs
+    INSERT INTO emailMIME (emailID, messageID, mime)
+    SELECT emailID, messageID, mime FROM emailMIME_old;
 
-      -- Don't copy DB IDs, generate new IDs
-      INSERT INTO emailMIME (emailID, messageID, mime)
-      SELECT emailID, messageID, mime FROM emailMIME_old;
-
-      DROP TABLE emailMIME_old;
-
-      END TRANSACTION;
-    `);
-  } catch(ex) {
-    await database.run(sql`ROLLBACK TRANSACTION`);
-    throw ex;
-  }
+    DROP TABLE emailMIME_old;
+  `);
 }
 
 export async function isEmailIDUnique(database: Database) {
