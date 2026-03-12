@@ -114,7 +114,7 @@
           <hbox class="label">{$t`Created`}</hbox>
           <hbox class="value">{getDateString(key.created)}</hbox>
           <hbox class="label-2-column">{$t`Expires`}</hbox>
-          <hbox class="value" title={getDateTimeString(key.expires)}>{getDateString(key.expires)}</hbox>
+          <hbox class="value" title={key.expires ? getDateTimeString(key.expires) : null}>{key.expires ? getDateString(key.expires) : "-"}</hbox>
         </hbox>
         <hbox>
           <hbox class="label">{$t`ID`}</hbox>
@@ -278,6 +278,7 @@
   .verification-code .value {
     letter-spacing: 0.05em;
     padding-block: 8px;
+    font-family: 'Courier New', Courier, monospace;
   }
   .verification-code:not(.obsolete) .value {
     background-color: var(--bg);

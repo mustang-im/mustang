@@ -11,7 +11,8 @@ export class PublicKey extends Observable {
   /** Must be set by subclass */
   system: EncryptionSystem;
   created: Date;
-  expires: Date;
+  /** null = never or unknown */
+  expires: Date | null;
   cipher: string;
   keyLengthInBits: number | null = null;
   @notifyChangedProperty
@@ -98,7 +99,7 @@ export class PublicKey extends Observable {
     json.id = this.id;
     json.fingerprint = this.fingerprint;
     json.created = this.created.toISOString();
-    json.expires = this.expires.toISOString();
+    json.expires = this.expires?.toISOString();
     json.cipher = this.cipher;
     json.keyLengthInBits = this.keyLengthInBits;
     json.fingerprint = this.fingerprint;
@@ -116,7 +117,7 @@ export class PublicKey extends Observable {
     this.id = sanitize.alphanumdash(json.id);
     this.fingerprint = sanitize.alphanumdash(json.fingerprint);
     this.created = sanitize.date(json.created);
-    this.expires = sanitize.date(json.expires);
+    this.expires = sanitize.date(json.expires, null);
     this.cipher = sanitize.nonemptylabel(json.cipher, null);
     this.keyLengthInBits = sanitize.integer(json.keyLengthInBits, null);
     this.trustLevel = sanitize.enum<TrustLevel>(json.trustLevel, Object.values(TrustLevel), TrustLevel.Sender);
