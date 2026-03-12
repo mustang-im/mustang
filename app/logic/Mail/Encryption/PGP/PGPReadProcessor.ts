@@ -3,7 +3,7 @@ import { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey } from "./PGPPublicKey";
-import { appGlobal } from "../../../app";
+import { PersonUID } from "../../../Abstract/PersonUID";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { Email as MIME } from "postal-mime";
@@ -29,30 +29,27 @@ export class PGPProcessor extends EMailProcessor {
     let openPGP = await import("openpgp");
     if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;
-    let senderPublicKeys = await this.getPublicKeysForEmailAddress(email.from.emailAddress, email.sent, openPGP);
-    let senderPGPKeys = senderPublicKeys.contents.map(publicKey => publicKey.pgpKey!);
+    let senderPublicKeys = await this.getPublicKeysForEmailAddress(email.from, email.sent, openPGP);
+    let senderOpenPGPKeys = senderPublicKeys.contents.map(publicKey => publicKey.openPGPPublicKey!);
     if (encrypted) {
       let identity = MailIdentity.findIdentity([...email.to.contents, ...email.cc.contents], email.folder?.account)?.identity;
       assert(identity, "Did not find identity for " + email.from.emailAddress);
       let encryptedMessage = await openPGP.readMessage({ binaryMessage: encrypted });
-
       let privateKey = await this.getPrivateKeysForIdentity(identity, openPGP);
-
       let decryptedResult = await openPGP.decrypt({
         message: encryptedMessage,
         decryptionKeys: privateKey.contents,
         format: 'binary',
-        verificationKeys: senderPGPKeys,
+        verificationKeys: senderOpenPGPKeys,
         date: email.sent, // TODO plus a few minutes
       });
       // check success? throws?
       email.wasEncrypted = true;
-      email.signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent);
-      email.signed = !!email.signedWithKey;
+      let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent);
+      email.signed = signedWithKey?.id ?? null;
       await this.updateMIME(email, decryptedResult.data, outerFrom);
       await email.saveCompleteMessage();
-    }
-    if (detachedSignature) {
+    } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
       let firstPartTODO = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content; // TODO only the first part
       // TODO normalization for line endings - does openPGP do that?
       let signedContent = await openPGP.readMessage({ binaryMessage: firstPartTODO });
@@ -62,12 +59,12 @@ export class PGPProcessor extends EMailProcessor {
       let verificationResult = await openPGP.verify({
         message: signedContent,
         signature,
-        verificationKeys: senderPGPKeys,
+        verificationKeys: senderOpenPGPKeys,
         format: 'binary',
         date: email.sent, // TODO plus a few minutes
       });
-      email.signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent);
-      email.signed = !!email.signedWithKey;
+      let signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent);
+      email.signed = signedWithKey?.id ?? null;
       await this.updateMIME(email, verificationResult.data, outerFrom)
     }
   }
@@ -92,7 +89,7 @@ export class PGPProcessor extends EMailProcessor {
 
     for (let sig of validSignatures.each) {
       for (let publicKey of senderPublicKeys.each) {
-        if (sig.keyID.equals(publicKey.pgpKey!.getKeyID())) {
+        if (sig.keyID.equals(publicKey.openPGPPublicKey!.getKeyID())) {
           return publicKey;
         }
       }
@@ -125,15 +122,15 @@ export class PGPProcessor extends EMailProcessor {
     return result;
   }
 
-  async getPublicKeysForEmailAddress(emailAddress: string, date: Date, openPGP: any): Promise<Collection<PGPPublicKey>> {
+  async getPublicKeysForEmailAddress(personUID: PersonUID, date: Date, openPGP: any): Promise<Collection<PGPPublicKey>> {
     let keys = new ArrayColl<PGPPublicKey>();
-    let contacts = appGlobal.persons.filterOnce(p => p.emailAddresses.some(ce => ce.value == emailAddress));
-    for (let contact of contacts.each) {
+    let contact = personUID.findPerson();
+    if (contact) {
       for (let publicKey of contact.encryptionPublicKeys.each) {
         if (!(publicKey instanceof PGPPublicKey && publicKey.publicKeyArmored)) {
           continue;
         }
-        publicKey.pgpKey ??= await openPGP.readKey({ armoredKey: publicKey.publicKeyArmored });
+        publicKey.openPGPPublicKey ??= await openPGP.readKey({ armoredKey: publicKey.publicKeyArmored });
         keys.add(publicKey);
       }
     }

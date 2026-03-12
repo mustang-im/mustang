@@ -9,7 +9,7 @@ export class PGPPublicKey extends PublicKey {
    * `-----END PGP PUBLIC KEY BLOCK-----`
    */
   declare publicKeyArmored: string;
-  pgpKey: OpenPGP.PublicKey | null = null;
+  openPGPPublicKey: OpenPGP.PublicKey | null = null;
 
   publicKeyAsFile(): File {
     return this.keyAsFile(this.publicKeyArmored, "application/pgp-keys", "PublicKey", "asc");
