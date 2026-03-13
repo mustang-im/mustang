@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
-  import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
 
@@ -32,7 +32,7 @@
     let dur = new Date();
     dur.setTime(dur.getTime() - meeting.started.getTime());
     console.log("dur", dur);
-    duration = dur.toLocaleTimeString(getDateTimeLocale());
+    duration = dur.toLocaleTimeString(getDateTimeFormatPref());
     setTimeout(calculateDuration, 1000);
     return duration;
   }

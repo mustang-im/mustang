@@ -16,14 +16,14 @@
 </hbox>
 
 <script lang="ts">
-  import { getDateTimeLocale } from "../../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../../l10n/l10n";
   import Toolbar from "../../../Shared/Toolbar/Toolbar.svelte";
 
   export let start: Date;
   export let end: Date;
   export let title: string | null = null;
 
-  $: startTime = start.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
+  $: startTime = start.toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "2-digit" });
 </script>
 
 <style>

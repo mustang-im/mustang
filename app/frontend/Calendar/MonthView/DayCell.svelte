@@ -8,7 +8,8 @@
       {/each}
     </Scroll>
   {/if}
-  {#if withMonthOnFirst && start.getDate(getDateTimeLocalethOnMonday && start.getDay() == 1 }
+  {#if withMonthOnFirst && start.getDate() == 1 ||
+    withMonthOnMonday && start.getDay() == 1 }
     <hbox class="month-name font-normal">
       {start.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })}
     </hbox>
@@ -25,7 +26,8 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";getDateTimeLocaleection } from "svelte-collections";
+  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
 
   export let start: Date;
   export let intervalInHours: number;

@@ -19,14 +19,14 @@
   import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { getDateTimeFormatPref } from "../../../l10n/l10n";
 
   export let event: Event;
   export let start: Date;
   export let end: Date;
   export let forceShowText = false;
 
-  $: startTime = $event.startTime.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
+  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));

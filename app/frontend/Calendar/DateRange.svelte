@@ -8,7 +8,7 @@
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
-  import { getDateTimeLocale, t } from "../../l10n/l10n";
+  import { getDateTimeFormatPref, t } from "../../l10n/l10n";
 
   export let date = new Date(); /* in/out */
   export let dateInterval: number; /* in */
@@ -32,7 +32,7 @@
     // Show the month that covers most of the current date range.
     date = new Date(date);
     date.setDate(date.getDate() + (dateInterval >> 1));
-    return date.toLocaleDateString(getDateTimeLocale(), {
+    return date.toLocaleDateString(getDateTimeFormatPref(), {
       year: "numeric",
       month: "long",
       // day: dateInterval < 28 ? "numeric" : undefined,
