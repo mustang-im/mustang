@@ -1,7 +1,7 @@
 <vbox class="time-box font-smallest" flex
-  title={time?.toLocaleDateString(getDateTimeFormatPref()) + "\n" + time?.toLocaleTimeString(getDateTimeFormatPref())}>
-  {#if !sameDay}getDateTimeLocale
-    <hbox class="date">getDateTimeLocale
+  title={time?.toLocaleDateString(getDateTimeLocale()) + "\n" + time?.toLocaleTimeString(getDateTimeLocale())}>
+  {#if !sameDay}
+    <hbox class="date">
       {getDateString(time, { year: "2-digit", month: "2-digit", day: "2-digit" })}
     </hbox>
   {/if}
@@ -12,8 +12,8 @@
 
 <script lang="ts">
   import type { LogEntry } from "../../../logic/Contacts/History/History";
-  import { getDateString, getTimeString } from "../../getDateTimeLocale
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateString, getTimeString } from "../../Util/date";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let message: LogEntry;
   export let previousMessage: LogEntry | null;

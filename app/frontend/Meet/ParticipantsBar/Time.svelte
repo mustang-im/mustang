@@ -6,10 +6,10 @@
     {duration}
   </hbox>
   <!--hbox class="debug">
-    Start time {event.startTime?.toLocaleTimeString(getDateTimeFormatPref())}
-    End time {event.endTime?.toLocaleTimeString(getDateTimeFormatPref())}
-    Started {meeting.started?.toLocaleTimeString(getDateTimeFormatPref())}
-    End time {meeting.ended?.toLocaleTimeString(getDateTimeFormatPref())}
+    Start time {event.startTime?.toLocaleTimeString(getDateTimeLocale())}
+    End time {event.endTime?.toLocaleTimeString(getDateTimeLocale())}
+    Started {meeting.started?.toLocaleTimeString(getDateTimeLocale())}
+    End time {meeting.ended?.toLocaleTimeString(getDateTimeLocale())}
   </hbox-->
 {/if}
 
