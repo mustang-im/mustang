@@ -108,7 +108,7 @@ export function getDateTimeLocalePref(): string {
 }
 
 export function saveDateTimeLocale(language: string) {
-  cachedDateTimeLocale = language;
+  cachedDateTimeLocale = null;
   localStorage.setItem("ui.dateTime", language);
 }
 
