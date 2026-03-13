@@ -4,7 +4,7 @@
   on:dblclick={onOpen}
   title={eventAsText}>
   {#if showTime}
-    <!--{event.startTime.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" })}-->
+    <!--{event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}-->
     <hbox class="time">{startTime}</hbox>
   {:else if forceShowText}
     <hbox class="time">…</hbox>

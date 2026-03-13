@@ -15,20 +15,20 @@
   class:all-day={$event.allDay}
   class:selected={$selectedEvent == event}
   >
-  {$event.title}getDateTimeLocale
-</hbox>getDateTimeLocalegetDateTimeLocale
+  {$event.title}
+</hbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedEvent } from "../selected";
   import { openEventFromOtherApp } from "../open";
   import { getDurationString } from "../../Util/date";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
 
-  $: startDay = event.startTime.toLocaleString(getDateTimeFormatPref(), { day: "2-digit", month: "short" });
-  $: startTime = event.startTime.toLocaleString(getDateTimeFormatPref(), { hour: "2-digit", minute: "2-digit" });
+  $: startDay = event.startTime.toLocaleString(getDateTimeLocale(), { day: "2-digit", month: "short" });
+  $: startTime = event.startTime.toLocaleString(getDateTimeLocale(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = (event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));

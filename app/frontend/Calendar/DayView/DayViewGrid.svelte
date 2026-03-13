@@ -9,8 +9,8 @@
         <vbox class="day-header header">
           <slot name="day-header" {day}>
             <vbox class="date-day">
-              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
-              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+              <hbox class="date">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</hbox>
+              <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
             </vbox>
           </slot>
           <vbox class="all-day-events">
@@ -19,8 +19,8 @@
             {/each}
           </vbox>
         </vbox>
-      {/each}getDateTimeLocale
-      {#each startTimes as time}getDateTimeLocale
+      {/each}
+      {#each startTimes as time}
         <slot name="time-label" {time}>
           <TimeLabel {time} />
         </slot>
@@ -40,14 +40,15 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;
   export let events: Collection<Event>;
   /** UI elements that appear in the event slots. Optional */
   export let overlayEvents: Collection<Event> | null = null;
-  export legetDateTimeLocale of hours visible at the same time. Larger range reduces size per hour.
+  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
