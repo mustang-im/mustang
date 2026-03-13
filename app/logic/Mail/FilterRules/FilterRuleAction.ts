@@ -49,10 +49,10 @@ export class FilterRuleAction extends Observable {
 
   constructor(account: MailAccount, criteria?: SearchEMail) {
     super();
-    this.account = account;
     if (criteria) {
       this.criteria = criteria;
     }
+    this.criteria.account = this.account = account;
   }
 
   /** Checks for a match, and runs the filter action, as needed. */
@@ -101,6 +101,7 @@ export class FilterRuleAction extends Observable {
     this.name = sanitize.nonemptystring(json.name, "-");
     this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
     this.criteria.fromJSON(json.criteria);
+    this.criteria.account = this.account;
     function boolean(value: boolean | undefined): boolean | undefined {
       return typeof (value) == "boolean" ? value : undefined;
     }
