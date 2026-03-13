@@ -1,6 +1,7 @@
 import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
-import { PublicKey } from '../Mail/Encryption/PublicKey';
+import type { PublicKey } from '../Mail/Encryption/PublicKey';
+import { publicKeyFromJSON } from '../Mail/Encryption/KeyFromJSON';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
@@ -200,7 +201,7 @@ export class Person extends ContactBase {
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
     this.encryptionPublicKeys.replaceAll(sanitize.array(json.encryptionPublicKeys, []).map(keyJSON =>
-      PublicKey.fromJSON(sanitize.json(keyJSON, null), this)));
+      publicKeyFromJSON(sanitize.json(keyJSON, null))));
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();

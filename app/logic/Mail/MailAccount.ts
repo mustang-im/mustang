@@ -74,6 +74,12 @@ export class MailAccount extends TCPAccount {
     }
   }
 
+  /**
+   * Send the email purely on the protocol level,
+   * and save it in the Sent folder. Nothing else.
+   * All higher-level send preparations (signature, encryption etc.)
+   * are done in `ComposeActions.send()`.
+   */
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
   }

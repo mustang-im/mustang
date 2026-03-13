@@ -14,14 +14,13 @@ import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
-import type { PublicKey } from "./Encryption/PublicKey";
-import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
-import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { RunOnce } from "../util/flow/RunOnce";
+import { notifyChangedProperty } from "../util/Observable";
+import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
 
@@ -365,6 +364,18 @@ export class EMail extends Message {
     return mail;
   }
 
+  /** Used by encrypted messages.
+   * Let `parseMIME()` set all properties. */
+  resetProperties() {
+    // This MUST list all properties where `parseMIME()` does `this.prop ??=` or `if (!this.prop)`
+    this.id = null;
+    this.subject = null;
+    this.sent = null;
+    this.from = null;
+    this.replyTo = null;
+    this.inReplyTo = null;
+  }
+
   /**
    * Saves the email
    * 1. in the database (meta-data, body text)
@@ -524,18 +535,25 @@ export class EMail extends Message {
   }
 
   copyFrom(other: EMail): void {
-    super.copyFrom(other);
+    super.copyFrom(other, true);
     other.from = this.from;
     other.replyTo = this.replyTo;
     other.to.replaceAll(this.to);
     other.cc.replaceAll(this.cc);
     other.bcc.replaceAll(this.bcc);
     other.tags.replaceAll(this.tags);
-    other.headers.replaceAll(this.headers);
+    //other.headers.replaceAll(this.headers);
+    other.headers.clear();
+    for (let name of this.headers.keys()) {
+      other.headers.set(name, this.headers.get(name));
+    }
     other.size = this.size;
     if (this.references) {
       other.references = this.references.slice();
     }
+    other.folder = this.folder;
+    other.threadID = this.threadID;
+    other.identity = this.identity;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
     other.isDraft = this.isDraft;
@@ -543,9 +561,12 @@ export class EMail extends Message {
     other.mime = this.mime;
     other.invitationMessage = this.invitationMessage;
     other.event = this.event;
-    other.folder = this.folder;
-    other.threadID = this.threadID;
-    other.identity = this.identity;
+    other.sml = this.sml;
+    //other.extraData.replaceAll(this.extraData);
+    other.extraData.clear();
+    for (let name of this.extraData.keys()) {
+      other.extraData.set(name, this.extraData.get(name));
+    }
 
     other.mustEncrypt = this.mustEncrypt;
     other.shouldEncrypt = this.shouldEncrypt;

@@ -9,17 +9,26 @@ export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
 }
 
 export async function saveBlobAsFile(blob: Blob, filename?: string) {
-  if (!window.showSaveFilePicker) { // Fallback
+  const showSaveFilePicker = (window as any).showSaveFilePicker;
+  if (typeof(showSaveFilePicker) != "function") { // Fallback
     saveBlobAsFileViaA(blob, filename);
     return;
   }
   if (blob instanceof File) {
     filename = blob.name;
   }
-  const handle = await window.showSaveFilePicker({
-    suggestedName: filename,
-  });
-  const writable = await handle.createWritable();
+  let handle: any;
+  try {
+    handle = await showSaveFilePicker({
+      suggestedName: filename,
+    });
+  } catch (ex) {
+    if (ex.name == "AbortError") {
+      return;
+    }
+    throw ex;
+  }
+  let writable = await handle.createWritable();
   await writable.write(blob);
   await writable.close();
 }

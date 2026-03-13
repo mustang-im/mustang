@@ -271,6 +271,12 @@ export class ComposeActions {
 
   /**
    * Sets up the email for sending, with all the headers, signature etc.
+   *
+   * - Insert inline images
+   * - Add footer signature
+   * - Encrypt
+   * - Delete drafts
+   *
    * Called by composer.
    * The actual send on the protocol level is done by `EMail.send()`
    */
@@ -308,7 +314,8 @@ export class ComposeActions {
     this.email.isDraft = false;
 
     this.convertInlineAttachmentsURLs();
-    await account.send(this.email);
+    let mail = this.encryptAsNeeded(this.email);
+    await account.send(mail);
 
     this.email.folder = previousFolder;
     this.deleteDrafts(previousDrafts)
@@ -327,6 +334,9 @@ export class ComposeActions {
     let previousDrafts = this.getDrafts();
 
     this.email.isDraft = true;
+    // TODO encrypt
+    assert(!this.email.shouldEncrypt, "TODO encrypt drafts");
+
     await draftFolder.addMessage(this.email);
 
     await this.deleteDrafts(previousDrafts);
@@ -335,7 +345,7 @@ export class ComposeActions {
   getDrafts(): Collection<EMail> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    return draftFolder.messages.filter(mail => mail.messageID == this.email.messageID);
+    return draftFolder.messages.filterOnce(mail => mail.messageID == this.email.messageID);
   }
 
   async deleteDrafts(previousDrafts?: Collection<EMail>): Promise<void> {
