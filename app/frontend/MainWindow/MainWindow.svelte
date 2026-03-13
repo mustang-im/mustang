@@ -107,11 +107,11 @@
   async function onLoad() {
     loadMustangApps();
     openApp(mailMustangApp, {});
-    changeTheme($themeSetting.value);
     // #if [MOBILE]
     SplashScreen.hide();
     // #endif
     await startup();
+    changeTheme($themeSetting.value);
   }
 
   async function startup() {
