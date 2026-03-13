@@ -95,16 +95,16 @@ export function saveUILocale(language: string) {
   cachedUILocale = null;
 }
 
-let cachedDateTimeFormat: string;
+let cachedDateTimeLocale: string;
 
-export function getDateTimeFormatPref(): string {
-  cachedDateTimeFormat ??=
+export function getDateTimeLocale(): string {
+  cachedDateTimeLocale ??=
     sanitize.nonemptystring(localStorage.getItem("ui.dateTime"), getUILocale());
-  return cachedDateTimeFormat;
+  return cachedDateTimeLocale;
 }
 
 export function saveDateTimeFormat(language: string) {
-  cachedDateTimeFormat = language;
+  cachedDateTimeLocale = language;
   localStorage.setItem("ui.dateTime", language);
 }
 

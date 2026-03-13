@@ -7,7 +7,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { assert, sleep, type URLString } from "../../util/util";
-import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
+import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -91,7 +91,7 @@ export class M3Conf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
-    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     let event = await this.httpPost("events", {
       title: `Meeting ${time}`,
       description: "",

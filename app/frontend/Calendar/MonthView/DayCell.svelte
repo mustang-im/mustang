@@ -11,7 +11,7 @@
   {#if withMonthOnFirst && start.getDate() == 1 ||
     withMonthOnMonday && start.getDay() == 1 }
     <hbox class="month-name font-normal">
-      {start.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })}
+      {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
     </hbox>
   {/if}
 </vbox>
@@ -26,7 +26,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;

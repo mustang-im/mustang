@@ -41,7 +41,7 @@
 </vbox>
 
 <script lang="ts">
-  import { getUILocale, getUILocalePref, getDateTimeFormatPref, saveDateTimeFormat, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
+  import { getUILocale, getUILocalePref, getDateTimeLocale, saveDateTimeFormat, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
@@ -51,7 +51,7 @@
   import { catchErrors } from "../../Util/error";
 
   let language = getUILocalePref();
-  let dateTimeFormat = getDateTimeFormatPref();
+  let dateTimeFormat = getDateTimeLocale();
   const sampleDate = new Date(new Date().getFullYear() + 1, 0, 20, 13, 0, 0);
 
   async function onSaveLanguage() {
