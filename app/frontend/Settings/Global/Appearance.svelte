@@ -40,17 +40,17 @@
   </HeaderGroupBox>
 </vbox>
 
-<script lang="ts">
+<script lang="ts">getDateTimeLocalesaveDateTimeLocale
   import { getUILocale, getUILocalePref, getDateTimeFormatPref, saveDateTimeFormat, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
-  import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
+  import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";getDateTimeLocale
   import Button from "../../Shared/Button.svelte";
   import RestartIcon from "lucide-svelte/icons/rotate-ccw";
   import { catchErrors } from "../../Util/error";
 
-  let language = getUILocalePref();
+  let language = getUILocalePref();saveDateTimeLocale
   let dateTimeFormat = getDateTimeFormatPref();
   const sampleDate = new Date(new Date().getFullYear() + 1, 0, 20, 13, 0, 0);
 

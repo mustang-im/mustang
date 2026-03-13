@@ -49,7 +49,7 @@
     {/if}
     {#if $message.cc.hasItems}
       <hbox class="cc font-small">
-        <hbox class="label">{$t`cc`}</hbox>
+        <hbox class="label">{$t`cc`}</hbox>getDateTimeLocale
         <RecipientsList recipients={$message.cc} />
       </hbox>
     {/if}
@@ -99,9 +99,7 @@
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import RemoveIcon from "lucide-svelte/icons/x";
-  import { getLocalStorage } from "../../Util/LocalStorage";
-  import { catchErrors, backgroundError } from "../../Util/error";
+  import RemoveIcon from "lucide-svelte/icons/x";getDateTimeLocaleimport { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
   import { onDestroy } from "svelte";
   import { getDateTimeFormatPref, t } from "../../../l10n/l10n";

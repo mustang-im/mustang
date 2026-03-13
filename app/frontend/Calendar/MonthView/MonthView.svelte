@@ -10,7 +10,7 @@
   <grid flex class="month"
     on:swipeleft={onNextMonth}
     on:swiperight={onPreviousMonth}
-    on:swipeup={onNextMonth}
+    on:swipeup={onNextMonth}getDateTimeLocale
     on:swipedown={onPreviousMonth}
     >
     {#each weekDays as day}
@@ -40,8 +40,7 @@
   import { catchErrors } from "../../Util/error";
   import { getDateTimeFormatPref } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-
-  export let start: Date;
+getDateTimeLocaleport let start: Date;
   export let events: Collection<Event>;
   export let showDays = 35;
 

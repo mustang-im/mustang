@@ -15,8 +15,8 @@
   class:all-day={$event.allDay}
   class:selected={$selectedEvent == event}
   >
-  {$event.title}
-</hbox>
+  {$event.title}getDateTimeLocale
+</hbox>getDateTimeLocalegetDateTimeLocale
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
