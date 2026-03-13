@@ -90,7 +90,7 @@ export class SearchEMail extends Observable {
 
     this.includesPerson = findPerson(json.includesPersonEMail);
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
-    this.folderID = json.folderID;
+    this.folderID = sanitize.nonemptystring(json.folderID, null);
     this._folder = null;
     this.tags.replaceAll(sanitize.array(json.tags, [])?.map(name => getTagByName(name)));
   }
