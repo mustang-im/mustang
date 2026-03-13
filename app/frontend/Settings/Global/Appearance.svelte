@@ -41,7 +41,7 @@
 </vbox>
 
 <script lang="ts">
-  import { getUILocale, getUILocalePref, getDateTimeLocale, saveDateTimeFormat, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
+  import { getUILocale, getUILocalePref, getDateTimeLocale, saveDateTimeLocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
@@ -66,7 +66,7 @@
   }
 
   async function onSaveDateTimeFormat() {
-    saveDateTimeFormat(dateTimeFormat);
+    saveDateTimeLocale(dateTimeFormat);
   }
 </script>
 
