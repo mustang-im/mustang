@@ -1,5 +1,6 @@
 import { PGPPublicKey } from "./PGPPublicKey";
-import { TrustLevel, type PrivateKey } from "../PublicKey";
+import type { PrivateKey } from "../PublicKey";
+import { PGPReadProcessor } from "./PGPReadProcessor";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../../util/Observable";
 
@@ -10,6 +11,7 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
    * `-----END PGP PRIVATE KEY BLOCK-----`
    */
   privateKeyArmored: string;
+  passphrase: string;
   //revocationCertificate: string;
 
   @notifyChangedProperty
@@ -57,6 +59,7 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     let key = await PGPPrivateKey.importPrivateKey(privateKey, passphrase);
     key.publicKeyArmored = publicKey;
     //key.revocationCertificate = revocationCertificate;
+    key.passphrase = passphrase;
     return key;
   }
 
@@ -82,6 +85,7 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
   toJSON() {
     let json = super.toJSON();
     json.privateKeyArmored = this.privateKeyArmored;
+    json.passphrase = this.passphrase;
     //json.revocationCertificate = this.revocationCertificate;
     json.useToSign = this.useToSign;
     json.didBackup = this.didBackup;
@@ -90,8 +94,11 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
   fromJSON(json: any) {
     super.fromJSON(json);
     this.privateKeyArmored = sanitize.nonemptystring(json.privateKeyArmored, null);
+    this.passphrase = sanitize.nonemptystring(json.passphrase, null);
     //this.revocationCertificate = sanitize.nonemptystring(json.revocationCertificate, null);
     this.useToSign = sanitize.boolean(json.useToSign, null);
     this.didBackup = sanitize.boolean(json.didBackup, null);
   }
 }
+
+PGPReadProcessor.hookup();

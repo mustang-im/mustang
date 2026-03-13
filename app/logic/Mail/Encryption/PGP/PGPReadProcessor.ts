@@ -1,9 +1,9 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
-import { EMail } from "../../EMail";
+import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey } from "./PGPPublicKey";
-import { PersonUID } from "../../../Abstract/PersonUID";
+import type { PersonUID } from "../../../Abstract/PersonUID";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { Email as MIME } from "postal-mime";
@@ -18,10 +18,11 @@ https://mailman3.ietf.org/mailman3/lists/openpgp@ietf.org/
 
 const isLogging = true;
 
-export class PGPProcessor extends EMailProcessor {
+export class PGPReadProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   async process(email: EMail, mime: MIME) {
-    let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content;
+    let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content &&
+      email.attachments.find(a => a.mimeType == "application/octet-stream")?.content;
     let detachedSignature = email.attachments.find(a => a.mimeType == "multipart/signed")?.content;
     if (!encrypted && !detachedSignature) {
       return;
@@ -34,7 +35,8 @@ export class PGPProcessor extends EMailProcessor {
     if (encrypted) {
       let identity = MailIdentity.findIdentity([...email.to.contents, ...email.cc.contents], email.folder?.account)?.identity;
       assert(identity, "Did not find identity for " + email.from.emailAddress);
-      let encryptedMessage = await openPGP.readMessage({ binaryMessage: encrypted });
+      let armored = await encrypted.text();
+      let encryptedMessage = await openPGP.readMessage({ armoredMessage: armored });
       let privateKey = await this.getPrivateKeysForIdentity(identity, openPGP);
       let decryptedResult = await openPGP.decrypt({
         message: encryptedMessage,
@@ -104,6 +106,7 @@ export class PGPProcessor extends EMailProcessor {
     }
     email.downloadComplete = false;
     email.mime = content;
+    email.resetProperties();
     await email.parseMIME();
     await email.saveCompleteMessage();
   }
@@ -115,7 +118,7 @@ export class PGPProcessor extends EMailProcessor {
         continue;
       }
       let encryptedKey = await openPGP.readPrivateKey({ armoredKey: privateKey.privateKeyArmored });
-      let password = ""; // TODO
+      let password = privateKey.passphrase; // TODO
       let key = await openPGP.decryptKey({ privateKey: encryptedKey, passphrase: password });
       result.add(key);
     }
