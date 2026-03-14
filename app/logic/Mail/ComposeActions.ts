@@ -3,6 +3,7 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
+import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -10,7 +11,7 @@ import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
-import type { Collection } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -44,10 +45,14 @@ export class ComposeActions {
     let reply = account.newEMailFrom();
     reply.compose.generateMessageID();
 
-    let recipients = original.from?.emailAddress
-      ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
-      : [];
-    let from = MailIdentity.findIdentity(recipients, account);
+    let findFrom = new ArrayColl<PersonUID>();
+    if (original.from?.emailAddress) {
+      findFrom.add(original.from);
+      findFrom.addAll(original.to);
+      findFrom.addAll(original.cc);
+      findFrom.addAll(original.bcc);
+    }
+    let from = MailIdentity.findIdentity(findFrom, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
 
@@ -68,6 +73,7 @@ export class ComposeActions {
     reply.inReplyTo = original.messageID;
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
+    reply.mustEncrypt = original.wasEncrypted;
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
@@ -126,6 +132,7 @@ export class ComposeActions {
     await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     forward.html = `<p></p>
     <p></p>
     <p></p>
@@ -157,6 +164,7 @@ export class ComposeActions {
     await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     let a = new Attachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
@@ -268,6 +276,12 @@ export class ComposeActions {
 
   /**
    * Sets up the email for sending, with all the headers, signature etc.
+   *
+   * - Insert inline images
+   * - Add footer signature
+   * - Encrypt
+   * - Delete drafts
+   *
    * Called by composer.
    * The actual send on the protocol level is done by `EMail.send()`
    */
@@ -305,7 +319,8 @@ export class ComposeActions {
     this.email.isDraft = false;
 
     this.convertInlineAttachmentsURLs();
-    await account.send(this.email);
+    let mail = await SendEncrypted.encryptAsNeeded(this.email);
+    await account.send(mail);
 
     this.email.folder = previousFolder;
     this.deleteDrafts(previousDrafts)
@@ -324,6 +339,9 @@ export class ComposeActions {
     let previousDrafts = this.getDrafts();
 
     this.email.isDraft = true;
+    // TODO encrypt
+    assert(!this.email.shouldEncrypt, "TODO encrypt drafts");
+
     await draftFolder.addMessage(this.email);
 
     await this.deleteDrafts(previousDrafts);
@@ -332,7 +350,7 @@ export class ComposeActions {
   getDrafts(): Collection<EMail> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    return draftFolder.messages.filter(mail => mail.messageID == this.email.messageID);
+    return draftFolder.messages.filterOnce(mail => mail.messageID == this.email.messageID);
   }
 
   async deleteDrafts(previousDrafts?: Collection<EMail>): Promise<void> {

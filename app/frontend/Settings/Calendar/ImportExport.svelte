@@ -21,11 +21,11 @@
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { convertICalToEvents } from "../../../logic/Calendar/ICal/ICalToEvent";
   import { eventsToICalFile } from "../../../logic/Calendar/ICal/ICalGenerator";
+  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
-  import { t } from "../../../l10n/l10n";
-  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import { saveBlobAsFile } from "../../Util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let account: Calendar;
 
@@ -44,9 +44,9 @@
     await account.save();
   }
 
-  function exportICal() {
+  async function exportICal() {
     let file = eventsToICalFile(account.events, account.name);
-    saveBlobAsFile(file);
+    await saveBlobAsFile(file);
   }
 </script>
 

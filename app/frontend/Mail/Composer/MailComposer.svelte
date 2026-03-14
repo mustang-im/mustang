@@ -17,6 +17,7 @@
       <IdentitySelector bind:selectedIdentity={fromIdentity}
         bind:fromAddress={mail.from.emailAddress}
         bind:fromName={mail.from.name} />
+      <EncryptionButtons {mail} identity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         {#if !appGlobal.isMobile}
@@ -196,6 +197,7 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";

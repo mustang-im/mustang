@@ -2,7 +2,7 @@ import type { EMail } from "./EMail";
 import type { ExtraData } from "./ExtraData";
 import { AbstractFunction } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
-import type PostalMime from "postal-mime";
+import type { Email as MIME } from "postal-mime";
 
 export class EMailProcessorList {
   static processors = new ArrayColl<EMailProcessor>();
@@ -11,7 +11,7 @@ export class EMailProcessorList {
 
 export class EMailProcessor {
   runOn: ProcessingStartOn;
-  async process(email: EMail, mime: PostalMime): Promise<void> {
+  async process(email: EMail, mime: MIME): Promise<void> {
     throw new AbstractFunction();
   }
 

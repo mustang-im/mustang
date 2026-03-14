@@ -1,8 +1,10 @@
 import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
+import type { PublicKey } from '../Mail/Encryption/PublicKey';
+import { publicKeyFromJSON } from '../Mail/Encryption/KeyFromJSON';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
-import { assert } from '../util/util';
+import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 
 export class Person extends ContactBase {
   id: string;
@@ -20,6 +22,8 @@ export class Person extends ContactBase {
   readonly urls = new ArrayColl<ContactEntry>();
   /** Custom user-defined fields */
   readonly custom = new ArrayColl<ContactEntry>();
+  /** PGP public keys and S/MIME certiticates for this contact */
+  readonly encryptionPublicKeys = new ArrayColl<PublicKey>();
   @notifyChangedProperty
   notes: string | null = "";
 
@@ -192,6 +196,17 @@ export class Person extends ContactBase {
     this.urls.addAll(other.urls.map(ce => ce.clone()));
     this.groups.addAll(other.groups.map(ce => ce.clone()));
     this.custom.addAll(other.custom.map(ce => ce.clone()));
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.encryptionPublicKeys.replaceAll(sanitize.array(json.encryptionPublicKeys, []).map(keyJSON =>
+      publicKeyFromJSON(sanitize.json(keyJSON, null))));
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
+    return json;
   }
 }
 

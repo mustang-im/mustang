@@ -13,17 +13,16 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
-import { gt } from "../../l10n/l10n";
+import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
-import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { RunOnce } from "../util/flow/RunOnce";
-import { logError } from "../../frontend/Util/error";
+import { notifyChangedProperty } from "../util/Observable";
+import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
-import PostalMIME from "postal-mime";
+import PostalMIME, { type Email as MIME } from "postal-mime";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -83,6 +82,27 @@ export class EMail extends Message {
   /** For composer only. Optional. */
   identity: MailIdentity;
 
+  /** For composer/send only: This email should be end-to-end encrypted. */
+  @notifyChangedProperty
+  shouldEncrypt = false;
+  /** For composer/send only: This email must be end-to-end encrypted, e.g.
+   * because it quotes from an encrypted email. */
+  @notifyChangedProperty
+  _mustEncrypt = false;
+  /** This email was end-to-end encrypted on the wire.
+   * It has now been decrypted and stored in decrypted form. */
+  @notifyChangedProperty
+  wasEncrypted = false;
+  /** This email was correctly signed with this public key.
+   * The signature was valid and the public key matches `From:`.
+   * This gives you the specific public key that was used to sign.
+   * Format: `PublicKey.id` */
+  @notifyChangedProperty
+  signed: string | null = null;
+  /** Contains the complete MIME message for sending.
+   * Used for encrypted messages. */
+  sendRawMIME: string | null = null;
+
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
   extraData = new MapColl<string, ExtraData>();
@@ -115,6 +135,18 @@ export class EMail extends Message {
 
   get storage(): MailAccountStorage {
     return this.folder.account.storage;
+  }
+
+  get mustEncrypt(): boolean {
+    return this._mustEncrypt;
+  }
+  set mustEncrypt(val: boolean) {
+    if (!val) {
+      // cannot disable once enforced
+      return;
+    }
+    this._mustEncrypt = val;
+    this.shouldEncrypt = val;
   }
 
   allRecipients(): Collection<PersonUID> {
@@ -251,7 +283,7 @@ export class EMail extends Message {
     // indirectly calls @see `ICalEMailProcessor.process()`
   }
 
-  async parseMIME() {
+  async parseMIME(): Promise<MIME> {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
@@ -330,9 +362,21 @@ export class EMail extends Message {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      processor.process(this, postalMIME)
-        .catch(logError);
+      await processor.process(this, mail);
     }
+    return mail;
+  }
+
+  /** Used by encrypted messages.
+   * Let `parseMIME()` set all properties. */
+  resetProperties() {
+    // This MUST list all properties where `parseMIME()` does `this.prop ??=` or `if (!this.prop)`
+    this.id = null;
+    this.subject = null;
+    this.sent = null;
+    this.from = null;
+    this.replyTo = null;
+    this.inReplyTo = null;
   }
 
   /**
@@ -494,18 +538,27 @@ export class EMail extends Message {
   }
 
   copyFrom(other: EMail): void {
-    super.copyFrom(other);
+    super.copyFrom(other, true);
+    // <copied to="SendEncrypted.cloneEMail()">
+    other.folder = this.folder;
+    other.identity = this.identity;
     other.from = this.from;
     other.replyTo = this.replyTo;
     other.to.replaceAll(this.to);
     other.cc.replaceAll(this.cc);
+    // </copied>
     other.bcc.replaceAll(this.bcc);
     other.tags.replaceAll(this.tags);
-    other.headers.replaceAll(this.headers);
+    //other.headers.replaceAll(this.headers);
+    other.headers.clear();
+    for (let name of this.headers.keys()) {
+      other.headers.set(name, this.headers.get(name));
+    }
     other.size = this.size;
     if (this.references) {
       other.references = this.references.slice();
     }
+    other.threadID = this.threadID;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
     other.isDraft = this.isDraft;
@@ -513,9 +566,17 @@ export class EMail extends Message {
     other.mime = this.mime;
     other.invitationMessage = this.invitationMessage;
     other.event = this.event;
-    other.folder = this.folder;
-    other.threadID = this.threadID;
-    other.identity = this.identity;
+    other.sml = this.sml;
+    //other.extraData.replaceAll(this.extraData);
+    other.extraData.clear();
+    for (let name of this.extraData.keys()) {
+      other.extraData.set(name, this.extraData.get(name));
+    }
+
+    other.mustEncrypt = this.mustEncrypt;
+    other.shouldEncrypt = this.shouldEncrypt;
+    other.wasEncrypted = this.wasEncrypted;
+    other.signed = this.signed;
   }
 
   /**

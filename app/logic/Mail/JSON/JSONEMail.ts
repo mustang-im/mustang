@@ -33,6 +33,11 @@ export class JSONEMail {
     json.plaintext = email.rawText;
     json.html = email.rawHTMLDangerous;
 
+    json.signed = email.signed;
+    json.wasEncrypted = email.wasEncrypted;
+    json.mustEncrypt = email.mustEncrypt;
+    json.shouldEncrypt = email.shouldEncrypt;
+
     this.saveWritableProps(email, json);
     this.saveRecipients(email, json);
     json.attachments = this.saveAttachments(email);
@@ -137,6 +142,11 @@ export class JSONEMail {
         email.html = html;
       }
     }
+    email.signed = sanitize.alphanumdash(json.signedPublicKeyID, null);
+    email.wasEncrypted = sanitize.boolean(json.wasEncrypted, false);
+    email.shouldEncrypt = sanitize.boolean(json.shouldEncrypt, false);
+    email.mustEncrypt = sanitize.boolean(json.mustEncrypt, false);
+
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
     this.readAttachments(email, json);

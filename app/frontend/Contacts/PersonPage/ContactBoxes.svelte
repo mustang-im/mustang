@@ -123,6 +123,8 @@
           label={$t`Street address`} icon={StreetIcon} classes="street" addIconSize="18px" />
         <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
           label={$t`Website`} icon={WebsiteIcon} classes="website" addIconSize="18px" />
+        <ExpanderButton bind:expanded={showEncryption} on:expand={addKey}
+          label={$t`Encryption`} icon={EncryptionIcon} classes="encryption" addIconSize="18px" />
         <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
           label="Groups" icon={GroupIcon} classes="group" addIconSize="18px" />-->
         <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
@@ -132,7 +134,9 @@
   {/if}
 
   <SameName bind:person {isEditing} />
-  <!--<Encryption bind:person {isEditing} />-->
+  {#if showEncryption || showEncryptionOverride}
+    <Encryption bind:person bind:showImportOverride={showEncryptionOverride} />
+  {/if}
 
   {#if showNotes}
     <vbox flex class="notes">
@@ -173,6 +177,7 @@
   import PhoneIcon from '../../asset/icon/meet/call.svg?raw';
   import StreetIcon from "lucide-svelte/icons/house";
   import WebsiteIcon from "lucide-svelte/icons/globe";
+  import EncryptionIcon from "lucide-svelte/icons/lock";
   import GroupIcon from "lucide-svelte/icons/users-round";
   import NotesIcon from "lucide-svelte/icons/notebook-pen";
   import { showError } from "../../Util/error";
@@ -188,6 +193,7 @@
   $: chatAccounts = person.chatAccounts;
   $: streetAddresses = person.streetAddresses;
   $: urls = person.urls;
+  $: keys = person.encryptionPublicKeys;
   $: groups = person.groups;
 
   $: showEmail = $emailAddresses.hasItems;
@@ -195,8 +201,11 @@
   $: showPhone = $phoneNumbers.hasItems;
   $: showStreet = $streetAddresses.hasItems;
   $: showURLs = $urls.hasItems;
+  $: showEncryption = $keys.hasItems;
   $: showGroups = $groups.hasItems;
   $: showNotes = !!$person.notes;
+
+  let showEncryptionOverride = false;
 
   function addEmail() {
     let entry = new ContactEntry("", "work");
@@ -227,6 +236,9 @@
     person.urls.push(entry);
     isEditing = true;
     $selectedContactEntry = entry;
+  }
+  function addKey() {
+    showEncryptionOverride = true;
   }
   function addNotes() {
     person.notes = " ";

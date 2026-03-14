@@ -43,6 +43,14 @@ export function saveBlobAsFileViaA(blob: Blob, filename?: string) {
   URL.revokeObjectURL(url); // otherwise we leak the entire blob
 }
 
+export async function saveBlobAsDataAsFile(blob: Blob, filename?: string) {
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  let url = await blobToDataURL(blob);
+  saveURLAsFile(url, filename);
+}
+
 /** Opens a "Save as..." file picker dialog, with the `filename` prefilled,
  * allowing the user to select where to save the file.
  * The content of `url` will be saved in the file.
