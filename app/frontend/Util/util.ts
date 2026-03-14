@@ -33,6 +33,7 @@ export async function saveBlobAsFile(blob: Blob, filename?: string) {
   await writable.close();
 }
 
+/** Doesn't work anymore */
 export function saveBlobAsFileViaA(blob: Blob, filename?: string) {
   if (blob instanceof File) {
     filename = blob.name;
@@ -53,6 +54,8 @@ export async function saveBlobAsDataAsFile(blob: Blob, filename?: string) {
 /** Opens a "Save as..." file picker dialog, with the `filename` prefilled,
  * allowing the user to select where to save the file.
  * The content of `url` will be saved in the file.
+ *
+ * TODO doesn't work anymore
  */
 export function saveURLAsFile(url: URLString, filename: string) {
   let a = document.createElement("a");
