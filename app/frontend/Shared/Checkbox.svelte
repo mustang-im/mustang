@@ -34,13 +34,15 @@
     {/if}
   {/if}
 
-  <hbox class="state-icon-wrapper">
-    {#if checked === true}
-      <CheckIcon strokeWidth={5} size={12} />
-    {:else if checked == false && allowIndetermined}
-      <MinusIcon strokeWidth={5} size={12} />
-    {/if}
-  </hbox>
+  {#if !toggle || allowIndetermined}
+    <hbox class="state-icon-wrapper">
+      {#if checked === true}
+        <CheckIcon strokeWidth={5} size={12} />
+      {:else if checked == false && allowIndetermined}
+        <MinusIcon strokeWidth={5} size={12} />
+      {/if}
+    </hbox>
+  {/if}
 
   <label for={id}>
     <slot name="icon" />
@@ -136,10 +138,12 @@
     height: 16px;
     width: 24px;
     min-width: 24px;
+    border-radius: 100px;
+    background-color: lightgray;
   }
   .knob {
     position: absolute;
-    top: 14px;
+    top: 0px;
     height: 16px;
     width: 16px;
     border-radius: 100px;
@@ -157,8 +161,8 @@
   }
   .off:not(.allowIndetermined) .knob {
     right: 0px;
-    background-color: rgba(135, 135, 135, 0.6);
-    color: white;
+    background-color: var(--bg);
+    color: var(--fg);
     box-shadow:
       0 0 8px 2px rgba(135, 135, 135, 0.3);
   }
@@ -180,6 +184,9 @@
   }
   :global(.mobile) .checkbox {
     min-height: 44px;
+  }
+  :global(.mobile) .knob {
+    top: 14px;
   }
   :global(.mobile) .knob-wrapper {
     height: 44px;
