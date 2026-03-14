@@ -55,8 +55,14 @@ export class PersonUID extends Observable {
     return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
   }
 
-  toString() {
+  get nameAndEMail(): string {
     return this.name + " <" + this.emailAddress + ">";
+  }
+  get nameOrEMail(): string {
+    return this.name || this.emailAddress;
+  }
+  toString() {
+    return this.nameOrEMail;
   }
 }
 

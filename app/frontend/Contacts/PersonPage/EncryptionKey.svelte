@@ -1,17 +1,19 @@
 <vbox class="key" class:obsolete={$key.obsolete} class:short>
   <hbox class="main-row"
     on:click={() => isExpanded = !isExpanded}>
-    <hbox class="usage"
-      style:background-color={trustColor[$key.trustLevel] ?? "grey"}
-      style:color={trustColorFG[$key.trustLevel] ?? "black"}>
-      {#if $key.trustLevel == TrustLevel.Distrusted}
-        <DistrustIcon title={$t`Untrusted`} size="16px" />
-      {:else if $key.encryptByDefault}
-        <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
-      {:else}
-        <SignIcon title={$t`Use only for checking signatures`} size="16px" />
-      {/if}
-    </hbox>
+    {#if showIcon}
+      <hbox class="usage-icon"
+        style:background-color={trustColor[$key.trustLevel] ?? "grey"}
+        style:color={trustColorFG[$key.trustLevel] ?? "black"}>
+        {#if $key.trustLevel == TrustLevel.Distrusted}
+          <DistrustIcon title={$t`Untrusted`} size="16px" />
+        {:else if $key.encryptByDefault}
+          <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
+        {:else}
+          <SignIcon title={$t`Use only for checking signatures`} size="16px" />
+        {/if}
+      </hbox>
+    {/if}
     <hbox class="name">{$key.name}</hbox>
     {#if isExpanded}
       <hbox class="keytype" flex>{$t`Certificate`}</hbox>
@@ -31,7 +33,9 @@
   {#if isExpanded}
     <vbox class="details">
       <hbox class="acceptance">
-        <hbox class="label">{$t`Acceptance`}</hbox>
+        {#if !short}
+          <hbox class="label">{$t`Acceptance`}</hbox>
+        {/if}
         <vbox>
           <label>
             <input type="radio"
@@ -63,15 +67,15 @@
           </label>
         </vbox>
       </hbox>
-      {#if !short}
-        <hbox class="usage-detail">
+      <hbox class="usage-detail">
+        {#if !short}
           <hbox class="label">{$t`Usage`}</hbox>
-          <Checkbox toggle
-            bind:checked={key.encryptByDefault}
-            disabled={$key.trustLevel == TrustLevel.Distrusted}
-            label={$t`Encrypt my emails to ${person.name} with this key`} />
-        </hbox>
-      {/if}
+        {/if}
+        <Checkbox toggle
+          bind:checked={key.encryptByDefault}
+          disabled={$key.trustLevel == TrustLevel.Distrusted}
+          label={$t`Encrypt my emails to ${person.name} with this key`} />
+      </hbox>
       <vbox class="verification-code">
         <hbox title={$t`To communicate securely, you first need to establish that this key really belongs to ${person.name}. Meet or call ${person.name} on a secure channel, and have him read his verification code, and compare that it matches what you see.`}>
           <hbox class="label">{$t`Verification code`}</hbox>
@@ -187,6 +191,7 @@
   export let person: Person;
   /** short = for message pane, long = in contacts app */
   export let short = false;
+  export let showIcon = true;
   export let isExpanded = false;
 
   $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.encryptByDefault || key.useToSign)));
@@ -221,7 +226,7 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .usage {
+  .usage-icon {
     border-radius: var(--border-radius);
     padding: 4px;
   }
@@ -235,7 +240,7 @@
   .key.obsolete {
     opacity: 70%;
   }
-  .key.obsolete .usage {
+  .key.obsolete .usage-icon {
     opacity: 50%;
   }
   .system {
@@ -288,8 +293,7 @@
     font-weight: 500;
     padding-inline: 12px;
   }
-  .verification-code .name-label,
-  .verification-code .dropdown {
+  .verification-code .name-label {
     padding-inline-start: 16px;
   }
   .acceptance {

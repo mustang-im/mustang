@@ -41,12 +41,7 @@
       </hbox>
     </vbox>
   </hbox>
-  {#if isEncryptionExpanded}
-    <EncryptionKey short
-      key={getPublicKeyForID($message.signed)}
-      person={$message.from.findPerson()}
-      bind:isExpanded={isEncryptionExpanded} />
-  {/if}
+  <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
   <vbox class="recipients">
     {#if $message.to.hasItems}
       <hbox class="to font-small">
@@ -97,7 +92,6 @@
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import type { Tag } from "../../../logic/Abstract/Tag";
-  import { getPublicKeyForID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { appGlobal } from "../../../logic/app";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientsList from "./RecipientsList.svelte";
@@ -106,7 +100,7 @@
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
-  import EncryptionKey from "../../Contacts/PersonPage/EncryptionKey.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
