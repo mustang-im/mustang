@@ -604,6 +604,9 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
+  // The list of accounts (with accountIds) you have access to is in the JMAP session object.
+  // Get the shared mailboxes using Mailbox/query or Mailbox/get using the accountId of the account that shared the mailbox to you.
+
   hasCapability(capa: string): boolean {
     if (!this.session) {
       return false;
