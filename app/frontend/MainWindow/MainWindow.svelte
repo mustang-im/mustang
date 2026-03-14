@@ -20,7 +20,7 @@
     {/if}
     <vbox flex>
       <DemoBarTop />
-      <NotificationBar notifications={$notifications} />
+      <NotificationBar notifications={$notifications} {history}/>
       {#if appGlobal.isMobile}
         <Router primary={false}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
@@ -32,7 +32,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router {basepath} primary={false}>
+        <Router {basepath} primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -49,7 +49,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp, history } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
