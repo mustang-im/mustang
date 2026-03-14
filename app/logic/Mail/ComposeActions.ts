@@ -319,7 +319,6 @@ export class ComposeActions {
     this.email.isDraft = false;
 
     this.convertInlineAttachmentsURLs();
-    this.email.mime = null;
     let mail = await SendEncrypted.encryptAsNeeded(this.email);
     await account.send(mail);
 

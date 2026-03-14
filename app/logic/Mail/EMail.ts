@@ -99,6 +99,9 @@ export class EMail extends Message {
    * Format: `PublicKey.id` */
   @notifyChangedProperty
   signed: string | null = null;
+  /** Contains the complete MIME message for sending.
+   * Used for encrypted messages. */
+  sendRawMIME: string | null = null;
 
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */

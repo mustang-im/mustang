@@ -41,7 +41,7 @@ export class PGPSend {
         signingKeys: privateOpenPGPKey,
         encryptionKeys: recipientOpenPGPKeys,
       });
-      result.mime = PGPSend.createMIMEForEncrypted(mail, encrypted);
+      result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted);
     } else if (mail.signed) {
       let signature = await openPGP.sign({
         message: message,
@@ -53,7 +53,7 @@ export class PGPSend {
       if (inHeader) {
         // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html>
       } else {
-        result.mime = PGPSend.createMIMEForSigned(mail, originalMIME, signature);
+        result.sendRawMIME = PGPSend.createMIMEForSigned(mail, originalMIME, signature);
       }
     } else {
       throw new NotReached();
@@ -61,7 +61,7 @@ export class PGPSend {
     return result;
   }
 
-  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string): Uint8Array {
+  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string): string {
     // RFC 3156 Sec 4 <https://www.rfc-editor.org/rfc/rfc3156>
 
     function esc(str: string): string {
@@ -101,11 +101,11 @@ export class PGPSend {
       `--${boundary}--`,
     ].join('\r\n');
 
-    return new TextEncoder().encode(mime);
+    return mime;
   }
 
 
-  static createMIMEForSigned(mail: EMail, message: Uint8Array, signature: string): Uint8Array {
+  static createMIMEForSigned(mail: EMail, message: Uint8Array, signature: string): string {
     // RFC 3156 Sec 5 <https://www.rfc-editor.org/rfc/rfc3156>
 
     function esc(str: string): string {
@@ -141,7 +141,7 @@ export class PGPSend {
       `--${boundary}--`,
     ].join('\r\n');
 
-    return new TextEncoder().encode(mime);
+    return mime;
   }
 
   /* import { MimeNode } from "mime-model";
