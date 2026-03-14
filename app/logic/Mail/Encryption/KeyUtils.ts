@@ -1,4 +1,5 @@
-import type { PrivateKey, PublicKey } from "./PublicKey";
+import type { PublicKey } from "./PublicKey";
+import type { PrivateKey } from "./PrivateKey";
 import type { Person } from "../../Abstract/Person";
 import type { MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
@@ -23,12 +24,23 @@ export function getPublicKeyForID(id: string | null): PublicKey | null {
 
 /** For composer, which recipient key to use for encrypting the outgoing email */
 export function getPublicKeyForPerson(person: Person): PublicKey | null {
-  return person.encryptionPublicKeys.find(key => key.useToEncrypt);
+  if (!person || person.encryptionPublicKeys.isEmpty) {
+    return null;
+  }
+  let keys = person.encryptionPublicKeys.filterOnce(key => !key.obsolete);
+  return keys.find(key => key.encryptByDefault) ??
+    keys.first;
 }
 
 /** For composer, which own key to use for signing the outgoing email */
 export function getMyPrivateKey(identity: MailIdentity): PublicKey & PrivateKey | null {
-  return identity.encryptionPrivateKeys.find(key => key.useToSign);
+  if (identity.encryptionPrivateKeys.isEmpty) {
+    return null;
+  }
+  let keys = identity.encryptionPrivateKeys.filterOnce(key => !key.obsolete);
+  return keys.find(key => key.encryptByDefault && key.useToSign) ??
+    keys.find(key => key.useToSign) ??
+    keys.first;
 }
 
 export async function importPrivateKey(fileContent: string, passphrase: string): Promise<PublicKey & PrivateKey> {

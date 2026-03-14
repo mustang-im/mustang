@@ -1,3 +1,4 @@
+import type { PrivateKey } from "./PrivateKey";
 import { Observable, notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { AbstractFunction } from "../../util/util";
@@ -18,7 +19,7 @@ export class PublicKey extends Observable {
   @notifyChangedProperty
   _trustLevel: TrustLevel = TrustLevel.Sender;
   @notifyChangedProperty
-  _useToEncrypt = false;
+  _encryptByDefault = false;
   /** expired, disabled by our user, revoked by owner etc. */
   @notifyChangedProperty
   _obsolete = false;
@@ -42,16 +43,16 @@ export class PublicKey extends Observable {
     this._trustLevel = val;
     if (this.trustLevel == TrustLevel.Distrusted) {
       this.obsolete = true;
-      this.useToEncrypt = false;
+      this.encryptByDefault = false;
     }
   }
 
   /** This recipient wishes that all emails to him are encrypted. */
-  get useToEncrypt(): boolean {
-    return this._useToEncrypt;
+  get encryptByDefault(): boolean {
+    return this._encryptByDefault;
   }
-  set useToEncrypt(val: boolean) {
-    this._useToEncrypt = val;
+  set encryptByDefault(val: boolean) {
+    this._encryptByDefault = val;
   }
 
   get obsolete(): boolean {
@@ -60,7 +61,7 @@ export class PublicKey extends Observable {
   set obsolete(val: boolean) {
     this._obsolete = val;
     if (this._obsolete) {
-      this.useToEncrypt = false;
+      this.encryptByDefault = false;
     }
   }
 
@@ -88,7 +89,7 @@ export class PublicKey extends Observable {
   get sortOrder(): number {
     return -(
       sanitize.translate(this.system, { [EncryptionSystem.PGP]: 2, [EncryptionSystem.SMIME]: 1 }, 0) +
-      (this.useToEncrypt ? 20 : (this as any as PrivateKey).useToSign ? 10 : 0) +
+      (this.encryptByDefault ? 20 : (this as any as PrivateKey).useToSign ? 10 : 0) +
       (this.obsolete ? -100 : 0));
   }
 
@@ -107,7 +108,7 @@ export class PublicKey extends Observable {
     json.trustLevel = this.trustLevel;
     json.caName = this.caName;
     json.userIDs = this.userIDs.contents;
-    json.useToEncrypt = this.useToEncrypt;
+    json.encryptByDefault = this.encryptByDefault;
     json.obsolete = this.obsolete;
     return json;
   }
@@ -124,20 +125,9 @@ export class PublicKey extends Observable {
     this.trustLevel = sanitize.enum<TrustLevel>(json.trustLevel, Object.values(TrustLevel), TrustLevel.Sender);
     this.caName = sanitize.nonemptystring(json.caName, null);
     this.userIDs.replaceAll(sanitize.array(json.userIDs).map(userID => sanitize.nonemptystring(userID)));
-    this.useToEncrypt = sanitize.boolean(json.useToEncrypt, false);
+    this.encryptByDefault = sanitize.boolean(json.encryptByDefault, false);
     this.obsolete = sanitize.boolean(json.obsolete, false);
   }
-}
-
-/** Added to `PublicKey` */
-export interface PrivateKey {
-  useToSign: boolean;
-  didBackup: boolean;
-  /** Set when the key is created.
-   * Do not save this property. It should be false on load. */
-  justCreated: boolean;
-
-  privateKeyAsFile(): File;
 }
 
 /**

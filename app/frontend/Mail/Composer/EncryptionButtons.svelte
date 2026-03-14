@@ -29,7 +29,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
@@ -46,7 +46,7 @@
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
-    : $mail.allRecipients().find(puid => !puid.findPerson()?.encryptionPublicKeys.find(key => key.useToEncrypt))
+    : $mail.allRecipients().find(puid => !getPublicKeyForPerson(puid.findPerson()))
       ? gt`No secret keys enabled for encryption`
       : null;
 

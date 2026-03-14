@@ -1,5 +1,5 @@
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
-import type { PrivateKey } from "../PublicKey";
+import type { PrivateKey } from "../PrivateKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../../util/Observable";
 
@@ -10,18 +10,20 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
    */
   protected privateKeyArmored: string;
 
+  /** User wishes to sign all outgoing emails */
   @notifyChangedProperty
   useToSign = false;
   @notifyChangedProperty
   didBackup = false;
   justCreated = false;
 
-  get useToEncrypt(): boolean {
-    return this._useToEncrypt;
+  /** User wishes to send encrypted emails whenever possible */
+  get encryptByDefault(): boolean {
+    return this._encryptByDefault;
   }
-  set useToEncrypt(val: boolean) {
-    this._useToEncrypt = val;
-    if (this._useToEncrypt) {
+  set encryptByDefault(val: boolean) {
+    this._encryptByDefault = val;
+    if (this._encryptByDefault) {
       this.useToSign = true;
     }
   }

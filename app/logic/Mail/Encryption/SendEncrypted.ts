@@ -26,7 +26,7 @@ export class SendEncrypted {
 
     if (mail.shouldEncrypt) {
       assert(mail.bcc.isEmpty, "Cannot encrypt with BCC recipients"); // TODO send BCC as separate email
-      // If the user wants encryption, then use all applicable keys. `useToEncrypt` is only for the default.
+      // If the user wants encryption, then use all applicable keys. `encryptByDefault` is only for the default.
       let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(privateKey => !privateKey.obsolete);
       assert(privateKeys.hasItems, gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
       let recipients = new ArrayColl<PersonUID>(mail.allRecipients());

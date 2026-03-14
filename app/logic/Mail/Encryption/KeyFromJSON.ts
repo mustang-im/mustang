@@ -1,4 +1,5 @@
-import { type PublicKey, type PrivateKey, EncryptionSystem } from "./PublicKey";
+import { type PublicKey, EncryptionSystem } from "./PublicKey";
+import type { PrivateKey } from "./PrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";

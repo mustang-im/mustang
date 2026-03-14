@@ -68,7 +68,7 @@
   function makeFakeKey(): PublicKey {
     let key = Math.random() > 0.5 ? new PGPPublicKey() : new SMIMEPublicKey();
     key.obsolete = Math.random() > 0.2;
-    key.useToEncrypt = Math.random() > 0.5;
+    key.encryptByDefault = Math.random() > 0.5;
     if (Math.random() < 0.2) {
       key.trustLevel = TrustLevel.Personal;
     }

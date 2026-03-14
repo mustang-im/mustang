@@ -6,7 +6,7 @@
       style:color={trustColorFG[$key.trustLevel] ?? "black"}>
       {#if $key.trustLevel == TrustLevel.Distrusted}
         <DistrustIcon title={$t`Untrusted`} size="16px" />
-      {:else if $key.useToEncrypt}
+      {:else if $key.encryptByDefault}
         <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
       {:else}
         <SignIcon title={$t`Use only for checking signatures`} size="16px" />
@@ -67,7 +67,7 @@
         <hbox class="usage-detail">
           <hbox class="label">{$t`Usage`}</hbox>
           <Checkbox toggle
-            bind:checked={key.useToEncrypt}
+            bind:checked={key.encryptByDefault}
             disabled={$key.trustLevel == TrustLevel.Distrusted}
             label={$t`Encrypt my emails to ${person.name} with this key`} />
         </hbox>
@@ -165,6 +165,7 @@
 <script lang="ts">
   import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { Person } from "../../../logic/Abstract/Person";
+  import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
   import IdentitySelector from "../../Mail/Composer/IdentitySelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
@@ -179,8 +180,8 @@
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
-  import { t } from "../../../l10n/l10n";
   import { saveBlobAsFile } from "../../Util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;
   export let person: Person;
@@ -188,9 +189,9 @@
   export let short = false;
   export let isExpanded = false;
 
-  $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.useToEncrypt || key.useToSign)));
+  $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.encryptByDefault || key.useToSign)));
   $: myIdentity = $allIdentitiesWithKeys.first;
-  $: myPrivateKey = myIdentity?.encryptionPrivateKeys.find(key => !key.obsolete && (key.useToEncrypt || key.useToSign));
+  $: myPrivateKey = getMyPrivateKey(myIdentity);
 
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());

@@ -6,7 +6,7 @@
       style:color={$key.obsolete ? "black" : "white"}>
       {#if $key.obsolete}
         <DistrustIcon title={$t`Obsolete`} size="16px" />
-      {:else if $key.useToEncrypt}
+      {:else if $key.encryptByDefault}
         <EncryptIcon title={$t`Use for encryption and signing`} size="16px" />
       {:else if $key.useToSign}
         <SignIcon title={$t`Use only for signing messages`} size="16px" />
@@ -46,10 +46,10 @@
               disabled={$key.obsolete}
               label={$t`Sign emails that I send`} />
             <Checkbox toggle
-                bind:checked={key.useToEncrypt}
+                bind:checked={key.encryptByDefault}
                 disabled={$key.obsolete}
                 label={$t`I want to receive encrypted emails`} />
-            {#if $key.useToEncrypt}
+            {#if $key.encryptByDefault}
               <div class="note">{$t`This is merely a request to your correspondents. The sender also needs to have encryption enabled for messages between you two to be encrypted.`}</div>
               {#if !$key.didBackup}
                 <div class="warning note">{$t`To read encrypted emails, you need to use ${appName} (or another app that supports ${key.system}) on your other devices as well.`}</div>
