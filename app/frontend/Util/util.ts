@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import type { URLString } from "../../logic/util/util";
+import { blobToDataURL, type URLString } from "../../logic/util/util";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -8,7 +8,33 @@ export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   }
 }
 
-export function saveBlobAsFile(blob: Blob, filename?: string) {
+export async function saveBlobAsFile(blob: Blob, filename?: string) {
+  const showSaveFilePicker = (window as any).showSaveFilePicker;
+  if (typeof(showSaveFilePicker) != "function") { // Fallback
+    saveBlobAsFileViaA(blob, filename);
+    return;
+  }
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  let handle: any;
+  try {
+    handle = await showSaveFilePicker({
+      suggestedName: filename,
+    });
+  } catch (ex) {
+    if (ex.name == "AbortError") {
+      return;
+    }
+    throw ex;
+  }
+  let writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+/** Doesn't work anymore */
+export function saveBlobAsFileViaA(blob: Blob, filename?: string) {
   if (blob instanceof File) {
     filename = blob.name;
   }
@@ -20,6 +46,8 @@ export function saveBlobAsFile(blob: Blob, filename?: string) {
 /** Opens a "Save as..." file picker dialog, with the `filename` prefilled,
  * allowing the user to select where to save the file.
  * The content of `url` will be saved in the file.
+ *
+ * TODO doesn't work anymore
  */
 export function saveURLAsFile(url: URLString, filename: string) {
   let a = document.createElement("a");
