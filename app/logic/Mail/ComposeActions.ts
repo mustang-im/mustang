@@ -3,6 +3,7 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
+import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -10,7 +11,7 @@ import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
-import type { Collection } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -44,10 +45,14 @@ export class ComposeActions {
     let reply = account.newEMailFrom();
     reply.compose.generateMessageID();
 
-    let recipients = original.from?.emailAddress
-      ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
-      : [];
-    let from = MailIdentity.findIdentity(recipients, account);
+    let findFrom = new ArrayColl<PersonUID>();
+    if (original.from?.emailAddress) {
+      findFrom.add(original.from);
+      findFrom.addAll(original.to);
+      findFrom.addAll(original.cc);
+      findFrom.addAll(original.bcc);
+    }
+    let from = MailIdentity.findIdentity(findFrom, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
 
@@ -314,7 +319,8 @@ export class ComposeActions {
     this.email.isDraft = false;
 
     this.convertInlineAttachmentsURLs();
-    let mail = this.encryptAsNeeded(this.email);
+    this.email.mime = null;
+    let mail = await SendEncrypted.encryptAsNeeded(this.email);
     await account.send(mail);
 
     this.email.folder = previousFolder;

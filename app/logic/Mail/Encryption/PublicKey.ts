@@ -46,6 +46,7 @@ export class PublicKey extends Observable {
     }
   }
 
+  /** This recipient wishes that all emails to him are encrypted. */
   get useToEncrypt(): boolean {
     return this._useToEncrypt;
   }

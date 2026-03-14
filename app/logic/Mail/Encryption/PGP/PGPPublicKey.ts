@@ -1,4 +1,5 @@
 import { PublicKey, EncryptionSystem, TrustLevel } from "../PublicKey";
+import { assert } from "../../../util/util";
 import type OpenPGP from "openpgp";
 
 export class PGPPublicKey extends PublicKey {
@@ -9,7 +10,16 @@ export class PGPPublicKey extends PublicKey {
    * `-----END PGP PUBLIC KEY BLOCK-----`
    */
   declare publicKeyArmored: string;
-  openPGPPublicKey: OpenPGP.PublicKey | null = null;
+  protected _openPGPPublicKey: OpenPGP.PublicKey | null = null; // cache only
+
+  async openPGPPublicKey(openPGP?: OpenPGPModule): Promise<OpenPGP.PublicKey> {
+    if (this._openPGPPublicKey) {
+      return this._openPGPPublicKey;
+    }
+    openPGP ??= await import("openpgp");
+    assert(this.publicKeyArmored, `Have no public key stored for ${this.userIDs.first} ${this.name}`);
+    return await openPGP.readKey({ armoredKey: this.publicKeyArmored });
+  }
 
   publicKeyAsFile(): File {
     return this.keyAsFile(this.publicKeyArmored, "application/pgp-keys", "PublicKey", "asc");
@@ -48,3 +58,5 @@ export class PGPPublicKey extends PublicKey {
     }
   }
 }
+
+export type OpenPGPModule = typeof import("openpgp");

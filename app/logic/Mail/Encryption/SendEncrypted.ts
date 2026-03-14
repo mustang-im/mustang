@@ -14,8 +14,10 @@ export class SendEncrypted {
   /**
    * Encrypts and signs the email as needed, based on flags
    * `mail.shouldEncrypt` and `mail.signed` .
-   * If no encryption nor signing needed, returns the input email unchanged.
-   * Otherwise, checks the recipients and determines whether to use PGP or
+   * If no encryption nor signing needed, returns the input `mail` object.
+   * Otherwise, checks the recipients, whether we have keys for them, and
+   * determines whether to use PGP or S/MIME, and calls the appropriate implementation.
+   * @returns the same or a new mail object, with the same content, but encrypted and/or signed
    */
   static async encryptAsNeeded(mail: EMail): Promise<EMail> {
     if (mail.mustEncrypt) {
@@ -24,38 +26,53 @@ export class SendEncrypted {
 
     if (mail.shouldEncrypt) {
       assert(mail.bcc.isEmpty, "Cannot encrypt with BCC recipients"); // TODO send BCC as separate email
-      assert(mail.identity.encryptionPrivateKeys.some(privateKey => !privateKey.obsolete), gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
+      // If the user wants encryption, then use all applicable keys. `useToEncrypt` is only for the default.
+      let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(privateKey => !privateKey.obsolete);
+      assert(privateKeys.hasItems, gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
       let recipients = new ArrayColl<PersonUID>(mail.allRecipients());
-      if (mail.identity.encryptionPrivateKeys.some(privateKey =>
-            privateKey instanceof PGPPrivateKey && !privateKey.obsolete) &&
+      if (privateKeys.find(privateKey => privateKey instanceof PGPPrivateKey) &&
           recipients.every(puid =>
             puid.findPerson()?.encryptionPublicKeys.some(key =>
-              key instanceof PGPPublicKey && !key.obsolete && key.useToEncrypt))) {
+              key instanceof PGPPublicKey && !key.obsolete))) {
         return await PGPSend.encryptAndSign(mail);
-      } else if (
-          mail.identity.encryptionPrivateKeys.some(privateKey =>
-            privateKey instanceof SMIMEPrivateKey && !privateKey.obsolete) &&
+      } else if (privateKeys.find(privateKey => privateKey instanceof SMIMEPrivateKey) &&
           recipients.every(puid =>
             puid.findPerson()?.encryptionPublicKeys.some(key =>
-              key instanceof SMIMEPublicKey && !key.obsolete && key.useToEncrypt))) {
+              key instanceof SMIMEPublicKey && !key.obsolete))) {
         return await SMIMESend.encryptAndSign(mail);
       } else {
         throw new UserError(gt`Cannot encrypt to all recipients using PGP or S/MIME`);
       }
     } else if (mail.signed) {
-      if (mail.identity.encryptionPrivateKeys.some(privateKey =>
-        privateKey instanceof PGPPrivateKey && !privateKey.obsolete && privateKey.useToSign)) {
+      let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(privateKey => !privateKey.obsolete);
+      if (privateKeys.find(privateKey => privateKey instanceof PGPPrivateKey && privateKey.useToSign)) {
         return await PGPSend.encryptAndSign(mail);
-      } else if (
-        mail.identity.encryptionPrivateKeys.some(privateKey =>
-          privateKey instanceof SMIMEPrivateKey && !privateKey.obsolete && privateKey.useToSign)) {
-        return await SMIMESend.encryptAndSign(mail);
+      } else if (privateKeys.find(privateKey => privateKey instanceof SMIMEPrivateKey && privateKey.useToSign)) {
+        return await SMIMESend.encryptAsNeeded(mail);
       } else {
         throw new UserError(gt`Please first set up encryption and create a signing key for yourself, in Settings | Mail | Identity | Encryption`);
       }
-      return mail;
     } else {
       return mail;
     }
+  }
+
+  static cloneEMail(mail: EMail): EMail {
+    let result = mail.folder.newEMail();
+    // <copied from="EMail.copyFrom()">, because we want to copy only the delivery properties, not the content
+    result.id = mail.id;
+    result.folder = mail.folder;
+    result.identity = mail.identity;
+    result.from = mail.from;
+    result.replyTo = mail.replyTo;
+    result.to.replaceAll(mail.to);
+    result.cc.replaceAll(mail.cc);
+    result.tags.replaceAll(mail.tags);
+    result.isDraft = mail.isDraft;
+    // </copied>
+
+    result.wasEncrypted = mail.wasEncrypted;
+    result.signed = mail.signed;
+    return result;
   }
 }

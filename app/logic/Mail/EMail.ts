@@ -536,10 +536,14 @@ export class EMail extends Message {
 
   copyFrom(other: EMail): void {
     super.copyFrom(other, true);
+    // <copied to="SendEncrypted.cloneEMail()">
+    other.folder = this.folder;
+    other.identity = this.identity;
     other.from = this.from;
     other.replyTo = this.replyTo;
     other.to.replaceAll(this.to);
     other.cc.replaceAll(this.cc);
+    // </copied>
     other.bcc.replaceAll(this.bcc);
     other.tags.replaceAll(this.tags);
     //other.headers.replaceAll(this.headers);
@@ -551,9 +555,7 @@ export class EMail extends Message {
     if (this.references) {
       other.references = this.references.slice();
     }
-    other.folder = this.folder;
     other.threadID = this.threadID;
-    other.identity = this.identity;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
     other.isDraft = this.isDraft;

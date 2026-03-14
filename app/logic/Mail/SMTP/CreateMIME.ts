@@ -17,6 +17,18 @@ export class CreateMIME {
   }
 
   static async getNMMail(email: EMail): Promise<NMMail> {
+    if (email.mime) { // Encrypted emails
+      let bytes = email.mime;
+      let smtpRecipients = email.allRecipients();
+      smtpRecipients.addAll(email.bcc);
+      return {
+        envelope: {
+          from: email.from.emailAddress,
+          to: smtpRecipients.contents.map(p => p.emailAddress),
+        },
+        raw: Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength),
+      };
+    }
     let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
     // <https://nodemailer.com/message/>
     return {

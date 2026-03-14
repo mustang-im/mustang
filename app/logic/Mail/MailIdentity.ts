@@ -8,7 +8,7 @@ import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
@@ -121,7 +121,7 @@ export class MailIdentity extends Observable {
    * select that identity by default.
    * In decreasing order of preference.
    */
-  static findIdentity(addresses: PersonUID[], defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
+  static findIdentity(addresses: Collection<PersonUID>, defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
     let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
     // console.log(`Checking ${addresses.join(", ")} for matches with identities ${identities.map(i => i.emailAddress).join(", ")}`);
     for (let candidate of addresses) {

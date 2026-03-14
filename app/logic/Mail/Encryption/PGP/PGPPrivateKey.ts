@@ -1,8 +1,10 @@
-import { PGPPublicKey } from "./PGPPublicKey";
+import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
 import type { PrivateKey } from "../PublicKey";
 import { PGPReadProcessor } from "./PGPReadProcessor";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../../util/Observable";
+import { assert } from "../../../util/util";
+import type OpenPGP from "openpgp";
 
 export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
   /**
@@ -11,8 +13,9 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
    * `-----END PGP PRIVATE KEY BLOCK-----`
    */
   privateKeyArmored: string;
-  passphrase: string;
+  protected passphrase: string;
   //revocationCertificate: string;
+  protected _openPGPPrivateKey: OpenPGP.PrivateKey | null = null; // cache only
 
   @notifyChangedProperty
   useToSign = false;
@@ -28,6 +31,17 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     if (this._useToEncrypt) {
       this.useToSign = true;
     }
+  }
+
+  async openPGPPrivateKey(openPGP?: OpenPGPModule): Promise<OpenPGP.PrivateKey> {
+    if (this._openPGPPrivateKey) {
+      return this._openPGPPrivateKey;
+    }
+    openPGP ??= await import("openpgp");
+    assert(this.privateKeyArmored, `Have no private key stored for ${this.userIDs.first} ${this.name}`);
+    let encryptedKey = await openPGP.readPrivateKey({ armoredKey: this.privateKeyArmored });
+    let password = this.passphrase; // TODO
+    return await openPGP.decryptKey({ privateKey: encryptedKey, passphrase: password });
   }
 
   privateKeyAsFile(): File {
