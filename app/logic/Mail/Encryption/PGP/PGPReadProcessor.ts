@@ -118,7 +118,7 @@ export class PGPReadProcessor extends EMailProcessor {
   async getPrivateKeysForIdentity(identity: MailIdentity, openPGP: OpenPGPModule): Promise<Collection<OpenPGP.PrivateKey>> {
     let result = new ArrayColl<OpenPGP.PrivateKey>();
     for (let privateKey of identity.encryptionPrivateKeys.each) {
-      if (!(privateKey instanceof PGPPrivateKey && privateKey.privateKeyArmored)) {
+      if (!(privateKey instanceof PGPPrivateKey)) {
         continue;
       }
       result.add(await privateKey.openPGPPrivateKey());

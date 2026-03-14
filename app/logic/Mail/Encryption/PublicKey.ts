@@ -131,9 +131,6 @@ export class PublicKey extends Observable {
 
 /** Added to `PublicKey` */
 export interface PrivateKey {
-  /** Armored (base64-encoded) private key
-   * This is super secret and should never leak. */
-  privateKeyArmored: string;
   useToSign: boolean;
   didBackup: boolean;
   /** Set when the key is created.

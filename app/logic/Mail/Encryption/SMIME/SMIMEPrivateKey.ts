@@ -6,8 +6,9 @@ import { notifyChangedProperty } from "../../../util/Observable";
 export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   /**
    * Armored private S/MIME key
+   * This is super secret and should never leak.
    */
-  privateKeyArmored: string;
+  protected privateKeyArmored: string;
 
   @notifyChangedProperty
   useToSign = false;
