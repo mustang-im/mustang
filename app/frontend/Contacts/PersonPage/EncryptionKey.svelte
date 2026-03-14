@@ -263,8 +263,12 @@
     display: flex;
     align-items: start;
   }
-  .details label input[type=radio] {
+  .acceptance label {
+    align-items: center;
+  }
+  .acceptance input[type=radio] {
     margin-inline-end: 8px;
+    margin-block-end: 2px; /* align with text */
   }
   .verification-code:not(.obsolete) {
     margin-block: 20px;
