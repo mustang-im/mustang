@@ -52,9 +52,9 @@ export class PGPSend {
 
       const inHeader = false;
       if (inHeader) {
-        // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html>
+        result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIME, signature);
       } else {
-        result.sendRawMIME = PGPSend.createMIMEForSigned(mail, originalMIME, signature);
+        result.sendRawMIME = PGPSend.createMIMEForSignedDetached(mail, originalMIME, signature);
       }
     } else {
       throw new NotReached();
@@ -62,9 +62,7 @@ export class PGPSend {
     return result;
   }
 
-  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string): string {
-    // RFC 3156 Sec 4 <https://www.rfc-editor.org/rfc/rfc3156>
-
+  static createMIMEHeader(mail: EMail): string[] {
     function esc(str: string): string {
       return str?.replace(/<>,/g, "") ?? ""; // TODO implement better
     }
@@ -76,15 +74,22 @@ export class PGPSend {
       }
     }
 
-    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
-    let mime = [
-      `Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";`,
-      ` boundary="${boundary}"`,
+    return [
+      `MIME-Version: 1.0`,
       `From: ` + recipient(mail.from),
       `To: ` + mail.to.contents.map(p => recipient(p)),
       `CC: ` + mail.cc.contents.map(p => recipient(p)),
+    ];
+  }
+
+  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string): string {
+    // RFC 3156 Sec 4 <https://www.rfc-editor.org/rfc/rfc3156>
+    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    let mime = [
+      ...PGPSend.createMIMEHeader(mail),
       `Subject: PGP encrypted message`,
-      `MIME-Version: 1.0`,
+      `Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";`,
+      ` boundary="${boundary}"`,
       ``,
       `--${boundary}`,
       `Content-Type: application/pgp-encrypted`,
@@ -101,37 +106,20 @@ export class PGPSend {
       ``,
       `--${boundary}--`,
     ].join('\r\n');
-
     return mime;
   }
 
-
-  static createMIMEForSigned(mail: EMail, message: Uint8Array, signature: string): string {
+  static createMIMEForSignedDetached(mail: EMail, message: Uint8Array, signature: string): string {
     // RFC 3156 Sec 5 <https://www.rfc-editor.org/rfc/rfc3156>
-
-    function esc(str: string): string {
-      return str?.replace(/<>,/g, "") ?? ""; // TODO implement better
-    }
-    function recipient(p: PersonUID): string {
-      if (p.name) {
-        return esc(p.name) + " <" + esc(p.emailAddress) + ">";
-      } else {
-        return esc(p.emailAddress);
-      }
-    }
-
-    let boundary = "----=_Part_" + crypto.randomUUID().replace(/-/g, "");
+    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
+      ...PGPSend.createMIMEHeader(mail),
+      ...this.wrapHeader(`Subject: ` + mail.subject),
       `Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha512;`,
       ` boundary="${boundary}"`,
-      `From: ` + recipient(mail.from),
-      `To: ` + mail.to.contents.map(p => recipient(p)),
-      `CC: ` + mail.cc.contents.map(p => recipient(p)),
-      `Subject: ` + mail.subject,
-      `MIME-Version: 1.0`,
       ``,
       `--${boundary}`,
-      new TextDecoder().decode(message),
+      new TextDecoder().decode(message).trim(),
       ``,
       `--${boundary}`,
       `Content-Type: application/pgp-signature; name="signature.asc"`,
@@ -141,8 +129,33 @@ export class PGPSend {
       ``,
       `--${boundary}--`,
     ].join('\r\n');
-
     return mime;
+  }
+
+  static createMIMEForSignedInHeader(mail: EMail, message: Uint8Array, signature: string): string {
+    // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
+    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    let mime = [
+      ...PGPSend.createMIMEHeader(mail),
+      ...this.wrapHeader(`Subject: ` + mail.subject),
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      ``,
+      `--${boundary}`,
+      ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
+      new TextDecoder().decode(message).trim(),
+      ``,
+      `--${boundary}--`,
+    ].join('\r\n');
+    return mime;
+  }
+
+  protected static wrapHeader(content: string): string[] {
+    const maxWidth = 60;
+    let lines: string[] = [];
+    for (let i = 0; i < content.length; i += maxWidth) {
+      lines.push((i == 0 ? "" : "    ") + content.slice(i, i + maxWidth));
+    }
+    return lines;
   }
 
   /* import { MimeNode } from "mime-model";
