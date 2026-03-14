@@ -33,9 +33,6 @@
   {#if isExpanded}
     <vbox class="details">
       <hbox class="acceptance">
-        {#if !short}
-          <hbox class="label">{$t`Acceptance`}</hbox>
-        {/if}
         <vbox>
           <label>
             <input type="radio"
@@ -68,9 +65,6 @@
         </vbox>
       </hbox>
       <hbox class="usage-detail">
-        {#if !short}
-          <hbox class="label">{$t`Usage`}</hbox>
-        {/if}
         <Checkbox toggle
           bind:checked={key.encryptByDefault}
           disabled={$key.trustLevel == TrustLevel.Distrusted}
