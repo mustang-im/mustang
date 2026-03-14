@@ -3,7 +3,7 @@ import { appGlobal } from "../../logic/app";
 import { backgroundError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
-import { navigate } from "svelte-navigator";
+import { navigate, createHistory, createMemorySource } from "svelte-navigator";
 import type AnyObject from "svelte-navigator/types/AnyObject";
 
 export const selectedApp: Writable<MustangApp> = writable(null);
@@ -12,6 +12,8 @@ export const mustangApps = new ArrayColl<MustangApp>;
 
 /** Search bar in the window title, applies to all apps */
 export const globalSearchTerm: Writable<string> = writable(null);
+
+export const history = createHistory(createMemorySource());
 
 export type PageParams = Record<string, any>;
 export function openApp(app: MustangApp, params: PageParams) {
@@ -22,14 +24,14 @@ export function openApp(app: MustangApp, params: PageParams) {
 export function goTo(pageURL: string, params: PageParams) {
   let replace = pageURL == window.location.pathname;
   console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.pathname, "with params", params);
-  navigate(pageURL, {
+  history.navigate(pageURL, {
     replace,
     state: addParams(params),
   });
 }
 
 export function goBack() {
-  navigate(-1);
+  history.navigate(-1);
 }
 
 export function bringAppToFront() {

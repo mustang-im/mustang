@@ -213,7 +213,7 @@
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../../AppsBar/selectedApp";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -363,7 +363,7 @@
 
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
-    navigate(-1);
+    goBack();
   }
 
   let showSMLAdd = false;

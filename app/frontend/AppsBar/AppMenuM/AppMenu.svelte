@@ -44,10 +44,10 @@
   import BottomAppMenu from "./BottomAppMenu.svelte";
   import AppMenuBarM from "./AppMenuBarM.svelte";
   import RecentPersons from "./RecentPersons.svelte";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../selectedApp";
 
   function onClose() {
-    navigate(-1);
+    goBack();
   }
 </script>
 
