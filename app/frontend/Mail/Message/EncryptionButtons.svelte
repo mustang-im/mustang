@@ -2,7 +2,7 @@
   <hbox class="signed key-{trustLevel} plain">
     <RoundButton
       label={msg}
-      icon={encrypted ? EncryptedIcon : SignedIcon}
+      icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
       onClick={openSigningKey}
       iconSize="12px"
       padding="2px"
@@ -18,6 +18,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
+  import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
