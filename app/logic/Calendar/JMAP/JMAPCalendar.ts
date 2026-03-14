@@ -1,4 +1,5 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
 import { JMAPEvent } from "./JMAPEvent";
 import type { TJMAPCalendar } from "./TJMAPCalendar";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
@@ -68,6 +69,7 @@ export class JMAPCalendar extends Calendar {
       let { newEvents, updatedEvents } = await this.fetchEvents(i, batchSize + 1);
       this.events.addAll(newEvents);
       await this.saveEvents(newEvents);
+      await this.updateRecurrenceOverrides(newEvents);
       allNewEvents.addAll(newEvents);
       hasMore = newEvents.length + updatedEvents.length > batchSize;
     }
@@ -205,7 +207,9 @@ export class JMAPCalendar extends Calendar {
           await event.deleteLocally();
         }
         await this.saveEvents(changedResult.updatedEvents);
+        await this.updateRecurrenceOverrides(changedResult.updatedEvents);
         await this.saveEvents(addedResult.newEvents);
+        await this.updateRecurrenceOverrides(addedResult.newEvents);
         if (this === calendar) {
           newEventsOfThisCal = addedResult.newEvents;
         }
@@ -270,10 +274,18 @@ export class JMAPCalendar extends Calendar {
     return { newEvents, updatedEvents };
   }
 
-  protected async saveEvents(events: Collection<JMAPEvent>) {
+  protected async saveEvents(events: Collection<Event>) {
     for (let event of events) {
       await event.save();
     }
+  }
+
+  protected async updateRecurrenceOverrides(events: Collection<JMAPEvent>) {
+    let exceptions = new ArrayColl<Event>();
+    for (let event of events) {
+      event.updateRecurrenceOverrides(exceptions);
+    }
+    await this.saveEvents(exceptions);
   }
 
   getEventByJMAPID(jmapID: string): JMAPEvent | undefined {

@@ -1,6 +1,8 @@
 import type { TID, TInteger, TUTCDateTime } from "../../Mail/JMAP/TJMAPGeneric";
 
 export interface TJMAPCalendarEvent extends TJSCalendarEvent {
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJMAPCalendarEvent>;
   id: TID;
   /** Only set if this is a server-generated recurrence instance.
    * The ID of the recurring event that this was generated from. */
@@ -95,7 +97,7 @@ interface TJSCalendarEventBase {
   /** Rules generating recurrence dates */
   recurrenceRule?: TJSCalendarRecurrenceRule;
   /** Overrides for specific recurrence instances */
-  recurrenceOverrides?: Record<TLocalDateTime, TPatchObject | boolean>;
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarEventBase>;
   /** Mark excluded dates in recurrence */
   excluded?: boolean;
 
@@ -137,6 +139,8 @@ interface TJSCalendarEventBase {
  */
 export interface TJSCalendarEvent extends TJSCalendarEventBase {
   "@type": "Event";
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarEvent>;
   /** Event start date/time */
   start: TLocalDateTime | TUTCDateTime;
   /** Event duration (default: "PT0S") */
@@ -152,6 +156,8 @@ export interface TJSCalendarEvent extends TJSCalendarEventBase {
  */
 export interface TJSCalendarTask extends TJSCalendarEventBase {
   "@type": "Task";
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarTask>;
   /** Task due date/time */
   due?: TLocalDateTime | TUTCDateTime;
   /** Task start date/time */
@@ -291,7 +297,7 @@ export type TJSCalendarParticipationStatus =
  */
 export interface TJSCalendarRecurrenceRule {
   /** Recurrence frequency */
-  frequency: "yearly" | "monthly" | "weekly" | "daily" | "hourly" | "minutely" | "secondly";
+  frequency: TJSCalendarRecurrenceFrequency;
   /** When to stop recurring */
   until?: TLocalDateTime | TUTCDateTime;
   /** Maximum occurrences */
@@ -299,7 +305,7 @@ export interface TJSCalendarRecurrenceRule {
   /** Interval between occurrences (default: 1) */
   interval?: TInteger;
   /** Days of week (mo, tu, we, th, fr, sa, su) */
-  byDay?: (string | { day: string; nthOfPeriod?: TInteger })[];
+  byDay?: { day: string; nthOfPeriod?: TInteger }[];
   /** Days of month (1-31, or -1 to -31 for reverse) */
   byMonthDay?: TInteger[];
   /** Months (1-12) */
@@ -323,6 +329,15 @@ export interface TJSCalendarRecurrenceRule {
   /** Skip rule */
   skip?: "omitted" | string;
 }
+
+export type TJSCalendarRecurrenceFrequency =
+  | "yearly"
+  | "monthly"
+  | "weekly"
+  | "daily"
+  | "hourly"
+  | "minutely"
+  | "secondly";
 
 /**
  * Alert: Represents a notification or alarm
