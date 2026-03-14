@@ -36,6 +36,7 @@ export class PGPSend {
       for (let recipientKey of recipientKeys) {
         recipientOpenPGPKeys.push(await recipientKey.openPGPPublicKey(openPGP));
       }
+      recipientOpenPGPKeys.push(await privateKey.openPGPPublicKey(openPGP));
       let encrypted = await openPGP.encrypt({
         message: message,
         signingKeys: privateOpenPGPKey,
