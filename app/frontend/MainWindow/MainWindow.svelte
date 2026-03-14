@@ -20,9 +20,9 @@
     {/if}
     <vbox flex>
       <DemoBarTop />
-      <NotificationBar notifications={$notifications} {history}/>
+      <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
-        <Router primary={false}>
+        <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
             <vbox flex class="sidebar" slot="top">
               <svelte:component this={sidebar} />
