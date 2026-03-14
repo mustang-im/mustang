@@ -41,7 +41,7 @@
 
   $: signingKey = getPublicKeyForID($message.signed);
   $: signed = $message.signed && $signingKey.trustLevel != TrustLevel.Distrusted;
-  $: encrypted = $message.wasEncrypted && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: msg = signed && encrypted
       ? $t`This message was end-to-end-encrypted to you, and signed by ${$message.from?.nameOrEMail}. If - and only if - you have confidence in the certificate below, that means that this email was indeed written by ${$message.from?.nameOrEMail},
@@ -69,6 +69,8 @@
   }
   .signed.key-none :global(.button) {
     display: none;
+    /*background-color: red;
+    color: white;*/
   }
   .signed.key-sender :global(.button) {
     background-color: yellow;

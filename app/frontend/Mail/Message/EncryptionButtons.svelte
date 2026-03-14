@@ -64,6 +64,8 @@
   }
   .signed.key-none :global(.button) {
     display: none;
+    /*background-color: red;
+    color: white;*/
   }
   .signed.key-sender :global(.button) {
     background-color: yellow;
@@ -82,7 +84,8 @@
     background-color: blue;
     color: white;
   }
-  .signed.signed.key-third-party :global(.button svg),
+  .signed.key-none :global(.button svg),
+  .signed.key-third-party :global(.button svg),
   .signed.key-personal :global(.button svg) {
     stroke-width: 3px;
   }
