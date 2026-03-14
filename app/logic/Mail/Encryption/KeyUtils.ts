@@ -23,24 +23,23 @@ export function getPublicKeyForID(id: string | null): PublicKey | null {
 }
 
 /** For composer, which recipient key to use for encrypting the outgoing email */
-export function getPublicKeyForPerson(person: Person): PublicKey | null {
+export function getPublicKeyForPerson<T extends PublicKey>(person: Person, keyType?: new () => T): T | null {
   if (!person || person.encryptionPublicKeys.isEmpty) {
     return null;
   }
-  let keys = person.encryptionPublicKeys.filterOnce(key => !key.obsolete);
-  return keys.find(key => key.encryptByDefault) ??
-    keys.first;
+  let keys = person.encryptionPublicKeys.filterOnce(key => !key.obsolete && (!keyType || key instanceof keyType));
+  return (keys.find(key => key.encryptByDefault) ?? keys.first) as T;
 }
 
 /** For composer, which own key to use for signing the outgoing email */
-export function getMyPrivateKey(identity: MailIdentity): PublicKey & PrivateKey | null {
+export function getMyPrivateKey<T extends PublicKey & PrivateKey>(identity: MailIdentity, keyType?: new () => T): T | null {
   if (identity.encryptionPrivateKeys.isEmpty) {
     return null;
   }
-  let keys = identity.encryptionPrivateKeys.filterOnce(key => !key.obsolete);
-  return keys.find(key => key.encryptByDefault && key.useToSign) ??
+  let keys = identity.encryptionPrivateKeys.filterOnce(key => !key.obsolete && (!keyType || key instanceof keyType));
+  return (keys.find(key => key.encryptByDefault && key.useToSign) ??
     keys.find(key => key.useToSign) ??
-    keys.first;
+    keys.first) as T | null;
 }
 
 export async function importPrivateKey(fileContent: string, passphrase: string): Promise<PublicKey & PrivateKey> {
