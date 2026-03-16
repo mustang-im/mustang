@@ -28,7 +28,7 @@ export class FilterRuleAction extends Observable {
   @notifyChangedProperty
   toFolderID: string | undefined;
   get toFolder(): Folder | null {
-    return this.toFolderID && (this._toFolder ??= this.account.findFolder(folder => folder.id == this.toFolderID)) || null;
+    return this.toFolderID && (this._toFolder ??= this.account.findFolder(folder => folder.id == this.toFolderID)) ?? null;
   }
   set toFolder(folder: Folder | null) {
     this._toFolder = folder;
