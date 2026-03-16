@@ -21,7 +21,7 @@ export class SearchEMail extends Observable {
   @notifyChangedProperty
   folderID: string | undefined;
   get folder(): Folder | null {
-    return this.folderID && (this._folder ??= this.account?.findFolder(folder => folder.id == this.folderID)) || null;
+    return (this.folderID && (this._folder ??= this.account?.findFolder(folder => folder.id == this.folderID))) ?? null;
   }
   set folder(folder: Folder | null) {
     this._folder = folder;
