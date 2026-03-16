@@ -178,6 +178,9 @@ export class EWSAccount extends MailAccount {
         }))),
       }, "item:Attachments");
     }
+    if (email.inReplyTo) {
+      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+    }
     if (email.headers.hasItems) {
       request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
         t$ExtendedFieldURI: {
@@ -189,16 +192,13 @@ export class EWSAccount extends MailAccount {
         t$Value: value,
       })), null);
     }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.replyTo) {
-      addRecipients(request, "ReplyTo", [email.replyTo]);
-    }
-    addRecipients(request, "From", [email.from]);
     addRecipients(request, "ToRecipients", email.to.contents);
     addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
+    addRecipients(request, "From", [email.from]);
+    if (email.replyTo) {
+      addRecipients(request, "ReplyTo", [email.replyTo]);
+    }
     await this.callEWS(request);
   }
 

@@ -181,9 +181,6 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { BodyType: "HTML", _TextContent_: this.rawHTMLDangerous } : { BodyType: "Text", _TextContent_: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
-      request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
-    }
     if (this.calUID && !this.itemID && !this.parentEvent) {
       // This probably only makes sense when creating an event.
       // (And it's not even needed then as Exchange will auto-generate one.)
@@ -204,6 +201,9 @@ export class EWSEvent extends Event {
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
+    if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
+      request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
+    }
     let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
     request.addField("CalendarItem", "StartTimeZone", { Id: timezone }, "calendar:StartTimeZone");
     request.addField("CalendarItem", "EndTimeZone", { Id: timezone }, "calendar:EndTimeZone");
@@ -237,8 +237,8 @@ export class EWSEvent extends Event {
     request.addField("Task", "Subject", this.title, "item:Subject");
     request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
+    request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     let response = await this.calendar.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Task.ItemId.Id);
   }
