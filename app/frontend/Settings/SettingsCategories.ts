@@ -39,8 +39,10 @@ import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
 import { Addressbook } from "../../logic/Contacts/Addressbook";
-import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import { Calendar } from "../../logic/Calendar/Calendar";
+import { CardDAVAddressbook } from "../../logic/Contacts/CardDAV/CardDAVAddressbook";
+import { CalDAVCalendar } from "../../logic/Calendar/CalDAV/CalDAVCalendar";
+import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
@@ -112,6 +114,7 @@ calendarSettings.newAccountURL = "/setup/calendar";
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
 accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
+accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 
 const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, true);
 contactsSettings.subCategories.addAll([
@@ -123,6 +126,7 @@ contactsSettings.newAccountURL = "/setup/contacts";
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
 accountSettings.add(new AccSetting(Addressbook, "contacts-import", gt`Import/Export`, ContactsImportExport, true));
+accountSettings.add(new AccSetting(CardDAVAddressbook, "contacts-server", gt`Server`, AccountURLServer));
 
 // #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
