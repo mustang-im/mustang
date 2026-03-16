@@ -182,7 +182,8 @@ export class OWAAccount extends MailAccount {
     if (!haveAddressbook) {
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
       let contacts = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
-      for (let addressbook of this.createAddressbookAccounts(contacts)) {
+      for (let folder of contacts) {
+        let addressbook = this.createAddressbookAccount(folder);
         await addressbook.save();
       }
     }
@@ -507,7 +508,7 @@ export class OWAAccount extends MailAccount {
       return accounts;
     }
     let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-    let contacts = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
+    let addressbooks = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
     let result = await this.callOWA(owaFindFoldersRequest(true));
     let calendars = result.RootFolder.Folders.filter(folder => folder.FolderClass == "IPF.Appointment");
     for (let account of this.dependentAccounts()) {
@@ -516,7 +517,7 @@ export class OWAAccount extends MailAccount {
         for (let folder of result.ResponseMessages.Items.filter(folder => folder.ResponseClass == "Success").map(folder => folder.Folders[0])) {
           folder.account = account;
           if (folder.DistinguishedFolderId == "contacts") {
-            contacts.push(folder);
+            addressbooks.push(folder);
           }
           if (folder.DistinguishedFolderId == "calendar") {
             calendars.push(folder);
@@ -524,55 +525,44 @@ export class OWAAccount extends MailAccount {
         }
       }
     }
-    accounts.addAll(this.createAddressbookAccounts(contacts));
-    accounts.addAll(this.createCalendarAccounts(calendars));
+    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, addressbooks[0] == ab)).filter(a => a));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(a => a));
     return accounts;
   }
 
-  private createAddressbookAccounts(contacts: any[]): OWAAddressbook[] {
-    let isMainAddressbook = true;
-    let accounts = [];
-    for (let folder of contacts) {
-      if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
-        isMainAddressbook = false;
-        continue;
-      }
-      let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-      addressbook.initFromMainAccount(this);
-      if (!isMainAddressbook && folder.DisplayName) {
-        addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
-      }
-      if (folder.account) {
-        addressbook.username = folder.account.username;
-      }
-      addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.push(addressbook);
-      isMainAddressbook = false;
+  private createAddressbookAccount(folder: any, isMainAddressbook = false): OWAAddressbook | null {
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
+      return null;
     }
-    return accounts;
+    let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+    addressbook.initFromMainAccount(this);
+    if (!isMainAddressbook && folder.DisplayName) {
+      addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+    }
+    if (folder.account) {
+      addressbook.username = folder.account.username;
+    }
+    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return addressbook;
   }
 
-  private createCalendarAccounts(calendars: any[]): OWACalendar[] {
-    let accounts = [];
-    for (let folder of calendars) {
-      if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
-        continue;
-      }
-      let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-      calendar.initFromMainAccount(this);
-      let isMainCalendar = !folder.account && folder.DistinguishedFolderId == "calendar";
-      if (isMainCalendar) {
-        calendar.useForInvitations = true;
-      } else if (folder.DisplayName) {
-        calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
-      }
-      if (folder.account) {
-        calendar.username = folder.account.username;
-      }
-      calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.push(calendar);
+  private createCalendarAccount(folder: any): OWACalendar | null{
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
+      return null;
     }
-    return accounts;
+    let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+    calendar.initFromMainAccount(this);
+    let isMainCalendar = !folder.account && folder.DistinguishedFolderId == "calendar";
+    if (isMainCalendar) {
+      calendar.useForInvitations = true;
+    } else if (folder.DisplayName) {
+      calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+    }
+    if (folder.account) {
+      calendar.username = folder.account.username;
+    }
+    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return calendar;
   }
 
   /**
