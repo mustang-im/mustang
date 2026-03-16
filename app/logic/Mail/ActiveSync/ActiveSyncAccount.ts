@@ -238,8 +238,9 @@ export class ActiveSyncAccount extends MailAccount {
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
     let heartbeat = aOptions.heartbeat ?? 0;
+    let wbxml = await request2WBXML({ [aCommand]: aRequest });
     let options: any = {
-      body: await request2WBXML({ [aCommand]: aRequest }),
+      body: wbxml,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
@@ -269,7 +270,7 @@ export class ActiveSyncAccount extends MailAccount {
     }
     this.fatalError = null;
     if (response.ok) {
-      // response.bytes() not supported yet
+      // response.bytes() not supported yet. This ctor does not copy, but creates another view.
       let bytes = new Uint8Array(await response.arrayBuffer());
       // ActiveSync short cut for when there are no changes to sync
       if (!bytes.length) {
