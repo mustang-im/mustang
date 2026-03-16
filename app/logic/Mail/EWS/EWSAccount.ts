@@ -28,8 +28,8 @@ import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json 
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da
-const PidTagAttributeHidden = "0x10F4";
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da>
+const HiddenPidTag = "0x10F4";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -652,7 +652,7 @@ export class EWSAccount extends MailAccount {
                 FieldURI: "folder:DistinguishedFolderId",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: PidTagAttributeHidden,
+                PropertyTag: HiddenPidTag,
                 PropertyType: "Boolean",
               },
             },
@@ -770,7 +770,7 @@ export class EWSAccount extends MailAccount {
               FieldURI: "folder:DistinguishedFolderId",
             }],
             t$ExtendedFieldURI: {
-              PropertyTag: PidTagAttributeHidden,
+              PropertyTag: HiddenPidTag,
               PropertyType: "Boolean",
             },
           },
@@ -798,7 +798,7 @@ export class EWSAccount extends MailAccount {
                   FieldURI: "folder:DistinguishedFolderId",
                 }],
                 t$ExtendedFieldURI: {
-                  PropertyTag: PidTagAttributeHidden,
+                  PropertyTag: HiddenPidTag,
                   PropertyType: "Boolean",
                 },
               },
