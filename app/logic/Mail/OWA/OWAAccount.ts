@@ -526,8 +526,8 @@ export class OWAAccount extends MailAccount {
         }
       }
     }
-    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, addressbooks[0] == ab)).filter(a => a));
-    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(a => a));
+    accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(Boolean));
     return accounts;
   }
 

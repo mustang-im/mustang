@@ -830,8 +830,8 @@ export class EWSAccount extends MailAccount {
         }
       }
     }
-    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab)).filter(a => a));
-    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(a => a));
+    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(Boolean));
     return accounts;
   }
 
