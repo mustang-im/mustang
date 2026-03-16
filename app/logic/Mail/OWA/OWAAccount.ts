@@ -182,8 +182,9 @@ export class OWAAccount extends MailAccount {
     if (!haveAddressbook) {
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
       let contacts = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
+      let i = 0;
       for (let folder of contacts) {
-        let addressbook = this.createAddressbookAccount(folder);
+        let addressbook = this.createAddressbookAccount(folder, i++ == 0);
         await addressbook.save();
       }
     }
