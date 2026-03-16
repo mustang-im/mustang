@@ -537,7 +537,7 @@ export class OWAAccount extends MailAccount {
     let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
     addressbook.initFromMainAccount(this);
     if (!isMainAddressbook && folder.DisplayName) {
-      addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      addressbook.name = `${this.name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (folder.account) {
       addressbook.username = folder.account.username;
@@ -556,7 +556,7 @@ export class OWAAccount extends MailAccount {
     if (isMainCalendar) {
       calendar.useForInvitations = true;
     } else if (folder.DisplayName) {
-      calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      calendar.name = `${this.name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (folder.account) {
       calendar.username = folder.account.username;
