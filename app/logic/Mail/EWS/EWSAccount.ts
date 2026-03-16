@@ -698,14 +698,16 @@ export class EWSAccount extends MailAccount {
     }
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      for (let addressbook of this.createAddressbookAccounts(ensureArray(result.RootFolder.Folders.ContactsFolder))) {
+      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
+        let addressbook = this.createAddressbookAccount(folder);
         await addressbook.save();
         appGlobal.addressbooks.add(addressbook);
       }
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      for (let calendar of this.createCalendarAccounts(ensureArray(result.RootFolder.Folders.CalendarFolder))) {
+      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
+        let calendar = this.createCalendarAccount(folder);
         await calendar.save();
         appGlobal.calendars.add(calendar);
       }
@@ -783,7 +785,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let result = await this.callEWS(query);
-    let contacts = ensureArray(result.RootFolder.Folders.ContactsFolder);
+    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder);
     let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder);
     for (let account of this.dependentAccounts()) {
       if (account instanceof EWSAccount) {
@@ -818,7 +820,7 @@ export class EWSAccount extends MailAccount {
           if (result.Folders.ContactsFolder) {
             let folder = result.Folders.ContactsFolder;
             folder.account = account;
-            contacts.push(folder);
+            addressbooks.push(folder);
           }
           if (result.Folders.CalendarFolder) {
             let folder = result.Folders.CalendarFolder;
@@ -828,59 +830,51 @@ export class EWSAccount extends MailAccount {
         }
       }
     }
-    accounts.addAll(this.createAddressbookAccounts(contacts));
-    accounts.addAll(this.createCalendarAccounts(calendars));
+    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab)).filter(a => a));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal)).filter(a => a));
     return accounts;
   }
 
-  private createAddressbookAccounts(contacts: any[]): EWSAddressbook[] {
-    let accounts = [];
-    for (let folder of contacts) {
-      if (folder.ExtendedProperty.Value == "true") {
-        continue;
-      }
-      if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
-        continue;
-      }
-      let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-      addressbook.initFromMainAccount(this);
-      let isMainAddressbook = !folder.account && folder.DistinguishedFolderId == "contacts";
-      if (!isMainAddressbook && folder.DisplayName) {
-        addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
-      }
-      if (folder.account) {
-        addressbook.username = folder.account.username;
-      }
-      addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.push(addressbook);
+  private createAddressbookAccount(folder: any): EWSAddressbook | null {
+    if (folder.ExtendedProperty.Value == "true") {
+      return null;
     }
-    return accounts;
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
+    addressbook.initFromMainAccount(this);
+    let isMainAddressbook = !folder.account && folder.DistinguishedFolderId == "contacts";
+    if (!isMainAddressbook && folder.DisplayName) {
+      addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+    }
+    if (folder.account) {
+      addressbook.username = folder.account.username;
+    }
+    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return addressbook;
   }
 
-  private createCalendarAccounts(calendars: any[]): EWSCalendar[] {
-    let accounts = [];
-    for (let folder of calendars) {
-      if (folder.FolderClass != "IPF.Appointment") {
-        continue;
-      }
-      if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
-        continue;
-      }
-      let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-      calendar.initFromMainAccount(this);
-      let isMainCalendar = !folder.account && folder.DistinguishedFolderId == "calendar";
-      if (isMainCalendar) {
-        calendar.useForInvitations = true;
-      } else if (folder.DisplayName) {
-        calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
-      }
-      if (folder.account) {
-        calendar.username = folder.account.username;
-      }
-      calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-      accounts.push(calendar);
+  private createCalendarAccount(folder: any): EWSCalendar | null {
+    if (folder.FolderClass != "IPF.Appointment") {
+      return null;
     }
-    return accounts;
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+    calendar.initFromMainAccount(this);
+    let isMainCalendar = !folder.account && folder.DistinguishedFolderId == "calendar";
+    if (isMainCalendar) {
+      calendar.useForInvitations = true;
+    } else if (folder.DisplayName) {
+      calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+    }
+    if (folder.account) {
+      calendar.username = folder.account.username;
+    }
+    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return calendar;
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
