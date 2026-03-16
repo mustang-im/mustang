@@ -1,23 +1,26 @@
 {#if isExpanded}
-  {#if signed || encrypted}
-    <vbox>
-      <hbox class="signed key-{trustLevel} plain" on:click={() => isExpanded = false}>
-        <RoundButton
-          label={msg}
-          icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
-          iconSize="16px"
-          padding="3px"
-          border={false}
-          />
-        <div>{msg}</div>
-      </hbox>
-    </vbox>
-  {/if}
+  <vbox class="font-small">
+    {#if signed || encrypted}
+      <vbox class="signed key-{trustLevel} plain">
+        <hbox on:click={() => isExpanded = false}>
+          <RoundButton
+            label={title}
+            icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
+            iconSize="16px"
+            padding="3px"
+            border={false}
+            />
+          <div class="title">{title}</div>
+        </hbox>
+        <div class="msg">{msg}</div>
+      </vbox>
+    {/if}
 
-  <EncryptionKey short showIcon={false}
-    key={getPublicKeyForID($message.signed)}
-    person={$message.from.findPerson()}
-    bind:isExpanded={isExpanded} />
+    <EncryptionKey short showIcon={false}
+      key={getPublicKeyForID($message.signed)}
+      person={$message.from.findPerson()}
+      bind:isExpanded={isExpanded} />
+  </vbox>
 {/if}
 
 <script lang="ts">
@@ -43,12 +46,16 @@
   $: signed = $message.signed && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
-  $: msg = signed && encrypted
-      ? $t`This message was end-to-end-encrypted to you, and signed by ${$message.from?.nameOrEMail}. If - and only if - you have confidence in the certificate below, that means that this email was indeed written by ${$message.from?.nameOrEMail},
-      and only the recipients can read it.`
+  $: title = signed && encrypted
+      ? $t`End-to-end encrypted and signed`
       : signed
-        ? $t`This message was signed by ${$message.from?.nameOrEMail}. If - and only if - you have confidence in the certificate below, that means that this email was indeed written by ${$message.from?.nameOrEMail}. It was not encrypted, meaning that it was not protected from surveillance.`
-        : $t`This message was end-to-end-encrypted, but not signed. Only the recipients can read it, but there is no assurance about who wrote it.`;
+        ? $t`Signed`
+        : $t`End-to-end-encrypted, but not signed`;
+  $: msg = signed && encrypted
+      ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${$message.from?.nameOrEMail}. Only the recipients can read it, but the email provider cannot.`
+      : signed
+        ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${$message.from?.nameOrEMail}. It was not encrypted, meaning that it was not protected from surveillance.`
+        : $t`Only the recipients can read this email, but there is no assurance about who wrote it.`;
 </script>
 
 <style>
@@ -88,7 +95,14 @@
     background-color: blue;
     color: white;
   }
-  .signed div {
+  .signed .title {
     margin-inline-start: 16px;
+    margin-block-start: 1px;
+    font-weight: bold;
+    justify-self: baseline;
+  }
+  .signed .msg {
+    margin-block-start: 8px;
+    margin-inline-start: 4px;
   }
 </style>

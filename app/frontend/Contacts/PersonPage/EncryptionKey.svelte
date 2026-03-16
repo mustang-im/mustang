@@ -250,6 +250,8 @@
   .details .label {
     min-width: 8em;
     max-width: 8em;
+    display: flex;
+    align-items: start;
     flex-wrap: wrap;
     margin-inline-end: 8px;
     opacity: 65%;
@@ -258,10 +260,6 @@
     margin-inline-start: 32px;
     margin-inline-end: 8px;
     opacity: 65%;
-  }
-  .details label {
-    display: flex;
-    align-items: start;
   }
   .acceptance label {
     align-items: center;
@@ -278,6 +276,7 @@
   }
   .verification-code .label {
     padding-block: 7px;
+    max-width: max-content;
   }
   .verification-code .value {
     letter-spacing: 0.05em;
