@@ -44,7 +44,7 @@
             <Checkbox toggle
               bind:checked={key.useToSign}
               disabled={$key.obsolete}
-              label={$t`Sign emails that I send`} />
+              label={$t`Sign emails that I send *=> I will sign outgoing emails`} />
             <Checkbox toggle
                 bind:checked={key.encryptByDefault}
                 disabled={$key.obsolete}
@@ -102,12 +102,12 @@
         <hbox class="buttons">
           {#if !key.obsolete}
             <Button
-              label={$t`Export public…`}
+              label={$t`Export public part… *=> Export the public key`}
               icon={ExportPublicIcon}
               onClick={onExportPublic}
               />
             <Button
-              label={$t`Export secret…`}
+              label={$t`Backup secret… *=> Export a backup file for the secret encryption key`}
               icon={ExportPrivateIcon}
               onClick={onExportPrivate}
               />
