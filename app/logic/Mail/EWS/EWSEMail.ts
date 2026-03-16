@@ -146,10 +146,10 @@ export class EWSEMail extends EMail {
       SuppressReadReceipts: true,
     });
     request.addField("Message", "Flag", {
-      t$CompleteDate: null,
-      t$DueDate: null,
-      t$StartDate: null,
       t$FlagStatus: starred ? "Flagged" : "NotFlagged",
+      t$StartDate: null,
+      t$DueDate: null,
+      t$CompleteDate: null,
     }, "item:Flag");
     await this.folder.account.callEWS(request);
     await super.markStarred(starred);

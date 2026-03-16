@@ -414,10 +414,10 @@ export class EWSFolder extends Folder {
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
-        t$CompleteDate: null,
-        t$DueDate: null,
-        t$StartDate: null,
         t$FlagStatus: "Flagged",
+        t$StartDate: null,
+        t$DueDate: null,
+        t$CompleteDate: null,
       });
     }
     request.addField("Message", "IsRead", message.isRead);
