@@ -40,14 +40,13 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
-  // JPC remoted AbortControllers for all currently streaming notifications
+  // AbortControllers for all currently streaming notifications
   notificationAbort = new Set<AbortController>();
   // Subscription IDs for all subscribed notificaions
   subscriptions: string[] = [];
 
   constructor() {
     super();
-    assert(appGlobal.remoteApp.postHTTP, "EWS: Need backend");
   }
 
   newFolder(): EWSFolder {
@@ -279,17 +278,19 @@ export class EWSAccount extends MailAccount {
   /** @returns `Authorization` HTTP request header - usable only for a single call */
   async loginWithNTLM(): Promise<string> {
     assert(this.username && this.password, gt`Need username and password`);
-    let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
-    assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+    let response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: await appGlobal.remoteApp.createType1Message() }));
+    assert(/\bNTLM\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.headers.get("WWW-Authenticate"), this.username, this.password);
   }
 
-  createRequestOptions(authorizationHeader?: string): any {
+  createRequestOptions({ authorizationHeader, body, signal }: { authorizationHeader?: string, body?: string, signal?: AbortSignal }): any {
     let options: any = {
-      throwHttpErrors: false,
+      body,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
+      method: "POST",
+      signal,
     };
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2.isLoggedIn) {
@@ -303,7 +304,7 @@ export class EWSAccount extends MailAccount {
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     } else if (this.authMethod == AuthMethod.Unknown) {
-      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
+      // triggers 401, which gives us WWW-Authenticate HTTP response header, which lists the login methods supported by the server
     } else {
       throw new NotReached(`Unknown authentication method ${this.authMethod}`);
     }
@@ -323,11 +324,11 @@ export class EWSAccount extends MailAccount {
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
+      response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
     }
-    response.responseXML = this.parseXML(response.data);
+    response.responseXML = this.parseXML(await response.text());
     this.fatalError = null;
     if (response.status == 200) {
       try {
@@ -357,21 +358,21 @@ export class EWSAccount extends MailAccount {
         let authorizationHeader = await this.loginWithNTLM();
         return repeat({ authorizationHeader });
       } else if (this.authMethod == AuthMethod.Password) {
-        assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+        assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
       } else if (this.authMethod == AuthMethod.Unknown) {
-        if (/\bBasic\b/.test(response.WWWAuthenticate)) {
+        if (/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
           this.authMethod = AuthMethod.Password;
-        } else if (/\bNTLM\b/.test(response.WWWAuthenticate)) {
+        } else if (/\bNTLM\b/.test(response.headers.get("WWW-Authenticate"))) {
           this.authMethod = AuthMethod.NTLM;
         } else {
           throw this.fatalError = new ConnectError(null,
-            gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
+            gt`Unsupported authentication protocol(s): ${response.headers.get("WWW-Authenticate")}`);
         }
         return repeat();
       } else {
         throw this.fatalError = new ConnectError(null,
-          gt`Server supports authentication protocol(s): ${response.WWWAuthenticate}. Please check your account configuration.`);
+          gt`Server supports authentication protocol(s): ${response.headers.get("WWW-Authenticate")}. Please check your account configuration.`);
       }
     } else {
       this.throttle.waitForSecond(1);
@@ -381,25 +382,25 @@ export class EWSAccount extends MailAccount {
 
   async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
     let lastAttempt: number;
-    let abort: AbortController;
+    let abort = new AbortController();
+    let signal = abort.signal;
     do {
       try {
         lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
-        let requestXML = this.request2XML(request);
+        let body = this.request2XML(request);
         let data = "";
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
+        let response = await fetch(this.url, this.createRequestOptions({ body, signal }));
         if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
           let authorizationHeader = await this.loginWithNTLM();
-          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorizationHeader)); // Repeat the call
+          response = await fetch(this.url, this.createRequestOptions({ authorizationHeader, body, signal })); // Repeat the call
         }
         if (!response.ok) {
-          console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
+          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
-        abort = response.abort;
         this.notificationAbort.add(abort);
-        for await (let chunk of response.body) {
+        for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;

@@ -52,7 +52,6 @@ export class ActiveSyncAccount extends MailAccount {
   constructor() {
     super();
     this.policyKey = this.getStorageItem("policy_key");
-    assert(appGlobal.remoteApp.optionsHTTP, "ActiveSync: Need backend");
   }
 
   newFolder(): ActiveSyncFolder {
@@ -159,10 +158,10 @@ export class ActiveSyncAccount extends MailAccount {
    */
   async verifyLogin(): Promise<void> {
     let options: any = {
-      throwHttpErrors: false,
       headers: {
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
       },
+      method: "OPTIONS",
     };
     if (this.authMethod == AuthMethod.OAuth2) {
       this.oAuth2 ??= getOAuth2BuiltIn(this);
@@ -172,9 +171,9 @@ export class ActiveSyncAccount extends MailAccount {
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
-    let response = await appGlobal.remoteApp.optionsHTTP(this.url, options);
+    let response = await fetch(this.url, options);
     if (response.ok) {
-      let versions = (response.MSASProtocolVersions || "").split(",");
+      let versions = (response.headers.get("MS-ASProtocolVersions") || "").split(",");
       if (versions.includes("14.1")) {
         this.protocolVersion = versions.includes("16.1") ? "16.1" : "14.1";
         this.setStorageItem("protocolVersion", this.protocolVersion);
@@ -184,7 +183,7 @@ export class ActiveSyncAccount extends MailAccount {
         this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
+      throw new Error(`ActiveSync version(s) ${response.headers.get("MS-ASProtocolVersions")} not supported`);
     }
     if (response.status == 401) {
       const repeat = async () => {
@@ -200,9 +199,9 @@ export class ActiveSyncAccount extends MailAccount {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         await repeat();
         return;
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
+      } else if (!/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
         throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+          "Unsupported authentication protocol(s): " + response.headers.get("WWW-Authenticate"));
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
@@ -239,14 +238,16 @@ export class ActiveSyncAccount extends MailAccount {
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
     let heartbeat = aOptions.heartbeat ?? 0;
+    let wbxml = await request2WBXML({ [aCommand]: aRequest });
     let options: any = {
-      throwHttpErrors: false,
+      body: wbxml,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
-      timeout: heartbeat * 1000 + 25000, // extra timeout for Ping commands
+      method: "POST",
+      signal: AbortSignal.timeout(heartbeat * 1000 + 25000), // extra timeout for Ping commands
     };
     if (this.oAuth2) {
       if (!this.oAuth2.isLoggedIn) {
@@ -259,32 +260,34 @@ export class ActiveSyncAccount extends MailAccount {
     if (await this.policyKey) {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
     }
-    let wbxml = await request2WBXML({ [aCommand]: aRequest });
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+      response = await fetch(url, options);
     } finally {
       lock.release();
     }
     this.fatalError = null;
     if (response.ok) {
+      // response.bytes() not supported yet. This ctor does not copy, but creates another view.
+      let bytes = new Uint8Array(await response.arrayBuffer());
       // ActiveSync short cut for when there are no changes to sync
-      if (!response.data.length) {
+      if (!bytes.length) {
         return null;
       }
-      let wbxmljs = WBXML2JSON(response.data);
+      let wbxmljs = WBXML2JSON(bytes);
       if (wbxmljs.Status > 140 && wbxmljs.Status < 145 && aCommand != "Provision") {
         // We need to provision (or re-provision). Use a Promise so that
         // parallel calls wait for it too.
         this.policyKey = this.provision();
         options.headers["X-MS-PolicyKey"] = await this.policyKey;
-        response = appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
-        if (!response.data.length) {
+        response = await fetch(url, options);
+        bytes = new Uint8Array(await response.arrayBuffer());
+        if (!bytes.length) {
           return null;
         }
-        wbxmljs = WBXML2JSON(response.data);
+        wbxmljs = WBXML2JSON(bytes);
       }
       // The Ping command has its own status codes for some reason.
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
@@ -309,17 +312,17 @@ export class ActiveSyncAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
+      } else if (!/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
         throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+          "Unsupported authentication protocol(s): " + response.headers.get("WWW-Authenticate"));
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
       }
     }
     this.throttle.waitForSecond(1);
-    if (response.RetryAfter) {
-      throw new Error(`The server is overloaded. Please try again after ${response.RetryAfter} seconds.`);
+    if (response.headers.get("Retry-After")) {
+      throw new Error(`The server is overloaded. Please try again after ${response.headers.get("Retry-After")} seconds.`);
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
