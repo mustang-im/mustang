@@ -698,7 +698,8 @@ export class EWSAccount extends MailAccount {
     }
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
+      let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder).filter(folder => folder.ExtendedProperty.Value != "true");
+      for (let folder of addressbooks) {
         let addressbook = this.createAddressbookAccount(folder);
         await addressbook.save();
         appGlobal.addressbooks.add(addressbook);
@@ -785,7 +786,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let result = await this.callEWS(query);
-    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder);
+    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder).filter(folder => folder.ExtendedProperty.Value != "true");
     let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder);
     for (let account of this.dependentAccounts()) {
       if (account instanceof EWSAccount) {
@@ -836,9 +837,6 @@ export class EWSAccount extends MailAccount {
   }
 
   private createAddressbookAccount(folder: any): EWSAddressbook | null {
-    if (folder.ExtendedProperty.Value == "true") {
-      return null;
-    }
     if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
