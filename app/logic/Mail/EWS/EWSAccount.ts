@@ -846,7 +846,7 @@ export class EWSAccount extends MailAccount {
     addressbook.initFromMainAccount(this);
     let isMainAddressbook = !folder.account && folder.DistinguishedFolderId == "contacts";
     if (!isMainAddressbook && folder.DisplayName) {
-      addressbook.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      addressbook.name = `${this.name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (folder.account) {
       addressbook.username = folder.account.username;
@@ -868,7 +868,7 @@ export class EWSAccount extends MailAccount {
     if (isMainCalendar) {
       calendar.useForInvitations = true;
     } else if (folder.DisplayName) {
-      calendar.name = `${(folder.account || this).name} ${folder.DisplayName}`;
+      calendar.name = `${this.name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (folder.account) {
       calendar.username = folder.account.username;
