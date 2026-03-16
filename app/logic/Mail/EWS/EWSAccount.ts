@@ -707,7 +707,8 @@ export class EWSAccount extends MailAccount {
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
+      let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder).filter(folder => folder.FolderClass == "IPF.Appointment");
+      for (let folder of calendars) {
         let calendar = this.createCalendarAccount(folder);
         await calendar.save();
         appGlobal.calendars.add(calendar);
@@ -787,7 +788,7 @@ export class EWSAccount extends MailAccount {
     };
     let result = await this.callEWS(query);
     let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder).filter(folder => folder.ExtendedProperty.Value != "true");
-    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder);
+    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder).filter(folder => folder.FolderClass == "IPF.Appointment");
     for (let account of this.dependentAccounts()) {
       if (account instanceof EWSAccount) {
         let request = {
@@ -854,9 +855,6 @@ export class EWSAccount extends MailAccount {
   }
 
   private createCalendarAccount(folder: any): EWSCalendar | null {
-    if (folder.FolderClass != "IPF.Appointment") {
-      return null;
-    }
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
