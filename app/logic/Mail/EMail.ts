@@ -223,6 +223,11 @@ export class EMail extends Message {
     this.isDeleted = true;
     this.folder.messages.remove(this);
     await this.storage.deleteMessage(this);
+    let contentDeletes = new PromiseAllDone();
+    for (let contentStorage of this.folder.account.contentStorage) {
+      contentDeletes.add(contentStorage.deleteIt(this));
+    }
+    await contentDeletes.wait();
   }
 
   async deleteMessageOnServer() {
