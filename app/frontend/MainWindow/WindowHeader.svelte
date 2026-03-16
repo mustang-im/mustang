@@ -15,6 +15,16 @@
   </hbox>
   {#if !webMail}
     <hbox class="right">
+      <Button label={$t`New window`}
+        icon={NewWindowIcon} iconSize="14px" plain iconOnly classes="newwin"
+        onClick={onNewWindow}
+        />
+      <!--
+      <Button label={$t`Split window`}
+        icon={SplitWindowIcon} iconSize="14px" plain iconOnly classes="split"
+        onClick={onSplitWindow}
+        />
+      -->
       <Button label={$t`Minimize`}
         icon={MinimizeIcon} iconSize="16px" plain iconOnly classes="minimize"
         onClick={onMinimize}
@@ -45,6 +55,8 @@
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import MaximizeIcon from 'lucide-svelte/icons/square';
   import UnmaximizeIcon from 'lucide-svelte/icons/copy';
+  import SplitWindowIcon from 'lucide-svelte/icons/columns-2';
+  import NewWindowIcon from 'lucide-svelte/icons/squares-exclude';
   import XIcon from 'lucide-svelte/icons/x';
   import { getOSName } from "../Util/util";
   import { t } from "../../l10n/l10n";
@@ -70,6 +82,17 @@
       appGlobal.remoteApp.unminimizeMainWindow();
     }
     canMaximize = !canMaximize;
+  }
+
+  function onNewWindow() {
+    let startURL = new URL(window.location.href);
+    startURL.pathname = "";
+    let win = window.open(startURL.href, "_blank", "");
+    console.log("Opened window", win);
+    win.setAppState(appGlobal); // TODO
+  }
+
+  function onSplitWindow() {
   }
 
   function onCloseApp() {
@@ -103,15 +126,21 @@
   }
   .right :global(button) {
     color: white;
-    padding-inline-start: 8px;
-    padding-inline-end: 8px;
+    padding-inline: 8px;
   }
   .right :global(.maximize) {
-    padding-inline-start: 10px;
-    padding-inline-end: 10px;
+    padding-inline: 10px;
   }
   .right :global(.minimize svg) {
     margin-block-start: 8px; /* Find better icon */
+  }
+  .right :global(.split),
+  .right :global(.newwin) {
+    padding-inline: 4px;
+  }
+  .right :global(.split svg),
+  .right :global(.newwin svg) {
+    stroke-width: 1.8px;
   }
   .free {
     app-region: drag;
