@@ -178,15 +178,13 @@ export class OWAAccount extends MailAccount {
 
     // `listFolders()` will subscribe to new user-added calendars
 
+    // Create primary addressbook automatically
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      let contacts = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
-      let i = 0;
-      for (let folder of contacts) {
-        let addressbook = this.createAddressbookAccount(folder, i++ == 0);
-        await addressbook.save();
-      }
+      let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+      let addressbook = this.createAddressbookAccount(folder, true);
+      await addressbook.save();
     }
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -390,7 +388,8 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (folder.FolderClass == "IPF.Appointment" && !haveCalendar) {
+      } else if (folder.FolderClass == "IPF.Appointment" && folder.DistinguishedFolderId == "calendar" && !haveCalendar) {
+        // Create primary calendar automatically
         let calendar = this.createCalendarAccount(folder);
         appGlobal.calendars.add(calendar);
         await calendar.save();
