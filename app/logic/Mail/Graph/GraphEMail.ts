@@ -43,7 +43,7 @@ export class GraphEMail extends EMail {
     setPersons(this.to, json.toRecipients);
     setPersons(this.cc, json.ccRecipients);
     setPersons(this.bcc, json.bccRecipients);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     // Content, attachments etc will be parsed from RFC822 MIME
   }
@@ -147,12 +147,14 @@ export class GraphEMail extends EMail {
   }
 
   async download() {
-    let account = this.folder.account;
-    let mime = await account.graphCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
-    assert(mime, "EMail no longer on server");
-    this.mime = new TextEncoder().encode(mime);
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+    await this.downloadRunOnce.runOnce(async () => {
+      let account = this.folder.account;
+      let mime = await account.graphCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
+      assert(mime, "EMail no longer on server");
+      this.mime = new TextEncoder().encode(mime);
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   async markRead(read = true) {
@@ -218,16 +220,16 @@ export class GraphEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.pID);
-      let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.account.graphDelete(this.path);
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
-        trash.moveMessageHere(this);
+        await trash.moveMessageHere(this);
       } else {
         throw new NotReached("Unknown delete strategy");
       }
@@ -246,5 +248,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TGraphPersonUI
 }
 
 function getPersonUID(p: TGraphPersonUID): PersonUID {
-  return findOrCreatePersonUID(sanitize.string(p?.emailAddress.address, null), sanitize.label(p?.emailAddress.name, null));
+  return findOrCreatePersonUID(
+    sanitize.emailAddress(p?.emailAddress.address, null),
+    sanitize.nonemptylabel(p?.emailAddress.name, null));
 }

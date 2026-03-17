@@ -32,7 +32,7 @@ export class EventDecoder {
   transform(chunk: string, controller: TransformStreamDefaultController) {
     this.data += chunk;
     let lines = this.data.split(/\r\n?|\n/);
-    this.data = lines.pop() as string;
+    this.data = lines.pop();
     for (let line of lines) {
       if (!line) {
         this.event.data = this.event.data.slice(0, -1);

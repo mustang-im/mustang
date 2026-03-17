@@ -294,7 +294,7 @@ class FakeFolder extends Folder {
 
 class FakeEMail extends EMail {
   setFake(person: Person, pUID: PersonUID, meUID: PersonUID, lastReadTime: Date, emailNr: number) {
-    this.needToLoadBody = false;
+    this.loadedBody = true;
     this.id = emailNr + '@' + this.folder.account.emailAddress;
     this.sent = faker.date.past({ years: 0.1 });
     this.received = new Date(this.sent.getTime() + 500);

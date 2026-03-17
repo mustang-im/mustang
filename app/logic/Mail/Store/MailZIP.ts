@@ -2,7 +2,7 @@ import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
 import type { Folder } from "../Folder";
-import { Lock, type Locked } from "../../util/Lock";
+import { Lock, type Locked } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";

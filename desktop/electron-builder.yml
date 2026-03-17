@@ -35,6 +35,7 @@ mac:
     target: default
     arch:
       - universal
+  x64ArchFiles: '**/{bufferutil,utf-8-validate}.node'
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:

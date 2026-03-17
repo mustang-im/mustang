@@ -4,7 +4,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount"
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { ensureArray, NotImplemented, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -186,6 +186,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
+      batch = batch.filter((email) => !email.downloadRunOnce.running);
       let request = {
         Fetch: batch.map(email => ({
           Store: "Mailbox",
@@ -231,10 +232,12 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     return this.messages.find(m => m.serverID == id);
   }
 
-  async moveMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
+  async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
+    throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
+  }
+
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<ActiveSyncEMail>) {
+    assert(action == "move", gt`ActiveSync does not permit messages to be copied`);
     let request = {
       Move: messages.contents.map(msg => ({
         SrcMsgId: msg.serverID,
@@ -250,10 +253,6 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
         console.error(`ActiveSync MoveItems status ${response.Status}`);
       }
     }
-  }
-
-  async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
   }
 
   async addMessage(message: ActiveSyncEMail) {

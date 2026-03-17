@@ -3,7 +3,7 @@
     <hbox class="header">
       <hbox class="account-icon">
         {#if account.icon}
-          {account.icon}
+          <Icon data={account.icon} />
         {:else}
           <InboxIcon />
         {/if}
@@ -43,6 +43,7 @@
   import AccountBarM from "./AccountBarM.svelte";
   import RowButton from "./RowButton.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import Icon from "../../Shared/Icon.svelte";
   import InboxIcon from "lucide-svelte/icons/inbox";
 
   export let account: Account;

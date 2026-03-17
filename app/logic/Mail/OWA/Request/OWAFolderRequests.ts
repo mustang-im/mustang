@@ -1,6 +1,7 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 import type { ExchangePermission } from "../../EWS/EWSFolder";
+// import { IconIndexPidTag } from "../../EWS/EWSFolder";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
@@ -23,7 +24,7 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: IconIndexPidTag,
             PropertyType: "Integer",
           },*/
       }],
@@ -117,7 +118,7 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: IconIndexPidTag,
             PropertyType: "Integer",
           },*/
       }],

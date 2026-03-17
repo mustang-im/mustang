@@ -22,7 +22,6 @@
       icon={NewContactIcon}
       iconSize="22px" padding="9px" classes="large create"
       onClick={addPerson}
-      disabled={!$selectedAddressbook}
       />
   </hbox>
 </hbox>
@@ -47,8 +46,10 @@
   export let selectedAddressbook: Addressbook;
 
   function addPerson() {
+    let addressbook = selectedAddressbook ?? appGlobal.addressbooks.first;
+    assert(addressbook, $t`Please add an addressbook first`);
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
-    let person = selectedAddressbook.newPerson();
+    let person = addressbook.newPerson();
     person.name = "";
     persons.add(person);
     $selectedPerson = person;

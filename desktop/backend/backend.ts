@@ -38,9 +38,6 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 async function createSharedAppObject() {
   return {
     kyCreate,
-    optionsHTTP,
-    postHTTP,
-    streamHTTP,
     OWA,
     newOSNotification,
     isOSNotificationSupported,
@@ -213,70 +210,6 @@ export class HTTPFetchError extends Error {
       }
     }
   }
-}
-
-/**
- * Perform an OPTIONS request to check the ActiveSync version.
- * @param config ky config @see <https://github.com/sindresorhus/ky>
- */
-async function optionsHTTP(url: string, config: any) {
-  // Sadly OPTIONS is not directly supported by ky
-  config.method = 'OPTIONS';
-  let response = await ky(url, config);
-  return {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    WWWAuthenticate: response.headers.get("WWW-Authenticate"),
-    MSASProtocolVersions: response.headers.get("MS-ASPRotocolVersions"),
-    MSServerActiveSync: response.headers.get("MS-Server-ActiveSync"),
-  };
-}
-
-/**
- * @param responseType "text", "json", "formData", "blob", "arrayBuffer"
- *    @see <https://developer.mozilla.org/en-US/docs/Web/API/Response#instance_methods>
- * @param config ky config @see <https://github.com/sindresorhus/ky>
- */
-async function postHTTP(url: string, data: any, responseType: string, config: any) {
-  switch (config.headers['Content-Type']) {
-  case 'application/x-www-form-urlencoded':
-    config.body = new URLSearchParams(data);
-    break;
-  case 'application/json':
-    config.json = data;
-    break;
-  default:
-    config.body = data;
-    break;
-  }
-  let response = await ky.post(url, config);
-  return {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    data: await response[responseType](),
-    RetryAfter: response.headers.get("Retry-After"),
-    WWWAuthenticate: response.headers.get("WWW-Authenticate"),
-  };
-}
-
-/**
- * @param config ky config @see <https://github.com/sindresorhus/ky>
- */
-async function streamHTTP(url: string, data: any, config: any) {
-  let abort = new AbortController();
-  config.signal = abort.signal;
-  config.body = data;
-  let response = await ky.post(url, config);
-  return {
-    abort,
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    body: response.body.pipeThrough(new TextDecoderStream()),
-    WWWAuthenticate: response.headers.get("WWW-Authenticate"),
-  };
 }
 
 function newHTTPServer() {

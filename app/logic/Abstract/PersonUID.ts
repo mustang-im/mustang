@@ -55,14 +55,23 @@ export class PersonUID extends Observable {
     return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
   }
 
-  toString() {
+  get nameAndEMail(): string {
     return this.name + " <" + this.emailAddress + ">";
+  }
+  get nameOrEMail(): string {
+    return this.name || this.emailAddress;
+  }
+  toString() {
+    return this.nameOrEMail;
   }
 }
 
 const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
 
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
+  if (!emailAddress && !realname) {
+    return kDummyPerson;
+  }
   let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
   if (cached) {
     return cached;

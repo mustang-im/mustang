@@ -143,7 +143,7 @@ class Sanitize {
     if (!str) { // in case of fallback
       return haveError("URL is empty", unchecked, fallback);
     }
-    if (!allowedURLSchemes.find(scheme => str.startsWith(scheme))) {
+    if (!allowedURLSchemes.find(scheme => str.startsWith(scheme + ":") || scheme == "*")) {
       return haveError("URL scheme", unchecked, fallback);
     }
     //TODO security-check URL
@@ -203,7 +203,7 @@ class Sanitize {
       filename = filename.replace(this.regexpHostname_ASCII, "").trim();
     }
     if (!filename) {
-      return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
+      return haveError("Filename cannot have only punctuation and control characters", unchecked, fallback);
     }
     const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
     if (filename.length < 5 && kDeviceNames.includes(filename)) {
@@ -254,14 +254,22 @@ class Sanitize {
     }
   }
 
-  /**
-   * A value which should be shown to the user in the UI as label
-   */
   array(unchecked: [] | null | undefined, fallback: [] | null | Symbol = throwErrors): [] | null {
     if (unchecked && Array.isArray(unchecked)) {
       return unchecked;
     } else {
       return haveError("Not an array", unchecked, fallback);
+    }
+  }
+
+  /**
+   * A JS Object with property -> value
+   */
+  object(unchecked: Object | null | undefined, fallback: Object | null | Symbol = throwErrors): Object | null {
+    if (unchecked && typeof(unchecked) == "object") {
+      return unchecked;
+    } else {
+      return haveError("Not an object", unchecked, fallback);
     }
   }
 

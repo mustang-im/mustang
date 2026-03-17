@@ -9,8 +9,8 @@
         <vbox class="day-header header">
           <slot name="day-header" {day}>
             <vbox class="date-day">
-              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
-              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+              <hbox class="date">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</hbox>
+              <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
             </vbox>
           </slot>
           <vbox class="all-day-events">
@@ -40,7 +40,7 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;
@@ -152,7 +152,7 @@
     overflow-wrap: break-word;
   }
   .all-day-events {
-    margin: 10px -16px -10px -16px;
+    margin: 0px -1px -2px 0px;
     opacity: 85%;
   }
   .weekday {

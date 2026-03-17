@@ -28,7 +28,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { appGlobal } from "../../../logic/app";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -38,7 +38,7 @@
    /** Which identities to select from.
     * Default: all identities of all accounts
     * in */
-  export let identities: Collection<MailIdentity> = new ArrayColl(appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat());
+  export let identities: Collection<MailIdentity> = findAllIdentities();
   /** Allows the user to override the From address with a custom email address.
    * This allows for catch-all email addresses to be used as From: */
   export let fromAddress: string;

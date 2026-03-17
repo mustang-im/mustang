@@ -6,7 +6,7 @@ import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
+import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 import { assert, sleep, type URLString } from "../../util/util";
 import type { Session, Inviter, Invitation } from "sip.js";
 
@@ -54,7 +54,7 @@ export class SIPMeeting extends VideoConfMeeting {
     this.remotePhoneNumber = getInternationalPhoneNumber(
       sanitize.string(urlParsed.pathname), this.account.countryCode);
 
-    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Call ${this.remotePhoneNumber} at ${time}`;
     this.state = MeetingState.OutgoingCallConfirm;
   }
@@ -149,7 +149,7 @@ export class SIPMeeting extends VideoConfMeeting {
 
   onIncomingCall(invitation: Invitation) {
     this.invitation = invitation;
-    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
     this.state = MeetingState.IncomingCall;
     this.waitForState(SessionState.Terminated, () => this.callEnded());
@@ -177,10 +177,10 @@ export class SIPMeeting extends VideoConfMeeting {
           await this.invitation.reject();
         } else if (this.inviter) {
           console.log("inviter cancel");
-          this.inviter.cancel();
+          await this.inviter.cancel();
         }
       }
-      this.session.dispose();
+      await this.session.dispose();
     }
     console.log("hanging up");
     await super.hangup();

@@ -4,10 +4,10 @@ import { JMAPGroup } from "./JMAPGroup";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { TJMAPAddressbook } from "./TJMAPAddressbook";
 import type { TJMAPContact } from "./TJSContact";
-import type { TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
+import type { TJMAPChangeResponse, TJMAPGetResponse, TID } from "../../Mail/JMAP/TJMAPGeneric";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 export class JMAPAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-jmap";
@@ -15,6 +15,12 @@ export class JMAPAddressbook extends Addressbook {
   declare readonly persons: ArrayColl<JMAPPerson>;
   declare readonly groups: ArrayColl<JMAPGroup>;
   readonly deletions = new Set<string>();
+  /** ID in JMAP (because `.id` is the ID our database) */
+  jmapID: TID;
+  /** Primary addressbook for this account */
+  isDefault = false;
+  /** isSubscribed - if false, the user doesn't want to see it in the UI */
+  shouldShow = true;
 
   get account(): JMAPAccount {
     return this.mainAccount as JMAPAccount;
@@ -39,8 +45,12 @@ export class JMAPAddressbook extends Addressbook {
   }
 
   fromJMAP(jmap: TJMAPAddressbook) {
-    this.id = sanitize.nonemptystring(jmap.id);
-    this.name = sanitize.nonemptystring(jmap.name);
+    this.jmapID = sanitize.nonemptystring(jmap.id);
+    this.isDefault = sanitize.boolean(jmap.isDefault, false);
+    this.shouldShow = sanitize.boolean(jmap.isSubscribed, true);
+    if (!this.name || !this.isDefault) { // Default addressbook name = account name, as set by `initFromMainAccount()`
+      this.name = sanitize.nonemptystring(jmap.name);
+    }
   }
 
   async listContacts() {
@@ -48,7 +58,6 @@ export class JMAPAddressbook extends Addressbook {
     if (!this.account.isLoggedIn) {
       await this.account.login(false);
     }
-    // Reading from DB happens on startup, in `Addressbooks.ts readAddressbooks()`
 
     this.persons.isEmpty
       ? await this.listAllPersons()
@@ -81,7 +90,7 @@ export class JMAPAddressbook extends Addressbook {
           "ContactCard/query", {
             accountId: this.account.accountID,
             filter: {
-              inAddressBook: this.id,
+              inAddressBook: this.jmapID,
             },
             sort: [
               { property: "created" }
@@ -131,10 +140,9 @@ export class JMAPAddressbook extends Addressbook {
     let lock = await this.account.stateLock.lock();
     try {
       if (lock.wasWaiting && false) { // TODO always true
-        console.log("JMAP fetch changes for folder", this.name, "already in progress");
+        console.log("JMAP fetch changes for addressbook", this.name, "already in progress");
         return new ArrayColl();
       }
-      //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
         [
@@ -166,34 +174,38 @@ export class JMAPAddressbook extends Addressbook {
           "changed",
         ],
       ]);
-      //console.log("sync response", response);
 
-      let changes = response["changes"] as TJMAPChangeResponse;
+      let changes = response["changes"] as TJMAPChangeResponse<TJMAPContact>;
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPContact>;
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPContact>;
 
-      // Now, split the responses by folder
-      let addedResponseByAB = new Map<string, TJMAPContact[]>();
-      let changedResponseByAB = new Map<string, TJMAPContact[]>();
+      // Split the responses by addressbook: map Addressbook JMAP ID -> JMAP Contact
+      let addedByAB = new Map<string, TJMAPContact[]>();
+      let changedByAB = new Map<string, TJMAPContact[]>();
       let newPersonsOfThisAB = new ArrayColl<JMAPPerson>();
-      splitByAddressbook(addedResponse.list, addedResponseByAB);
-      splitByAddressbook(changedResponse.list, changedResponseByAB);
+      splitByAddressbook(addedResponse.list, addedByAB);
+      splitByAddressbook(changedResponse.list, changedByAB);
 
       let allAddressbooks = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       for (let addressbook of allAddressbooks) {
-        let removedPersons = await addressbook.parseRemovedPersons(changes.destroyed)
-        if (!addedResponseByAB.get(addressbook.id) && !changedResponseByAB.get(addressbook.id)) {
-          continue;
+        await addressbook.readContactsFromDB();
+        let removed = this.findMovedAway(changedResponse.list, addressbook);
+        let addedThisAB = addedByAB.get(addressbook.id);
+        let changedThisAB = changedByAB.get(addressbook.id);
+        if (!(addedThisAB || changedThisAB ||
+              removed.hasItems || changes.destroyed?.length)) {
+              continue;
         }
-        let addedResult = addressbook.parsePersonsList(addedResponseByAB.get(addressbook.id) ?? [], false);
-        let changedResult = addressbook.parsePersonsList(changedResponseByAB.get(addressbook.id) ?? []);
+        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed));
+        let addedResult = addressbook.parsePersonsList(addedThisAB ?? [], false);
+        let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);
         addedResult.newPersons.addAll(changedResult.newPersons);
-        //console.log(addressbook.name, "added persons", addedResult.newPersons.contents.map(p => p.subject));
-        //console.log(addressbook.name, "updates persons", changedResult.updatedPersons.contents.map(p => p.subject));
-        //console.log(addressbook.name, "removed persons", removedPersons.contents.map(p => p.name));
 
-        addressbook.persons.removeAll(removedPersons);
+        addressbook.persons.removeAll(removed);
         addressbook.persons.addAll(addedResult.newPersons);
+        for (let person of removed) {
+          await person.deleteLocally();
+        }
         await this.savePersons(changedResult.updatedPersons);
         await this.savePersons(addedResult.newPersons);
         if (this === addressbook) {
@@ -202,6 +214,7 @@ export class JMAPAddressbook extends Addressbook {
       }
 
       this.account.syncState.set("ContactCard", changes.newState);
+      await this.account.save();
       if (changes.hasMoreChanges) {
         lock.release();
         await this.fetchChangedPersonsForAllAddressbooks();
@@ -212,38 +225,51 @@ export class JMAPAddressbook extends Addressbook {
     }
   }
 
-  protected async parseRemovedPersons(personIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
-    let removedPersons = new ArrayColl<JMAPPerson>();
-    for (let removedID of personIDs) {
-      let person = this.getPersonByID(removedID);
-      if (!person) {
-        continue;
-      }
-      removedPersons.add(person);
-      await person.deleteLocally();
-    }
-    return removedPersons;
+  protected async parseRemovedPersons(jmapIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
+    return new ArrayColl<JMAPPerson>(jmapIDs
+      .map(jmapID => this.getPersonByJMAPID(jmapID))
+      .filter(ev => ev));
   }
 
-  protected parsePersonsList(msgs: TJMAPContact[], checkUpdates = true): UpdateResult<JMAPPerson> {
+  /**
+   * Find `persons` that were moved away from `addressbooks`.
+   *
+   * To handle copy of the same contact object to a second addressbook, and then deleting it from only one of the addressbooks,
+   * we need to check *all* addressbooks for *every* changed contact, even if the addressbook didn't change, because
+   * JMAP doesn't tell us about moves or removals of the second copy. :-(
+   * @return removed contacts. It's the caller's obligation to remove them from the addressbook
+   */
+  protected findMovedAway(persons: TJMAPContact[], addressbook: JMAPAddressbook): SetColl<JMAPPerson> {
+    let removed = new SetColl<JMAPPerson>();
+    for (let person of persons) {
+      let existing = addressbook.getPersonByJMAPID(person.id);
+      // added persons are handled by `addressbook.parsePersonsList(changedThisAB...`
+      if (existing && !person.addressBookIds[addressbook.jmapID]) {
+        removed.add(existing);
+      }
+    }
+    return removed;
+  }
+
+  protected parsePersonsList(persons: TJMAPContact[], checkUpdates = true): UpdateResult<JMAPPerson> {
     let newPersons = new ArrayColl<JMAPPerson>();
     let updatedPersons = new ArrayColl<JMAPPerson>();
-    for (let json of msgs) {
+    for (let json of persons) {
       let id = sanitize.nonemptystring(json.id);
       if (this.deletions.has(id)) {
         continue;
       }
-      let msg = checkUpdates && this.getPersonByID(id);
-      if (msg) {
-        msg.fromJMAP(json);
-        updatedPersons.add(msg);
+      let person = checkUpdates && this.getPersonByJMAPID(id);
+      if (person) {
+        person.fromJMAP(json);
+        updatedPersons.add(person);
       } else {
-        msg = this.newPerson();
-        msg.fromJMAP(json);
-        newPersons.add(msg);
+        person = this.newPerson();
+        person.fromJMAP(json);
+        newPersons.add(person);
       }
     }
-    return { newPersons: newPersons, updatedPersons: updatedPersons };
+    return { newPersons, updatedPersons };
   }
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
@@ -252,21 +278,23 @@ export class JMAPAddressbook extends Addressbook {
     }
   }
 
-  protected getPersonByID(id: string): JMAPPerson | undefined {
-    return this.persons.find(p => p.id == id);
+  protected getPersonByJMAPID(jmapID: string): JMAPPerson | undefined {
+    return this.persons.find(p => p.jmapID == jmapID);
   }
 
-  protected getGroupByID(id: string): JMAPGroup | undefined {
-    return this.groups.find(p => p.itemID == id);
+  protected getGroupByJMAPID(jmapID: string): JMAPGroup | undefined {
+    return this.groups.find(p => p.jmapID == jmapID);
   }
 
-  /*fromConfigJSON(json: any) {
+  fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
+    this.jmapID = sanitize.alphanumdash(json.jmapID);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
+    json.jmapID = this.jmapID;
     return json;
-  }*/
+  }
 }
 
 type UpdateResult<T> = { newPersons: ArrayColl<T>, updatedPersons: ArrayColl<T> }

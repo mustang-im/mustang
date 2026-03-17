@@ -27,13 +27,13 @@
           <LanguageDropDown bind:language={dateTimeFormat} on:change={() => catchErrors(onSaveDateTimeFormat)} />
         </hbox>
         <hbox class="sample">
-          {sampleDate.toLocaleString(dateTimeFormat, { year: "numeric", month: "2-digit", day: "2-digit" })}
+          {sampleDate.toLocaleString(dateTimeFormatDisplayed, { year: "numeric", month: "2-digit", day: "2-digit" })}
         </hbox>
         <hbox class="sample">
-          {sampleDate.toLocaleString(dateTimeFormat, { dateStyle: "long" })}
+          {sampleDate.toLocaleString(dateTimeFormatDisplayed, { dateStyle: "long" })}
         </hbox>
         <hbox class="sample">
-          {sampleDate.toLocaleString(dateTimeFormat, { hour: "numeric", minute: "numeric" })}
+          {sampleDate.toLocaleString(dateTimeFormatDisplayed, { hour: "numeric", minute: "numeric" })}
         </hbox>
       </vbox>
     </hbox>
@@ -41,7 +41,7 @@
 </vbox>
 
 <script lang="ts">
-  import { getUILocale, getUILocalePref, getDateTimeFormatPref, saveDateTimeFormat, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
+  import { getUILocale, getUILocalePref, getDateTimeLocale, getDateTimeLocalePref, saveDateTimeLocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
@@ -51,7 +51,8 @@
   import { catchErrors } from "../../Util/error";
 
   let language = getUILocalePref();
-  let dateTimeFormat = getDateTimeFormatPref();
+  let dateTimeFormat = getDateTimeLocalePref();
+  let dateTimeFormatDisplayed = getDateTimeLocale();
   const sampleDate = new Date(new Date().getFullYear() + 1, 0, 20, 13, 0, 0);
 
   async function onSaveLanguage() {
@@ -66,7 +67,8 @@
   }
 
   async function onSaveDateTimeFormat() {
-    saveDateTimeFormat(dateTimeFormat);
+    saveDateTimeLocale(dateTimeFormat);
+    dateTimeFormatDisplayed = getDateTimeLocale();
   }
 </script>
 

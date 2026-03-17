@@ -74,6 +74,12 @@ export class MailAccount extends TCPAccount {
     }
   }
 
+  /**
+   * Send the email purely on the protocol level,
+   * and save it in the Sent folder. Nothing else.
+   * All higher-level send preparations (signature, encryption etc.)
+   * are done in `ComposeActions.send()`.
+   */
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
   }
@@ -96,13 +102,14 @@ export class MailAccount extends TCPAccount {
     let folder = this.getSpecialFolder(SpecialFolder.Sent);
     let email = folder.newEMail();
     email.compose.generateMessageID();
-    email.needToLoadBody = false;
+    email.loadedBody = true;
     email.from.emailAddress = this.emailAddress;
     email.from.name = this.realname;
     return email;
   }
 
   async save(): Promise<void> {
+    await super.save();
     console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
     await this.storage?.saveAccount(this);
   }
@@ -116,6 +123,18 @@ export class MailAccount extends TCPAccount {
   isMyEMailAddress(emailAddress: string): boolean {
     return this.emailAddress == emailAddress ||
       this.identities.some(id => id.isEMailAddress(emailAddress));
+  }
+
+  /**
+   * @returns `MailIdentity` of *this* account, for the given email address.
+   * @see also global function `findIdentityForEMailAddress()`, which searches all accounts. */
+  findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+    for (let identity of this.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+    return null;
   }
 
   /** Get the `specialFolder` in this account. */

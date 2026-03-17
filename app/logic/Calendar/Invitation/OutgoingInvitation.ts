@@ -57,7 +57,7 @@ export class OutgoingInvitation {
     }
     let removed = unedited.participants.subtract(event.participants);
     // Use the original event when sending cancellations
-    unedited.outgoingInvitation.sendCancellationsTo(removed);
+    await unedited.outgoingInvitation.sendCancellationsTo(removed);
     let notify = this.changesNeedToNotify()
       ? event.participants
       : event.participants.subtract(unedited.participants);

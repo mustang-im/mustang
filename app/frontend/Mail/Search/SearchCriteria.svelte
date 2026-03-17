@@ -74,7 +74,7 @@
       <TagSelector tags={availableTags} selectedTags={search.tags} canAdd={false} />
     </vbox>
   {/if}
-  {#if appGlobal.emailAccounts.length > 1}
+  {#if showAccount && appGlobal.emailAccounts.length > 1}
     <Checkbox bind:checked={hasAccount} allowFalse={false} allowIndetermined={true}
       on:change={updateAccount}
       label={$t`${search.account?.name} account only`}>
@@ -131,6 +131,7 @@
   export let search: SearchEMail;
 
   export let showSearchTerm = true;
+  export let showAccount = true;
   export let searchMessages: Collection<EMail> = null;
 
   // enable/disable fine-grained controls

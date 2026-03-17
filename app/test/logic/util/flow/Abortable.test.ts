@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import { makeAbortable, ParallelAbortable, PriorityAbortable } from '../../../logic/util/Abortable';
-import { sleep } from '../../../logic/util/util';
+import { makeAbortable, ParallelAbortable, PriorityAbortable } from '../../../../logic/util/flow/Abortable';
+import { sleep } from '../../../../logic/util/util';
 
 function testSuccess(result = 5): Promise<number> {
   return new Promise((resolve, reject) => {

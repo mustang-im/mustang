@@ -8,7 +8,7 @@ import type { MeetAccount } from "../Meet/MeetAccount";
 import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
-import { Lock } from "../util/Lock";
+import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";

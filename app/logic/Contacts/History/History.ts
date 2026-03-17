@@ -3,7 +3,7 @@ import { Message } from "../../Abstract/Message";
 import type { EMail } from "../../Mail/EMail";
 import type { ChatMessage } from "../../Chat/Message";
 import { VideoConfMeeting } from "../../Meet/VideoConfMeeting";
-import { Event } from "../../Calendar/Event";
+import { Event, RecurrenceCase } from "../../Calendar/Event";
 import { File } from "../../Files/File";
 import { newSearchEMail } from "../../Mail/Store/setStorage";
 import { newSearchChat } from "../../Chat/AccountsList/ChatAccounts";
@@ -68,10 +68,15 @@ async function getChatMessages(person: Person, limit: number): Promise<Collectio
 }
 
 async function getCalendarEvents(person: Person, limit: number): Promise<Collection<Event>> {
+  let future1Week = new Date();
+  future1Week.setDate(future1Week.getDate() + 7);
   let events = new ArrayColl<Event>();
   for (let event of appGlobal.calendarEvents) {
     if (event.participants.hasItems &&
         event.participants.find(puid => puid.matchesPerson(person))) {
+      if (event.recurrenceCase == RecurrenceCase.Instance && event.startTime > future1Week) {
+        continue; // Don't show recurring events more than 1 week in the future
+      }
       events.add(event);
     }
   }

@@ -4,8 +4,8 @@ import { kMaxFetchCount, type GraphAccount } from "./GraphAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { type TGraphFolder, type TGraphEMail, TGraphEMailHeaderProperties } from "./TGraphMail";
-import { Semaphore } from "../../util/Semaphore";
-import { Lock } from "../../util/Lock";
+import { Semaphore } from "../../util/flow/Semaphore";
+import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, type URLString } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -221,6 +221,9 @@ export class GraphFolder extends Folder {
     let semaphore = new Semaphore(kMaxParallelCount);
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
+      if (msg.downloadRunOnce.running) {
+        continue;
+      }
       let lock = await semaphore.lock();
       (async () => {
         try {
@@ -230,7 +233,7 @@ export class GraphFolder extends Folder {
         } finally {
           lock.release();
         }
-      })();
+      })().catch(this.account.errorCallback);
     }
     return downloadedMsgs;
   }
@@ -297,39 +300,17 @@ export class GraphFolder extends Folder {
     this.messages.add(email as GraphEMail);
   }
 
-  async moveMessagesHere(messages: Collection<GraphEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("move", messages);
-  }
-
-  async copyMessagesHere(messages: Collection<GraphEMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("copy", messages);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<GraphEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<GraphEMail>) {
     for (let msg of messages) {
-      this.account.graphPost(msg.path + "/" + action, {
+      await this.account.graphPost(msg.path + "/" + action, {
         destinationId: this.id,
       });
     }
 
-    this.countTotal += messages.length;
-    let sourceFolder = messages.first.folder;
-    if (action == "move") {
-      sourceFolder.countTotal -= messages.length;
-      for (let sourceMsg of messages) {
-        await sourceMsg.deleteMessageLocally();
-      }
-    }
-
     await this.listChangedMessages();
     if (action == "move") {
-      sourceFolder.listChangedMessages();
+      let sourceFolder = messages.first.folder;
+      await sourceFolder.listChangedMessages();
     }
   }
 

@@ -1,5 +1,4 @@
 import { Folder, type SpecialFolder } from "../Folder";
-import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import type { Collection } from "svelte-collections";
@@ -53,12 +52,8 @@ export class SQLFolder extends Folder {
   static async saveProperties(folder: Folder, doLock = true) {
     let lock = doLock ? await folder.storageLock.lock() : null;
     try {
-      let jsonStr: string | null = null;
-      if ((folder as IMAPFolder).uidvalidity) {
-        let json = {} as any;
-        json.uidvalidity = (folder as IMAPFolder).uidvalidity;
-        jsonStr = JSON.stringify(json, null, 2);
-      }
+      let json = folder.toExtraJSON();
+      let jsonStr = Object.keys(json).length > 0 ? JSON.stringify(json, null, 2) : null;
       await (await getDatabase()).run(sql`
         UPDATE folder SET
           countTotal = ${folder.countTotal},
@@ -109,8 +104,7 @@ export class SQLFolder extends Folder {
     folder.syncState = typeof(row.syncState) == "number"
       ? sanitize.integer(row.syncState, null)
       : sanitize.string(row.syncState, null);
-    let json = sanitize.json(row.json, {});
-    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(json.uidvalidity, 0);
+    folder.fromExtraJSON(sanitize.json(row.json, {}));
     let accountID = sanitize.integer(row.accountID);
     assert(folder.account.dbID == accountID, "Folder: Account does not match");
     if (row.parent) {

@@ -49,9 +49,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { AuthMethod } from "../../../../logic/Abstract/Account";
-  import { OAuth2URLs } from "../../../../logic/Auth/OAuth2URLs";
-  import { OAuth2 } from "../../../../logic/Auth/OAuth2";
-  import { OWAAuth } from "../../../../logic/Auth/OWAAuth";
+  import { getOAuth2BuiltIn } from "../../../../logic/Auth/OAuth2Util";
   import { TLSSocketType } from "../../../../logic/Abstract/TCPAccount";
   import ProtocolSelector from "./ProtocolSelector.svelte";
   import PasswordChange from "../../Shared/PasswordChange.svelte";
@@ -138,14 +136,7 @@
       authError = new Error("Please enter the authentication method");
       throw authError;
     } else if (config.authMethod == AuthMethod.OAuth2) {
-      if (config.protocol == "owa") {
-        config.oAuth2 = new OWAAuth(config);
-      } else {
-        let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
-        if (oAuth) {
-          config.oAuth2 = new OAuth2(config, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret, oAuth.doPKCE);
-        }
-      }
+      config.oAuth2 ??= getOAuth2BuiltIn(config);
     } else {
       authError = null;
     }

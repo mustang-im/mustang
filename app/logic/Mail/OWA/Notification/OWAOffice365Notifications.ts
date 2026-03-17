@@ -84,7 +84,7 @@ export class OWAOffice365Notifications extends OWANotifications {
       clearTimeout(abortTimer);
       if (json?.ConnectionToken) {
         let url = this.account.url + URLPart`notificationchannel/abort?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        fetch(url, timerOptions);
+        await fetch(url, timerOptions);
       }
     }
   }

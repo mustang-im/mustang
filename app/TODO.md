@@ -1,5 +1,6 @@
 # Bugs
-* IMAP Message download race condition (see IMAPEmail)
+* Mail: Move multiple mails (desktop) - UI and backend buggy
+* Composer: Bulleted lists - Paragraphs vs. lines
 * Mobile
   * Composer
   * Contacts Person page
@@ -22,14 +23,14 @@
 * Calendar: Find identity #682
 
 # Polish
-* Account icons
 * Contacts History
   * Now bar
-  * Hide all recurring events more than 1 week in the future
   * Make icon clickable
 
 # Next
   * JMAP Calendar and Contacts
+    * Fix bugs
+    * Calendar: Recurrence
   * Graph Calendar and Contacts
   * PGP
   * SML
@@ -58,22 +59,18 @@
   * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
   * Setup mail
-    * After account delete: remove general panel
     * Scroll inside dialog, not whole window
 
 # Feedback
 ## Zucca
-* TB import: doppelte eigene Identity
-* Attachments einlesen mit email headers
-* Search server
-* CardDAV: Mehrere Addressbücher
-* CardDAV: "invalid string length" bei smartCollectionSync()
+* TB import: Duplicated own Identity
+* Attachments list: Fetch with email headers (not only during full download)
+* Mail: Search on server
 ## Elena
 * Clear profile
 * Debug dump of settings
 * Composer
   * PersonEntry: Delete key
-  * Remove added attachment (needs menu item)
   * Open attachment
 * Setup
   * OAuth2 login: Close window. Login button disabled.
@@ -111,15 +108,12 @@
   * Start with email setup, not selection screen
   * Don't exit setup
 * gmx.net / web.de unable to verify the first certificate on macOS 14.5
-* Contacts: Add (+) when "All" selected: add to personal addressbook
 * Demo: Files: Add Files for persons
 * Chat: selected person not shown
 * Mail: Get out of Folder settings mode
- ## Freshness
-* Account colors
+## Freshness
 * Icons for accounts: user-set
 * Pic for users, in identities
-* Unified inbox: Show account as tag or icon
 
 
 # WebApps

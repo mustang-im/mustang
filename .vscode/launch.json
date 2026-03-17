@@ -21,10 +21,20 @@
       "request": "attach",
       "type": "chrome",
       "webRoot": "${workspaceFolder}/desktop/src/renderer",
-      "timeout": 60000,
+      "timeout": 20000,
       "presentation": {
         "hidden": true
-      }
+      },
+    },
+    {
+      "name": "Attach to backend",
+      "type": "node",
+      "request": "attach",
+      "port": 9222,
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ],
   "compounds": [

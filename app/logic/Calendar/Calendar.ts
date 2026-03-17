@@ -52,6 +52,10 @@ export class Calendar extends Account {
   }
 
   async listEvents() {
+    await this.readEventsFromDB();
+  }
+
+  async readEventsFromDB() {
     if (!this.dbID) {
       await this.save();
     }
@@ -65,6 +69,7 @@ export class Calendar extends Account {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveCalendar(this);
   }
 

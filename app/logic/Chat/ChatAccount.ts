@@ -24,7 +24,7 @@ export class ChatAccount extends TCPAccount {
       await this.save();
     }
     if (this.rooms.isEmpty) {
-      SQLChatRoom.readAll(this);
+      await SQLChatRoom.readAll(this);
     }
   }
 
@@ -33,6 +33,7 @@ export class ChatAccount extends TCPAccount {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAccount(this);
   }
 

@@ -1,7 +1,7 @@
 import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
 import { appGlobal } from "../../app";
-import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
+import { PriorityAbortable, makeAbortable } from "../../util/flow/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getBaseDomainFromHost } from "../../util/netUtil";
 import { URLPart } from "../../../frontend/Util/util";
@@ -117,7 +117,9 @@ let ky;
 
 async function fetchText(url: URLString, abort: AbortController): Promise<string> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   let text = await makeAbortable(ky.get(url, {
     result: "text",
@@ -129,7 +131,9 @@ async function fetchText(url: URLString, abort: AbortController): Promise<string
 
 async function fetchJSON(url: URLString, resultMIMEType: string, abort: AbortController): Promise<any> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   let text = await makeAbortable(ky.get(url, {
     result: "json",

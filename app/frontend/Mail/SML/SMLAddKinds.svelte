@@ -4,21 +4,29 @@
 <vbox>
   <hbox class="title">{$t`Add`}</hbox>
   <hbox class="actions">
-    <Button
-      label={$t`Poll`}
-      icon={PollIcon}
-      onClick={addPoll}
-      />
-    <Button
-      label={$t`Meeting time poll`}
-      icon={MeetingTimePollIcon}
-      onClick={addMeetingTimePoll}
-      />
-    <Button
-      label={$t`Book me`}
-      icon={BookMeIcon}
-      onClick={addBookMe}
-      />
+    {#if account}
+      <Button
+        label={$t`Poll`}
+        icon={PollIcon}
+        onClick={addPoll}
+        />
+      <Button
+        label={$t`Meeting time poll`}
+        icon={MeetingTimePollIcon}
+        onClick={addMeetingTimePoll}
+        />
+      <Button
+        label={$t`Book me`}
+        icon={BookMeIcon}
+        onClick={addBookMe}
+        />
+    {:else}
+      <Button
+        label={$t`Create SML account`}
+        icon={PollIcon}
+        onClick={onRegister}
+        />
+    {/if}
   </hbox>
 </vbox>
 
@@ -32,6 +40,7 @@
   import MeetingTimePollIcon from "lucide-svelte/icons/calendar-clock";
   import BookMeIcon from "lucide-svelte/icons/calendar-check";
   import { showError } from "../../Util/error";
+  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ close: void }>();
@@ -41,24 +50,25 @@
 
   function addPoll() {
     sml = createPoll(identity);
-    registerSMLHTTP()
-      .catch(showError);
     close();
   }
 
   function addMeetingTimePoll() {
     sml = createMeetingTimePoll(identity);
-    registerSMLHTTP()
-      .catch(showError);
     close();
   }
 
   function addBookMe() {
     sml = createBookMe(identity);
-    registerSMLHTTP()
-      .catch(showError);
     close();
   }
+
+  function onRegister() {
+    registerSMLHTTP()
+      .catch(showError);
+  }
+
+  $: account = $identity.smlAccount;
 
   /**
    * Registers an SML HTTP account, if not yet done.
@@ -66,10 +76,10 @@
    * @warning Waits for email, so often takes minutes or hangs entirely. Do not `await` it.
    */
   async function registerSMLHTTP() {
-    let acc = SMLHTTPAccount.getOrCreateAccount(identity.emailAddress, identity.realname);
-    if (!acc.isLoggedIn) {
-      acc.mailAccount = identity.account;
-      await acc.login(); // waits for email, so often takes minutes or hangs entirely
+    assert(!account, "Already have an account");
+    account = await SMLHTTPAccount.getOrCreateAccount(identity);
+    if (!account.isLoggedIn) {
+      await account.login(); // waits for email, so often takes minutes or hangs entirely
     }
   }
 

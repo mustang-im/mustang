@@ -1,3 +1,4 @@
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
@@ -18,9 +19,10 @@ export class OAuth2ServerError extends OAuth2Error {
   codes: number[];
   details: any;
   consentRequired = false;
-  constructor(json: any) {
-    let msg = json?.error_description?.split(/[\r\n]/)[0].replace(/^\w+: /, "")
-      ?? json?.error?.replace("_", " ")
+  constructor(prefix: string, json: any) {
+    let msg = prefix + ": " +
+      sanitize.nonemptystring(json?.error_description, null)?.split(/[\r\n]/)[0].replace(/^\w+: /, "")
+      ?? sanitize.nonemptystring(json?.error, null)?.replace("_", " ")
       ?? "Login failed. Unknown OAuth2 error.";
     super(msg);
     // Microsoft

@@ -1,7 +1,9 @@
 <input type="file"
   bind:this={inputFileEl}
-  bind:files on:change={fileWasSelected}
+  bind:files
   accept={acceptFileTypes.join(",")}
+  on:change={onFileSelected}
+  on:cancel={onCancel}
   />
 
 <script lang="ts">
@@ -17,12 +19,17 @@
     });
   }
 
-  function fileWasSelected() {
+  function onFileSelected() {
     if (!files.length) {
       doneFunc(null);
       return;
     }
     doneFunc(files[0]);
+  }
+
+  function onCancel() {
+    doneFunc(null);
+    return;
   }
 
   let inputFileEl: HTMLInputElement;

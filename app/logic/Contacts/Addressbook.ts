@@ -30,15 +30,20 @@ export class Addressbook extends Account {
   }
 
   async listContacts() {
+    await this.readContactsFromDB();
+  }
+
+  async readContactsFromDB() {
     if (!this.dbID) {
       await this.save();
     }
     if (this.persons.isEmpty && this.groups.isEmpty) {
-      SQLGroup.readAll(this); // also reads persons
+      await SQLGroup.readAll(this); // also reads persons
     }
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAddressbook(this);
   }
 

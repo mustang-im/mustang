@@ -6,7 +6,7 @@ import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { kStandardPorts } from "./configInfo";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { getMX } from "./fetchConfig";
-import { PriorityAbortable, ParallelAbortable } from "../../util/Abortable";
+import { PriorityAbortable, ParallelAbortable } from "../../util/flow/Abortable";
 import { getBaseDomainFromHost } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";

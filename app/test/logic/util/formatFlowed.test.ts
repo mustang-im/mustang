@@ -1,4 +1,4 @@
-import { convertFormatFlowedToHTML, convertHTMLToFormatFlowed } from './formatFlowed';
+import { convertFormatFlowedToHTML, convertHTMLToFormatFlowed } from '../../../logic/util/formatFlowed';
 import markdownit from "markdown-it";
 import { convert as htmlToText } from "html-to-text";
 import formatHTML from 'html-formatter';

@@ -3,12 +3,12 @@ import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { kStandardPorts } from "./configInfo";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { appGlobal } from "../../app";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import JXON from "../../../../lib/util/JXON";
-import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
+import { PriorityAbortable, makeAbortable } from "../../util/flow/Abortable";
 import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
@@ -215,7 +215,7 @@ export async function exchangeAutoDiscoverV2JSON(domain: string, emailAddress: s
 }
 
 async function fetchV2AllProtocols(urlPrefix: URLString, abort: AbortController): Promise<ArrayColl<MailAccount>> {
-  let protocols = ["ews", "activesync"];
+  let protocols = ["ews", "activesync", "owa"];
   let results = await Promise.allSettled<MailAccount>(protocols.map(protocol =>
     fetchV2SingleProtocol(urlPrefix, protocol, abort)
   ));
@@ -232,6 +232,7 @@ async function fetchV2SingleProtocol(urlPrefix: URLString, protocol: string, abo
   let exchangeProtocol = sanitize.translate(protocol, {
     "ews": "Ews",
     "activesync": "ActiveSync",
+    "owa": "REST",
   });
   let json = await fetchJSON(urlPrefix + exchangeProtocol, abort);
   return readAutoDiscoverV2JSON(json, protocol);
@@ -244,18 +245,25 @@ function readAutoDiscoverV2JSON(json: any, protocol: string): MailAccount {
   }
   let url = json?.Url;
   assert(url, "No URL found");
+  url = sanitize.url(url, null, ["https"]);
+  assert(url, `Invalid URL found: <${url}>`);
   return newURLAccount(url, protocol, "autodiscover-json");
 }
 
 /** @param protocol Like `Account.protocol` */
 function newURLAccount(url: URLString, protocol: string, source: ConfigSource): MailAccount {
   assert(url.startsWith("https://"), "URL must be https:");
+  let urlObj = new URL(url);
+  if (urlObj.pathname == "/api") {
+    urlObj.pathname = "/owa/";
+  }
   let acc = newAccountForProtocol(protocol);
-  acc.url = url;
-  acc.hostname = new URL(acc.url).hostname;
+  acc.url = urlObj.href;
+  acc.hostname = urlObj.hostname;
   acc.port = 443;
   acc.tls = TLSSocketType.TLS;
-  acc.authMethod = OAuth2URLs.some(oauth => oauth.domains.includes(acc.hostname))
+  acc.oAuth2 = getOAuth2BuiltIn(acc);
+  acc.authMethod = acc.oAuth2
     ? AuthMethod.OAuth2
     : protocol == "ews"
       ? AuthMethod.Unknown
@@ -272,7 +280,9 @@ let ky;
  */
 async function fetchJSON(url: URLString, abort: AbortController): Promise<any> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   let params = {
     result: "json",
@@ -317,7 +327,9 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
  */
 async function fetchHTTP(url: URLString, params: any, abort: AbortController): Promise<Response> {
   if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
+    ky = await appGlobal.remoteApp.kyCreate({
+      timeout: 3000,
+    });
   }
   params = Object.assign({ throwHttpErrors: false }, params);
   return await makeAbortable(ky.post(url, params), abort);

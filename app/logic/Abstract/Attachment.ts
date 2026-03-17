@@ -1,7 +1,7 @@
 import { File as FileEntry } from "../Files/File";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { saveURLAsFile } from "../../frontend/Util/util";
+import { saveBlobAsFile, saveURLAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
 
@@ -97,10 +97,7 @@ export class Attachment extends Observable {
     await appGlobal.remoteApp.showFileInFolder(this.filepathLocal);
   }
   async saveFile() {
-    throw new NotImplemented();
-    let url = "file://" + this.filepathLocal;
-    console.log("url " + url);
-    saveURLAsFile(url, this.filename);
+    saveBlobAsFile(this.content);
   }
   async deleteFile() {
     throw new NotImplemented();

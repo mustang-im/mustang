@@ -1,5 +1,5 @@
-import { Lock } from './Lock';
-import { sleep } from './util';
+import { Lock } from '../../../../logic/util/flow/Lock';
+import { sleep } from '../../../../logic/util/util';
 import { expect, test } from 'vitest';
 
 class WithLock {

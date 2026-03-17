@@ -17,6 +17,7 @@
       <IdentitySelector bind:selectedIdentity={fromIdentity}
         bind:fromAddress={mail.from.emailAddress}
         bind:fromName={mail.from.name} />
+      <EncryptionButtons {mail} identity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         {#if !appGlobal.isMobile}
@@ -196,6 +197,7 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
@@ -213,7 +215,7 @@
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../../AppsBar/selectedApp";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -316,10 +318,8 @@
   async function onAddAttachment() {
     let file = await fileSelector.selectFile();
     if (!file) {
-      console.log("no file selected");
       return;
     }
-    console.log("Selected attachment file", file);
     mail.attachments.add(Attachment.fromFile(file));
   }
 
@@ -365,7 +365,7 @@
 
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
-    navigate(-1);
+    goBack();
   }
 
   let showSMLAdd = false;

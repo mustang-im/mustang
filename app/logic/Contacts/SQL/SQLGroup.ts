@@ -13,22 +13,24 @@ import { appGlobal } from "../../app";
 export class SQLGroup extends Group {
   static async save(group: Group) {
     assert(group.addressbook?.dbID, "Need address book ID to save the group");
+    let jsonStr = JSON.stringify(group.toExtraJSON(), null, 2);
     let lock = await group.storageLock.lock();
     try {
       if (!group.dbID) {
         let insert = await (await getDatabase()).run(sql`
           INSERT INTO "group" (
-            name, description, pID, addressbookID
+            name, description, pID, addressbookID, json
           ) VALUES (
             ${group.name}, ${group.description},
-            ${group.id}, ${group.addressbook?.dbID}
+            ${group.id}, ${group.addressbook?.dbID}, ${jsonStr}
           )`);
         group.dbID = insert.lastInsertRowid;
       } else {
         await (await getDatabase()).run(sql`
           UPDATE "group" SET
             name = ${group.name}, description = ${group.description},
-            pID = ${group.id}, addressbookID = ${group.addressbook?.dbID}
+            pID = ${group.id}, addressbookID = ${group.addressbook?.dbID},
+            json = ${jsonStr}
           WHERE id = ${group.dbID}
           `);
       }
@@ -83,7 +85,7 @@ export class SQLGroup extends Group {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
-          name, description, pID, addressbookID
+          name, description, pID, addressbookID, json
         FROM "group"
         WHERE id = ${dbID}
         `) as any;
@@ -92,6 +94,7 @@ export class SQLGroup extends Group {
     group.name = sanitize.label(row.name);
     group.description = sanitize.label(row.description, "");
     group.id = sanitize.string(row.pID, null);
+    group.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (group.addressbook) {
@@ -149,7 +152,7 @@ export class SQLGroup extends Group {
 
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        id, name, description, pID
+        id, name, description, pID, json
       FROM "group"
       WHERE addressbookID = ${addressbook.dbID}
       `) as any;

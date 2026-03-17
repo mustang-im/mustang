@@ -3,7 +3,6 @@ import type { EMail } from "../EMail";
 import { getBaseDomainFromURL, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import { SMLHTTPAccount } from "./SMLHTTPAccount";
 
 /**
  * Automatically answers registration email confirmations for the SML HTTP server.
@@ -15,8 +14,10 @@ export abstract class RegisterSMLProcessor extends SMLProcessor {
   async processSML(email: EMail, sml: any): Promise<void> {
     assert(sml.object?.["@type"] == "Account", "Not an account registration");
     let emailAddress = sanitize.emailAddress(sml.object.emailAddress);
-    assert(email.folder.account.isMyEMailAddress(emailAddress), "EMail address in registration does not match the email account");
-    let smlAccount = SMLHTTPAccount.getAccount(emailAddress);
+    assert(email.to.first.emailAddress == emailAddress, "EMail address in SML registration and in To: does not match");
+    let identity = email.folder.account.findIdentityForEMailAddress(emailAddress);
+    assert(identity, "EMail address in registration does not match the email account");
+    let smlAccount = identity.smlAccount;
     assert(smlAccount, "Ignoring registration for an account that we didn't request");
 
     let confirmURL = sanitize.url(sml.target);
@@ -27,6 +28,7 @@ export abstract class RegisterSMLProcessor extends SMLProcessor {
     let oAuth2Call = await fetch(confirmURL) as any;
     let oAuth2Response = await oAuth2Call.json();
     smlAccount.setAccessToken(sanitize.nonemptystring(oAuth2Response.access_token));
+    await smlAccount.save();
     await email.deleteMessage();
   };
 }

@@ -5,12 +5,12 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Locked } from "../../util/Lock";
+import type { Locked } from "../../util/flow/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
-import type { ImapFlow } from "../../../../desktop/backend/node_modules/imapflow";
+import type { ImapFlow, MailboxLockObject } from "../../../../desktop/backend/node_modules/imapflow";
 import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
@@ -41,11 +41,6 @@ export class IMAPFolder extends Folder {
   get lastModSeq(): bigint {
     return BigInt(this.syncState ?? 0n);
   }
-  set lastModSeq(val: bigint) {
-    assert(typeof (val) == "bigint", "IMAP Folder modseq must be a bigint");
-    this.syncState = String(sanitize.bigint(val));
-    this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
-  }
 
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
@@ -61,30 +56,24 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
-    let lockMailbox;
+  async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null): Promise<T> {
+    let lockMailbox: MailboxLockObject;
     let lock: Locked;
     try {
       let conn = connection ?? await this.account.connection(false, purpose);
       try {
-        if (doLock) {
+        this.account.log(this, conn, "open mailbox");
+        lock = await this.account.connectionLock.get(conn).lock();
+        lockMailbox = await conn.getMailboxLock(this.path);
+      } catch (ex) {
+        this.account.log(this, conn, "open mailbox failed", ex);
+        if (ex.code == "NoConnection") {
+          lockMailbox?.release();
+          lock?.release(); // reconnect() uses runOnce()
+          conn = await this.account.reconnect(conn, purpose);
+          this.account.log(this, conn, "open mailbox after reconnect");
           lock = await this.account.connectionLock.get(conn).lock();
           lockMailbox = await conn.getMailboxLock(this.path);
-        } else if (conn.mailbox.path == this.path) {
-          // already open
-        } else {
-          await conn.mailboxOpen(this.path);
-        }
-      } catch (ex) {
-        console.log("Opening IMAP folder failed", ex);
-        if (ex.code == "NoConnection") {
-          conn = await this.account.reconnect(conn, purpose);
-          if (doLock) {
-            lock ??= await this.account.connectionLock.get(conn).lock();
-            lockMailbox ??= await conn.getMailboxLock(this.path);
-          } else {
-            await conn.mailboxOpen(this.path);
-          }
           // Re-try only once (to open mailbox)
         } else {
           throw ex;
@@ -92,6 +81,7 @@ export class IMAPFolder extends Folder {
       }
       return await imapFunc(conn);
     } catch (ex) {
+      this.account.log(this, null, "error", ex);
       if (ex.responseText) {
         throw new IMAPCommandError(ex, ex.responseText
           .replace("Error in IMAP command", "IMAP")
@@ -102,6 +92,7 @@ export class IMAPFolder extends Folder {
     } finally {
       lock?.release();
       lockMailbox?.release();
+      this.account.log(this, null, "released lock");
     }
   }
 
@@ -120,7 +111,7 @@ export class IMAPFolder extends Folder {
         await this.storage.saveFolderProperties(this);
       }
       let newMsgs: ArrayColl<IMAPEMail>;
-      if (await this.account.hasCapability("CONDSTORE")) {
+      if (await this.account.hasCapability("CONDSTORE") && this.lastModSeq) {
         newMsgs = await this.listChangedMessages();
       } else {
         newMsgs = await this.listAllUnknownMessages();
@@ -227,7 +218,9 @@ export class IMAPFolder extends Folder {
         envelope: true,
         flags: true,
       };
+      this.account.log(this, conn, "fetchMessageList", range);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
+      let modseq: bigint;
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.envelope || this.deletions.has(msgInfo.uid)) {
           continue;
@@ -241,8 +234,9 @@ export class IMAPFolder extends Folder {
           msg.fromFlow(msgInfo);
           newMessages.add(msg);
         }
-        this.updateModSeq(msgInfo.modseq);
+        modseq = msgInfo.modseq
       }
+      await this.updateModSeq(modseq);
     }, ConnectionPurpose.Fetch);
     return { newMessages, updatedMessages };
   }
@@ -255,6 +249,7 @@ export class IMAPFolder extends Folder {
         flags: true,
         //threadId: true,
       };
+      this.account.log(this, conn, "fetchFlags", range);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.flags || this.deletions.has(msgInfo.uid)) {
@@ -275,6 +270,7 @@ export class IMAPFolder extends Folder {
   protected async fetchUIDList(range: any, connection?: ImapFlow): Promise<ArrayColl<number>> {
     let ids: number[];
     await this.runCommand(async (conn) => {
+      this.account.log(this, conn, "fetchUIDList", range);
       ids = await conn.search(range, { uid: true });
     }, ConnectionPurpose.Fetch, connection);
     return new ArrayColl(ids);
@@ -293,9 +289,9 @@ export class IMAPFolder extends Folder {
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<Collection<IMAPEMail>> {
-    await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);
+    await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     return newMsgs;
   }
 
@@ -317,9 +313,11 @@ export class IMAPFolder extends Folder {
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
       let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount);
+      downloadingMsgs = downloadingMsgs.filter((msg) => !msg.downloadRunOnce.running);
       needMsgs.removeAll(downloadingMsgs);
       let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
+        this.account.log(this, conn, "downloadMessages", emails.contents.map(e => e.id).join(", "));
         let msgInfos = await conn.fetch({ uid: uids }, {
           uid: true,
           size: true,
@@ -331,7 +329,7 @@ export class IMAPFolder extends Folder {
         }, { uid: true });
         for await (let msgInfo of msgInfos) {
           try {
-            if (this.deletions.has(msgInfo.uid)) {
+            if (!msgInfo.envelope || this.deletions.has(msgInfo.uid)) {
               continue;
             }
             let msg = this.getEMailByUID(msgInfo.uid);
@@ -339,7 +337,7 @@ export class IMAPFolder extends Folder {
               continue;
             } else if (msg) {
               msg.fromFlow(msgInfo);
-              this.updateModSeq(msgInfo.modseq);
+              await this.updateModSeq(msgInfo.modseq);
               await msg.parseMIME();
               await msg.saveCompleteMessage();
               downloadedMsgs.add(msg);
@@ -412,12 +410,14 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  updateModSeq(modseq: bigint) {
-    if (typeof (modseq) != "bigint") {
+  async updateModSeq(modseq: bigint) {
+    if (!modseq) {
       return;
     }
+    assert(typeof (modseq) == "bigint", "IMAP Folder modseq must be a bigint");
     if (modseq > this.lastModSeq) {
-      this.lastModSeq = modseq;
+      this.syncState = String(sanitize.bigint(modseq));
+      await this.storage.saveFolderProperties(this);
     }
   }
 
@@ -469,10 +469,11 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * number of emails in the folder changed */
-  async countChanged(newCount: number, oldCount: number): Promise<void> {
+  async countChanged(newCount: number, oldCount: number, connection: ImapFlow): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
     if (hasChanged) {
+      this.account.log(this, connection, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
       await this.getNewMessages();
     }
   }
@@ -487,6 +488,7 @@ export class IMAPFolder extends Folder {
     let query = uid && this.getEMailByUID(uid)
       ? { uid: uid }
       : { seq: seq }; // needs to happen on the same IMAP connection where we got the seq number from
+    this.account.log(this, connection, "notify: message flags changed", "uid", uid, "seq", seq, "found email UID", uid);
     let { updatedMessages } = await this.fetchFlags(query, {}, connection);
     await this.saveMsgUpdates(updatedMessages);
   }
@@ -494,10 +496,12 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number, connection: ImapFlow): Promise<void> {
+    this.account.log(this, connection, "notify: message deleted", "seq", seq);
+
     // We need to map from msg sequence number to UID
     // Ask server to list all known messages (as UID) from 1 msg before seq to seq.
     // (whereas `seq` is now the message after (!) the deleted msg,
-    // given that seq are order numbers are therefore get re-assigned on delete.)
+    // given that seq are order numbers and therefore get re-assigned on delete.)
     // This should return exactly 2 messages (unless we're at the end or start).
     // Any UIDs between those 2 UIDs are deleted messages.
     // We should purge them from our cache.
@@ -510,45 +514,26 @@ export class IMAPFolder extends Folder {
     // needs to happen on the same IMAP connection where we got the seq number from
     let remainingUIDs = await this.fetchUIDList({ seq: (seq - 1) + ":" + seq }, connection);
     if (remainingUIDs.length != 2) {
+      this.account.log(this, connection, "newest message deleted", "TODO handle this");
       return; // TODO Handle start and end
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
     let deletedMsgs = this.messages.filterOnce(msg => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
-      //console.log(`Deleted msg ${deletedMsg.subject}`);
+      this.account.log(this, connection, "Deleted msg", deletedMsg.subject);
       await deletedMsg.deleteMessageLocally();
     }
   }
 
-  async moveMessagesHere(messages: Collection<IMAPEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    let sourceFolder = messages.first.folder;
-    sourceFolder.countTotal -= messages.length;
-    this.countTotal += messages.length;
-    for (let sourceMsg of messages) {
-      await sourceMsg.deleteMessageLocally();
-    }
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    await sourceFolder.runCommand(async conn => {
-      await conn.messageMove(ids, this.path, { uid: true });
-    });
-    await this.listNewMessages();
-  }
-
-  async copyMessagesHere(messages: Collection<IMAPEMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    this.countTotal += messages.length;
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<IMAPEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let sourceFolder = messages.first.folder;
     let ids = messages.contents.map(msg => msg.uid).join(",");
     await sourceFolder.runCommand(async conn => {
-      await conn.messageCopy(ids, this.path, { uid: true });
+      this.account.log(this, conn, action, "message from", sourceFolder.id, ids);
+      await conn["message" + actionVerb](ids, this.path, { uid: true });
     });
-    await this.listNewMessages();
   }
 
   async addMessage(message: EMail) {
@@ -677,5 +662,15 @@ export class IMAPFolder extends Folder {
     let conn = await this.account.connection();
     let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
     await response.next();
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.uidvalidity = sanitize.integer(json.uidvalidity, 0);
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.uidvalidity = this.uidvalidity;
+    return json;
   }
 }

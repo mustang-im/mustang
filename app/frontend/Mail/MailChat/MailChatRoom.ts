@@ -16,6 +16,6 @@ export class MailChatRoom extends ChatRoom {
     this.lastMessage = messages.last;
   }
   async sendMessage(message: UserChatMessage): Promise<void> {
-    this.account.send(message);
+    await this.account.send(message);
   }
 }

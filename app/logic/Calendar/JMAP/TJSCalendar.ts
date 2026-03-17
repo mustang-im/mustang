@@ -1,6 +1,8 @@
 import type { TID, TInteger, TUTCDateTime } from "../../Mail/JMAP/TJMAPGeneric";
 
 export interface TJMAPCalendarEvent extends TJSCalendarEvent {
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJMAPCalendarEvent>;
   id: TID;
   /** Only set if this is a server-generated recurrence instance.
    * The ID of the recurring event that this was generated from. */
@@ -34,7 +36,7 @@ type TDuration = string;
 /** SignedDuration: Duration with optional +/- sign prefix */
 type TSignedDuration = string;
 /** TimeZoneId: IANA timezone name or custom identifier */
-type TTimeZoneID = string;
+export type TTimeZoneID = string;
 /**
  * PatchObject: Unordered set of patches using JSON Pointer paths
  * Keys are JSON Pointer paths (implicitly prefixed with /)
@@ -93,11 +95,9 @@ interface TJSCalendarEventBase {
   /** Timezone of recurrenceId (required if recurrenceId is set) */
   recurrenceIdTimeZone?: TTimeZoneID | null;
   /** Rules generating recurrence dates */
-  recurrenceRules?: TJSCalendarRecurrenceRule[];
-  /** Rules removing recurrence dates */
-  excludedRecurrenceRules?: TJSCalendarRecurrenceRule[];
+  recurrenceRule?: TJSCalendarRecurrenceRule;
   /** Overrides for specific recurrence instances */
-  recurrenceOverrides?: Record<TLocalDateTime, TPatchObject | boolean>;
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarEventBase>;
   /** Mark excluded dates in recurrence */
   excluded?: boolean;
 
@@ -128,8 +128,8 @@ interface TJSCalendarEventBase {
   // Time Zone Properties (4.7)
   /** Default timezone for floating times */
   timeZone?: TTimeZoneID;
-  /** Custom timezone definitions */
-  timeZones?: Record<TTimeZoneID, TJSCalendarTimeZone>;
+  /** timezone of the end time */
+  endTimeZone?: TTimeZoneID;
 }
 
 /**
@@ -139,6 +139,8 @@ interface TJSCalendarEventBase {
  */
 export interface TJSCalendarEvent extends TJSCalendarEventBase {
   "@type": "Event";
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarEvent>;
   /** Event start date/time */
   start: TLocalDateTime | TUTCDateTime;
   /** Event duration (default: "PT0S") */
@@ -154,6 +156,8 @@ export interface TJSCalendarEvent extends TJSCalendarEventBase {
  */
 export interface TJSCalendarTask extends TJSCalendarEventBase {
   "@type": "Task";
+  /** Overrides for specific recurrence instances */
+  recurrenceOverrides?: Record<TLocalDateTime, TJSCalendarTask>;
   /** Task due date/time */
   due?: TLocalDateTime | TUTCDateTime;
   /** Task start date/time */
@@ -164,8 +168,6 @@ export interface TJSCalendarTask extends TJSCalendarEventBase {
   percentComplete?: TInteger;
   /** Task progress status */
   progress?: "needs-action" | "in-process" | "completed" | "failed" | "cancelled" | string;
-  /** When progress was last updated */
-  progressUpdated?: TUTCDateTime;
 }
 
 /**
@@ -201,10 +203,6 @@ export interface TJSCalendarLocation {
   description?: string;
   /** Location types from IANA registry */
   locationTypes?: Record<string, true>;
-  /** Relation to event timing: "start" or "end" */
-  relativeTo?: "start" | "end" | string;
-  /** Timezone for this location */
-  timeZone?: TTimeZoneID;
   /** Geographic coordinates as "geo:" URI */
   coordinates?: string;
   /** Links associated with this location */
@@ -233,8 +231,6 @@ export interface TJSCalendarLink {
   "@type": "Link";
   /** URI to fetch the resource */
   href: string;
-  /** Content-ID for embedded resources */
-  cid?: string;
   /** Media type of the resource */
   contentType?: string;
   /** Size in octets when fully decoded */
@@ -301,7 +297,7 @@ export type TJSCalendarParticipationStatus =
  */
 export interface TJSCalendarRecurrenceRule {
   /** Recurrence frequency */
-  frequency: "yearly" | "monthly" | "weekly" | "daily" | "hourly" | "minutely" | "secondly";
+  frequency: TJSCalendarRecurrenceFrequency;
   /** When to stop recurring */
   until?: TLocalDateTime | TUTCDateTime;
   /** Maximum occurrences */
@@ -309,7 +305,7 @@ export interface TJSCalendarRecurrenceRule {
   /** Interval between occurrences (default: 1) */
   interval?: TInteger;
   /** Days of week (mo, tu, we, th, fr, sa, su) */
-  byDay?: (string | { day: string; nthOfPeriod?: TInteger })[];
+  byDay?: { day: string; nthOfPeriod?: TInteger }[];
   /** Days of month (1-31, or -1 to -31 for reverse) */
   byMonthDay?: TInteger[];
   /** Months (1-12) */
@@ -333,6 +329,15 @@ export interface TJSCalendarRecurrenceRule {
   /** Skip rule */
   skip?: "omitted" | string;
 }
+
+export type TJSCalendarRecurrenceFrequency =
+  | "yearly"
+  | "monthly"
+  | "weekly"
+  | "daily"
+  | "hourly"
+  | "minutely"
+  | "secondly";
 
 /**
  * Alert: Represents a notification or alarm
@@ -373,34 +378,6 @@ interface TJSCalendarAbsoluteTrigger {
   "@type": "AbsoluteTrigger";
   /** Absolute trigger time */
   when: TUTCDateTime;
-}
-
-/**
- * TimeZone: Custom timezone definition
- */
-export interface TJSCalendarTimeZone {
-  /** Timezone name */
-  name?: string;
-  /** Timezone standard abbreviation */
-  standard?: TJSCalendarTimeZoneRule[];
-  /** Daylight saving rules */
-  daylight?: TJSCalendarTimeZoneRule[];
-}
-
-/**
- * TimeZoneRule: Rules for timezone transitions
- */
-interface TJSCalendarTimeZoneRule {
-  /** Start of rule */
-  start?: TLocalDateTime;
-  /** UTC offset */
-  offsetFromUTC?: TSignedDuration;
-  /** Daylight saving offset */
-  daylightSavings?: TSignedDuration;
-  /** Recurrence rules for transitions */
-  recurrenceRules?: TJSCalendarRecurrenceRule[];
-  /** Timezone name */
-  tzName?: string;
 }
 
 /**

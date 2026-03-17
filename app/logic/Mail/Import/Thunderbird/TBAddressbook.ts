@@ -16,7 +16,7 @@ export class ThunderbirdAddressbook extends Addressbook {
     entryErrorCallback: (ex: Error) => void): Promise<ThunderbirdAddressbook> {
     //console.log("Reading ", name, "file", dbFilename);
     let ab = newAddressbookForProtocol("addressbook-local");
-    ab.id = "tb-" + dbFilename.replace(/\..*/, "ä.").replace(/[^a-zA-Z0-9\-]/g, "");
+    ab.id = "tb-" + dbFilename.replace(/\..*/, "").replace(/[^a-zA-Z0-9\-]/g, "");
     ab.name = name;
 
     let db = await this.getDatabase(profile, dbFilename);

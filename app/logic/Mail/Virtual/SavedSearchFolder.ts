@@ -80,7 +80,7 @@ export class SavedSearchFolder extends Folder {
 
   async deleteIt() {
     let disableDelete = this.disableDelete();
-    assert(!disableDelete, disableDelete ?? "Cannot delete");
+    assert(!disableDelete, disableDelete || "Cannot delete");
     savedSearchFolders.remove(this);
     saveSavedSearches();
   }
@@ -99,13 +99,13 @@ export class SavedSearchFolder extends Folder {
     throw new Error(`${this.name} is a saved search. You cannot move messages here.`);
   }
   async copyMessagesHere(messages: Collection<EMail>) {
-    throw new Error(`${this.name} is a saved search. You cannot move messages here.`);
+    throw new Error(`${this.name} is a saved search. You cannot copy messages here.`);
   }
   async moveFolderHere(folder: Folder) {
-    throw new Error(`${this.name} is a saved search. You cannot move messages here.`);
+    throw new Error(`${this.name} is a saved search. You cannot move folders here.`);
   }
   async createSubFolder(name: string): Promise<Folder> {
-    throw new Error(`${this.name} is a saved search. You cannot move messages here.`);
+    throw new Error(`${this.name} is a saved search. You cannot create subfolders.`);
   }
 }
 

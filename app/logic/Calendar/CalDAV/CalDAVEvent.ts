@@ -65,6 +65,7 @@ export class CalDAVEvent extends Event {
         filename,
       });
       this.url = new URL(filename, this.calendar.calendarURL).href;
+      this.originalICal = iCal;
     }
     await super.saveToServer();
   }

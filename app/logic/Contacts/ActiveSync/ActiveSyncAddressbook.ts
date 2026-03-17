@@ -4,7 +4,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSyn
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 

@@ -33,6 +33,11 @@ export class JSONEMail {
     json.plaintext = email.rawText;
     json.html = email.rawHTMLDangerous;
 
+    json.signed = email.signed;
+    json.wasEncrypted = email.wasEncrypted;
+    json.mustEncrypt = email.mustEncrypt;
+    json.shouldEncrypt = email.shouldEncrypt;
+
     this.saveWritableProps(email, json);
     this.saveRecipients(email, json);
     json.attachments = this.saveAttachments(email);
@@ -137,6 +142,11 @@ export class JSONEMail {
         email.html = html;
       }
     }
+    email.signed = sanitize.alphanumdash(json.signedPublicKeyID, null);
+    email.wasEncrypted = sanitize.boolean(json.wasEncrypted, false);
+    email.shouldEncrypt = sanitize.boolean(json.shouldEncrypt, false);
+    email.mustEncrypt = sanitize.boolean(json.mustEncrypt, false);
+
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
     this.readAttachments(email, json);
@@ -226,9 +236,9 @@ export class JSONEMail {
     if (!json) {
       return null;
     }
-    let addr = sanitize.emailAddress(json.emailAddress, kDummyPerson.emailAddress);
-    let name = sanitize.label(json.name, null);
-    return findOrCreatePersonUID(addr, name);
+    return findOrCreatePersonUID(
+      sanitize.emailAddress(json.emailAddress, null),
+      sanitize.nonemptylabel(json.name, null));
   }
 
   protected static readAttachments(email: EMail, emailJSON: any): void {

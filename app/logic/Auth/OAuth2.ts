@@ -5,12 +5,12 @@ import type { OAuth2UI } from "./UI/OAuth2UI";
 import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordLocalStorage";
-import { appGlobal } from "../app";
+import { production } from "../build";
 import { notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { RunOnce } from "../util/flow/RunOnce";
 import { assert, type URLString } from "../util/util";
 import pkceChallenge from "pkce-challenge";
-import { production } from "../build";
 
 /**
  * Implements login via OAuth2
@@ -47,6 +47,7 @@ export class OAuth2 extends WebBasedAuth {
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Tab;
   protected ui: OAuth2UI | null = null;
+  protected runOnce = new RunOnce();
 
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
@@ -152,7 +153,7 @@ export class OAuth2 extends WebBasedAuth {
   /** clearLogin(), and also actively log out from the server.
    * The latter is currently not implemented */
   async logout(): Promise<void> {
-    this.reset();
+    await this.reset();
   }
 
   /** Forgets the current login and deletes the refresh token */
@@ -160,7 +161,7 @@ export class OAuth2 extends WebBasedAuth {
     this.stop();
     this.accessToken = undefined;
     this.refreshToken = undefined;
-    this.deleteRefreshTokenFromStorage();
+    await this.deleteRefreshTokenFromStorage();
   }
 
   get isLoggedIn(): boolean {
@@ -202,53 +203,57 @@ export class OAuth2 extends WebBasedAuth {
    * @throws OAuth2Error
    */
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
-    params.scope = this.scope;
-    params.client_id = this.clientID;
-    if (this.clientSecret) {
-      params.client_secret = this.clientSecret;
-    }
-    if (this.doPKCE && params.grant_type == "authorization_code") {
-      assert(!!this.codeVerifierPKCE, "Missing code verifier");
-      params.code_verifier = this.codeVerifierPKCE;
-    }
+    await this.runOnce.runOnce(async () => {
+      params.scope = this.scope;
+      params.client_id = this.clientID;
+      if (this.clientSecret) {
+        params.client_secret = this.clientSecret;
+      }
+      if (this.doPKCE && params.grant_type == "authorization_code") {
+        assert(!!this.codeVerifierPKCE, "Missing code verifier");
+        params.code_verifier = this.codeVerifierPKCE;
+      }
+      console.log("OAuth2", this.account.name, "get new access token", tokenURL, params);
 
-    let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-        ...additionalHeaders,
-      },
-      timeout: 3000,
-      throwHttpErrors: false,
+      let response = await fetch(tokenURL, {
+        body: new URLSearchParams(params),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+          ...additionalHeaders,
+        },
+        method: "POST",
+        signal: AbortSignal.timeout(3000),
+      });
+      let data = await response.json();
+      if (data.error) {
+        throw new OAuth2ServerError(this.account.name, data);
+      }
+      if (!data.access_token) {
+        throw new OAuth2Error(`${this.account.name}: OAuth2: No access token`);
+      }
+      this.accessToken = sanitize.nonemptystring(data.access_token);
+      if (data.id_token) {
+        this.idToken = sanitize.nonemptystring(data.id_token);
+        if (this.idTokenCallback) {
+          // Allows to set `this.account.username`, needed by `storeRefreshToken()`
+          this.idTokenCallback(this.idToken, this);
+        }
+      }
+      if (data.refresh_token) {
+        this.refreshToken = sanitize.nonemptystring(data.refresh_token);
+        await this.storeRefreshToken(this.refreshToken);
+      }
+      if (data.expires_in) {
+        let seconds = sanitize.integer(data.expires_in);
+        if (seconds) {
+          this.refreshInSeconds(seconds - 5);
+          let expiresAt = new Date();
+          expiresAt.setSeconds(expiresAt.getSeconds() + seconds);
+          this.expiresAt = expiresAt;
+        }
+      }
     });
-    let data = response.data;
-    if (data.error) {
-      throw new OAuth2ServerError(data);
-    }
-    if (!data.access_token) {
-      throw new OAuth2Error(data);
-    }
-    this.accessToken = data.access_token;
-    if (data.id_token) {
-      this.idToken = data.id_token;
-      if (this.idTokenCallback) {
-        // Allows to set `this.account.username`, needed by `storeRefreshToken()`
-        this.idTokenCallback(this.idToken, this);
-      }
-    }
-    if (data.refresh_token) {
-      this.refreshToken = data.refresh_token;
-      await this.storeRefreshToken(this.refreshToken);
-    }
-    if (data.expires_in) {
-      let seconds = parseInt(data.expires_in);
-      if (seconds) {
-        this.refreshInSeconds(seconds - 5);
-        let expiresAt = new Date();
-        expiresAt.setSeconds(expiresAt.getSeconds() + seconds);
-        this.expiresAt = expiresAt;
-      }
-    }
     return this.accessToken;
   }
 
@@ -300,7 +305,7 @@ export class OAuth2 extends WebBasedAuth {
     if (authCode) {
       return authCode;
     } else {
-      throw new OAuth2ServerError(urlParams);
+      throw new OAuth2ServerError(this.account.name, urlParams);
     }
   }
 
@@ -375,6 +380,6 @@ export class OAuth2 extends WebBasedAuth {
   protected get storageKey(): string {
     let host = new URL(this.tokenURL).host.replaceAll(".", "-");
     let username = this.account.username.replace(/@/, "-").replaceAll(".", "-");
-    return `oauth2.refreshToken.${host}.${username}`;
+    return `oauth2refresh.${host}.${username}.${this.account.id}`;
   }
 }

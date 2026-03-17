@@ -1,9 +1,9 @@
 import { MailAccount } from "../MailAccount";
 import { MailIdentity } from "../MailIdentity";
-import { AuthMethod } from "../../Abstract/Account";
+import { AuthMethod, type Account } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
@@ -25,8 +25,8 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Semaphore } from "../../util/Semaphore";
-import { Throttle } from "../../util/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
@@ -51,6 +51,7 @@ export class OWAAccount extends MailAccount {
    * In future it might be possible to perform requests from the front end?
    */
   authorizationHeader: string | undefined;
+  /** requests only work after the login form has been successfully submitted */
   @notifyChangedProperty
   hasLoggedIn = false;
   protected notifications: OWANotifications;
@@ -140,9 +141,7 @@ export class OWAAccount extends MailAccount {
    */
   protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        this.oAuth2 = new OWAAuth(this);
-      }
+      this.oAuth2 ??= new OWAAuth(this);
       await this.oAuth2.login(interactive);
     } else if (!await this.testLoggedIn()) {
       let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
@@ -179,25 +178,14 @@ export class OWAAccount extends MailAccount {
 
     // `listFolders()` will subscribe to new user-added calendars
 
+    // Create primary addressbook automatically
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      let isMainAB = true;
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      for (let ab of response) {
-        // Exclude internal contacts folders.
-        if (ab.IsReadOnly || !ab.FolderId?.Id) {
-          continue;
-        }
-        let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
-        addressbook.initFromMainAccount(this);
-        if (!isMainAB) {
-          addressbook.name = `${this.name} ${ab.DisplayName}`;
-        }
-        addressbook.folderID = ab.FolderId.Id;
-        appGlobal.addressbooks.add(addressbook);
-        addressbook.save();
-        isMainAB = false;
-      }
+      let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+      let addressbook = this.createAddressbookAccount(folder, true);
+      appGlobal.addressbooks.add(addressbook);
+      await addressbook.save();
     }
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -247,8 +235,17 @@ export class OWAAccount extends MailAccount {
     if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
     }
-    assert(email.folder?.id, "Need folder to save the sent email in");
-    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
+    let folder = email.folder as OWAFolder;
+    assert(folder?.id, "Need folder to save the sent email in");
+    assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
+    if (folder.account.mainAccount) {
+      let mainAccount = folder.account.mainAccount as OWAAccount;
+      let permissions = (await folder.getPermissions()).find(permissions => permissions.emailAddress == mainAccount.emailAddress);
+      if (!permissions.exchangePermissions.CanCreateItems) {
+        folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as OWAFolder;
+      }
+    }
+    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
     request.addField("Message", "Body", {
@@ -283,7 +280,7 @@ export class OWAAccount extends MailAccount {
     if (email.replyTo) {
       addRecipients(request, "ReplyTo", [email.replyTo]);
     }
-    request.addField("Message", "From", { Name: email.from.name, EmailAddress: email.from.emailAddress }, "message:From");
+    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
     addRecipients(request, "ToRecipients", email.to.contents);
     addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
@@ -401,15 +398,9 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (folder.FolderClass == "IPF.Appointment" && !haveCalendar) {
-        let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-        calendar.initFromMainAccount(this);
-        if (folder.DistinguishedFolderId == "calendar") {
-          calendar.useForInvitations = true;
-        } else {
-          calendar.name = `${this.name} ${folder.DisplayName}`;
-        }
-        calendar.folderID = folder.FolderId.Id;
+      } else if (folder.DistinguishedFolderId == "calendar" && !haveCalendar) {
+        // Create primary calendar automatically
+        let calendar = this.createCalendarAccount(folder);
         appGlobal.calendars.add(calendar);
         await calendar.save();
       }
@@ -475,7 +466,8 @@ export class OWAAccount extends MailAccount {
       let inbox = this.inbox as OWAFolder;
       let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
       inbox.messages.addAll(newMessages);
-      inbox.downloadMessages(newMessages);
+      inbox.downloadMessages(newMessages)
+        .catch(this.errorCallback);
       inbox.dirty = false; // probably
     }
   }
@@ -518,6 +510,75 @@ export class OWAAccount extends MailAccount {
     }
   }
 
+  get mayHaveSubAccounts(): boolean {
+    return true;
+  }
+
+  async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
+    let accounts = await super.listPossibleSubAccounts();
+    if (this.mainAccount) {
+      return accounts;
+    }
+    let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+    let addressbooks = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
+    let result = await this.callOWA(owaFindFoldersRequest(true));
+    let calendars = result.RootFolder.Folders.filter(folder => folder.FolderClass == "IPF.Appointment");
+    for (let account of this.dependentAccounts()) {
+      if (account instanceof OWAAccount) {
+        let result = await this.callOWA(owaSharedFolderRequest(["contacts", "calendar"], account.username));
+        for (let folder of result.ResponseMessages.Items.filter(folder => folder.ResponseClass == "Success").map(folder => folder.Folders[0])) {
+          folder.account = account; // passed to creation functions below
+          if (folder.DistinguishedFolderId == "contacts") {
+            addressbooks.push(folder);
+          }
+          if (folder.DistinguishedFolderId == "calendar") {
+            calendars.push(folder);
+          }
+        }
+      }
+    }
+    accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.account)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.account)).filter(Boolean));
+    return accounts;
+  }
+
+  private createAddressbookAccount(folder: any, isMainAddressbook: boolean, account?: OWAAccount): OWAAddressbook | null {
+    assert(!folder.IsReadOnly && folder.FolderId?.Id, "Need writable addressbook");
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
+    addressbook.initFromMainAccount(this);
+    if (!isMainAddressbook && folder.DisplayName) {
+      addressbook.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    }
+    if (account) {
+      addressbook.username = account.username;
+    }
+    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return addressbook;
+  }
+
+  private createCalendarAccount(folder: any, account?: OWAAccount): OWACalendar | null{
+    assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+    calendar.initFromMainAccount(this);
+    let isMainCalendar = !account && folder.DistinguishedFolderId == "calendar";
+    if (isMainCalendar) {
+      calendar.useForInvitations = true;
+    } else if (folder.DisplayName) {
+      calendar.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    }
+    if (account) {
+      calendar.username = account.username;
+    }
+    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return calendar;
+  }
+
   /**
    * Used by the sharing UI to identify whether this user has access to any of
    * the specified known folders of another user given their email address,
@@ -548,7 +609,7 @@ export class OWAAccount extends MailAccount {
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);
-    account.save();
+    await account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
     return account;

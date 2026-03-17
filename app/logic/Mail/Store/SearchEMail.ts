@@ -17,8 +17,16 @@ import { SetColl, type ArrayColl } from "svelte-collections";
 export class SearchEMail extends Observable {
   @notifyChangedProperty
   account: MailAccount | null = null;
+  _folder: Folder | null = null;
   @notifyChangedProperty
-  folder: Folder | null = null;
+  folderID: string | undefined;
+  get folder(): Folder | null {
+    return (this.folderID && (this._folder ??= this.account?.findFolder(folder => folder.id == this.folderID))) ?? null;
+  }
+  set folder(folder: Folder | null) {
+    this._folder = folder;
+    this.folderID = folder?.id;
+  }
 
   @notifyChangedProperty
   isOutgoing: boolean | null = null;
@@ -82,7 +90,8 @@ export class SearchEMail extends Observable {
 
     this.includesPerson = findPerson(json.includesPersonEMail);
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
-    this.folder = this.account?.findFolder(folder => folder.id == json.folderID) ?? null;
+    this.folderID = sanitize.nonemptystring(json.folderID, null);
+    this._folder = null;
     this.tags.replaceAll(sanitize.array(json.tags, [])?.map(name => getTagByName(name)));
   }
 
@@ -103,7 +112,7 @@ export class SearchEMail extends Observable {
       sentDateMax: this.sentDateMax?.toISOString(),
       includesPersonEMail: this.includesPerson?.emailAddresses.first?.value ?? null,
       accountID: this.account?.id ?? this.folder?.account?.id,
-      folderID: this.folder?.id,
+      folderID: this.folderID,
       tags: this.tags?.contents.map(tag => tag.name),
     };
   }
@@ -155,8 +164,9 @@ export class SearchEMail extends Observable {
     if (this.sentDateMax && !(this.sentDateMax.getTime() >= email.sent.getTime())) {
       return false;
     }
-    if (this.bodyText && !email.rawText?.includes(this.bodyText) && // TODO `.text`? Avoid triggering a full load
-        !email.subject.includes(this.bodyText)) {
+    if (this.bodyText && // TODO `.text`? Avoid triggering a full load
+        !email.rawText?.toLowerCase().includes(this.bodyText.toLowerCase()) &&
+        !email.subject.toLowerCase().includes(this.bodyText.toLowerCase())) {
       return false;
     }
     if (this.tags.hasItems) {

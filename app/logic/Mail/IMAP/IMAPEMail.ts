@@ -1,14 +1,13 @@
 import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
+import { ConnectionPurpose } from "./IMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
-import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { appGlobal } from "../../app";
+import { findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ConnectionPurpose } from "./IMAPAccount";
 
 export class IMAPEMail extends EMail {
   declare folder: IMAPFolder;
@@ -29,34 +28,37 @@ export class IMAPEMail extends EMail {
   }
 
   async download() {
-    let msgInfo: any;
-    try {
-      msgInfo = await this.folder.runCommand(async (conn) => {
-        return await conn.fetchOne(this.uid + "", {
-          uid: true,
-          size: true,
-          threadId: true,
-          envelope: true,
-          source: true,
-          flags: true,
-        }, { uid: true });
-      }, ConnectionPurpose.Display);
-    } catch (ex) {
-      if (ex.message == "IMAP UID FETCH: Invalid uidset") {
+    await this.downloadRunOnce.runOnce(async () => {
+      let msgInfo: any;
+      try {
+        msgInfo = await this.folder.runCommand(async (conn) => {
+          this.folder.account.log(this.folder, conn, "download email", this.uid, this.subject);
+          return await conn.fetchOne(this.uid + "", {
+            uid: true,
+            size: true,
+            threadId: true,
+            envelope: true,
+            source: true,
+            flags: true,
+          }, { uid: true });
+        }, ConnectionPurpose.Display);
+      } catch (ex) {
+        if (ex.message == "IMAP UID FETCH: Invalid uidset") {
+          await this.disappeared();
+          return;
+        } else {
+          throw ex;
+        }
+      }
+      if (!msgInfo.envelope || this.folder.deletions.has(msgInfo.uid)) {
         await this.disappeared();
         return;
-      } else {
-        throw ex;
       }
-    }
-    if (!msgInfo.envelope) {
-      await this.disappeared();
-      return;
-    }
-    this.fromFlow(msgInfo);
-    this.mime ??= msgInfo.source; // Temp HACK when `downloadComplete` == true, but mime is not there
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      this.fromFlow(msgInfo);
+      this.mime ??= msgInfo.source; // Temp HACK when `downloadComplete` == true, but mime is not there
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromFlow(msgInfo: any) {
@@ -77,17 +79,21 @@ export class IMAPEMail extends EMail {
     this.threadID = sanitize.string(env.threadId, null); // Only if server supports OBJECTID or X-GM-EXT-1 IMAP extension
     if (env.from?.length && env.from[0]?.address) {
       let firstFrom = env.from[0];
-      this.from = findOrCreatePersonUID(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
+      this.from = findOrCreatePersonUID(
+        sanitize.emailAddress(firstFrom.address, null),
+        sanitize.nonemptylabel(firstFrom.name, null));
     } else {
-      this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
+      this.from = kDummyPerson;
     }
     setPersons(this.to, env.to);
     setPersons(this.cc, env.cc);
     setPersons(this.bcc, env.bcc);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
-    this.mime = msgInfo.source;
+    if (msgInfo.source) {
+      this.mime = msgInfo.source;
+    }
   }
 
   /** Can happen when another client deleted the email and we didn't get the news yet. */
@@ -178,6 +184,7 @@ export class IMAPEMail extends EMail {
   async setFlagServer(name: string, set = true) {
     this.flagsChanging = true;
     await this.folder.runCommand(async (conn) => {
+      this.folder.account.log(this.folder, conn, set ? "set" : "remove" + " email flag", this.uid, name, this.subject);
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
       } else {
@@ -195,21 +202,22 @@ export class IMAPEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       if (!this.uid) {
         return;
       }
       this.folder.deletions.add(this.uid);
-      let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.runCommand(async (conn) => {
+          this.folder.account.log(this.folder, conn, "delete email flag", this.uid, this.subject);
           await conn.messageDelete(this.uid, { uid: true });
         });
       } else if (strategy == DeleteStrategy.MoveToTrash) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
-        trash.moveMessageHere(this);
+        await trash.moveMessageHere(this);
       } else if (strategy == DeleteStrategy.Flag) {
         await this.setFlagServer("\\Deleted", true);
       } else {

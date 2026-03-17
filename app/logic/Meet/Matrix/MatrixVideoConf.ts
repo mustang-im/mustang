@@ -57,7 +57,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
   }
 
   async answer() {
-    this._call.answer();
+    await this._call.answer();
     await super.answer();
   }
 

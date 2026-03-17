@@ -2,7 +2,7 @@ import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { SpecificError, AbstractFunction, assert } from "../util/util";
+import { SpecificError, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -123,6 +123,15 @@ export class Account extends Observable {
     this.workspace = main.workspace;
     this.username = main.username;
   }
+  /** Checks the available server resources and lists all possible sub-accounts that
+   * a) could be found automatically and
+   * b) are not yet `dependentAccounts()`. */
+  async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
+    return new ArrayColl<Account>();
+  }
+  get mayHaveSubAccounts(): boolean {
+    return false;
+  }
 
   /** The cookie store to use when loading this account. For `<webview partition="persist:...">` */
   get webSessionID(): string | null {
@@ -137,7 +146,6 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
-    throw new AbstractFunction();
   }
 
   /** Saves the config in this account and its dependent accounts to disk. */
@@ -212,7 +220,7 @@ function findFreeAccountID(): string {
   let allAccounts = getAllAccounts();
 
   for (let i = ++lastID; true; i++) {
-    let id = "account" + i;
+    let id = "account" + i + Math.floor(Math.random() * 100);
     if (allAccounts.find(acc => acc.id == id) || usedIDs.has(id)) {
       continue;
     }
@@ -224,7 +232,7 @@ function findFreeAccountID(): string {
 export function getAllAccounts(): Collection<Account> {
   let allAccounts = new ArrayColl<Account>();
   allAccounts.addAll(appGlobal.emailAccounts);
-  allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filter(o => !!o));
+  allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filterOnce(o => !!o));
   allAccounts.addAll(appGlobal.chatAccounts);
   allAccounts.addAll(appGlobal.addressbooks);
   allAccounts.addAll(appGlobal.calendars);

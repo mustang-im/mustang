@@ -11,10 +11,14 @@ import { CalendarShareCombinedPermissions } from "../../Calendar/Calendar";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, NotReached, ensureArray } from "../../util/util";
-import { gt } from "../../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
+
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/77844470-22ca-43fb-993d-c53e96cf9cd6>
+export const MessageFlagsPidTag = "0x0E07";
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/eeca3a02-14e7-419b-8918-986275a2fac0>
+export const IconIndexPidTag = "0x1080";
 
 export class EWSFolder extends Folder {
   declare account: EWSAccount;
@@ -76,7 +80,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -177,7 +181,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -285,7 +289,7 @@ export class EWSFolder extends Folder {
               */
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -322,6 +326,7 @@ export class EWSFolder extends Folder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
+      batch = batch.filter((email) => !email.downloadRunOnce.running);
       let request = {
         m$GetItem: {
           m$ItemShape: {
@@ -374,32 +379,17 @@ export class EWSFolder extends Folder {
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>) {
     // We can copy messages to and from shared folders for the main account.
-    let mainAccount = this.account.mainAccount || this.account;
-    if (messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount)) {
-      return false;
-    }
-    return await super.moveOrCopyMessages(action, messages);
+    let mainAccount = this.account.mainAccount ?? this.account;
+    let sameServer = messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount);
+    await super.moveOrCopyMessagesHere(action, messages, sameServer);
   }
 
-  async moveMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<EWSEMail>);
-  }
-
-  async copyMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<EWSEMail>);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<EWSEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EWSEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let request = {
-      ["m$" + action + "Item"]: {
+      ["m$" + actionVerb + "Item"]: {
         m$ToFolderId: {
           t$FolderId: {
             Id: this.id,
@@ -424,14 +414,14 @@ export class EWSFolder extends Folder {
       request.addField("Message", "Categories", { t$String: message.tags.contents.map(tag => tag.name) });
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, t$Value: 0 });
+      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: MessageFlagsPidTag, PropertyType: "Integer" }, t$Value: 0 });
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
-        t$CompleteDate: null,
-        t$DueDate: null,
-        t$StartDate: null,
         t$FlagStatus: "Flagged",
+        t$StartDate: null,
+        t$DueDate: null,
+        t$CompleteDate: null,
       });
     }
     request.addField("Message", "IsRead", message.isRead);

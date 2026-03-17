@@ -1,9 +1,10 @@
-import { ArrayColl } from "svelte-collections";
-import { blobToDataURL, NotImplemented, type URLString } from "../../logic/util/util";
-import { gt } from "../../l10n/l10n";
+import { openExternalURL } from "../../logic/util/os-integration";
 import { appGlobal } from "../../logic/app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { openExternalURL } from "../../logic/util/os-integration";
+import { catchErrors } from "../Util/error";
+import { blobToDataURL, NotImplemented, type URLString } from "../../logic/util/util";
+import { gt } from "../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 /**
  * Handles the Electron `<webview>` `"context-menu"` event.
@@ -37,7 +38,7 @@ export async function buildContextMenu(context: ContextInfo, win: any): Promise<
 
   let menuItems = new ArrayColl<MenuItem>();
   function add(id: string, label: string, icon: string, action: Function, disabled: boolean = false) {
-    let menuItem = new MenuItem(id, label, icon, () => action(context, win));
+    let menuItem = new MenuItem(id, label, icon, () => catchErrors(() => action(context, win)));
     menuItem.disabled = disabled;
     menuItems.add(menuItem);
   }
@@ -198,26 +199,26 @@ function selectAll(context: ContextInfo, win: any) {
   win.selectAll();
 }
 
-function searchWeb(context: ContextInfo, win: any) {
+async function searchWeb(context: ContextInfo, win: any) {
   const url = new URL('https://www.google.com/search');
   url.searchParams.set('q', context.selectionText);
-  openBrowser(url.toString());
+  await openBrowser(url.toString());
 }
 
 function lookUpSelection(context: ContextInfo, win: any) {
   win.showDefinitionForSelection();
 }
 
-function saveImage(context: ContextInfo, win: any) {
-  download(context.srcURL, win, false);
+async function saveImage(context: ContextInfo, win: any) {
+  await download(context.srcURL, win, false);
 }
 
-function saveVideo(context: ContextInfo, win: any) {
-  download(context.srcURL, win, false);
+async function saveVideo(context: ContextInfo, win: any) {
+  await download(context.srcURL, win, false);
 }
 
-function saveVideoAs(context: ContextInfo, win: any) {
-  download(context.srcURL, win, true);
+async function saveVideoAs(context: ContextInfo, win: any) {
+  await download(context.srcURL, win, true);
 }
 
 async function copyLink(context: ContextInfo, win: any) {
@@ -230,8 +231,8 @@ async function copyLink(context: ContextInfo, win: any) {
   */
 }
 
-function saveLinkAs(context: ContextInfo, win: any) {
-  download(context.linkURL, win, true, context.suggestedFilename);
+async function saveLinkAs(context: ContextInfo, win: any) {
+  await download(context.linkURL, win, true, context.suggestedFilename);
 }
 
 async function copyImage(context: ContextInfo, win: any) {

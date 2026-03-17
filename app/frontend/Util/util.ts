@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import type { URLString } from "../../logic/util/util";
+import { blobToDataURL, type URLString } from "../../logic/util/util";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -8,7 +8,33 @@ export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   }
 }
 
-export function saveBlobAsFile(blob: Blob, filename?: string) {
+export async function saveBlobAsFile(blob: Blob, filename?: string) {
+  const showSaveFilePicker = (window as any).showSaveFilePicker;
+  if (typeof(showSaveFilePicker) != "function") { // Fallback
+    saveBlobAsFileViaA(blob, filename);
+    return;
+  }
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  let handle: any;
+  try {
+    handle = await showSaveFilePicker({
+      suggestedName: filename,
+    });
+  } catch (ex) {
+    if (ex.name == "AbortError") {
+      return;
+    }
+    throw ex;
+  }
+  let writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+/** Doesn't work anymore */
+export function saveBlobAsFileViaA(blob: Blob, filename?: string) {
   if (blob instanceof File) {
     filename = blob.name;
   }
@@ -17,9 +43,19 @@ export function saveBlobAsFile(blob: Blob, filename?: string) {
   URL.revokeObjectURL(url); // otherwise we leak the entire blob
 }
 
+export async function saveBlobAsDataAsFile(blob: Blob, filename?: string) {
+  if (blob instanceof File) {
+    filename = blob.name;
+  }
+  let url = await blobToDataURL(blob);
+  saveURLAsFile(url, filename);
+}
+
 /** Opens a "Save as..." file picker dialog, with the `filename` prefilled,
  * allowing the user to select where to save the file.
  * The content of `url` will be saved in the file.
+ *
+ * TODO doesn't work anymore
  */
 export function saveURLAsFile(url: URLString, filename: string) {
   let a = document.createElement("a");
@@ -49,23 +85,19 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
 }
 
 export function stringFromDataURL(dataURL: URLString, mimetype: string): string | null {
-  console.log("altrep URL", dataURL);
   if (!dataURL || typeof (dataURL) != "string" ||
       dataURL.substring(0, "data:".length + mimetype.length).toLowerCase() != "data:text/html") {
     return null;
   }
   // There might be `;charset=utf-8` in-between
   let comma = dataURL.indexOf(",");
-  console.log("comma", comma);
   if (comma < 1) {
     return null;
   }
   let htmlEncoded = dataURL.substring(comma + 1);
-  console.log("html encoded", htmlEncoded);
   if (!htmlEncoded) {
     return null;
   }
-  console.log("html decoded", decodeURIComponent(htmlEncoded));
   return decodeURIComponent(htmlEncoded);
 }
 

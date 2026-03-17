@@ -1,5 +1,5 @@
 import { Event, RecurrenceCase } from "../Event";
-import type { TJMAPCalendarEvent } from "./TJSCalendar";
+import type { TJMAPCalendarEvent, TJSCalendarRecurrenceRule, TJSCalendarRecurrenceFrequency } from "./TJSCalendar";
 import { Frequency, RecurrenceRule, type RecurrenceInit } from "../RecurrenceRule";
 import { InvitationResponse } from "../Invitation/InvitationStatus";
 import { Participant } from "../Participant";
@@ -9,7 +9,9 @@ import { NotImplemented, assert } from "../../util/util";
 export class JSCalendarEvent {
   static toEvent(jmap: TJMAPCalendarEvent, event: Event) {
     // ID and metadata
-    event.calUID = sanitize.nonemptystring(jmap.uid, null);
+    if (!event.parentEvent) {
+      event.calUID = sanitize.nonemptystring(jmap.uid, null);
+    }
     event.lastUpdateTime = sanitize.date(jmap.updated, null);
     event.original = jmap;
 
@@ -24,41 +26,38 @@ export class JSCalendarEvent {
     }
 
     // Time
-    event.startTime = sanitize.date(jmap.start);
+    event.startTime = this.toDate(jmap.start, jmap);
     event.endTime = getEndTimeFromDuration(event.startTime, sanitize.nonemptystring(jmap.duration));
     event.timezone = jmap.timeZone ?? null;
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
 
     // Recurrence
-    if (jmap.recurrenceRules?.length) {
+    if (jmap.recurrenceRule) {
       event.recurrenceCase = RecurrenceCase.Master;
-      let r = jmap.recurrenceRules[0];
-      let rrinit = {} as RecurrenceInit;
-      rrinit.interval = r.interval;
-      rrinit.frequency =
-        r.frequency == "yearly" ? Frequency.Yearly :
-          r.frequency == "monthly" ? Frequency.Monthly :
-            r.frequency == "weekly" ? Frequency.Weekly :
-              r.frequency == "daily" ? Frequency.Daily :
-                Frequency.Yearly;
+      let r = jmap.recurrenceRule;
+      let rrinit: RecurrenceInit = {
+        masterDuration: event.duration,
+        seriesStartTime: event.startTime,
+        seriesEndTime: this.toDate(r.until, jmap, null),
+        count: sanitize.integer(r.count, Infinity),
       // iCal and we don't support hourly, minutely or secondly. Esp. the latter is pretty silly
-      rrinit.seriesStartTime = event.startTime;
-      event.recurrenceRule = new RecurrenceRule(rrinit);
-    }
-    if (jmap.recurrenceId) {
-      let start = sanitize.date(jmap.recurrenceId);
-      event.recurrenceCase = RecurrenceCase.Exception;
-      let masters = event.calendar?.events.filterOnce(ev => ev.recurrenceCase == RecurrenceCase.Master);
-      let master = masters?.find(ev => ev.startTime == start || !!ev.exclusions.find(ex => ex == start));
-      if (master) {
-        if (jmap.excluded) {
-          master.exclusions.add(start);
-          // TODO Do not add this to the main calendar
-          throw new NotImplemented("Recurring exclusion");
-        } else {
-          master.exceptions.add(event);
-        }
+        frequency: sanitize.translate(r.frequency, {
+          yearly: Frequency.Yearly,
+          monthly: Frequency.Monthly,
+          weekly: Frequency.Weekly,
+          daily: Frequency.Daily,
+        }, Frequency.Yearly),
+        interval: sanitize.integerRange(r.interval, 1, Infinity, 1),
+        first: sanitize.integer(jsCalWeekday[r.firstDayOfWeek as keyof typeof jsCalWeekday], jsCalWeekday.mo),
+      };
+      if (r.byDay) {
+        rrinit.weekdays = r.byDay.map(day => sanitize.integer(jsCalWeekday[day.day as keyof typeof jsCalWeekday]));
+        // jsCalendar uses -1..4 but we use 0..5
+        rrinit.week = (sanitize.integer(r.byDay[0].nthOfPeriod, 0) + 6) % 6;
       }
+      event.recurrenceRule = new RecurrenceRule(rrinit);
+      // Exceptions and exclusions have to be handled by the caller,
+      // once the event has been saved locally.
     }
 
     // Location
@@ -99,8 +98,11 @@ export class JSCalendarEvent {
   static fromEvent(event: Event, jmap: TJMAPCalendarEvent) {
     // ID and metadata
     Object.assign(jmap, event.original);
-    jmap.uid = event.calUID;
-    jmap.updated = event.lastUpdateTime?.toISOString();
+    if (!event.parentEvent) {
+      jmap.uid = event.calUID;
+    }
+    jmap.updated = (event.lastUpdateTime ?? new Date()).toISOString();
+    jmap.sequence ??= -1;
     jmap.sequence++;
 
     // Text
@@ -114,7 +116,7 @@ export class JSCalendarEvent {
     }
 
     // Time
-    jmap.start = event.startTime.toISOString();
+    jmap.start = this.fromDate(event.startTime, event);
     if (Number.isInteger(event.durationDays)) {
       jmap.duration = "P" + event.durationDays + "D";
     } else if (Number.isInteger(event.durationHours)) {
@@ -129,28 +131,43 @@ export class JSCalendarEvent {
 
     // Recurrence
     if (event.recurrenceCase == RecurrenceCase.Master) {
-      jmap.recurrenceRules ??= [];
-      let jr = jmap.recurrenceRules[0] ??= {
-        frequency: "yearly",
-      };
+      let jr = jmap.recurrenceRule ??= {} as TJSCalendarRecurrenceRule;
+      delete jr.byMonthDay;
+      delete jr.byMonth;
+      delete jr.byYearDay;
+      delete jr.byWeekNo;
+      delete jr.byHour;
+      delete jr.byMinute;
+      delete jr.bySecond;
+      delete jr.bySetPosition;
       let er = event.recurrenceRule;
+      jr.frequency = er.frequency.toLowerCase() as TJSCalendarRecurrenceFrequency,
       jr.interval = er.interval;
-      if (er.frequency == Frequency.Yearly) {
-        jr.frequency = "yearly";
-      } else if (er.frequency == Frequency.Monthly) {
-        jr.frequency = "monthly";
-      } else if (er.frequency == Frequency.Weekly) {
-        jr.frequency = "weekly";
-      } else if (er.frequency == Frequency.Daily) {
-        jr.frequency = "daily";
-      } // else Unknown `Frequency` -> keep as-is
-      for (let exclusion of event.exclusions) {
-        // TODO one `Event` has to generate multiple `JSCalendarEvents`
-        throw new NotImplemented("Recurring exclusion");
+      jr.firstDayOfWeek = jsCalWeekday[er.first];
+      if (er.seriesEndTime) {
+        delete jr.count;
+        jr.until = this.fromDate(er.seriesEndTime, event);
+      } else if (Number.isFinite(er.count)) {
+        delete jr.until;
+        jr.count = er.count;
+      } else {
+        delete jr.count;
+        delete jr.until;
       }
-      for (let exclusion of event.exceptions) {
-        // TODO one `Event` has to generate multiple `JSCalendarEvents`
-        throw new NotImplemented("Recurring exception"); // TODO
+      if (er.weekdays) {
+        if (er.week) {
+          jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day], nthOfPeriod: er.week == 5 ? -1 : er.week }));
+        } else {
+          jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day] }));
+        }
+      }
+      for (let exclusion of event.exclusions) {
+        let ro = jmap.recurrenceOverrides ??= {};
+        ro[this.fromDate(exclusion, event)] = { excluded: true } as TJMAPCalendarEvent;
+      }
+      for (let exception of event.exceptions) {
+        let ro = jmap.recurrenceOverrides ??= {};
+        this.fromEvent(exception, ro[this.fromDate(exception.recurrenceStartTime, event)] ??= {} as TJMAPCalendarEvent);
       }
     }
 
@@ -228,6 +245,37 @@ export class JSCalendarEvent {
 
     jmap.color = event.color;
   }
+
+  static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
+    if (/Z$/.test(date) || !jmap.timeZone || jmap.showWithoutTime) {
+      // Easy cases:
+      // - date was already in UTC
+      // - no time zone was provided
+      // - event is an all-day event
+      return sanitize.date(date, fallback);
+    }
+    date += "Z";
+    let utc = sanitize.date(date, fallback);
+    // Work out the time zone offset for the time given as UTC.
+    // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
+    // which we can easily convert into ISO format.
+    let offset = new Date(utc.toLocaleString("lt", { timeZone: jmap.timeZone }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    let local = new Date(utc.getTime() - offset);
+    // Check the time zone offset at this local time,
+    // as that may have jumped across a DST change.
+    offset = new Date(local.toLocaleString("lt", { timeZone: jmap.timeZone }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    if (offset) {
+      local = new Date(local.getTime() - offset);
+    }
+    return local;
+  }
+
+  static fromDate(date: Date, event: Event): string {
+    // All-day events should have a time of zero and no UTC indicator.
+    // `toISOString` might not even provide the right date in this case.
+    // "lt" locale has date format YYYY-MM-DD.
+    return event.allDay ? date.toLocaleDateString("lt") + "T00:00:00" : date.toISOString();
+  }
 }
 
 function getEndTimeFromDuration(start: Date, duration: string): Date {
@@ -242,3 +290,14 @@ function getEndTimeFromDuration(start: Date, duration: string): Date {
 }
 
 const kLocationNameDescriptionSeparator = "\n---\n";
+
+/** Maps between jsCal names and JavaScript day of week values */
+enum jsCalWeekday {
+  su = 0,
+  mo = 1,
+  tu = 2,
+  we = 3,
+  th = 4,
+  fr = 5,
+  sa = 6,
+}

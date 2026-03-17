@@ -17,6 +17,7 @@ const ignoreSvelteCompilerWarnings = [
   "a11y-autofocus",
   "a11y-mouse-events-have-key-events",
   "a11y-click-events-have-key-events",
+  "a11y-no-static-element-interactions",
   "a11y-no-noninteractive-tabindex",
   "element_invalid_self_closing_tag",
 ];

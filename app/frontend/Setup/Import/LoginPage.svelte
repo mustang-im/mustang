@@ -53,7 +53,7 @@
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Button from "../../Shared/Button.svelte";
-  import { Cancelled } from "../../../logic/util/Abortable";
+  import { Cancelled } from "../../../logic/util/flow/Abortable";
   import { catchErrors, logError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 

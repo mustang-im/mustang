@@ -24,7 +24,7 @@ export class MatrixAccount extends ChatAccount {
   static personsCache = new MapColl<string, MatrixPerson>();
 
   async loginOnly(interactive: boolean) {
-    super.login(interactive);
+    await super.login(interactive);
     let accessToken: string;
     if (this.mainAccount?.oAuth2) {
       this.oAuth2 = this.mainAccount.oAuth2;
@@ -185,7 +185,8 @@ export class MatrixAccount extends ChatAccount {
       }
     });
     this.client.on("Call.incoming", (call: MatrixCall) => {
-      this.incomingCall(call);
+      this.incomingCall(call)
+        .catch(this.errorCallback);
     });
   }
 

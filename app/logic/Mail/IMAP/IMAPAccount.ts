@@ -7,9 +7,9 @@ import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import { assert, NotReached, SpecificError } from "../../util/util";
-import { Lock } from "../../util/Lock";
-import { Throttle } from "../../util/Throttle";
-import { RunOnce } from "../../util/RunOnce";
+import { Lock } from "../../util/flow/Lock";
+import { Throttle } from "../../util/flow/Throttle";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
@@ -35,6 +35,10 @@ export class IMAPAccount extends MailAccount {
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
+  /** High level logging about the commands we issue, logged by us */
+  logCommands = true;
+  /** Logs by ImapFlow */
+  logLibrary = true;
 
   constructor() {
     super();
@@ -51,7 +55,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }
@@ -68,7 +72,7 @@ export class IMAPAccount extends MailAccount {
 
   async verifyLogin(): Promise<void> {
     await this.connection(true);
-    this.logout(false);
+    await this.logout(false);
   }
 
   async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
@@ -122,12 +126,14 @@ export class IMAPAccount extends MailAccount {
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
         socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
         logger: false, // true, // Run backend using: `yarn run dev | npx pino-pretty -i time,msg`
+        emitLogs: this.logLibrary,
       }
       // console.log("IMAP connection", options);
 
-      let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
+      let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options) as ImapFlow;
       assert(connection, `Connection is null\n${this.hostname} IMAP server`);
       this.attachListeners(connection);
+      this.log(null, connection, "connect", purpose);
 
       try {
         await connection.connect();
@@ -139,7 +145,7 @@ export class IMAPAccount extends MailAccount {
         } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
           throw this.fatalError = new LoginError(ex,
             "Check your login, username, and password.\n" + msg);
-        } else if (ex.code == "NoConn" || msg == "Command failed.") {
+        } else if (ex.code == "NoConnection" || ex.code == "NoConn" || msg == "Command failed.") {
           throw this.fatalError = new ConnectError(ex,
             "Failed to connect to server " + this.hostname + " for account " + this.name);
         } else {
@@ -151,6 +157,7 @@ export class IMAPAccount extends MailAccount {
       if (purpose == ConnectionPurpose.Main) {
         this.notifyObservers();
       }
+      this.log(null, connection, "connected");
       return connection;
     });
   }
@@ -158,7 +165,7 @@ export class IMAPAccount extends MailAccount {
   attachListeners(connection: ImapFlow): void {
     connection.on("close", async () => {
       try {
-        console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
+        console.warn(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
@@ -167,7 +174,7 @@ export class IMAPAccount extends MailAccount {
     });
     connection.on("error", async (ex) => {
       try {
-        console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
+        console.warn(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}. Reconnecting...`);
         await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
@@ -196,7 +203,7 @@ export class IMAPAccount extends MailAccount {
         assert(info.flags instanceof Set, "Expected Set for flags");
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
-        console.log("Error", ex, "in processing server event", info);
+        console.error("Error", ex, "in processing server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
@@ -207,10 +214,15 @@ export class IMAPAccount extends MailAccount {
         assert(typeof (info.seq) == "number", "seq must be a number");
         await folder.messageDeletedNotification(info.seq, connection);
       } catch (ex) {
-        console.log("Server event", info);
+        console.error("Server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
+    if (this.logLibrary) {
+      connection.on("log", async (entry) => {
+        this.log(null, connection, "ImapFlow", entry.msg);
+      });
+    }
   }
 
   async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
@@ -219,6 +231,7 @@ export class IMAPAccount extends MailAccount {
 
     purpose = this.connections.getKeyForValue(connection) ?? purpose;
     assert(purpose, "Connection purpose unknown");
+    this.log(null, connection, "reconnect", purpose);
 
     return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
       try {
@@ -299,6 +312,7 @@ export class IMAPAccount extends MailAccount {
     let lock = await this.connectionLock.get(conn).lock();
     let foldersInfo;
     try {
+      this.log(null, conn, "list folders");
       foldersInfo = await conn.list({
         statusQuery: {
           messages: true, // Total msg count
@@ -389,7 +403,8 @@ export class IMAPAccount extends MailAccount {
       if (!conn) {
         continue;
       }
-      conn.logout();
+      this.log(null, conn, "logout");
+      await conn.logout();
       this.connections.delete(purpose);
       this.connectionLock.delete(conn);
     }
@@ -467,6 +482,21 @@ export class IMAPAccount extends MailAccount {
     for (let folder of foldersToShare) {
       await folder.addPermission(otherPerson, rights);
     }
+  }
+
+  log(folder: IMAPFolder | string | null, connection: ImapFlow, command: string, ...args: any[]) {
+    let purpose = connection === null
+      ? ""
+      : this.connections.getKeyForValue(connection)
+      ?? "unknown";
+    purpose = purpose ? "p-" + purpose : "";
+    let folderID = folder instanceof IMAPFolder
+      ? folder?.id
+      : typeof (folder) == "string"
+        ? folder
+        : "-";
+    let connID = connection?.id.substring(0, 4) ?? "";
+    console.log("IMAP", this.name, folderID, purpose, connID, command, ...args);
   }
 
   fromConfigJSON(config: any) {

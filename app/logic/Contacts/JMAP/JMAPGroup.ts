@@ -2,19 +2,16 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { JMAPAddressbook } from './JMAPAddressbook';
+import type { TJMAPContact } from './TJSContact';
+import type { TID } from '../../Mail/JMAP/TJMAPGeneric';
 import { appGlobal } from "../../app";
-import { ensureArray } from "../../util/util";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 
 export class JMAPGroup extends Group {
   declare addressbook: JMAPAddressbook | null;
-
-  get itemID() {
-    return this.id;
-  }
-  set itemID(val) {
-    this.id = val;
-  }
+  original: TJMAPContact;
+  jmapID: TID;
+  uid: string;
 
   fromJMAP(jmap: any) {
     /*
@@ -29,6 +26,20 @@ export class JMAPGroup extends Group {
   }
 
   async deleteFromServer() {
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.original = sanitize.json(json.original, {}); // as object, not string
+    this.jmapID = sanitize.alphanumdash(json.jmapID, null);
+    this.uid = sanitize.nonemptystring(json.uid, null);
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.original = this.original;
+    json.jmapID = this.jmapID;
+    json.uid = this.uid;
+    return json;
   }
 }
 

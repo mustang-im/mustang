@@ -45,7 +45,6 @@
   export let account: MailAccount;
 
   $: identities = (account as MailAccount).identities;
-  $: console.log("identities", $identities.contents);
 
   function onAdd() {
     let id = new MailIdentity(account);

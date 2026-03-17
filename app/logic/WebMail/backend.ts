@@ -64,45 +64,6 @@ export class WebMailBackend {
   }
   async setTheme() {
   }
-  /** For OAuth2 and EWS
-   * @param config ky config @see <https://github.com/sindresorhus/ky>
-   */
-  async postHTTP(url: string, data: any, responseType: string, config: any): Promise<any> {
-    switch (config.headers['Content-Type']) {
-      case 'application/x-www-form-urlencoded':
-        config.body = new URLSearchParams(data);
-        break;
-      case 'application/json':
-        config.json = data;
-        break;
-      default:
-        config.body = data;
-        break;
-    }
-    let response = await ky.post(url, config);
-    return {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      data: await response[responseType](),
-      WWWAuthenticate: response.headers.get("WWW-Authenticate"),
-    };
-  }
-  /**
-   * For EWS
-   * @param config ky config @see <https://github.com/sindresorhus/ky>
-   */
-  async streamHTTP(url: string, data: any, config: any) {
-    config.body = data;
-    let response = await ky.post(url, config);
-    return {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      body: response.body.pipeThrough(new TextDecoderStream()),
-      WWWAuthenticate: response.headers.get("WWW-Authenticate"),
-    };
-  }
 }
 
 export class HTTPFetchError extends Error {

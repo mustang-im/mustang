@@ -1,9 +1,9 @@
 import { MailAccount } from "../MailAccount";
 import { MailIdentity } from "../MailIdentity";
-import { AuthMethod } from "../../Abstract/Account";
+import { AuthMethod, type Account } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
-import type { Folder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
@@ -15,19 +15,21 @@ import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import { OAuth2 } from "../../Auth/OAuth2";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
-import { Throttle } from "../../util/Throttle";
-import { Semaphore } from "../../util/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
+
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da>
+const HiddenPidTag = "0x10F4";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -41,14 +43,13 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
-  // JPC remoted AbortControllers for all currently streaming notifications
+  // AbortControllers for all currently streaming notifications
   notificationAbort = new Set<AbortController>();
   // Subscription IDs for all subscribed notificaions
   subscriptions: string[] = [];
 
   constructor() {
     super();
-    assert(appGlobal.remoteApp.postHTTP, "EWS: Need backend");
   }
 
   newFolder(): EWSFolder {
@@ -86,12 +87,8 @@ export class EWSAccount extends MailAccount {
 
   protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
-      }
+      this.oAuth2 ??= getOAuth2BuiltIn(this);
+      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
@@ -154,8 +151,17 @@ export class EWSAccount extends MailAccount {
     if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
     }
-    assert(email.folder?.id, "Need folder to save the sent email in");
-    let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
+    let folder = email.folder as EWSFolder;
+    assert(folder?.id, "Need folder to save the sent email in");
+    assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
+    if (folder.account.mainAccount) {
+      let mainAccount = folder.account.mainAccount as EWSAccount;
+      let permissions = (await folder.getPermissions()).find(permissions => permissions.emailAddress == mainAccount.emailAddress);
+      if (!permissions.exchangePermissions.CanCreateItems) {
+        folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as EWSFolder;
+      }
+    }
+    let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
     request.addField("Message", "Body", {
@@ -174,6 +180,9 @@ export class EWSAccount extends MailAccount {
         }))),
       }, "item:Attachments");
     }
+    if (email.inReplyTo) {
+      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+    }
     if (email.headers.hasItems) {
       request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
         t$ExtendedFieldURI: {
@@ -185,16 +194,14 @@ export class EWSAccount extends MailAccount {
         t$Value: value,
       })), null);
     }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.replyTo) {
-      addRecipients(request, "ReplyTo", [email.replyTo]);
-    }
-    addRecipients(request, "From", [email.from]);
+    // Older versions of Exchange require a specific order of parameters
     addRecipients(request, "ToRecipients", email.to.contents);
     addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
+    addRecipients(request, "From", [email.from]);
+    if (email.replyTo) {
+      addRecipients(request, "ReplyTo", [email.replyTo]);
+    }
     await this.callEWS(request);
   }
 
@@ -274,17 +281,19 @@ export class EWSAccount extends MailAccount {
   /** @returns `Authorization` HTTP request header - usable only for a single call */
   async loginWithNTLM(): Promise<string> {
     assert(this.username && this.password, gt`Need username and password`);
-    let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
-    assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+    let response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: await appGlobal.remoteApp.createType1Message() }));
+    assert(/\bNTLM\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.headers.get("WWW-Authenticate"), this.username, this.password);
   }
 
-  createRequestOptions(authorizationHeader?: string): any {
+  createRequestOptions({ authorizationHeader, body, signal }: { authorizationHeader?: string, body?: string, signal?: AbortSignal }): any {
     let options: any = {
-      throwHttpErrors: false,
+      body,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
+      method: "POST",
+      signal,
     };
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2.isLoggedIn) {
@@ -298,7 +307,7 @@ export class EWSAccount extends MailAccount {
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     } else if (this.authMethod == AuthMethod.Unknown) {
-      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
+      // triggers 401, which gives us WWW-Authenticate HTTP response header, which lists the login methods supported by the server
     } else {
       throw new NotReached(`Unknown authentication method ${this.authMethod}`);
     }
@@ -323,11 +332,11 @@ export class EWSAccount extends MailAccount {
 
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
+      response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
     }
-    response.responseXML = this.parseXML(response.data);
+    response.responseXML = this.parseXML(await response.text());
     this.fatalError = null;
     if (response.status == 200) {
       try {
@@ -357,21 +366,21 @@ export class EWSAccount extends MailAccount {
         let authorizationHeader = await this.loginWithNTLM();
         return repeat({ authorizationHeader });
       } else if (this.authMethod == AuthMethod.Password) {
-        assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+        assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
       } else if (this.authMethod == AuthMethod.Unknown) {
-        if (/\bBasic\b/.test(response.WWWAuthenticate)) {
+        if (/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
           this.authMethod = AuthMethod.Password;
-        } else if (/\bNTLM\b/.test(response.WWWAuthenticate)) {
+        } else if (/\bNTLM\b/.test(response.headers.get("WWW-Authenticate"))) {
           this.authMethod = AuthMethod.NTLM;
         } else {
           throw this.fatalError = new ConnectError(null,
-            gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
+            gt`Unsupported authentication protocol(s): ${response.headers.get("WWW-Authenticate")}`);
         }
         return repeat();
       } else {
         throw this.fatalError = new ConnectError(null,
-          gt`Server supports authentication protocol(s): ${response.WWWAuthenticate}. Please check your account configuration.`);
+          gt`Server supports authentication protocol(s): ${response.headers.get("WWW-Authenticate")}. Please check your account configuration.`);
       }
     } else {
       this.throttle.waitForSecond(1);
@@ -381,25 +390,25 @@ export class EWSAccount extends MailAccount {
 
   async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
     let lastAttempt: number;
-    let abort: AbortController;
+    let abort = new AbortController();
+    let signal = abort.signal;
     do {
       try {
         lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
-        let requestXML = this.request2XML(request);
+        let body = this.request2XML(request);
         let data = "";
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
+        let response = await fetch(this.url, this.createRequestOptions({ body, signal }));
         if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
           let authorizationHeader = await this.loginWithNTLM();
-          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorizationHeader)); // Repeat the call
+          response = await fetch(this.url, this.createRequestOptions({ authorizationHeader, body, signal })); // Repeat the call
         }
         if (!response.ok) {
-          console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
+          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
-        abort = response.abort;
         this.notificationAbort.add(abort);
-        for await (let chunk of response.body) {
+        for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -421,7 +430,7 @@ export class EWSAccount extends MailAccount {
               if (message.ConnectionStatus == "Closed") {
                 continue; // Re-open connection
               }
-              responseCallback(message);
+              await responseCallback(message);
             } catch (ex) {
               this.errorCallback(ex);
             }
@@ -649,6 +658,10 @@ export class EWSAccount extends MailAccount {
               }, {
                 FieldURI: "folder:DistinguishedFolderId",
               }],
+              t$ExtendedFieldURI: {
+                PropertyTag: HiddenPidTag,
+                PropertyType: "Boolean",
+              },
             },
           },
           m$FolderIds: {
@@ -690,43 +703,22 @@ export class EWSAccount extends MailAccount {
     if (this.sharedFolderRoot) {
       return; // Don't automatically add shared addressbook or calendar.
     }
+    // Create the primary address book and calendar automatically
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      for (let folder of ensureArray(result.RootFolder.Folders.ContactsFolder)) {
-        /* EWS has some internal contacts folders that we don't want to display.
-           Fortunately, they all have distinguished folder IDs,
-           so we are only interested in the primary user address book ("contacts")
-           or a additional user-created address books (which have no distinguished ID). */
-        if (folder.FolderClass == "IPF.Contact" && [undefined, "contacts"].includes(folder.DistinguishedFolderId)) {
-          let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
-          addressbook.initFromMainAccount(this);
-          let isMainAddressbook = folder.DistinguishedFolderId == "contacts";
-          if (!isMainAddressbook && folder.DisplayName) {
-            addressbook.name = `${this.name} ${folder.DisplayName}`;
-          }
-          addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await addressbook.save();
-          appGlobal.addressbooks.add(addressbook);
-        }
-      }
+      let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
+        folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
+      let addressbook = this.createAddressbookAccount(folder);
+      await addressbook.save();
+      appGlobal.addressbooks.add(addressbook);
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      for (let folder of ensureArray(result.RootFolder.Folders.CalendarFolder)) {
-        if (folder.FolderClass == "IPF.Appointment") {
-          let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-          calendar.initFromMainAccount(this);
-          let isMainCalendar = folder.DistinguishedFolderId == "calendar";
-          if (isMainCalendar) {
-            calendar.useForInvitations = true;
-          } else if (folder.DisplayName) {
-            calendar.name = `${this.name} ${folder.DisplayName}`;
-          }
-          calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
-          await calendar.save();
-          appGlobal.calendars.add(calendar);
-        }
-      }
+      let folder = ensureArray(result.RootFolder.Folders.CalendarFolder).find(folder =>
+        folder.DistinguishedFolderId == "calendar");
+      let calendar = this.createCalendarAccount(folder);
+      await calendar.save();
+      appGlobal.calendars.add(calendar);
     }
   }
 
@@ -765,6 +757,130 @@ export class EWSAccount extends MailAccount {
     let folder = await super.createToplevelFolder(name) as EWSFolder;
     folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
     return folder;
+  }
+
+  get mayHaveSubAccounts(): boolean {
+    return true;
+  }
+
+  async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
+    let accounts = await super.listPossibleSubAccounts();
+    if (this.mainAccount) {
+      return accounts;
+    }
+    let query = {
+      m$FindFolder: {
+        Traversal: "Deep",
+        m$FolderShape: {
+          t$BaseShape: "Default",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "folder:FolderClass",
+            }, {
+              FieldURI: "folder:DistinguishedFolderId",
+            }],
+            t$ExtendedFieldURI: {
+              PropertyTag: HiddenPidTag,
+              PropertyType: "Boolean",
+            },
+          },
+        },
+        m$ParentFolderIds: {
+          t$DistinguishedFolderId: {
+            Id: "msgfolderroot",
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(query);
+    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
+      .filter(folder => folder.ExtendedProperty?.Value != "true");
+    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
+      .filter(folder => folder.FolderClass == "IPF.Appointment");
+    for (let account of this.dependentAccounts()) {
+      if (account instanceof EWSAccount) {
+        let request = {
+          m$GetFolder: {
+            m$FolderShape: {
+              t$BaseShape: "Default",
+              t$AdditionalProperties: {
+                t$FieldURI: [{
+                  FieldURI: "folder:FolderClass",
+                }, {
+                  FieldURI: "folder:DistinguishedFolderId",
+                }],
+                t$ExtendedFieldURI: {
+                  PropertyTag: HiddenPidTag,
+                  PropertyType: "Boolean",
+                },
+              },
+            },
+            m$FolderIds: {
+              t$DistinguishedFolderId: ["contacts", "calendar"].map(folder => ({
+                Id: folder,
+                t$Mailbox: {
+                  t$EmailAddress: account.username,
+                },
+              })),
+            },
+          },
+        };
+        let results = await this.callEWS(request);
+        for (let result of results.filter(result => result.ResponseClass == "Success")) {
+          if (result.Folders.ContactsFolder) {
+            let folder = result.Folders.ContactsFolder;
+            folder.account = account; // pass to createAddressbookAccount below
+            addressbooks.push(folder);
+          }
+          if (result.Folders.CalendarFolder) {
+            let folder = result.Folders.CalendarFolder;
+            folder.account = account; // pass to createCalendarAccount below
+            calendars.push(folder);
+          }
+        }
+      }
+    }
+    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.account)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.account)).filter(Boolean));
+    return accounts;
+  }
+
+  private createAddressbookAccount(folder: any, account?: EWSAccount): EWSAddressbook | null {
+    assert(folder.ExtendedProperty?.Value != "true", "Need visible addressbook");
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
+    addressbook.initFromMainAccount(this);
+    let isMainAddressbook = !account && folder.DistinguishedFolderId == "contacts";
+    if (!isMainAddressbook && folder.DisplayName) {
+      addressbook.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    }
+    if (account) {
+      addressbook.username = account.username;
+    }
+    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return addressbook;
+  }
+
+  private createCalendarAccount(folder: any, account?: EWSAccount): EWSCalendar | null {
+    assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
+      return null;
+    }
+    let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+    calendar.initFromMainAccount(this);
+    let isMainCalendar = !account && folder.DistinguishedFolderId == "calendar";
+    if (isMainCalendar) {
+      calendar.useForInvitations = true;
+    } else if (folder.DisplayName) {
+      calendar.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    }
+    if (account) {
+      calendar.username = account.username;
+    }
+    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    return calendar;
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
@@ -813,7 +929,7 @@ export class EWSAccount extends MailAccount {
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);
-    account.save();
+    await account.save();
     appGlobal.emailAccounts.add(account);
     await account.listFolders();
     return account;

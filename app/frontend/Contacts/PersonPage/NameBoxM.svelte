@@ -5,7 +5,7 @@
         <RoundButton
           icon={BackIcon}
           label={$t`Back to list of persons`}
-          onClick={() => navigate(-1)}
+          onClick={() => goBack()}
           classes="back" />
       {/if}
       {#if isEditing}
@@ -117,7 +117,7 @@
   import { getUILocale, t } from "../../../l10n/l10n";
   import Button from "../../Shared/Button.svelte";
   import GroupBox from "./GroupBox.svelte";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../../AppsBar/selectedApp";
 
   export let person: Person;
   /** in/out */

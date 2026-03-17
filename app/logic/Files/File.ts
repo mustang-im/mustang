@@ -1,6 +1,6 @@
 import { FileOrDirectory } from "./FileOrDirectory";
 import { appGlobal } from "../app";
-import { Lock } from "../util/Lock";
+import { Lock } from "../util/flow/Lock";
 import { notifyChangedProperty } from "../util/Observable";
 import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, blobToDataURL, type URLString } from "../util/util";

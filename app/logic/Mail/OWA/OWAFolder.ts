@@ -12,7 +12,7 @@ import {
   owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
+import { MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
@@ -152,6 +152,7 @@ export class OWAFolder extends Folder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
+      batch = batch.filter((email) => !email.downloadRunOnce.running);
       let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let item of items) {
@@ -197,34 +198,19 @@ export class OWAFolder extends Folder {
     return this.messages.find((m: OWAEMail) => m.itemID == id) as OWAEMail | undefined;
   }
 
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>) {
     // We can copy messages to and from shared folders for the main account,
     // but the messages all have to be from the same account.
     let sourceAccount = messages.first.folder.account;
-    if ((sourceAccount.mainAccount ?? sourceAccount) == (this.account.mainAccount ?? this.account) &&
-        messages.contents.every(msg => msg.folder.account == sourceAccount)) {
-      return false;
-    }
-    return await super.moveOrCopyMessages(action, messages);
+    let sameServer = (sourceAccount.mainAccount ?? sourceAccount) == (this.account.mainAccount ?? this.account) &&
+      messages.contents.every(msg => msg.folder.account == sourceAccount);
+    await super.moveOrCopyMessagesHere(action, messages, sameServer);
   }
 
-  async moveMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<OWAEMail>);
-  }
-
-  async copyMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<OWAEMail>);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<OWAEMail>) {
-    // This function must be called using the source account.
-    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(action, this.id, messages.contents));
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<OWAEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" }) as "Move" | "Copy";
+    // This function must be called using the source account
+    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
   }
 
   async addMessage(message: EMail) {
@@ -235,7 +221,7 @@ export class OWAFolder extends Folder {
       request.addField("Message", "Categories", message.tags.contents.map(tag => tag.name));
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, Value: "0" }]);
+      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: MessageFlagsPidTag, PropertyType: "Integer" }, Value: "0" }]);
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
