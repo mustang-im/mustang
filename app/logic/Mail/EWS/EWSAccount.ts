@@ -698,25 +698,22 @@ export class EWSAccount extends MailAccount {
     if (this.sharedFolderRoot) {
       return; // Don't automatically add shared addressbook or calendar.
     }
+    // Create the primary address book and calendar automatically
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
-        .filter(folder => folder.ExtendedProperty.Value != "true");
-      for (let folder of addressbooks) {
-        let addressbook = this.createAddressbookAccount(folder);
-        await addressbook.save();
-        appGlobal.addressbooks.add(addressbook);
-      }
+      let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
+        folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
+      let addressbook = this.createAddressbookAccount(folder);
+      await addressbook.save();
+      appGlobal.addressbooks.add(addressbook);
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
-        .filter(folder => folder.FolderClass == "IPF.Appointment");
-      for (let folder of calendars) {
-        let calendar = this.createCalendarAccount(folder);
-        await calendar.save();
-        appGlobal.calendars.add(calendar);
-      }
+      let folder = ensureArray(result.RootFolder.Folders.CalendarFolder).find(folder =>
+        folder.DistinguishedFolderId == "calendar");
+      let calendar = this.createCalendarAccount(folder);
+      await calendar.save();
+      appGlobal.calendars.add(calendar);
     }
   }
 
@@ -792,7 +789,7 @@ export class EWSAccount extends MailAccount {
     };
     let result = await this.callEWS(query);
     let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
-      .filter(folder => folder.ExtendedProperty.Value != "true");
+      .filter(folder => folder.ExtendedProperty?.Value != "true");
     let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
       .filter(folder => folder.FolderClass == "IPF.Appointment");
     for (let account of this.dependentAccounts()) {
@@ -844,7 +841,7 @@ export class EWSAccount extends MailAccount {
   }
 
   private createAddressbookAccount(folder: any, account?: EWSAccount): EWSAddressbook | null {
-    assert(folder.ExtendedProperty.Value != "true", "Need visible addressbook");
+    assert(folder.ExtendedProperty?.Value != "true", "Need visible addressbook");
     if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
