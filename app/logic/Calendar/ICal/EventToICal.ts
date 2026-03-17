@@ -6,14 +6,18 @@ import { VContainer, type VObject } from "../../util/VParser";
 import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
+export function getProdID() {
+  return `PRODID:-//Beonex//${appName}//EN\r\n`;
+}
+
 export function getICal(event: Event, method?: iCalMethod): string {
   assert(event, "Need event");
-  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${eventToVEvent(event)}END:VCALENDAR\r\n`;
+  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\n${getProdID()}${eventToVEvent(event)}END:VCALENDAR\r\n`;
 }
 
 export function getUpdatedICal(event: Event, original: string, method?: iCalMethod) {
   let parsed = new VContainer(original);
-  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${getUpdatedVEvent(event, parsed.objects.vevent[0])}END:VCALENDAR\r\n`;
+  return `BEGIN:VCALENDAR\r\n${method ? `METHOD:${method}\r\n` : ""}VERSION:2.0\r\n${getProdID()}${getUpdatedVEvent(event, parsed.objects.vevent[0])}END:VCALENDAR\r\n`;
 }
 
 /**
@@ -25,7 +29,7 @@ export function getUpdatedICal(event: Event, original: string, method?: iCalMeth
  * @returns iCal file contents, as UTF8 text file
  */
 export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
-  let fileContents = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Beonex//${appName}//EN\r\n${events.contents.map(event => eventToVEvent(event)).join("")}END:VCALENDAR\r\n`;
+  let fileContents = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\n${getProdID()}${events.contents.map(event => eventToVEvent(event)).join("")}END:VCALENDAR\r\n`;
   let filename = sanitize.filename(filenameWithoutExt) + ".ics";
   let file = new File([fileContents], filename, { type: "text/calendar" });
   return file;

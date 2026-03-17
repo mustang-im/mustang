@@ -2,6 +2,7 @@ import { VContainer, type VObject, type VEntry } from "../../util/VParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
 import { StreetAddress } from "../StreetAddress";
+import { getProdID } from "../../Calendar/ICal/EventToICal";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl, Collection } from 'svelte-collections';
 import { gt } from "../../../l10n/l10n";
@@ -217,7 +218,7 @@ export function updateContainerFromPerson(person: Person, container: Record<stri
  * Generates a VCard as a string of text from a record object.
  */
 function containerToVCard(container: Record<string, string[]>): string {
-  return "BEGIN:VCARD\r\nVERSION:4.0\r\nPRODID:-//Beonex//appName//EN\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VCARD\r\n";
+  return "BEGIN:VCARD\r\nVERSION:4.0\r\n" + getProdID() + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VCARD\r\n";
 }
 
 function makeContactEntry(entry: VEntry, protocol?: string, isURI = true, stripProtocol = false) {
