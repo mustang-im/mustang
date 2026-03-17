@@ -128,7 +128,7 @@
       </hbox>
       {#if showSecretPassphrase}
         <vbox class="passphrase">
-          <hbox>{$t`You will need the following passphrase when using that secret key file:`}</hbox>
+          <hbox>{$t`You will need the following password when using that secret key file:`}</hbox>
           <hbox class="value">{key.passphrase}</hbox>
           <hbox>{$t`Would you like to save this password as file as well?`}</hbox>
           <hbox class="buttons">
