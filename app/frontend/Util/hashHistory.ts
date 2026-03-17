@@ -1,4 +1,7 @@
-// <copied from="https://github.com/mefechoel/svelte-navigator/blob/main/example/custom-hash-history/src/hashHistory.js">
+// From <https://github.com/mefechoel/svelte-navigator/blob/main/example/custom-hash-history/src/hashHistory.js>
+// Copyright (c) 2020 Michel Strelow
+// MIT License (MIT)
+
 import { createHashHistory as _createHashHistory } from "history";
 import { createHistory, type HistorySource } from "svelte-navigator";
 
