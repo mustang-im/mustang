@@ -9,6 +9,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
    * This is super secret and should never leak.
    */
   protected privateKeyArmored: string;
+  passphrase: string;
 
   /** User wishes to sign all outgoing emails */
   @notifyChangedProperty
@@ -37,6 +38,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     json.privateKeyArmored = this.privateKeyArmored;
     json.useToSign = this.useToSign;
     json.didBackup = this.didBackup;
+    json.passphrase = this.passphrase;
     return json;
   }
   fromJSON(json: any) {
@@ -44,5 +46,6 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     this.privateKeyArmored = sanitize.nonemptystring(json.privateKeyArmored, null);
     this.useToSign = sanitize.boolean(json.useToSign, null);
     this.didBackup = sanitize.boolean(json.didBackup, null);
+    this.passphrase = sanitize.string(json.passphrase, null);
   }
 }

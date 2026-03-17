@@ -14,7 +14,7 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
    * This is super secret and should never leak.
    */
   protected privateKeyArmored: string;
-  protected passphrase: string;
+  passphrase: string;
   //revocationCertificate: string;
   protected _openPGPPrivateKey: OpenPGP.PrivateKey | null = null; // cache only
 

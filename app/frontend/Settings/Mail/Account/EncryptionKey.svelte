@@ -126,12 +126,24 @@
           {/if}
         </hbox>
       </hbox>
+      {#if showSecretPassphrase}
+        <vbox class="passphrase">
+          <hbox>{$t`You will need the following passphrase when using that secret key file:`}</hbox>
+          <hbox class="value">{key.passphrase}</hbox>
+          <hbox>{$t`Would you like to save this password as file as well?`}</hbox>
+          <hbox class="buttons">
+            <Button label={$t`Yes`} onClick={onExportPrivatePassphrase} />
+            <Button label={$t`No`} onClick={onExportPrivateDone} />
+          </hbox>
+        </vbox>
+      {/if}
     </vbox>
   {/if}
 </vbox>
 
 <script lang="ts">
-  import type { PrivateKey, PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
+  import type { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
+  import type { PrivateKey } from "../../../../logic/Mail/Encryption/PrivateKey";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import { saveBlobAsFile } from "../../../Util/util";
   import { appName } from "../../../../logic/build";
@@ -149,15 +161,30 @@
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../../Util/date";
-  import { t } from "../../../../l10n/l10n";
+  import { gt, t } from "../../../../l10n/l10n";
 
   export let key: PublicKey & PrivateKey;
   export let identity: MailIdentity;
 
   let isExpanded = false;
 
+  let showSecretPassphrase = false;
   async function onExportPrivate() {
     await saveBlobAsFile(key.privateKeyAsFile());
+    if (key.passphrase) {
+      showSecretPassphrase = true;
+    } else {
+      await onExportPrivateDone();
+    }
+  }
+  async function onExportPrivatePassphrase() {
+    let passwordFilename = "SecretPassword-" + key.userIDs.first + "-" + key.name + ".txt";
+    let passwordFile = new File([key.passphrase + "\n"], passwordFilename, { type: "text/plain" });
+    await saveBlobAsFile(passwordFile);
+    await onExportPrivateDone();
+  }
+  async function onExportPrivateDone() {
+    showSecretPassphrase = false;
     key.didBackup = true;
     await identity.account.save();
   }
@@ -232,18 +259,24 @@
   .verification-code .label {
     padding-block: 7px;
   }
-  .verification-code .value {
+  .verification-code .value,
+  .passphrase .value {
     padding-block: 8px;
     letter-spacing: 0.05em;
     font-family: 'Courier New', Courier, monospace;
     font-size: 15px;
   }
-  .verification-code:not(.obsolete) .value {
+  .verification-code:not(.obsolete) .value,
+  .passphrase .value {
     background-color: var(--bg);
     color: var(--fg);
 
     padding-inline: 12px;
     font-weight: 500;
+  }
+  .passphrase .value {
+    padding-block-start: 12px;
+    margin-block: 12px;
   }
   .warning {
     background-color: yellow;
