@@ -12,7 +12,7 @@ import {
   owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
+import { MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
@@ -221,7 +221,7 @@ export class OWAFolder extends Folder {
       request.addField("Message", "Categories", message.tags.contents.map(tag => tag.name));
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, Value: "0" }]);
+      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: MessageFlagsPidTag, PropertyType: "Integer" }, Value: "0" }]);
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
