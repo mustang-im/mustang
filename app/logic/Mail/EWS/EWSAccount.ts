@@ -702,7 +702,7 @@ export class EWSAccount extends MailAccount {
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
       let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
-        folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty.Value != "true");
+        folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
       let addressbook = this.createAddressbookAccount(folder);
       await addressbook.save();
       appGlobal.addressbooks.add(addressbook);
