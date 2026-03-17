@@ -27,15 +27,14 @@
 
 <script lang="ts">
   import { settingsMustangApp } from "../../Settings/Window/SettingsMustangApp";
-  import { goTo } from "../selectedApp";
+  import { goBack, goTo } from "../selectedApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Button from "../../Shared/Button.svelte";
-  import { navigate } from "svelte-navigator";
   import { t } from "../../../l10n/l10n";
 
   function onClose() {
-    navigate(-1);
+    goBack();
   }
 </script>
 
