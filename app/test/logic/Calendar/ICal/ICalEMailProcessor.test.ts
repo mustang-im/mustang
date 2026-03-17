@@ -19,9 +19,9 @@ function toJSON(event: Event) {
     timezone: event.timezone != "UTC" && event.timezone || undefined,
     allDay: event.allDay,
     calUID: event.calUID,
-    location: event.location || undefined,
-    descriptionText: event.descriptionText || undefined,
-    descriptionHTML: event.hasHTML ? event.descriptionHTML : undefined,
+    location: event.location,
+    descriptionText: event.rawText ?? undefined,
+    descriptionHTML: event.rawHTMLDangerous ?? undefined,
     recurrenceRule: event.recurrenceRule?.getCalString(event.allDay),
     participants: event.participants.contents.map(participant => participant._properties),
   };
