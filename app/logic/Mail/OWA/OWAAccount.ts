@@ -525,6 +525,7 @@ export class OWAAccount extends MailAccount {
   }
 
   private createAddressbookAccount(folder: any, isMainAddressbook = false): OWAAddressbook | null {
+    assert(!folder.IsReadOnly && folder.FolderId?.Id, "Need writable addressbook");
     if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
@@ -541,6 +542,7 @@ export class OWAAccount extends MailAccount {
   }
 
   private createCalendarAccount(folder: any): OWACalendar | null{
+    assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
       return null;
     }

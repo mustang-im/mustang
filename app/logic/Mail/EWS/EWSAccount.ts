@@ -842,6 +842,7 @@ export class EWSAccount extends MailAccount {
   }
 
   private createAddressbookAccount(folder: any): EWSAddressbook | null {
+    assert(folder.ExtendedProperty.Value != "true", "Need visible addressbook");
     if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
@@ -859,6 +860,7 @@ export class EWSAccount extends MailAccount {
   }
 
   private createCalendarAccount(folder: any): EWSCalendar | null {
+    assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
