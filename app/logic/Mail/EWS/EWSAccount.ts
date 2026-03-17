@@ -698,7 +698,8 @@ export class EWSAccount extends MailAccount {
     }
     let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
     if (!haveAddressbook) {
-      let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder).filter(folder => folder.ExtendedProperty.Value != "true");
+      let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
+        .filter(folder => folder.ExtendedProperty.Value != "true");
       for (let folder of addressbooks) {
         let addressbook = this.createAddressbookAccount(folder);
         await addressbook.save();
@@ -707,7 +708,8 @@ export class EWSAccount extends MailAccount {
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
     if (!haveCalendar) {
-      let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder).filter(folder => folder.FolderClass == "IPF.Appointment");
+      let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
+        .filter(folder => folder.FolderClass == "IPF.Appointment");
       for (let folder of calendars) {
         let calendar = this.createCalendarAccount(folder);
         await calendar.save();
@@ -787,8 +789,10 @@ export class EWSAccount extends MailAccount {
       },
     };
     let result = await this.callEWS(query);
-    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder).filter(folder => folder.ExtendedProperty.Value != "true");
-    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder).filter(folder => folder.FolderClass == "IPF.Appointment");
+    let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
+      .filter(folder => folder.ExtendedProperty.Value != "true");
+    let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
+      .filter(folder => folder.FolderClass == "IPF.Appointment");
     for (let account of this.dependentAccounts()) {
       if (account instanceof EWSAccount) {
         let request = {
