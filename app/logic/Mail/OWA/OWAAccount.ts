@@ -184,6 +184,7 @@ export class OWAAccount extends MailAccount {
       let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
       let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
       let addressbook = this.createAddressbookAccount(folder, true);
+      appGlobal.addressbooks.add(addressbook);
       await addressbook.save();
     }
 
