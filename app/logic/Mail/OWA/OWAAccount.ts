@@ -293,7 +293,7 @@ export class OWAAccount extends MailAccount {
       return await mainAccount.callOWA(aRequest, { mailbox: this.username });
     }
     if (!this.hasLoggedIn) {
-      throw new LoginError(null, "Please login");
+      throw new LoginError(null, gt`Please login`);
     }
     let url = this.url + 'service.svc';
     let options = {
@@ -336,7 +336,7 @@ export class OWAAccount extends MailAccount {
     }
     if ([401, 440].includes(response.status)) {
       await this.logout();
-      throw new LoginError(null, "Please login");
+      throw new LoginError(null, gt`Please login`);
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);

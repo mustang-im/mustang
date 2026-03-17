@@ -227,6 +227,10 @@ export class GraphAccount extends MailAccount {
     if (path.startsWith("https://")) {
       return await this.httpCall(path, options);
     }
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(false);
+    }
+
     let user = options?.user ? "user/" + options.user : "me";
     let version = options?.beta ? "beta" : "v1.0";
     return await this.httpCall(`${this.url}/${version}/${user}/${path}`, options);
