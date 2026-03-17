@@ -54,11 +54,19 @@ export function updateContainerFromEvent(event: Event, container: Record<string,
   setValue(container, "dtstamp", datetime2ical(new Date()));
   setValue(container, "uid", event.calUID);
   setValue(container, "summary", event.title);
+  // Backwards compat, because other clients don't know `CONFERENCE`
+  // Maybe also add to the end of descriptionText and HTML?
   setValue(container, "location", event.location || event.isOnline && event.onlineMeetingURL);
+  // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
   setValue(container, "conference", event.onlineMeetingURL);
   if (event.hasHTML) {
+    // Plaintext, and HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
+    // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
+    // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
     setValue(container, "description", event.descriptionText, { altrep: `"data:text/html,${encodeURIComponent(event.descriptionHTML)}"` });
+    // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
     setValue(container, "styled-description", event.descriptionHTML, { value: "TEXT", fmttype: "text/html" });
+    // HTML Outlook
     setValue(container, "x-alt-desc", event.descriptionHTML, { fmttype: "text/html" });
   } else {
     setValue(container, "description", event.descriptionText);
@@ -71,6 +79,7 @@ export function updateContainerFromEvent(event: Event, container: Record<string,
   setValue(container, "dtend", datetime2ical(event.endTime, timeZone), properties);
   setValue(container, "recurrence-id", datetime2ical(event.recurrenceStartTime, timeZone), properties);
   if (event.recurrenceRule) {
+    // getCalString gives us the whole RRULE line directly
     container.rrule = [event.recurrenceRule.getCalString(event.allDay)];
   } else {
     delete container.rrule;
@@ -106,9 +115,25 @@ export function updateContainerFromEvent(event: Event, container: Record<string,
 }
 
 function containerToVEvent(container: Record<string, string[]>): string {
+  // Lines longer than 75 octets should be folded.
+  // XXX should use TextEncoder to count octets.
   return "BEGIN:VEVENT\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VEVENT\r\n";
 }
 
+/**
+ * Updates an unprototyped object containing VEvent data.
+ * @param container  {object} VEvent data from @see vEventToContainer
+ * @param key        {string} The key for the value to be set
+ * @param value      {string} The new data for this key, or falsey to delete it
+ * @param parameters {object} Additional parameter values for this key
+ * The value will be escaped if necessary, but parameters will not.
+ * Example: To set the recurrence ID of an exception of an all-day event:
+ * setValue(container, "recurrence-id", "20260226", { value: "DATE" });
+ * This will then set the `container.recurrenceid` property to
+ * ["RECURRENCE=ID;VALUE=DATE:20260226"]
+ * This is an array because the `attendee` property is multivalued
+ * (by comparison vCard has many multivalued propertes).
+ */
 function setValue(container: Record<string, string[]>, key: string, value: string | null, parameters: Record<string, string> = {}) {
   if (!value) {
     delete container[key];
