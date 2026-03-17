@@ -287,7 +287,7 @@ export class OWAAccount extends MailAccount {
     await this.callOWA(request);
   }
 
-  async callOWA(aRequest: any, { mailbox = null, authRepeat = false } = {}): Promise<any> {
+  async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
     if (this.mainAccount) {
       let mainAccount = this.mainAccount as OWAAccount;
       return await mainAccount.callOWA(aRequest, { mailbox: this.username });
@@ -335,17 +335,8 @@ export class OWAAccount extends MailAccount {
       lock.release();
     }
     if ([401, 440].includes(response.status)) {
-      try {
-        if (authRepeat) { // Don't loop on errors
-          throw new LoginError(null, gt`Please login`);
-        }
-        await this.loginCommon(false); // throws on login failure
-      } catch (ex) {
-        await this.logout();
-        throw ex;
-      }
-      // retry
-      return await this.callOWA(aRequest, { authRepeat: true });
+      await this.logout();
+      throw new LoginError(null, gt`Please login`);
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
