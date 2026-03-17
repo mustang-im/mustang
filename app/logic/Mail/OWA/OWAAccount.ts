@@ -389,7 +389,7 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
-      } else if (folder.FolderClass == "IPF.Appointment" && folder.DistinguishedFolderId == "calendar" && !haveCalendar) {
+      } else if (folder.DistinguishedFolderId == "calendar" && !haveCalendar) {
         // Create primary calendar automatically
         let calendar = this.createCalendarAccount(folder);
         appGlobal.calendars.add(calendar);
