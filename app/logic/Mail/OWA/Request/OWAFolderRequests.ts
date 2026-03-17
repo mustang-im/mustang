@@ -1,9 +1,6 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 import type { ExchangePermission } from "../../EWS/EWSFolder";
-
-// IconIndexPidTag is currently unused because I don't know how to
-// correctly format an OWA request for it, so we can't import it yet.
 // import { IconIndexPidTag } from "../../EWS/EWSFolder";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
