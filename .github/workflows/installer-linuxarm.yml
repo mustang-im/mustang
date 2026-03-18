@@ -12,7 +12,7 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install FPM
       # Work around <https://github.com/electron-userland/electron-builder/issues/9563>
