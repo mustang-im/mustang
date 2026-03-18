@@ -1,6 +1,7 @@
 import type { MailAccount } from "../MailAccount";
 import { fetchConfig } from "./fetchConfig";
-import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON, fetchV1, ConfirmExchangeRedirect } from "./exchangeConfig";
+import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV1XMLSingleFetch, ConfirmExchangeRedirect } from "./exchangeV1Config";
+import { exchangeAutoDiscoverV2JSON } from "./exchangeV2Config";
 import { guessConfig } from "./guessConfig";
 import { localConfig } from "./localConfig";
 import { PriorityAbortable } from "../../util/flow/Abortable";
@@ -42,7 +43,7 @@ export async function findConfig(emailAddress: string, password: string, exchang
       let redirectDomain = getBaseDomainFromHost(new URL(redirectURL).hostname);
       if (exchangeConfirmCallback &&
           await exchangeConfirmCallback(emailAddress, redirectDomain)) {
-        return await fetchV1(redirectURL, confirm.callArgs, abort);
+        return await exchangeAutoDiscoverV1XMLSingleFetch(redirectURL, confirm.callArgs, abort);
       } else {
         throw new UserCancelled();
       }
