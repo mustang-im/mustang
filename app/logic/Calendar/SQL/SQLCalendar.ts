@@ -52,7 +52,7 @@ export class SQLCalendar {
       FROM calendar
       WHERE idStr = ${accountRow.idStr}
       `) as any;
-    if (row.id) {
+    if (row?.id) {
       cal.dbID = row.id;
     } else {
       // When the type-specific DB has been deleted, but not the accounts DB.
