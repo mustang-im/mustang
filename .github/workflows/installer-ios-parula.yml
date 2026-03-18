@@ -65,7 +65,7 @@ jobs:
           echo "IPA_FILENAME=$(basename "$IPA_FILE")" >> $GITHUB_ENV
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.IPA_FILENAME }}
           path: ${{ env.IPA_FILE_PATH }}

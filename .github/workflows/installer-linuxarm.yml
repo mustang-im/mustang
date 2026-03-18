@@ -43,7 +43,7 @@ jobs:
         USE_SYSTEM_FPM: true
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Installers Linux ARM
         path: |
