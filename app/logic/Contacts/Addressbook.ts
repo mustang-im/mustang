@@ -1,8 +1,11 @@
 import { Account } from "../Abstract/Account";
 import { Person } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
+import { SQLGroup } from "./SQL/SQLGroup";
 import { appGlobal } from "../app";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 
 export class Addressbook extends Account {
@@ -21,7 +24,22 @@ export class Addressbook extends Account {
     return new Group(this);
   }
 
+  get isLoggedIn(): boolean {
+    // Please override in subclasses
+    return true; // for local addressbook
+  }
+
   async listContacts() {
+    await this.readContactsFromDB();
+  }
+
+  async readContactsFromDB() {
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.persons.isEmpty && this.groups.isEmpty) {
+      await SQLGroup.readAll(this); // also reads persons
+    }
   }
 
   quickSearch(searchTerm: string, fullSearch: boolean = false): Collection<Person> {
@@ -44,6 +62,7 @@ export class Addressbook extends Account {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAddressbook(this);
   }
 
@@ -51,6 +70,16 @@ export class Addressbook extends Account {
     await super.deleteIt();
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
+  }
+
+  async addSharedPerson(person: PersonUID, access: AddressbookShareCombinedPermissions) {
   }
 
   fromConfigJSON(json: any) {
@@ -72,3 +101,14 @@ export interface AddressbookStorage {
   saveAddressbook(addressbook: Addressbook): Promise<void>;
   deleteAddressbook(addressbook: Addressbook): Promise<void>;
 }
+
+export enum AddressbookShareCombinedPermissions {
+  /** Can see all contacts details, but not modify */
+  Read = "read",
+  /** Can see and modify all details of all contacts, and add and delete contacts */
+  Modify = "modify",
+}
+export const addressbookShareCombinedPermissionsLabels: Record<string, string> = {
+  [AddressbookShareCombinedPermissions.Read]: gt`See all contact details`,
+  [AddressbookShareCombinedPermissions.Modify]: gt`Modify, add and delete contacts`,
+};

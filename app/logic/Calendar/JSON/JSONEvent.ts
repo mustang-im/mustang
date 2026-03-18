@@ -18,6 +18,8 @@ export class JSONEvent {
     json.endTime = event.endTime.toISOString();
     json.allDay = event.allDay;
     json.timezone = event.timezone;
+    json.isOnline = event.isOnline;
+    json.onlineMeetingURL = event.onlineMeetingURL;
     json.calUID = event.calUID;
     json.pID = event.pID;
     json.calendarID = event.calendar.id;
@@ -68,6 +70,8 @@ export class JSONEvent {
     event.endTime = sanitize.date(json.endTime, event.startTime);
     event.allDay = sanitize.boolean(json.allDay, false);
     event.timezone = sanitize.string(json.timezone, null);
+    event.isOnline = sanitize.boolean(json.isOnline, false);
+    event.onlineMeetingURL = sanitize.url(json.onlineMeetingURL, null);
     event.calUID = json.calUID;
     event.pID = json.pID;
     if (json.calendarID) {

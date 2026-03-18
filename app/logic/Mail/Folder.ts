@@ -4,7 +4,7 @@ import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
-import { Lock } from "../util/Lock";
+import { Lock } from "../util/flow/Lock";
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
@@ -28,7 +28,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   @notifyChangedProperty
   countNewArrived = 0;
   /**
-   * IMAP: modseq from CONDSTORE, as integer
+   * IMAP: modseq from CONDSTORE, as string
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
@@ -60,12 +60,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   protected async readFolder() {
+    if (this.messages.hasItems) {
+      return;
+    }
     let lock = await this.readFolderLock.lock();
     try {
       if (lock.wasWaiting) {
-        return;
-      }
-      if (this.messages.hasItems) {
         return;
       }
       if (!this.dbID) {
@@ -128,27 +128,52 @@ export class Folder extends Observable implements TreeItem<Folder> {
     await this.copyMessagesHere(new ArrayColl([message]));
   }
 
+  /**
+   * To move messages from one folder to another, call this function
+   * on the target folder. The `messages` are in the source folder.
+   *
+   * All messages must be from the same source folder.
+   *
+   * Attention:
+   * Always pass in a copy of the array, not the live `selectedMessages` array from the UI.
+   * If the user deletes or moves messages, they will be removed from the UI
+   * instantly, which changes the current selection, so the wrong emails get deleted.
+   * (Alternatively, all implementations here would need to make a copy of the array at start.)
+   */
   async moveMessagesHere(messages: Collection<EMail>) {
-    throw new AbstractFunction();
-  }
-
-  async copyMessagesHere(messages: Collection<EMail>) {
-    throw new AbstractFunction();
+    await this.moveOrCopyMessagesHere("move", messages);
   }
 
   /**
-   * Helper function for `copyMessagesHere()` and `moveMessagesHere()`
-   * @returns
-   * true = Move has already been done (across accounts)
-   * false = Caller needs to move messages (within the same account) */
-  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
+   * To copy messages from one folder to another, call this function
+   * on the target folder. The `messages` are in the source folder.
+   *
+   * All messages must be from the same source folder.
+   */
+  async copyMessagesHere(messages: Collection<EMail>) {
+    await this.moveOrCopyMessagesHere("copy", messages);
+  }
+
+  /**
+   * Helper function for `copyMessagesHere()` and `moveMessagesHere()`.
+   * Calls `moveOrCopyMessagesOnServer()` as needed.
+   *
+   * @param sameServer
+   *   true = source and target folder are on the same server, and we can move the email directly on the server and locally
+   *   false = we need to upload the full email to the target and hard delete it on the source
+   *   default: true, if target and source folder are the same account, otherwise false
+   *   You may want to override that to true for delegate accounts or dependent accounts.
+   */
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>, sameServer?: boolean) {
     let sourceFolder = messages.first.folder;
+    sameServer ??= this.account == sourceFolder.account;
     assert(sourceFolder, "Need source folder");
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
+
     if (action == "move") {
       sourceFolder.messages.removeAll(messages);
     }
-    if (this.account != sourceFolder.account) {
+    if (!sameServer) {
       for (let message of messages) {
         await message.loadMIME();
         await this.addMessage(message);
@@ -156,10 +181,23 @@ export class Folder extends Observable implements TreeItem<Folder> {
           await message.deleteMessage();
         }
       }
-      return true;
+      return;
     }
-    // Both folders need refresh
-    return false;
+
+    this.countTotal += messages.length;
+
+    await this.moveOrCopyMessagesOnServer(action, messages);
+
+    if (action == "move") {
+      sourceFolder.countTotal -= messages.length;
+      for (let sourceMsg of messages) {
+        await sourceMsg.deleteMessageLocally();
+      }
+    }
+  }
+
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EMail>) {
+    throw new AbstractFunction();
   }
 
   /**
@@ -183,7 +221,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     assert(folder != this, "Cannot move a folder into itself. Neither physics nor logic allow that. We would run into a circle and run and run and run...");
     assert(this.subFolders.contains(folder), "This folder is *already* a subfolder of the target folder");
     let disableSubfolders = this.disableSubfolders();
-    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
+    assert(!disableSubfolders, disableSubfolders || "This folder cannot have subfolders");
     // TODO Check sub sub folders
     if (folder.parent) {
       folder.parent.subFolders.remove(folder);
@@ -197,7 +235,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   /** @see MailAccount.createToplevelFolder() */
   async createSubFolder(name: string): Promise<Folder> {
     let disableSubfolders = this.disableSubfolders();
-    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
+    assert(!disableSubfolders, disableSubfolders || "This folder cannot have subfolders");
     let folder = this.account.newFolder();
     folder.name = name;
     folder.parent = this;
@@ -207,7 +245,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   async rename(newName: string): Promise<void> {
     let disabled = this.disableRename();
-    assert(!disabled, disabled);
+    assert(!disabled, disabled || "Cannot rename");
     this.name = newName;
   }
 
@@ -218,7 +256,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
     let disableDelete = this.disableDelete();
-    assert(!disableDelete, disableDelete ?? "Cannot delete");
+    assert(!disableDelete, disableDelete || "Cannot delete");
     await this.deleteItLocally();
     await this.deleteItOnServer();
   }
@@ -245,8 +283,34 @@ export class Folder extends Observable implements TreeItem<Folder> {
     }
   }
 
+  /**
+   * Triggers a full resync of the folder.
+   * Works only for protocols that have a sync key (e.g. EWS).
+   * For some protocols (e.g. JMAP), might trigger a full resync of
+   * *every* folder (in the account), on their respective next sync.
+   */
+  async fullResync(): Promise<void> {
+    this.syncState = null;
+    await this.listMessages();
+  }
+
   get children(): Collection<Folder> {
     return this.subFolders as any as Collection<Folder>;
+  }
+
+  /**
+   * Return this folder and all of its descendants.
+   */
+  getInclusiveDescendants(): ArrayColl<Folder> {
+    let descendants = new ArrayColl<Folder>();
+    function iterateFolders(folder: Folder) {
+      descendants.add(folder);
+      for (let child of folder.subFolders) {
+        iterateFolders(child);
+      }
+    }
+    iterateFolders(this);
+    return descendants;
   }
 
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
@@ -278,6 +342,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return false;
   }
 
+  fromExtraJSON(json: any) {
+  }
+  toExtraJSON(): any {
+    return {};
+  }
+
   newEMail(): EMail {
     return new EMail(this);
   }
@@ -297,7 +367,6 @@ export enum SpecialFolder {
 }
 
 export const specialFolderOrder = [
-  SpecialFolder.All,
   SpecialFolder.Inbox,
   SpecialFolder.Sent,
   SpecialFolder.Drafts,
@@ -305,11 +374,12 @@ export const specialFolderOrder = [
   SpecialFolder.Spam,
   SpecialFolder.Archive,
   SpecialFolder.Outbox,
+  SpecialFolder.All,
   SpecialFolder.Search,
   SpecialFolder.Normal,
 ];
 
-export const specialFolderNames = {};
+export const specialFolderNames: Record<string, string> = {};
 specialFolderNames[SpecialFolder.Inbox] = gt`Inbox`;
 specialFolderNames[SpecialFolder.Sent] = gt`Sent`;
 specialFolderNames[SpecialFolder.Drafts] = gt`Drafts`;
@@ -320,3 +390,36 @@ specialFolderNames[SpecialFolder.Outbox] = gt`Outbox`;
 specialFolderNames[SpecialFolder.Search] = gt`Saved Search`;
 specialFolderNames[SpecialFolder.Normal] = gt`Normal folder`;
 specialFolderNames[SpecialFolder.All] = gt`All messages`;
+
+export enum MailShareCombinedPermissions {
+  Read = "read",
+  /** Can read messages, and change the flags and tags,
+   * but not add and delete emails */
+  FlagChange = "flags-change",
+  /** Full access, read, add and delete emails, and flag changes */
+  Modify = "modify",
+  Custom = "custom",
+}
+export enum MailShareIndividualPermissions {
+  Read = "read",
+  /** Can change the flags and tags */
+  FlagChange = "flags-change",
+  Delete = "delete",
+  Create = "create",
+  DeleteFolder = "delete-folder",
+  CreateSubfolders = "create-subfolders",
+}
+export const mailShareCombinedPermissionsLabels: Record<string, string> = {
+  [MailShareCombinedPermissions.Read]: gt`Read`,
+  [MailShareCombinedPermissions.FlagChange]: gt`Tag, star, mark as read`,
+  [MailShareCombinedPermissions.Modify]: gt`Delete, move and add mails`,
+  [MailShareCombinedPermissions.Custom]: gt`Custom`,
+};
+export const mailShareIndividualPermissionsLabels: Record<string, string> = {
+  [MailShareIndividualPermissions.Read]: gt`Read mail`,
+  [MailShareIndividualPermissions.FlagChange]: gt`Change mail flags`,
+  [MailShareIndividualPermissions.Delete]: gt`Delete mails`,
+  [MailShareIndividualPermissions.Create]: gt`Add new mails`,
+  [MailShareIndividualPermissions.DeleteFolder]: gt`Delete this folder`,
+  [MailShareIndividualPermissions.CreateSubfolders]: gt`Add new folders`,
+};

@@ -4,14 +4,14 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSyn
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
   canSync: boolean = true;
-  readonly persons: ArrayColl<ActiveSyncPerson>;
+  declare readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
   protected readonly requestLock = new Lock();
   /** ActiveSync ServerId for this addressbook */
@@ -30,6 +30,17 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
   newGroup(): never {
     throw new NotSupported("ActiveSync does not support distribution lists");
+  }
+
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
   }
 
   /**
@@ -82,10 +93,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   async listContacts() {
-    if (!this.dbID || !this.serverID) {
-      this.serverID ??= new URL(this.url).searchParams.get("serverID");
-      await this.save();
-    }
+    await super.listContacts();
 
     let data = {
       WindowSize: String(kMaxCount),

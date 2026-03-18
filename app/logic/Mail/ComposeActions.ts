@@ -3,14 +3,15 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
+import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
-import { getDateTimeFormatPref, gt } from "../../l10n/l10n";
-import type { Collection } from "svelte-collections";
+import { getDateTimeLocale, gt } from "../../l10n/l10n";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -24,7 +25,7 @@ export class ComposeActions {
 
   quotePrefixLine(): string {
     function getDate(date: Date) {
-      return date.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+      return date.toLocaleString(getDateTimeLocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
     let from = this.email.from.name || this.email.from.emailAddress;
     let date = getDate(this.email.sent);
@@ -37,30 +38,42 @@ export class ComposeActions {
     this.email.messageID = crypto.randomUUID() + "@" + hostname;
   }
 
-  protected _reply(): EMail {
+  /** New unrelated message from the same identity and folder */
+  newMailFromSameIdentity(): EMail {
     let original = this.email;
-    original.markReplied()
-      .catch(original.folder.account.errorCallback);
-
     let account = original.folder.account;
     let reply = account.newEMailFrom();
     reply.compose.generateMessageID();
 
-    let recipients = original.from?.emailAddress
-      ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
-      : [];
-    let from = MailIdentity.findIdentity(recipients, account);
+    let findFrom = new ArrayColl<PersonUID>();
+    if (original.from?.emailAddress) {
+      findFrom.add(original.from);
+      findFrom.addAll(original.to);
+      findFrom.addAll(original.cc);
+      findFrom.addAll(original.bcc);
+    }
+    let from = MailIdentity.findIdentity(findFrom, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
 
     reply.folder = original.folder?.specialFolder == SpecialFolder.Normal
       ? original.folder
       : account.getSpecialFolder(SpecialFolder.Sent);
+    return reply;
+  }
+
+  protected _reply(): EMail {
+    let reply = this.newMailFromSameIdentity();
+
+    let original = this.email;
+    original.markReplied()
+      .catch(original.folder.account.errorCallback);
 
     reply.subject = "Re: " + original.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = original.messageID;
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
+    reply.mustEncrypt = original.wasEncrypted;
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
@@ -77,13 +90,17 @@ export class ComposeActions {
     return reply;
   }
 
-  replyToAuthor(): EMail {
-    let reply = this._reply();
+  protected _addFromAsRecipient(reply: EMail) {
     let to = this.email.replyTo ?? this.email.from;
     if (findIdentityForEMailAddress(to.emailAddress) && this.email.to.first) {
       to = this.email.to.first;
     }
     reply.to.add(to);
+  }
+
+  replyToAuthor(): EMail {
+    let reply = this._reply();
+    this._addFromAsRecipient(reply);
     return reply;
   }
 
@@ -92,6 +109,14 @@ export class ComposeActions {
     reply.to.addAll(this.email.to.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
     reply.cc.addAll(this.email.cc.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
     return reply;
+  }
+
+  newToAll(): EMail {
+    let mail = this.newMailFromSameIdentity();
+    this._addFromAsRecipient(mail);
+    mail.to.addAll(this.email.to.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != mail.to.first));
+    mail.cc.addAll(this.email.cc.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != mail.to.first));
+    return mail;
   }
 
   async forward(): Promise<EMail> {
@@ -107,6 +132,7 @@ export class ComposeActions {
     await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     forward.html = `<p></p>
     <p></p>
     <p></p>
@@ -119,7 +145,7 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Date:</span> <span class="value">
-          ${this.email.sent.toLocaleString(getDateTimeFormatPref(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
+          ${this.email.sent.toLocaleString(getDateTimeLocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
         </span>
       </div>
       <div>
@@ -138,6 +164,7 @@ export class ComposeActions {
     await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
+    forward.mustEncrypt = this.email.wasEncrypted;
     let a = new Attachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
@@ -205,9 +232,6 @@ export class ComposeActions {
       return url;
     }
 
-    URL.revokeObjectURL(url);
-    attachment.blobURL = null;
-
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
   }
@@ -252,6 +276,12 @@ export class ComposeActions {
 
   /**
    * Sets up the email for sending, with all the headers, signature etc.
+   *
+   * - Insert inline images
+   * - Add footer signature
+   * - Encrypt
+   * - Delete drafts
+   *
    * Called by composer.
    * The actual send on the protocol level is done by `EMail.send()`
    */
@@ -262,6 +292,7 @@ export class ComposeActions {
       this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.realname);
     }
     let account = fromIdentity.account;
+    this.email.html ??= "";
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
@@ -288,7 +319,8 @@ export class ComposeActions {
     this.email.isDraft = false;
 
     this.convertInlineAttachmentsURLs();
-    await account.send(this.email);
+    let mail = await SendEncrypted.encryptAsNeeded(this.email);
+    await account.send(mail);
 
     this.email.folder = previousFolder;
     this.deleteDrafts(previousDrafts)
@@ -307,6 +339,9 @@ export class ComposeActions {
     let previousDrafts = this.getDrafts();
 
     this.email.isDraft = true;
+    // TODO encrypt
+    assert(!this.email.shouldEncrypt, "TODO encrypt drafts");
+
     await draftFolder.addMessage(this.email);
 
     await this.deleteDrafts(previousDrafts);
@@ -315,7 +350,7 @@ export class ComposeActions {
   getDrafts(): Collection<EMail> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    return draftFolder.messages.filter(mail => mail.messageID == this.email.messageID);
+    return draftFolder.messages.filterOnce(mail => mail.messageID == this.email.messageID);
   }
 
   async deleteDrafts(previousDrafts?: Collection<EMail>): Promise<void> {

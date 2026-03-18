@@ -3,7 +3,14 @@
 </Route>
 {#if appGlobal.isMobile}
   <Route path="folder/:accountID/:folderID/message-list">
-    <MsgListM messages={params?.messages ?? searchMessages ?? $selectedFolder?.messages ?? requiredParam()} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+    {$selectedFolder = params.folder ?? $selectedFolder,
+     $selectedAccount = params.account ?? $selectedAccount, ""}
+    <MsgListM
+      messages={searchMessages ?? params?.messages ?? $selectedFolder?.messages ?? requiredParam()}
+      bind:searchMessages
+      selectedFolder={$selectedFolder}
+      bind:selectedMessage={$selectedMessage}
+      bind:selectedMessages={$selectedMessages} />
   </Route>
   <Route path="message/:accountID/:folderID/:messageID/display">
     <MessageDisplay message={params?.message ?? $selectedMessage ?? requiredParam()} />
@@ -17,7 +24,11 @@
   <Route path="/">
     {params?.account ? $selectedAccount = params.account : null,
      params?.folder ? $selectedFolder = params.folder : null, ""}
-    <AccountsM {accounts} {folders} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} />
+    <AccountsM
+      {accounts}
+      {folders}
+      bind:selectedAccount={$selectedAccount}
+      bind:selectedFolder={$selectedFolder} />
   </Route>
 {:else}
   <Route path="/">
@@ -29,10 +40,8 @@
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
   import type { Folder } from "../../logic/Mail/Folder";
   import type { EMail } from "../../logic/Mail/EMail";
-  import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
-  import { selectedPerson } from "../Contacts/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { appGlobal } from "../../logic/app";
   import MailApp from "./MailApp.svelte";
@@ -42,7 +51,6 @@
   import SearchResultsM from "./Search/SearchResultsM.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
-  import { showError } from "../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
@@ -55,41 +63,25 @@
 
   let searchMessages: ArrayColl<EMail> | null;
 
-  $: loadFolder($selectedFolder).catch(showError);
+  $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
+    if (!folder) {
+      return;
+    }
     try {
-      if (!folder) {
-        return;
-      }
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
-      await folder.listMessages();
+      let newMessages = await folder.listMessages();
+      await folder.downloadMessages(newMessages);
     } catch (ex) {
       if (ex.authFail) {
         // await folder.account.login(true);
         // await folder.listMessages();
       } else {
-        showError(ex);
+        folder.account.errorCallback(ex);
       }
     }
-  }
-
-  $: $selectedMessage && selectPerson($selectedMessage)
-  function selectPerson(message: EMail) {
-    if (view == "chat") {
-      return;
-    }
-    if (message.contact instanceof Person) {
-      $selectedPerson = message.contact;
-      return;
-    }
-    let personUID = message.outgoing ? message.to.first : message.from;
-    let person = personUID?.findPerson();
-    if (!person) {
-      return;
-    }
-    $selectedPerson = person;
   }
 
   let viewSetting = getLocalStorage("mail.view", "vertical");

@@ -1,5 +1,5 @@
 <!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
-<hbox class="direction">
+<hbox class="direction" style="--account-color: {$message.folder.account.color}" class:read={$message.isRead}>
   {#if $message.outgoing}
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
@@ -28,26 +28,29 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{contactName}</hbox>
-<hbox class="subject"
-  class:unread={!$message.isRead}
-  draggable="true"
-  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
-  on:contextmenu={contextMenu.onContextMenu}
-  >{$message.subject}</hbox>
-<hbox class="tags" class:tagged={$tags.hasItems}>
-  {#if $tags.hasItems}
-    <TagSelector tags={$tags} object={message} canAdd={false} />
-  {/if}
-</hbox>
-<hbox class="star button" class:starred={$message.isStarred}>
-  <Button
-    icon={StarIcon}
-    iconSize="16px"
-    iconOnly
-    label={$t`Remember this message`}
-    onClick={toggleStar}
-    plain
-    />
+<hbox class="subject-tags">
+  <hbox class="subject"
+    class:unread={!$message.isRead}
+    draggable="true"
+    on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+    on:contextmenu={contextMenu.onContextMenu}
+    >{$message.subject}</hbox>
+  <hbox flex />
+  <hbox class="tags" class:tagged={$tags.hasItems}>
+    {#if $tags.hasItems}
+      <TagSelector tags={$tags} object={message} canAdd={false} />
+    {/if}
+  </hbox>
+  <hbox class="star button" class:starred={$message.isStarred}>
+    <Button
+      icon={StarIcon}
+      iconSize="16px"
+      iconOnly
+      label={$t`Remember this message`}
+      onClick={toggleStar}
+      plain
+      />
+  </hbox>
 </hbox>
 <hbox class="date"
   class:unread={!$message.isRead}
@@ -94,9 +97,9 @@
 </ContextMenu>
 <Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
   {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
-    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} bind:selectedMessage={message} />
+    <MessageMovePopup messages={new ArrayColl($selectedMessages)} on:close={onPopupClose} />
   {:else}
-    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={message} />
+    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
   {/if}
 </Popup>
 
@@ -156,6 +159,15 @@
 </script>
 
 <style>
+  .direction:before {
+    content: "";
+    top: 10%;
+    height: 80%;
+    border-left: 3px solid var(--account-color);
+    border-radius: 10px;
+    margin-inline-end: 2px;
+    opacity: 80%;
+  }
   .correspondent,
   .subject,
   .date {
@@ -163,6 +175,13 @@
     white-space: nowrap;
     font-weight: 300;
     height: 100%;
+  }
+  .subject {
+    overflow: hidden;
+    /* Avoid cutting off within a word
+    white-space: wrap;
+    height: 1.3em; */
+    margin-inline-start: 6px;
   }
   .date {
     justify-content: start;
@@ -204,7 +223,6 @@
     padding: 4px 0px 0px 2px;
   }
   .direction {
-    width: 16px;
     padding: 0px;
   }
 
@@ -245,6 +263,9 @@
     margin-inline-start: 0px;
     transform: translateX(3px);
   }
+  .unread-dot {
+    height: 100%;
+  }
   .buttons.hover :global(svg),
   .unread-dot :global(svg) {
     stroke-width: 1.5px;
@@ -253,7 +274,7 @@
   :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
-  :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
+  :global(.row:not(:hover)) .star:not(.starred) {
     display: none;
   }
   :global(.row:not(:hover)) .unread-dot:not(.unread) :global(svg) {

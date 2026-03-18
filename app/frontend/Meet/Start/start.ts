@@ -1,7 +1,6 @@
 import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
 import { MeetAccount } from "../../../logic/Meet/MeetAccount";
 import { LiveKitAccount } from "../../../logic/Meet/LiveKit/LiveKitAccount";
-import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
 import { VideoStream } from "../../../logic/Meet/VideoStream";
 import { MeetingParticipant } from "../../../logic/Meet/Participant";
 import type { Person } from "../../../logic/Abstract/Person";
@@ -12,7 +11,6 @@ import { appGlobal } from "../../../logic/app";
 import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
 import { gt } from "../../../l10n/l10n";
 import { UserError, type URLString } from "../../../logic/util/util";
-import { faker } from "@faker-js/faker";
 
 export async function startAdHocMeeting(): Promise<VideoConfMeeting> {
   await createMustangMeetAccountIfPossible();
@@ -31,6 +29,7 @@ export function getMeetAccount(): MeetAccount {
 }
 
 export async function startFakeMeeting() {
+  const { FakeMeeting } = await import("../../../logic/Meet/FakeMeeting");
   let meeting = new FakeMeeting();
   await meeting.createNewConference();
   appGlobal.meetings.add(meeting);
@@ -45,13 +44,14 @@ class FakeIncomingCall extends VideoConfMeeting {
     this.state = MeetingState.IncomingCall;
   }
   async answer(): Promise<void> {
-    super.answer();
+    await super.answer();
     this.myParticipant = new MeetingParticipant();
     this.state = MeetingState.Ongoing;
   }
 }
 
 export async function testIncoming(person: Person) {
+  const { faker } = await import("@faker-js/faker");
   let fakeMeeting = new Event();
   fakeMeeting.startTime = faker.date.soon({ days: 1/24/4 });
   fakeMeeting.endTime = faker.date.soon({ days: 1/24 });
@@ -68,6 +68,7 @@ export async function testIncoming(person: Person) {
 }
 
 export async function callSelected(person: Person): Promise<VideoConfMeeting> {
+  const { faker } = await import("@faker-js/faker");
   let callee = new MeetingParticipant();
   callee.name = person.name;
   callee.picture = person.picture;
@@ -108,7 +109,7 @@ export async function joinByURL(url: URLString) {
 
 export async function createMustangMeetAccountIfPossible() {
   // For paying users only, create a free Meet account for demo purposes
-  if (appGlobal.meetAccounts.isEmpty &&
+  if (!appGlobal.meetAccounts.find(acc => acc.url == "https://meet.mustang.im") &&
       appGlobal.emailAccounts.hasItems &&
       await isLicensed()) {
     let account = new LiveKitAccount();

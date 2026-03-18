@@ -2,10 +2,15 @@ import { MeetingState, VideoConfMeeting } from "../VideoConfMeeting";
 import { VideoStream } from "../VideoStream";
 import { MeetingParticipant } from "../Participant";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
-import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
 import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
-import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
+import type { MatrixAccount } from "../../Chat/Matrix/MatrixAccount";
+import type { MatrixRoom } from "../../Chat/Matrix/MatrixRoom";
+import { gt } from "../../../l10n/l10n";
+enum CallErrorCode {
+  UserHangup = "user_hangup",
+};
+
 
 export class MatrixVideoConf extends VideoConfMeeting {
   protected _call: MatrixCall;
@@ -23,10 +28,10 @@ export class MatrixVideoConf extends VideoConfMeeting {
    * @param client Logged in, and the initial sync has already finished.
    * @param call
    */
-  protected constructor(client: MatrixClient, call: MatrixCall) {
+  constructor(matrixAccount: MatrixAccount, call: MatrixCall) {
     super();
     this.mediaDeviceStreams = new LocalMediaDeviceStreams();
-    this.client = client;
+    this.client = matrixAccount.client;
     this._call = call;
     this._call.on("error", ex => this.errorCallback(ex));
     this._call.on("hangup", () => this.endCallback());
@@ -52,7 +57,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
   }
 
   async answer() {
-    this._call.answer();
+    await this._call.answer();
     await super.answer();
   }
 
@@ -64,10 +69,11 @@ export class MatrixVideoConf extends VideoConfMeeting {
   /**
    * @param client Logged in, and the initial sync has already finished.
    */
-  static async call(chatRoom: Chat, client: MatrixClient): Promise<MatrixVideoConf> {
-    let call = createNewMatrixCall(client, chatRoom.id);
+  static async call(chatRoom: MatrixRoom, matrixAccount: MatrixAccount): Promise<MatrixVideoConf> {
+    const { createNewMatrixCall } = await import("matrix-js-sdk/lib/webrtc/call");
+    let call = createNewMatrixCall(matrixAccount.client, chatRoom.id);
     assert(call, "Matrix failed to start the call");
-    let meet = new MatrixVideoConf(client, call);
+    let meet = new MatrixVideoConf(matrixAccount, call);
     meet.state = MeetingState.OutgoingCallConfirm;
     return meet;
   }
@@ -75,28 +81,8 @@ export class MatrixVideoConf extends VideoConfMeeting {
   /**
    * @param client Logged in, and the initial sync has already finished.
    */
-  static async createNewConference(client: MatrixClient): Promise<MatrixVideoConf> {
-    let chatRoom = new Chat();
-    // TODO create room using MatrixClient
-    return await this.call(chatRoom, client);
-  }
-
-  /**
-   * The phone is ringing!
-   * Be informed of incoming calls from other users.
-   *
-   * This is before a conference.
-   * Once somebody calls our users, the `incomingCallCallback` will be called
-   * with a `MatrixVideoConf` object as parameter.
-   * You then need to call `conf.answer()` on that object.
-   *
-   * This `listenForCalls()` function should normally be called only once in the lifetime of the app.
-   */
-  static listenForCalls(client: MatrixClient, incomingCallCallback: (MatrixVideoConf) => Promise<void>) {
-    client.on("Call.incoming", (call: MatrixCall) => {
-      console.log("Incoming call", call.roomId, call);
-      let conf = new MatrixVideoConf(client, call);
-      incomingCallCallback(conf);
-    });
+  static async createNewConference(matrixAccount: MatrixAccount): Promise<MatrixVideoConf> {
+    let chatRoom = await matrixAccount.createRoom(gt`Meeting` + " " + new Date().toLocaleTimeString());
+    return await this.call(chatRoom, matrixAccount);
   }
 }

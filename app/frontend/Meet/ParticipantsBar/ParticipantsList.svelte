@@ -2,8 +2,7 @@
   <PersonsList
     persons={$participantsSorted}
     bind:selected
-    showSearch={false}
-    pictureSize={24}>
+    showSearch={false}>
     <hbox slot="top-right" let:person>
       {#if person instanceof MeetingParticipant}
         {#if invited.includes(person)}

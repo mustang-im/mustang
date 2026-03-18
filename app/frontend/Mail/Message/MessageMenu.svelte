@@ -27,6 +27,11 @@
     icon={EditAsNewIcon} />
 {/if}
 <MenuItem
+  onClick={newToAll}
+  label={$t`New topic`}
+  tooltip={$t`Send a new, unrelated message to all recipients`}
+  icon={NewAllIcon} />
+<MenuItem
   onClick={deleteMessage}
   classes="danger"
   label={$t`Delete`}
@@ -54,6 +59,12 @@
   label={$t`Show source`}
   tooltip={$t`Show the on-the-wire format of this message`}
   icon={SourceIcon} />
+<MenuItem
+  onClick={showDOMInspector}
+  label={$t`Show DOM`}
+  tooltip={$t`Show HTML email in the DOM Inspector of the Developer Tools`}
+  icon={SourceIcon} />
+<hbox bind:this={domE} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -63,6 +74,7 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
+  import NewAllIcon from "lucide-svelte/icons/plus";
   import ForwardIcon from "lucide-svelte/icons/forward";
   import RedirectIcon from "lucide-svelte/icons/move-right";
   import EditAsNewIcon from "lucide-svelte/icons/iteration-ccw";
@@ -87,6 +99,10 @@
   function replyAll() {
     let reply = message.compose.replyAll();
     mailMustangApp.writeMail(reply);
+  }
+  function newToAll() {
+    let mail = message.compose.newToAll();
+    mailMustangApp.writeMail(mail);
   }
   async function forward(event: MouseEvent) {
     let setting = getLocalStorage("mail.send.forward", "inline").value;
@@ -128,6 +144,14 @@
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");
     setting.value = setting.value == "source" ? "html" : "source";
+  }
+  let domE: HTMLDivElement;
+  function showDOMInspector() {
+    let setting = getLocalStorage("mail.contentRendering", "html");
+    setting.value = "html";
+    let messageE = domE.ownerDocument.querySelector(".message-body");
+    let webviewE = messageE.querySelector("webview") as HTMLIFrameElement as any;
+    webviewE.openDevTools();
   }
   function translate() {
     throw new NotImplemented();

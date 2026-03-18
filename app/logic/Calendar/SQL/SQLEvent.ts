@@ -14,6 +14,7 @@ export class SQLEvent extends Event {
   static async save(event: Event) {
     assert(event.calendar?.dbID, "Need calendar DB ID to save the event");
     let jsonStr = JSON.stringify(event.toExtraJSON(), null, 2);
+    let original = typeof (event.original) == "string" ? event.original : JSON.stringify(event.original, null, 2);
     let lock = await event.storageLock.lock();
     try {
       if (!event.dbID) {
@@ -23,7 +24,7 @@ export class SQLEvent extends Event {
             startTime, endTime, allDay, startTimeTZ,
             calUID, responseToOrganizer, pID, calendarID,
             recurrenceRule, recurrenceMasterEventID,
-            recurrenceStartTime, recurrenceIsException, json
+            recurrenceStartTime, recurrenceIsException, source, json
           ) VALUES (
             ${event.title}, ${event.rawText}, ${event.rawHTMLDangerous},
             ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0}, ${event.timezone},
@@ -31,7 +32,7 @@ export class SQLEvent extends Event {
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
             ${+!!event.parentEvent?.dbID},
-            ${jsonStr}
+            ${original}, ${jsonStr}
           )`);
         event.dbID = insert.lastInsertRowid;
       } else {
@@ -52,6 +53,7 @@ export class SQLEvent extends Event {
             recurrenceMasterEventID = ${event.parentEvent?.dbID},
             recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
             recurrenceIsException = ${+!!event.parentEvent?.dbID},
+            source = ${original},
             json = ${jsonStr}
           WHERE id = ${event.dbID}
           `);
@@ -128,7 +130,7 @@ export class SQLEvent extends Event {
           title, descriptionText, descriptionHTML,
           startTime, endTime, allDay, startTimeTZ,
           calUID, responseToOrganizer, pID, calendarID,
-          recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, json
+          recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, source, json
         FROM event
         WHERE id = ${dbID}
         `) as any;
@@ -148,6 +150,13 @@ export class SQLEvent extends Event {
     event.myParticipation = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
     event.fromExtraJSON(sanitize.json(row.json, {}));
+    if (row.source?.[0] == "{") {
+      event.original = sanitize.json(row.source, undefined);
+    } else if (row.source) {
+      event.original = sanitize.nonemptystring(row.source, undefined);
+    } else {
+      delete event.original;
+    }
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
       if (event.calendar) {
@@ -229,7 +238,7 @@ export class SQLEvent extends Event {
         title, descriptionText, descriptionHTML,
         startTime, endTime, allDay, startTimeTZ,
         calUID, responseToOrganizer, pID, id,
-        recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, json
+        recurrenceRule, recurrenceMasterEventID, recurrenceStartTime, source, json
       FROM event
       WHERE calendarID = ${calendar.dbID}
       ORDER BY id

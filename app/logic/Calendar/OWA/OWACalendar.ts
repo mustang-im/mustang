@@ -1,27 +1,49 @@
-import { Calendar } from "../Calendar";
+import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { RunOnce } from "../../util/RunOnce";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  declare readonly events: ArrayColl<OWAEvent>;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  readonly events: ArrayColl<OWAEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
-  listEventsOnce = new RunOnce(() => this.listEventsSlow());
+  /** Is this the default calendar that handles incoming invitations */
+  useForInvitations: boolean = false;
+  protected listEventsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
+  }
+
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
+  callOWA(aRequest: any) {
+    return this.username == this.account.username
+      ? this.account.callOWA(aRequest)
+      : this.account.callOWA(aRequest, { mailbox: this.username });
   }
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
@@ -33,7 +55,7 @@ export class OWACalendar extends Calendar {
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
-    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
+    let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     return participants.map((participant, i) => ({
       participant,
       availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
@@ -49,19 +71,14 @@ export class OWACalendar extends Calendar {
   }
 
   async listEvents() {
-    await this.listEventsOnce.maybeRun();
+    await super.listEvents();
+    await this.listEventsRunOnce.runOnce(() => this.listEventsSlow());
   }
 
   async listEventsSlow() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
+    await super.listEvents();
     let events = new ArrayColl<OWAEvent>;
-    await this.listFolder("calendar", events);
-    /* Disabling tasks for now.
-    await this.listFolder("tasks", events);
-    */
+    await this.listFolder(events);
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
       await event.deleteLocally();
@@ -69,11 +86,11 @@ export class OWACalendar extends Calendar {
     this.events.replaceAll(events);
   }
 
-  protected async listFolder(folderID: string, events: ArrayColl<OWAEvent>) {
-    let request = owaFindEventsRequest(folderID, kMaxFetchCount);
+  protected async listFolder(events: ArrayColl<OWAEvent>) {
+    let request = owaFindEventsRequest(this.folderID, kMaxFetchCount);
     let result: any = { RootFolder: { IncludesLastItemInRange: false } };
     while (result?.RootFolder?.IncludesLastItemInRange === false) {
-      result = await this.account.callOWA(request);
+      result = await this.callOWA(request);
       if (!result?.RootFolder?.Items?.length) {
         break;
       }
@@ -98,11 +115,11 @@ export class OWACalendar extends Calendar {
     if (!eventIDs.length) {
       return;
     }
-    let results = await this.account.callOWA(owaGetEventsRequest(eventIDs));
+    let results = await this.callOWA(owaGetEventsRequest(eventIDs));
     let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
     let online = items.filter(item => item.IsOnlineMeeting);
     if (online.length) {
-      let results = await this.account.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
+      let results = await this.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let i = 0; i < items.length; i++) {
         online[i].OnlineMeetingJoinUrl = items[i].OnlineMeetingJoinUrl;
@@ -133,13 +150,37 @@ export class OWACalendar extends Calendar {
     }
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return getSharedPersons(result.Folders[0].PermissionSet.CalendarPermissions, this.account.emailAddress);
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return result.Folders[0].PermissionSet.CalendarPermissions.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    await this.account.callOWA(owaSetCalendarPermissionsRequest(this.folderID, permissions));
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
+    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
+    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

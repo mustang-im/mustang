@@ -16,14 +16,15 @@ jobs:
     - name: Build installers for Windows
       uses: actions/setup-node@v3
       with:
-        node-version: 20.x
+        node-version: 24.x
 
+    - run: cd app/build; bash fix-installer-filenames.sh
     - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
-    - run: cd e2; yarn install
-    - run: cd e2; yarn run build:release:win
+    - run: cd desktop; yarn install
+    - run: cd desktop/backend; yarn install
+    - run: cd desktop; yarn run build:release:win
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -34,5 +35,5 @@ jobs:
       with:
         name: Parula Installers Windows
         path: |
-          e2/dist/*.exe
-          e2/dist/*.msi
+          desktop/dist/*.exe
+          desktop/dist/*.msi

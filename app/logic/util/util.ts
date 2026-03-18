@@ -1,5 +1,5 @@
 
-export function assert(test: boolean | Object | null, errorMessage: string): asserts test {
+export function assert(test: boolean | object | string | null | undefined, errorMessage: string): asserts test {
   if (!test) {
     throw new Error(errorMessage);
   }
@@ -62,6 +62,7 @@ export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {
   return await res.blob();
 }
 
+/** TODO Implement this correctly */
 export function fileExtensionForMIMEType(mimetype: string) {
   if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {
     let type = mimetype.split("/")[1];
@@ -138,3 +139,5 @@ export class AbstractFunction extends Error {
 }
 
 export type URLString = string;
+export type Json = { [key: string]: JsonValue } | JsonValue[];
+type JsonValue = string | number | boolean | null | Json;

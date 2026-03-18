@@ -21,7 +21,7 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 export class ActiveSyncEMail extends EMail {
-  folder: ActiveSyncFolder;
+  declare folder: ActiveSyncFolder;
 
   get serverID(): string | null {
     return this.pID as string | null;
@@ -32,26 +32,28 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      Fetch: {
-        Store: "Mailbox",
-        ServerId: this.serverID,
-        CollectionId: this.folder.id,
-        Options: {
-          MIMESupport: "2",
-          BodyPreference: {
-            Type: "4",
+    await this.downloadRunOnce.runOnce(async () => {
+      let request = {
+        Fetch: {
+          Store: "Mailbox",
+          ServerId: this.serverID,
+          CollectionId: this.folder.id,
+          Options: {
+            MIMESupport: "2",
+            BodyPreference: {
+              Type: "4",
+            },
           },
         },
-      },
-    };
-    let response = await this.folder.account.callEAS("ItemOperations", request);
-    if (response.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
-    }
-    this.mime = response.Response.Fetch.Properties.Body.RawData;
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      };
+      let response = await this.folder.account.callEAS("ItemOperations", request);
+      if (response.Response.Fetch.Status != "1") {
+        throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
+      }
+      this.mime = response.Response.Fetch.Properties.Body.RawData;
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromWBXML(wbxmljs: any) {
@@ -59,9 +61,11 @@ export class ActiveSyncEMail extends EMail {
     this.received = sanitize.date(wbxmljs.DateReceived, new Date());
     this.sent = this.received; // ActiveSync only supports received date
     this.setFlags(wbxmljs);
-    let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || { name: "Unknown", address: "unknown@invalid" }) as ParsedMailbox;
-    this.from = findOrCreatePersonUID(from.address, from.name);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || {}) as ParsedMailbox;
+    this.from = findOrCreatePersonUID(
+      sanitize.emailAddress(from.address, null),
+      sanitize.nonemptylabel(from.name, null));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     setPersons(this.to, wbxmljs.To);
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
@@ -224,9 +228,11 @@ export class ActiveSyncEMail extends EMail {
 }
 
 function setPersons(targetList: ArrayColl<PersonUID>, addresses: string): void {
-  let list = parseAddressList(addresses);
+  let list = parseAddressList(addresses) as ParsedMailbox[];
   if (!list) {
     return;
   }
-  targetList.replaceAll(list.map((mailbox: ParsedMailbox) => findOrCreatePersonUID(mailbox.address, mailbox.name)));
+  targetList.replaceAll(list.map(mailbox => findOrCreatePersonUID(
+    sanitize.emailAddress(mailbox.address, null),
+    sanitize.label(mailbox.name, null))));
 }

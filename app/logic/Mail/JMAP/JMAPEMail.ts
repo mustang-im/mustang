@@ -4,8 +4,9 @@ import type { JMAPAccount } from "./JMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPGetResponse, TJMAPPerson } from "./JMAPTypes";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
+import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
+import type { TJMAPGetResponse } from "./TJMAPGeneric";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
@@ -13,8 +14,7 @@ import { gt } from "../../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 
 export class JMAPEMail extends EMail {
-  pID: string | null = null;
-  folder: JMAPFolder;
+  declare folder: JMAPFolder;
   mimeBlobId: string | null = null; // TODO Save in DB
   protected flagsChanging = false;
 
@@ -22,24 +22,31 @@ export class JMAPEMail extends EMail {
     super(folder);
   }
 
+  get jmapID(): string {
+    return this.pID as string;
+  }
+  set jmapID(val: string) {
+    this.pID = val;
+  }
+
   fromJMAP(json: TJMAPEMailHeaders) {
     this.setFlagsLocal(json.keywords);
     // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1>
-    this.pID = sanitize.nonemptystring(json.id, null);
+    this.jmapID = sanitize.nonemptystring(json.id, null);
     if (this.downloadComplete) {
       return;
     }
-    this.id = sanitize.nonemptystring(json.messageId, this.pID);
+    this.id = sanitize.nonemptystring(json.messageId, this.jmapID);
     this.subject = sanitize.string(json.subject, null);
     this.received = sanitize.date(json.receivedAt, this.received ?? new Date());
     this.sent = sanitize.date(json.sentAt, this.received);
     this.inReplyTo = sanitize.string(json.inReplyTo, null);
     this.threadID = sanitize.string(json.threadId, null);
-    this.from = getPersonUID(json.from[0]);
+    this.from = getPersonUID(json.from?.[0] ?? {} as TJMAPPerson);
     setPersons(this.to, json.to);
     setPersons(this.cc, json.cc);
     setPersons(this.bcc, json.bcc);
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     this.size = sanitize.integer(json.size, null);
     this.mimeBlobId = sanitize.string(json.blobId, null);
@@ -70,7 +77,7 @@ export class JMAPEMail extends EMail {
   }
 
   static getJMAPFlags(email: EMail): Record<string, boolean> {
-    let flags = {};
+    let flags: Record<string, boolean> = {};
     flags["$seen"] = email.isRead ? true : null;
     flags["$flagged"] = email.isStarred ? true : null;
     flags["$answered"] = email.isReplied ? true : null;
@@ -140,36 +147,38 @@ export class JMAPEMail extends EMail {
   }
 
   async download() {
-    let account = this.folder.account;
-    if (!this.mimeBlobId) {
-      let response = await account.makeSingleCall(
-        "Email/get", {
-        accountId: account.accountID,
-        "ids": [this.pID],
-        properties: ["blobId"],
-      },
-      ) as TJMAPGetResponse<TJMAPEMailHeaders>;
-      let json = response.list[0];
-      assert(json, "JMAP: EMail no longer on server");
-      this.mimeBlobId = sanitize.string(json.blobId);
-    }
+    await this.downloadRunOnce.runOnce(async () => {
+      let account = this.folder.account;
+      if (!this.mimeBlobId) {
+        let response = await account.makeSingleCall(
+          "Email/get", {
+          accountId: account.accountID,
+          "ids": [this.jmapID],
+          properties: ["blobId"],
+        },
+        ) as TJMAPGetResponse<TJMAPEMailHeaders>;
+        let json = response.list[0];
+        assert(json, "JMAP: EMail no longer on server");
+        this.mimeBlobId = sanitize.string(json.blobId);
+      }
 
-    let url = account.session.downloadUrl;
-    url = url
-      .replace("{accountId}", account.accountID)
-      .replace("{blobId}", this.mimeBlobId)
-      .replace("{name}", "email")
-      .replace("{type}", "message/rfc822");
-    let response = await account.httpGet(url, {
-      headers: {
-        "Accept": "message/rfc822",
-        "Content-Type": undefined, // override
-      },
-      result: "blob",
+      let url = account.session.downloadUrl;
+      url = url
+        .replace("{accountId}", account.accountID)
+        .replace("{blobId}", this.mimeBlobId)
+        .replace("{name}", "email")
+        .replace("{type}", "message/rfc822");
+      let response = await account.httpGet(url, {
+        headers: {
+          "Accept": "message/rfc822",
+          "Content-Type": undefined, // override
+        },
+        result: "blob",
+      });
+      this.mime = new Uint8Array(await response.arrayBuffer());
+      await this.parseMIME();
+      await this.saveCompleteMessage();
     });
-    this.mime = new Uint8Array(await response.arrayBuffer());
-    await this.parseMIME();
-    await this.saveCompleteMessage();
   }
 
   async markRead(read = true) {
@@ -208,7 +217,7 @@ export class JMAPEMail extends EMail {
     await this.folder.account.makeSingleCall("Email/set", {
       accountId: this.folder.account.accountID,
       update: {
-        [this.pID]: {
+        [this.jmapID]: {
           [`keywords/${name}`]: set ? true : null,
         },
       },
@@ -224,24 +233,24 @@ export class JMAPEMail extends EMail {
     await this.setFlagServer(tag.name, false);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
-      this.folder.deletions.add(this.pID);
-      let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
+      this.folder.deletions.add(this.jmapID);
+      if (strategy == DeleteStrategy.DeleteImmediately ||
+          [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
         await this.folder.account.makeSingleCall("Email/set", {
           accountId: this.folder.account.accountID,
-          destroy: [ this.pID ],
+          destroy: [ this.jmapID ],
         });
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
-        trash.moveMessageHere(this);
+        await trash.moveMessageHere(this);
       } else {
         throw new NotReached("Unknown delete strategy");
       }
     } finally {
-      this.folder.deletions.delete(this.pID);
+      this.folder.deletions.delete(this.jmapID);
     }
   }
 }
@@ -255,5 +264,5 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TJMAPPerson[])
 }
 
 function getPersonUID(p: TJMAPPerson): PersonUID {
-  return findOrCreatePersonUID(sanitize.string(p.email, null), sanitize.label(p.name, null));
+  return findOrCreatePersonUID(sanitize.emailAddress(p.email, null), sanitize.nonemptylabel(p.name, null));
 }

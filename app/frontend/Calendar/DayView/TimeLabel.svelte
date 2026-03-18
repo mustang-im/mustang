@@ -1,9 +1,9 @@
-<hbox class="time">
-  {time.toLocaleTimeString(getDateTimeFormatPref(), { hour: "numeric" })}
+<hbox class="time label">
+  {time.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric" })}
 </hbox>
 
 <script lang="ts">
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let time: Date
 </script>

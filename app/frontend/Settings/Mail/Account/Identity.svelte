@@ -16,6 +16,11 @@
   {/each}
 
   <hbox class="buttons">
+    <RoundButton
+      label={$t`Add`}
+      onClick={onAdd}
+      icon={AddIcon}
+      />
     <Button label={$t`Save`}
       classes="save"
       icon={SaveIcon}
@@ -40,7 +45,6 @@
   export let account: MailAccount;
 
   $: identities = (account as MailAccount).identities;
-  $: console.log("identities", $identities.contents);
 
   function onAdd() {
     let id = new MailIdentity(account);
@@ -67,6 +71,7 @@
   .buttons {
     justify-content: end;
     margin-block-start: 64px;
+    gap: 12px;
   }
   .buttons :global(button) {
     margin-inline-start: 8px;

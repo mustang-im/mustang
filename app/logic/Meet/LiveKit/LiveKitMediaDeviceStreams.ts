@@ -1,9 +1,10 @@
 import { MediaDeviceStreams } from "../MediaDeviceStreams";
 import { notifyChangedProperty, notifyChangedAccessor } from "../../util/Observable";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
+import type { LocalParticipant, LocalTrack } from "livekit-client";
+import { Track } from "./LiveKitRemoteParticipant";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
@@ -40,7 +41,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
         * Source code: <https://github.com/livekit/client-sdk-js/blob/ff0de417aeaa71d9fcd07772facbb5ebdcdaf7f0/src/room/participant/LocalParticipant.ts#L482> */
         for (let trackPub of this.localParticipant.getTrackPublications()) {
           if (trackPub.source == Track.Source.Camera) {
-            this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
+            await this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
           }
         }
       }
@@ -61,7 +62,7 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
       if (device && device != this._micDevice && this.cameraMicStream) {
         for (let trackPub of this.localParticipant.getTrackPublications()) {
           if (trackPub.source == Track.Source.Microphone) {
-            this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
+            await this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
           }
         }
       }

@@ -1,10 +1,19 @@
 {#if appGlobal.isMobile}
   <Route path="/">
-    <CategoriesM />
+    <CategoryM category={null} />
   </Route>
-  <Route path="/panel/:categoryID" let:params={urlParams}>
-    <!--{ensureIDMatch(params?.category, urlParams.categoryID, id => settingsCategories.find(cat => cat.id == id))}-->
-    <PanelM category={params?.category ?? $selectedCategory ?? requiredParam()} />
+  <Route path="/category/:categoryID">
+    <CategoryM category={params?.category ?? $selectedCategory ?? requiredParam()} />
+  </Route>
+  <Route path="/account/:accountID">
+    <AccountM isMain={true}
+      account={params?.account ?? $selectedAccount ?? requiredParam()}
+      category={null} />
+  </Route>
+  <Route path="/account/:accountID/:categoryID">
+    <AccountM isMain={false}
+      account={params?.account ?? $selectedAccount ?? requiredParam()}
+      category={params?.category ?? $selectedCategory ?? requiredParam()} />
   </Route>
 {:else}
   <Route path="/">
@@ -14,12 +23,12 @@
 {/if}
 
 <script lang="ts">
-  import { selectedCategory } from "./Window/selected";
+  import { selectedCategory, selectedAccount } from "./Window/selected";
   import { appGlobal } from "../../logic/app";
   import { getParams } from "../AppsBar/selectedApp";
   import SettingsApp from "./Window/SettingsApp.svelte";
-  import PanelM from "./Mobile/PanelM.svelte";
-  import CategoriesM from "./Mobile/CategoriesM.svelte";
+  import CategoryM from "./Mobile/CategoryM.svelte";
+  import AccountM from "./Mobile/AccountM.svelte";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
 

@@ -1,5 +1,10 @@
-<StatusMessage status="processing"
-  message={$t`We are looking for the configuration of your email account...`} />
+{#if fetchingIcon}
+  <StatusMessage status="processing"
+    message={$t`Fetching icon...`} />
+{:else}
+  <StatusMessage status="processing"
+    message={$t`We are looking for the configuration of your email account...`} />
+{/if}
 
 <script lang="ts">
   import { findConfig } from "../../../logic/Mail/AutoConfig/findConfig";
@@ -25,6 +30,8 @@
   /** in */
   export let abort: AbortController;
 
+  let fetchingIcon = false;
+
   onMount(async () => {
     try {
       altConfigs = await findConfig(emailAddress, password, exchangeConfirmCallback, abort);
@@ -35,9 +42,12 @@
       let domain = getDomainForEmailAddress(emailAddress);
       assert(altConfigs?.length, $t`We could not find a configuration for ${domain}`);
       config = altConfigs.slice().shift();
+      fetchingIcon = true;
       config.icon = await getFavIcon(domain);
+      fetchingIcon = false;
       dispatchEvent("continue");
     } catch (ex) {
+      fetchingIcon = false;
       dispatchEvent("fail", ex);
     }
   });

@@ -2,12 +2,12 @@ import { ICalParser } from "./ICalParser";
 import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
-import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
-import { convertICalParserToEvent } from "./ICalToEvent";
+import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProcessor";
+import { convertICalContainerToEvent } from "./ICalToEvent";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
-  async process(email: EMail, postalMIME: any) {
+  async process(email: EMail) {
     let invitationBlob = email.attachments.find(a => a.mimeType == "text/calendar")?.content;
     if (!invitationBlob) {
       return;
@@ -16,10 +16,11 @@ export class ICalEMailProcessor extends EMailProcessor {
     let ics = new ICalParser(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
     let event = new InvitationEvent();
-    let isEvent = convertICalParserToEvent(ics, event);
-    if (!isEvent) {
+    let vevent = ics.containers.vevent?.[0];
+    if (!vevent) {
       return;
     }
+    convertICalContainerToEvent(vevent, event);
     event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;

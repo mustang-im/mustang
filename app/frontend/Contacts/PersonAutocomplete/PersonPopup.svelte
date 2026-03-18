@@ -70,7 +70,7 @@
         />
       <Button plain
         label={$t`Remove`}
-        onClick={onRemovePerson}
+        onClick={() => onRemovePerson(personUID)}
         />
       <slot name="buttons" {personUID} />
     </hbox>
@@ -80,9 +80,8 @@
 <script lang="ts">
   import { kDummyPerson, PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { ContactEntry, Person } from "../../../logic/Abstract/Person";
-  import { openUIFor } from "../../AppsBar/changeTo";
+  import { openPersonFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
-  import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -92,12 +91,13 @@
   import MailIcon from "lucide-svelte/icons/mail";
   import { createIsSame, onKeyEnter } from "../../Util/util";
   import { backgroundError, catchErrors } from "../../Util/error";
-  import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
-  const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
+  import { createEventDispatcher, onMount } from 'svelte';
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   export let personUID: PersonUID;
   export let disabled = false;
+  export let onRemovePerson: (person: PersonUID) => void | Promise<void>;
 
   let person: Person;
   let contactEntry: ContactEntry;
@@ -141,11 +141,7 @@
   }
   function onEditPerson() {
     onClose();
-    openUIFor(personUID.createPerson(appGlobal.personalAddressbook));
-  }
-  function onRemovePerson() {
-    console.log("remove contact");
-    dispatch("removePerson", personUID);
+    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook));
   }
   function useOtherEmailAddress(emailAddress: string) {
     personUID.emailAddress = emailAddress;

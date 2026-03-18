@@ -1,5 +1,5 @@
 <button on:click on:dblclick on:click={myOnClick}
-  title={label} class="button {classes}" class:filled class:border
+  title={tooltip ?? label} class="button {classes}" class:filled class:border
   {disabled} class:disabled class:selected
   {tabindex}
   style="--padding: {padding}"
@@ -27,10 +27,12 @@
   import { showError } from '../Util/error';
   import Icon from 'svelte-icon/Icon.svelte';
   import Spinner from './Spinner.svelte';
-  import type { ComponentType } from 'svelte';
+  import type { ConstructorOfATypedSvelteComponent } from 'svelte';
 
   export let label: string = null;
-  export let icon: ComponentType | string = null;
+  /** Default to the label */
+  export let tooltip: string = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string = null;
   export let classes = "";
   export let iconSize =
     classes?.includes("create") ? "18px" :

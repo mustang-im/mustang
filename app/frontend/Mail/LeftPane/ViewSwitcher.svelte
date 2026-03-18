@@ -18,20 +18,20 @@
       selected={view == "vertical"}
       />
     <Button
-      label={$t`Classic 3-pane view`}
-      icon={ThreePaneIcon}
-      iconOnly={!large}
-      iconSize="16px"
-      onClick={() => switchTo('3pane')}
-      selected={view == "3pane"}
-      />
-    <Button
       label={$t`Wide table view`}
       icon={WideTableIcon}
       iconOnly={!large}
       iconSize="16px"
       onClick={() => switchTo('widetable')}
       selected={view == "widetable"}
+      />
+    <Button
+      label={$t`Classic 3-pane view`}
+      icon={ThreePaneIcon}
+      iconOnly={!large}
+      iconSize="16px"
+      onClick={() => switchTo('3pane')}
+      selected={view == "3pane"}
       />
   </IslandSwitcher>
 </hbox>

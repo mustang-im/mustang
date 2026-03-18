@@ -1,9 +1,12 @@
-import { Addressbook } from "../Addressbook";
+import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addressbook";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
-import { RunOnce } from "../../util/RunOnce";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -12,12 +15,18 @@ export class OWAAddressbook extends Addressbook {
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
   canSync: boolean = true;
-  readonly persons: ArrayColl<OWAPerson>;
-  readonly groups: ArrayColl<OWAGroup>;
-  listContactsOnce = new RunOnce(() => this.listContactsSlow());
+  declare readonly persons: ArrayColl<OWAPerson>;
+  declare readonly groups: ArrayColl<OWAGroup>;
+  protected listContactsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
+  }
+
+  callOWA(aRequest: any) {
+    return this.username == this.account.username
+      ? this.account.callOWA(aRequest)
+      : this.account.callOWA(aRequest, { mailbox: this.username });
   }
 
   newPerson(): OWAPerson {
@@ -27,35 +36,33 @@ export class OWAAddressbook extends Addressbook {
     return new OWAGroup(this);
   }
 
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
+  }
+
   async listContacts() {
-    await this.listContactsOnce.maybeRun();
+    await super.listContacts();
+    await this.listContactsRunOnce.runOnce(() => this.listContactsSlow());
   }
 
   async listContactsSlow() {
-    let response = await this.account.callOWA(new OWAGetPeopleFiltersRequest());
-    let contacts = response.find(filter => !filter.IsReadOnly);
-    if (!contacts) {
-      this.persons.clear();
-      this.groups.clear();
-      return;
-    }
-    if (this.folderID == `${{}}`) { // Temporary workaround for corrupt IDs
-      this.folderID = null;
-    }
-    let newFolderID = !this.folderID; // Temporary until support for multiple address books
-    this.folderID ??= contacts.FolderId.Id;
-    if (!this.name) {
-      this.name = contacts.DisplayName;
-    }
-    if (!this.dbID || newFolderID) {
+    if (!this.dbID) {
       await this.save();
     }
 
     let persons = [];
     let groups = [];
-    let request = owaFindPersonsRequest(contacts.FolderId, kMaxFetchCount);
+    let request = owaFindPersonsRequest(this.folderID, kMaxFetchCount);
+    let response;
     do {
-      response = await this.account.callOWA(request);
+      response = await this.callOWA(request);
       for (let result of response.ResultSet) {
         if (result.EmailAddress?.EmailAddress) {
           persons.push(result);
@@ -79,10 +86,10 @@ export class OWAAddressbook extends Addressbook {
     for (let result of persons) {
       try {
         let request = owaGetPersonaRequest(result.PersonaId.Id);
-        let response = await this.account.callOWA(request);
+        let response = await this.callOWA(request);
         Object.assign(result, response.Persona);
         let requestNotes = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
-        let responseNotes = await this.account.callOWA(requestNotes);
+        let responseNotes = await this.callOWA(requestNotes);
         result.Notes = responseNotes.PersonaWithNotes?.BodiesArray[0].Value.Value;
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
@@ -108,7 +115,7 @@ export class OWAAddressbook extends Addressbook {
     for (let result of groups) {
       try {
         let request: any = new OWAGetGroupInfoRequest(result.EmailAddress.ItemId.Id);
-        let response = await this.account.callOWA(request);
+        let response = await this.callOWA(request);
         result.Members = response.Members;
         request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
         response = await this.account.callOWA(request);
@@ -137,6 +144,28 @@ export class OWAAddressbook extends Addressbook {
     return this.groups.find(p => p.personaID == id);
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return getSharedPersons(result.Folders[0].PermissionSet.Permissions, this.account.emailAddress);
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let result = await this.account.callOWA(owaGetPermissionsRequest(this.folderID));
+    return result.Folders[0].PermissionSet.Permissions.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    await this.account.callOWA(owaSetFolderPermissionsRequest(this.folderID, permissions));
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
@@ -145,13 +174,6 @@ export class OWAAddressbook extends Addressbook {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
     return json;
-  }
-}
-
-class OWAGetPeopleFiltersRequest {
-  /** This is an empty request, but it still needs an action. */
-  get action() {
-    return "GetPeopleFilters";
   }
 }
 

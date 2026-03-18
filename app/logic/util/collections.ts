@@ -28,3 +28,15 @@ export function getNext<T>(list: ArrayColl<T>, curObject: T): T | null {
     ?? list.last
     ?? null;
 }
+
+/** Creates an `ArrayColl` for a JS array, populates it with the contents,
+ * and syncs the changes to the ArrayColl back to the JS array. */
+export function syncArrayColl<T>(org: Array<T>, sortBy?: (i: T) => any): ArrayColl<T> {
+  let coll = new ArrayColl<T>(org);
+  coll.subscribe(() => {
+    org.length = 0;
+    let c = sortBy ? coll.sortBy(sortBy) : coll; // TODO leaking observing SortedCollection?
+    org.push(...c.contents);
+  });
+  return coll;
+}

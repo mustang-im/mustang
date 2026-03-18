@@ -1,12 +1,12 @@
 import type { EMail } from "../EMail";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName, Tag } from "../../Abstract/Tag";
 import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./SQLDatabase";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { Lock } from "../../util/Lock";
+import { Lock } from "../../util/flow/Lock";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
@@ -86,12 +86,12 @@ export class SQLEMail {
     assert(email.dbID, "Need Email DB ID to save props");
     let lock = doLock ? await email.storageLock.lock() : null;
     try {
-      let jsonStr: string | null = null;
-      if (email.invitationMessage) {
-        let json = {} as any;
-        json.invitationMessage = email.invitationMessage;
-        jsonStr = JSON.stringify(json, null, 2);
-      }
+      let json = {} as any;
+      JSONEMail.saveExtraData(email, json);
+      let jsonStr = Object.keys(json).length
+        ? JSON.stringify(json, null, 2)
+        : null;
+
       await (await getDatabase()).run(sql`
         UPDATE email SET
           isRead = ${email.isRead ? 1 : 0},
@@ -312,7 +312,7 @@ export class SQLEMail {
         email.html = html;
       }
     }
-    this.readWritableProps(email, row);
+    await this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
     await this.readAttachments(email, attachmentRows);
     await this.readTags(email, tagRows);
@@ -342,8 +342,8 @@ export class SQLEMail {
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
 
     email.contact = findOrCreatePersonUID(
-      sanitize.emailAddress(row.contactEmail, "must@n.g"),
-      sanitize.label(row.contactName, " "));
+      sanitize.emailAddress(row.contactEmail, kDummyPerson.emailAddress),
+      sanitize.nonemptylabel(row.contactName, " "));
   }
 
   static async readWritableProps(email: EMail, row?: any) {
@@ -366,8 +366,7 @@ export class SQLEMail {
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
     let json = sanitize.json(row.json, {});
-    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
-
+    JSONEMail.readExtraData(email, json);
     await this.readTags(email);
   }
 
@@ -388,9 +387,9 @@ export class SQLEMail {
     email.replyTo = null;
     for (let row of recipientRows) {
       try {
-        let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
-        let name = sanitize.label(row.name, null);
-        let uid = findOrCreatePersonUID(addr, name);
+        let uid = findOrCreatePersonUID(
+          sanitize.emailAddress(row.emailAddress, null),
+          sanitize.nonemptylabel(row.name, null));
         if (row.recipientType == 1) {
           email.from = uid;
           continue;

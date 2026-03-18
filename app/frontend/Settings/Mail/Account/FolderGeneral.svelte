@@ -44,6 +44,9 @@
     <Button label={$t`Download all messages`}
       onClick={() => refreshHack(onDownloadAll)}
       />
+    <Button label={$t`Full re-sync`}
+      onClick={() => refreshHack(onFullResync)}
+      />
     <Button label={$t`Mark all read`}
       onClick={onMarkAllRead}
       />
@@ -85,6 +88,11 @@
 
   async function onDownloadAll() {
     await folder.listMessages();
+    await folder.downloadAllMessages();
+  }
+
+  async function onFullResync() {
+    await folder.fullResync();
     await folder.downloadAllMessages();
   }
 

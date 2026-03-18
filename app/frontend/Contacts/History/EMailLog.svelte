@@ -11,14 +11,14 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { openMailFromOtherApp } from "../../Mail/open";
+  import { openEMailMessage } from "../../Mail/open";
   import { SearchView } from "../../Mail/LeftPane/SearchSwitcher.svelte";
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
 
   async function onOpen() {
-    openMailFromOtherApp(message, SearchView.Person);
+    openEMailMessage(message, SearchView.Person);
   }
 </script>
 

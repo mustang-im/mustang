@@ -3,7 +3,7 @@
     <!-- left -->
     <hbox class="accounts">
       <Button
-        icon={folder.account?.icon ?? InboxIcon}
+        icon={folder.account?.icon ?? FolderIcon}
         iconSize="24px"
         iconOnly
         label={$t`Select account or folder`}
@@ -51,7 +51,7 @@
   import Button from "../../Shared/Button.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
-  import InboxIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/folder";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import { goTo } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";

@@ -1,4 +1,4 @@
-import { getDateTimeFormatPref, gPlural, gt } from "../../l10n/l10n";
+import { getDateTimeLocale, gPlural, gt } from "../../l10n/l10n";
 
 /**
 * @returns
@@ -15,7 +15,9 @@ export function getDateTimeString(date: Date): string {
   }
   let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
+  if (date > today) { // future
+    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
+  } else if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
   } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
       today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
@@ -25,7 +27,7 @@ export function getDateTimeString(date: Date): string {
   } else { // full date
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
-  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
+  return date.toLocaleString(getDateTimeLocale(), dateDetails);
 }
 
 /**
@@ -37,23 +39,36 @@ export function getDateTimeString(date: Date): string {
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date, fullDate: Intl.DateTimeFormatOptions = { year: "numeric", month: "2-digit", day: "2-digit" }): string {
+export function getDateString(date: Date, fullDate?: Intl.DateTimeFormatOptions): string {
   if (!date) {
     return "";
   }
   let dateDetails: Intl.DateTimeFormatOptions;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
+  if (date > today) { // future
+    dateDetails = fullDate ?? { year: "numeric", month: "2-digit", day: "2-digit" };
+  } else if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
   } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
       today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
     dateDetails = { weekday: "long" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit" };
+    if (fullDate) {
+      dateDetails = Object.assign({}, fullDate);
+      dateDetails.year = undefined;
+    }
   } else { // full date
-    dateDetails = fullDate;
+    dateDetails = fullDate ?? { year: "numeric", month: "2-digit", day: "2-digit" };
   }
-  return date.toLocaleString(getDateTimeFormatPref(), dateDetails);
+  return date.toLocaleString(getDateTimeLocale(), dateDetails);
+}
+
+export function getFormattedDateString(date: Date, dateDetails: Intl.DateTimeFormatOptions): string {
+  if (!date) {
+    return "";
+  }
+  return date.toLocaleString(getDateTimeLocale(), dateDetails);
 }
 
 /** @returns Time, e.g. "15:23" */
@@ -61,7 +76,7 @@ export function getTimeString(date: Date): string {
   if (!date) {
     return "";
   }
-  return date.toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+  return date.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
 }
 
 /**
@@ -73,7 +88,7 @@ export function getTimeString(date: Date): string {
  * @return Name for the weekday, e.g. "Mo" or "Monday" */
 export function weekdayLabel(weekday: number, form: "long" | "short" | "narrow") {
   let date = new Date(2010, 2, weekday);
-  return date.toLocaleDateString(getDateTimeFormatPref(), { weekday: form });
+  return date.toLocaleDateString(getDateTimeLocale(), { weekday: form });
 };
 
 /** Monday to Sunday, in order (sorted).

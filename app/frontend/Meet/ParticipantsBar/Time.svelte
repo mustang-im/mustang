@@ -6,16 +6,16 @@
     {duration}
   </hbox>
   <!--hbox class="debug">
-    Start time {event.startTime?.toLocaleTimeString(getDateTimeFormatPref())}
-    End time {event.endTime?.toLocaleTimeString(getDateTimeFormatPref())}
-    Started {meeting.started?.toLocaleTimeString(getDateTimeFormatPref())}
-    End time {meeting.ended?.toLocaleTimeString(getDateTimeFormatPref())}
+    Start time {event.startTime?.toLocaleTimeString(getDateTimeLocale())}
+    End time {event.endTime?.toLocaleTimeString(getDateTimeLocale())}
+    Started {meeting.started?.toLocaleTimeString(getDateTimeLocale())}
+    End time {meeting.ended?.toLocaleTimeString(getDateTimeLocale())}
   </hbox-->
 {/if}
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
 
@@ -32,7 +32,7 @@
     let dur = new Date();
     dur.setTime(dur.getTime() - meeting.started.getTime());
     console.log("dur", dur);
-    duration = dur.toLocaleTimeString(getDateTimeFormatPref());
+    duration = dur.toLocaleTimeString(getDateTimeLocale());
     setTimeout(calculateDuration, 1000);
     return duration;
   }

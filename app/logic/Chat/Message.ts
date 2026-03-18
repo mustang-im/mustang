@@ -1,17 +1,24 @@
 import { Message } from "../Abstract/Message";
 import { notifyChangedProperty } from "../util/Observable";
-import type { Chat } from "./Chat";
+import type { ChatRoom } from "./ChatRoom";
 
 export class ChatMessage extends Message {
   @notifyChangedProperty
-  to: Chat;
+  to: ChatRoom;
   @notifyChangedProperty
   deliveryStatus = DeliveryStatus.Unknown;
 
-  constructor(chat: Chat) {
+  constructor(room: ChatRoom) {
     super();
-    this.to = chat;
-    this.contact = chat.contact;
+    this.to = room;
+    this.contact = room.contact;
+  }
+
+  get room(): ChatRoom {
+    return this.to;
+  }
+  set room(val: ChatRoom) {
+    this.to = val;
   }
 }
 

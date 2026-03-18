@@ -1,5 +1,7 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
+import type { ExchangePermission } from "../../EWS/EWSFolder";
+// import { IconIndexPidTag } from "../../EWS/EWSFolder";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
@@ -22,7 +24,7 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: IconIndexPidTag,
             PropertyType: "Integer",
           },*/
       }],
@@ -116,7 +118,7 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
-            PropertyTag: "0x1080",
+            PropertyTag: IconIndexPidTag,
             PropertyType: "Integer",
           },*/
       }],
@@ -165,7 +167,7 @@ export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", fold
   });
 }
 
-export function owaFindFoldersRequest(deep: boolean): OWARequest {
+export function owaFindFoldersRequest(deep: boolean, sharedFolderRoot?: string | null, username?: string): OWARequest {
   return new OWARequest("FindFolder", {
     __type: "FindFolderRequest:#Exchange",
     FolderShape: {
@@ -182,7 +184,15 @@ export function owaFindFoldersRequest(deep: boolean): OWARequest {
       }],
     },
     Paging: null,
-    ParentFolderIds: [{
+    ParentFolderIds: [sharedFolderRoot
+    ? {
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: sharedFolderRoot,
+      Mailbox: {
+        EmailAddress: username,
+      },
+    }
+    : {
       __type: "DistinguishedFolderId:#Exchange",
       Id: "msgfolderroot",
     }],
@@ -228,12 +238,20 @@ export function owaCreateNewSubFolderRequest(name: string, parentFolderID: strin
   });
 }
 
-export function owaCreateNewTopLevelFolderRequest(name: string): OWARequest {
+export function owaCreateNewTopLevelFolderRequest(name: string, username: string | null): OWARequest {
   return new OWARequest("CreateFolder", {
     __type: "CreateFolderRequest:#Exchange",
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
-      BaseFolderId: {
+      BaseFolderId: username
+      ? {
+        __type: "DistinguishedFolderId:#Exchange",
+        Id: "msgfolderroot",
+        Mailbox: {
+          EmailAddress: username,
+        },
+      }
+      : {
         __type: "DistinguishedFolderId:#Exchange",
         Id: "msgfolderroot",
       },
@@ -266,6 +284,106 @@ export function owaRenameFolderRequest(name: string, folderID: string): OWAReque
           FieldURI: "FolderDisplayName",
         },
       }],
+    }],
+  });
+}
+
+export function owaSharedFolderRequest(distinguishedIDs: string[], emailAddress: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "Default",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:FolderClass",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:ParentFolderId",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:DistinguishedFolderId",
+      }],
+    },
+    FolderIds: distinguishedIDs.map(distinguishedID => ({
+      __type: "DistinguishedFolderId:#Exchange",
+      Id: distinguishedID,
+      Mailbox: {
+        EmailAddress: emailAddress,
+      },
+    })),
+  });
+}
+
+/** Subtly different to owaSetFolderPermissionsRequst */
+export function owaSetCalendarPermissionsRequest(folderID: string, permissions: ExchangePermission[]): OWARequest {
+  return new OWARequest("UpdateFolder", {
+    __type: "UpdateFolderRequest:#Exchange",
+    FolderChanges: [{
+      __type: "FolderChange:#Exchange",
+      FolderId: {
+        __type: "FolderId:#Exchange",
+        Id: folderID,
+      },
+      Updates: [{
+        __type: "SetFolderField:#Exchange",
+        Folder: {
+          __type: "CalendarFolder:#Exchange",
+          PermissionSet: {
+            CalendarPermissions: permissions.map(permission => permission.toOWACalendarPermission()),
+          },
+        },
+        Path: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI: "PermissionSet",
+        },
+      }],
+    }],
+  });
+}
+
+export function owaSetFolderPermissionsRequest(folderID: string, permissions: ExchangePermission[]): OWARequest {
+  return new OWARequest("UpdateFolder", {
+    __type: "UpdateFolderRequest:#Exchange",
+    FolderChanges: [{
+      __type: "FolderChange:#Exchange",
+      FolderId: {
+        __type: "FolderId:#Exchange",
+        Id: folderID,
+      },
+      Updates: [{
+        __type: "SetFolderField:#Exchange",
+        Folder: {
+          __type: "Folder:#Exchange",
+          PermissionSet: {
+            __type: "PermissionSet:#Exchange",
+            Permissions: permissions.map(permission => permission.toOWAFolderPermission()),
+          },
+        },
+        Path: {
+          __type: "PropertyUri:#Exchange",
+          FieldURI: "PermissionSet",
+        },
+      }],
+    }],
+  });
+}
+
+/** Also works with calendars, but returns CalendarFolder permissions */
+export function owaGetPermissionsRequest(folderID: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:PermissionSet",
+      }],
+    },
+    FolderIds: [{
+      __type: "FolderId:#Exchange",
+      Id: folderID,
     }],
   });
 }

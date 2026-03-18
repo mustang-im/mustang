@@ -16,7 +16,7 @@ export async function checkConfig(config: MailAccount, emailAddress: string, pas
       await config.outgoing.verifyLogin();
     } catch (ex) {
       if (config.isLoggedIn) {
-        await config.logout();        
+        await config.logout();
       }
       config.outgoing.fatalError = ex;
       throw ex;

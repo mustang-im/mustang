@@ -7,7 +7,7 @@ import { mergeColls, mergeColl, Collection, ArrayColl } from "svelte-collections
 import { gt } from "../../../l10n/l10n";
 
 export class AllFolders extends Folder {
-  account: AllAccounts;
+  declare account: AllAccounts;
   /** `this` folder shows the sum of all messages in these `folders` */
   _folders: Collection<Folder>;
 
@@ -21,6 +21,9 @@ export class AllFolders extends Folder {
   set folders(val: Collection<Folder>) {
     this._folders = val;
     (this as any).messages = mergeColls(this.folders.map(folder => folder.messages));
+    this.messages.subscribe(() => {
+      this.countTotal = this.messages.length;
+    });
   }
 
   followSpecialFolder(specialFolder: SpecialFolder) {
@@ -38,7 +41,13 @@ export class AllFolders extends Folder {
 
   async getNewMessages(): Promise<Collection<EMail>> {
     let results = await Promise.all(this._folders.contents.map(folder =>
-      folder.downloadAllMessages()));
+      folder.getNewMessages()));
+    return mergeColl(...results);
+  }
+
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    let results = await Promise.all(this._folders.contents.map(folder =>
+      folder.downloadMessages(emails.filterOnce(email => email.folder == folder))));
     return mergeColl(...results);
   }
 

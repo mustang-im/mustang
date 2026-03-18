@@ -19,10 +19,6 @@ export class SQLCalendarStorage implements CalendarStorage {
   }
 
   static async readCalendars(): Promise<Collection<Calendar>> {
-    let calendars = await SQLCalendar.readAll();
-    for (let calendar of calendars) {
-      await SQLEvent.readAll(calendar);
-    }
-    return calendars;
+    return await SQLCalendar.readAll();
   }
 }

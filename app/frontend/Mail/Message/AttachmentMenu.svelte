@@ -9,14 +9,14 @@
     label={$t`Open folder`}
     tooltip={$t`Open containing folder`}
     icon={FolderIcon} />
+  <MenuItem
+    onClick={saveFile}
+    label={$t`Save as`}
+    tooltip={$t`Save in a folder on your computer`}
+    icon={SaveIcon} />
   <!--
   <MenuItem
-    on:click={saveFile}
-    label=$t`Save as`
-    tooltip=$t`Save as`
-    icon={SaveIcon}>
-  <MenuItem
-    on:click={deleteIt}
+    onClick={deleteIt}
     label=$t`Delete this attachment`
     tooltip=$t`Delete`
     icon={DeleteIcon} />

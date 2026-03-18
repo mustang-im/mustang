@@ -5,23 +5,23 @@
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
   >
-  {#if !$message.outgoing && !followup}
-    <vbox class="avatar">
-      {#if $message.contact instanceof Person}
+  {#if !$message.outgoing}
+    <vbox class="avatar"  from={$message.contact?.name}>
+      {#if $message.contact?.picture && !followup}
         <PersonPicture person={$message.contact} size={32} />
       {/if}
     </vbox>
   {/if}
   <vbox class="right">
     {#if !(fastFollowup && hideHeaderFollowup)}
-      <hbox class="meta">
+      <hbox class="meta font-smallest" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
         {#if !$message.outgoing && !followup}
-          <hbox class="from">{$message.contact?.name}</hbox>
+          <hbox class="from value">{$message.contact?.name}</hbox>
         {/if}
         <hbox flex>
           <slot name="above-center" />
         </hbox>
-        <hbox class="time">{getDateTimeString($message.sent)}</hbox>
+        <hbox class="time value">{getDateTimeString($message.sent)}</hbox>
       </hbox>
     {/if}
     <vbox class="bubble">
@@ -31,7 +31,7 @@
         </hbox>
       {/if}
       <slot name="inner-top" />
-      <div class="text selectable font-normal">
+      <div class="text value font-normal">
         {@html $message.html || ""}
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
         <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
@@ -42,7 +42,7 @@
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">
-        {#each $reactions.entries().each as [sender, emoji]}
+        {#each [...$reactions.entries()] as [sender, emoji]}
           <hbox class="reaction" title={emoji + " " + sender?.name}>{emoji}</hbox>
         {/each}
       </hbox>
@@ -79,7 +79,6 @@
 <style>
   .message {
     margin: 16px 32px 0 20px;
-    color: black;
     max-width: 75%;
   }
   .incoming {
@@ -139,19 +138,18 @@
   .avatar {
     margin-block-start: 3px;
     margin-inline-end: 4px;
-  }
-  .message.followup.incoming {
-    /* no avatar */
-    padding-inline-start: 60px;
+    min-width: 32px;
   }
   .meta {
     align-items: end;
     margin-block-end: 2px;
-    font-size: x-small;
+    color: #818181;
+  }
+  .meta.singlechat {
     color: #999999;
   }
   .incoming .meta {
-    margin-inline-start: 10px;
+    margin-inline-start: 14px;
   }
   .outgoing .meta {
     justify-content: end;
@@ -159,6 +157,11 @@
   }
   .from {
     margin-inline-end: 16px;
+  }
+  .from:not(.singlechat) {
+    font-size: medium;
+    font-weight: 500;
+    color: var(--fg);
   }
   .text {
     overflow-wrap: anywhere;

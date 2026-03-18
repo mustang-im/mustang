@@ -24,5 +24,9 @@
     align-items: center;
     background-color: red;
     color: #160C27;
+    border-radius: inherit;
+  }
+  .payment-bar :global(button) {
+    padding: 2px 12px !important;
   }
 </style>

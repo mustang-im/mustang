@@ -8,17 +8,16 @@ import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { ActiveSyncGAL } from "../../Contacts/ActiveSync/ActiveSyncGAL";
-import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
+import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
-import { OAuth2 } from "../../Auth/OAuth2";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
+import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Throttle } from "../../util/Throttle";
-import { Semaphore } from "../../util/Semaphore";
+import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -54,7 +53,6 @@ export class ActiveSyncAccount extends MailAccount {
   constructor() {
     super();
     this.policyKey = this.getStorageItem("policy_key");
-    assert(appGlobal.remoteApp.optionsHTTP, "ActiveSync: Need backend");
   }
 
   newFolder(): ActiveSyncFolder {
@@ -81,12 +79,8 @@ export class ActiveSyncAccount extends MailAccount {
     await ensureLicensed();
     await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
-      }
+      this.oAuth2 ??= getOAuth2BuiltIn(this);
+      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
@@ -107,16 +101,22 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
-    appGlobal.addresslists.add(new ActiveSyncGAL(this));
+    // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-    // `listFolders` will subscribe to new user-added address books and calendars
-    for (let account of this.dependentAccounts()) {
-      if (account instanceof ActiveSyncAddressbook) {
-        account.listContacts();
-      } else if (account instanceof ActiveSyncCalendar) {
-        account.listEvents();
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.mainAccount == this) {
+        addressbook.listContacts()
+          .catch(this.errorCallback);
       }
     }
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.mainAccount == this) {
+        calendar.listEvents()
+          .catch(this.errorCallback);
+      }
+    }
+
+    appGlobal.addresslists.add(new ActiveSyncGAL(this));
 
     // ActiveSync doesn't have streaming notifications, instead it
     // provides the Ping operation which will tell us when a pingable
@@ -126,7 +126,7 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    this.oAuth2?.logout();
+    await this.oAuth2?.logout();
   }
 
   needsLicense(): boolean {
@@ -161,26 +161,22 @@ export class ActiveSyncAccount extends MailAccount {
    */
   async verifyLogin(): Promise<void> {
     let options: any = {
-      throwHttpErrors: false,
       headers: {
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
       },
+      method: "OPTIONS",
     };
     if (this.authMethod == AuthMethod.OAuth2) {
-      if (!this.oAuth2) {
-        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
-      }
+      this.oAuth2 ??= getOAuth2BuiltIn(this);
+      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
       await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
-    let response = await appGlobal.remoteApp.optionsHTTP(this.url, options);
+    let response = await fetch(this.url, options);
     if (response.ok) {
-      let versions = (response.MSASProtocolVersions || "").split(",");
+      let versions = (response.headers.get("MS-ASProtocolVersions") || "").split(",");
       if (versions.includes("14.1")) {
         this.protocolVersion = versions.includes("16.1") ? "16.1" : "14.1";
         this.setStorageItem("protocolVersion", this.protocolVersion);
@@ -190,7 +186,7 @@ export class ActiveSyncAccount extends MailAccount {
         this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
+      throw new Error(`ActiveSync version(s) ${response.headers.get("MS-ASProtocolVersions")} not supported`);
     }
     if (response.status == 401) {
       const repeat = async () => {
@@ -202,13 +198,13 @@ export class ActiveSyncAccount extends MailAccount {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
-        this.oAuth2.reset();
+        await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         await repeat();
         return;
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
+      } else if (!/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
         throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+          "Unsupported authentication protocol(s): " + response.headers.get("WWW-Authenticate"));
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
@@ -245,16 +241,21 @@ export class ActiveSyncAccount extends MailAccount {
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
     let heartbeat = aOptions.heartbeat ?? 0;
+    let wbxml = await request2WBXML({ [aCommand]: aRequest });
     let options: any = {
-      throwHttpErrors: false,
+      body: wbxml,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
-      timeout: heartbeat * 1000 + 25000, // extra timeout for Ping commands
+      method: "POST",
+      signal: AbortSignal.timeout(heartbeat * 1000 + 25000), // extra timeout for Ping commands
     };
     if (this.oAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        await this.oAuth2.login(false);
+      }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
@@ -262,32 +263,34 @@ export class ActiveSyncAccount extends MailAccount {
     if (await this.policyKey) {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
     }
-    let wbxml = await request2WBXML({ [aCommand]: aRequest });
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+      response = await fetch(url, options);
     } finally {
       lock.release();
     }
     this.fatalError = null;
     if (response.ok) {
+      // response.bytes() not supported yet. This ctor does not copy, but creates another view.
+      let bytes = new Uint8Array(await response.arrayBuffer());
       // ActiveSync short cut for when there are no changes to sync
-      if (!response.data.length) {
+      if (!bytes.length) {
         return null;
       }
-      let wbxmljs = WBXML2JSON(response.data);
+      let wbxmljs = WBXML2JSON(bytes);
       if (wbxmljs.Status > 140 && wbxmljs.Status < 145 && aCommand != "Provision") {
         // We need to provision (or re-provision). Use a Promise so that
         // parallel calls wait for it too.
         this.policyKey = this.provision();
         options.headers["X-MS-PolicyKey"] = await this.policyKey;
-        response = appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
-        if (!response.data.length) {
+        response = await fetch(url, options);
+        bytes = new Uint8Array(await response.arrayBuffer());
+        if (!bytes.length) {
           return null;
         }
-        wbxmljs = WBXML2JSON(response.data);
+        wbxmljs = WBXML2JSON(bytes);
       }
       // The Ping command has its own status codes for some reason.
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
@@ -309,20 +312,20 @@ export class ActiveSyncAccount extends MailAccount {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
-        this.oAuth2.reset();
+        await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
+      } else if (!/\bBasic\b/.test(response.headers.get("WWW-Authenticate"))) {
         throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+          "Unsupported authentication protocol(s): " + response.headers.get("WWW-Authenticate"));
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
       }
     }
     this.throttle.waitForSecond(1);
-    if (response.RetryAfter) {
-      throw new Error(`The server is overloaded. Please try again after ${response.RetryAfter} seconds.`);
+    if (response.headers.get("Retry-After")) {
+      throw new Error(`The server is overloaded. Please try again after ${response.headers.get("Retry-After")} seconds.`);
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
@@ -425,17 +428,15 @@ export class ActiveSyncAccount extends MailAccount {
         // We're syncing from scratch, so we may have stale folders.
         missingFolders = this.getAllFolders();
       }
-      let url = new URL(this.url);
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
         try {
-          url.searchParams.set("serverID", change.ServerId);
           switch (change.Type) {
-          case FolderType.OtherSpecialFolder:
           case FolderType.Inbox:
           case FolderType.Drafts:
           case FolderType.Trash:
           case FolderType.Sent:
           case FolderType.Outbox:
+          case FolderType.OtherSpecialFolder:
           case FolderType.UserFolder:
             let folder = this.findFolderById(change.ServerId) || this.newFolder();
             folder.fromWBXML(change);
@@ -448,53 +449,42 @@ export class ActiveSyncAccount extends MailAccount {
             await folder.save();
             missingFolders.remove(folder);
             break;
-          case FolderType.Tasks:
-          case FolderType.UserTasks:
-            // Mustang doesn't support tasks yet, fortunately.
+          case FolderType.Contacts:
+          case FolderType.UserContacts:
+            let isMainAddressbook = change.Type == FolderType.Contacts;
+            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && addressbook.serverID == change.ServerId) as ActiveSyncAddressbook | null;
+            if (!addressbook) {
+              addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
+              addressbook.initFromMainAccount(this);
+              addressbook.serverID = sanitize.nonemptystring(change.ServerId);
+              appGlobal.addressbooks.add(addressbook);
+            }
+            if (!isMainAddressbook) {
+              // Rename and new address books
+              addressbook.name = sanitize.nonemptylabel(change.DisplayName, addressbook.name);
+            }
+            // ActiveSync doesn't list all folders, only the changed ones.
+            // So, if we're here, then the address book changed.
+            await addressbook.save();
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == change.ServerId)) as ActiveSyncCalendar | null;
-            console.log("found the ActS cal again", calendar?.name);
-            if (calendar) {
-              calendar.name = change.DisplayName;
-              calendar.serverID ??= change.ServerId;
-              calendar.icon ??= this.icon; // Migration, remove later
-              calendar.color ??= this.color;
-            } else {
+            let isMainCalendar = change.Type == FolderType.Calendar;
+            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && calendar.serverID == change.ServerId) as ActiveSyncCalendar | null;
+            if (!calendar) {
               calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
-              calendar.name = change.DisplayName;
-              calendar.serverID = change.ServerId;
-              calendar.url = url.toString();
-              calendar.username = this.username;
-              calendar.workspace = this.workspace;
-              calendar.icon = this.icon;
-              calendar.color = this.color;
-              calendar.mainAccount = this;
+              calendar.initFromMainAccount(this);
+              calendar.serverID = sanitize.nonemptystring(change.ServerId);
               appGlobal.calendars.add(calendar);
             }
-            break;
-          case FolderType.Contacts:
-          case FolderType.UserContacts:
-            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == change.ServerId)) as ActiveSyncAddressbook | null;
-            console.log("found the ActS AB again", addressbook?.name);
-            if (addressbook) {
-              addressbook.name = change.DisplayName;
-              addressbook.serverID ??= change.ServerId;
-              addressbook.icon ??= this.icon; // Migration, remove later
-              addressbook.color ??= this.color;
-            } else {
-              addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
-              addressbook.name = change.DisplayName;
-              addressbook.serverID = change.ServerId;
-              addressbook.url = url.toString();
-              addressbook.username = this.username;
-              addressbook.workspace = this.workspace;
-              addressbook.icon = this.icon;
-              addressbook.color = this.color;
-              addressbook.mainAccount = this;
-              appGlobal.addressbooks.add(addressbook);
+            if (!isMainCalendar) {
+              calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
             }
+            await calendar.save();
+            break;
+          case FolderType.Tasks:
+          case FolderType.UserTasks:
+            // Mustang doesn't support tasks yet, fortunately.
             break;
           }
         } catch (ex) {
@@ -509,17 +499,15 @@ export class ActiveSyncAccount extends MailAccount {
             await this.storage.deleteFolder(folder);
             folder.removeFromParent();
           }
-          let url = new URL(this.url);
-          url.searchParams.set("serverID", deletion.ServerId);
-          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && (addressbook.url == url.toString() || addressbook.serverID == deletion.ServerId)) as ActiveSyncAddressbook | undefined;
+          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this && addressbook.serverID == deletion.ServerId) as ActiveSyncAddressbook | undefined;
           if (addressbook) {
             this.removePingable(addressbook);
-            addressbook.deleteIt();
+            await addressbook.deleteIt();
           }
-          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && (calendar.url == url.toString() || calendar.serverID == deletion.ServerId)) as ActiveSyncCalendar | undefined;
+          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this && calendar.serverID == deletion.ServerId) as ActiveSyncCalendar | undefined;
           if (calendar) {
             this.removePingable(calendar);
-            calendar.deleteIt();
+            await calendar.deleteIt();
           }
         } catch (ex) {
           this.errorCallback(ex);
@@ -541,7 +529,8 @@ export class ActiveSyncAccount extends MailAccount {
     this.pingsMRU.remove(pingable);
     this.pingsMRU.add(pingable);
     if (!this.listening) {
-      this.listenForPings();
+      this.listenForPings()
+        .catch(this.errorCallback); // TODO restart on error (with throttle)?
     }
   }
 

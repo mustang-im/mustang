@@ -1,6 +1,6 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { kAllWeekdays, weekdayLabel } from "../../frontend/Util/date";
-import { getDateTimeFormatPref, gt } from "../../l10n/l10n";
+import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { assert } from "../util/util";
 
 export enum Frequency {
@@ -135,14 +135,18 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
   }
 
+  static ensureFrequency(frequency: string): asserts frequency is Frequency {
+    if (!Object.values(Frequency).includes(frequency as Frequency)) {
+      throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
+    }
+  }
+
   static fromCalString(masterDuration: number, seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
-    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
-    if (!Object.values(Frequency).includes(frequency)) {
-      throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
-    }
+    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("="))) as Record<string, string>;
+    this.ensureFrequency(frequency);
     let data: RecurrenceInit = { masterDuration, seriesStartTime, frequency };
     if (seriesEndTime) {
       data.seriesEndTime = sanitizeCalDate(seriesEndTime);
@@ -164,13 +168,10 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         data.week = sanitize.integer(byday[0]);
         byday = byday.split(byday[0]).join("");
       }
-      data.weekdays = byday.split(",").map(day => iCalWeekday[day]);
-      for (let day of data.weekdays) {
-        sanitize.integer(day);
-      }
+      data.weekdays = byday.split(",").map(day => sanitize.integer(iCalWeekday[day as keyof typeof iCalWeekday]));
     }
     if (first) {
-      data.first = sanitize.integer(iCalWeekday[first]);
+      data.first = sanitize.integer(iCalWeekday[first as keyof typeof iCalWeekday]);
     }
     return new RecurrenceRule(data);
   }
@@ -383,7 +384,7 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
     if (r.week) {
       label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} *=> as in: on the third Wednesday of the month`;
     } else {
-      label += gt`on the ${startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
+      label += gt`on the ${startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
     }
   } else if (r.frequency == Frequency.Yearly) {
     label += r.interval == 1
@@ -391,9 +392,9 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
       : gt`Every ${r.interval} years`;
     label += `, `;
     if (r.week) {
-      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getDateTimeFormatPref(), { month: "long" })} *=> as in: on the third Wednesday in September`;
+      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getDateTimeLocale(), { month: "long" })} *=> as in: on the third Wednesday in September`;
     } else {
-      label += gt`on ${startTime.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
+      label += gt`on ${startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
     }
   }
   return label;

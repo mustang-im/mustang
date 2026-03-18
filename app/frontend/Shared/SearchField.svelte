@@ -5,6 +5,7 @@
     on:input={onInput}
     on:keydown={onKeyPress}
     placeholder={placeholder ?? $t`Search`}
+    class="font-normal"
     bind:this={inputEl}
     {autofocus}
     spellcheck={false} />
@@ -62,12 +63,15 @@
 <style>
   .search {
     align-items: center;
-    border: 1px solid #A1E4DA;
+    border: 1px solid var(--border);
     padding-inline-start: 8px;
     padding-inline-end: 4px;
     border-radius: 100px;
     background-color: field;
     color: fieldtext;
+  }
+  .search:has(input:focus) {
+    border-color: var(--input-focus);
   }
   .search.has-search {
     background-color: var(--inverted-bg);
@@ -84,6 +88,9 @@
     border-radius: 100px;
     background-color: inherit;
     color: inherit;
+  }
+  :global(.mobile) input[type="search"] {
+    height: 40px;
   }
   input::placeholder {
     color: #808080;

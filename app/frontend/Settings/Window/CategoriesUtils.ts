@@ -1,5 +1,5 @@
-import type { SettingsCategory } from "./SettingsCategory";
-import { accountSettings, settingsCategories } from "../SettingsCategories";
+import type { SettingsCategory } from "../SettingsCategory";
+import { accountSettings, settingsCategories } from "../SettingsCategory";
 import type { MustangApp } from "../../AppsBar/MustangApp";
 import type { Account } from "../../../logic/Abstract/Account";
 import { settingsMustangApp } from "./SettingsMustangApp";
@@ -29,6 +29,12 @@ export function getSettingsCategoryForApp(app: MustangApp) {
   return getAllSettingsCategories().find(cat => cat.forApp == app);
 }
 
+export function openSettingsCategoryByID(id: string) {
+  let cat = getSettingsCategoryByID(id);
+  selectedCategory.set(cat);
+  openApp(settingsMustangApp, {});
+}
+
 export function openSettingsCategoryForApp(app: MustangApp) {
   let cat = getSettingsCategoryForApp(app);
   selectedCategory.set(cat);
@@ -36,11 +42,13 @@ export function openSettingsCategoryForApp(app: MustangApp) {
   openApp(settingsMustangApp, {});
 }
 
-export function openSettingsCategoryForAccount(account: Account) {
+export function openSettingsCategoryForAccount(account: Account, category = "main") {
   // let mainCat = getAllSettingsCategories().find(cat => cat.accounts.contains(account));
-  let cat = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+  let cat = accountSettings.find(cat => account instanceof cat.type &&
+    cat.id == category || category == "main" && cat.isMain);
   assert(cat, "Account not found in settings");
   selectedAccount.set(account);
   selectedCategory.set(cat);
+  // TODO Mobile? goTo(URLPart`/settings/account/${account.id}`, { category, account }); or goTo(URLPart`/settings/account/${account.id}/${category.id}`, { category, account });
   openApp(settingsMustangApp, { category: cat, account: account });
 }

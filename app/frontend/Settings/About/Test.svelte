@@ -9,7 +9,6 @@
 </hbox>
 
 <script lang="ts">
-  import { addTestDataToGlobal } from "../../../logic/testData";
   import { openApp } from "../../AppsBar/selectedApp";
   import { chatMustangApp } from "../../Chat/ChatMustangApp";
   import { appGlobal } from "../../../logic/app";
@@ -21,6 +20,7 @@
   let isLoading = false;
 
   async function loadTest() {
+    const { addTestDataToGlobal } = await import("../../../logic/testData");
     isLoading = true;
     appGlobal.emailAccounts.clear();
     appGlobal.chatAccounts.clear();

@@ -2,15 +2,18 @@ import type { EMail } from "../EMail";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getTagByName } from "../../Abstract/Tag";
-import { appGlobal } from "../../app";
+import { getFilesDir } from "../../../logic/util/backend-wrapper";
+import { EMailProcessorList } from "../EMailProcessor";
+import { SMLData } from "../SML/SMLData";
 import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { logError } from "../../../frontend/Util/error";
 import type { ArrayColl } from "svelte-collections";
 
 export class JSONEMail {
   static filesDir: string | null = null;
   static async init() {
-    this.filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    this.filesDir ??= await getFilesDir();
   }
 
   /**
@@ -30,6 +33,11 @@ export class JSONEMail {
     json.plaintext = email.rawText;
     json.html = email.rawHTMLDangerous;
 
+    json.signed = email.signed;
+    json.wasEncrypted = email.wasEncrypted;
+    json.mustEncrypt = email.mustEncrypt;
+    json.shouldEncrypt = email.shouldEncrypt;
+
     this.saveWritableProps(email, json);
     this.saveRecipients(email, json);
     json.attachments = this.saveAttachments(email);
@@ -45,6 +53,28 @@ export class JSONEMail {
     json.isDraft = email.isDraft;
     json.threadID = email.threadID;
     json.downloadComplete = email.downloadComplete;
+    this.saveExtraData(email, json);
+  }
+
+  static saveExtraData(email: EMail, json: any) {
+    let extraDataJSON = [];
+    email.extraData.forEach((extraData, type) => {
+      let json = extraData.toJSON() as any;
+      if (json == null) {
+        return;
+      }
+      json.type = type;
+      extraDataJSON.push(json);
+    });
+    if (extraDataJSON.length) {
+      json.extraData = extraDataJSON;
+    }
+
+    json.sml = email.sml?.toJSON();
+
+    if (email.invitationMessage) {
+      json.invitationMessage = email.invitationMessage;
+    }
   }
 
   protected static saveRecipients(email: EMail, json: any) {
@@ -112,9 +142,15 @@ export class JSONEMail {
         email.html = html;
       }
     }
+    email.signed = sanitize.alphanumdash(json.signedPublicKeyID, null);
+    email.wasEncrypted = sanitize.boolean(json.wasEncrypted, false);
+    email.shouldEncrypt = sanitize.boolean(json.shouldEncrypt, false);
+    email.mustEncrypt = sanitize.boolean(json.mustEncrypt, false);
+
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
     this.readAttachments(email, json);
+    this.readExtraData(email, json);
     this.readTags(email, json);
     email.contact = email.outgoing ? email.to.first : email.from;
     return email;
@@ -157,6 +193,27 @@ export class JSONEMail {
     this.readTags(email, json);
   }
 
+  static readExtraData(email: EMail, json: any): void {
+    if (json.extraData) {
+      for (let extra of json.extraData) {
+        try {
+          let type = sanitize.alphanumdash(extra.type);
+          let ExtraDataSubclass = EMailProcessorList.extraDataTypes.get(type);
+          let data = new ExtraDataSubclass();
+          data.fromJSON(extra);
+          email.extraData.set(type, data);
+        } catch (ex) {
+          logError(ex);
+        }
+      }
+    }
+    if (json.sml) {
+      email.sml = new SMLData();
+      email.sml.fromJSON(json.sml);
+    }
+    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
+  }
+
   static readRecipients(email: EMail, json: any): void {
     email.to.clear();
     email.cc.clear();
@@ -179,9 +236,9 @@ export class JSONEMail {
     if (!json) {
       return null;
     }
-    let addr = sanitize.emailAddress(json.emailAddress, kDummyPerson.emailAddress);
-    let name = sanitize.label(json.name, null);
-    return findOrCreatePersonUID(addr, name);
+    return findOrCreatePersonUID(
+      sanitize.emailAddress(json.emailAddress, null),
+      sanitize.nonemptylabel(json.name, null));
   }
 
   protected static readAttachments(email: EMail, emailJSON: any): void {

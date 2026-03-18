@@ -36,8 +36,8 @@
   }
 
   function stopMeter() {
-    meter.stop.bind(meter);
-    audioContext.close();
+    meter?.stop.bind(meter);
+    audioContext?.close();
   }
 
   let volume: number;

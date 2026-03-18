@@ -17,7 +17,7 @@ import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
-import { appGlobal } from '../../app';
+import { dataProcessorsHookup } from '../SML/DataProcessors';
 import { NotReached, NotSupported } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
@@ -72,7 +72,7 @@ export async function readMailAccounts(): Promise<Collection<MailAccount>> {
 }
 // #endif
 
-const kProtocolLabel = {
+const kProtocolLabel: Record<string, string> = {
   // Displayed to user, but do not translate (technical term)
   "imap": "IMAP",
   "smtp": "SMTP",
@@ -92,3 +92,6 @@ export function listMailProtocols(): string[] {
 export function labelForMailProtocol(protocol: string): string {
   return kProtocolLabel[protocol] ?? protocol.toUpperCase();
 }
+
+// TODO Find better spot to call this
+dataProcessorsHookup();

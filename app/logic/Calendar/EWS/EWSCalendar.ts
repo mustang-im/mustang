@@ -1,8 +1,10 @@
-import { Calendar } from "../Calendar";
+import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -11,11 +13,13 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
-  /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
+  declare readonly events: ArrayColl<EWSEvent>;
+  /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  readonly events: ArrayColl<EWSEvent>;
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
+  /** Is this the default calendar that handles incoming invitations */
+  useForInvitations: boolean = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -23,6 +27,17 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  get isLoggedIn(): boolean {
+    return this.account.isLoggedIn;
+  }
+
+  async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.account.login(interactive);
   }
 
   getIncomingInvitationForEMail(message: EWSEMail) {
@@ -61,34 +76,23 @@ export class EWSCalendar extends Calendar {
   }
 
   async listEvents() {
-    if (!this.dbID) {
-      await this.save();
-    }
-
-    /* Disabling tasks for now.
-    // syncState is base64-encoded so it's safe to split and join on comma
-    let [calendar, tasks] = this.syncState?.split(",") || [];
-    calendar = await this.syncFolder("calendar", calendar);
-    tasks = await this.syncFolder("tasks", tasks);
-    this.syncState = calendar + "," + tasks;
-    */
-    // Delete the next line when enabling tasks.
-    this.syncState = await this.syncFolder("calendar", this.syncState);
+    await super.listEvents();
+    await this.syncFolder();
     await this.save();
   }
 
-  protected async syncFolder(folder: string, syncState: string | null): Promise<string> {
+  protected async syncFolder(): Promise<void> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
           t$BaseShape: "IdOnly",
         },
         m$SyncFolderId: {
-          t$DistinguishedFolderId: {
-            Id: folder,
+          t$FolderId: {
+            Id: this.folderID,
           },
         },
-        m$SyncState: syncState,
+        m$SyncState: this.syncState,
         m$MaxChangesReturned: kMaxCount,
       }
     };
@@ -126,10 +130,9 @@ export class EWSCalendar extends Calendar {
         }
       }
       await this.getEvents(eventIDs, events);
-      syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
-    return sanitize.string(syncState);
   }
 
   getEventByItemID(id: string): EWSEvent | undefined {
@@ -255,13 +258,96 @@ export class EWSCalendar extends Calendar {
     }
   }
 
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.folderID,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return getSharedPersons(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission, this.account.emailAddress);
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await deleteExchangePermissions(this, otherPerson);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {
+    await setExchangePermissions(this, otherPerson, access);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.folderID,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    let request = {
+      m$UpdateFolder: {
+        m$FolderChanges: {
+          t$FolderChange: {
+            t$FolderId: {
+              Id: this.folderID,
+            },
+            t$Updates: {
+              t$SetFolderField: {
+                t$FieldURI: {
+                  FieldURI: "folder:PermissionSet",
+                },
+                t$CalendarFolder: {
+                  t$PermissionSet: {
+                    t$CalendarPermissions: {
+                      t$CalendarPermission: permissions.map(permission => permission.toEWSCalendarPermission()),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    await this.account.callEWS(request);
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
+    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
+    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

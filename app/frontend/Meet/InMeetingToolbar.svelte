@@ -60,7 +60,7 @@
         border={false}
         />
     {/if}
-    {#if meeting instanceof FakeMeeting}
+    {#if meeting.account.protocol == "fake-meeting"}
       <RoundButton
         label={$t`Add participant`}
         classes="large"
@@ -116,7 +116,6 @@
   import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
   import SelectScreenShare from "./SelectScreenShare.svelte";
@@ -181,7 +180,6 @@
     await meeting.hangup();
     await stream.setScreenShare(false);
     await stream.setCameraMicOn(false, false);
-    appGlobal.meetings.remove(meeting);
   }
 
   async function toggleHand() {

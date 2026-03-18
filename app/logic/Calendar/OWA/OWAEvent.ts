@@ -148,6 +148,8 @@ export class OWAEvent extends Event {
   }
 
   async saveToServer() {
+    await this.prepareSaveToServer();
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
@@ -161,10 +163,10 @@ export class OWAEvent extends Event {
 
   protected getExchangeSaveRequest() {
     return this.itemID ?
-      new OWAUpdateItemRequest(this.itemID, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new OWAUpdateItemRequest(this.itemID, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
-      new OWAUpdateOccurrenceRequest(this, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
-      new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+      new OWAUpdateOccurrenceRequest(this, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
+      new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
   }
 
   protected getOffice365SaveRequest() {
@@ -173,7 +175,7 @@ export class OWAEvent extends Event {
       this.parentEvent ?
       new OWAUpdateOffice365OccurrenceRequest(this) :
       // Office 365 requires an explicit saved item folder id
-      new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "DistinguishedFolderId:#Exchange", Id: "calendar" } } });
+      new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } } });
   }
 
   async saveCalendarItem() {
@@ -181,7 +183,7 @@ export class OWAEvent extends Event {
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-      await this.calendar.account.callOWA(request);
+      await this.calendar.callOWA(request);
       return;
     }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
@@ -229,7 +231,7 @@ export class OWAEvent extends Event {
       request.addField("CalendarItem", "IsOnlineMeeting", true, "IsOnlineMeeting");
       request.addField("CalendarItem", "OnlineMeetingProvider", "TeamsForBusiness", "OnlineMeetingProvider");
     }
-    let response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.callOWA(request);
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
 
     // The server will set the online meeting URL and append the description.
@@ -246,7 +248,7 @@ export class OWAEvent extends Event {
   }
 
   protected async getOnlineMeetingDescription() {
-    let response = await this.calendar.account.callOWA(owaOnlineMeetingDescriptionRequest([ this.itemID ]));
+    let response = await this.calendar.callOWA(owaOnlineMeetingDescriptionRequest([ this.itemID ]));
     let item = response.Items[0];
     this.calUID = sanitize.nonemptystring(item.UID);
     this.location = sanitize.nonemptystring(item.Location?.DisplayName, "");
@@ -261,12 +263,12 @@ export class OWAEvent extends Event {
   }
 
   protected async getOnlineMeetingURL() {
-    let response = await this.calendar.account.callOWA(owaOnlineMeetingURLRequest([ this.itemID ]));
+    let response = await this.calendar.callOWA(owaOnlineMeetingURLRequest([ this.itemID ]));
     this.onlineMeetingURL = sanitize.url(response.Items[0].OnlineMeetingJoinUrl, null);
   }
 
   protected async updateUID() {
-    let response = await this.calendar.account.callOWA(owaGetEventUIDsRequest([ this.itemID ]));
+    let response = await this.calendar.callOWA(owaGetEventUIDsRequest([ this.itemID ]));
     this.calUID = sanitize.nonemptystring(response.Items[0].UID);
   }
 
@@ -277,7 +279,7 @@ export class OWAEvent extends Event {
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
-    let response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.callOWA(request);
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
   }
 
@@ -345,19 +347,19 @@ export class OWAEvent extends Event {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-      await this.calendar.account.callOWA(request);
+      await this.calendar.callOWA(request);
     } else if (this.parentEvent) {
-      await this.calendar.account.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
+      await this.calendar.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
   }
 
   /** Returns a copy of the event as read from the server */
   async fetchFromServer(): Promise<OWAEvent> {
     assert(this.itemID, "can't query unsaved event");
-    let result = await this.calendar.account.callOWA(owaGetEventsRequest([this.itemID]));
+    let result = await this.calendar.callOWA(owaGetEventsRequest([this.itemID]));
     let item = result.Items[0];
     if (item.IsOnlineMeeting) {
-      let result = await this.calendar.account.callOWA(owaGetCalendarEventsRequest([this.itemID]));
+      let result = await this.calendar.callOWA(owaGetCalendarEventsRequest([this.itemID]));
       item.OnlineMeetingJoinUrl = result.Items[0].OnlineMeetingJoinUrl;
     }
     let event = this.calendar.newEvent(this.parentEvent);
@@ -366,7 +368,7 @@ export class OWAEvent extends Event {
   }
 
   async makeExclusions(exclusions: OWAEvent[]) {
-    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(exclusions, this));
+    await this.calendar.callOWA(owaCreateMultipleExclusionsRequest(exclusions, this));
     await super.makeExclusions(exclusions);
   }
 
@@ -378,7 +380,7 @@ export class OWAEvent extends Event {
       // In case the invitation is for a single instance of a recurring meeting
       assert(this.recurrenceCase == RecurrenceCase.Instance, "must be an instance, or have an itemID");
       let request = owaGetOccurrenceIdRequest(this);
-      let response = await this.calendar.account.callOWA(request);
+      let response = await this.calendar.callOWA(request);
       itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
     }
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
@@ -386,7 +388,7 @@ export class OWAEvent extends Event {
       __type: "ItemId:#Exchange",
       Id: itemID,
     });
-    await this.calendar.account.callOWA(request);
+    await this.calendar.callOWA(request);
     try {
       await this.calendar.getEvents([itemID], new ArrayColl<OWAEvent>(), this.parentEvent);
     } catch (ex) {
@@ -404,13 +406,13 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
   for (let attendee of attendees) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
-      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
 }
 
 function fromWindowsZone(zone: string | null): string | null {

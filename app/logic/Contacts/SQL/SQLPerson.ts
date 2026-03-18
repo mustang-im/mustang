@@ -41,12 +41,12 @@ export class SQLPerson {
           WHERE id = ${person.dbID}
           `);
       }
-      SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
-      SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
-      SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
-      SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
-      SQLPerson.saveContacts(person, person.urls, ContactType.URL);
-      SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
+      await SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
+      await SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
+      await SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
+      await SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
+      await SQLPerson.saveContacts(person, person.urls, ContactType.URL);
+      await SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
     } finally {
       lock.release();
     }
@@ -61,7 +61,7 @@ export class SQLPerson {
       `);
 
     for (let contact of contacts) {
-      SQLPerson.saveContact(person, contact, contactType);
+      await SQLPerson.saveContact(person, contact, contactType);
     }
   }
 
@@ -73,10 +73,11 @@ export class SQLPerson {
     await (await getDatabase()).run(sql`
       INSERT INTO personContact (
         personID, type, value,
-        protocol, purpose, preference
+        protocol, purpose, preference, json
       ) VALUES (
         ${person.dbID}, ${contactType}, ${contact.value},
-        ${contact.protocol}, ${contact.purpose}, ${contact.preference}
+        ${contact.protocol}, ${contact.purpose}, ${contact.preference},
+        ${contact.json ? JSON.stringify(contact.json, null, 2) : null}
       )`);
   }
 
@@ -122,7 +123,7 @@ export class SQLPerson {
         person.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
       }
     }
-    SQLPerson.readContacts(person);
+    await SQLPerson.readContacts(person);
     return person;
   }
 
@@ -131,7 +132,7 @@ export class SQLPerson {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         type, value,
-        protocol, purpose, preference
+        protocol, purpose, preference, json
       FROM personContact
       WHERE personID = ${person.dbID}
       `) as any;
@@ -141,6 +142,7 @@ export class SQLPerson {
         let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
         contactEntry.preference = sanitize.integer(row.preference, ContactEntry.defaultPreference);
         contactEntry.protocol = sanitize.string(row.protocol, null);
+        contactEntry.json = sanitize.json(row.json, null);
         let type = row.type;
         if (type == ContactType.EMailAddress) {
           person.emailAddresses.add(contactEntry);

@@ -18,9 +18,11 @@
   </grid>
 </vbox>
 
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
-  canContinue={!!config.name}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
+  canContinue={!!config.name && !!config.url && !!config.username}
   canCancel={true}
   onCancel={onCancel}
   />
@@ -32,6 +34,8 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   /** in/out */
@@ -40,7 +44,10 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
+  let errorUI: ErrorMessageInline;
+
   async function onContinue() {
+    errorUI.clearError();
     config.authMethod = AuthMethod.Password;
     await config.verifyLogin();
     showPage = CalDavSelectCalendar;

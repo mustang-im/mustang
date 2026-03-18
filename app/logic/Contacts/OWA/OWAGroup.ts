@@ -7,7 +7,7 @@ import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
 
 export class OWAGroup extends Group {
-  addressbook: OWAAddressbook | null;
+  declare addressbook: OWAAddressbook | null;
 
   get personaID() {
     return this.id;
@@ -32,7 +32,7 @@ export class OWAGroup extends Group {
     throw new NotImplemented();
     /* Don't know whether this works
     let request = new OWADeletePersonaRequest(this.personaID);
-    await this.addressbook.account.callOWA(request);
+    await this.addressbook.callOWA(request);
     //await super.deleteIt();
     */
   }

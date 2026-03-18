@@ -1,26 +1,36 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
-import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
+import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
+import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
+import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
+import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
+import { checkChangeError } from "./JMAPError";
+import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
+import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
-import { Lock } from "../../util/Lock";
-import { assert, SpecificError } from "../../util/util";
+import { Lock } from "../../util/flow/Lock";
+import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
+  /** ID in JMAP (`.id` is the ID our database) */
+  accountID: string;
   @notifyChangedProperty
   session: TJMAPSession;
-  accountID: string;
   allFolders = new MapColl<string, JMAPFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -41,7 +51,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }
@@ -50,15 +60,38 @@ export class JMAPAccount extends MailAccount {
     await this.loginOAuth2(interactive);
     await this.getSession();
     await this.listFolders();
+    this.startPushListener()
+      .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();
+
+    if (this.haveContacts) {
+      await this.listAddressbooks();
+    }
+    if (this.haveCalendar) {
+      await this.listCalendars();
+    }
+    if (this.haveContacts) {
+      for (let addressbook of appGlobal.addressbooks) {
+        if (addressbook.mainAccount == this) {
+          await addressbook.listContacts();
+        }
+      }
+    }
+    if (this.haveCalendar) {
+      for (let calendar of appGlobal.calendars) {
+        if (calendar.mainAccount == this) {
+          await calendar.listEvents();
+        }
+      }
+    }
   }
 
   async verifyLogin(): Promise<void> {
     await this.loginOAuth2(true);
     await this.getSession();
-    await this.logout();
+    this.stopPolling(); // Don't log out, because we want to keep the OAuth2 refresh token
   }
 
   protected async loginOAuth2(interactive: boolean): Promise<void> {
@@ -92,6 +125,13 @@ export class JMAPAccount extends MailAccount {
     this.session = session;
   }
 
+  get haveContacts(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:contacts"];
+  }
+  get haveCalendar(): boolean {
+    return !!this.session.capabilities["urn:ietf:params:jmap:calendars"];
+  }
+
   /** A single API call, with a single result */
   async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
     let responses = await this.makeCalls([[ method, argumentsJSON ]]);
@@ -112,9 +152,9 @@ export class JMAPAccount extends MailAccount {
    *     list: [ { id: "", subject: "" }, ... ]
    *   }
    *   If a call returns multiple results, only the last result of that call is returned. */
-  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
+  async makeCombinedCall(calls: [ string, Record<string, any>, string? ][]): Promise<Record<string, any>> {
     let responses = await this.makeCalls(calls);
-    let results = {};
+    let results: Record<string, any> = {};
     for (let response of responses) {
       results[response[2]] = response[1];
     }
@@ -131,9 +171,24 @@ export class JMAPAccount extends MailAccount {
    * @returns Results from the calls.
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
-  async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
+  async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
+    if (!this.isLoggedIn) {
+      if (this.session) {
+        await this.oAuth2.login(false);
+      }
+      if (!this.isLoggedIn) {
+        await this.login(false);
+      }
+    }
+    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
+    if (this.haveContacts) {
+      using.push("urn:ietf:params:jmap:contacts");
+    }
+    if (this.haveCalendar) {
+      using.push("urn:ietf:params:jmap:calendars");
+    }
     let requestJSON: TJMAPAPIRequest = {
-      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
+      using: using,
       methodCalls: [],
     };
     let callCounter = 0;
@@ -143,7 +198,7 @@ export class JMAPAccount extends MailAccount {
     }
     let log: any[] = [ "Calling" ];
     for (let method of requestJSON?.methodCalls) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
@@ -162,7 +217,7 @@ export class JMAPAccount extends MailAccount {
     }
     log.push("Response");
     for (let method of responsesJSON?.methodResponses) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
     if (this.logging) {
       console.log(...log);
@@ -194,6 +249,19 @@ export class JMAPAccount extends MailAccount {
     return responsesJSON.methodResponses;
   }
 
+  protected authorizationHeader(): string {
+    // Auth method
+    let usePassword = [AuthMethod.Password].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
+    if (usePassword) {
+      return basicAuth(this.username, this.password);
+    } else if (useOAuth2) {
+      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
+      return this.oAuth2.authorizationHeader;
+    }
+    return undefined;
+  }
+
   protected async ky(options: Record<string, any> = {}) {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -203,16 +271,7 @@ export class JMAPAccount extends MailAccount {
     for (let name in options.headers) {
       headers[name] = options.headers[name];
     }
-
-    // Auth method
-    let usePassword = [AuthMethod.Password].includes(this.authMethod);
-    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
-    if (usePassword) {
-      headers.Authorization = basicAuth(this.username, this.password);
-    } else if (useOAuth2) {
-      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
-      headers.Authorization = this.oAuth2.authorizationHeader;
-    }
+    headers.Authorization = this.authorizationHeader();
     // console.log("JMAP headers", headers);
 
     return appGlobal.remoteApp.kyCreate({
@@ -341,7 +400,8 @@ export class JMAPAccount extends MailAccount {
           isSubscribed: true,
         },
       },
-    }) as TJMAPChangeResponse;
+    }) as TJMAPChangeResponse<TJMAPFolder>;
+    checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
     this.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
@@ -358,6 +418,7 @@ export class JMAPAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.stopPolling();
+    this.session = null;
     if (this.oAuth2) {
       await this.oAuth2.logout();
     }
@@ -428,31 +489,123 @@ export class JMAPAccount extends MailAccount {
   }
 
   /**
-   * Call this when the server state changed and the server told us.
-   * This may be in result of a `get`, `set` or push call.
    * Triggers an update, as needed.
    *
    * @param type What object type the sync state is for.
    *  The state is account-global (i.e. across folders), but specific to an
    *  object type.
-   * @param newState The sync state that the server returned after a server call.
-   * @param oldState
-   *  Empty, if this was a `get` operation and we're now up to date
+   * @param toState (Optional) The sync state that the server returned after a server call.
+   * @param fromState (Optional)
    *  If this was a `set` operation, this is the state that the server
    *  returned as the old state before the operation.
    */
-  setState(type: TJMAPObjectType, newState: string, oldState?: string) {
-    let knownState = this.syncState.get(type);
-    this.syncState.set(type, newState);
-    if (knownState != newState && knownState != oldState && oldState) {
-      this.sync(type, knownState)
-        .catch(this.errorCallback);
+  async sync(type: TJMAPObjectType, toState?: string, fromState?: string) {
+    fromState ??= this.syncState.get(type);
+    if (toState && toState == fromState) {
+      return;
+    }
+
+    if (type == "Email") {
+      await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
+    }
+    if (type == "ContactCard") {
+      let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
+      await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
+    }
+    if (type == "CalendarEvent") {
+      let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+      await calendars.first?.fetchChangedEventsForAllCalendars();
     }
   }
 
-  async sync(type: TJMAPObjectType, fromState: string) {
-    // TODO
+  /** Starts push mail
+   * Runs as long as we're logged in, so don't `await` it */
+  async startPushListener(): Promise<void> {
+    let url = this.session.eventSourceUrl;
+    assert(url, "Need event source URL");
+    url = url
+      .replace("{accountId}", this.accountID)
+      .replace("{types}", "Email,ContactCard") // TJMAPObjectTypes.join(","))
+      .replace("{ping}", "500")
+      .replace("{closeafter}", "no");
+    while (this.isLoggedIn) {
+      let stream = await fetch(url, {
+        headers: {
+          Authorization: this.authorizationHeader(),
+        }
+      });
+      if (!stream.ok) {
+        throw new Error(`EventSource <${url}> failed with HTTP ${stream.status} ${stream.statusText}`);
+      }
+      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+      for await (let event of eventStream) {
+        if (event.name == "state") {
+          try {
+            let json = JSON.parse(event.data);
+            assert(json.changed, "Need state changes");
+            let changes = json.changed[this.accountID];
+            for (let typename in changes) {
+              let newState = changes[typename];
+              let type = typename as TJMAPObjectType;
+              if (newState == this.syncState.get(type)) {
+                continue;
+              }
+              await this.sync(type, newState);
+            }
+          } catch (ex) {
+            console.error(ex);
+          }
+        }
+      }
+    }
   }
+
+  async listAddressbooks() {
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:contacts"]);
+    if (!primaryID) {
+      return;
+    }
+    let response = await this.makeSingleCall("AddressBook/get", {
+      accountId: primaryID,
+    });
+    let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;
+    for (let jmap of listResponse.list) {
+      if (!jmap.isSubscribed && !jmap.isDefault ||
+          this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.jmapID == jmap.id).hasItems) {
+        continue;
+      }
+      let ab = newAddressbookForProtocol("addressbook-jmap") as JMAPAddressbook;
+      ab.initFromMainAccount(this);
+      ab.fromJMAP(jmap)
+      appGlobal.addressbooks.add(ab);
+      await ab.save();
+    }
+  }
+
+  async listCalendars() {
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:calendars"]);
+    if (!primaryID) {
+      return;
+    }
+    let response = await this.makeSingleCall("Calendar/get", {
+      accountId: primaryID,
+    });
+    let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
+    for (let jmap of listResponse.list) {
+      if (!jmap.isSubscribed && !jmap.isDefault ||
+        this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.jmapID == jmap.id).hasItems) {
+        continue;
+      }
+      let cal = newCalendarForProtocol("calendar-jmap") as JMAPCalendar;
+      cal.initFromMainAccount(this);
+      cal.fromJMAP(jmap)
+      appGlobal.calendars.add(cal);
+      await cal.save();
+    }
+  }
+
+  // The list of accounts (with accountIds) you have access to is in the JMAP session object.
+  // Get the shared mailboxes using Mailbox/query or Mailbox/get using the accountId of the account that shared the mailbox to you.
 
   hasCapability(capa: string): boolean {
     if (!this.session) {
@@ -468,15 +621,16 @@ export class JMAPAccount extends MailAccount {
     return this.session.capabilities[capa];
   }
 
-  fromConfigJSON(config: any) {
-    super.fromConfigJSON(config);
-    this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.accountID = sanitize.alphanumdash(json.accountID, null);
+    this.pollIntervalMinutes = sanitize.integer(json.pollIntervalMinutes, this.pollIntervalMinutes);
 
-    if (config.syncState && config.syncState instanceof Object) {
-      for (let typeName in config.syncState) {
+    if (json.syncState && json.syncState instanceof Object) {
+      for (let typeName in json.syncState) {
         try {
           let type = sanitize.enum(typeName, TJMAPObjectTypes) as TJMAPObjectType;
-          this.syncState.set(type, sanitize.string(config.syncState[type]));
+          this.syncState.set(type, sanitize.string(json.syncState[type]));
         } catch (ex) {
           this.errorCallback(ex);
         }
@@ -485,6 +639,7 @@ export class JMAPAccount extends MailAccount {
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
+    json.accountID = this.accountID;
     json.pollIntervalMinutes = this.pollIntervalMinutes;
     json.syncState = this.syncState.contentKeyValues();
     return json;
@@ -493,7 +648,4 @@ export class JMAPAccount extends MailAccount {
   newFolder(): JMAPFolder {
     return new JMAPFolder(this);
   }
-}
-
-export class JMAPCommandError extends SpecificError {
 }

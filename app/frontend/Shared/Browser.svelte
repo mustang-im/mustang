@@ -7,7 +7,7 @@
     <hbox class="buttons right">
       <hbox class="loading">
         {#if isLoading}
-          <Loader size="sm" />
+          <Loader />
         {/if}
       </hbox>
       <RoundButton
@@ -23,16 +23,16 @@
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url} {title} {partition} />
 // #else
-<iframe bind:this={webviewE} src={url} {title} />
+<iframe bind:this={webviewE} src={url} {title} sandbox="allow-scripts allow-forms" />
 // #endif
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import RoundButton from './RoundButton.svelte';
+  import Loader from './Loader.svelte';
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
-  import { Loader } from '@svelteuidev/core';
   import { t } from '../../l10n/l10n';
   const dispatch = createEventDispatcher();
 

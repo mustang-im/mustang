@@ -7,7 +7,7 @@
 {/if}
 
 <script lang="ts">
-  import type { SettingsCategory } from "./SettingsCategory";
+  import type { SettingsCategory } from "../SettingsCategory";
   import CategoryItem from "./CategoryItem.svelte";
   import type { Collection } from "svelte-collections";
 

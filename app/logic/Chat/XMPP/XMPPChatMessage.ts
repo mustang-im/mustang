@@ -1,7 +1,7 @@
 import { assert } from "../../util/util";
 import { UserChatMessage } from "../Message";
 import { getJID } from "./XMPPAccount";
-import { XMPPChat } from "./XMPPChat";
+import type { XMPPChat } from "./XMPPChat";
 import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChatMessage extends UserChatMessage {

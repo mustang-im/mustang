@@ -6,7 +6,7 @@ import { LocalMediaDeviceStreams } from "./LocalMediaDeviceStreams";
 import { DummyMeetStorage } from "./SQL/DummyMeetStorage";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { assert, type URLString } from "../util/util";
-import { getDateTimeFormatPref } from "../../l10n/l10n";
+import { getDateTimeLocale } from "../../l10n/l10n";
 import { faker } from '@faker-js/faker';
 
 export class FakeMeeting extends VideoConfMeeting {
@@ -28,7 +28,7 @@ export class FakeMeeting extends VideoConfMeeting {
   }
 
   async createNewConference() {
-    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.state = MeetingState.Init;
   }
@@ -50,7 +50,7 @@ export class FakeMeeting extends VideoConfMeeting {
 
   async hangup() {
     for (let participant of this.participants) {
-      this.removeParticipant(participant);
+      await this.removeParticipant(participant);
     }
     await super.hangup();
   }
@@ -106,6 +106,8 @@ export class FakeMeeting extends VideoConfMeeting {
 
 
 export class FakeMeetAccount extends MeetAccount {
+  readonly protocol: string = "fake-meeting";
+
   constructor() {
     super();
     this.name = faker.company.name();

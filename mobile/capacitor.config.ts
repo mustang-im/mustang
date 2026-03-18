@@ -16,6 +16,9 @@ const config: CapacitorConfig = {
     EdgeToEdge: {
       backgroundColor: "#494558", // --appbar-bg, see app.css
     },
+    StatusBar: {
+      overlaysWebView: false,
+    },
   },
 }
 

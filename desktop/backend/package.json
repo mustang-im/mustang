@@ -1,0 +1,32 @@
+{
+  "name": "mustang-backend",
+  "version": "0.5.0",
+  "description": "Mustang Backend",
+  "main": "./backend.ts",
+  "dependencies": {
+    "@radically-straightforward/sqlite": "^1.1.13",
+    "@types/nodemailer": "^7.0.4",
+    "adm-zip": "^0.5.16",
+    "better-sqlite3": "^12.6.2",
+    "bufferutil": "^4.1.0",
+    "des.js": "^1.1.0",
+    "electron-updater": "^6.6.2",
+    "express": "^5.2.1",
+    "imapflow": "https://github.com/mustang-im/imapflow/",
+    "js-md4": "^0.3.2",
+    "ky": "^1.14.2",
+    "nodemailer": "^7.0.12",
+    "tsdav": "^2.1.6",
+    "utf-8-validate": "^6.0.6",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.2",
+    "i18n": "^0.15.3"
+  },
+  "author": "Ben Bucksch and  Mustang GmbH (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "license": "EUPL-1.2",
+  "licenseText": "See LICENSE file at top level",
+  "homepage": "https://mustang.im"
+}

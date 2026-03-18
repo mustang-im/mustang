@@ -1,8 +1,10 @@
-<hbox flex class="person" class:selected={isSelected} {size} on:click>
+<hbox flex class="person" class:selected={isSelected} on:click
+  style="--account-color: {addressbook?.color ?? "transparent"};"
+  >
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
-      <hbox flex class="name font-small">{$person.name}</hbox>
+      <hbox flex class="name {fontClass}">{$person.name}</hbox>
       <slot name="top-right" {person} />
     </hbox>
     <hbox class="second-row">
@@ -13,12 +15,15 @@
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
+  import { appGlobal } from "../../../logic/app";
   import PersonPicture from "./PersonPicture.svelte";
 
   export let person: PersonOrGroup;
   export let isSelected = false;
   export let pictureSize: number;
-  export let size: "large" | "small" = "large";
+
+  $: fontClass = appGlobal.isMobile ? "font-normal" : "font-small";
+  $: addressbook = ($person as any).addressbook;
 </script>
 
 <style>
@@ -30,21 +35,43 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .first-row {
-    height: 1.3em; /* prevent line breaks */
+  .person :global(.avatar) {
+    margin: 2px 14px;
   }
-  .second-row:first-child {
-    max-height: 1.3em;
+
+  /* account color bar */
+  .person {
+    position: relative;
   }
+  .person::before {
+    position: absolute;
+    left: 8px;
+    top: 15%;
+    content: "";
+    height: 70%;
+    border-left: 3px solid var(--account-color);
+    border-radius: 10px;
+  }
+
   .main {
     justify-content: center;
     margin-block-start: 0px;
-    padding: 10px 16px 10px 4px;
+    padding: 1px 6px 0px 0px;
+    max-width: calc(100% - 42px - 2 * 6px); /* HACK Fix long names overdrawing into avatar column */
   }
-  .person[size="small"] .main {
-    padding: 1px 20px 0px 0px;
+  :global(.mobile) .main {
+    min-height: 44px;
   }
-  .person[size="small"] :global(.avatar) {
-    margin: 2px 14px;
+  .first-row {
+    height: 1.3em; /* prevent line breaks */
+  }
+  .name {
+    align-items: center;
+    white-space: nowrap;
+    max-height: 1.3em;
+    overflow: hidden;
+  }
+  .second-row:first-child {
+    max-height: 1.3em;
   }
 </style>

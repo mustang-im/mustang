@@ -1,3 +1,15 @@
+# Bugs
+* Mail: Move multiple mails (desktop) - UI and backend buggy
+* Composer: Bulleted lists - Paragraphs vs. lines
+* Mobile
+  * Composer
+  * Contacts Person page
+    * Combo box background color
+    * Edit/Save buttons not on second line
+    * Star
+    * Name field labels
+    * Avatar
+
 # Release
 * Polish based on feedback
 * License notification bar
@@ -11,26 +23,30 @@
 * Calendar: Find identity #682
 
 # Polish
-* Account icons
 * Contacts History
   * Now bar
-  * Hide all recurring events more than 1 week in the future
   * Make icon clickable
 
 # Next
+  * JMAP Calendar and Contacts
+    * Fix bugs
+    * Calendar: Recurrence
+  * Graph Calendar and Contacts
+  * PGP
+  * SML
+    * Purchase
+    * Poll
   * Actions (Filters)
     * Run on fetch, not full download
     * Save/load folder and tag
     * Move on server fails, works locally
   * Calendar
-    * Invitations
     * Free/Busy
     * Tasks
   * Contacts
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
     * Same name: Checkboxes
-  * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
@@ -43,16 +59,18 @@
   * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
   * Setup mail
-    * After account delete: remove general panel
     * Scroll inside dialog, not whole window
 
 # Feedback
+## Zucca
+* TB import: Duplicated own Identity
+* Attachments list: Fetch with email headers (not only during full download)
+* Mail: Search on server
 ## Elena
 * Clear profile
 * Debug dump of settings
 * Composer
   * PersonEntry: Delete key
-  * Remove added attachment (needs menu item)
   * Open attachment
 * Setup
   * OAuth2 login: Close window. Login button disabled.
@@ -90,15 +108,12 @@
   * Start with email setup, not selection screen
   * Don't exit setup
 * gmx.net / web.de unable to verify the first certificate on macOS 14.5
-* Contacts: Add (+) when "All" selected: add to personal addressbook
 * Demo: Files: Add Files for persons
 * Chat: selected person not shown
 * Mail: Get out of Folder settings mode
- ## Freshness
-* Account colors
+## Freshness
 * Icons for accounts: user-set
 * Pic for users, in identities
-* Unified inbox: Show account as tag or icon
 
 
 # WebApps

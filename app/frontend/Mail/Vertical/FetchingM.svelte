@@ -18,15 +18,19 @@
   let checkingMail = false;
   let loggingIn = false;
   export async function onCheckMail() {
-    loggingIn = true;
-    let account = folder.account;
-    if (!account.isLoggedIn) {
-      await account.login(true);
+    try {
+      loggingIn = true;
+      let account = folder.account;
+      if (!account.isLoggedIn) {
+        await account.login(true);
+      }
+      loggingIn = false;
+      checkingMail = true;
+      await folder.getNewMessages();
+    } finally {
+      loggingIn = false;
+      checkingMail = false;
     }
-    loggingIn = false;
-    checkingMail = true;
-    await folder.getNewMessages();
-    checkingMail = false;
   }
 </script>
 

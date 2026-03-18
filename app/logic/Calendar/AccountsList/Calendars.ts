@@ -1,4 +1,7 @@
 import { Calendar } from '../Calendar';
+// #if [!WEBMAIL || WEBMAIL=JMAP]
+import { JMAPCalendar } from '../JMAP/JMAPCalendar';
+// #endif
 // #if [!WEBMAIL && PROPRIETARY]
 import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
@@ -10,7 +13,7 @@ import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
 // #else
 import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';
 // #endif
-import { NotReached, NotImplemented } from '../../util/util';
+import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -30,8 +33,7 @@ function _newCalendarForProtocol(protocol: string): Calendar {
   }
   // #if [!WEBMAIL || WEBMAIL=JMAP]
   if (protocol == "calendar-jmap") {
-    throw new NotImplemented("JMAP Calendar not implemented");
-    // return new JMAPCalendar();
+    return new JMAPCalendar();
   }
   // #endif
   // #if [!WEBMAIL]

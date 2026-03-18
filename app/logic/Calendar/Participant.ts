@@ -1,4 +1,4 @@
-import { PersonUID, findPerson } from "../Abstract/PersonUID";
+import { PersonUID, findPerson, kDummyPerson } from "../Abstract/PersonUID";
 import { InvitationResponse, kInviteeResponses } from "./Invitation/InvitationStatus";
 import { notifyChangedProperty } from "../util/Observable";
 
@@ -11,9 +11,9 @@ export class Participant extends PersonUID {
    * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
   lastUpdateTime: Date | null;
 
-  constructor(emailAddress: string, name: string, response: InvitationResponse) {
-    let person = findPerson(emailAddress);
-    super(emailAddress, name ?? person?.name ?? emailAddress);
+  constructor(emailAddress: string | null | undefined, name: string | null | undefined, response: InvitationResponse) {
+    let person = emailAddress ? findPerson(emailAddress) : null;
+    super(emailAddress ?? kDummyPerson.emailAddress, name ?? person?.name ?? emailAddress);
     this.person = person;
     this.response = response;
   }

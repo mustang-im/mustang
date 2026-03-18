@@ -7,10 +7,15 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <grid flex class="month">
+  <grid flex class="month"
+    on:swipeleft={onNextMonth}
+    on:swiperight={onPreviousMonth}
+    on:swipeup={onNextMonth}
+    on:swipedown={onPreviousMonth}
+    >
     {#each weekDays as day}
       <hbox class="weekday">
-        {day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "short" })}
+        {day.toLocaleDateString(getDateTimeLocale(), { weekday: "short" })}
       </hbox>
     {/each}
     {#each days as day}
@@ -18,7 +23,7 @@
         class:selected={day.getTime() == $selectedDate?.getTime()}
         >
         <DayLabel {day} />
-        <EventsLineCell start={day} events={filteredEvents} intervalInHours={24}
+        <DayCell start={day} events={filteredEvents} intervalInHours={24}
           withMonthOnFirst={true} withMonthOnMonday={true} />
       </vbox>
     {/each}
@@ -28,12 +33,12 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import DayLabel from "./DayLabel.svelte";
-  import EventsLineCell from "./EventsLineCell.svelte";
+  import DayCell from "./DayCell.svelte";
   import DateRange from "../DateRange.svelte";
   import { selectedDate } from "../selected";
   import { getWeekDays } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;
@@ -68,6 +73,17 @@
     start.setDate(start.getDate() + showDays * upDown);
     start = start;
   }
+
+  // <copied from="DateRange.svelte">
+  function onNextMonth() {
+    start.setDate(start.getDate() + (showDays == 35 ? 42 : showDays));
+    start = start;
+  }
+  function onPreviousMonth() {
+    start.setDate(start.getDate() - (showDays == 35 ? 28 : showDays));
+    start = start;
+  }
+  // </copied>
 </script>
 
 <style>

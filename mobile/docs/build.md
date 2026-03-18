@@ -5,7 +5,6 @@
 
 1. `cd app; yarn install`
 2. `cd lib; yarn install`
-3. `cd backend; yarn install`
 4. `cd mobile; yarn install`
 5. `cd mobile/backend; yarn install`
 6. `cd mobile; yarn build`
@@ -38,9 +37,67 @@ fails when there's no tag for the commit which fails when you manually trigger i
 1. Install Android NDK v28+ and set `ANDROID_NDK_HOME` env e.g. `/usr/local/lib/android/sdk/ndk/28.2.13676358`
 2. `cd app; yarn install`
 3. `cd lib; yarn install`
-4. `cd backend; yarn install`
 5. `cd mobile; yarn install`
 6. `cd mobile/backend; yarn install`
 7. `cd mobile; yarn build`
 8. Set the envs `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEYSTORE_ALIAS`, `KEYSTORE_ALIAS_PASS`
 9. `cd mobile; yarn build:android`
+
+### iOS
+
+### Building with CI
+1. Setup a create a Code Signing Certificate https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Create-a-new-code-signing-identity
+2. Export the Code Signing Certificate as a `.p12` file https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Export-your-signing-identity-to-share-with-a-team-member
+3. Create an App Store Connect provisioning profile https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile
+4. Download the provisioning profile https://help.apple.com/xcode/mac/current/#/deva899b4fe5 https://developer.apple.com/account/resources/profiles/add
+5. Go to the repository
+6. Go to the setting tab
+7. Go Secrets and variables > Actions
+8. Go to Repository secrets
+9. Click New repository secret
+10. Do `base64 -i <file.p12> -o _` and get the value
+11. Create a secret with the value from step 10 and the name `IOS_CERTIFICATE`
+12. Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created in step 1
+13. Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
+14. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
+15. Go to App Store Connect > Users and Access > Keys https://appstoreconnect.apple.com/
+16. Create a new API key with "App Manager" or "Developer" role
+17. Download the .p8 key file
+18. Create a secret with the value from step 17 and the name `IOS_APPSTORE_API_KEY`
+19. Create a secret with the key ID from step 16 and the name `IOS_APPSTORE_API_KEY_ID`
+20. Create a secret with the issuer ID from step 15 and the name `IOS_APPSTORE_API_ISSUER`
+21. Start the workflow by mannually triggering it or pushing with a tag
+22. The `tag_name` is retrieved from `mobile/package.json`.
+    (The release step fails when there's no tag for the commit, but we want to also manually trigger it.)
+23. The build artifacts will be available in the workflow run summary.
+
+## iOS
+
+### Building with Xcode
+1. `cd app; yarn install`
+2. `cd lib; yarn install`
+4. `cd mobile; yarn install`
+5. `cd mobile/backend; yarn install`
+6. `export MOBILE_ARCH=ios-arm64`
+7. `cd mobile; yarn build`
+8. `cd mobile; yarn setup:ios`
+9. `cd mobile; npx cap sync ios`
+10. `npx cap open ios` in `/mobile`
+11. Select `Any iOS Device (arm64)` at the top bar under the menu
+12. Click `[Product]` > `[Archive]`
+13. Go to `~//Library/Developer/Xcode/Archives` to find the Archive
+
+#### Troubleshooting
+
+- You may need to wait about 10 minutes after opening the project to select device and build because Xcode needs to index the files
+in the project.
+- For debug builds if there's no Development Team ID you may need to open Xcode, go to Settings > Apple Accounts and login.
+Then go to the file explorer in the Xcode project and click on the Project, then Target > Signings and Capabilities and
+select a Development Team.
+
+### Building with command line
+1. `cd app; yarn install`
+2. `cd lib; yarn install`
+4. `cd mobile; yarn install`
+5. `cd mobile/backend; yarn install`
+6. `cd mobile; yarn build:ios`

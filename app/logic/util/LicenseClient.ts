@@ -34,10 +34,11 @@ import { gLicense } from "./License";
 import { siteRoot } from "../build";
 import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
 import { appGlobal } from "../app";
-import { logError } from "../../frontend/Util/error";
+import { catchErrors, logError } from "../../frontend/Util/error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 import { openExternalURL } from "./os-integration";
+import { sleep, type URLString } from "./util";
 
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
 // cat license.pem.pub, and append the part between "-----" after "base64,"
@@ -128,7 +129,8 @@ export async function ensureLicensed() {
     return;
   }
   ticket = await checkSavedLicense();
-  /* Allows the Open-Source parts - e.g. email signatures - to check whether
+  //console.log("saved license", ticket);
+  /* `gLicense` allows the Open-Source parts - e.g. email signatures - to check whether
    * this is a paid version.
    * Also a cache, to avoid re-validating the ticket cryptographically for every server call. */
   gLicense.license = ticket;
@@ -136,11 +138,14 @@ export async function ensureLicensed() {
     return;
   }
   if (ticket.isExpired && !ticket.hasRecentlyExpired) {
+    //console.log("we lost that user on", ticket.expiresOn);
     // We lost that user. Stop polling.
     throw new NoValidLicense();
   }
   ticket = await fetchTicket();
+  //console.log("fetched license", ticket);
   if (!ticket?.valid) {
+    //console.log("fetched license not valid", ticket.expiresOn);
     throw new NoValidLicense();
   }
 }
@@ -174,11 +179,13 @@ async function nextPoll() {
     gLicense.license = ticket;
   } catch (ex) {
     logError(ex);
+  } finally {
+    gPolling = false;
   }
 }
 
 export async function fetchLicenseFromServer(): Promise<Ticket> {
-  return fetchTicket();
+  return await fetchTicket();
 }
 
 /** A promise that resolves when a ticket refresh finishes */
@@ -201,22 +208,7 @@ async function fetchTicket(): Promise<Ticket> {
  * Downloads a new license ticket.
  */
 async function fetchTicketUnqueued(): Promise<Ticket> {
-  let name: string | null = null;
-  let emailAddresses = new SetColl<string>();
-  for (let account of appGlobal.emailAccounts) {
-    for (let identity of account.identities) {
-      let emailAddress = identity.emailAddress;
-      if (identity.isCatchAll) {
-        emailAddress = emailAddress.replace("*", "any");
-      }
-      emailAddresses.add(emailAddress);
-      name ??= identity.realname;
-    }
-  }
-  if (emailAddresses.isEmpty) {
-    throw new AccountMissingError();
-  }
-
+  let { emailAddresses, name } = getUserEMailAddresses(); // can throw
   let url = kLicenseServerURL + "ticket/" + emailAddresses.first + "?" +
     new URLSearchParams({
       name: name ?? "",
@@ -239,6 +231,29 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
     ticket = await checkSavedLicense();
   }
   return ticket;
+}
+
+function getUserEMailAddresses(): { emailAddresses: SetColl<string>, name: string } {
+  let name: string | null = null;
+  let emailAddresses = new SetColl<string>();
+  console.log("license client: user email addresses");
+  for (let account of appGlobal.emailAccounts) {
+    console.log("  account", account.name, account.emailAddress);
+    for (let identity of account.identities) {
+      console.log("    identity", identity.emailAddress);
+      let emailAddress = identity.emailAddress;
+      if (identity.isCatchAll) {
+        emailAddress = emailAddress.replace("*", "any");
+      }
+      emailAddresses.add(emailAddress);
+      name ??= identity.realname;
+    }
+  }
+  console.log("user email addresses", emailAddresses.contents);
+  if (emailAddresses.isEmpty) {
+    throw new AccountMissingError();
+  }
+  return { emailAddresses, name };
 }
 
 /** Whether this user is known to have had a trial license */
@@ -268,7 +283,8 @@ async function startTrial(emailAddresses: string[], name: string) {
   saveTicket(signedTicket);
 
   if (isFirstRun()) {
-    openPurchasePage(null, "welcome");
+    openPurchasePage(null, "welcome")
+      .catch(logError);
   }
 }
 
@@ -367,37 +383,44 @@ function isFirstRun(): boolean {
   return isFirstRun;
 }
 
-const kGetLicenseURL = siteRoot;
-
 /** Called from [Bug] button in license bar and in settings page,
  * and on first run */
 export async function openPurchasePage(paidCallback?: (license: Ticket) => void, mode: "welcome" | "purchase" = "purchase") {
-  let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
-  let pageURL = kGetLicenseURL + "?" + new URLSearchParams({
-    email: primaryIdentity.emailAddress,
-    name: primaryIdentity.realname,
-    lang: getUILocale(),
-    goal: mode,
-  }) + "#" + mode;
+  let pageURL = purchagePageURL(mode);
   console.log("Opening payment page in browser", pageURL);
   await openExternalURL(pageURL);
-  startPolling(paidCallback);
+  startFastPolling(paidCallback);
+}
+
+const kGetLicenseURL = siteRoot;
+
+export function purchagePageURL(mode: "welcome" | "purchase" | "inline-payment" = "purchase"): URLString {
+  let params = {
+    lang: getUILocale(),
+    goal: mode,
+  } as any;
+  let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
+  if (primaryIdentity) {
+    params.email = primaryIdentity?.emailAddress;
+    params.name = primaryIdentity?.realname;
+  }
+  return kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
 }
 
 let purchasePoller: NodeJS.Timeout | null = null;
 
-function startPolling(paidCallback?: (license: Ticket) => void) {
+export function startFastPolling(paidCallback?: (license: Ticket) => void) {
   /** How often to poll after the user clicked [Buy] */
   const kPurchasePollInterval = 10 * 1000; // 10 seconds
   /** For how long to poll after the user clicked [Buy] */
   const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
 
-  stopPurchasePolling();
+  stopFastPolling();
   purchasePoller = setInterval(async () => {
     try {
       let ticket = await fetchTicket();
       if (ticket.valid && paidCallback) {
-        stopPurchasePolling();
+        stopFastPolling();
         paidCallback(ticket);
         paidCallback = null;
       }
@@ -406,19 +429,33 @@ function startPolling(paidCallback?: (license: Ticket) => void) {
     }
   }, kPurchasePollInterval);
 
-  setTimeout(stopPurchasePolling, kPurchasePollFor);
+  setTimeout(stopFastPolling, kPurchasePollFor);
 }
 
-function stopPurchasePolling() {
+export function stopFastPolling() {
   if (purchasePoller) {
     clearInterval(purchasePoller);
   }
   purchasePoller = null;
 }
 
-export function startup() {
-  nextPoll();
+async function startup() {
+  if (appGlobal.emailAccounts.isEmpty) {
+    await sleep(2); // wait for accounts to be loaded
+  }
+  if (appGlobal.emailAccounts.isEmpty) {
+    await sleep(10);
+  }
+
+  appGlobal.emailAccounts.subscribe(() => {
+    // Clear license cache when accounts are added or removed, e.g. after setup
+    gLicense.license = null;
+  });
+
+  nextPoll()
+    .catch(logError);
   const kSoonExpiringPollInterval = k1DayMS; // 1 day
-  setInterval(nextPoll, kSoonExpiringPollInterval);
+  setInterval(() => catchErrors(nextPoll, logError), kSoonExpiringPollInterval);
 }
-startup(); // Hack, to avoid that Open-Source code depends on this file
+startup() // Hack, to avoid that Open-Source code depends on this file
+  .catch(logError);

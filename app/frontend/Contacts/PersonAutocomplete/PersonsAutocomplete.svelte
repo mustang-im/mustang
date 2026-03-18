@@ -1,8 +1,7 @@
 <hbox flex class="persons-autocomplete">
   {#each $persons.each as person}
     <PersonEntry {person}
-      on:removePerson
-      on:removePerson={(event) => onRemovePerson(event.detail)}
+      {onRemovePerson}
       on:focusNext={onFocusNext}
       {disabled}
       >
@@ -16,8 +15,7 @@
   {#if !disabled}
     <hbox flex class="input">
       <PersonAutocomplete
-        on:addPerson
-        on:addPerson={(event) => onAddPerson(event.detail)}
+        {onAddPerson}
         skipPersons={$persons}
         {placeholder} {tabindex} {autofocus}
         bind:this={autocompleteEl}
@@ -43,16 +41,18 @@
   export let tabindex = null;
   export let autofocus = false;
   export let disabled = false;
+  export let onAddPerson: (person: PersonUID) => void | Promise<void> = onAddPersonDefault;
+  export let onRemovePerson: (person: PersonUID) => void | Promise<void> = onRemovePersonDefault;
 
   //$: console.log("persons", persons.contents);
 
-  function onAddPerson(person: PersonUID) {
+  function onAddPersonDefault(person: PersonUID) {
     if (!person || persons.contains(person)) {
       return;
     }
     persons.add(person);
   }
-  function onRemovePerson(person: PersonUID) {
+  function onRemovePersonDefault(person: PersonUID) {
     if (!person) {
       return;
     }

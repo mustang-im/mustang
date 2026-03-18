@@ -8,7 +8,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 
 export class EWSPerson extends Person {
-  addressbook: EWSAddressbook | null;
+  declare addressbook: EWSAddressbook | null;
 
   get itemID() {
     return this.id;
@@ -23,7 +23,7 @@ export class EWSPerson extends Person {
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "work", "mailto")));
+      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.emailAddress(entry.Value), "work", "mailto")));
     }
     if (xmljs.PhoneNumbers?.Entry) {
       for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {
@@ -75,7 +75,7 @@ export class EWSPerson extends Person {
   }
 
   async saveToServer() {
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     request.addField("Contact", "Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
@@ -138,14 +138,18 @@ export class EWSPerson extends Person {
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   postalCode: "PostalCode",
   state: "State",
   country: "CountryOrRegion",
 };
-const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
+const PhysicalAddressPurposes: Record<string, string> = {
+  Business: "work",
+  Home: "home",
+  Other: "other",
+};
 const PhoneMapping: [string, string, number, string][] = [
   ["home", "tel", 2, "HomePhone"],
   ["work", "tel", 2, "BusinessPhone"],

@@ -61,6 +61,7 @@ const tabsObserver = {
     for (let tab of tabs) {
       mailMustangApp.subApps.remove(tab.mustangApp);
     }
+    openApp(mailMustangApp, {});
   },
 };
 oAuth2TabsOpen.registerObserver(tabsObserver);

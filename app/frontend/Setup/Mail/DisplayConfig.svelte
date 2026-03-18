@@ -14,7 +14,7 @@
   /** in */
   export let config: MailAccount;
 
-  $: childServices = [ config.outgoing,
+  $: childServices = config && [ config.outgoing,
     config.setup?.calendar, config.setup?.addressbook,
     config.setup?.fileShare, config.setup?.meet ];
 </script>

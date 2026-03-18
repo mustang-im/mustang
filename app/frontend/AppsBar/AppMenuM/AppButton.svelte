@@ -1,6 +1,6 @@
-<hbox class="app-button app-column">
-  <AppButton on:click={onClick} classes={app.id}>
-    <AppIcon slot="icon" icon={app.icon} size="24px" />
+<hbox class="app-button-wrapper {app.id}">
+  <AppButton on:click={onClick} classes="center-bar {app.id}" padding={false}>
+    <AppIcon slot="icon" icon={app.icon} size="28px" />
   </AppButton>
 </hbox>
 
@@ -12,16 +12,16 @@
 
   export let app: MustangApp
   export let page: string;
+  export let params = {};
 
   function onClick(event: Event) {
     event.stopPropagation();
-    goTo(page, {});
+    goTo(page, params);
   }
 </script>
 
 <style>
-  .app-button :global(.app-button) {
-    padding: 12px;
+  .app-button-wrapper :global(.app-button) {
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
   }

@@ -66,7 +66,7 @@
   </AppBarM>
 </hbox>
 <Popup bind:popupOpen popupAnchor={popupAnchorE} placement="bottom" boundaryElSel=".message-list-pane">
-  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} bind:selectedMessage={message} />
+  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
 </Popup>
 
 <Print {message} bind:this={printE} />
@@ -85,7 +85,7 @@
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
-  import InboxIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/folder";
   import ListIcon from "lucide-svelte/icons/list";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";

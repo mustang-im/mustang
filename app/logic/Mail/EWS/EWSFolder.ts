@@ -1,17 +1,29 @@
-import { Folder, SpecialFolder } from "../Folder";
+import { Folder, SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
+import { EWSItemError } from "./EWSError";
+import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { AddressbookShareCombinedPermissions } from "../../Contacts/Addressbook";
+import { CalendarShareCombinedPermissions } from "../../Calendar/Calendar";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
-import { ArrayColl, Collection } from "svelte-collections";
+import { base64ToArrayBuffer, blobToBase64, NotReached, ensureArray } from "../../util/util";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
 
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/77844470-22ca-43fb-993d-c53e96cf9cd6>
+export const MessageFlagsPidTag = "0x0E07";
+// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/eeca3a02-14e7-419b-8918-986275a2fac0>
+export const IconIndexPidTag = "0x1080";
+
 export class EWSFolder extends Folder {
-  account: EWSAccount;
+  declare account: EWSAccount;
+  declare readonly messages: EMailCollection<EWSEMail>;
+  declare readonly subFolders: ArrayColl<EWSFolder>;
 
   newEMail(): EWSEMail {
     return new EWSEMail(this);
@@ -19,7 +31,7 @@ export class EWSFolder extends Folder {
 
   fromXML(xmljs: any) {
     this.id = sanitize.nonemptystring(xmljs.FolderId.Id);
-    this.name = sanitize.nonemptystring(xmljs.DisplayName);
+    this.name = sanitize.nonemptylabel(xmljs.DisplayName);
     this.countTotal = sanitize.integer(xmljs.TotalCount);
     this.countUnread = sanitize.integer(xmljs.UnreadCount);
     switch (xmljs.DistinguishedFolderId) { // allowed to be null
@@ -68,7 +80,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -169,7 +181,7 @@ export class EWSFolder extends Folder {
                 FieldURI: "item:Flag",
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -277,7 +289,7 @@ export class EWSFolder extends Folder {
               */
               }],
               t$ExtendedFieldURI: {
-                PropertyTag: "0x1080",
+                PropertyTag: IconIndexPidTag,
                 PropertyType: "Integer",
               },
             },
@@ -287,16 +299,23 @@ export class EWSFolder extends Folder {
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
-      for (let result of results) {
-        try {
-          let email = this.newEMail();
-          email.fromXML(getEWSItem(result.Items));
-          await this.storage.saveMessage(email);
-          newMsgs.add(email);
-        } catch (ex) {
-          this.account.errorCallback(ex);
+      try {
+        let results = ensureArray(await this.account.callEWS(request));
+        for (let result of results) {
+          try {
+            if (result.ResponseClass == "Error") {
+              throw new EWSItemError(result, request);
+            }
+            let email = this.newEMail();
+            email.fromXML(getEWSItem(result.Items));
+            await this.storage.saveMessage(email);
+            newMsgs.add(email);
+          } catch (ex) {
+            this.account.errorCallback(ex);
+          }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return newMsgs;
@@ -307,6 +326,7 @@ export class EWSFolder extends Folder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
+      batch = batch.filter((email) => !email.downloadRunOnce.running);
       let request = {
         m$GetItem: {
           m$ItemShape: {
@@ -359,23 +379,17 @@ export class EWSFolder extends Folder {
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
-  async moveMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<EWSEMail>);
+  protected async moveOrCopyMessagesHere(action: "move" | "copy", messages: Collection<EMail>) {
+    // We can copy messages to and from shared folders for the main account.
+    let mainAccount = this.account.mainAccount ?? this.account;
+    let sameServer = messages.contents.every(msg => msg.folder.account == mainAccount || msg.folder.account.mainAccount == mainAccount);
+    await super.moveOrCopyMessagesHere(action, messages, sameServer);
   }
 
-  async copyMessagesHere(messages: Collection<EMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<EWSEMail>);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<EWSEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<EWSEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let request = {
-      ["m$" + action + "Item"]: {
+      ["m$" + actionVerb + "Item"]: {
         m$ToFolderId: {
           t$FolderId: {
             Id: this.id,
@@ -400,14 +414,14 @@ export class EWSFolder extends Folder {
       request.addField("Message", "Categories", { t$String: message.tags.contents.map(tag => tag.name) });
     }
     if (!message.isDraft) {
-      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, t$Value: 0 });
+      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: MessageFlagsPidTag, PropertyType: "Integer" }, t$Value: 0 });
     }
     if (message.isStarred) {
       request.addField("Message", "Flag", {
-        t$CompleteDate: null,
-        t$DueDate: null,
-        t$StartDate: null,
         t$FlagStatus: "Flagged",
+        t$StartDate: null,
+        t$DueDate: null,
+        t$CompleteDate: null,
       });
     }
     request.addField("Message", "IsRead", message.isRead);
@@ -515,6 +529,216 @@ export class EWSFolder extends Folder {
   disableChangeSpecial(): string | false {
     return "You cannot change Exchange special folders.";
   }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return getSharedPersons(result.Folders.Folder.PermissionSet.Permissions.Permission, this.account.emailAddress);
+  }
+
+  async getPermissions(): Promise<ExchangePermission[]> {
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: {
+              FieldURI: "folder:PermissionSet",
+            },
+          },
+        },
+        m$FolderIds: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+      },
+    };
+    let result = await this.account.callEWS(request);
+    return result.Folders.Folder.PermissionSet.Permissions.Permission.map(permission => new ExchangePermission(permission));
+  }
+
+  async setPermissions(permissions: ExchangePermission[]) {
+    let request = {
+      m$UpdateFolder: {
+        m$FolderChanges: {
+          t$FolderChange: {
+            t$FolderId: {
+              Id: this.id,
+            },
+            t$Updates: {
+              t$SetFolderField: {
+                t$FieldURI: {
+                  FieldURI: "folder:PermissionSet",
+                },
+                t$Folder: {
+                  t$PermissionSet: {
+                    t$Permissions: {
+                      t$Permission: permissions.map(permission => permission.toEWSFolderPermission()),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    await this.account.callEWS(request);
+  }
+}
+
+export class ExchangePermissions {
+  CanCreateItems: boolean;
+  CanCreateSubFolders: boolean;
+  DeleteItems: "None" | "Owned" | "All";
+  EditItems: "None" | "Owned" | "All";
+  IsFolderContact: boolean;
+  IsFolderOwner: boolean;
+  IsFolderVisible: boolean;
+  ReadItems: "None" | "TimeOnly" | "TimeAndSubjectAndLocation" | "FullDetails";
+
+  constructor(permissions: Partial<ExchangePermissions> = {}) {
+    this.CanCreateItems = sanitize.boolean(permissions.CanCreateItems, false);
+    this.CanCreateSubFolders = sanitize.boolean(permissions.CanCreateSubFolders, false);
+    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
+    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
+    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
+    this.IsFolderOwner = sanitize.boolean(permissions.IsFolderOwner, false);
+    this.IsFolderVisible = sanitize.boolean(permissions.IsFolderVisible, true);
+    this.ReadItems = sanitize.enum(permissions.ReadItems, ["None", "TimeOnly", "TimeAndSubjectAndLocation", "FullDetails"], "None");
+  }
+
+  toEWS() {
+    let result: Record<string, boolean | string> = {};
+    for (let permission in this) {
+      result["t$" + permission] = this[permission] as string | boolean;
+    }
+    return result;
+  }
+}
+
+type ExchangeUser = { UserId: { DisplayName: string; DistinguishedUser: string; PrimarySmtpAddress: string; } };
+
+export class ExchangePermission {
+  exchangePermissions: ExchangePermissions;
+  distinguishedUser?: string;
+  emailAddress?: string;
+
+  constructor(permissions: Partial<ExchangePermissions> & ExchangeUser) {
+    this.exchangePermissions = new ExchangePermissions(permissions);
+    this.distinguishedUser = permissions.UserId.DistinguishedUser;
+    this.emailAddress = permissions.UserId.PrimarySmtpAddress;
+  }
+
+  toEWSFolderPermission() {
+    return Object.assign({
+      t$UserId: this.distinguishedUser
+      ? { t$DistinguishedUser: this.distinguishedUser, }
+      : { t$PrimarySmtpAddress: this.emailAddress, },
+    }, { t$PermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+  }
+
+  toEWSCalendarPermission() {
+    return Object.assign({
+      t$UserId: this.distinguishedUser
+      ? { t$DistinguishedUser: this.distinguishedUser, }
+      : { t$PrimarySmtpAddress: this.emailAddress, },
+    }, { t$CalendarPermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+  }
+
+  toOWAFolderPermission() {
+    return Object.assign({
+      __type: "Permission:#Exchange",
+      UserId: this.distinguishedUser
+      ? { DistinguishedUser: this.distinguishedUser, }
+      : { PrimarySmtpAddress: this.emailAddress, },
+    }, { PermissionLevel: "Custom" }, this.exchangePermissions);
+  }
+
+  toOWACalendarPermission() {
+    return Object.assign({
+      __type: "CalendarPermission:#Exchange",
+      UserId: this.distinguishedUser
+      ? { DistinguishedUser: this.distinguishedUser, }
+      : { PrimarySmtpAddress: this.emailAddress, },
+    }, { PermissionLevel: "Custom" }, this.exchangePermissions);
+  }
+}
+
+export function getSharedPersons(permissions: ExchangeUser[], thisUser: string): ArrayColl<PersonUID> {
+  return new ArrayColl(permissions.filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress != thisUser).map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
+}
+
+export async function deleteExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, otherPerson: PersonUID) {
+  let targetPermissions = await target.getPermissions();
+  let personPermission = targetPermissions.findIndex(permission => permission.emailAddress == otherPerson.emailAddress);
+  if (personPermission >= 0) {
+    targetPermissions.splice(personPermission, 1);
+    await target.setPermissions(targetPermissions);
+  }
+}
+
+export async function setExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, person: PersonUID, access: string, ...permissions: MailShareIndividualPermissions[]) {
+  let targetPermissions = await target.getPermissions();
+  let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
+  if (!personPermission) {
+    personPermission = new ExchangePermission({ IsFolderVisible: true, UserId: { DisplayName: undefined, DistinguishedUser: undefined, PrimarySmtpAddress: person.emailAddress } });
+    targetPermissions.push(personPermission);
+  }
+  let permission = personPermission.exchangePermissions;
+  switch (access) {
+  case CalendarShareCombinedPermissions.ReadAvailability:
+    permission.ReadItems = "TimeOnly";
+    break;
+  case CalendarShareCombinedPermissions.ReadTitle:
+    permission.ReadItems = "TimeAndSubjectAndLocation";
+    break;
+  case CalendarShareCombinedPermissions.ReadAll:
+  case AddressbookShareCombinedPermissions.Read:
+  case MailShareCombinedPermissions.Read:
+    permission.ReadItems = "FullDetails";
+    break;
+  case MailShareCombinedPermissions.FlagChange:
+    permission.ReadItems = "FullDetails";
+    permission.EditItems = "All";
+    break;
+  case CalendarShareCombinedPermissions.Modify:
+  case AddressbookShareCombinedPermissions.Modify:
+  case MailShareCombinedPermissions.Modify:
+    permission.ReadItems = "FullDetails";
+    permission.EditItems = "All";
+    permission.DeleteItems = "All";
+    permission.CanCreateItems = true;
+    break;
+  case MailShareCombinedPermissions.Custom:
+    permission.ReadItems = permissions.includes(MailShareIndividualPermissions.Read) ? "FullDetails" : "None";
+    permission.EditItems = permissions.includes(MailShareIndividualPermissions.FlagChange) ? "All" : "None"; // closest supported by Exchange
+    permission.DeleteItems = permissions.includes(MailShareIndividualPermissions.Delete) ? "All" : "None";
+    permission.CanCreateItems = permissions.includes(MailShareIndividualPermissions.Create);
+    permission.IsFolderOwner = permissions.includes(MailShareIndividualPermissions.DeleteFolder); // closest supported by Exchange
+    permission.CanCreateSubFolders = permissions.includes(MailShareIndividualPermissions.CreateSubfolders);
+    break;
+  default:
+    throw new NotReached();
+  }
+  await target.setPermissions(targetPermissions);
 }
 
 /**

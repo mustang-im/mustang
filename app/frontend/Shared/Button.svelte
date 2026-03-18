@@ -36,13 +36,13 @@
   import { showError } from '../Util/error';
   import Icon from 'svelte-icon/Icon.svelte';
   import Spinner from './Spinner.svelte';
-  import type { ComponentType } from 'svelte';
+  import type { ConstructorOfATypedSvelteComponent } from 'svelte';
   import { t } from '../../l10n/l10n';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
   export let label: string = null;
-  export let icon: ComponentType | string = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string = null;
   export let classes = "";
   export let plain = false;
   export let iconSize = "16px";
@@ -152,10 +152,16 @@
     background-color: var(--inverted-bg);
     color: var(--inverted-fg);
   }
+  button {
+    font-size: 14px;
+  }
   button.large {
     padding: 8px 24px;
     font-size: 16px;
     font-weight: bold;
+  }
+  :global(.mobile) button {
+    font-size: 16px;
   }
   .gap {
     width: 8px;

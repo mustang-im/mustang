@@ -5,7 +5,7 @@
 
 <script lang="ts">
   import { Participant } from "../../../logic/Calendar/Participant";
-  import { openUIFor } from "../../AppsBar/changeTo";
+  import { openPersonFromOtherApp } from "../../Contacts/open";
   import { catchErrors } from "../../Util/error";
 
   export let participant: Participant;
@@ -15,7 +15,7 @@
     if (!person) {
       return;
     }
-    openUIFor(person);
+    openPersonFromOtherApp(person);
   }
 </script>
 

@@ -1,4 +1,4 @@
-<vbox class="app-button {classes}" class:selected on:click>
+<vbox class="app-button {classes}" class:selected class:padding on:click>
   <hbox class="icon">
     <slot name="icon" />
   </hbox>
@@ -10,11 +10,14 @@
 <script lang="ts">
   export let selected = false;
   export let classes: string = "";
+  export let padding = true;
 </script>
 
 <style>
   .app-button {
     align-items: center;
+  }
+  .app-button.padding {
     padding: 10px 0px 6px 0px;
   }
   .label :global(.label){

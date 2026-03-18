@@ -5,7 +5,7 @@
       accounts={appGlobal.addressbooks}
       showAllOption={true}
       filterByWorkspace={true}
-      icon={AccountIcon}
+      icon={AddressbookIcon}
       />
   </vbox>
   <hbox flex />
@@ -22,7 +22,6 @@
       icon={NewContactIcon}
       iconSize="22px" padding="9px" classes="large create"
       onClick={addPerson}
-      disabled={!$selectedAddressbook}
       />
   </hbox>
 </hbox>
@@ -36,7 +35,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
-  import AccountIcon from "lucide-svelte/icons/book-user";
+  import AddressbookIcon from "lucide-svelte/icons/book-user";
   import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
@@ -47,16 +46,22 @@
   export let selectedAddressbook: Addressbook;
 
   function addPerson() {
+    let addressbook = selectedAddressbook ?? appGlobal.addressbooks.first;
+    assert(addressbook, $t`Please add an addressbook first`);
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
-    let person = selectedAddressbook.newPerson();
+    let person = addressbook.newPerson();
     person.name = "";
     persons.add(person);
     $selectedPerson = person;
   }
 
   async function sync() {
-    assert($selectedAddressbook?.canSync, "Cannot sync " + $selectedAddressbook.protocol);
-    await $selectedAddressbook.listContacts();
+    let ab = $selectedAddressbook;
+    assert(ab?.canSync, "Cannot sync " + ab.protocol);
+    if (!ab.isLoggedIn) {
+      await ab.login(true);
+    }
+    await ab.listContacts();
   }
 </script>
 

@@ -8,7 +8,7 @@ import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
 import { StreetAddress } from './Contacts/StreetAddress';
-import { Chat } from './Chat/Chat';
+import { ChatRoom } from './Chat/ChatRoom';
 import { FileSharingAccount } from './Files/FileSharingAccount';
 import type { File } from './Files/File';
 import { Directory } from './Files/Directory';
@@ -161,10 +161,10 @@ export class FakeChatPerson extends Person {
     this.firstName = faker.person.firstName(male ? "male" : "female");
     this.lastName = faker.person.lastName();
     this.name = this.firstName + " " + this.lastName;
-    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "work"));
-    this.emailAddresses.add(new ContactEntry(faker.internet.email(this.firstName, this.lastName).toLowerCase(), "home"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
-    this.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
+    this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "work"));
+    this.emailAddresses.add(new ContactEntry(faker.internet.email({ firstName: this.firstName, lastName: this.lastName }).toLowerCase(), "home"));
+    this.phoneNumbers.add(new ContactEntry(faker.helpers.fromRegExp('+49-170-[0-9]{3} [0-9]{4}'), "mobile"));
+    this.phoneNumbers.add(new ContactEntry(faker.helpers.fromRegExp('+49-[0-9]{3}-[0-9]{6}'), "work"));
     this.chatAccounts.add(new ContactEntry(this.phoneNumbers.first.value, "WhatsApp"));
     this.chatAccounts.add(new ContactEntry(this.emailAddresses.first.value, "Teams"));
     this.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
@@ -270,6 +270,12 @@ class FakeFolder extends Folder {
   async getNewMessages(): Promise<Collection<EMail>> {
     return this.messages;
   }
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    return new ArrayColl<EMail>();
+  }
+  async downloadAllMessages(): Promise<Collection<EMail>> {
+    return new ArrayColl<EMail>();
+  }
   newEMail(): FakeEMail {
     return new FakeEMail(this);
   }
@@ -288,7 +294,7 @@ class FakeFolder extends Folder {
 
 class FakeEMail extends EMail {
   setFake(person: Person, pUID: PersonUID, meUID: PersonUID, lastReadTime: Date, emailNr: number) {
-    this.needToLoadBody = false;
+    this.loadedBody = true;
     this.id = emailNr + '@' + this.folder.account.emailAddress;
     this.sent = faker.date.past({ years: 0.1 });
     this.received = new Date(this.sent.getTime() + 500);
@@ -367,25 +373,25 @@ export class FakeChatAccount extends ChatAccount {
     this.storage = new DummyChatStorage();
   }
   async login(interactive: boolean): Promise<void> {
-    await this.listChats();
+    await this.listRooms();
   }
-  async listChats(): Promise<void> {
-    if (this.chats.hasItems) {
+  async listRooms(): Promise<void> {
+    if (this.rooms.hasItems) {
       return;
     }
     for (let person of this.persons) {
-      let chat = this.newChat() as FakeChat;
-      chat.id = person.id + "-" + faker.string.uuid();
-      chat.contact = person;
-      this.chats.set(person, chat);
+      let room = this.newRoom() as FakeChat;
+      room.id = person.id + "-" + faker.string.uuid();
+      room.contact = person;
+      this.rooms.set(person, room);
     }
   }
-  newChat(): FakeChat {
+  newRoom(): FakeChat {
     return new FakeChat(this);
   }
 }
 
-class FakeChat extends Chat {
+class FakeChat extends ChatRoom {
   constructor(account: FakeChatAccount) {
     super(account);
   }

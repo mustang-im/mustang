@@ -1,9 +1,10 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
 import { MailIdentity } from "./MailIdentity";
-import { Folder, SpecialFolder } from "./Folder";
+import { Folder, SpecialFolder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "./Folder";
 import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
@@ -73,6 +74,12 @@ export class MailAccount extends TCPAccount {
     }
   }
 
+  /**
+   * Send the email purely on the protocol level,
+   * and save it in the Sent folder. Nothing else.
+   * All higher-level send preparations (signature, encryption etc.)
+   * are done in `ComposeActions.send()`.
+   */
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
   }
@@ -95,13 +102,14 @@ export class MailAccount extends TCPAccount {
     let folder = this.getSpecialFolder(SpecialFolder.Sent);
     let email = folder.newEMail();
     email.compose.generateMessageID();
-    email.needToLoadBody = false;
+    email.loadedBody = true;
     email.from.emailAddress = this.emailAddress;
     email.from.name = this.realname;
     return email;
   }
 
   async save(): Promise<void> {
+    await super.save();
     console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
     await this.storage?.saveAccount(this);
   }
@@ -117,6 +125,18 @@ export class MailAccount extends TCPAccount {
       this.identities.some(id => id.isEMailAddress(emailAddress));
   }
 
+  /**
+   * @returns `MailIdentity` of *this* account, for the given email address.
+   * @see also global function `findIdentityForEMailAddress()`, which searches all accounts. */
+  findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+    for (let identity of this.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+    return null;
+  }
+
   /** Get the `specialFolder` in this account. */
   getSpecialFolder(specialFolder: SpecialFolder): Folder {
     let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);
@@ -130,6 +150,20 @@ export class MailAccount extends TCPAccount {
       return this.getSpecialFolder(SpecialFolder.Sent);
     }
     return this.rootFolders.first;
+  }
+
+  canShareWithPersons(): boolean {
+    return false;
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
+  async deleteSharedPerson(Person: PersonUID) {
+  }
+
+  async addSharedPerson(person: PersonUID, mailFolder: Folder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
   }
 
   fromConfigJSON(json: any) {
@@ -209,7 +243,7 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
   return null;
 }
 
-export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "harddisk" | "builtin" | null;
 
 export interface MailAccountStorage {
   saveAccount(account: MailAccount): Promise<void>;

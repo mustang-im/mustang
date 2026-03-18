@@ -8,7 +8,7 @@ perl -p -i \
   package.json
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
-  ../e2/package.json
+  ../desktop/package.json
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../mobile/package.json

@@ -8,6 +8,7 @@ import { EWSOutgoingInvitation } from "./EWSOutgoingInvitation";
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -27,7 +28,7 @@ enum WeekOfMonth {
   'Last' = 5,
 };
 
-const RecurrenceType = {
+const RecurrenceType: Record<string, Frequency> = {
   RelativeYearlyRecurrence: Frequency.Yearly,
   AbsoluteYearlyRecurrence: Frequency.Yearly,
   RelativeMonthlyRecurrence: Frequency.Monthly,
@@ -102,7 +103,7 @@ export class EWSEvent extends Event {
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (xmljs.Organizer && (xmljs.RequiredAttendees?.Attendee || xmljs.OptionalAttendees?.Attendee)) {
-      organizer = sanitize.emailAddress(xmljs.Organizer.Mailbox.EmailAddress);
+      organizer = getEmailAddressOrX400(xmljs.Organizer.Mailbox.EmailAddress);
       xmljs.Organizer.ResponseType = "Organizer";
       addParticipants(xmljs.Organizer, participants);
     }
@@ -151,6 +152,8 @@ export class EWSEvent extends Event {
   }
 
   async saveToServer() {
+    await this.prepareSaveToServer();
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
@@ -164,10 +167,10 @@ export class EWSEvent extends Event {
 
   async saveCalendarItemToServer() {
     let request: any = this.itemID ?
-      new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new EWSUpdateItemRequest(this.itemID, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
-      new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
-      new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+      new EWSUpdateOccurrenceRequest(this, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
+      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -178,9 +181,6 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { BodyType: "HTML", _TextContent_: this.rawHTMLDangerous } : { BodyType: "Text", _TextContent_: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
-      request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
-    }
     if (this.calUID && !this.itemID && !this.parentEvent) {
       // This probably only makes sense when creating an event.
       // (And it's not even needed then as Exchange will auto-generate one.)
@@ -201,6 +201,9 @@ export class EWSEvent extends Event {
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
+    if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
+      request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
+    }
     let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
     request.addField("CalendarItem", "StartTimeZone", { Id: timezone }, "calendar:StartTimeZone");
     request.addField("CalendarItem", "EndTimeZone", { Id: timezone }, "calendar:EndTimeZone");
@@ -230,12 +233,12 @@ export class EWSEvent extends Event {
   }
 
   async saveTask() {
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } } });
     request.addField("Task", "Subject", this.title, "item:Subject");
     request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
+    request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     let response = await this.calendar.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Task.ItemId.Id);
   }
@@ -432,13 +435,13 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
   for (let attendee of ensureArray(attendees)) {
     let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
     if (emailAddress != organizer) {
-      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
 }
 
 class EWSUpdateOccurrenceRequest {

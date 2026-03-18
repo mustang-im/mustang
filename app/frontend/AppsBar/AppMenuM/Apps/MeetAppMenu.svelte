@@ -8,8 +8,8 @@
 {/if}
 <hbox class="empty" />
 <AppButton app={meetMustangApp} page="/meet/" />
-<CombinedButton icon1={meetMustangApp.icon} icon2={HistoryIcon} page="/meet/history" />
-<CombinedButton icon1={meetMustangApp.icon} icon2={PlusIcon} onClick={onCreateMeeting} />
+<BasicButton icon={HistoryIcon} page="/meet/history" />
+<BasicButton icon={PlusIcon} onClick={onCreateMeeting} />
 
 <script lang="ts">
   import { meetMustangApp } from "../../../Meet/MeetMustangApp";
@@ -17,9 +17,10 @@
   import { goTo, openApp } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import HistoryIcon from "lucide-svelte/icons/history";
   import PersonIcon from "lucide-svelte/icons/user";
-  import PlusIcon from "lucide-svelte/icons/plus-circle";
+  import PlusIcon from "lucide-svelte/icons/plus";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
   import { Person } from "../../../../logic/Abstract/Person";
 

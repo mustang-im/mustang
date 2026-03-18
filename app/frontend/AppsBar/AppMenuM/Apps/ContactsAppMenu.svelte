@@ -8,13 +8,15 @@
     page={URLPart`/contacts/person/${$selectedPerson.id}/history`}
     params={{ person: $selectedPerson }} />
 {:else}
-  <hbox class="empty" />
+  <hbox class="dummy">
+    <BasicButton icon={HistoryIcon} /> <!-- let entire column occupy the normal width, for page alignment -->
+  </hbox>
   <hbox class="empty" />
 {/if}
 <!--<AccountButton account={appGlobal.addressbooks.get(0)} page={acc => `/contacts/account/${acc.id}/persons`} defaultIcon={AccountIcon} />-->
 <AppButton app={contactsMustangApp} page="/contacts/" />
-<CombinedButton icon1={contactsMustangApp.icon} icon2={SearchIcon} page="/contacts/search" />
-<CombinedButton icon1={contactsMustangApp.icon} icon2={PlusIcon} onClick={onCreatePerson} />
+<BasicButton icon={SearchIcon} page="/contacts/search" />
+<BasicButton icon={PlusIcon} onClick={onCreatePerson} />
 
 <script lang="ts">
   import { contactsMustangApp } from "../../../Contacts/ContactsMustangApp";
@@ -22,11 +24,11 @@
   import { goTo } from "../../selectedApp";
   import { appGlobal } from "../../../../logic/app";
   import AppButton from "../AppButton.svelte";
-  import BasicButton from "../BasicButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import PersonPicture from "../../../Contacts/Person/PersonPicture.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
-  import PlusIcon from "lucide-svelte/icons/plus-circle";
+  import PlusIcon from "lucide-svelte/icons/plus";
   import contactsIcon from '../../../asset/icon/appBar/contacts.svg?raw';
   import HistoryIcon from "lucide-svelte/icons/history";
   import { URLPart } from "../../../Util/util";
@@ -40,3 +42,9 @@
     goTo(URLPart`/contacts/person/${contact.id}/edit`, { person: contact });
   }
 </script>
+
+<style>
+  .dummy {
+    visibility: hidden;
+  }
+</style>

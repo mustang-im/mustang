@@ -1,8 +1,10 @@
 import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
+import type { PublicKey } from '../Mail/Encryption/PublicKey';
+import { publicKeyFromJSON } from '../Mail/Encryption/KeyFromJSON';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
-import { assert } from '../util/util';
+import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 
 export class Person extends ContactBase {
   id: string;
@@ -20,6 +22,8 @@ export class Person extends ContactBase {
   readonly urls = new ArrayColl<ContactEntry>();
   /** Custom user-defined fields */
   readonly custom = new ArrayColl<ContactEntry>();
+  /** PGP public keys and S/MIME certiticates for this contact */
+  readonly encryptionPublicKeys = new ArrayColl<PublicKey>();
   @notifyChangedProperty
   notes: string | null = "";
 
@@ -35,8 +39,6 @@ export class Person extends ContactBase {
    * Higher is more popular. */
   @notifyChangedProperty
   popularity: number = 0;
-  @notifyChangedProperty
-  syncState: number | string | undefined;
 
   /**
    * Saves the contact to the server and to the database.
@@ -98,16 +100,6 @@ export class Person extends ContactBase {
     // nothing to do for local persons
   }
 
-  fromExtraJSON(json: any) {
-    assert(typeof (json) == "object", "Must be a JSON object");
-    this.syncState = json.syncState;
-  }
-  toExtraJSON(): any {
-    let json: any = {};
-    json.syncState = this.syncState;
-    return json;
-  }
-
   toString() {
     return this.name;
   }
@@ -148,7 +140,7 @@ export class Person extends ContactBase {
     this.company = this.company ?? other.company;
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
-    this.notes = ((this.notes || "") + (other.notes || "")) || null;
+    this.notes = ((this.notes || "") + (this.notes && other.notes ? "\n\n" : "") + (other.notes || "")) || null;
     this.emailAddresses.addAll(other.emailAddresses.filterOnce(o => !this.emailAddresses.find(t => t.value == o.value)));
     this.chatAccounts.addAll(other.chatAccounts.filterOnce(o => !this.chatAccounts.find(t => t.value == o.value)));
     this.phoneNumbers.addAll(other.phoneNumbers.filterOnce(o => !this.phoneNumbers.find(t => t.value == o.value)));
@@ -180,6 +172,14 @@ export class Person extends ContactBase {
     await newPerson.save();
   }
 
+  async copyToAddressbook(newAddressbook: Addressbook): Promise<void> {
+    let newPerson = newAddressbook.newPerson();
+    newPerson.copyFrom(this);
+    newPerson.addressbook = newAddressbook;
+    newAddressbook.persons.add(newPerson);
+    await newPerson.save();
+  }
+
   copyFrom(other: Person): void {
     this.name = other.name;
     this.firstName = other.firstName;
@@ -197,6 +197,17 @@ export class Person extends ContactBase {
     this.groups.addAll(other.groups.map(ce => ce.clone()));
     this.custom.addAll(other.custom.map(ce => ce.clone()));
   }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.encryptionPublicKeys.replaceAll(sanitize.array(json.encryptionPublicKeys, []).map(keyJSON =>
+      publicKeyFromJSON(sanitize.json(keyJSON, null))));
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
+    return json;
+  }
 }
 
 export class ContactEntry extends Observable {
@@ -211,6 +222,7 @@ export class ContactEntry extends Observable {
   /** Lower is more preferred */
   @notifyChangedProperty
   preference: number = ContactEntry.defaultPreference;
+  json: any;
 
   constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference: number = ContactEntry.defaultPreference) {
     super();

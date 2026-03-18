@@ -16,7 +16,6 @@
   import AnswerCallIcon from "lucide-svelte/icons/phone-call";
   import { IncomingCall } from "../../../logic/Chat/RoomEvent";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let message: IncomingCall;

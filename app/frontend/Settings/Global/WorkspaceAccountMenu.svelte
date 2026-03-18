@@ -30,7 +30,7 @@
 <script lang="ts">
   import { Workspace } from "../../../logic/Abstract/Workspace";
   import { Account } from "../../../logic/Abstract/Account";
-  import { accountSettings } from "../SettingsCategories";
+  import { accountSettings } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "../Window/selected";
   import { appGlobal } from "../../../logic/app";
   import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";

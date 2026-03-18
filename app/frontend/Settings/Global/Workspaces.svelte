@@ -50,7 +50,7 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  import { useDebounce } from '@svelteuidev/composables';
+  import debounce from "lodash/debounce";
   import { t } from "../../../l10n/l10n";
 
   $: workspaces = appGlobal.workspaces;
@@ -74,7 +74,7 @@
     }
     await saveWorkspaces();
   }
-  const onSaveDelayed = useDebounce(() => catchErrors(onSave), 500);
+  const onSaveDelayed = debounce(() => catchErrors(onSave), 500);
 </script>
 
 <style>

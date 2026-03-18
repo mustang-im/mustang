@@ -1,36 +1,56 @@
-<vbox>
-  {#await getLicense()}
-    <div class="message">{$t`Checking...`}</div>
-  {:then}
-    {#if license.isSoonExpiring}
-      <SoonExpiring bind:license />
-    {:else if license.isExpired}
-      <Expired bind:license />
-    {:else if license.valid && !wasValid}
-      <PaidJustNow bind:license />
-    {:else if license.valid}
-      <HaveLicense bind:license />
-    {:else if owlLicense}
-      <Upgrade bind:license {owlLicense} />
-    {:else}
-      <NeverPaid bind:license />
-    {/if}
-  {:catch ex}
-    <div class="error-intro message">{$t`Failed to contact the license server`}</div>
-    <ErrorMessageInline {ex} />
-  {/await}
+<vbox flex>
+  {#if appGlobal.emailAccounts.isEmpty}
+    <SetupMail />
+  {:else}
+    {#await getLicense()}
+      <div class="message">{$t`Checking...`}</div>
+    {:then}
+      {#if license.isSoonExpiring}
+        <div>{$t`Your license expires in ${license.daysLeft} days, on ${getDateString(license.expiresOn)}`}</div>
+      {:else if license.isExpired}
+        <div>{$t`Your license has expired on ${getDateString(license.expiresOn)}`}</div>
+      {:else if license.valid && !wasValid}
+        <HaveLicense bind:license paidJustNow />
+      {:else if license.valid}
+        <HaveLicense bind:license />
+      {:else if owlLicense}
+        <div>{$t`You can upgrade your license from Owl`}</div>
+      {:else}
+        <div>{$t`You can buy a license to use ${appName} fully`}</div>
+      {/if}
+
+      {#if !license?.valid || license.isExpired || license.isSoonExpiring}
+        <vbox class="payment-page" flex>
+          <hbox class="buttons">
+            <Button
+              label={$t`Open in browser`}
+              onClick={() => openPurchasePage(paid => license = paid)}
+              classes="tertiary"
+              />
+          </hbox>
+
+          <PaymentPage />
+        </vbox>
+      {/if}
+    {:catch ex}
+      <div class="error-intro message">{$t`Failed to contact the license server`}</div>
+      <ErrorMessageInline {ex} />
+    {/await}
+  {/if}
 </vbox>
 
 <script lang="ts">
-  import { checkSavedLicense, Ticket, BadTicket, fetchLicenseFromServer } from "../../../../logic/util/LicenseClient";
+  import { checkSavedLicense, Ticket, BadTicket, fetchLicenseFromServer, openPurchasePage, startFastPolling, stopFastPolling } from "../../../../logic/util/LicenseClient";
+  import { appGlobal } from "../../../../logic/app";
+  import { appName } from "../../../../logic/build";
   import HaveLicense from "./HaveLicense.svelte";
-  import SoonExpiring from "./SoonExpiring.svelte";
-  import Expired from "./Expired.svelte";
-  import Upgrade from "./Upgrade.svelte";
-  import PaidJustNow from "./PaidJustNow.svelte";
-  import NeverPaid from "./NeverPaid.svelte";
+  import PaymentPage from "./PaymentPage.svelte";
+  import SetupMail from "../../../Setup/Mail/SetupMail.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
+  import Button from "../../../Shared/Button.svelte";
+  import { getDateString } from "../../../Util/date";
   import { t } from "../../../../l10n/l10n";
+  import { onDestroy } from "svelte";
 
   let license: Ticket = new BadTicket();
   let owlLicense: Ticket | null = null;
@@ -41,7 +61,12 @@
     license = await fetchLicenseFromServer();
     wasValid = license.valid;
     console.log("License ticket on payment settings page", license);
+    if (!license.valid || license.isSoonExpiring) {
+      startFastPolling(paid => license = paid);
+    }
   }
+
+  onDestroy(stopFastPolling);
 
   function testLicense() {
     license = new Ticket();
@@ -56,5 +81,10 @@
 <style>
   .error-intro {
     margin: 4px 20px;
+  }
+  .payment-page .buttons {
+    justify-content: end;
+    margin-block-start: -24px;
+    margin-block-end: 12px;
   }
 </style>

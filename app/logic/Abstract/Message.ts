@@ -1,4 +1,4 @@
-import type { Contact } from "./Contact";
+import type { Group } from "./Group";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import type { Attachment } from "./Attachment";
@@ -18,7 +18,7 @@ export class Message extends Observable {
    * if outgoing = true, this is the recipient, otherwise the sender
    */
   @notifyChangedProperty
-  contact: Contact | PersonUID;
+  contact: PersonUID | Person | Group;
   /** When the message was sent */
   @notifyChangedProperty
   sent: Date;
@@ -134,7 +134,7 @@ export class Message extends Observable {
     this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
 
-  readonly reactions = new MapColl<Person, string>();
+  readonly reactions = new MapColl<PersonUID, string>();
 
   async markRead(read = true) {
     this.isRead = read;

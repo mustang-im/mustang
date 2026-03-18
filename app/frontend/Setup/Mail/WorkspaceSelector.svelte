@@ -22,15 +22,12 @@
 
 <script lang="ts">
   import type { Workspace } from "../../../logic/Abstract/Workspace";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { t } from "../../../l10n/l10n";
 
-  export let config: MailAccount;
-  export let selectedWorkspace: Workspace = config.workspace ?? appGlobal.workspaces.last;
+  export let selectedWorkspace: Workspace = appGlobal.workspaces.last;
   export let horizontal = false;
 
-  $: config.workspace = selectedWorkspace;
   let workspaces = appGlobal.workspaces;
 
   function onChange(newWorkspace: Workspace, event: Event) {

@@ -10,6 +10,19 @@
     </svelte:fragment>
     <vbox class="content">
       <grid>
+        {#if account.isDependentAccount}
+          <label for="mainaccount">{$t`Part of account`}</label>
+          <hbox class="account-button" name="mainaccount">
+            <Button
+              label={account.mainAccount.name}
+              icon={AccountIcon}
+              onClick={() => openSettingsCategoryForAccount(account.mainAccount)}
+              plain={true}
+              />
+          </hbox>
+          <hbox />
+          <hbox />
+        {/if}
         <label for="name">{$t`Account name`}</label>
         <input type="text" bind:value={account.name} name="name" on:change={onChange} />
         <input type="color" bind:value={account.color} name="color" on:change={onChange} list="proposed-colors" />
@@ -40,6 +53,12 @@
   </HeaderGroupBox>
 </vbox>
 
+<vbox class="extra-settings" flex>
+  {#each extraSettings.each as category}
+    <svelte:component this={category.windowContent} {account} />
+  {/each}
+</vbox>
+
 <!-- <copied to="WorkspaceBlock.svelte" /> -->
 <datalist id="proposed-colors">
   {#each accountColors as color}
@@ -49,9 +68,10 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { accountSettings, settingsCategories } from "./SettingsCategory";
   import { selectedCategory } from "./Window/selected";
-  import { settingsCategories } from "./SettingsCategories";
+  import { selectedAccount as selectedMailAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -61,13 +81,17 @@
   import { catchErrors } from "../Util/error";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { useDebounce } from '@svelteuidev/composables';
+  import AccountIcon from "lucide-svelte/icons/server";
+  import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
 
-  const onChange = useDebounce(() => catchErrors(onSave), 500);
+  $: extraSettings = accountSettings.filterObservable(cat => account instanceof cat.type && cat.isMain && cat.id != "acc-general");
+
+  const onChange = debounce(() => catchErrors(onSave), 500);
   async function onSave() {
     await account.save();
   }
@@ -80,9 +104,14 @@
     await account.deleteIt();
 
     // Reset selected
-    if ($selectedAccount == account) {
-      $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount?.inbox;
+    if (account.mainAccount) {
+      openSettingsCategoryForAccount(account.mainAccount);
+    } else {
+      $selectedCategory = settingsCategories.first;
+    }
+    if ($selectedMailAccount == account) {
+      $selectedMailAccount = appGlobal.emailAccounts.first;
+      $selectedFolder = $selectedMailAccount?.inbox;
       $selectedMessage = null;
       $selectedMessages.clear();
     }
@@ -90,7 +119,8 @@
 </script>
 
 <style>
-  .account-general {
+  .account-general,
+  .extra-settings {
     max-width: 40em;
   }
 

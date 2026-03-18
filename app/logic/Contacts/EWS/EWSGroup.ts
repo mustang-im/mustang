@@ -5,12 +5,13 @@ import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { getEmailAddressOrX400 } from '../../Mail/EWS/EWSEMail';
 import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class EWSGroup extends Group {
-  addressbook: EWSAddressbook | null;
+  declare addressbook: EWSAddressbook | null;
 
   get itemID() {
     return this.id;
@@ -23,12 +24,12 @@ export class EWSGroup extends Group {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.description = sanitize.nonemptystring(xmljs.Body?.Value, "");
-    this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(sanitize.emailAddress(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
+    this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(getEmailAddressOrX400(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
   }
 
   async saveToServer() {
     // XXX untested due to no UI yet
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
     request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
     let participants = this.participants.contents.filter(entry => entry.emailAddresses.first?.value);

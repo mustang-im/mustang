@@ -1,16 +1,17 @@
 <hbox />
 <hbox />
-<hbox class="bottom app-column" />
+<hbox class="bottom center-bar" />
 <hbox />
 <hbox />
 
 <style>
   .bottom {
-    height: 44px;
-    width: 48px;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
+    width: 28px;
+    margin-block-start: -8px;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
+    z-index: -1;
   }
 </style>

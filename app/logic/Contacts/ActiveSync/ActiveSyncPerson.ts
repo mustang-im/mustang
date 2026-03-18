@@ -6,7 +6,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 
 export class ActiveSyncPerson extends Person {
-  addressbook: ActiveSyncAddressbook | null;
+  declare addressbook: ActiveSyncAddressbook | null;
 
   get serverID() {
     return this.id;
@@ -124,7 +124,7 @@ export class ActiveSyncPerson extends Person {
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   postalCode: "PostalCode",
@@ -138,12 +138,11 @@ const PhoneMapping: [string, string, number][] = [
   ["work", "fax", 1],
   ["mobile", "tel", 1],
 ];
-
-enum ContactElements {
-  home = "Home",
-  work = "Business",
-  other = "Other",
-  mobile = "Mobile",
-  tel = "Phone",
-  fax = "Fax",
+const ContactElements: Record<string, string> = {
+  home: "Home",
+  work: "Business",
+  other: "Other",
+  mobile: "Mobile",
+  tel: "Phone",
+  fax: "Fax",
 };

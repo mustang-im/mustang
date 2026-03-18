@@ -14,7 +14,7 @@ export default defineConfig(({}) => {
   return {
     ssr: { noExternal: true },
     build: {
-      target: 'node18',
+      target: 'node24',
       lib: {
         name: 'index',
         formats: ['es'],
@@ -27,6 +27,11 @@ export default defineConfig(({}) => {
       commonjsOptions: {
         // To load better-sqlite3
         ignoreDynamicRequires: true,
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.mjs',
+        },
       },
     },
     plugins: [
@@ -42,11 +47,11 @@ export default defineConfig(({}) => {
       // Required for proper error messages
       esmShim(),
       viteStaticCopy({
+        environment: 'ssr',
         targets: [
           {
-            src: 'dist/index.js',
+            src: 'dist/*',
             dest: projectDir,
-            rename: 'index.mjs',
           },
           {
             src: 'package-deploy.json',
@@ -55,13 +60,13 @@ export default defineConfig(({}) => {
           },
           {
             src: `node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node${isIOS ? '/better_sqlite3' : ''}`,
-            dest: `${projectDir}/build`,
-            rename: isIOS ? 'better_sqlite3.node' : undefined,
+            dest: `${projectDir}/build${isIOS ? '/better_sqlite3.node' : ''}`,
+            rename: isIOS ? 'better_sqlite3' : undefined,
           },
           {
             src: `node_modules/bufferutil/prebuilds/${arch}/bufferutil.node${isIOS ? '/bufferutil' : ''}`,
-            dest: `${projectDir}/prebuilds/${arch}`,
-            rename: isIOS ? 'bufferutil.node' : undefined,
+            dest: `${projectDir}/prebuilds/${arch}${isIOS ? '/bufferutil.node' : ''}`,
+            rename: isIOS ? 'bufferutil' : undefined,
           },
         ]
       }),

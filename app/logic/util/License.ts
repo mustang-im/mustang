@@ -38,4 +38,4 @@
  * requirements, e.g. for attribution. If you do change this, you are fully
  * responsible for all legal consequences.
  */
-export const gLicense: { license: Object | null } = { license: null };
+export const gLicense: { license: { valid: boolean } | null } = { license: null };

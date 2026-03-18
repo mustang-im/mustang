@@ -1,11 +1,15 @@
 import type { MailAccount } from "./MailAccount";
 import { PersonUID } from "../Abstract/PersonUID";
 import type { EMail } from "./EMail";
+import { SMLHTTPAccount } from "./SML/SMLHTTPAccount";
+import type { PublicKey } from "./Encryption/PublicKey";
+import type { PrivateKey } from "./Encryption/PrivateKey";
+import { privateKeyFromJSON } from "./Encryption/KeyFromJSON";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
@@ -29,6 +33,8 @@ export class MailIdentity extends Observable {
   /** email addresses that should be CCed on every outgoing email */
   @notifyChangedProperty
   sendBCC = new ArrayColl<string>();
+  smlAccount: SMLHTTPAccount;
+  readonly encryptionPrivateKeys = new ArrayColl<PublicKey & PrivateKey>();
 
   constructor(account: MailAccount) {
     super();
@@ -83,6 +89,16 @@ export class MailIdentity extends Observable {
       !!sanitize.emailAddress(e, null)));
     thiss.sendBCC.addAll(sanitize.array(config.sendBCC).filter(e =>
       !!sanitize.emailAddress(e, null)));
+    thiss.smlAccount = SMLHTTPAccount.fromJSON(sanitize.json(config.smlAccount, null), thiss);
+    thiss.encryptionPrivateKeys.clear();
+    for (let keyJSON of sanitize.array(config.encryptionPrivateKeys, [])) {
+      try {
+        let key = privateKeyFromJSON(sanitize.json(keyJSON, null));
+        thiss.encryptionPrivateKeys.add(key);
+      } catch (ex) {
+        thiss.account.errorCallback;
+      }
+    }
     return thiss;
   }
   toConfigJSON(): any {
@@ -95,6 +111,8 @@ export class MailIdentity extends Observable {
       signatureHTML: this.signatureHTML,
       sendCC: this.sendCC.contents,
       sendBCC: this.sendBCC.contents,
+      smlAccount: this.smlAccount?.toJSON(),
+      encryptionPrivateKeys: this.encryptionPrivateKeys.contents.map(key => key.toJSON()),
     };
   }
 
@@ -104,7 +122,7 @@ export class MailIdentity extends Observable {
    * select that identity by default.
    * In decreasing order of preference.
    */
-  static findIdentity(addresses: PersonUID[], defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
+  static findIdentity(addresses: Collection<PersonUID>, defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
     let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
     // console.log(`Checking ${addresses.join(", ")} for matches with identities ${identities.map(i => i.emailAddress).join(", ")}`);
     for (let candidate of addresses) {

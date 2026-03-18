@@ -1,5 +1,22 @@
 <vbox class="app-menu" on:click={onClose} flex>
-  <grid>
+  <hbox class="top">
+    <vbox class="left" flex>
+      <!--<WorkspaceDropDown />-->
+    </vbox>
+    <vbox class="center" flex>
+      <hbox class="date font-small">
+        {getFormattedDateString(new Date(), { weekday: "short", day: "2-digit", month: "short" })}
+      </hbox>
+      <hbox class="time">
+        {getTimeString(new Date())}
+      </hbox>
+    </vbox>
+    <vbox class="right" flex />
+  </hbox>
+  <hbox flex />
+  <!--<RecentPersons />-->
+  <hbox flex />
+  <grid class="apps">
     <!-- each app must add exactly 5 elements -->
     <TopAppMenu />
     <!--<WebAppsAppMenu />-->
@@ -9,13 +26,13 @@
     <ChatAppMenu />
     <MailAppMenu />
     <ContactsAppMenu />
-    <SettingsAppMenu />
     <BottomAppMenu />
   </grid>
 </vbox>
 <AppMenuBarM />
 
 <script lang="ts">
+  import { getDateString, getFormattedDateString, getTimeString } from "../../Util/date";
   import TopAppMenu from "./TopAppMenu.svelte";
   import WebAppsAppMenu from "./Apps/WebAppsAppMenu.svelte";
   import FilesAppMenu from "./Apps/FilesAppMenu.svelte";
@@ -24,43 +41,58 @@
   import ChatAppMenu from "./Apps/ChatAppMenu.svelte";
   import MailAppMenu from "./Apps/MailAppMenu.svelte";
   import ContactsAppMenu from "./Apps/ContactsAppMenu.svelte";
-  import SettingsAppMenu from "./SettingsAppMenu.svelte";
   import BottomAppMenu from "./BottomAppMenu.svelte";
   import AppMenuBarM from "./AppMenuBarM.svelte";
-  import { navigate } from "svelte-navigator";
+  import RecentPersons from "./RecentPersons.svelte";
+  import { goBack } from "../selectedApp";
 
   function onClose() {
-    navigate(-1);
+    goBack();
   }
 </script>
 
 <style>
+  :global(.content) .app-menu {
+    background-color: transparent;
+  }
   .app-menu {
     align-items: center;
-    justify-content: end;
   }
   grid {
     grid-template-columns: auto auto auto auto auto;
     align-items: center;
+    justify-items: center;
     margin-block-end: 12px;
+
+    width: 100%;
+    max-width: 500px;
   }
-  grid :global(hbox) {
+  grid :global(hbox),
+  grid :global(> button) {
     align-items: center;
     justify-content: center;
   }
-  grid :global(.empty) {
-    width: 50px;
-    height: 32px;
-  }
   grid :global(.button) {
-    width: 32px;
-    height: 32px;
+    box-shadow: -1px 0px 1px 0px rgba(22, 12, 39, 15%); /* #160C27 */
   }
-  grid :global(.app-column) {
-    margin-inline: 12px;
+  grid :global(.center-bar) {
+    padding-block: 18px;
+    padding-inline: 16px;
   }
-  /*grid :global(.app-column .contacts) {
+  .app-menu :global(.app-button.contacts) {
     padding-block-end: 0px;
-    height: 32px;
-  }*/
+  }
+
+  .top .center {
+    align-items: center;
+  }
+  .time {
+    font-size: 30px;
+    font-weight: 500;
+  }
+  .date {
+    opacity: 50%;
+    width: max-content;
+    margin-block-start: 32px;
+  }
 </style>

@@ -29,13 +29,13 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import { showError } from '../../Util/error';
-  import { getContext, type ComponentType } from 'svelte';
+  import { getContext, type ConstructorOfATypedSvelteComponent } from 'svelte';
   import { t } from '../../../l10n/l10n';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
   export let label: string = null;
-  export let icon: ComponentType | string = null;
+  export let icon: ConstructorOfATypedSvelteComponent | string = null;
   export let classes = "";
   export let iconSize = "16px";
   export let iconOnly = false;

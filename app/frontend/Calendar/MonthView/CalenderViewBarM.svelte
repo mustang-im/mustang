@@ -47,9 +47,8 @@
 <script lang="ts">
   import { selectedCalendar } from "../selected";
   import { setNewEventTime } from "../event";
-  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { openEventFromOtherApp } from "../open";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
-  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
@@ -71,6 +70,6 @@
   function newEvent() {
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, false, new Date());
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>

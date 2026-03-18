@@ -6,7 +6,10 @@
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
-<vbox flex class="main-window" dir={rtl} class:mobile={$appGlobal.isMobile}>
+<vbox flex class="main-window"
+  dir={rtl}
+  class:mobile={$appGlobal.isMobile}
+  class:desktop={!$appGlobal.isMobile}>
   {#if !appGlobal.isMobile}
     <WindowHeader selectedApp={$selectedApp} />
   {/if}
@@ -29,7 +32,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router primary={false}>
+        <Router {basepath} primary={false}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -46,7 +49,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
@@ -61,6 +64,7 @@
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
+  import { categoriesLoaded } from "../Settings/SettingsCategories";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -79,7 +83,7 @@
   import { rtlLocales } from "../../l10n/list";
   import { appName } from "../../logic/build";
   import { onMount } from "svelte";
-  import { useDebounce } from "@svelteuidev/composables";
+  import debounce from "lodash/debounce";
   import { Router } from "svelte-navigator";
   // #if [MOBILE]
   import { SplashScreen } from '@capacitor/splash-screen';
@@ -88,20 +92,26 @@
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   let sidebar;
-  const setSidebarDebounced = useDebounce(() => sidebar = $sidebarApp?.sidebar);
+  const setSidebarDebounced = debounce(() => sidebar = $sidebarApp?.sidebar);
   $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
+  categoriesLoaded; /* make sure to import the file, so that that categories load */
+
+  let basepath: string; // default: no basepath
+  if (window.location.pathname[2] == ":") { // #854 Windows in production mode has URL pathnames like `/D:/mail/`
+    basepath = window.location.pathname.substring(0, 3);
+  }
 
   onMount(() => catchErrors(onLoad));
 
   async function onLoad() {
     loadMustangApps();
-    $selectedApp = mailMustangApp;
-    changeTheme($themeSetting.value);
+    openApp(mailMustangApp, {});
     // #if [MOBILE]
     SplashScreen.hide();
     // #endif
     await startup();
+    changeTheme($themeSetting.value);
   }
 
   async function startup() {
@@ -152,12 +162,24 @@
     let targetE = event.target as HTMLElement;
     let linkE = targetE.closest && targetE.closest("a[href]");
     let url = linkE?.getAttribute("href");
-    if (!url ||
-        // Let default handler open in external browser
-        linkE.getAttribute("target") == "_blank") {
+    if (!url) {
       return;
     }
-    let urlObj = new URL(url); // throws
+    // _blank should open in external browser
+    if (linkE.getAttribute("target") == "_blank") {
+      // Let default handler open in external browser
+      return;
+      /* // ... unless it's a link in an email that we can handle internally
+      if (linkE.getAttribute("source") == "convert-html" &&
+          appGlobal.meetAccounts.some(acc => acc.isMeetingURL(new URL(url)))) {
+        // open internally, continue below
+      } else {
+        // Let default handler open in external browser
+        return;
+      }*/
+    }
+    // open internally
+    let urlObj = new URL(url); // throws, if invalid
     let protocol = urlObj.protocol.replace(":", "");
     let urlEvent = new Event("url-" + protocol); // e.g. "url-mailto"
     (urlEvent as any).url = url;

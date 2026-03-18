@@ -1,9 +1,6 @@
 {#if $messages.hasItems}
   <vbox class="history" flex>
-    <GroupBox>
-      <hbox class="title" slot="header">
-        {$t`Contact history *=> The log of previous interactions with this person`}
-      </hbox>
+    <GroupBox headerName={$t`Contact history *=> The log of previous interactions with this person`}>
       <vbox class="log" flex slot="content">
         <FastList items={messages} columns="12px 5em 48px 1fr">
           <LogBox {message} {person} let:item={message} slot="row"
@@ -32,7 +29,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { searchLog, type LogEntry } from "../../../logic/Contacts/History/History";
   import LogBox from "./LogBox.svelte";
-  import GroupBox from "../GroupBox.svelte";
+  import GroupBox from "../PersonPage/GroupBox.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import Button from "../../Shared/Button.svelte";
   import ShowMoreIcon from "lucide-svelte/icons/chevron-down";

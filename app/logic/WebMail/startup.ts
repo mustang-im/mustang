@@ -2,6 +2,7 @@ import { appGlobal } from '../app';
 import { WebMailBackend } from './backend';
 import { login } from './config';
 import type { Account } from '../Abstract/Account';
+import { gLicense } from '../util/License';
 import { createCollectedAddressbook } from '../Contacts/AccountsList/Addressbooks';
 import { createPersonalCalendar } from '../Calendar/AccountsList/Calendars';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
@@ -10,6 +11,7 @@ import { assert } from '../util/util';
 import { logError } from '../../frontend/Util/error';
 
 export async function getStartObjects(): Promise<void> {
+  gLicense.license = { valid: true }; // Proprietary, see comment in License.ts
   appGlobal.remoteApp = new WebMailBackend();
   appGlobal.collectedAddressbook = await createCollectedAddressbook();
   appGlobal.personalAddressbook = appGlobal.collectedAddressbook;

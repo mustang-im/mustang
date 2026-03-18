@@ -5,6 +5,16 @@
       <GetMailButton {folder} />
     {/if}
     <hbox class="buttons">
+      <hbox class="attachment button" class:on={isShowAttachments}>
+        <RoundButton
+          icon={AttachmentIcon}
+          iconSize={$appGlobal.isMobile ? "20px" : "14px"}
+          label={$t`Show only messages with attachments`}
+          onClick={toggleAttachments}
+          selected={isShowAttachments}
+          border={false}
+          />
+      </hbox>
       <hbox class="star button" class:starred={isShowStarred}>
         <RoundButton
           icon={StarIcon}
@@ -17,8 +27,8 @@
       <hbox class="unread-dot button" class:unread={isShowUnread}>
         <RoundButton
           icon={CircleIcon}
-          iconSize={$appGlobal.isMobile ? "18px" : "7px"}
-          padding={$appGlobal.isMobile ? "11px" : "12px"}
+          iconSize={$appGlobal.isMobile ? "18px" : "10px"}
+          padding={$appGlobal.isMobile ? "11px" : "8px"}
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
           border={false}
@@ -50,29 +60,9 @@
         </hbox>
       {/if}
       <hbox flex />
-    {:else}
+    {:else if !appGlobal.isMobile}
       <hbox flex />
-      <hbox class="msg-count">
-        {#if searchMessages}
-          {#if $searchMessages.hasItems}
-            {$t`${$searchMessages.length} of ${$messages.length}`}
-          {:else}
-            {$t`No search results`}
-          {/if}
-        {:else}
-          {#if $folder.countTotal > 0}
-            {#if $messages.length == 0}
-              {$t`Loading...`}
-            {:else}
-              {#if !appGlobal.isSmall}
-                {$t`${$folder.countUnread} unread of ${$messages.length} *=> number of messages that have not been read`}
-              {/if}
-            {/if}
-          {:else}
-            {$t`Empty folder`}
-          {/if}
-        {/if}
-      </hbox>
+      <FolderMsgCount {folder} {searchMessages} />
     {/if}
     <hbox flex />
   </hbox>
@@ -83,12 +73,14 @@
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
   import { appGlobal } from '../../../logic/app';
+  import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
   import RoundButton from '../../Shared/RoundButton.svelte';
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { catchErrors } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
@@ -98,7 +90,6 @@
   export let showGetMail = true;
 
   $: account = folder?.account;
-  $: messages = folder?.messages;
 
   $: folder && catchErrors(startSearch);
 
@@ -127,15 +118,22 @@
     await startSearch();
   }
 
+  let isShowAttachments = false;
+  async function toggleAttachments() {
+    isShowAttachments = !isShowAttachments;
+    await startSearch();
+  }
+
   /** Filters the folder.messages array */
   async function startSearch() {
-    if (!isShowStarred && !isShowUnread && !searchTerm) {
+    if (!isShowStarred && !isShowUnread && !isShowAttachments && !searchTerm) {
       searchMessages = null;
       return;
     }
     searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
+      (!isShowAttachments || msg.hasVisibleAttachments === true) &&
       (!searchTerm || searchTerm.length > 1) &&
       (!searchTerm ||
         msg.subject?.toLowerCase().includes(searchTerm) ||
@@ -228,6 +226,9 @@
     padding-inline-start: 4px;
     padding-inline-end: 8px;
     opacity: 70%;
+  }
+  .attachment:not(.on) {
+    opacity: 80%;
   }
   .star.starred :global(svg) {
     fill: orange;

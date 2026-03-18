@@ -5,8 +5,10 @@ import { meetMustangApp } from "../Meet/MeetMustangApp";
 // #endif
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
+// #if [!WEBMAIL]
 import { filesMustangApp } from "../Files/FilesMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
+// #endif
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
 import { mustangApps, selectedApp } from "./selectedApp";
 import { production } from "../../logic/build";
@@ -23,8 +25,10 @@ export function loadMustangApps() {
     contactsMustangApp,
     mailMustangApp,
     calendarMustangApp,
+    // #if [!WEBMAIL]
     filesMustangApp,
     webAppsMustangApp,
+    // #endif
     settingsMustangApp,
   ]);
 }

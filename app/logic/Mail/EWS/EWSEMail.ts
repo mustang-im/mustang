@@ -6,7 +6,8 @@ import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import type { Calendar } from "../../Calendar/Calendar";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -22,7 +23,7 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 export class EWSEMail extends EMail {
-  folder: EWSFolder;
+  declare folder: EWSFolder;
 
   get itemID(): string | null {
     return this.pID as string | null;
@@ -33,24 +34,26 @@ export class EWSEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$IncludeMimeContent: true,
-        },
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
+    await this.downloadRunOnce.runOnce(async () => {
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$IncludeMimeContent: true,
+          },
+          m$ItemIds: {
+            t$ItemId: {
+              Id: this.itemID,
+            },
           },
         },
-      },
-    };
-    let result = await this.folder.account.callEWS(request);
-    let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      };
+      let result = await this.folder.account.callEWS(request);
+      let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromXML(xmljs: Record<string, any>) {
@@ -63,14 +66,22 @@ export class EWSEMail extends EMail {
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(sanitize.emailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
+      this.replyTo = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.ReplyTo.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.From.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.From.Mailbox.Name, null));
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
+      this.from = findOrCreatePersonUID(
+        getEmailAddressOrX400(xmljs.Sender.Mailbox.EmailAddress),
+        sanitize.nonemptylabel(xmljs.Sender.Mailbox.Name, null));
+    } else {
+      this.from = kDummyPerson;
     }
-    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from?.emailAddress);
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
@@ -135,10 +146,10 @@ export class EWSEMail extends EMail {
       SuppressReadReceipts: true,
     });
     request.addField("Message", "Flag", {
-      t$CompleteDate: null,
-      t$DueDate: null,
-      t$StartDate: null,
       t$FlagStatus: starred ? "Flagged" : "NotFlagged",
+      t$StartDate: null,
+      t$DueDate: null,
+      t$CompleteDate: null,
     }, "item:Flag");
     await this.folder.account.callEWS(request);
     await super.markStarred(starred);
@@ -198,7 +209,7 @@ export class EWSEMail extends EMail {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
     if (this.invitationMessage == InvitationMessage.Invitation) {
       // EWS always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).useForInvitations);
     }
     return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
@@ -267,5 +278,68 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(sanitize.emailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(
+    getEmailAddressOrX400(mailbox.EmailAddress),
+    sanitize.nonemptylabel(mailbox.Name, null))));
+}
+
+/**
+ * Converts X.400 into pseudo email addresses.
+ * Alternative to sanitize.emailAddress()
+ * @param emailAddress email address or X.400 address
+ * @returns email address
+ * @throws when not valid
+ */
+export function getEmailAddressOrX400(emailAddress: string): string {
+  if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
+    return convertX400ToEmailAddress(emailAddress);
+  }
+  return sanitize.emailAddress(emailAddress);
+}
+
+/**
+ * Converts X.400 into pseudo email addresses.
+ *
+ * This is just as a fail-safe. When we download the MIME and parse it,
+ * we should be getting the real Internet email addresses anyways.
+ *
+ * @param x400 X.400 address
+ * @returns pseudo email address
+ */
+export function convertX400ToEmailAddress(x400: string): string {
+  let parts = x400.toLowerCase().split("/");
+  let username = "user";
+  let domain = "xfourhundred";
+  for (let part of parts) {
+    if (!part) {
+      continue;
+    }
+    if (part.startsWith("o=")) {
+      part = part.substring(3);
+      let company = ensureAlphaNum(part);
+      domain = company + "." + domain;
+    }
+    if (part.startsWith("ou=")) {
+      part = part.substring(3);
+      const prefix = "Exchange Administrative Group (";
+      const suffix = ")";
+      if (part.startsWith(prefix)) {
+        part = part.substring(prefix.length, part.length - suffix.length);
+      }
+      let department = ensureAlphaNum(part);
+      domain = department + "." + domain;
+    }
+    if (part.startsWith("cn=Recipient")) {
+      continue;
+    }
+    if (part.startsWith("cn=")) {
+      part = part.substring(3);
+      username = ensureAlphaNum(part);
+    }
+  }
+  return sanitize.emailAddress(username + "@" + domain, kDummyPerson.emailAddress);
+}
+
+function ensureAlphaNum(str: string): string {
+  return str.replace(/[^a-zA-Z0-9\-]/g, "");
 }

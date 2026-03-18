@@ -9,8 +9,8 @@
 {/if}
 <AccountButton account={appGlobal.chatAccounts.get(0)} page={acc => `/chat/account/${acc.id}/persons`} defaultIcon={AccountIcon} />
 <AppButton app={chatMustangApp} page="/chat/" />
-<CombinedButton icon1={chatMustangApp.icon} icon2={SearchIcon} page="/chat/search" />
-<CombinedButton icon1={chatMustangApp.icon} icon2={PencilIcon} page="/chat/" />
+<BasicButton icon={SearchIcon} page="/chat/search" />
+<BasicButton icon={PencilIcon} page="/chat/" />
 
 <script lang="ts">
   import { chatMustangApp } from "../../../Chat/ChatMustangApp";
@@ -19,6 +19,7 @@
   import AccountButton from "../AccountButton.svelte";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
+  import BasicButton from "../BasicButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PersonIcon from "lucide-svelte/icons/user";
   import PencilIcon from "lucide-svelte/icons/pencil";

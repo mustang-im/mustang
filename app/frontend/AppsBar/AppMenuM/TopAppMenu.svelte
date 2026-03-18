@@ -6,7 +6,7 @@
 
 <hbox class="empty" />
 <hbox class="empty" />
-<hbox class="logo app-column">
+<hbox class="logo center-bar">
   <Icon data={logo} size="24px" />
 </hbox>
 <hbox class="empty" />
@@ -19,9 +19,9 @@
 
 <style>
   .logo {
-    padding: 12px;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    width: 28px;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
   }

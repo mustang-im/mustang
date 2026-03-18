@@ -7,7 +7,6 @@
 
 <script lang="ts">
   import { isDemo } from "./demo";
-  import { testDataOff, testDataOn } from "../../logic/testData";
   import { loadDemoMustangApps, loadMustangApps } from "./loadMustangApps";
   import { selectedPerson } from "../Contacts/Person/Selected";
   import { selectedCalendar, selectedEvent } from "../Calendar/selected";
@@ -20,6 +19,7 @@
   import { t } from "../../l10n/l10n";
 
   async function onToggle() {
+    const { testDataOn, testDataOff } = await import("../../logic/testData");
     let startDemo = !$isDemo;
     if (startDemo) {
       await testDataOn();

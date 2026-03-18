@@ -2,7 +2,7 @@ import { Account } from "../Abstract/Account";
 import type { VideoConfMeeting } from "./VideoConfMeeting";
 import { appGlobal } from "../app";
 import { ensureLicensed } from "../util/LicenseClient";
-import { AbstractFunction } from "../util/util";
+import { AbstractFunction, type URLString } from "../util/util";
 
 export class MeetAccount extends Account {
   readonly protocol: string = "meet";
@@ -40,7 +40,21 @@ export class MeetAccount extends Account {
     throw new AbstractFunction();
   }
 
+  async createMeetingURL(): Promise<URLString> {
+    let conf = this.newMeeting();
+    await conf.createNewConference();
+    return await conf.createInvitationURL();
+  }
+
+  async openMeetingURL(url: string): Promise<VideoConfMeeting> {
+    let meeting = this.newMeeting();
+    appGlobal.meetings.add(meeting);
+    await meeting.join(url);
+    return meeting;
+  }
+
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAccount(this);
   }
 

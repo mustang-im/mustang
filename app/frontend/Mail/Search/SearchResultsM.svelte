@@ -16,6 +16,7 @@
   import { catchErrors } from "../../Util/error";
   import { assert, sleep } from "../../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
+  import { openEMailMessage } from "../open";
 
   export let searchMessages: ArrayColl<EMail> | null = null;
 
@@ -25,10 +26,6 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    goTo(URLPart`/mail/message/${selectedMessage.folder.account.id}/${selectedMessage.folder.id}/${selectedMessage.id}/display`, {
-      account: selectedMessage.folder.account,
-      folder: selectedMessage.folder,
-      message: selectedMessage,
-    });
+    openEMailMessage(selectedMessage);
   }
 </script>

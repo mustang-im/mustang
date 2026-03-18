@@ -7,7 +7,7 @@ import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class OWAPerson extends Person {
-  addressbook: OWAAddressbook | null;
+  declare addressbook: OWAAddressbook | null;
   fields: Record<string, string> = this.toFields();
 
   get personaID() {
@@ -65,8 +65,8 @@ export class OWAPerson extends Person {
     if (Object.keys(fields).every(key => fields[key] == this.fields[key])) {
       return;
     }
-    let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.fields, fields);
-    let response = await this.addressbook.account.callOWA(request);
+    let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
+    let response = await this.addressbook.callOWA(request);
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
     this.fields = fields;
@@ -111,19 +111,23 @@ export class OWAPerson extends Person {
 
   async deleteFromServer() {
     let request = new OWADeletePersonaRequest(this.personaID);
-    await this.addressbook.account.callOWA(request);
+    await this.addressbook.callOWA(request);
     this.addressbook.persons.remove(this);
   }
 }
 
-const PhysicalAddressElements = {
+const PhysicalAddressElements: Record<string, string> = {
   street: "Street",
   city: "City",
   state: "State",
   postalCode: "PostalCode",
   country: "Country",
 };
-const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
+const PhysicalAddressPurposes: Record<string, string> = {
+  Business: "work",
+  Home: "home",
+  Other: "other",
+};
 const PhoneMapping: [string, string, string, string?][] = [
   ["work", "tel", "BusinessPhoneNumbers", "BusinessPhoneNumbers2"],
   ["home", "tel", "HomePhones", "HomePhones2"],

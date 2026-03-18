@@ -1,6 +1,7 @@
 import { MeetAccount } from '../MeetAccount';
-import { M3Account } from '../M3/M3Account';
 import { LiveKitAccount } from '../LiveKit/LiveKitAccount';
+import { M3Account } from '../M3/M3Account';
+import { SIPAccount } from '../SIP/SIPAccount';
 // #if [!WEBMAIL]
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 // #else
@@ -22,10 +23,12 @@ export function newMeetAccountForProtocol(protocol: string): MeetAccount {
 function _newMeetAccountForProtocol(protocol: string): MeetAccount {
   if (protocol == "meet") {
     return new MeetAccount();
-  } else if (protocol == "m3") {
-    return new M3Account();
   } else if (protocol == "livekit") {
     return new LiveKitAccount();
+  } else if (protocol == "m3") {
+    return new M3Account();
+  } else if (protocol == "sip") {
+    return new SIPAccount();
   }
   throw new NotReached(`Unknown meet account type ${protocol}`);
 }

@@ -1,8 +1,8 @@
 {#if !expanded}
   <hbox class="expander-button {classes}">
     <Button plain onClick={onExpand} tooltip={label}>
-      <hbox class="content" slot="label">
-        {#if typeof(icon) == "string" }
+      <hbox class="content font-small" slot="label">
+        {#if typeof(icon) == "string"}
           <hbox class="icon">
             <Icon data={icon} size={iconSize} />
           </hbox>
@@ -13,8 +13,10 @@
         {:else}
           <slot name="icon" />
         {/if}
-        {label}
-        <AddIcon size="16px" />
+        <hbox class="label">{label}</hbox>
+        <hbox class="add">
+          <AddIcon size={addIconSize} />
+        </hbox>
       </hbox>
     </Button>
   </hbox>
@@ -24,7 +26,7 @@
   import Button from "./Button.svelte";
   import Icon from "./Icon.svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
-  import type { ComponentType } from "svelte";
+  import type { ConstructorOfATypedSvelteComponent } from "svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -35,8 +37,9 @@
   /** in/out */
   export let expanded = false;
   export let label: string;
-  export let icon: ComponentType | string | null = null;
-  export let iconSize = "20px";
+  export let icon: ConstructorOfATypedSvelteComponent | string | null = null;
+  export let iconSize = "16px";
+  export let addIconSize = iconSize;
   export let classes = "";
 
   function onExpand() {
@@ -46,7 +49,9 @@
 </script>
 
 <style>
-  .expander-button {
+  :global(.mobile) .content {
+    border-radius: 12px;
+    padding: 6px 12px !important;
   }
   .content {
     align-items: center;
@@ -57,7 +62,7 @@
     padding: 2px 6px 2px 4px;
   }
   .content :global(svg) {
-    margin-inline-start: 8px;
+    margin-inline-start: 2px;
     stroke-width: 1px;
   }
   .expander-button :global(button:hover:not(.disabled)) {
@@ -70,5 +75,11 @@
   .icon {
     margin-inline-start: 0px;
     margin-inline-end: 8px;
+  }
+  :global(.mobile) .label {
+    border-radius: 100px;
+  }
+  .add {
+    margin-inline-start: 6px;
   }
 </style>

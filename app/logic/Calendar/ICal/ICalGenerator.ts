@@ -1,7 +1,9 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import type { Collection } from "svelte-collections";
 
 export function getICal(event: Event, method?: iCalMethod): string | null {
   assert(event, "Need event");
@@ -19,6 +21,19 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   lines.push(["UID", event.calUID]);
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
+  }
+  if (event.location) {
+    lines.push(["LOCATION", event.location]);
+  }
+  if (event.isOnline && event.onlineMeetingURL) {
+    // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    lines.push(["CONFERENCE", event.onlineMeetingURL]);
+    if (!event.location) {
+      // Backwards compat, because other clients don't know `CONFERENCE`
+      lines.push(["LOCATION", event.onlineMeetingURL]);
+    }
+    // Maybe also add to the end of descriptionText and HTML?
+    // if (!event.descriptionHTML.includes(event.onlineMeetingURL)) { ...
   }
   if (event.descriptionText) {
     if (event.hasHTML) {
@@ -57,9 +72,6 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
       }
     }
   }
-  if (event.location) {
-    lines.push(["LOCATION", event.location]);
-  }
   if (event.isCancelled) {
     lines.push(["STATUS", "CANCELLED"]);
   }
@@ -88,6 +100,25 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   lines.push(["END", "VEVENT"]);
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
+}
+
+/**
+ * Exports the given events into a single large iCal .ics file with all contacts
+ * concatenated
+ * @param events what to export
+ * @param filenameWithoutExt a suggested filename, without extension.
+ *    The name will be name filesystem-safe.
+ * @returns iCal file contents, as UTF8 text file
+ */
+export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
+  let fileContents = "";
+  for (let event of events) {
+    // TODO Don't wrap *each* `VEVENT` with `VCALENDAR`, but all with a single one
+    fileContents += getICal(event);
+  }
+  let filename = sanitize.filename(filenameWithoutExt) + ".ics";
+  let file = new File([fileContents], filename, { type: "text/calendar" });
+  return file;
 }
 
 function line2ical(line: string | string[]): string {
@@ -120,7 +151,9 @@ function datetime2ical(date: Date, timeZone: string): string {
 }
 
 function escaped(s: string, quote: boolean): string {
-  if (quote) {
+  if (!s) {
+    return "";
+  } else if (quote) {
     // param-value isn't supposed to include these at all;
     // maybe we should just delete them?
     s = s.replace(/["\\]/g, "\\$&").replace(/\r\n?|\n/g, "\\n");

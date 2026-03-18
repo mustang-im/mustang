@@ -30,13 +30,12 @@ jobs:
     - name: Set NDK to v28
       run:  echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
 
-    - run: cd mobile; sh hooks/common/parula-brand.sh
+    - run: cd app/build; sh parula-brand.sh
     - run: cd app; yarn install
     - run: cd lib; yarn install
-    - run: cd backend; yarn install
+    - run: cd desktop/backend; yarn install
     - run: cd mobile; yarn install
     - run: cd mobile/backend; yarn install
-    - run: cd mobile; yarn build
 
     - run: |
         mkdir -p ${{ github.workspace }}/private_keys/
@@ -68,9 +67,15 @@ jobs:
         cd mobile
         VERSION=$(jq -r '.version' package.json)
         echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+        if [[ "$VERSION" == *dev ]]; then
+          echo "RELEASE=false" >> $GITHUB_ENV
+        else
+          echo "RELEASE=true" >> $GITHUB_ENV
+        fi
 
     - name: Upload to GitHub release
       uses: softprops/action-gh-release@v2
+      if: env.RELEASE == 'true'
       with:
         tag_name: ${{ env.APP_VERSION }}
         files: |

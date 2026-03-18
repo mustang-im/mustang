@@ -8,8 +8,8 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
-import { getDateTimeFormatPref, gt } from "../../../l10n/l10n";
-import { Room, RemoteParticipant, RoomEvent, type RpcInvocationData } from "livekit-client";
+import { getDateTimeLocale, gt } from "../../../l10n/l10n";
+import type { Room, RemoteParticipant, RpcInvocationData } from "livekit-client";
 
 export class LiveKitConf extends VideoConfMeeting {
   /* Authentication */
@@ -19,6 +19,7 @@ export class LiveKitConf extends VideoConfMeeting {
   webSocketURL: URLString;
   room: Room | null = null;
   invitationURL: URLString;
+  myOrganizerToken: string;
   encryptionKey: string | null = null;
   mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
@@ -41,7 +42,8 @@ export class LiveKitConf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
-    let time = new Date().toLocaleString(getDateTimeFormatPref(), { hour: "numeric", minute: "numeric" });
+    await ensureLicensed();
+    let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.state = MeetingState.Init;
   }
@@ -61,7 +63,11 @@ export class LiveKitConf extends VideoConfMeeting {
       name: forName ?? "",
       key: this.encryptionKey ?? "",
     });*/
-    assert(this.invitationURL, "The invitation token has to be created together with the meeting, or in the join URL");
+    await ensureLicensed();
+    // The invitation token has to be created together with the meeting, or in the join URL
+    if (!this.invitationURL) {
+      await this.createMyParticipant();
+    }
     let urlObj = new URL(this.invitationURL);
     // add/replace key= and name= after #
     let anchor = new URLSearchParams(urlObj.hash?.substring(1));
@@ -126,7 +132,6 @@ export class LiveKitConf extends VideoConfMeeting {
 
   /** @returns participant token */
   protected async createMyParticipant(): Promise<string> {
-    await ensureLicensed();
     let myName = appGlobal.me.name;
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
@@ -167,18 +172,20 @@ export class LiveKitConf extends VideoConfMeeting {
       participantName: myName,
     }));
     this.webSocketURL = sanitize.url(response.serverUrl);
-    let participantToken = sanitize.nonemptystring(response.participantToken);
+    this.myOrganizerToken = sanitize.nonemptystring(response.participantToken);
     // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(participantToken)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
-    return participantToken;
+    return this.myOrganizerToken;
   }
 
   async start() {
     assert(this.id, "Need to create the conference first");
     await super.start();
-    await this.joinAfterStart(await this.createMyParticipant());
+    this.myOrganizerToken ??= await this.createMyParticipant();
+    await this.joinAfterStart(this.myOrganizerToken);
   }
 
   protected async joinAfterStart(participantToken: string) {
+    const { Room, RoomEvent } = await import("livekit-client");
     this.room = new Room();
     await this.room.connect(this.webSocketURL, participantToken);
     this.title = this.room.name;
@@ -188,7 +195,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipant.id = this.room.localParticipant.sid;
     this.myParticipant.name = this.room.localParticipant.name || appGlobal.me.name;
     this.myParticipant.role = ParticipantRole.User;
-    this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
+    this.myParticipant.subscribe((_obj, propName) => catchErrors(() => this.myUserChanged(propName), this.errorCallback));
     this.state = MeetingState.Ongoing;
 
     this.room.localParticipant.registerRpcMethod("handUp", async (data: RpcInvocationData) => {
@@ -214,7 +221,7 @@ export class LiveKitConf extends VideoConfMeeting {
     }*/
   }
 
-  protected async participantJoined(remoteParticipant: RemoteParticipant): Promise<void> {
+  protected participantJoined(remoteParticipant: RemoteParticipant) {
     let participant = new LiveKitRemoteParticipant(remoteParticipant, this);
     this.participants.add(participant);
   }
@@ -228,10 +235,10 @@ export class LiveKitConf extends VideoConfMeeting {
 
   readonly canHandUp = true;
 
-  protected myUserChanged(propName: string) {
+  protected async myUserChanged(propName: string) {
     console.log("My participant changed", propName, "to", this.myParticipant[propName]);
     if (propName == "handUp") {
-      this.setMyHandUp(this.myParticipant.handUp);
+      await this.setMyHandUp(this.myParticipant.handUp);
     }
   }
 

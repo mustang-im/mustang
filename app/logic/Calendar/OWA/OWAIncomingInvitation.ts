@@ -36,7 +36,7 @@ export class OWAIncomingInvitation extends IncomingInvitation {
     // Exchange will have created a calendar item if there wasn't one already
     let itemID = result.Items.find(item => item?.__type == "CalendarItem:#Exchange")?.ItemId?.Id;
     if (itemID) {
-      this.calendar.createOrUpdateEventFromServerByID(itemID);
+      await this.calendar.createOrUpdateEventFromServerByID(itemID);
     }
   }
 

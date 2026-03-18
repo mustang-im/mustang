@@ -16,32 +16,27 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { openEMailMessage } from "../open";
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
   import TagsList from "../LeftPane/TagsList.svelte";
   import MessageListBarM from "./MessageListBarM.svelte";
   import FetchingM from "./FetchingM.svelte";
-  import { URLPart } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl } from 'svelte-collections';
 
   export let messages: ArrayColl<EMail>; /** in */
   export let searchMessages: ArrayColl<EMail> | null; /** out */
-  export let selectedFolder: Folder; /** in/out */
+  export let selectedFolder: Folder; /** in */
   export let selectedMessage: EMail; /** in/out */
   export let selectedMessages: ArrayColl<EMail>; /** in/out */
 
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    goTo(URLPart`/mail/message/${selectedMessage.folder.account.id}/${selectedMessage.folder.id}/${selectedMessage.id}/display`, {
-      account: selectedMessage.folder.account,
-      folder: selectedMessage.folder,
-      message: selectedMessage,
-    });
+    openEMailMessage(selectedMessage);
   }
 
   /** From FastList. read only */

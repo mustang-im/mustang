@@ -1,25 +1,21 @@
-import { Chat } from "../Chat";
+import { ChatRoom } from "../ChatRoom";
 import { getJID, type XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { UserChatMessage, DeliveryStatus } from "../Message";
-import { ChatPerson } from "../Person";
-import { ContactBase } from "../../Abstract/Contact";
+import { ChatPerson } from "../ChatPerson";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
-import { JXT } from "stanza";
-import { Message, Forward } from "stanza/protocol";
+import type { Message, Forward } from "stanza/protocol";
 
-export class XMPPChat extends Chat {
-  account: XMPPAccount;
+export class XMPPChat extends ChatRoom {
+  declare account: XMPPAccount;
   lastMessage: XMPPChatMessage;
   constructor(account: XMPPAccount, jid: string) {
     super(account);
     jid = getJID(jid);
     this.id = jid;
-    this.contact = new ChatPerson();
-    this.contact.id = jid;
-    this.contact.name = jid;
-    this.account.chats.set(this.contact, this);
+    this.contact = new ChatPerson("xmpp", jid, jid);
+    this.account.rooms.set(this.contact, this);
   }
 
   addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage | null {
@@ -44,7 +40,8 @@ export class XMPPChat extends Chat {
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: UserChatMessage) {
-    assert(message.contact instanceof ContactBase && message.contact.id, "Need contact with Jabber User ID");
+    const { JXT } = await import("stanza");
+    assert(message.contact instanceof ChatPerson && message.contact.chatID && message.contact.protocol == "xmpp", "Need contact with Jabber User ID");
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
     //console.log("Sending", message.text, "to", this.name);

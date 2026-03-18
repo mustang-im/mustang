@@ -1,13 +1,13 @@
-import { ICalParser } from "../../Calendar/ICal/ICalParser";
-import type { ICalEntry } from "../../Calendar/ICal/ICalParser";
+import { ICalParser, type ICalEntry, type ICalContainer } from "../../Calendar/ICal/ICalParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
 import { StreetAddress } from "../StreetAddress";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from 'svelte-collections';
+import type { ArrayColl, Collection } from 'svelte-collections';
+import { gt } from "../../../l10n/l10n";
 
-/** This file contains various functions that map between VCard formats:
- * - `parse()` converts from string to a rich intermediate object.
+/** This file contains various functions that map between vCard formats:
+ * - `parseContact()` converts from string to a rich intermediate object.
  * - `vCardToContainer()` converts from the rich intermediate object to a record.
  * - `containerToVCard()` converts from the record to a string.
  *
@@ -18,33 +18,41 @@ import type { ArrayColl } from 'svelte-collections';
  *   unrecognised properties previously extracted from `vCardToContainer()`.
  *
  * The higher level convenience functions are:
- * - `convertVCardToPerson()` combines `parse()` and `updatePerson()`.
+ * - `convertVCardToPerson()` combines `parseContact()` and `updatePerson()`.
  * - `getUpdatedVCard()` combines `vCardToContainer()` and `personToVCard()`.
  */
 
 /**
- * Takes a VCard as a string of text and write its data to the Person object.
+ * Parses an addressbook vCard string to an array of rich intermediate vCard objects.
+ * @throws if no vCard could be found
  */
-export function convertVCardToPerson(vCard: string, person: Person) {
-  let parsed = new ICalParser(vCard);
-  updatePerson(parsed, person);
-}
-
-/**
- * Parses a VCard to a rich intermediate VCard object.
- */
-export function parse(text: string): ICalParser {
-  return new ICalParser(text);
-}
-
-/**
- * Writes a rich intermediate VCard object to a Person object.
- */
-export function updatePerson(card: ICalParser, person: Person) {
-  if (!card.containers.vcard) {
-    throw new Error("No vCard found");
+export function parseAddressbook(text: string): ICalContainer[] {
+  let parsed = new ICalParser(text);
+  if (!parsed.containers.vcard) {
+    throw new Error(gt`No vCard found`);
   }
-  let vcard = card.containers.vcard[0];
+  return parsed.containers.vcard;
+}
+
+/**
+ * Parses a contact vCard string to a rich intermediate vCard object.
+ * @throws if no vCard could be found
+ */
+export function parseContact(text: string): ICalContainer {
+  return parseAddressbook(text)[0];
+}
+
+/**
+ * Takes a vCard as a string of text and write its data to the Person object.
+ */
+export function convertVCardToPerson(vcard: string, person: Person) {
+  updatePerson(parseContact(vcard), person);
+}
+
+/**
+ * Writes a rich intermediate vCard object to a Person object.
+ */
+export function updatePerson(vcard: ICalContainer, person: Person) {
   person.name = vcard.entries.fn?.[0].value ?? "";
   if (vcard.entries.photo) {
     let photo = vcard.entries.photo[0];
@@ -114,6 +122,23 @@ export function updatePerson(card: ICalParser, person: Person) {
 }
 
 /**
+ * Takes a vCard file with many contacts (multiple vCards concatenated) and
+ * returns Person objects for it.
+ * @param vcardFile file contents
+ * @param newPerson Factory function to create the subclass of Person that you need
+ */
+export function convertVCardsToPersons(vcardFile: string, newPerson: () => Person): Person[] {
+  let persons = [];
+  let cards = parseAddressbook(vcardFile);
+  for (let vCard of cards) {
+    let person = newPerson();
+    updatePerson(vCard, person);
+    persons.push(person);
+  }
+  return persons;
+}
+
+/**
  * Generates a VCard as a string of text from a Person object, with an optional
  * record object to carry over unrecognised properties.
  */
@@ -123,11 +148,29 @@ export function personToVCard(person: Person, container: Record<string, string[]
 }
 
 /**
+ * Exports the given persons into a single large vCard file with all contacts
+ * concatenated
+ * @param persons what to export
+ * @param filenameWithoutExt a suggested filename, without extension.
+ *    The name will be name filesystem-safe.
+ * @returns vCard file contents, as UTF8 text file
+ */
+export function personsToVCardFile(persons: Collection<Person>, filenameWithoutExt: string): File {
+  let fileContents = "";
+  for (let person of persons) {
+    fileContents += personToVCard(person);
+  }
+  let filename = sanitize.filename(filenameWithoutExt) + ".vcf";
+  let file = new File([fileContents], filename, { type: "text/vcard" });
+  return file;
+}
+
+/**
  * Generates a VCard as a string of text from a Person object, carrying over
  * unrecognised properites from a rich intermediate VCard object.
  */
-export function getUpdatedVCard(person: Person, card: ICalParser): string {
-  let container = vCardToContainer(card);
+export function getUpdatedVCard(person: Person, vcard: ICalContainer): string {
+  let container = vCardToContainer(vcard);
   updateContainerFromPerson(person, container);
   return containerToVCard(container);
 }
@@ -135,11 +178,7 @@ export function getUpdatedVCard(person: Person, card: ICalParser): string {
 /**
  * Creates a record object from properties of a rich intermediate VCard object.
  */
-export function vCardToContainer(card: ICalParser): Record<string, string[]> {
-  if (!card.containers.vcard) {
-    throw new Error("No vCard found");
-  }
-  let vcard = card.containers.vcard[0];
+export function vCardToContainer(vcard: ICalContainer): Record<string, string[]> {
   let container: Record<string, string[]> = Object.create(null);
   for (let key in vcard.entries) {
     if (key != "version" && key != "prodid") {

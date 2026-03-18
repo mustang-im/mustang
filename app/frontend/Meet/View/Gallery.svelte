@@ -17,7 +17,7 @@
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";
-  import { useDebounce } from "@svelteuidev/composables";
+  import debounce from "lodash/debounce";
 
   export let videos: Collection<VideoStream>;
   export let view: MeetVideoView;
@@ -29,7 +29,7 @@
   let videoHeight: number;
 
   let gridColumns: string;
-  const calculateColumnsDebounced = useDebounce(() => calculateColumns($videos.length, gridWidth, gridHeight, view), 20);
+  const calculateColumnsDebounced = debounce(() => calculateColumns($videos.length, gridWidth, gridHeight, view), 20);
   $: $videos, showSelf, gridWidth, gridHeight, view, calculateColumnsDebounced();
   function calculateColumns(count: number, width: number, height: number, view: MeetVideoView) {
     if (!width) {

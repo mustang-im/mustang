@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
 
   export let event: Event;
@@ -21,8 +21,7 @@
   }
 
   function onOpen() {
-    $selectedEvent = event;
-    calendarMustangApp.showEvent(event);
+    openEventFromOtherApp(event, true);
   }
 </script>
 

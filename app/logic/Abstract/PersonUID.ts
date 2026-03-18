@@ -9,15 +9,10 @@ import { ArrayColl } from "svelte-collections";
 export class PersonUID extends Observable {
   @notifyChangedProperty
   name: string;
-  /** or user ID, for chat and other systems (despite the property name) */
   @notifyChangedProperty
   emailAddress: string;
   @notifyChangedProperty
   person?: Person;
-  // Used so that autocompleted meeting participants have a default value.
-  // They should really be Participant objects, but I'm cheating for now.
-  @notifyChangedProperty
-  protected response = 0;
 
   constructor(emailAddress?: string, name?: string) {
     super();
@@ -51,10 +46,7 @@ export class PersonUID extends Observable {
   }
 
   matchesPerson(person: Person): boolean {
-    return person && (
-      !!person.emailAddresses.find(e => e.value == this.emailAddress) ||
-      !!person.chatAccounts.find(e => e.value == this.emailAddress)
-    );
+    return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
   }
 
   /** The email address does not belong to the end user,
@@ -63,14 +55,23 @@ export class PersonUID extends Observable {
     return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
   }
 
-  toString() {
+  get nameAndEMail(): string {
     return this.name + " <" + this.emailAddress + ">";
+  }
+  get nameOrEMail(): string {
+    return this.name || this.emailAddress;
+  }
+  toString() {
+    return this.nameOrEMail;
   }
 }
 
 const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
 
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
+  if (!emailAddress && !realname) {
+    return kDummyPerson;
+  }
   let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
   if (cached) {
     return cached;

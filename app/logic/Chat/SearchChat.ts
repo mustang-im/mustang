@@ -145,7 +145,7 @@ export class SearchChat extends Observable {
     if (this.includesPerson) {
       let person = this.includesPerson;
       if (msg.contact == person ||
-          msg.contact instanceof PersonUID && msg.contact.matchesPerson(person)) {
+          msg.contact instanceof PersonUID && msg.contact.matchesPerson(person)) { // @see `ChatPerson.matchesPerson()`
         return false;
       }
     }
