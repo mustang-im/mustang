@@ -89,7 +89,7 @@ jobs:
           files: ${{ env.IPA_FILE_PATH }}
 
       - name: Upload app to TestFlight
-        uses: apple-actions/upload-testflight-build@v3
+        uses: apple-actions/upload-testflight-build@v4
         with:
           app-path: ${{ env.IPA_FILE_PATH }}
           issuer-id: ${{ secrets.IOS_APPSTORE_API_ISSUER }}
