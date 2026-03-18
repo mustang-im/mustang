@@ -1,6 +1,6 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
-import { MailIdentity } from "../../MailIdentity";
+import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
 import type { PersonUID } from "../../../Abstract/PersonUID";
@@ -134,6 +134,15 @@ export class PGPReadProcessor extends EMailProcessor {
           continue;
         }
         keys.add(publicKey);
+      }
+    }
+    let myself = findIdentityForEMailAddress(personUID.emailAddress);
+    if (myself) {
+      for (let privateKey of myself.encryptionPrivateKeys.each) {
+        if (!(privateKey instanceof PGPPrivateKey && privateKey.publicKeyArmored)) {
+          continue;
+        }
+        keys.add(privateKey);
       }
     }
     return keys;
