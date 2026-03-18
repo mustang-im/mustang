@@ -79,8 +79,6 @@ export class EMail extends Message {
   loadedBody = false;
   /** For SQLEMail and alternatives only */
   readonly storageLock = new Lock();
-  protected readonly parseMIMERunOnce = new RunOnce<MIME>();
-  protected readonly loadMIMERunOnce = new RunOnce<void>();
   /** For composer only. Optional. */
   identity: MailIdentity;
 
@@ -293,86 +291,85 @@ export class EMail extends Message {
   async parseMIME(): Promise<MIME> {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
-    return await this.parseMIMERunOnce.runOnce(async () => {
-      // We may need access to internal PostalMIME data.
-      let postalMIME = new PostalMIME();
-      let mail = await postalMIME.parse(this.mime);
+    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
+    // We may need access to internal PostalMIME data.
+    let postalMIME = new PostalMIME();
+    let mail = await postalMIME.parse(this.mime);
 
-      // Headers
-      /** TODO header.key returns Uint8Array
-      for (let header of mail.headers) {
-        try {
-          this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
-        } catch (ex) {
-          this.folder.account.errorCallback(ex);
-        }
-      }*/
+    // Headers
+    /** TODO header.key returns Uint8Array
+    for (let header of mail.headers) {
+      try {
+        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+    }*/
 
-      this.id ??= sanitize.string(mail.messageId, this.id ?? "");
-      this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
-      this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
-      if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
-        this.from = mail.from?.address
-          ? findOrCreatePersonUID(
+    this.id ??= sanitize.string(mail.messageId, this.id ?? "");
+    this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
+    this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
+    if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
+      this.from = mail.from?.address
+        ? findOrCreatePersonUID(
             sanitize.emailAddress(mail.from.address, null),
             sanitize.nonemptylabel(mail.from.name, null))
-          : kDummyPerson;
-      }
-      setPersons(this.to, mail.to);
-      setPersons(this.cc, mail.cc);
-      setPersons(this.bcc, mail.bcc);
-      this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
-      this.contact = this.outgoing ? this.to.first : this.from;
-      if (!this.replyTo && mail.replyTo?.length) {
-        let p = mail.replyTo[0];
-        this.replyTo = findOrCreatePersonUID(
-          sanitize.emailAddress(p.address, null),
-          sanitize.nonemptylabel(p.name, null));
-      }
-      if (!this.inReplyTo) {
-        this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
-      }
-      this.references = sanitize.string(mail.references, null)?.split(" ");
+        : kDummyPerson;
+    }
+    setPersons(this.to, mail.to);
+    setPersons(this.cc, mail.cc);
+    setPersons(this.bcc, mail.bcc);
+    this.outgoing = this.folder?.account.isMyEMailAddress(this.from.emailAddress);
+    this.contact = this.outgoing ? this.to.first : this.from;
+    if (!this.replyTo && mail.replyTo?.length) {
+      let p = mail.replyTo[0];
+      this.replyTo = findOrCreatePersonUID(
+        sanitize.emailAddress(p.address, null),
+        sanitize.nonemptylabel(p.name, null));
+    }
+    if (!this.inReplyTo) {
+      this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
+    }
+    this.references = sanitize.string(mail.references, null)?.split(" ");
 
-      // Body
-      this.text = mail.text;
-      let html = sanitize.string(mail.html, null);
-      if (html) {
-        this.html = html;
-      }
+    // Body
+    this.text = mail.text;
+    let html = sanitize.string(mail.html, null);
+    if (html) {
+      this.html = html;
+    }
 
-      // Attachments
-      let fallbackID = 0;
-      this.attachments.clear();
-      this.attachments.addAll(mail.attachments.map(a => {
-        try {
-          let attachment = new Attachment();
-          attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
-          attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
-          attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
-          attachment.disposition = sanitize.translate(a.disposition, {
-            attachment: ContentDisposition.attachment,
-            inline: ContentDisposition.inline,
-          }, ContentDisposition.unknown);
-          attachment.related = sanitize.boolean(a.related, false);
-          attachment.content = new File([a.content], attachment.filename, { type: attachment.mimeType });
-          attachment.size = sanitize.integer(attachment.content.size, -1);
-          return attachment;
-        } catch (ex) {
-          this.folder.account.errorCallback(ex);
-          return null;
-        }
-      }).filter(attachment => !!attachment));
-
-      // Run processors, filters, calendar invitations, SML, etc.
-      for (let processor of EMailProcessorList.processors) {
-        if (processor.runOn != ProcessingStartOn.Parse) {
-          continue;
-        }
-        await processor.process(this, mail);
+    // Attachments
+    let fallbackID = 0;
+    this.attachments.clear();
+    this.attachments.addAll(mail.attachments.map(a => {
+      try {
+        let attachment = new Attachment();
+        attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
+        attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
+        attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+        attachment.disposition = sanitize.translate(a.disposition, {
+          attachment: ContentDisposition.attachment,
+          inline: ContentDisposition.inline,
+        }, ContentDisposition.unknown);
+        attachment.related = sanitize.boolean(a.related, false);
+        attachment.content = new File([a.content], attachment.filename, { type: attachment.mimeType });
+        attachment.size = sanitize.integer(attachment.content.size, -1);
+        return attachment;
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+        return null;
       }
-      return mail;
-    });
+    }).filter(attachment => !!attachment));
+
+    // Run processors, filters, calendar invitations, SML, etc.
+    for (let processor of EMailProcessorList.processors) {
+      if (processor.runOn != ProcessingStartOn.Parse) {
+        continue;
+      }
+      await processor.process(this, mail);
+    }
+    return mail;
   }
 
   /** Used by encrypted messages.
@@ -429,21 +426,19 @@ export class EMail extends Message {
     if (this.mime) {
       return;
     }
-    await this.loadMIMERunOnce.runOnce(async () => {
-      if (this.dbID) {
-        try {
-          await this.storage.readMessage(this);
-          await this.folder.account.contentStorage.first.read(this);
-          if (this.mime) {
-            await this.parseMIME();
-            return;
-          }
-        } catch (ex) {
-          console.error(ex);
+    if (this.dbID) {
+      try {
+        await this.storage.readMessage(this);
+        await this.folder.account.contentStorage.first.read(this);
+        if (this.mime) {
+          await this.parseMIME();
+          return;
         }
+      } catch (ex) {
+        console.error(ex);
       }
-      await this.download();
-    });
+    }
+    await this.download();
   }
 
   async loadAttachments() {
