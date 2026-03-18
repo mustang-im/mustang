@@ -53,7 +53,6 @@ export class PGPReadProcessor extends EMailProcessor {
       let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP);
       email.signed = signedWithKey?.id ?? null;
       await this.updateMIME(email, decryptedResult.data, outerFrom);
-      await email.saveCompleteMessage();
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
       let firstPartTODO = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content; // TODO only the first part
       // TODO normalization for line endings - does openPGP do that?

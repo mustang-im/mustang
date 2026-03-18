@@ -380,9 +380,9 @@ export class EMail extends Message {
   resetProperties() {
     // This MUST list all properties where `parseMIME()` does `this.prop ??=` or `if (!this.prop)`
     this.id = null;
-    this.subject = null;
+    this.subject = "";
     this.sent = null;
-    this.from = null;
+    this.from = new PersonUID();
     this.replyTo = null;
     this.inReplyTo = null;
   }
