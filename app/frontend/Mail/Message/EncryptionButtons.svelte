@@ -25,10 +25,6 @@
   /** out */
   export let isExpanded = false;
 
-  // TODO Fake for testing
-  $: message.signed = message.from?.findPerson()?.encryptionPublicKeys.first?.id;
-  $: message.wasEncrypted = true;
-
   $: signingKey = getPublicKeyForID($message.signed);
   $: signed = $message.signed && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
@@ -43,14 +39,6 @@
   function openSigningKey() {
     isExpanded = !isExpanded;
   }
-
-  /*function openSigningKeyPerson() {
-    let person = message.from?.findPerson();
-    if (!person) {
-      return;
-    }
-    openPersonFromOtherApp(person);
-  }*/
 </script>
 
 <style>
