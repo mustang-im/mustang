@@ -116,7 +116,7 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
 
-    appGlobal.addresslists.add(new ActiveSyncGAL(this));
+    appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
 
     // ActiveSync doesn't have streaming notifications, instead it
     // provides the Ping operation which will tell us when a pingable

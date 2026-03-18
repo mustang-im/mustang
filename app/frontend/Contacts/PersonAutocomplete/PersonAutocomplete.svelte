@@ -62,7 +62,7 @@
           person.name?.toLowerCase().includes(inputPart) ||
           person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
       }
-      await Promise.all(appGlobal.addresslists.map(async ab => {
+      await Promise.all(appGlobal.searchOnlyAddressbooks.map(async ab => {
         let results = new ArrayColl<Person>;
         await ab.quickSearchAsync(inputStr.toLowerCase(), results);
         persons = persons.concat(results.contents);
@@ -82,6 +82,7 @@
       return emailAddresses;
     } catch (ex) {
       showError(ex);
+      return [];
     }
   }
 

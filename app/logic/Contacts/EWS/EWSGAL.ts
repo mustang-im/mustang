@@ -1,16 +1,17 @@
-import { Addressbook } from "../Addressbook";
+import { SearchOnlyAddressbook } from "../Addressbook";
 import { EWSPerson } from "./EWSPerson";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { ensureArray, NotReached } from "../../util/util";
-import { ArrayColl, type Collection } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
-export class EWSGAL extends Addressbook {
+export class EWSGAL extends SearchOnlyAddressbook {
   readonly protocol: string = "gal-ews";
   account: EWSAccount;
 
   constructor(account: EWSAccount) {
     super();
     this.account = account;
+    this.errorCallback = account.errorCallback;
   }
 
   newPerson(): EWSPerson {
@@ -18,16 +19,6 @@ export class EWSGAL extends Addressbook {
   }
   newGroup(): never {
     throw new NotReached();
-  }
-
-  listContacts(): never {
-    throw new NotReached();
-  }
-
-  quickSearch(searchTerm: string): Collection<EWSPerson> {
-    let results = new ArrayColl<EWSPerson>();
-    this.quickSearchAsync(searchTerm, results).catch(this.account.errorCallback);
-    return results;
   }
 
   async quickSearchAsync(searchTerm: string, results: ArrayColl<EWSPerson>) {

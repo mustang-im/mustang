@@ -202,7 +202,7 @@ export class OWAAccount extends MailAccount {
       }
     }
 
-    appGlobal.addresslists.add(new OWAGAL(this));
+    appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
 
     await this.callOWA(new OWASubscribeToNotificationRequest());
 

@@ -36,7 +36,10 @@
   export let doSearch = false;
   export let sortBy = (person: PersonOrGroup) => person.name.toLowerCase();
 
-  $: filteredPersons = searchTerm ? mergeColls(appGlobal.addressbooks.merge(appGlobal.addresslists).map(ab => ab.quickSearch(searchTerm, true))) : persons;
+  let searchAddressbooks = appGlobal.addressbooks.merge(appGlobal.searchOnlyAddressbooks);
+  $: filteredPersons = searchTerm
+    ? mergeColls(searchAddressbooks.map(ab => ab.quickSearch(searchTerm, true)))
+    : persons;
   $: sortedPersons = filteredPersons.sortBy(sortBy);
 
   $: searchTerm && adaptSelected();

@@ -123,7 +123,8 @@ export class EWSAccount extends MailAccount {
           .catch(this.errorCallback);
       }
     }
-    appGlobal.addresslists.add(new EWSGAL(this));
+
+    appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
 
     await this.streamNotifications();
   }

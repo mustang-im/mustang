@@ -1,8 +1,7 @@
 import type { MailAccount } from './Mail/MailAccount';
 import type { ChatAccount } from './Chat/ChatAccount';
 import { Person } from './Abstract/Person';
-// import type { Contact } from './Abstract/Contact';
-import type { Addressbook } from './Contacts/Addressbook';
+import type { Addressbook, SearchOnlyAddressbook } from './Contacts/Addressbook';
 import type { Calendar } from './Calendar/Calendar';
 import type { MeetAccount } from './Meet/MeetAccount';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
@@ -17,7 +16,7 @@ class AppGlobal extends Observable {
   readonly emailAccounts = new ArrayColl<MailAccount>();
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly addressbooks = new ArrayColl<Addressbook>();
-  readonly addresslists = new ArrayColl<Addressbook>(); // search-only
+  readonly searchOnlyAddressbooks = new ArrayColl<SearchOnlyAddressbook>();
   readonly calendars = new ArrayColl<Calendar>();
   readonly calendarEvents = mergeColls(this.calendars.map(cal => cal.eventsWithRecurrences)).sortBy(ev => ev.startTime);
   readonly meetAccounts = new ArrayColl<MeetAccount>();
