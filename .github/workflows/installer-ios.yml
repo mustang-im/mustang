@@ -12,7 +12,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v3
         with:
           # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
