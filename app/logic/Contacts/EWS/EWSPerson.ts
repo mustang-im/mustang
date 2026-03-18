@@ -18,7 +18,7 @@ export class EWSPerson extends Person {
   }
 
   fromXML(xmljs: any) {
-    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.itemID = sanitize.nonemptystring(xmljs.ItemId?.Id, "");
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");

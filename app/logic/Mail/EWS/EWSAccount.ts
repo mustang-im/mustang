@@ -9,6 +9,7 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
+import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
@@ -122,6 +123,8 @@ export class EWSAccount extends MailAccount {
           .catch(this.errorCallback);
       }
     }
+
+    appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
 
     await this.streamNotifications();
   }

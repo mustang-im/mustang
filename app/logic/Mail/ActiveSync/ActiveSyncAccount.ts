@@ -6,7 +6,8 @@ import type { Folder } from "../Folder";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { ActiveSyncGAL } from "../../Contacts/ActiveSync/ActiveSyncGAL";
 import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
@@ -114,6 +115,8 @@ export class ActiveSyncAccount extends MailAccount {
           .catch(this.errorCallback);
       }
     }
+
+    appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
 
     // ActiveSync doesn't have streaming notifications, instead it
     // provides the Ping operation which will tell us when a pingable

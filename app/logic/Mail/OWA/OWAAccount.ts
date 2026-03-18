@@ -11,6 +11,7 @@ import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotification
 import { OWAOffice365Notifications } from "./Notification/OWAOffice365Notifications";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { OWAGAL } from "../../Contacts/OWA/OWAGAL";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
@@ -200,6 +201,8 @@ export class OWAAccount extends MailAccount {
           .catch(this.errorCallback);
       }
     }
+
+    appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
 
     await this.callOWA(new OWASubscribeToNotificationRequest());
 
