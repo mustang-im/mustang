@@ -341,13 +341,17 @@ export class EMail extends Message {
 
     // Attachments
     let fallbackID = 0;
-    this.attachments.clear();
-    this.attachments.addAll(mail.attachments.map(a => {
+    let oldAttachments = new ArrayColl<Attachment>(this.attachments);
+    this.attachments.replaceAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
         attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
         attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
         attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+        attachment.filepathLocal = oldAttachments.find(old =>
+          old.contentID == attachment.contentID &&
+          old.filename == attachment.filename)
+          ?.filepathLocal;
         attachment.disposition = sanitize.translate(a.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
@@ -361,6 +365,7 @@ export class EMail extends Message {
         return null;
       }
     }).filter(attachment => !!attachment));
+    oldAttachments.clear();
 
     // Run processors, filters, calendar invitations, SML, etc.
     for (let processor of EMailProcessorList.processors) {
