@@ -115,8 +115,8 @@ export class PublicKey extends Observable {
   fromJSON(json: any) {
     this.publicKeyArmored = sanitize.nonemptystring(json.publicKeyArmored, null);
     this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
-    this.name = sanitize.label(json.name);
     this.id = sanitize.alphanumdash(json.id);
+    this.name = sanitize.label(json.name, this.id.substring(0, 4));
     this.fingerprint = sanitize.alphanumdash(json.fingerprint);
     this.created = sanitize.date(json.created);
     this.expires = sanitize.date(json.expires, null);

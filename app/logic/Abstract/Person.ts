@@ -200,8 +200,15 @@ export class Person extends ContactBase {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
-    this.encryptionPublicKeys.replaceAll(sanitize.array(json.encryptionPublicKeys, []).map(keyJSON =>
-      publicKeyFromJSON(sanitize.json(keyJSON, null))));
+    this.encryptionPublicKeys.clear();
+    for (let keyJSON of sanitize.array(json.encryptionPublicKeys, [])) {
+      try {
+        let key = publicKeyFromJSON(sanitize.json(keyJSON, null));
+        this.encryptionPublicKeys.add(key);
+      } catch (ex) {
+        this.addressbook?.errorCallback(ex);
+      }
+    }
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();

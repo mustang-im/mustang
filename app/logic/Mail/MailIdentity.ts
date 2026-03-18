@@ -96,7 +96,7 @@ export class MailIdentity extends Observable {
         let key = privateKeyFromJSON(sanitize.json(keyJSON, null));
         thiss.encryptionPrivateKeys.add(key);
       } catch (ex) {
-        thiss.account.errorCallback;
+        thiss.account.errorCallback(ex);
       }
     }
     return thiss;
