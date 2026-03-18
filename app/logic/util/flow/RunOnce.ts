@@ -9,13 +9,22 @@ export class RunOnce<Result> {
   running: Promise<Result> | null = null;
 
   async runOnce(func: () => Promise<Result>): Promise<Result> {
+    if (!this.running) {
+      this.running = (async () => {
+        try {
+          return await func();
+        } finally {
+          this.running = null;
+        }
+      })();
+    }
+
     try {
-      if (!this.running) {
-        this.running = func();
-      }
+      // Return the same result if successful
       return await this.running;
-    } finally {
-      this.running = null;
+    } catch (ex) {
+      // Rethrow error for a fresh stack
+      throw ex;
     }
   }
 }
