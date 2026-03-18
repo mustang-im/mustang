@@ -60,7 +60,7 @@
     "psl": "https://github.com/lupomontero/psl",
     "sip.js": "^0.21.2",
     "stanza": "^12.21.0",
-    "svelte-collections": "^1.2.12",
+    "svelte-collections": "^1.2.13",
     "svelte-icon": "^2.0.0",
     "svelte-navigator": "^3.2.2",
     "timezone-picker-svelte": "^1.0.2",
