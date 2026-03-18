@@ -176,17 +176,22 @@ export class ActiveSyncAccount extends MailAccount {
     }
     let response = await fetch(this.url, options);
     if (response.ok) {
-      let versions = (response.headers.get("MS-ASProtocolVersions") || "").split(",");
-      if (versions.includes("14.1")) {
-        this.protocolVersion = versions.includes("16.1") ? "16.1" : "14.1";
-        this.setStorageItem("protocolVersion", this.protocolVersion);
-        return;
+      let versionsHeader = response.headers.get("MS-ASProtocolVersions");
+      let versions = (versionsHeader || "").split(",");
+      if (!versionsHeader && response.headers.get("x-feserver")) {
+        this.protocolVersion = "16.1";
+      } else if (versions.includes("16.1")) {
+        this.protocolVersion = "16.1";
+      } else if (versions.includes("14.1")) {
+        this.protocolVersion = "14.1";
       } else if (versions.includes("14.0")) {
         this.protocolVersion = "14.0";
-        this.setStorageItem("protocolVersion", this.protocolVersion);
-        return;
       }
-      throw new Error(`ActiveSync version(s) ${response.headers.get("MS-ASProtocolVersions")} not supported`);
+      if (!this.protocolVersion) {
+        throw new Error(`ActiveSync version(s) ${versionsHeader} not supported`);
+      }
+      this.setStorageItem("protocolVersion", this.protocolVersion);
+      return;
     }
     if (response.status == 401) {
       const repeat = async () => {
