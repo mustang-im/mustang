@@ -49,14 +49,14 @@ jobs:
         KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: parula.apk
         path: |
           mobile/android/app/build/outputs/apk/release/*.apk
 
     - name: Upload AAB
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: parula.aab
         path: |
