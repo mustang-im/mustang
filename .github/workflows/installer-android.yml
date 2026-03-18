@@ -19,7 +19,7 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 22.x
 
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin' # See 'Supported distributions' for available options
         java-version: '21'
