@@ -76,6 +76,10 @@
   function openSearchPane() {
     activeTab = SearchView.Search;
   }
+  if (activeTab == SearchView.Search && !$globalSearchTerm) {
+    // reset, but only when opening, not while the user is changing the search term
+    activeTab = SearchView.Folder;
+  }
   $: activeTab, changeTab();
   function changeTab() {
     lastPerson = null;
