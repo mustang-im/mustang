@@ -23,7 +23,7 @@ export class RunOnce<Result> {
       // Return the same result if successful
       return await this.running;
     } catch (ex) {
-      if (!ex.stack) {
+      if (!ex?.stack) {
         throw ex;
       }
       // Join stack traces and rethrow
