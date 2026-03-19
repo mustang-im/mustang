@@ -159,7 +159,7 @@ export class EWSAccount extends MailAccount {
     assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
     if (folder.account.mainAccount) {
       let mainAccount = folder.account.mainAccount as EWSAccount;
-      let permissions = (await folder.getPermissions()).find(permissions => permissions.emailAddress == mainAccount.emailAddress);
+      let permissions = (await folder.getPermissions()).find(permissions => permissions.matchesEMailAddress(mainAccount.emailAddress));
       if (!permissions.exchangePermissions.CanCreateItems) {
         folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as EWSFolder;
       }

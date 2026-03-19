@@ -639,12 +639,16 @@ type ExchangeUser = { UserId: { DisplayName: string; DistinguishedUser: string; 
 export class ExchangePermission {
   exchangePermissions: ExchangePermissions;
   distinguishedUser?: string;
-  emailAddress?: string;
+  protected emailAddress?: string;
 
   constructor(permissions: Partial<ExchangePermissions> & ExchangeUser) {
     this.exchangePermissions = new ExchangePermissions(permissions);
     this.distinguishedUser = permissions.UserId.DistinguishedUser;
     this.emailAddress = permissions.UserId.PrimarySmtpAddress;
+  }
+
+  matchesEMailAddress(emailAddress: string) {
+    return this.emailAddress.toLowerCase() == emailAddress.toLowerCase();
   }
 
   toEWSFolderPermission() {
@@ -688,7 +692,7 @@ export function getSharedPersons(permissions: ExchangeUser[], thisUser: string):
 
 export async function deleteExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, otherPerson: PersonUID) {
   let targetPermissions = await target.getPermissions();
-  let personPermission = targetPermissions.findIndex(permission => permission.emailAddress == otherPerson.emailAddress);
+  let personPermission = targetPermissions.findIndex(permission => permission.matchesEMailAddress(otherPerson.emailAddress));
   if (personPermission >= 0) {
     targetPermissions.splice(personPermission, 1);
     await target.setPermissions(targetPermissions);
@@ -697,7 +701,7 @@ export async function deleteExchangePermissions(target: { getPermissions(): Prom
 
 export async function setExchangePermissions(target: { getPermissions(): Promise<ExchangePermission[]>, setPermissions(permission: ExchangePermission[]): Promise<void> }, person: PersonUID, access: string, ...permissions: MailShareIndividualPermissions[]) {
   let targetPermissions = await target.getPermissions();
-  let personPermission = targetPermissions.find(permission => permission.emailAddress == person.emailAddress);
+  let personPermission = targetPermissions.find(permission => permission.matchesEMailAddress(person.emailAddress));
   if (!personPermission) {
     personPermission = new ExchangePermission({ IsFolderVisible: true, UserId: { DisplayName: undefined, DistinguishedUser: undefined, PrimarySmtpAddress: person.emailAddress } });
     targetPermissions.push(personPermission);
