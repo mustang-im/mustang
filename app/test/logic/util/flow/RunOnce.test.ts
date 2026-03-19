@@ -1,5 +1,5 @@
 import { RunOnce } from "../../../../logic/util/flow/RunOnce";
-import { sleep } from '../../../../logic/util/util';
+import { sleep, UserError } from '../../../../logic/util/util';
 import { expect, test } from "vitest";
 
 class WithRunOnce {
@@ -26,7 +26,7 @@ class WithRunOnceError {
   async throwErr() {
     await sleep(Math.random());
     this.ran += 1;
-    throw new Error(`Err #${this.ran}`);
+    throw new UserError(`Err #${this.ran}`);
   }
 }
 
@@ -54,7 +54,7 @@ class WithoutRunOnceError {
   async throwErr() {
     await sleep(Math.random());
     this.ran += 1;
-    throw new Error(`Err #${this.ran}`);
+    throw new UserError(`Err #${this.ran}`);
   }
 }
 
@@ -84,8 +84,9 @@ test("RunOnce Error", async () => {
   let results = await Promise.allSettled(promises) as PromiseRejectedResult[];
   expect(a.ran).toBe(1);
   for (let i = 0; i < kCalls; i++) {
-    expect(!!results.find(r => (r.reason as Error).stack?.includes(`Promise.allSettled (index ${i})`))).toBe(true);
-    expect(!!results.find(r => (r.reason as Error).message.includes("Err #1"))).toBe(true);
+    expect(results[i].reason.isUserError).toBe(true);
+    expect(!!results.find(r => (r.reason as UserError).stack?.includes(`Promise.allSettled (index ${i})`))).toBe(true);
+    expect(!!results.find(r => (r.reason as UserError).message.includes("Err #1"))).toBe(true);
   }
 });
 
@@ -95,7 +96,8 @@ test("Without RunOnce Error", async () => {
   let results = await Promise.allSettled(promises) as PromiseRejectedResult[];
   expect(a.ran).toBe(kCalls);
   for (let i = 0; i < kCalls; i++) {
-    expect(!!results.find(r => (r.reason as Error).stack?.includes(`Promise.allSettled (index ${i})`))).toBe(true);
-    expect(!!results.find(r => (r.reason as Error).message.includes(`Err #${i + 1}`))).toBe(true);
+    expect(results[i].reason.isUserError).toBe(true);
+    expect(!!results.find(r => (r.reason as UserError).stack?.includes(`Promise.allSettled (index ${i})`))).toBe(true);
+    expect(!!results.find(r => (r.reason as UserError).message.includes(`Err #${i + 1}`))).toBe(true);
   }
 });
