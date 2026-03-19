@@ -23,8 +23,29 @@ export class RunOnce<Result> {
       // Return the same result if successful
       return await this.running;
     } catch (ex) {
-      // Rethrow error for a fresh stack
-      throw ex;
+      if (!ex.stack) {
+        throw ex;
+      }
+      // Join stack traces and rethrow
+      let newEx = new Error(ex.message);
+      // Get new stack before copying
+      let newStack = newEx.stack;
+      copyError(ex, newEx);
+      newEx.stack = `${ex.stack}\n${newStack.split('\n').slice(1).join('\n')}`;
+      throw newEx;
     }
   }
+}
+
+function copyError(oldError: Error, newError: Error) {
+  for (let key of Object.keys(oldError)) {
+    newError[key] = oldError[key];
+  }
+  newError.message = oldError.message;
+  newError.stack = oldError.stack;
+  if (oldError.stack) {
+    newError.stack = oldError.stack;
+  }
+
+  return newError;
 }
