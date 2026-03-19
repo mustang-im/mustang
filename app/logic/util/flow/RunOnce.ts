@@ -38,9 +38,8 @@ export class RunOnce<Result> {
 }
 
 function copyError(oldError: Error, newError: Error) {
-  for (let key of Object.keys(oldError)) {
-    newError[key] = oldError[key];
-  }
+  newError = Object.assign(newError, oldError);
+
   newError.message = oldError.message;
   newError.stack = oldError.stack;
   if (oldError.stack) {
