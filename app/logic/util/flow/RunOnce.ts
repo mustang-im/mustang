@@ -31,6 +31,7 @@ export class RunOnce<Result> {
       // Get new stack before copying
       let newStack = newEx.stack;
       copyError(ex, newEx);
+      // Remove second Error header before joining
       newEx.stack = `${ex.stack}\n${newStack.split('\n').slice(1).join('\n')}`;
       throw newEx;
     }
