@@ -32,7 +32,14 @@ import { ArrayColl } from "svelte-collections";
 // <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da>
 const HiddenPidTag = "0x10F4";
 
-export class EWSAccount extends MailAccount {
+export interface EWSSubscribable extends Account {
+  // FolderId to subscribe to
+  readonly folderID: string;
+  // SubscriptionId for unsubscribing on disconnect
+  subscriptionID?: string;
+}
+
+export class EWSAccount extends MailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
@@ -44,10 +51,10 @@ export class EWSAccount extends MailAccount {
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
   sharedFolderRoot: "msgfolderroot" | "inbox" | null;
-  // AbortControllers for all currently streaming notifications
-  notificationAbort = new Set<AbortController>();
-  // Subscription IDs for all subscribed notificaions
-  subscriptions: string[] = [];
+  // AbortController for streaming notifications
+  notificationAbort: Record<string, AbortController> = {};
+  // Subscription ID for unsubscribing on disconnect
+  subscriptionID: string;
 
   constructor() {
     super();
@@ -55,6 +62,10 @@ export class EWSAccount extends MailAccount {
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
+  }
+
+  get folderID(): string {
+    return this.inbox.id;
   }
 
   get isLoggedIn(): boolean {
@@ -98,7 +109,6 @@ export class EWSAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.mainAccount) {
       await this.mainAccount.login(interactive);
-      await this.listFolders();
       return;
     }
     await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
@@ -109,37 +119,32 @@ export class EWSAccount extends MailAccount {
 
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .then(() => addressbook.username != this.username && this.streamNotifications((addressbook as EWSAddressbook).folderID))
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .then(() => calendar.username != this.username && this.streamNotifications((calendar as EWSCalendar).folderID))
-          .catch(this.errorCallback);
-      }
+    for (let account of this.dependentAccounts()) {
+      account.startup().catch(this.errorCallback);
     }
 
     appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
 
-    await this.streamNotifications();
+    await this.subscribeToNotifications();
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
-      await this.mainAccount.logout();
-      return;
-    }
-    await this.unsubscribeAllNotifications();
+    await super.logout();
     await this.oAuth2?.logout();
   }
 
   async disconnect(): Promise<void> {
-    await this.unsubscribeAllNotifications();
+    if (this.mainAccount) {
+      await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
+    } else {
+      await this.unsubscribeAllSubscriptions();
+    }
+  }
+
+  async startup() {
+    assert(this.isDependentAccount, "Not supported for main accounts yet");
+    await this.listFolders();
+    await (this.mainAccount as EWSAccount).subscribeToNotifications(this);
   }
 
   needsLicense(): boolean {
@@ -391,9 +396,8 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>) {
     let lastAttempt: number;
-    let abort = new AbortController();
     let signal = abort.signal;
     do {
       try {
@@ -410,7 +414,6 @@ export class EWSAccount extends MailAccount {
           console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
-        this.notificationAbort.add(abort);
         for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
           data += chunk;
           while (data.includes(endEnvelope)) {
@@ -440,6 +443,11 @@ export class EWSAccount extends MailAccount {
           }
         }
       } catch (ex) {
+        if (signal.aborted) {
+          // Log only for development purposes.
+          console.log(signal.reason);
+          break;
+        }
         if (ex?.message == "terminated") {
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
@@ -447,23 +455,18 @@ export class EWSAccount extends MailAccount {
         }
         this.errorCallback(ex);
         break;
-      } finally {
-        this.notificationAbort.delete(abort);
       }
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
-  async unsubscribeAllNotifications() {
-    for (let abort of this.notificationAbort) {
-      abort.abort();
+  async unsubscribeAllSubscriptions() {
+    for (let emailAddress in this.notificationAbort) {
+      this.notificationAbort[emailAddress].abort("Disconnect requested");
     }
-    this.notificationAbort.clear();
-    if (!this.subscriptions.length) {
-      return;
-    }
+    this.notificationAbort = {};
     let unsubscribe = {
       m$Unsubscribe: {
-        m$SubscriptionId: this.subscriptions,
+        m$SubscriptionId: [this, ...this.dependentAccounts()].map(account => (account as EWSSubscribable).subscriptionID).filter(Boolean),
       },
     };
     try {
@@ -471,17 +474,38 @@ export class EWSAccount extends MailAccount {
     } catch (ex) {
       this.errorCallback(ex);
     }
-    this.subscriptions.length = 0;
+    this.subscriptionID = undefined;
+    for (let account of this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)) {
+      account.subscriptionID = undefined;
+    }
   }
 
-  async streamNotifications(folderID?: string) {
-    let subscribe = folderID
+  async unsubscribeNotifications(account: EWSSubscribable) {
+    if (!account.subscriptionID) {
+      return;
+    }
+    try {
+      let unsubscribe = {
+        m$Unsubscribe: {
+          m$SubscriptionId: account.subscriptionID,
+        },
+      };
+      await this.callEWS(unsubscribe);
+      account.subscriptionID = undefined;
+      await this.streamNotifications(account.username);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
+
+  async subscribeToNotifications(account?: EWSSubscribable) {
+    let subscribe = account
     ? {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
           t$FolderIds: {
             t$FolderId: {
-              Id: folderID,
+              Id: account.folderID,
             },
           },
           t$EventTypes: {
@@ -514,11 +538,26 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
-    this.subscriptions.push(sanitize.nonemptystring(response.SubscriptionId));
+    assert(!(account ?? this).subscriptionID, "startup code is broken");
+    (account ?? this).subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+    await this.streamNotifications(account?.username);
+  }
+
+  async streamNotifications(username = "") {
+    this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
+    this.notificationAbort[username] = new AbortController();
+    let subscriptions = username
+      ? this.dependentAccounts().contents.filter(
+          (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
+        ).map(account => account.subscriptionID)
+      : [this.subscriptionID];
+    if (!subscriptions.length) {
+      return;
+    }
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
-          t$SubscriptionId: response.SubscriptionId,
+          t$SubscriptionId: subscriptions,
         },
         // Maximum number of minutes to keep a stream open.
         // In minutes, between 1 and 30, inclusive.
@@ -526,7 +565,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     // Now, connect and wait for the notifications. Runs 29 minutes long, so don't `await` it.
-    this.callStream(streamRequest, async message => {
+    this.callStream(streamRequest, this.notificationAbort[username], async message => {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
@@ -934,7 +973,7 @@ export class EWSAccount extends MailAccount {
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.listFolders();
+    await account.startup();
     return account;
   }
 
@@ -965,8 +1004,7 @@ export class EWSAccount extends MailAccount {
     addressbook.username = person.emailAddress;
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.addressbooks.add(addressbook);
-    await addressbook.listContacts();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await addressbook.startup();
     return addressbook;
   }
 
@@ -997,8 +1035,7 @@ export class EWSAccount extends MailAccount {
     calendar.username = person.emailAddress;
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.calendars.add(calendar);
-    await calendar.listEvents();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await calendar.startup();
     return calendar;
   }
 

@@ -3,7 +3,7 @@ import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
-import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
@@ -11,7 +11,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export class EWSCalendar extends Calendar {
+export class EWSCalendar extends Calendar implements EWSSubscribable {
   readonly protocol: string = "calendar-ews";
   declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
@@ -38,6 +38,17 @@ export class EWSCalendar extends Calendar {
       return;
     }
     await this.account.login(interactive);
+  }
+
+  async disconnect(): Promise<void> {
+    await this.account.unsubscribeNotifications(this);
+  }
+
+  async startup(): Promise<void> {
+    await super.startup();
+    if (this.username != this.account.emailAddress) {
+      await this.account.subscribeToNotifications(this);
+    }
   }
 
   getIncomingInvitationForEMail(message: EWSEMail) {

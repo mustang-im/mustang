@@ -85,6 +85,7 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+    await this.disconnect();
   }
 
   /**
@@ -92,6 +93,12 @@ export class Account extends Observable {
    * e.g. due to app shutdown.
    */
   async disconnect(): Promise<void> {
+  }
+
+  /**
+   * Used to start a newly-added subaccount.
+   */
+  async startup(): Promise<void> {
   }
 
   /**
