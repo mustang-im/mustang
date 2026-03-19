@@ -61,3 +61,20 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
   }
   throw new UserError(gt`Could not find a key in this file`);
 }
+
+
+/**
+ * Takes an armored public or private key, and returns the base64 content of it
+ * Works for PGP private and public keys, and S/MIME certificates, if ASCII-armored.
+ * @returns base64-encoded key
+ */
+export function extractBase64FromArmorned(armored: string): string {
+  let lines = armored.trim().split("\n");
+  assert(lines[0].startsWith("-----BEGIN"), "Not an armored key: BEGIN line missing");
+  let bodyStartIndex = lines.findIndex(line => line.trim() === "") + 1;
+  let footerIndex = lines.findIndex(line => line.startsWith("-----END "));
+  let bodyLines = lines
+    .slice(bodyStartIndex, footerIndex)
+    .filter(line => !line.startsWith("=")); // exclude checksum line (starts with "=")
+  return bodyLines.join("").replace(/\s/g, "");
+}

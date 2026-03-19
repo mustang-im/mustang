@@ -3,6 +3,7 @@ import type { EMail } from "../../EMail";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
+import { sendAutoCryptHeader } from "./AutoCryptSend";
 import type { PersonUID } from "../../../Abstract/PersonUID";
 import { NotReached, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
@@ -42,7 +43,7 @@ export class PGPSend {
         signingKeys: privateOpenPGPKey,
         encryptionKeys: recipientOpenPGPKeys,
       });
-      result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted);
+      result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted, privateKey);
     } else if (mail.signed) {
       let signature = await openPGP.sign({
         message: message,
@@ -52,9 +53,9 @@ export class PGPSend {
 
       const inHeader = false;
       if (inHeader) {
-        result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIME, signature);
+        result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIME, signature, privateKey);
       } else {
-        result.sendRawMIME = PGPSend.createMIMEForSignedDetached(mail, originalMIME, signature);
+        result.sendRawMIME = PGPSend.createMIMEForSignedDetached(mail, originalMIME, signature, privateKey);
       }
     } else {
       throw new NotReached();
@@ -62,7 +63,7 @@ export class PGPSend {
     return result;
   }
 
-  static createMIMEHeader(mail: EMail): string[] {
+  static createMIMEHeader(mail: EMail, privateKey: PGPPrivateKey): string[] {
     function esc(str: string): string {
       return str?.replace(/<>,/g, "") ?? ""; // TODO implement better
     }
@@ -79,14 +80,15 @@ export class PGPSend {
       `From: ` + recipient(mail.from),
       `To: ` + mail.to.contents.map(p => recipient(p)),
       `CC: ` + mail.cc.contents.map(p => recipient(p)),
+      ...this.wrapHeader(sendAutoCryptHeader(mail.identity, privateKey)),
     ];
   }
 
-  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string): string {
+  static createMIMEForEncrypted(mail: EMail, encryptedMessage: string, privateKey: PGPPrivateKey): string {
     // RFC 3156 Sec 4 <https://www.rfc-editor.org/rfc/rfc3156>
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
-      ...PGPSend.createMIMEHeader(mail),
+      ...PGPSend.createMIMEHeader(mail, privateKey),
       `Subject: PGP encrypted message`,
       `Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";`,
       ` boundary="${boundary}"`,
@@ -109,11 +111,11 @@ export class PGPSend {
     return mime;
   }
 
-  static createMIMEForSignedDetached(mail: EMail, message: Uint8Array, signature: string): string {
+  static createMIMEForSignedDetached(mail: EMail, message: Uint8Array, signature: string, privateKey: PGPPrivateKey): string {
     // RFC 3156 Sec 5 <https://www.rfc-editor.org/rfc/rfc3156>
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
-      ...PGPSend.createMIMEHeader(mail),
+      ...PGPSend.createMIMEHeader(mail, privateKey),
       ...this.wrapHeader(`Subject: ` + mail.subject),
       `Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha512;`,
       ` boundary="${boundary}"`,
@@ -132,11 +134,11 @@ export class PGPSend {
     return mime;
   }
 
-  static createMIMEForSignedInHeader(mail: EMail, message: Uint8Array, signature: string): string {
+  static createMIMEForSignedInHeader(mail: EMail, message: Uint8Array, signature: string, privateKey: PGPPrivateKey): string {
     // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
-      ...PGPSend.createMIMEHeader(mail),
+      ...PGPSend.createMIMEHeader(mail, privateKey),
       ...this.wrapHeader(`Subject: ` + mail.subject),
       `Content-Type: multipart/mixed; boundary="${boundary}"`,
       ``,
