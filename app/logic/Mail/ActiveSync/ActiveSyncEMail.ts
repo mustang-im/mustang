@@ -70,7 +70,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[wbxmljs.MessageClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(wbxmljs.MessageClass, "")] || InvitationMessage.None;
     /* Can't use this data because the description is missing.
     if (wbxmljs.MeetingRequest) {
       let event = new ActiveSyncEvent();
@@ -88,7 +88,7 @@ export class ActiveSyncEMail extends EMail {
     }
     this.tags.clear();
     if (wbxmljs.Categories) {
-      this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(name)));
+      this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(sanitize.string(name))));
     }
   }
 

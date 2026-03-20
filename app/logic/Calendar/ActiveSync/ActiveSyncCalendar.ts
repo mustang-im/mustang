@@ -65,7 +65,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       if (result.Response.Status != "1") {
         throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
       }
-      let freebusy = result.Response.Recipient.Availability.MergedFreeBusy || "";
+      let freebusy = sanitize.nonemptystring(result.Response.Recipient.Availability.MergedFreeBusy, "");
       let availability = freebusy.split("").map((c: string, i: number) => ({
         from: new Date(from.getTime() + i * kHalfHour),
         to: new Date(from.getTime() + (i + 1) * kHalfHour),
@@ -138,13 +138,13 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     await this.makeSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
-          let event = this.getEventByServerID(item.ServerId);
+          let event = this.getEventByServerID(sanitize.nonemptystring(item.ServerId));
           if (event) {
             event.fromWBXML(item.ApplicationData);
             await event.saveLocally();
           } else {
             event = this.newEvent();
-            event.serverID = item.ServerId;
+            event.serverID = sanitize.nonemptystring(item.ServerId);
             event.fromWBXML(item.ApplicationData);
             await event.saveLocally();
             this.events.add(event);
@@ -152,7 +152,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           // Exceptions must be handled after the master event has been saved.
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
-              let exceptionTime = fromCompact(exception.ExceptionStartTime);
+              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionStartTime));
               let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
               if (existing) {
                 existing.fromWBXML(exception);
@@ -171,7 +171,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       }
       for (let item of ensureArray(response.Commands?.Delete)) {
         try {
-          let event = this.getEventByServerID(item.ServerId);
+          let event = this.getEventByServerID(sanitize.nonemptystring(item.ServerId));
           if (event) {
             this.events.remove(event);
             this.events.removeAll(event.exceptions);

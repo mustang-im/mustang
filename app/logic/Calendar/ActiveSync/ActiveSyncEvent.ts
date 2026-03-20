@@ -43,26 +43,26 @@ export class ActiveSyncEvent extends Event {
       this.rawHTMLDangerous = null;
     }
     if (wbxmljs.DtStamp) {
-      this.lastUpdateTime = fromCompact(wbxmljs.DtStamp);
+      this.lastUpdateTime = fromCompact(sanitize.nonemptystring(wbxmljs.DtStamp));
     }
     if (wbxmljs.ExceptionStartTime) {
-      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionStartTime);
+      this.recurrenceStartTime = fromCompact(sanitize.nonemptystring(wbxmljs.ExceptionStartTime));
       // In case it's not otherwise provided to us.
       this.startTime = new Date(this.recurrenceStartTime);
     }
     if (wbxmljs.StartTime) {
-      this.startTime = fromCompact(wbxmljs.StartTime);
+      this.startTime = fromCompact(sanitize.nonemptystring(wbxmljs.StartTime));
     }
     if (wbxmljs.EndTime) {
-      this.endTime = fromCompact(wbxmljs.EndTime);
+      this.endTime = fromCompact(sanitize.nonemptystring(wbxmljs.EndTime));
     }
-    this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
+    this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
     if (wbxmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.makeExclusionLocally(fromCompact(exception.ExceptionStartTime));
+          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionStartTime)));
         }
       }
     } else {
@@ -95,11 +95,11 @@ export class ActiveSyncEvent extends Event {
   protected newRecurrenceRuleFromWBXML(wbxmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
-    let seriesEndTime = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
+    let seriesEndTime = wbxmljs.Until ? fromCompact(sanitize.nonemptystring(wbxmljs.Until)) : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
-    let frequency = kRecurrenceTypes[wbxmljs.Type];
+    let frequency = kRecurrenceTypes[sanitize.integer(wbxmljs.Type, 0)];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
-    let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
+    let weekdays = extractWeekdays(sanitize.nonemptystring(wbxmljs.DayOfWeek, ""));
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
@@ -149,7 +149,7 @@ export class ActiveSyncEvent extends Event {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
         let event = await this.fetchFromServer();
-        this.calUID = event.calUID;
+        this.calUID = sanitize.nonemptystring(event.calUID);
       }
     }
     await super.saveToServer();
@@ -182,7 +182,7 @@ export class ActiveSyncEvent extends Event {
         if (response.Responses.Add.Status != "1") {
           throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.calendar);
         }
-        this.serverID = response.Responses.Add.ServerId;
+        this.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
       }
     }
   }

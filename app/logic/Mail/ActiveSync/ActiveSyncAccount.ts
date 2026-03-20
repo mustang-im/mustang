@@ -438,9 +438,9 @@ export class ActiveSyncAccount extends MailAccount {
           case FolderType.Outbox:
           case FolderType.OtherSpecialFolder:
           case FolderType.UserFolder:
-            let folder = this.findFolderById(change.ServerId) || this.newFolder();
+            let folder = this.findFolderById(sanitize.nonemptystring(change.ServerId)) || this.newFolder();
             folder.fromWBXML(change);
-            let parent = this.findFolderById(change.ParentId);
+            let parent = this.findFolderById(sanitize.nonemptystring(change.ParentId));
             if (parent != folder.parent) {
               folder.removeFromParent();
               folder.parent = parent;
@@ -493,7 +493,7 @@ export class ActiveSyncAccount extends MailAccount {
       }
       for (let deletion of ensureArray(response.Changes.Delete)) {
         try {
-          let folder = this.findFolderById(deletion.ServerId);
+          let folder = this.findFolderById(sanitize.nonemptystring(deletion.ServerId));
           if (folder) {
             this.removePingable(folder);
             await this.storage.deleteFolder(folder);

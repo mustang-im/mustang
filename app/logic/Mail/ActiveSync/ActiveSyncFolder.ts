@@ -150,13 +150,13 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     await this.makeSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
-          let email = this.getEmailByServerID(item.ServerId);
+          let email = this.getEmailByServerID(sanitize.nonemptystring(item.ServerId));
           if (email) {
             email.setFlags(item.ApplicationData);
             await this.storage.saveMessageWritableProps(email);
           } else {
             email = this.newEMail();
-            email.serverID = item.ServerId;
+            email.serverID = sanitize.nonemptystring(item.ServerId);
             email.fromWBXML(item.ApplicationData);
             await this.storage.saveMessage(email);
             newMsgs.add(email);
@@ -167,7 +167,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       }
       for (let item of ensureArray(response.Commands?.Delete)) {
         try {
-          let email = this.getEmailByServerID(item.ServerId);
+          let email = this.getEmailByServerID(sanitize.nonemptystring(item.ServerId));
           if (email) {
             await email.deleteMessageLocally();
           }
@@ -285,7 +285,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     // email.copyFrom didn't work
     email.mime = message.mime;
     await email.parseMIME();
-    email.serverID = response.Responses.Add.ServerId;
+    email.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
     email.sent = email.received = new Date();
     email.isRead = true;
     await email.saveCompleteMessage();
