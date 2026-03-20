@@ -7,6 +7,7 @@ import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { importAutoCryptKeys } from "./Encryption/PGP/AutoCryptSend";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
@@ -74,6 +75,8 @@ export class ComposeActions {
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
     reply.mustEncrypt = original.wasEncrypted;
+    importAutoCryptKeys(original)
+      .catch(original.folder.account.errorCallback);
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
@@ -131,7 +134,7 @@ export class ComposeActions {
   async forwardInline(): Promise<EMail> {
     await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject;
+    forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
     forward.html = `<p></p>
     <p></p>
@@ -163,7 +166,7 @@ export class ComposeActions {
   async forwardAsAttachment(): Promise<EMail> {
     await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject;
+    forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
     let a = new Attachment();
     a.mimeType = "message/rfc822";

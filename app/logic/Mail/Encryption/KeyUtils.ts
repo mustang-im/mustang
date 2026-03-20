@@ -78,3 +78,13 @@ export function extractBase64FromArmorned(armored: string): string {
     .filter(line => !line.startsWith("=")); // exclude checksum line (starts with "=")
   return bodyLines.join("").replace(/\s/g, "");
 }
+
+/** Take base64, and add "-----BEGIN FOO ---" and "-----END FOO ----"
+ * This is the opposite of `extractBase64FromArmorned()`
+ * @param headerType FOO above, e.g. "PGP PUBLIC KEY BLOCK"
+ * @returns the ASCII-armored key file */
+export function addArmorHeader(base64: string, headerType: string) {
+  return "-----BEGIN " + headerType + "-----\n\n" +
+    base64 +
+    "\n-----END " + headerType + "-----\n";
+}

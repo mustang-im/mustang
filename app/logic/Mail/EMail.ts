@@ -296,16 +296,6 @@ export class EMail extends Message {
     let postalMIME = new PostalMIME();
     let mail = await postalMIME.parse(this.mime);
 
-    // Headers
-    /** TODO header.key returns Uint8Array
-    for (let header of mail.headers) {
-      try {
-        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-      }
-    }*/
-
     this.id ??= sanitize.string(mail.messageId, this.id ?? "");
     this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
     this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
@@ -375,6 +365,24 @@ export class EMail extends Message {
       await processor.process(this, mail);
     }
     return mail;
+  }
+
+  async parseHeaders() {
+    if (this.headers.hasItems) {
+      return;
+    }
+    await this.loadMIME();
+    assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
+    let mail = await new PostalMIME().parse(this.mime);
+    for (let header of mail.headers) {
+      try {
+        let name = sanitize.nonemptystring(header.key).toLowerCase();
+        let value = sanitize.nonemptystring(header.value);
+        this.headers.set(name, value);
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+    }
   }
 
   /** Used by encrypted messages.
