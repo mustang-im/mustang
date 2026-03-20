@@ -7,7 +7,7 @@ import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-import { importAutoCryptKeys } from "./Encryption/PGP/AutoCryptSend";
+import { importAutoCryptKeys } from "./Encryption/PGP/AutoCrypt";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";

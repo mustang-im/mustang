@@ -3,7 +3,7 @@ import type { EMail } from "../../EMail";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
-import { sendAutoCryptHeader } from "./AutoCryptSend";
+import { sendAutoCryptHeader } from "./AutoCrypt";
 import type { PersonUID } from "../../../Abstract/PersonUID";
 import { NotReached, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
