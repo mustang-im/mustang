@@ -47,17 +47,23 @@ export async function importAutoCryptKeys(mail: EMail) {
       !parts.keydata) {
     return;
   }
+  let preferEncrypted = parts["prefer-encrypt"] == "mutual";
 
   let publicKeyArmored = addArmorHeader(
     sanitize.nonemptystring(parts.keydata), "PGP PUBLIC KEY BLOCK");
   let publicKey = await PGPPublicKey.importPublicKey(publicKeyArmored);
   publicKey.trustLevel = TrustLevel.Sender;
-  publicKey.encryptByDefault = parts["prefer-encrypt"] == "mutual";
+  publicKey.encryptByDefault = preferEncrypted;
 
   let person = mail.from.findPerson() ?? mail.from.createPerson(appGlobal.collectedAddressbook);
-  if (person.encryptionPublicKeys.find(key => key.id == publicKey.id)) {
-    return;
+  let existing = person.encryptionPublicKeys.find(key => key.id == publicKey.id);
+  if (existing) {
+    if (existing.encryptByDefault != preferEncrypted) {
+      existing.encryptByDefault = preferEncrypted;
+      await person.save();
+    }
+  } else {
+    person.encryptionPublicKeys.add(publicKey);
+    await person.save();
   }
-  person.encryptionPublicKeys.add(publicKey);
-  await person.save();
 }

@@ -153,10 +153,10 @@ export class PGPSend {
   }
 
   protected static wrapHeader(content: string): string[] {
-    const maxWidth = 60;
+    const maxWidth = 78;
     let lines: string[] = [];
     for (let i = 0; i < content.length; i += maxWidth) {
-      lines.push((i == 0 ? "" : "    ") + content.slice(i, i + maxWidth));
+      lines.push((i == 0 ? "" : "    ") + content.slice(i, i + maxWidth + (i == 0 ? 0 : -4)));
     }
     return lines;
   }
