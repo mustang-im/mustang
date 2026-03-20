@@ -37,17 +37,20 @@
   import { openSettingsCategoryForAccount } from "../../Settings/Window/CategoriesUtils";
   import { showError } from "../../Util/error";
   import { assert, UserError } from "../../../logic/util/util";
+  import { mergeColls } from "svelte-collections";
 
   export let mail: EMail;
   export let identity: MailIdentity;
 
   $: privateKeys = identity.encryptionPrivateKeys;
   $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity)?.id ? null : gt`No secret keys enabled for signing`;
+  $: allRecipients = mail.to.concat(mail.cc);
+  $: allRecipientsKeys = mergeColls($allRecipients.map(p => p.findPerson()?.encryptionPublicKeys));
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
-    : $mail.allRecipients().find(puid => !getPublicKeyForPerson(puid.findPerson()))
-      ? gt`No secret keys enabled for encryption`
+    : $allRecipientsKeys.isEmpty || $mail.allRecipients().find(puid => !getPublicKeyForPerson(puid.findPerson()))
+      ? gt`One of the recipients is lacking the certificate for encryption`
       : null;
 
   function toggleSigned() {

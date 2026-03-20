@@ -26,7 +26,7 @@
   export let isExpanded = false;
 
   $: signingKey = getPublicKeyForID($message.signed);
-  $: signed = $message.signed && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signed = $message.signed && $signingKey?.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: keyName = $signingKey?.name ?? $message.signed?.substring(2, 6);

@@ -179,6 +179,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
   import { saveBlobAsFile } from "../../Util/util";
+  import { logError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;
@@ -191,6 +192,7 @@
   $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.encryptByDefault || key.useToSign)));
   $: myIdentity = $allIdentitiesWithKeys.first;
   $: myPrivateKey = getMyPrivateKey(myIdentity);
+  $: key.trustLevel, key.encryptByDefault, person.save().catch(logError);
 
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());

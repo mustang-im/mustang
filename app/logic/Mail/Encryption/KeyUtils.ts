@@ -1,7 +1,7 @@
 import type { PublicKey } from "./PublicKey";
 import type { PrivateKey } from "./PrivateKey";
 import type { Person } from "../../Abstract/Person";
-import type { MailIdentity } from "../MailIdentity";
+import { findAllIdentities, type MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
 import { UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -14,6 +14,13 @@ export function getPublicKeyForID(id: string | null): PublicKey | null {
   }
   for (let person of appGlobal.persons.each) {
     for (let key of person.encryptionPublicKeys.each) {
+      if (key.id == id) {
+        return key;
+      }
+    }
+  }
+  for (let identity of findAllIdentities()) {
+    for (let key of identity.encryptionPrivateKeys.each) {
       if (key.id == id) {
         return key;
       }

@@ -16,10 +16,12 @@
       </vbox>
     {/if}
 
-    <EncryptionKey short showIcon={false}
-      key={getPublicKeyForID($message.signed)}
-      person={$message.from.findPerson()}
-      bind:isExpanded={isExpanded} />
+    {#if signingKey}
+      <EncryptionKey short showIcon={false}
+        key={signingKey}
+        person={$message.from.findPerson()}
+        bind:isExpanded={isExpanded} />
+    {/if}
   </vbox>
 {/if}
 
@@ -39,7 +41,7 @@
   export let isExpanded = false;
 
   $: signingKey = getPublicKeyForID($message.signed);
-  $: signed = $message.signed && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signed = $message.signed && $signingKey?.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: title = signed && encrypted

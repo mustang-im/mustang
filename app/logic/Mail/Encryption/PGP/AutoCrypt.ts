@@ -59,4 +59,5 @@ export async function importAutoCryptKeys(mail: EMail) {
     return;
   }
   person.encryptionPublicKeys.add(publicKey);
+  await person.save();
 }
