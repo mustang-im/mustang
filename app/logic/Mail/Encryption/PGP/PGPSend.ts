@@ -51,11 +51,12 @@ export class PGPSend {
         detached: true,
       });
 
+      let originalMIMEStr = new TextDecoder().decode(originalMIME).trim().replace(/User-Agent: [^\r]+\r\n/, "");
       const inHeader = false;
       if (inHeader) {
-        result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIME, signature, privateKey);
+        result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIMEStr, signature, privateKey);
       } else {
-        result.sendRawMIME = PGPSend.createMIMEForSignedDetached(mail, originalMIME, signature, privateKey);
+        result.sendRawMIME = PGPSend.createMIMEForSignedDetached(mail, originalMIMEStr, signature, privateKey);
       }
     } else {
       throw new NotReached();
@@ -111,7 +112,7 @@ export class PGPSend {
     return mime;
   }
 
-  static createMIMEForSignedDetached(mail: EMail, message: Uint8Array, signature: string, privateKey: PGPPrivateKey): string {
+  static createMIMEForSignedDetached(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
     // RFC 3156 Sec 5 <https://www.rfc-editor.org/rfc/rfc3156>
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
@@ -121,7 +122,7 @@ export class PGPSend {
       ` boundary="${boundary}"`,
       ``,
       `--${boundary}`,
-      new TextDecoder().decode(message).trim(),
+      message,
       ``,
       `--${boundary}`,
       `Content-Type: application/pgp-signature; name="signature.asc"`,
@@ -144,7 +145,7 @@ export class PGPSend {
       ``,
       `--${boundary}`,
       ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
-      new TextDecoder().decode(message).trim(),
+      message,
       ``,
       `--${boundary}--`,
     ].join('\r\n');
