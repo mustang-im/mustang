@@ -42,6 +42,7 @@ export class JSONEMail {
     this.saveRecipients(email, json);
     json.attachments = this.saveAttachments(email);
     json.tags = this.saveTags(email);
+    //json.headers = email.headers.contentKeyValues();
     return json;
   }
 
@@ -153,6 +154,12 @@ export class JSONEMail {
     this.readExtraData(email, json);
     this.readTags(email, json);
     email.contact = email.outgoing ? email.to.first : email.from;
+    /*email.headers.clear();
+    for (let name in json.headers) {
+      email.headers.set(
+        sanitize.nonemptystring(name),
+        sanitize.nonemptystring(json.headers[name]));
+    }*/
     return email;
   }
 

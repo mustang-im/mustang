@@ -31,8 +31,8 @@ export class PGPPublicKey extends PublicKey {
     const openPGP = await import("openpgp");
     let key = new PGPPublicKey();
     key.publicKeyArmored = armoredPublicKey;
-    let pu = await openPGP.readKey({ armoredKey: armoredPublicKey });
-    await key.readFromOpenPGPKey(pu);
+    let pgp = await openPGP.readKey({ armoredKey: armoredPublicKey });
+    await key.readFromOpenPGPKey(pgp);
     return key;
   }
 
@@ -53,9 +53,7 @@ export class PGPPublicKey extends PublicKey {
     this.cipher = cipher.replaceAll("Legacy", "").toUpperCase();
     this.keyLengthInBits = pgpCipher.bits;
     this.name = this.id.substring(0, 4).toUpperCase();
-    for (let user of pgp.users) {
-      this.userIDs.add(user.userID.email);
-    }
+    this.userIDs.replaceAll(pgp.users.map(u => u.userID.email));
   }
 }
 
