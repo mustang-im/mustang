@@ -128,14 +128,14 @@ export class PGPSend {
       `Content-Type: application/pgp-signature; name="signature.asc"`,
       `Content-Disposition: inline; filename="signature.asc"`,
       ``,
-      signature,
+      signature.replaceAll("\n", "\r\n"),
       ``,
       `--${boundary}--`,
     ].join('\r\n');
     return mime;
   }
 
-  static createMIMEForSignedInHeader(mail: EMail, message: Uint8Array, signature: string, privateKey: PGPPrivateKey): string {
+  static createMIMEForSignedInHeader(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
     // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
