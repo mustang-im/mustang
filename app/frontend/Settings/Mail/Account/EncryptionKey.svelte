@@ -69,7 +69,7 @@
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
         <hbox class="value">{getDateString(key.created)}</hbox>
-        <hbox class="label-2-column">{$t`Expires`}</hbox>
+        <hbox class="label-2-column">{$t`Expires *=> No longer valid after this date`}</hbox>
         <hbox class="value" title={key.expires ? getDateTimeString(key.expires) : null}>{key.expires ? getDateString(key.expires) : "-"}</hbox>
       </hbox>
       <hbox>

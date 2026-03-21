@@ -22,7 +22,7 @@
           on:click={() => showObsolete = !showObsolete}>
           <hbox class="first-row">
             <hbox class="label font-smallest" flex>
-              {$t`Expired`}
+              {$t`Expired *=> No longer valid`}
             </hbox>
             <RoundButton
               label={showObsolete ? $t`Collapse` : $t`Expand`}
