@@ -216,6 +216,13 @@ function allowCrossDomainRequestsFromFrontend() {
         case "origin":
         case "referer":
           delete requestHeaders[name];
+          break;
+        case "user-agent":
+          // Fake out the User-Agent on all ActiveSync requests, because Office.
+          if (details.url.toLowerCase().includes("/microsoft-server-activesync")) {
+            requestHeaders[name] = requestHeaders[name].replace(/\).*/, ") Gecko/20100101");
+          }
+          break;
         }
       }
       callback({ requestHeaders: requestHeaders });
@@ -229,7 +236,7 @@ function allowCrossDomainRequestsFromFrontend() {
       for (let name in responseHeaders) {
         let lowercase = name.toLowerCase();
         if (lowercase.startsWith("access-control-allow-")) {
-          delete responseHeaders[lowercase];
+          delete responseHeaders[name];
         }
       }
       // Allow frontend to access other servers
