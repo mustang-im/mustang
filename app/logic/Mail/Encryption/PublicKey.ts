@@ -158,6 +158,17 @@ export enum TrustLevel {
   Distrusted = "distrust",
 }
 
+const kTrustOrder = [
+  TrustLevel.Distrusted,
+  TrustLevel.Sender,
+  TrustLevel.ThirdParty,
+  TrustLevel.Personal,
+];
+
+export function trustOrder(trustLevel: TrustLevel): number {
+  return kTrustOrder.indexOf(trustLevel);
+}
+
 export const trustColor = {
   [TrustLevel.Personal]: "green",
   [TrustLevel.ThirdParty]: "blue",

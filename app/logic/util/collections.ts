@@ -1,5 +1,15 @@
 import { ArrayColl, Collection } from "svelte-collections";
 
+/** @returns true, if the check returns true for all items in the collection */
+export function every<T>(coll: Collection<T>, check: (item: T) => boolean): boolean {
+  for (let item of coll) {
+    if (!check(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Like SetColl, but always preserves the first matching entry, and retains the order
  * E.g. `let familyHeads = filterUnique(persons, (a, b) => a.lastname == b.lastname);`

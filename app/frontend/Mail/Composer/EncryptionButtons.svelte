@@ -1,5 +1,7 @@
 {#if $privateKeys.hasItems}
-  <hbox class="encryption buttons">
+  <hbox class="encryption buttons"
+    class:encrypt={mail.shouldEncrypt}
+    style="--trustColor: {trustColor[trustLevel]}; --trustColorFG: {trustColorFG[trustLevel]}">
     <ButtonMenu bind:isMenuOpen>
       <RoundButton
         label={$t`Sign or encrypt`}
@@ -54,6 +56,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { trustColor, trustColorFG, TrustLevel, trustOrder, type PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -61,11 +64,12 @@
   import EncryptIcon from "lucide-svelte/icons/lock";
   import NoEncryptIcon from "lucide-svelte/icons/lock-open";
   import NoneIcon from "lucide-svelte/icons/circle-off";
-  import { t, gt } from "../../../l10n/l10n";
   import { openSettingsCategoryForAccount } from "../../Settings/Window/CategoriesUtils";
+  import { every } from "../../../logic/util/collections";
   import { showError } from "../../Util/error";
   import { assert, UserError } from "../../../logic/util/util";
-  import { mergeColls } from "svelte-collections";
+  import { t, gt } from "../../../l10n/l10n";
+  import { mergeColls, type Collection } from "svelte-collections";
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -74,6 +78,7 @@
   $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity)?.id ? null : gt`No secret keys enabled for signing`;
   $: allRecipients = mail.to.concat(mail.cc);
   $: allRecipientsKeys = mergeColls($allRecipients.map(p => p.findPerson()?.encryptionPublicKeys));
+  $: trustLevel = mail.shouldEncrypt ? lowestTrust($allRecipientsKeys) : TrustLevel.Personal;
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
@@ -87,7 +92,9 @@
     if (mail.mustEncrypt) {
       return;
     }
-    if (mail.signed) {
+    if (mail.signed && mail.shouldEncrypt) {
+      mail.shouldEncrypt = false;
+    } else if (mail.signed) {
       mail.signed = null;
       mail.shouldEncrypt = false;
     } else {
@@ -123,6 +130,17 @@
     mail.signed = null;
     mail.shouldEncrypt = false;
   }
+
+  function lowestTrust(keys: Collection<PublicKey>): TrustLevel {
+    return allTrust(keys, TrustLevel.Personal)
+      || allTrust(keys, TrustLevel.ThirdParty)
+      || allTrust(keys, TrustLevel.Sender)
+      || TrustLevel.Distrusted;
+  }
+  function allTrust(keys: Collection<PublicKey>, trustLevel: TrustLevel): TrustLevel | false {
+    let needLevel = trustOrder(trustLevel);
+    return every(keys, key => trustOrder(key.trustLevel) >= needLevel) ? trustLevel : false;
+  }
 </script>
 
 <style>
@@ -134,7 +152,9 @@
   .buttons  :global(.button:not(.selected)) {
     color: #595065;
   }
-  .buttons :global(.disabled) {
-    opacity: 60%;
+  .buttons.encrypt :global(.button) {
+    background-color: var(--trustColor);
+    color: var(--trustColorFG);
+    border-radius: 1000px;
   }
 </style>
