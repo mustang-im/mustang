@@ -21,7 +21,7 @@
       plain
       />
   </hbox>
-  {#if recipients.length > 1 && message.bcc.isEmpty}
+  {#if recipients.length > 1 && (message.bcc.isEmpty || message.outgoing)}
     <hbox class="reply-all">
       <Button
         icon={ReplyAllIcon}

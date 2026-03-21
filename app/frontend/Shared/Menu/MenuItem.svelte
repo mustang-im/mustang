@@ -60,7 +60,8 @@
 
   let onMenuClose = getContext("onMenuClose") as () => void;
   async function myOnClick(event: Event) {
-    if (!(onClick && typeof(onClick) == "function")) {
+    if (!(onClick && typeof(onClick) == "function") ||
+        disabled) {
       return;
     }
     event.stopPropagation();

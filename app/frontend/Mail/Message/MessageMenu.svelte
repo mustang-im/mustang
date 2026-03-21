@@ -7,7 +7,7 @@
   onClick={replyAll}
   label={$t`Reply to all`}
   tooltip={$t`Reply to all recipients of this message`}
-  disabled={recipients.length <= 1 || message.bcc.hasItems}
+  disabled={recipients.length <= 1 || message.bcc.hasItems && !message.outgoing}
   icon={ReplyAllIcon} />
 <MenuItem
   onClick={forward}
