@@ -109,7 +109,7 @@
         </MailAutocomplete>
       {/if}
     </grid>
-    {#if fromIdentity?.encryptionPrivateKeys?.hasItems}
+    {#if $mail.shouldEncrypt}
       <EncryptionDetails {mail} identity={fromIdentity} />
     {/if}
     <HTMLEditorToolbar {editor}>

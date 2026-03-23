@@ -9,6 +9,14 @@
             label={$t`Query key servers`}
             icon={QueryServerIcon}
             onClick={onQueryKeyServer}
+            classes="key-server"
+            />
+          <Button
+            label={$t`Import…`}
+            icon={ImportIcon}
+            onClick={() => showImport = !showImport}
+            classes="import"
+            selected={showImport}
             />
           <Button
             label={$t`Remove recipients`}
@@ -21,14 +29,29 @@
         {#each $recipientsWithoutKeys.each as recipient}
           <vbox class="recipient box">
             <hbox class="first-row">
-              <Recipient {recipient} />
-              <Button
-                label={$t`Remove`}
-                icon={RemoveOneIcon}
-                onClick={() => onRemoveOne(recipient)}
-                />
+              <vbox>
+                <Recipient {recipient} />
+                <hbox class="email-address font-smallest">{recipient.emailAddress}</hbox>
+              </vbox>
+              <hbox class="buttons">
+                <Button
+                  label={$t`Remove`}
+                  icon={RemoveOneIcon}
+                  onClick={() => onRemoveOne(recipient)}
+                  />
+                <RoundButton
+                  label={$t`Import`}
+                  icon={showImport ? ChevronUp : ChevronDown}
+                  onClick={() => showImport = !showImport}
+                  border={false}
+                  classes="plain"
+                  padding="4px"
+                  />
+              </hbox>
             </hbox>
-            <EncryptionImport person={recipient.createPerson(appGlobal.collectedAddressbook)} isOpen={true} />
+            {#if showImport}
+              <EncryptionImport person={recipient.createPerson(appGlobal.collectedAddressbook)} isOpen={true} />
+            {/if}
           </vbox>
         {/each}
       </hbox>
@@ -44,18 +67,27 @@
   import EncryptionImport from "../../Contacts/PersonPage/EncryptionImport.svelte";
   import Recipient from "../Message/Recipient.svelte";
   import Button from "../../Shared/Button.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import QueryServerIcon from "lucide-svelte/icons/cloud-download";
+  import ImportIcon from "lucide-svelte/icons/file-lock";
   import RemoveAllIcon from "lucide-svelte/icons/trash-2";
   import RemoveOneIcon from "lucide-svelte/icons/trash-2";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import ChevronUp from "lucide-svelte/icons/chevron-up";
   import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
 
+  let showImport = false;
+
   $: privateKeys = identity.encryptionPrivateKeys;
-  let allRecipients = mail.to.concat(mail.cc).concat(mail.bcc);
-  // TODO Observer `encryptionPublicKeys`
-  let recipientsWithoutKeys = $allRecipients.filterObservable(p => !p.findPerson()?.encryptionPublicKeys.find(key => key.system == mail.system));
+  $: to = $mail.to;
+  $: cc = $mail.cc;
+  $: bcc = $mail.bcc;
+  $: allRecipients = $to.concat($cc).concat($bcc);
+  // TODO Observe `encryptionPublicKeys`
+  $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !p.findPerson()?.encryptionPublicKeys.find(key => key.system == mail.system));
 
   $: console.log("all", $allRecipients.contents.join(", "), $allRecipients.contents, "without keys", $recipientsWithoutKeys.contents);
 
@@ -92,15 +124,28 @@
   .all {
     flex-wrap: wrap;
     align-items: center;
+    row-gap: 6px;
   }
   .recipients {
     flex-wrap: wrap;
-    gap: 8px;
+    column-gap: 8px;
     margin-block-end: 16px;
+    max-height: 140px; /* A little more than one row, so that the user can see that there is more. */
+    overflow-y: scroll;
+  }
+  .recipient {
+    padding-block: 4px;
+    padding-inline-start: 16px;
+    padding-inline-end: 6px;
+  }
+  .recipient .email-address {
+    opacity: 70%;
   }
   .recipient :global(.key-import) {
     box-shadow: none;
     margin-block-end: -4px;
+    padding-inline-start: 0px;
+    padding-block: 4px;
   }
   .recipient :global(.button.close),
   .recipient :global(.button.keyserver) {
@@ -109,12 +154,13 @@
   .recipient .first-row {
     align-items: center;
     gap: 16px;
-    margin-block-start: 8px;
-    margin-inline-start: 16px;
   }
   .buttons {
     align-items: baseline;
     justify-items: end;
     gap: 12px;
+  }
+  .no-keys :global(.button svg) {
+    stroke-width: 1.2px;
   }
 </style>
