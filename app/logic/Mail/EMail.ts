@@ -23,6 +23,7 @@ import { notifyChangedProperty } from "../util/Observable";
 import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
+import type { EncryptionSystem } from "./Encryption/PublicKey";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -82,6 +83,8 @@ export class EMail extends Message {
   /** For composer only. Optional. */
   identity: MailIdentity;
 
+  /** PGP or S/MIME or none */
+  system: EncryptionSystem | null = null;
   /** For composer/send only: This email should be end-to-end encrypted. */
   @notifyChangedProperty
   shouldEncrypt = false;

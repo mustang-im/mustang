@@ -6,11 +6,13 @@
         label={$t`Key server`}
         icon={CloudIcon}
         onClick={onQueryKeyserver}
+        classes="keyserver"
         />
       <Button
         label={$t`File`}
         icon={FileIcon}
         onClick={onImportFile}
+        classes="import-file"
         />
       <hbox class="spacer" />
       <RoundButton

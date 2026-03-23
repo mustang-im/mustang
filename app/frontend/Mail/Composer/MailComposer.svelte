@@ -109,6 +109,9 @@
         </MailAutocomplete>
       {/if}
     </grid>
+    {#if fromIdentity?.encryptionPrivateKeys?.hasItems}
+      <EncryptionDetails {mail} identity={fromIdentity} />
+    {/if}
     <HTMLEditorToolbar {editor}>
       <Button
         label={$t`Spell check`}
@@ -198,6 +201,7 @@
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
