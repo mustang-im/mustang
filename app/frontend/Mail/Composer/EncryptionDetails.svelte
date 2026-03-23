@@ -82,9 +82,9 @@
   let showImport = false;
 
   $: privateKeys = identity.encryptionPrivateKeys;
-  $: to = $mail.to;
-  $: cc = $mail.cc;
-  $: bcc = $mail.bcc;
+  $: to = mail.to;
+  $: cc = mail.cc;
+  $: bcc = mail.bcc;
   $: allRecipients = $to.concat($cc).concat($bcc);
   // TODO Observe `encryptionPublicKeys`
   $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !p.findPerson()?.encryptionPublicKeys.find(key => key.system == mail.system));

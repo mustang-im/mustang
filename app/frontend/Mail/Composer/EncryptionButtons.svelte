@@ -69,20 +69,22 @@
   import { showError } from "../../Util/error";
   import { assert, UserError } from "../../../logic/util/util";
   import { t, gt } from "../../../l10n/l10n";
-  import { mergeColls, type Collection } from "svelte-collections";
+  import type { Collection } from "svelte-collections";
 
   export let mail: EMail;
   export let identity: MailIdentity;
 
   $: privateKeys = identity.encryptionPrivateKeys;
-  $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity)?.id ? null : gt`No secret keys enabled for signing`;
-  $: allRecipients = mail.to.concat(mail.cc);
-  $: allRecipientsKeys = mergeColls($allRecipients.map(p => p.findPerson()?.encryptionPublicKeys));
+  $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity) ? null : gt`No secret keys enabled for signing`;
+  $: to = mail.to;
+  $: cc = mail.cc;
+  $: allRecipients = $to.concat($cc);
+  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson()));
   $: trustLevel = mail.shouldEncrypt ? lowestTrust($allRecipientsKeys) : TrustLevel.Personal;
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
-    : $allRecipients.hasItems && ($allRecipientsKeys.isEmpty || $mail.allRecipients().find(puid => !getPublicKeyForPerson(puid.findPerson())))
+    : $allRecipients.hasItems && ($allRecipientsKeys.isEmpty || $allRecipients.find(puid => !getPublicKeyForPerson(puid.findPerson())))
       ? gt`One of the recipients is lacking the certificate for encryption`
       : null;
 

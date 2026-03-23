@@ -28,7 +28,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
-  import { getPublicKeyForID } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import EncryptionKey from "../../Contacts/PersonPage/EncryptionKey.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignedIcon from "lucide-svelte/icons/signature";
@@ -40,7 +40,7 @@
   /** out */
   export let isExpanded = false;
 
-  $: signingKey = getPublicKeyForID($message.signed);
+  $: signingKey = getPublicKeyByKeyID($message.signed);
   $: signed = $message.signed && $signingKey?.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";

@@ -8,7 +8,7 @@ import { gt } from "../../../l10n/l10n";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 
-export function getPublicKeyForID(id: string | null): PublicKey | null {
+export function getPublicKeyByKeyID(id: string | null): PublicKey | null {
   if (!id) {
     return null;
   }

@@ -1,5 +1,7 @@
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import { EncryptionSystem } from "./PublicKey";
+import { getMyPrivateKey, getPublicKeyForPerson } from "./KeyUtils";
 import { PGPSend } from "./PGP/PGPSend";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
@@ -27,28 +29,24 @@ export class SendEncrypted {
     if (mail.shouldEncrypt) {
       assert(mail.bcc.isEmpty, "Cannot encrypt with BCC recipients"); // TODO send BCC as separate email
       // If the user wants encryption, then use all applicable keys. `encryptByDefault` is only for the default.
-      let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(privateKey => !privateKey.obsolete);
-      assert(privateKeys.hasItems, gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
+      // TODO Use `mail.encryptionSystem` variable to determine how to encrypt
+      let privateKey = getMyPrivateKey(mail.identity);
+      assert(privateKey, gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
       let recipients = new ArrayColl<PersonUID>(mail.allRecipients());
-      if (privateKeys.find(privateKey => privateKey instanceof PGPPrivateKey) &&
-          recipients.every(puid =>
-            puid.findPerson()?.encryptionPublicKeys.some(key =>
-              key instanceof PGPPublicKey && !key.obsolete))) {
+      if (getMyPrivateKey(mail.identity, PGPPrivateKey) &&
+          recipients.every(puid => getPublicKeyForPerson(puid.findPerson(), PGPPublicKey))) {
         return await PGPSend.encryptAndSign(mail);
-      } else if (privateKeys.find(privateKey => privateKey instanceof SMIMEPrivateKey) &&
-          recipients.every(puid =>
-            puid.findPerson()?.encryptionPublicKeys.some(key =>
-              key instanceof SMIMEPublicKey && !key.obsolete))) {
+      } else if (getMyPrivateKey(mail.identity, SMIMEPrivateKey) &&
+          recipients.every(puid => getPublicKeyForPerson(puid.findPerson(), SMIMEPublicKey))) {
         return await SMIMESend.encryptAndSign(mail);
       } else {
         throw new UserError(gt`Cannot encrypt to all recipients using PGP or S/MIME`);
       }
     } else if (mail.signed) {
-      let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(privateKey => !privateKey.obsolete);
-      if (privateKeys.find(privateKey => privateKey instanceof PGPPrivateKey && privateKey.useToSign)) {
+      if (getMyPrivateKey(mail.identity, PGPPrivateKey)?.useToSign) {
         return await PGPSend.encryptAndSign(mail);
-      } else if (privateKeys.find(privateKey => privateKey instanceof SMIMEPrivateKey && privateKey.useToSign)) {
-        return await SMIMESend.encryptAsNeeded(mail);
+      } else if (getMyPrivateKey(mail.identity, SMIMEPrivateKey)?.useToSign) {
+        return await SMIMESend.encryptAndSign(mail);
       } else {
         throw new UserError(gt`Please first set up encryption and create a signing key for yourself, in Settings | Mail | Identity | Encryption`);
       }

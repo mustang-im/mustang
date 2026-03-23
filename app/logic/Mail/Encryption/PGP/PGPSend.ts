@@ -1,5 +1,6 @@
 import { SendEncrypted } from "../SendEncrypted";
 import type { EMail } from "../../EMail";
+import { getPublicKeyForPerson } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
@@ -31,8 +32,7 @@ export class PGPSend {
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
-        puid.findPerson()?.encryptionPublicKeys.contents.filter(key =>
-          key instanceof PGPPublicKey && !key.obsolete) as PGPPublicKey[]);
+        getPublicKeyForPerson(puid.findPerson(), PGPPublicKey));
       let recipientOpenPGPKeys: OpenPGP.PublicKey[] = [];
       for (let recipientKey of recipientKeys) {
         recipientOpenPGPKeys.push(await recipientKey.openPGPPublicKey(openPGP));
