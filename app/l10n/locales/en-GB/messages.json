@@ -1067,5 +1067,10 @@
   "alq0xX": "This ensures that only the recipients can read the email",
   "s9kL8S": "This proves that I wrote this email",
   "ELjIL8": "Expired",
-  "5WCjPP": "Expires"
+  "5WCjPP": "Expires",
+  "l3s5ri": "Import",
+  "Sjnlwj": "Import…",
+  "eBWa/n": "Query key servers",
+  "R643XQ": "Remove recipients",
+  "l7UKoO": "To encrypt this message, add certificates for the following recipients"
 }
