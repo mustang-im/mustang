@@ -91,7 +91,7 @@
   // TODO Observe `encryptionPublicKeys`
   $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPerson(p.findPerson()));
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems
-    ? gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
+    ? $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   $: console.log("all", $allRecipients.contents.join(", "), $allRecipients.contents, "without keys", $recipientsWithoutKeys.contents);
 

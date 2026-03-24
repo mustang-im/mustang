@@ -33,7 +33,7 @@ export class JSONEMail {
     json.plaintext = email.rawText;
     json.html = email.rawHTMLDangerous;
 
-    json.signed = email.signed;
+    json.signedPublicKeyID = email.signed;
     json.wasEncrypted = email.wasEncrypted;
     json.mustEncrypt = email.mustEncrypt;
     json.shouldEncrypt = email.shouldEncrypt;
