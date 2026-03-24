@@ -40,7 +40,6 @@
        <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
     * Composer
       * No keys
-        * Shows recipients that do have keys
         * Enable "Encrypt" menu option
       * Dropdown for PGP vs. S/MIME
     * Msg reader

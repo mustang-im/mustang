@@ -61,6 +61,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
   import { queryPGPKeyServersForUID } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { appGlobal } from "../../../logic/app";
   import EncryptionImport from "../../Contacts/PersonPage/EncryptionImport.svelte";
@@ -88,7 +89,7 @@
   $: bcc = mail.bcc;
   $: allRecipients = $to.concat($cc).concat($bcc);
   // TODO Observe `encryptionPublicKeys`
-  $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !p.findPerson()?.encryptionPublicKeys.find(key => key.system == mail.system));
+  $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPerson(p.findPerson()));
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems
     ? gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
