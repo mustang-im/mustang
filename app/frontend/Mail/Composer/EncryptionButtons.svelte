@@ -84,9 +84,7 @@
   $: encryptDisabledReason =
     $mail.mustEncrypt
     ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
-    : $allRecipients.hasItems && ($allRecipientsKeys.isEmpty || $allRecipients.find(puid => !getPublicKeyForPerson(puid.findPerson())))
-      ? gt`One of the recipients is lacking the certificate for encryption`
-      : null;
+    : null; // Enable even if some recipients don't have public keys. Our UI warns and allows to resolve it.
 
   let isMenuOpen = false;
 

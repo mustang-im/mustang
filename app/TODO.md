@@ -39,8 +39,6 @@
     * Send and read: Protected headers in encrypted emails
        <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
     * Composer
-      * No keys
-        * Enable "Encrypt" menu option
       * Dropdown for PGP vs. S/MIME
     * Msg reader
       * Expander scrollable, maybe whole header
