@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Import...",
   "eBWa/n": "Spør etter nøkkelservere",
   "R643XQ": "Fjern mottakere",
-  "l7UKoO": "For å kryptere denne meldingen må du legge til sertifikater for følgende mottakere"
+  "l7UKoO": "For å kryptere denne meldingen må du legge til sertifikater for følgende mottakere",
+  "fiB66J": "Noen mottakere mangler sertifikater for kryptering. Legg til sertifikater for dem, fjern dem, eller deaktiver kryptering."
 }

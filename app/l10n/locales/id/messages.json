@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Impor...",
   "eBWa/n": "Server kunci kueri",
   "R643XQ": "Menghapus penerima",
-  "l7UKoO": "Untuk mengenkripsi pesan ini, tambahkan sertifikat untuk penerima berikut"
+  "l7UKoO": "Untuk mengenkripsi pesan ini, tambahkan sertifikat untuk penerima berikut",
+  "fiB66J": "Beberapa penerima tidak memiliki sertifikat untuk enkripsi.\\nApakah menambahkan sertifikat untuk mereka, menghapusnya, atau menonaktifkan enkripsi."
 }

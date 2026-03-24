@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Import...",
   "eBWa/n": "Dotazování klíčových serverů",
   "R643XQ": "Odstranění příjemců",
-  "l7UKoO": "Chcete-li tuto zprávu zašifrovat, přidejte certifikáty pro následující příjemce."
+  "l7UKoO": "Chcete-li tuto zprávu zašifrovat, přidejte certifikáty pro následující příjemce.",
+  "fiB66J": "Některým příjemcům chybí certifikáty pro šifrování.\\nPřidejte pro ně certifikáty, odeberte je nebo šifrování zakažte."
 }

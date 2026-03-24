@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Import...",
   "eBWa/n": "Interogarea serverelor de chei",
   "R643XQ": "Eliminarea destinatarilor",
-  "l7UKoO": "Pentru a cripta acest mesaj, adăugați certificate pentru următorii destinatari"
+  "l7UKoO": "Pentru a cripta acest mesaj, adăugați certificate pentru următorii destinatari",
+  "fiB66J": "Unii destinatari nu au certificate pentru criptare.\\nAdăugați certificate pentru aceștia, eliminați-le sau dezactivați criptarea."
 }

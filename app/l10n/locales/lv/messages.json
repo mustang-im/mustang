@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Importēt...",
   "eBWa/n": "Pieprasīt atslēgu serverus",
   "R643XQ": "Saņēmēju noņemšana",
-  "l7UKoO": "Lai šifrētu šo ziņojumu, pievienojiet sertifikātus šādiem saņēmējiem."
+  "l7UKoO": "Lai šifrētu šo ziņojumu, pievienojiet sertifikātus šādiem saņēmējiem.",
+  "fiB66J": "Dažiem saņēmējiem trūkst šifrēšanas sertifikātu.\\nIr pievienojiet tiem sertifikātus, noņemiet tos vai atspējojiet šifrēšanu."
 }

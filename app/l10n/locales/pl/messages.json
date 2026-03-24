@@ -1072,5 +1072,6 @@
   "Sjnlwj": "Import...",
   "eBWa/n": "Serwery zapytań o klucze",
   "R643XQ": "Usuń odbiorców",
-  "l7UKoO": "Aby zaszyfrować tę wiadomość, należy dodać certyfikaty dla następujących odbiorców"
+  "l7UKoO": "Aby zaszyfrować tę wiadomość, należy dodać certyfikaty dla następujących odbiorców",
+  "fiB66J": "Niektórym odbiorcom brakuje certyfikatów szyfrowania. Dodaj dla nich certyfikaty, usuń je lub wyłącz szyfrowanie."
 }
