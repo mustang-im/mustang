@@ -1,62 +1,60 @@
-{#if $privateKeys.hasItems}
-  {#if $recipientsWithoutKeys.hasItems}
-    <vbox class="no-keys">
-      <hbox class="all box">
-        <div class="explanation">{$t`To encrypt this message, add certificates for the following recipients`}</div>
-        <hbox flex />
-        <hbox class="buttons">
-          <Button
-            label={$t`Query key servers`}
-            icon={QueryServerIcon}
-            onClick={onQueryKeyServer}
-            classes="key-server"
-            />
-          <Button
-            label={$t`Import…`}
-            icon={ImportIcon}
-            onClick={() => showImport = !showImport}
-            classes="import"
-            selected={showImport}
-            />
-          <Button
-            label={$t`Remove recipients`}
-            icon={RemoveAllIcon}
-            onClick={onRemoveAll}
-            />
-        </hbox>
+{#if $recipientsWithoutKeys.hasItems}
+  <vbox class="no-keys">
+    <hbox class="all box">
+      <div class="explanation">{$t`To encrypt this message, add certificates for the following recipients`}</div>
+      <hbox flex />
+      <hbox class="buttons">
+        <Button
+          label={$t`Query key servers`}
+          icon={QueryServerIcon}
+          onClick={onQueryKeyServer}
+          classes="key-server"
+          />
+        <Button
+          label={$t`Import…`}
+          icon={ImportIcon}
+          onClick={() => showImport = !showImport}
+          classes="import"
+          selected={showImport}
+          />
+        <Button
+          label={$t`Remove recipients`}
+          icon={RemoveAllIcon}
+          onClick={onRemoveAll}
+          />
       </hbox>
-      <hbox class="recipients">
-        {#each $recipientsWithoutKeys.each as recipient}
-          <vbox class="recipient box">
-            <hbox class="first-row">
-              <vbox>
-                <Recipient {recipient} />
-                <hbox class="email-address font-smallest">{recipient.emailAddress}</hbox>
-              </vbox>
-              <hbox class="buttons">
-                <Button
-                  label={$t`Remove`}
-                  icon={RemoveOneIcon}
-                  onClick={() => onRemoveOne(recipient)}
-                  />
-                <RoundButton
-                  label={$t`Import`}
-                  icon={showImport ? ChevronUp : ChevronDown}
-                  onClick={() => showImport = !showImport}
-                  border={false}
-                  classes="plain"
-                  padding="4px"
-                  />
-              </hbox>
+    </hbox>
+    <hbox class="recipients">
+      {#each $recipientsWithoutKeys.each as recipient}
+        <vbox class="recipient box">
+          <hbox class="first-row">
+            <vbox>
+              <Recipient {recipient} />
+              <hbox class="email-address font-smallest">{recipient.emailAddress}</hbox>
+            </vbox>
+            <hbox class="buttons">
+              <Button
+                label={$t`Remove`}
+                icon={RemoveOneIcon}
+                onClick={() => onRemoveOne(recipient)}
+                />
+              <RoundButton
+                label={$t`Import`}
+                icon={showImport ? ChevronUp : ChevronDown}
+                onClick={() => showImport = !showImport}
+                border={false}
+                classes="plain"
+                padding="4px"
+                />
             </hbox>
-            {#if showImport}
-              <EncryptionImport person={recipient.createPerson(appGlobal.collectedAddressbook)} isOpen={true} />
-            {/if}
-          </vbox>
-        {/each}
-      </hbox>
-    </vbox>
-  {/if}
+          </hbox>
+          {#if showImport}
+            <EncryptionImport person={recipient.createPerson(appGlobal.collectedAddressbook)} isOpen={true} />
+          {/if}
+        </vbox>
+      {/each}
+    </hbox>
+  </vbox>
 {/if}
 
 <script lang="ts">
