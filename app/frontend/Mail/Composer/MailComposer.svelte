@@ -41,7 +41,7 @@
           iconSize="20px"
           padding="6px"
           filled
-          disabled={!mail.subject || $to.isEmpty}
+          disabled={!!sendDisabledTooltip}
           onClick={onSend}
           tabindex={2}
           />
@@ -53,7 +53,7 @@
           iconSize="18px"
           onClick={onSend}
           classes="filled"
-          disabled={!mail.subject || $to.isEmpty}
+          disabled={!!sendDisabledTooltip}
           />
         -->
       </hbox>
@@ -62,7 +62,7 @@
       <hbox>
         {#if showCC || showBCC}
           <hbox class="label">
-              {$t`To`}
+            {$t`To`}
           </hbox>
         {/if}
       </hbox>
@@ -110,7 +110,7 @@
       {/if}
     </grid>
     {#if $mail.shouldEncrypt}
-      <EncryptionDetails {mail} identity={fromIdentity} />
+      <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
     {/if}
     <HTMLEditorToolbar {editor}>
       <Button
@@ -228,6 +228,7 @@
   $: to = mail.to;
   let fromIdentity: MailIdentity;
   let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
+  let encryptionError: string | null = null;
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>
@@ -341,7 +342,9 @@
 
   $: sendDisabledTooltip =
     !mail.subject ? $t`Please enter a subject` :
-    $to.isEmpty ? $t`Please add some recipients` : null;
+    $to.isEmpty ? $t`Please add some recipients` :
+    encryptionError ??
+    null;
 
   async function onSend() {
     mail.text = null;

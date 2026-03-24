@@ -75,20 +75,24 @@
   import RemoveOneIcon from "lucide-svelte/icons/trash-2";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
+  /** If the email cannot be sent, gives an error message.
+   * out only */
+  export let encryptionError: string | null = null;
 
   let showImport = false;
 
-  $: privateKeys = identity.encryptionPrivateKeys;
   $: to = mail.to;
   $: cc = mail.cc;
   $: bcc = mail.bcc;
   $: allRecipients = $to.concat($cc).concat($bcc);
   // TODO Observe `encryptionPublicKeys`
   $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !p.findPerson()?.encryptionPublicKeys.find(key => key.system == mail.system));
+  $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems
+    ? gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   $: console.log("all", $allRecipients.contents.join(", "), $allRecipients.contents, "without keys", $recipientsWithoutKeys.contents);
 
