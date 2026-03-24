@@ -66,7 +66,7 @@ export class OWAEMail extends EMail {
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = sanitize.integer(ExchangeScheduling[json.ItemClass], InvitationMessage.None);
+    this.invitationMessage = ExchangeScheduling[sanitize.string(json.ItemClass)] || InvitationMessage.None;
   }
 
   setFlags(json: Record<string, any>) {
