@@ -61,6 +61,7 @@ export class PGPSend {
     } else {
       throw new NotReached();
     }
+    result.signed = privateKey.id;
     return result;
   }
 
