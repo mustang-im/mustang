@@ -79,7 +79,7 @@
   $: to = mail.to;
   $: cc = mail.cc;
   $: allRecipients = $to.concat($cc);
-  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson()));
+  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson())).filterOnce(Boolean);
   $: trustLevel = mail.shouldEncrypt ? lowestTrust($allRecipientsKeys) : TrustLevel.Personal;
   $: encryptDisabledReason =
     $mail.mustEncrypt

@@ -63,6 +63,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { queryPGPKeyServersForUID } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { appGlobal } from "../../../logic/app";
   import EncryptionImport from "../../Contacts/PersonPage/EncryptionImport.svelte";
   import Recipient from "../Message/Recipient.svelte";
@@ -93,10 +94,8 @@
 
   async function onQueryKeyServer() {
     await Promise.all(recipientsWithoutKeys.contents.map(recipient =>
-      queryKeyServerPGP(recipient)));
-  }
-
-  async function queryKeyServerPGP(recipient: PersonUID) {
+      queryPGPKeyServersForUID(recipient)));
+    allRecipients = allRecipients; // because we don't observe `encryptionPublicKeys`
   }
 
   function onRemoveAll() {

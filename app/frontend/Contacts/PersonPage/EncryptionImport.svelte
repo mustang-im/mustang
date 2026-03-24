@@ -25,6 +25,7 @@
         />
     </hbox>
   </hbox>
+  <ErrorMessageInline {ex} />
 </vbox>
 
 <FileSelector {acceptFileTypes} bind:this={fileSelector} />
@@ -33,16 +34,17 @@
   import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
   import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
-  import { Person } from "../../../logic/Abstract/Person";
+  import { queryPGPKeyServersForPerson } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
+  import type { Person } from "../../../logic/Abstract/Person";
   import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import CloudIcon from "lucide-svelte/icons/cloud-download";
   import FileIcon from "lucide-svelte/icons/file-lock";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { t } from "../../../l10n/l10n";
-  import { NotImplemented } from "../../../logic/util/util";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let person: Person;
   /** in/out */
@@ -62,9 +64,15 @@
     await person.save();
   }
 
+  let ex: Error | null = null;
+
   async function onQueryKeyserver() {
-    throw new NotImplemented();
-    isOpen = false;
+    isOpen = !await queryPGPKeyServersForPerson(person);
+
+    if (isOpen) {
+      ex = new Error(gt`Not found`);
+      setTimeout(() => ex = null, 2000);
+    }
   }
 
   function makeFakeKey(): PublicKey {

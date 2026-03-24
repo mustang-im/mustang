@@ -33,6 +33,19 @@
     * Calendar: Recurrence
   * Graph Calendar and Contacts
   * PGP
+    * EMail: Save encryption status in JSON
+    * Data: Move to ContactEntry
+    * Data: Move EMail properties into class
+    * Send and read: Protected headers in encrypted emails
+       <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
+    * Composer
+      * No keys
+        * Disable Save button
+        * Shows recipients that do have keys
+        * Enable "Encrypt" menu option
+      * Dropdown for PGP vs. S/MIME
+    * Msg reader
+      * Expander scrollable, maybe whole header
   * SML
     * Purchase
     * Poll

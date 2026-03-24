@@ -1,12 +1,13 @@
 import type { PublicKey } from "./PublicKey";
 import type { PrivateKey } from "./PrivateKey";
 import type { Person } from "../../Abstract/Person";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
+import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { findAllIdentities, type MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
 import { UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
-import { PGPPublicKey } from "./PGP/PGPPublicKey";
 
 export function getPublicKeyByKeyID(id: string | null): PublicKey | null {
   if (!id) {
@@ -67,6 +68,15 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
   } else if (fileContent.includes("-----BEGIN PUBLIC KEY BLOCK-----")) {
   }
   throw new UserError(gt`Could not find a key in this file`);
+}
+
+export function addPublicKeyToPersonUID(uid: PersonUID, key: PublicKey) {
+  let person = uid.createPerson(appGlobal.collectedAddressbook);
+  assert(person, "Need person");
+  if (person.encryptionPublicKeys.find(key => key.id == key.id)) {
+    return;
+  }
+  person.encryptionPublicKeys.add(key);
 }
 
 

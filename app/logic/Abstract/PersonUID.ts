@@ -26,6 +26,13 @@ export class PersonUID extends Observable {
     return puid;
   }
 
+  /** from `Person.emailAddresses` */
+  static fromContactEntry(person: Person, entry: ContactEntry) {
+    let puid = new PersonUID(entry.value, person.name);
+    puid.person = person;
+    return puid;
+  }
+
   findPerson() {
     if (this.person) {
       return this.person;
