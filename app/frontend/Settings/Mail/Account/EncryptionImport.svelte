@@ -1,37 +1,68 @@
 <vbox class="key-import">
-  <hbox class="import">
-    <hbox class="label">{$t`Import from`}</hbox>
-    <hbox class="buttons">
-      <hbox bind:this={appsButton}>
-        <Button
-          label={$t`App`}
-          icon={AppIcon}
-          onClick={onImportFromApps}
+  {#if showPassword}
+    <hbox flex>
+      <hbox class="password">
+        <vbox>
+          <hbox class="label">
+            {$t`Passphrase for secret key file`}
+          </hbox>
+          <input type="password" bind:value={passphrase} />
+        </vbox>
+        <hbox class="buttons">
+          <Button
+            label={$t`Import`}
+            onClick={onFilePassword}
+            classes="password-ok"
+            />
+        </hbox>
+      </hbox>
+      <hbox flex />
+      <hbox class="buttons">
+        <RoundButton
+          label={$t`Close`}
+          icon={CloseIcon}
+          onClick={() => isOpen = false}
+          border={false}
+          classes="plain close"
+          padding="4px"
           />
       </hbox>
+    </hbox>
+  {:else}
+    <hbox class="import">
+      <hbox class="label">{$t`Import from`}</hbox>
+      <hbox class="buttons">
+        <hbox bind:this={appsButton}>
+          <Button
+            label={$t`App`}
+            icon={AppIcon}
+            onClick={onImportFromApps}
+            />
+        </hbox>
+        <Button
+          label={$t`File`}
+          icon={FileIcon}
+          onClick={() => showPassword = true}
+          />
+        <hbox class="spacer" />
+        <RoundButton
+          label={$t`Close`}
+          icon={CloseIcon}
+          onClick={() => isOpen = false}
+          border={false}
+          classes="plain close"
+          padding="4px"
+          />
+      </hbox>
+    </hbox>
+    <hbox class="create buttons">
       <Button
-        label={$t`File`}
-        icon={FileIcon}
-        onClick={onImportFile}
-        />
-      <hbox class="spacer" />
-      <RoundButton
-        label={$t`Close`}
-        icon={CloseIcon}
-        onClick={() => isOpen = false}
-        border={false}
-        classes="plain close"
-        padding="4px"
+        label={$t`Create new`}
+        icon={PlusIcon}
+        onClick={onCreateNew}
         />
     </hbox>
-  </hbox>
-  <hbox class="create buttons">
-    <Button
-      label={$t`Create new`}
-      icon={PlusIcon}
-      onClick={onCreateNew}
-      />
-  </hbox>
+  {/if}
 </vbox>
 
 <FileSelector {acceptFileTypes} bind:this={fileSelector} />
@@ -65,15 +96,21 @@
   /** in/out */
   export let isOpen: boolean;
 
+  let showPassword = false;
+  let passphrase: string;
+  async function onFilePassword() {
+    await onImportFile(passphrase);
+    showPassword = false;
+  }
+
   let fileSelector: FileSelector;
   const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", "text/plain" ];
-  async function onImportFile() {
+  async function onImportFile(passphrase: string) {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
     let fileContent = await file.text();
-    let passphrase = null; // prompt(gt`Passphrase for this file`); TODO
     let key = await importPrivateKey(fileContent, passphrase);
     identity.encryptionPrivateKeys.add(key);
     isOpen = false;
@@ -141,6 +178,14 @@
   }
   .label {
     margin-inline-end: 12px;
+  }
+  .password {
+    align-items: baseline;
+  }
+  .password .buttons {
+    align-self: end;
+    min-width: max-content;
+    margin-inline-start: 24px;
   }
   .buttons {
     gap: 8px;

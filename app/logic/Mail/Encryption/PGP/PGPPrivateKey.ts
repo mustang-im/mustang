@@ -90,11 +90,13 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     const openPGP = await import("openpgp");
     let key = new PGPPrivateKey();
     key.privateKeyArmored = armoredPrivateKey;
+    key.passphrase = passphrase;
     let pr = await openPGP.readPrivateKey({ armoredKey: armoredPrivateKey });
     if (passphrase) {
       pr = await openPGP.decryptKey({ privateKey: pr, passphrase: passphrase });
     }
     await key.readFromOpenPGPKey(pr);
+    key.publicKeyArmored = pr.toPublic().armor();
     key.justCreated = true;
     return key;
   }

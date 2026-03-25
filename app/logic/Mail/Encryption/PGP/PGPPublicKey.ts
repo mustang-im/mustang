@@ -12,6 +12,10 @@ export class PGPPublicKey extends PublicKey {
   declare publicKeyArmored: string;
   protected _openPGPPublicKey: OpenPGP.PublicKey | null = null; // cache only
 
+  constructor() {
+    super(EncryptionSystem.PGP);
+  }
+
   async openPGPPublicKey(openPGP?: OpenPGPModule): Promise<OpenPGP.PublicKey> {
     if (this._openPGPPublicKey) {
       return this._openPGPPublicKey;
