@@ -1,6 +1,7 @@
 import { PersonUID } from "../../../Abstract/PersonUID";
 import type { Person } from "../../../Abstract/Person";
 import { PGPPublicKey } from "./PGPPublicKey";
+import { TrustLevel } from "../PublicKey";
 import { addArmorHeader, addPublicKeyToPersonUID } from "../KeyUtils";
 import { getDomainForEmailAddress } from "../../../util/netUtil";
 import { PriorityAbortable } from "../../../util/flow/Abortable";
@@ -24,6 +25,9 @@ export async function queryPGPKeyServersForUID(uid: PersonUID): Promise<boolean>
   if (publicKey.obsolete) {
     return false;
   }
+  // WKD is domain-validated, and keys.openpgp.org verifies email address.
+  // Both match S/MIME Class 1 validation from CAs.
+  publicKey.trustLevel = TrustLevel.ThirdParty;
   addPublicKeyToPersonUID(uid, publicKey);
   await uid.findPerson()?.save();
   return true;
