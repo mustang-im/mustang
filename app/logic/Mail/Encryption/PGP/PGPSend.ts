@@ -1,6 +1,6 @@
 import { SendEncrypted } from "../SendEncrypted";
 import type { EMail } from "../../EMail";
-import { getPublicKeyForPerson } from "../KeyUtils";
+import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
@@ -22,9 +22,8 @@ export class PGPSend {
    *   The original email is untouched.
    */
   static async encryptAndSign(mail: EMail): Promise<EMail> {
-    let privateKeys = mail.identity.encryptionPrivateKeys.filterOnce(key => key instanceof PGPPrivateKey && !key.obsolete);
-    assert(privateKeys.hasItems, gt`Please first set up PGP encryption for yourself, in Settings | Mail | Identity | Encryption`);
-    let privateKey = (privateKeys.find(key => key.useToSign) ?? privateKeys.first) as PGPPrivateKey;
+    let privateKey = getMyPrivateKey(mail.identity, PGPPrivateKey);
+    assert(privateKey, gt`Please first set up PGP encryption for yourself, in Settings | Mail | Identity | Encryption`);
     let result = SendEncrypted.cloneEMail(mail);
     let originalMIME = await CreateMIME.getMIME(mail);
     let openPGP = await import("openpgp");

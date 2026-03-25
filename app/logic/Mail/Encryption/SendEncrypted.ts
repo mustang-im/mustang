@@ -1,6 +1,5 @@
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import { EncryptionSystem } from "./PublicKey";
 import { getMyPrivateKey, getPublicKeyForPerson } from "./KeyUtils";
 import { PGPSend } from "./PGP/PGPSend";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
@@ -26,11 +25,11 @@ export class SendEncrypted {
       assert(mail.shouldEncrypt, "shouldEncrypt must be set whenever mustEncrypt is set");
     }
 
+    // TODO Use `mail.encryptionSystem` variable to determine how to encrypt
+    let privateKey = getMyPrivateKey(mail.identity);
     if (mail.shouldEncrypt) {
       assert(mail.bcc.isEmpty, "Cannot encrypt with BCC recipients"); // TODO send BCC as separate email
       // If the user wants encryption, then use all applicable keys. `encryptByDefault` is only for the default.
-      // TODO Use `mail.encryptionSystem` variable to determine how to encrypt
-      let privateKey = getMyPrivateKey(mail.identity);
       assert(privateKey, gt`Please first set up encryption for yourself, in Settings | Mail | Identity | Encryption`);
       let recipients = new ArrayColl<PersonUID>(mail.allRecipients());
       if (getMyPrivateKey(mail.identity, PGPPrivateKey) &&
@@ -42,10 +41,10 @@ export class SendEncrypted {
       } else {
         throw new UserError(gt`Cannot encrypt to all recipients using PGP or S/MIME`);
       }
-    } else if (mail.signed) {
-      if (getMyPrivateKey(mail.identity, PGPPrivateKey)?.useToSign) {
+    } else if (mail.signed || privateKey?.useToSign) {
+      if (privateKey instanceof PGPPrivateKey) {
         return await PGPSend.encryptAndSign(mail);
-      } else if (getMyPrivateKey(mail.identity, SMIMEPrivateKey)?.useToSign) {
+      } else if (privateKey instanceof SMIMEPrivateKey) {
         return await SMIMESend.encryptAndSign(mail);
       } else {
         throw new UserError(gt`Please first set up encryption and create a signing key for yourself, in Settings | Mail | Identity | Encryption`);
