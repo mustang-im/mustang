@@ -81,7 +81,7 @@ export class EWSEvent extends Event {
     if (xmljs.DueDate) {
       this.endTime = sanitize.date(xmljs.DueDate);
     }
-    this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
+    this.timezone = fromWindowsZone(sanitize.nonemptystring(xmljs.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
@@ -141,7 +141,7 @@ export class EWSEvent extends Event {
     let pattern = xmljs[key];
     let frequency = RecurrenceType[key];
     let interval = sanitize.integer(pattern.Interval, 1);
-    let weekdays = extractWeekdays(pattern.DaysOfWeek);
+    let weekdays = extractWeekdays(sanitize.nonemptystring(pattern.DaysOfWeek, null));
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });

@@ -514,7 +514,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
-    this.subscriptions.push(response.SubscriptionId);
+    this.subscriptions.push(sanitize.nonemptystring(response.SubscriptionId));
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
@@ -594,7 +594,7 @@ export class EWSAccount extends MailAccount {
     }
     for (let folderID of folderIDs) {
       try {
-        let mailFolder = this.folderMap.get(folderID);
+        let mailFolder = this.folderMap.get(sanitize.string(folderID));
         if (mailFolder) {
           await mailFolder.updateChangedMessages();
           continue;
@@ -682,7 +682,7 @@ export class EWSAccount extends MailAccount {
     }
     for (let folder of folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
-        let parent = this.folderMap.get(folder.ParentFolderId.Id);
+        let parent = this.folderMap.get(sanitize.string(folder.ParentFolderId.Id));
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
         let ewsFolder = parentFolders.find(ewsFolder => ewsFolder.id == folder.FolderId.Id) as EWSFolder;
         if (!ewsFolder) {
@@ -912,7 +912,7 @@ export class EWSAccount extends MailAccount {
     };
     try {
       let result = await this.callEWS(request);
-      return result.filter(folder => folder.ResponseClass == "Success").map(folder => getEWSItem(folder.Folders).DistinguishedFolderId);
+      return result.filter(folder => folder.ResponseClass == "Success").map(folder => sanitize.string(getEWSItem(folder.Folders).DistinguishedFolderId));
     } catch (ex) {
       return [];
     }
@@ -961,12 +961,12 @@ export class EWSAccount extends MailAccount {
     let folder = result.Folders.ContactsFolder;
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
     addressbook.initFromMainAccount(this);
-    addressbook.name = `${person.name} ${folder.DisplayName}`;
+    addressbook.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     addressbook.username = person.emailAddress;
-    addressbook.folderID = folder.FolderId.Id;
+    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
-    await this.streamNotifications(folder.FolderId.Id);
+    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
     return addressbook;
   }
 
@@ -993,12 +993,12 @@ export class EWSAccount extends MailAccount {
     let folder = result.Folders.CalendarFolder;
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
-    calendar.name = `${person.name} ${folder.DisplayName}`;
+    calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
-    calendar.folderID = folder.FolderId.Id;
+    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
-    await this.streamNotifications(folder.FolderId.Id);
+    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
     return calendar;
   }
 

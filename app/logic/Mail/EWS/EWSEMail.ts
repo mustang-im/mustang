@@ -86,7 +86,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[xmljs.ItemClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(xmljs.ItemClass, "")] || InvitationMessage.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -106,13 +106,13 @@ export class EWSEMail extends EMail {
       let attachments = ensureArray(xmljs.Attachments.FileAttachment);
       this.attachments.replaceAll(attachments.map(a => {
         let attachment = new Attachment();
-        attachment.filename = a.Name;
-        attachment.mimeType = a.ContentType;
+        attachment.filename = sanitize.nonemptystring(a.Name);
+        attachment.mimeType = sanitize.nonemptystring(a.ContentType);
         attachment.disposition = a.IsInline == "true" ? ContentDisposition.inline : ContentDisposition.attachment;
         if (a.ContentId) {
-          attachment.contentID = a.ContentId;
+          attachment.contentID = sanitize.nonemptystring(a.ContentId);
         }
-        attachment.size = Number(a.Size);
+        attachment.size = sanitize.integer(a.Size);
         return attachment;
       }));
     }
@@ -125,7 +125,7 @@ export class EWSEMail extends EMail {
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft, false);
-    this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(name)));
+    this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(sanitize.string(name))));
   }
 
   async markRead(read = true) {
