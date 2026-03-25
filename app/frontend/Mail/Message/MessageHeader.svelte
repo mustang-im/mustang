@@ -41,7 +41,9 @@
       </hbox>
     </vbox>
   </hbox>
-  <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
+  {#if isEncryptionExpanded}
+    <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
+  {/if}
   <vbox class="recipients">
     {#if $message.to.hasItems}
       <hbox class="to font-small">
