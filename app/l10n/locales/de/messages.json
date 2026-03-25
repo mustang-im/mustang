@@ -1073,5 +1073,7 @@
   "eBWa/n": "Abfrage von Schlüsselservern",
   "R643XQ": "Empfänger entfernen",
   "l7UKoO": "Um diese Nachricht zu verschlüsseln, fügen Sie Zertifikate für die folgenden Empfänger hinzu",
-  "fiB66J": "Einigen Empfängern fehlen Zertifikate für die Verschlüsselung.\\nFügen Sie entweder Zertifikate für sie hinzu, entfernen Sie sie oder deaktivieren Sie die Verschlüsselung."
+  "fiB66J": "Einigen Empfängern fehlen Zertifikate für die Verschlüsselung.\\nFügen Sie entweder Zertifikate für sie hinzu, entfernen Sie sie oder deaktivieren Sie die Verschlüsselung.",
+  "GZISRB": "Passphrase für geheime Schlüsseldatei",
+  "tQuHhm": "Sie haben diese E-Mail gesendet"
 }

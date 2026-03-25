@@ -1073,5 +1073,7 @@
   "eBWa/n": "Consultar servidores de chaves",
   "R643XQ": "Remover destinatários",
   "l7UKoO": "Para encriptar esta mensagem, adicione certificados para os seguintes destinatários",
-  "fiB66J": "Alguns destinatários não têm certificados para encriptação.\\nAdicione certificados para eles, remova-os ou desactive a encriptação."
+  "fiB66J": "Alguns destinatários não têm certificados para encriptação.\\nAdicione certificados para eles, remova-os ou desactive a encriptação.",
+  "GZISRB": "Frase-chave para o ficheiro de chave secreta",
+  "tQuHhm": "Enviou esta mensagem de correio eletrónico"
 }

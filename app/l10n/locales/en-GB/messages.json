@@ -1073,5 +1073,7 @@
   "eBWa/n": "Query key servers",
   "R643XQ": "Remove recipients",
   "l7UKoO": "To encrypt this message, add certificates for the following recipients",
-  "fiB66J": "Some recipients are missing certificates for encryption.\\nEither add certificates for them, remove them, or disable encryption."
+  "fiB66J": "Some recipients are missing certificates for encryption.\\nEither add certificates for them, remove them, or disable encryption.",
+  "GZISRB": "Passphrase for secret key file",
+  "tQuHhm": "You sent this email"
 }

@@ -1073,5 +1073,7 @@
   "eBWa/n": "Interroger les serveurs de clés",
   "R643XQ": "Supprimer les destinataires",
   "l7UKoO": "Pour crypter ce message, ajoutez des certificats pour les destinataires suivants",
-  "fiB66J": "Certains destinataires n'ont pas de certificats pour le cryptage. Ajoutez des certificats pour eux, supprimez-les ou désactivez le cryptage."
+  "fiB66J": "Certains destinataires n'ont pas de certificats pour le cryptage. Ajoutez des certificats pour eux, supprimez-les ou désactivez le cryptage.",
+  "GZISRB": "Phrase de passe pour le fichier de clés secrètes",
+  "tQuHhm": "Vous avez envoyé ce courriel"
 }
