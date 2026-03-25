@@ -45,6 +45,7 @@
               <input type="radio"
                 value={TrustLevel.ThirdParty}
                 disabled={!key.caName}
+                on:change={onSave}
                 bind:group={key.trustLevel} />
               {`${key.caName} claims that this is correct`}
             </label>
@@ -52,6 +53,7 @@
             <label>
               <input type="radio"
                 value={TrustLevel.Sender}
+                on:change={onSave}
                 bind:group={key.trustLevel} />
               {$t`Not checked`}
             </label>
@@ -59,6 +61,7 @@
           <label>
             <input type="radio"
               value={TrustLevel.Distrusted}
+              on:change={onSave}
               bind:group={key.trustLevel} />
             {$t`This key is bad`}
           </label>
@@ -68,10 +71,11 @@
         <Checkbox toggle
           bind:checked={key.encryptByDefault}
           disabled={$key.trustLevel == TrustLevel.Distrusted}
-          label={$t`Encrypt my emails to ${person.name} with this key`} />
+          on:change={onSave}
+          label={$t`Encrypt my emails to ${personName} with this key`} />
       </hbox>
       <vbox class="verification-code">
-        <hbox title={$t`To communicate securely, you first need to establish that this key really belongs to ${person.name}. Meet or call ${person.name} on a secure channel, and have him read his verification code, and compare that it matches what you see.`}>
+        <hbox title={$t`To communicate securely, you first need to establish that this key really belongs to ${personName}. Meet or call ${personName} on a secure channel, and have him read his verification code, and compare that it matches what you see.`}>
           <hbox class="label">{$t`Verification code`}</hbox>
           <hbox>
             <RoundButton
@@ -85,7 +89,7 @@
         </hbox>
         <hbox>
           <hbox class="label">
-            <hbox class="name-label">{person.name}</hbox>
+            <hbox class="name-label">{personName}</hbox>
           </hbox>
           <vbox class="value">
             <hbox>{key.fingerprintDisplay.substring(0, 24)}</hbox>
@@ -162,7 +166,8 @@
 
 <script lang="ts">
   import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
-  import { Person } from "../../../logic/Abstract/Person";
+  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
   import IdentitySelector from "../../Mail/Composer/IdentitySelector.svelte";
@@ -179,11 +184,13 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
   import { saveBlobAsFile } from "../../Util/util";
-  import { logError } from "../../Util/error";
+  import { logError, showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;
-  export let person: Person;
+  /** If you don't have a `Person` */
+  export let personUID: PersonUID = null;
+  export let person: Person = personUID.findPerson();
   /** short = for message pane, long = in contacts app */
   export let short = false;
   export let showIcon = true;
@@ -191,14 +198,22 @@
 
   $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.encryptByDefault || key.useToSign)));
   $: myIdentity = $allIdentitiesWithKeys.first;
-  $: myPrivateKey = getMyPrivateKey(myIdentity);
-  $: key.trustLevel, key.encryptByDefault, person.save().catch(logError);
+  $: myPrivateKey = myIdentity ? getMyPrivateKey(myIdentity) : null;
+  $: personName = person?.name ?? personUID?.name;
 
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());
   }
+
+  async function onSave() {
+    try {
+      await person.save();
+    } catch (ex) {
+      showError(ex);
+    }
+  }
   async function onDelete() {
-    if (!confirm(`Do you want to delete this public key for ${person.name}? You will not be able to validate emails signed with this key.`)) {
+    if (!confirm(`Do you want to delete this public key for ${personName}? You will not be able to validate emails signed with this key.`)) {
       return;
     }
     person.encryptionPublicKeys.remove(key);

@@ -19,7 +19,7 @@
     {#if signingKey}
       <EncryptionKey short showIcon={false}
         key={signingKey}
-        person={$message.from.findPerson()}
+        personUID={$message.from}
         bind:isExpanded={isExpanded} />
     {/if}
   </vbox>
@@ -35,6 +35,7 @@
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
   import { t } from "../../../l10n/l10n";
+    import { appGlobal } from "../../../logic/app";
 
   export let message: EMail;
   /** out */
@@ -49,10 +50,11 @@
       : signed
         ? $t`Signed`
         : $t`End-to-end-encrypted, but not signed`;
+  $: fromName = $message.from?.findPerson()?.name ?? $message.from?.nameOrEMail;
   $: msg = signed && encrypted
-      ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${$message.from?.nameOrEMail}. Only the recipients can read it, but the email provider cannot.`
+      ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. Only the recipients can read it, but the email provider cannot.`
       : signed
-        ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${$message.from?.nameOrEMail}. It was not encrypted, meaning that it was not protected from surveillance.`
+        ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. It was not encrypted, meaning that it was not protected from surveillance.`
         : $t`Only the recipients can read this email, but there is no assurance about who wrote it.`;
 </script>
 
