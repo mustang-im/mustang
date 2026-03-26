@@ -68,8 +68,8 @@ export class EWSCalendar extends Calendar {
     return participants.map((participant, i) => ({
       participant,
       availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
-        from: new Date(sanitize.date(event.StartTime, new Date()) + "Z"),
-        to: new Date(sanitize.date(event.EndTime, new Date()) + "Z"),
+        from: new Date(event.StartTime + "Z"),
+        to: new Date(event.EndTime + "Z"),
         free: event.BusyType == "Free",
       })),
     }));
