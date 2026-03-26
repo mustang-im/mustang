@@ -106,7 +106,7 @@ export class EWSEMail extends EMail {
       let attachments = ensureArray(xmljs.Attachments.FileAttachment);
       this.attachments.replaceAll(attachments.map(a => {
         let attachment = new Attachment();
-        attachment.filename = sanitize.nonemptystring(a.Name);
+        attachment.filename = sanitize.filename(a.Name);
         attachment.mimeType = sanitize.nonemptystring(a.ContentType);
         attachment.disposition = a.IsInline == "true" ? ContentDisposition.inline : ContentDisposition.attachment;
         if (a.ContentId) {
