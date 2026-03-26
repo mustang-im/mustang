@@ -112,7 +112,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
             }, data),
           },
         };
-        response = await this.account.callEAS("Sync", request, { allowV16: true });
+        response = await this.account.callEAS("Sync", request);
         if (!response) {
           return null;
         }

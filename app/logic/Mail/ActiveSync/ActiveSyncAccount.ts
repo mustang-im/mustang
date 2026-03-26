@@ -177,8 +177,12 @@ export class ActiveSyncAccount extends MailAccount {
     let response = await fetch(this.url, options);
     if (response.ok) {
       let versions = (response.headers.get("MS-ASProtocolVersions") || "").split(",");
-      if (versions.includes("14.1")) {
-        this.protocolVersion = versions.includes("16.1") ? "16.1" : "14.1";
+      if (versions.includes("16.1")) {
+        this.protocolVersion = "16.1";
+        this.setStorageItem("protocolVersion", this.protocolVersion);
+        return;
+      } else if (versions.includes("14.1")) {
+        this.protocolVersion = "14.1";
         this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       } else if (versions.includes("14.0")) {
@@ -231,7 +235,6 @@ export class ActiveSyncAccount extends MailAccount {
 
   /**
    * Make HTTP call to server
-   * @param aOptions.allowV16 Don't auto-downgrade 16.1 to 14.1
    * @returns JSON returned from the server
    */
   async callEAS(aCommand: string, aRequest: any, aOptions: any = {}): Promise<any> {
@@ -246,7 +249,7 @@ export class ActiveSyncAccount extends MailAccount {
       body: wbxml,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
+        "MS-ASProtocolVersion": this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
       method: "POST",
