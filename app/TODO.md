@@ -33,13 +33,13 @@
     * Calendar: Recurrence
   * Graph Calendar and Contacts
   * PGP
-    * EMail: Save encryption status in JSON
-    * Data: Move to ContactEntry
-    * Data: Move EMail properties into class
+    * PGP: Read signature properly
     * Send and read: Protected headers in encrypted emails
        <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
+    * Data: Move to ContactEntry
+    * Data: Move EMail properties into class
     * Composer
-      * Dropdown for PGP vs. S/MIME
+      * Dropdown for PGP vs. S/MIME (if private keys for both systems)
     * Msg reader
       * Expander scrollable, maybe whole header
   * SML

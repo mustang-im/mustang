@@ -51,7 +51,7 @@ export class PGPSend {
       });
 
       let originalMIMEStr = new TextDecoder().decode(originalMIME).trim().replace(/User-Agent: [^\r]+\r\n/, "");
-      const inHeader = false;
+      const inHeader = true;
       if (inHeader) {
         result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIMEStr, signature, privateKey);
       } else {
@@ -137,6 +137,22 @@ export class PGPSend {
 
   static createMIMEForSignedInHeader(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
     // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
+
+    // need to add `hp=clean` *sigh*
+    let msgLines = message.split("\r\n");
+    for (let i = 0; i < msgLines.length; i++) {
+      let msgLine = msgLines[i];
+      if (msgLine.startsWith("Content-Type: ")) {
+        if (msgLine.endsWith(";")) {
+          msgLine += ` hp="clear";`;
+        } else {
+          msgLine += `; hp="clear"`;
+        }
+        msgLines[i] = msgLine;
+        break; // first only
+      }
+    }
+
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
@@ -145,7 +161,7 @@ export class PGPSend {
       ``,
       `--${boundary}`,
       ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
-      message,
+      ...msgLines,
       ``,
       `--${boundary}--`,
     ].join('\r\n');
