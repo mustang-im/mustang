@@ -176,7 +176,7 @@
   $: canSaveSingle = hasMinimalPropsChanged || // Single changed
     hasMinimalProps && event.recurrenceRule && !event.parentEvent || // Change single event into series
     newCalendar != event.calendar;
-  $: participants = event.participants;
+  $: participants = $event.displayParticipants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
   let isSaveSeriesOpen = false;
@@ -228,6 +228,9 @@
     } else {
       if (!event.calendar.events.contains(event)) {
         event.calendar.events.add(event);
+      }
+      if (event.isOutgoingMeeting && participants.isEmpty) {
+        event.participants.clear();
       }
       await event.save();
     }

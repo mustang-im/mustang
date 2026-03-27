@@ -25,7 +25,7 @@
   });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
-     (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
+     (event.displayParticipants.isEmpty ? "" : "\n" + event.displayParticipants.getIndexRange(0, 4).map(person => person.name).join(", "));
   $: isContinued = $event.startTime < start;
 
   function onSelect() {

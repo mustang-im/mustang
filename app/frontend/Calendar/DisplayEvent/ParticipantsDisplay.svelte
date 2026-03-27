@@ -9,5 +9,5 @@
 
   export let event: Event;
 
-  $: participants = event.participants;
+  $: participants = event.displayParticipants;
 </script>

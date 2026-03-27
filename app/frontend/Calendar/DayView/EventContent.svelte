@@ -29,7 +29,7 @@
   $: startTime = $event.startTime.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
-     (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
+     (event.displayParticipants.isEmpty ? "" : "\n" + event.displayParticipants.getIndexRange(0, 4).map(person => person.name).join(", "));
   $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
   $: showTitle = showTime || forceShowText;
 

@@ -507,6 +507,11 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
+  get displayParticipants(): ArrayColl<Participant> {
+    return this.isOutgoingMeeting ?
+      this.participants.filterObservable(p => p.response != InvitationResponse.Organizer) : this.participants;
+  }
+
   async createOnlineMeeting() {
     if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
       return;

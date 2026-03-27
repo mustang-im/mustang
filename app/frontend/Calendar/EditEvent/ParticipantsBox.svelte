@@ -14,7 +14,7 @@
   -->
 </SectionTitle>
 <vbox class="participants">
-  <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`} {onAddPerson}>
+  <PersonsAutocomplete persons={$event.displayParticipants} placeholder={$t`Add participants`} {onAddPerson} {onRemovePerson}>
     <hbox slot="person-pill-before-avatar" let:person={participant}>
       <ParticipantConfirmIcon {participant} />
     </hbox>
@@ -31,7 +31,7 @@
   <ExpandSection>
     <hbox slot="header" class="header">{$t`Availability of participants`}</hbox>
     <AvailabilityGrid
-      participants={event.participants}
+      participants={$event.displayParticipants}
       start={$event.startTime}
       calendar={$event.calendar}
       />
@@ -58,6 +58,10 @@
   function onAddPerson(person: PersonUID) {
     let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
     event.participants.add(participant);
+  }
+
+  function onRemovePerson(person: PersonUID) {
+    event.participants.remove(person as Participant);
   }
 </script>
 
