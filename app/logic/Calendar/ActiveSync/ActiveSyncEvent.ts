@@ -267,8 +267,8 @@ export class ActiveSyncEvent extends Event {
   }
 }
 
-function extractWeekdays(dayOfWeek: number): Weekday[] | null {
-  return dayOfWeek ? [0, 1, 2, 3, 4, 5, 6].filter(day => dayOfWeek & 1 << day) : null;
+function extractWeekdays(daysOfWeek: number): Weekday[] | null {
+  return daysOfWeek ? [0, 1, 2, 3, 4, 5, 6].filter(day => daysOfWeek & 1 << day) : null;
 }
 
 /// Returns the compact date time of a date
