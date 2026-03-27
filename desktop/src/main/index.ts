@@ -217,6 +217,10 @@ function allowCrossDomainRequestsFromFrontend() {
         case "referer":
           delete requestHeaders[name];
           break;
+        case "defaultanchormailbox":
+          // Fake out the Cookie on all ActiveSync requests, because Hotmail.
+          requestHeaders.Cookie = name + "=" + requestHeaders[name];
+          break;
         case "user-agent":
           // Fake out the User-Agent on all ActiveSync requests, because Office.
           if (details.url.toLowerCase().includes("/microsoft-server-activesync")) {
