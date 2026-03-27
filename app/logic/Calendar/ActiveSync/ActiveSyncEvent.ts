@@ -99,7 +99,7 @@ export class ActiveSyncEvent extends Event {
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
     let frequency = kRecurrenceTypes[sanitize.integer(wbxmljs.Type, 0)];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
-    let weekdays = extractWeekdays(sanitize.nonemptystring(wbxmljs.DayOfWeek, ""));
+    let weekdays = extractWeekdays(sanitize.integer(wbxmljs.DayOfWeek, 0));
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
     return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
@@ -267,9 +267,8 @@ export class ActiveSyncEvent extends Event {
   }
 }
 
-function extractWeekdays(dayOfWeek: string): Weekday[] | null {
-  let daysOfWeek = sanitize.integer(dayOfWeek, 0);
-  return daysOfWeek ? [0, 1, 2, 3, 4, 5, 6].filter(day => daysOfWeek & 1 << day) : null;
+function extractWeekdays(dayOfWeek: number): Weekday[] | null {
+  return dayOfWeek ? [0, 1, 2, 3, 4, 5, 6].filter(day => dayOfWeek & 1 << day) : null;
 }
 
 /// Returns the compact date time of a date
