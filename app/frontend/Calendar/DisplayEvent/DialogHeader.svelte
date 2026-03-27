@@ -113,6 +113,7 @@
     if (event.seriesStatus == "only") {
       await event.parentEvent.deleteIt();
     } else {
+      event.parentEvent?.cancelEditing();
       await event.deleteIt();
     }
     $selectedEvent = null;
