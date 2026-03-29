@@ -23,7 +23,8 @@ export class PGPReadProcessor extends EMailProcessor {
   async process(email: EMail, mime: MIME) {
     let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content &&
       email.attachments.find(a => a.mimeType == "application/octet-stream")?.content;
-    let detachedSignature = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content;
+    let detachedSignatureAtt = email.attachments.find(a => a.mimeType == "application/pgp-signature");
+    let detachedSignature = detachedSignatureAtt?.content;
     if (!encrypted && !detachedSignature) {
       return;
     }
@@ -36,22 +37,26 @@ export class PGPReadProcessor extends EMailProcessor {
       senderOpenPGPKeys.push(await publicKey.openPGPPublicKey(openPGP));
     }
     if (encrypted) {
-      let identity = MailIdentity.findIdentity(email.allRecipients(), email.folder?.account)?.identity;
-      assert(identity, "Did not find identity for " + email.from?.emailAddress);
+      let privateKeys = new ArrayColl<OpenPGP.PrivateKey>();
+      for (let recipient of email.allRecipients()) {
+        let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
+        privateKeys.addAll(await this.getPrivateKeysForIdentity(identity, openPGP));
+      }
+      assert(privateKeys.hasItems, "Did not find private keys");
       let armored = await encrypted.text();
       let encryptedMessage = await openPGP.readMessage({ armoredMessage: armored });
-      let privateKey = await this.getPrivateKeysForIdentity(identity, openPGP);
       let decryptedResult = await openPGP.decrypt({
         message: encryptedMessage,
-        decryptionKeys: privateKey.contents,
+        decryptionKeys: privateKeys.contents,
         format: 'binary',
         verificationKeys: senderOpenPGPKeys,
         date: email.sent, // TODO plus a few minutes
       });
-      // check success? throws?
       email.wasEncrypted = true;
-      let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP);
-      email.signed = signedWithKey?.id ?? null;
+      if (decryptedResult.signatures?.length) {
+        let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP);
+        email.signed = signedWithKey?.id ?? null;
+      }
       await this.updateMIME(email, decryptedResult.data, outerFrom);
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
       let signedPart = null;// TODO
@@ -65,12 +70,12 @@ export class PGPReadProcessor extends EMailProcessor {
         message: signedContent,
         signature,
         verificationKeys: senderOpenPGPKeys,
-        format: 'binary',
+        format: "binary",
         date: email.sent, // TODO plus a few minutes
       });
       let signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent, openPGP);
       email.signed = signedWithKey?.id ?? null;
-      await this.updateMIME(email, verificationResult.data, outerFrom)
+      email.attachments.remove(detachedSignatureAtt);
     }
   }
 
@@ -81,7 +86,8 @@ export class PGPReadProcessor extends EMailProcessor {
         await sig.verified; // throws for invalid signature
         let sigg = await sig.signature;
         let packet = sigg.packets[0]; // TODO n packets
-        if (!packet || packet.created && Math.abs(packet.created?.getTime() - forDate.getTime()) > 2000) {
+        if (!packet ||
+            packet.created && Math.abs(packet.created?.getTime() - forDate.getTime()) > 20000) {
           continue;
         }
         validSignatures.add(sig);
@@ -107,6 +113,7 @@ export class PGPReadProcessor extends EMailProcessor {
   async updateMIME(email: EMail, content: Uint8Array, outerFrom: string) {
     if (email.from.emailAddress.toLowerCase() != outerFrom.toLowerCase()) {
       // Treat as phishing
+      email.signed = null;
     }
     email.downloadComplete = false;
     email.mime = content;
