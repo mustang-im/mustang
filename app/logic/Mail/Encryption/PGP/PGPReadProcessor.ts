@@ -23,7 +23,7 @@ export class PGPReadProcessor extends EMailProcessor {
   async process(email: EMail, mime: MIME) {
     let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content &&
       email.attachments.find(a => a.mimeType == "application/octet-stream")?.content;
-    let detachedSignature = email.attachments.find(a => a.mimeType == "multipart/signed")?.content;
+    let detachedSignature = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content;
     if (!encrypted && !detachedSignature) {
       return;
     }
@@ -54,9 +54,10 @@ export class PGPReadProcessor extends EMailProcessor {
       email.signed = signedWithKey?.id ?? null;
       await this.updateMIME(email, decryptedResult.data, outerFrom);
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
-      let firstPartTODO = email.attachments.find(a => a.mimeType == "application/pgp-signature")?.content; // TODO only the first part
+      let signedPart = null;// TODO
+      return;
       // TODO normalization for line endings - does openPGP do that?
-      let signedContent = await openPGP.readMessage({ binaryMessage: firstPartTODO });
+      let signedContent = await openPGP.createMessage({ binary: new Uint8Array(await signedPart.arrayBuffer()) });
       let signature = await openPGP.readSignature({
         armoredSignature: await detachedSignature.text(),
       });
