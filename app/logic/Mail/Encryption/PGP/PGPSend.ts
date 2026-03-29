@@ -26,8 +26,10 @@ export class PGPSend {
     assert(privateKey, gt`Please first set up PGP encryption for yourself, in Settings | Mail | Identity | Encryption`);
     let result = SendEncrypted.cloneEMail(mail);
     let originalMIME = await CreateMIME.getMIME(mail);
+    let originalMIMEStr = new TextDecoder().decode(originalMIME);
+    originalMIMEStr = originalMIMEStr.replace(/User-Agent: [^\r]+\r\n/, "");
     let openPGP = await import("openpgp");
-    let message = await openPGP.createMessage({ binary: originalMIME });
+    let message = await openPGP.createMessage({ text: originalMIMEStr });
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
@@ -50,8 +52,7 @@ export class PGPSend {
         detached: true,
       });
 
-      let originalMIMEStr = new TextDecoder().decode(originalMIME).trim().replace(/User-Agent: [^\r]+\r\n/, "");
-      const inHeader = true;
+      const inHeader = false;
       if (inHeader) {
         result.sendRawMIME = PGPSend.createMIMEForSignedInHeader(mail, originalMIMEStr, signature, privateKey);
       } else {
@@ -123,7 +124,6 @@ export class PGPSend {
       ``,
       `--${boundary}`,
       message,
-      ``,
       `--${boundary}`,
       `Content-Type: application/pgp-signature; name="signature.asc"`,
       `Content-Disposition: inline; filename="signature.asc"`,
@@ -162,7 +162,6 @@ export class PGPSend {
       `--${boundary}`,
       ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
       ...msgLines,
-      ``,
       `--${boundary}--`,
     ].join('\r\n');
     return mime;
