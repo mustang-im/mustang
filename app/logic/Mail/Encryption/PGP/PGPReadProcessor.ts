@@ -4,6 +4,7 @@ import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
 import type { PersonUID } from "../../../Abstract/PersonUID";
+import { k1HourMS } from "../../../../frontend/Util/date";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { Email as MIME } from "postal-mime";
@@ -48,18 +49,19 @@ export class PGPReadProcessor extends EMailProcessor {
       let decryptedResult = await openPGP.decrypt({
         message: encryptedMessage,
         decryptionKeys: privateKeys.contents,
-        format: 'binary',
+        format: "binary",
         verificationKeys: senderOpenPGPKeys,
-        date: email.sent, // TODO plus a few minutes
+        date: email.sent,
       });
       email.wasEncrypted = true;
       if (decryptedResult.signatures?.length) {
         let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP);
         email.signed = signedWithKey?.id ?? null;
       }
+      // TODO If inner MIME doesn't contain headers, keep the outer ones
       await this.updateMIME(email, decryptedResult.data, outerFrom);
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
-      let signedPart = null;// TODO
+      let signedPart = null;// TODO MIME part with cleartext message
       return;
       // TODO normalization for line endings - does openPGP do that?
       let signedContent = await openPGP.createMessage({ binary: new Uint8Array(await signedPart.arrayBuffer()) });
@@ -85,9 +87,8 @@ export class PGPReadProcessor extends EMailProcessor {
       try {
         await sig.verified; // throws for invalid signature
         let sigg = await sig.signature;
-        let packet = sigg.packets[0]; // TODO n packets
-        if (!packet ||
-            packet.created && Math.abs(packet.created?.getTime() - forDate.getTime()) > 20000) {
+        let packet = sigg.packets[0]; // there's only one in our cases
+        if (Math.abs(packet.created.getTime() - forDate.getTime()) > 1 * k1HourMS) {
           continue;
         }
         validSignatures.add(sig);
@@ -99,6 +100,7 @@ export class PGPReadProcessor extends EMailProcessor {
     }
 
     for (let sig of validSignatures.each) {
+      // TODO senders not in my addressbook (never replied)
       for (let publicKey of senderPublicKeys.each) {
         let openPGPPublicKey = await publicKey.openPGPPublicKey(openPGP);
         if (sig.keyID.equals(openPGPPublicKey.getKeyID())) {
