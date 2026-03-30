@@ -3,10 +3,10 @@ import type { Person } from "../../../Abstract/Person";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { TrustLevel } from "../PublicKey";
 import { addArmorHeader, addPublicKeyToPersonUID } from "../KeyUtils";
-import { getDomainForEmailAddress } from "../../../util/netUtil";
+import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../util/netUtil";
 import { PriorityAbortable } from "../../../util/flow/Abortable";
 import { appGlobal } from "../../../app";
-import { type URLString, assert } from "../../../util/util";
+import { type URLString, assert, capitalizeStart } from "../../../util/util";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
@@ -15,19 +15,23 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  * @returns success or not
  */
 export async function queryPGPKeyServersForUID(uid: PersonUID): Promise<boolean> {
-  let key: string;
+  let key: KeyWithSource | null;
   try {
     key = await queryPGPKeyServers(uid);
+    if (!key) {
+      return false;
+    }
   } catch (ex) {
     return false;
   }
-  let publicKey = await PGPPublicKey.importPublicKey(key);
+  let publicKey = await PGPPublicKey.importPublicKey(key.key);
   if (publicKey.obsolete) {
     return false;
   }
   // WKD is domain-validated, and keys.openpgp.org verifies email address.
   // Both match S/MIME Class 1 validation from CAs.
   publicKey.trustLevel = TrustLevel.ThirdParty;
+  publicKey.caName = key.source;
   addPublicKeyToPersonUID(uid, publicKey);
   await uid.findPerson()?.save();
   return true;
@@ -58,7 +62,7 @@ export async function queryPGPKeyServersForPerson(person: Person): Promise<boole
  * central key server at `openpgp.org`.
  * @returns ASCII-armored public key, or null
  */
-export async function queryPGPKeyServers(uid: PersonUID): Promise<string | null> {
+export async function queryPGPKeyServers(uid: PersonUID): Promise<KeyWithSource | null> {
   let emailAddress = sanitize.emailAddress(uid.emailAddress, null)?.toLowerCase();
   assert(emailAddress, "Need email address");
   return await new PriorityAbortable(new AbortController(), [
@@ -73,12 +77,15 @@ export async function queryPGPKeyServers(uid: PersonUID): Promise<string | null>
  * @see <https://keys.openpgp.org/about/api/>
  * @returns ASCII-armored public key, or null
  */
-async function queryVKS(emailAddress: string, server?: URLString): Promise<string> {
+async function queryVKS(emailAddress: string, server?: URLString): Promise<KeyWithSource> {
   server ??= "https://keys.openpgp.org";
   let url = server + "/vks/v1/by-email/" + encodeURIComponent(emailAddress);
   let armoredKey = await fetchText(url);
   assert(armoredKey?.trim(), "Not found via VKS");
-  return armoredKey;
+  return {
+    key: armoredKey!,
+    source: "Keys.OpenPGP.org",
+  };
 }
 
 /**
@@ -87,7 +94,7 @@ async function queryVKS(emailAddress: string, server?: URLString): Promise<strin
  * @see <https://www.ietf.org/archive/id/draft-koch-openpgp-webkey-service-21.html>
  * @returns ASCII-armored public key, or null
  */
-async function queryWKD(emailAddress: string): Promise<string> {
+async function queryWKD(emailAddress: string): Promise<KeyWithSource> {
   let domain = getDomainForEmailAddress(emailAddress);
   let localPart = emailAddress.split("@")[0];
   let hash = await computeWKDHash(emailAddress);
@@ -102,7 +109,13 @@ async function queryWKD(emailAddress: string): Promise<string> {
   ]).run();
   assert(binary, "Not found via WKD");
   let base64 = binaryToBase64(binary);
-  return addArmorHeader(base64, "PGP PUBLIC KEY BLOCK");
+  let armoredKey = addArmorHeader(base64, "PGP PUBLIC KEY BLOCK");
+  // it.dept.stanford.edu -> Stanford
+  let domainName = capitalizeStart(getBaseDomainFromHost(domain).replace(/\..*/, ""));
+  return {
+    key: armoredKey,
+    source: domainName,
+  };
 }
 
 /**
@@ -114,6 +127,13 @@ async function computeWKDHash(original: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-1", encoded);
   const hashBytes = new Uint8Array(hashBuffer);
   return zbase32Encode(hashBytes);
+}
+
+interface KeyWithSource {
+  /** Armored public key */
+  key: string;
+  /** User-readable name for the source that validated this key */
+  source: string;
 }
 
 function binaryToBase64(bytes: Uint8Array) {

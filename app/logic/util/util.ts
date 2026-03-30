@@ -36,6 +36,13 @@ export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }
 
+export function capitalizeStart(str: string): string {
+  return str[0].toLocaleUpperCase() + str.substring(1);
+}
+export function capitalizeWords(str: string): string {
+  return str.split(" ").map(word => capitalizeStart(word)).join(" ");
+}
+
 export async function blobToBase64(blob: Blob): Promise<string> {
   let dataURL = await blobToDataURL(blob)
   return dataURL.split(",")[1];

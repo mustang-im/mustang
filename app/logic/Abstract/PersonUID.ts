@@ -4,6 +4,7 @@ import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { capitalizeWords } from "../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class PersonUID extends Observable {
@@ -149,7 +150,7 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
 export function nameFromEmailAddress(emailAddress: string): string {
   let name = emailAddress.split("@")[0];
   name = name.replace(/\./g, " ");
-  name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize
+  name = capitalizeWords(name);
   return name;
 }
 

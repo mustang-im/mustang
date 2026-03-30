@@ -3,7 +3,7 @@ import { PersonUID } from "../Abstract/PersonUID";
 import type { Addressbook } from "../Contacts/Addressbook";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
-import type { URLString } from "../util/util";
+import { capitalizeWords, type URLString } from "../util/util";
 
 export class ChatPerson extends PersonUID {
   @notifyChangedProperty
@@ -64,6 +64,6 @@ export function nameFromChatID(chatID: string): string {
     name = chatID;
   }
   name = name.replace(/\./g, " ");
-  name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize
+  name = capitalizeWords(name);
   return name;
 }

@@ -38,16 +38,15 @@
             <input type="radio"
               value={TrustLevel.Personal}
               bind:group={key.trustLevel} />
-            {$t`I have personally checked the verification code with ${person?.name ?? $t`this person`}`}
+            {$t`I have personally checked the verification code with ${personName}`}
           </label>
-          {#if key.caName}
+          {#if TrustLevel.ThirdParty}
             <label>
               <input type="radio"
                 value={TrustLevel.ThirdParty}
-                disabled={!key.caName}
                 on:change={onSave}
                 bind:group={key.trustLevel} />
-              {`${key.caName} claims that this is correct`}
+              {$t`${key.caName ?? $t`A third-party`} claims that this is correct *=> A company claims this`}
             </label>
           {:else}
             <label>
@@ -199,7 +198,7 @@
   $: allIdentitiesWithKeys = findAllIdentities().filterObservable(i => i.encryptionPrivateKeys.some(key => !key.obsolete && (key.encryptByDefault || key.useToSign)));
   $: myIdentity = $allIdentitiesWithKeys.first;
   $: myPrivateKey = myIdentity ? getMyPrivateKey(myIdentity) : null;
-  $: personName = person?.name ?? personUID?.name;
+  $: personName = person?.name ?? personUID?.name ?? $t`this person`;
 
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());
