@@ -40,13 +40,13 @@
               bind:group={key.trustLevel} />
             {$t`I have personally checked the verification code with ${personName}`}
           </label>
-          {#if key.trustLevel == TrustLevel.ThirdParty}
+          {#if key.caName}
             <label>
               <input type="radio"
                 value={TrustLevel.ThirdParty}
                 on:change={onSave}
                 bind:group={key.trustLevel} />
-              {$t`${key.caName ?? $t`A third-party`} claims that this is correct *=> A company claims this`}
+              {$t`${key.caName} claims that this is correct *=> A company claims this`}
             </label>
           {:else}
             <label>
