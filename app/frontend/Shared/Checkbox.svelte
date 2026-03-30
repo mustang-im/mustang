@@ -151,7 +151,7 @@
     cursor: pointer;
   }
   .on .knob {
-    left: 0px;
+    right: 0px;
     background-color: var(--selected-bg);
     color: var(--selected-fg);
     box-shadow:
@@ -160,7 +160,7 @@
       inset 0 1px 2px rgba(255, 255, 255, 0.2);
   }
   .off:not(.allowIndetermined) .knob {
-    right: 0px;
+    left: 0px;
     background-color: var(--bg);
     color: var(--fg);
     box-shadow:
@@ -174,7 +174,7 @@
       0 0 8px 2px rgba(135, 135, 135, 0.15);
   }
   .off.allowIndetermined .knob {
-    right: 0px;
+    left: 0px;
     background-color: red;
     color: white;
     box-shadow:
