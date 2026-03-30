@@ -162,7 +162,7 @@ export class ActiveSyncAccount extends MailAccount {
   async verifyLogin(): Promise<void> {
     let options: any = {
       headers: {
-        DefaultAnchorMailbox: encodeURI(this.emailAddress), // required for Hotmail
+        "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
       },
       method: "OPTIONS",
     };
@@ -247,7 +247,7 @@ export class ActiveSyncAccount extends MailAccount {
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
-        DefaultAnchorMailbox: encodeURI(this.emailAddress), // required for Hotmail
+        "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
       },
       method: "POST",
       signal: AbortSignal.timeout(heartbeat * 1000 + 25000), // extra timeout for Ping commands
