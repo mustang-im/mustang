@@ -40,7 +40,7 @@
               bind:group={key.trustLevel} />
             {$t`I have personally checked the verification code with ${personName}`}
           </label>
-          {#if TrustLevel.ThirdParty}
+          {#if key.trustLevel == TrustLevel.ThirdParty}
             <label>
               <input type="radio"
                 value={TrustLevel.ThirdParty}
