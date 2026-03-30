@@ -76,7 +76,7 @@
   async function autoQueryKeyServer() {
     let found = await queryPGPKeyServersForPerson(person);
     if (found) {
-      showImport = false;
+      showImport = showImportOverride = false;
     }
   }
 </script>
