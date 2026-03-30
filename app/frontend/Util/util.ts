@@ -150,6 +150,20 @@ export async function fetchGzip(url: string) {
   return URL.createObjectURL(blob);
 }
 
+/**
+ * Validates user input in an `<input>` text field.
+ * @param checkFunc Throws, if the input is invalid. Otherwise just returns.
+ * @param inputField will be marked invalid, with the exception message.
+ */
+export function checkInputField(checkFunc: () => void, inputField: HTMLInputElement) {
+  try {
+    checkFunc();
+    inputField?.setCustomValidity("");
+  } catch (ex) {
+    inputField?.setCustomValidity(ex.message);
+  }
+}
+
 /** @returns a new
  * `function isSame(check: T): boolean`
  * which returns

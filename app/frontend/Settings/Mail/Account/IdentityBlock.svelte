@@ -16,6 +16,7 @@
 
       <label for="emailaddress">{$t`Your email address`}</label>
       <input type="email" bind:value={identity.emailAddress} required
+        bind:this={emailInput}
         autofocus={!$identity.emailAddress}
         name="emailaddress" class="emailaddress" />
 
@@ -101,9 +102,11 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import type { Editor } from "@tiptap/core";
-  import { createEventDispatcher } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
+  import { checkInputField } from "../../../Util/util";
+  import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
   import { t } from "../../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;
@@ -118,6 +121,8 @@
   $: showEncryption = $keys.hasItems;
   let showEncryptionOverride = false;
   let editor: Editor;
+  let emailInput: HTMLInputElement;
+  $: $identity.emailAddress && checkInputField(() => sanitize.emailAddress($identity.emailAddress), emailInput);
 
   function addEcryption() {
     showEncryptionOverride = true;
@@ -143,6 +148,7 @@
   }
   .emailaddress:invalid {
     background-color: #FFF160;
+    color: black;
   }
   .catch-all {
     font-style: italic;
