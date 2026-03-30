@@ -1,4 +1,4 @@
-{#if $privateKeys.hasItems}
+{#if privateKey}
   <hbox class="encryption buttons"
     class:encrypt={mail.shouldEncrypt}
     style="--trustColor: {trustColor[trustLevel]}; --trustColorFG: {trustColorFG[trustLevel]}">
@@ -74,8 +74,8 @@
   export let mail: EMail;
   export let identity: MailIdentity;
 
-  $: privateKeys = identity.encryptionPrivateKeys;
-  $: signDisabledReason = $privateKeys.hasItems && getMyPrivateKey(identity) ? null : gt`No secret keys enabled for signing`;
+  $: privateKey = getMyPrivateKey(identity);
+  $: signDisabledReason = privateKey ? null : gt`No secret keys enabled for signing`;
   $: to = mail.to;
   $: cc = mail.cc;
   $: allRecipients = $to.concat($cc);
@@ -87,6 +87,33 @@
     : null; // Enable even if some recipients don't have public keys. Our UI warns and allows to resolve it.
 
   let isMenuOpen = false;
+
+  let extra = mail as any;
+  $: privateKey, changedIdentity()
+  function changedIdentity() {
+    if (privateKey) {
+      if (!mail.signed && privateKey.useToSign) {
+        mail.signed = privateKey.id;
+        extra.signOnlyByDefault = true;
+      }
+      if (!mail.shouldEncrypt && privateKey.encryptByDefault) {
+        mail.shouldEncrypt = true;
+        extra.encryptOnlyByDefault = true;
+      }
+      if (mail.signed && extra.signOnlyByDefault && !privateKey.useToSign) {
+        mail.signed = null;
+        extra.signOnlyByDefault = false;
+      }
+      if (mail.shouldEncrypt && extra.encryptOnlyByDefault && !privateKey.encryptByDefault) {
+        mail.shouldEncrypt = null;
+        extra.encryptOnlyByDefault = false;
+      }
+    } else {
+      assert(!mail.mustEncrypt, gt`This email must be encrypted.`);
+      mail.shouldEncrypt = false;
+      mail.signed = null;
+    }
+  }
 
   function toggleSigned() {
     if (mail.mustEncrypt) {
