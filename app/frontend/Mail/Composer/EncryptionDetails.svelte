@@ -75,7 +75,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import { catchErrors } from "../../Util/error";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
   import { Collection } from "svelte-collections";
 
   export let mail: EMail;
@@ -93,8 +93,8 @@
   // TODO Observe `encryptionPublicKeys`
   $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPerson(p.findPerson()));
   $: $recipientsWithoutKeys.hasItems && catchErrors(autoQueryKeyServer);
-  $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems
-    ? $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
+  $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
+    gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function onQueryKeyServer() {
     queryKeyServerFor(recipientsWithoutKeys);
