@@ -79,7 +79,7 @@
   $: to = mail.to;
   $: cc = mail.cc;
   $: allRecipients = $to.concat($cc);
-  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson())).filterOnce(Boolean);
+  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson()));
   $: trustLevel = mail.shouldEncrypt ? lowestTrust($allRecipientsKeys) : TrustLevel.Personal;
   $: encryptDisabledReason =
     $mail.mustEncrypt
@@ -158,7 +158,13 @@
     mail.shouldEncrypt = false;
   }
 
-  function lowestTrust(keys: Collection<PublicKey>): TrustLevel {
+  function lowestTrust(keys: Collection<PublicKey | null>): TrustLevel {
+    if (keys.isEmpty) {
+      return TrustLevel.Personal;
+    }
+    if (!every(keys, key => !!key)) {
+      return TrustLevel.Distrusted;
+    }
     return allTrust(keys, TrustLevel.Personal)
       || allTrust(keys, TrustLevel.ThirdParty)
       || allTrust(keys, TrustLevel.Sender)
