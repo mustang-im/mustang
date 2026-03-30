@@ -1075,5 +1075,7 @@
   "l7UKoO": "För att kryptera detta meddelande lägger du till certifikat för följande mottagare",
   "fiB66J": "Vissa mottagare saknar certifikat för kryptering. Lägg antingen till certifikat för dem, ta bort dem eller inaktivera kryptering.",
   "GZISRB": "Lösenord för hemlig nyckelfil",
-  "tQuHhm": "Du skickade detta e-postmeddelande"
+  "tQuHhm": "Du skickade detta e-postmeddelande",
+  "kofuRI": "En tredje part",
+  "ZT0r/B": "{0} hävdar att detta är korrekt"
 }

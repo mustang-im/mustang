@@ -1075,5 +1075,7 @@
   "l7UKoO": "To encrypt this message, add certificates for the following recipients",
   "fiB66J": "Some recipients are missing certificates for encryption.\\nEither add certificates for them, remove them, or disable encryption.",
   "GZISRB": "Passphrase for secret key file",
-  "tQuHhm": "You sent this email"
+  "tQuHhm": "You sent this email",
+  "kofuRI": "A third-party",
+  "ZT0r/B": "{0} claims that this is correct"
 }
