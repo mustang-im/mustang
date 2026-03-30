@@ -49,15 +49,17 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
+  import { queryPGPKeyServersForPerson } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import EncryptionKey from "./EncryptionKey.svelte";
+  import EncryptionImport from "./EncryptionImport.svelte";
   import GroupBox from "./GroupBox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import EcryptionIcon from "lucide-svelte/icons/lock";
   import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
-  import EncryptionImport from "./EncryptionImport.svelte";
 
   export let person: Person;
   export let showImportOverride: boolean;
@@ -65,6 +67,18 @@
   $: keys = $person.encryptionPublicKeys;
   $: showImport = $keys.isEmpty || showImportOverride;
   let showObsolete = false;
+
+  // Auto-query servers after [ Encryption + ]
+  // Show this component only if there are keys or the user requested encryption.
+  // No `$` before `keys`, to allow to delete the key
+  $: keys.isEmpty && catchErrors(autoQueryKeyServer)
+
+  async function autoQueryKeyServer() {
+    let found = await queryPGPKeyServersForPerson(person);
+    if (found) {
+      showImport = false;
+    }
+  }
 </script>
 
 <style>
