@@ -106,9 +106,12 @@
   }
 
   async function queryKeyServerFor(recipients: Collection<PersonUID>) {
+    if (recipients.isEmpty) {
+      return;
+    }
+    recipients.forEach(recipient => (recipient as any)._queriedKeyserver = true);
     await Promise.all(recipients.contents.map(recipient =>
       queryPGPKeyServersForUID(recipient)));
-    recipients.forEach(recipient => (recipient as any)._queriedKeyserver = true);
     allRecipients = allRecipients; // because we don't observe `encryptionPublicKeys`
   }
 
