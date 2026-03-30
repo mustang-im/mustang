@@ -4,6 +4,7 @@ import { TrustLevel } from "../PublicKey";
 import type { EMail } from "../../EMail";
 import type { MailIdentity } from "../../MailIdentity";
 import { addArmorHeader, extractBase64FromArmorned } from "../KeyUtils";
+import { parseHeaderParameters } from "../MIME";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../util/util";
@@ -31,26 +32,15 @@ export async function importAutoCryptKeys(mail: EMail) {
   if (!header) {
     return;
   }
-  let parts: Record<string, string> = {};
-  let partsSplit = header.split(";");
-  for (let partStr of partsSplit) {
-    let pos = partStr.indexOf("=");
-    if (pos == -1) {
-      continue;
-    }
-    let name = sanitize.nonemptystring(partStr.substring(0, pos).trim());
-    let value = sanitize.nonemptystring(partStr.substring(pos + 1).trim()
-      .replaceAll(" ", ""));
-    parts[name] = value;
-  }
-  if (parts.addr != mail.from?.emailAddress ||
-      !parts.keydata) {
+  let params = parseHeaderParameters(header);
+  if (params.addr != mail.from?.emailAddress ||
+      !params.keydata) {
     return;
   }
-  let preferEncrypted = parts["prefer-encrypt"] == "mutual";
+  let preferEncrypted = params["prefer-encrypt"] == "mutual";
 
   let publicKeyArmored = addArmorHeader(
-    sanitize.nonemptystring(parts.keydata), "PGP PUBLIC KEY BLOCK");
+    sanitize.nonemptystring(params.keydata), "PGP PUBLIC KEY BLOCK");
   let publicKey = await PGPPublicKey.importPublicKey(publicKeyArmored);
   publicKey.trustLevel = TrustLevel.Sender;
   publicKey.encryptByDefault = preferEncrypted;

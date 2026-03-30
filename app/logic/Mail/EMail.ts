@@ -374,8 +374,7 @@ export class EMail extends Message {
     if (this.headers.hasItems) {
       return;
     }
-    await this.loadMIME();
-    assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
+    assert(this.mime instanceof Uint8Array, "Need MIME");
     let mail = await new PostalMIME().parse(this.mime);
     for (let header of mail.headers) {
       try {

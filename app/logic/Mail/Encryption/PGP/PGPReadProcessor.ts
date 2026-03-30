@@ -4,6 +4,7 @@ import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
 import type { PersonUID } from "../../../Abstract/PersonUID";
+import { parseMIMEDirectSubparts, parseHeaderParameters, toCRLF } from "../MIME";
 import { k1HourMS } from "../../../../frontend/Util/date";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -24,8 +25,8 @@ export class PGPReadProcessor extends EMailProcessor {
   async process(email: EMail, mime: MIME) {
     let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content &&
       email.attachments.find(a => a.mimeType == "application/octet-stream")?.content;
-    let detachedSignatureAtt = email.attachments.find(a => a.mimeType == "application/pgp-signature");
-    let detachedSignature = detachedSignatureAtt?.content;
+    let detachedSignaturePart = email.attachments.find(a => a.mimeType == "application/pgp-signature");
+    let detachedSignature = detachedSignaturePart?.content;
     if (!encrypted && !detachedSignature) {
       return;
     }
@@ -61,10 +62,11 @@ export class PGPReadProcessor extends EMailProcessor {
       // TODO If inner MIME doesn't contain headers, keep the outer ones
       await this.updateMIME(email, decryptedResult.data, outerFrom);
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
-      let signedPart = null;// TODO MIME part with cleartext message
-      return;
-      // TODO normalization for line endings - does openPGP do that?
-      let signedContent = await openPGP.createMessage({ binary: new Uint8Array(await signedPart.arrayBuffer()) });
+      await email.parseHeaders();
+      let signedPart = getSignedCleartext(email);
+      signedPart = toCRLF(signedPart);
+      let signedBinary = new TextEncoder().encode(signedPart);
+      let signedContent = await openPGP.createMessage({ binary: signedBinary });
       let signature = await openPGP.readSignature({
         armoredSignature: await detachedSignature.text(),
       });
@@ -77,7 +79,7 @@ export class PGPReadProcessor extends EMailProcessor {
       });
       let signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent, openPGP);
       email.signed = signedWithKey?.id ?? null;
-      email.attachments.remove(detachedSignatureAtt);
+      email.attachments.remove(detachedSignaturePart);
     }
   }
 
@@ -157,6 +159,17 @@ export class PGPReadProcessor extends EMailProcessor {
     }
     return keys;
   }
+}
+
+function getSignedCleartext(email: EMail): string {
+  assert(email.headers.length > 0, "parseHeaders first");
+  let contentType = email.headers.get("content-type");
+  let parameters = parseHeaderParameters(contentType);
+  assert(parameters.$main == "multipart/signed", "Signature must be the main content of the email, not nested");
+  assert(parameters.protocol == "application/pgp-signature", "PGP signature must be at the top level");
+  let parts = parseMIMEDirectSubparts(email.mime, contentType);
+  assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
+  return parts[0];
 }
 
 type OpenPGPVerificationResult = {
