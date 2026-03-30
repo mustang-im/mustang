@@ -86,7 +86,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[sanitize.string(xmljs.ItemClass, "")] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(xmljs.ItemClass, null)] || InvitationMessage.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -112,7 +112,7 @@ export class EWSEMail extends EMail {
         if (a.ContentId) {
           attachment.contentID = sanitize.nonemptystring(a.ContentId);
         }
-        attachment.size = sanitize.integer(a.Size);
+        attachment.size = sanitize.integer(a.Size, null);
         return attachment;
       }));
     }
