@@ -74,7 +74,8 @@
   import RemoveOneIcon from "lucide-svelte/icons/trash-2";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
+  import { Collection } from "svelte-collections";
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -90,14 +91,23 @@
   $: allRecipients = $to.concat($cc).concat($bcc);
   // TODO Observe `encryptionPublicKeys`
   $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPerson(p.findPerson()));
+  $: $recipientsWithoutKeys.hasItems && autoQueryKeyServer();
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems
     ? $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
-  $: console.log("all", $allRecipients.contents.join(", "), $allRecipients.contents, "without keys", $recipientsWithoutKeys.contents);
-
   async function onQueryKeyServer() {
-    await Promise.all(recipientsWithoutKeys.contents.map(recipient =>
+    queryKeyServerFor(recipientsWithoutKeys);
+  }
+
+  async function autoQueryKeyServer() {
+    let notYetQueried = recipientsWithoutKeys.filterOnce(r => !(r as any)._queriedKeyserver);
+    queryKeyServerFor(notYetQueried);
+  }
+
+  async function queryKeyServerFor(recipients: Collection<PersonUID>) {
+    await Promise.all(recipients.contents.map(recipient =>
       queryPGPKeyServersForUID(recipient)));
+    recipients.forEach(recipient => (recipient as any)._queriedKeyserver = true);
     allRecipients = allRecipients; // because we don't observe `encryptionPublicKeys`
   }
 
