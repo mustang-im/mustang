@@ -50,7 +50,11 @@ export class PGPPublicKey extends PublicKey {
     if (pgpCipher.curve) {
       cipher += "/" + pgpCipher.curve;
     }
-    this.cipher = cipher.replaceAll("Legacy", "").toUpperCase();
+    this.cipher = cipher
+      .replaceAll("Encrypt", "")
+      .replaceAll("Sign", "")
+      .replaceAll("Legacy", "")
+      .toUpperCase();
     this.keyLengthInBits = pgpCipher.bits;
     this.name = this.id.substring(0, 4).toUpperCase();
     this.userIDs.replaceAll(pgp.users.map(u => u.userID.email));
