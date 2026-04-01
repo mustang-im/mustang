@@ -39,7 +39,6 @@
     "@victr/favicon-fetcher": "^4.0.1",
     "@xmpp-plugins/roster": "^1.2.0",
     "@xmpp/client": "^0.14.0",
-    "axios": "^1.13.2",
     "dompurify": "^3.3.1",
     "email-addresses": "^5.0.0",
     "html-to-text": "^9.0.5",
