@@ -107,7 +107,9 @@
   let monthWeekOptions: RadioOption[];
   let yearWeekOptions: RadioOption[];
 
-  $: $event.startTime, $event.duration, updateDateUI();
+  $: startTime = $event.startTime.getTime();
+  $: duration = $event.duration;
+  $: startTime, duration, updateDateUI();
   function updateDateUI() {
     master.startEditing();
     master.startTime = event.startTime;
