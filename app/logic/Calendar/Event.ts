@@ -364,9 +364,12 @@ export class Event extends Observable {
    * copyEditableFieldsFrom and recurring events need extra care. */
   copyFrom(original: Event) {
     this.copyEditableFieldsFrom(original);
-    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
+    this.recurrenceStartTime = original.recurrenceStartTime;
     this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
+    this.instances.replaceAll(original.instances);
+    this.exceptions.replaceAll(original.exceptions);
+    this.exclusions.replaceAll(original.exclusions);
     this.parentEvent = original.parentEvent;
   }
 
@@ -580,8 +583,10 @@ export class Event extends Observable {
    * Saves the event to the server and to the database.
    */
   async save() {
-    await this.saveLocally();
+    // Temporary to work around #1127 - save to server first,
+    // while the event's parent is still unedited.
     await this.saveToServer();
+    await this.saveLocally();
   }
 
   /**
