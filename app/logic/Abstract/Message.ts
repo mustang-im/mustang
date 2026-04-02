@@ -90,6 +90,9 @@ export class Message extends Observable {
       if (this._text) {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
+      if (this._rawHTML === "" || this._text === "") {
+        return "";
+      }
     } catch (ex) {
       backgroundError(ex);
     }
