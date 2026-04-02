@@ -98,7 +98,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
     event.allDay = true;
   }
   if (vevent.entries.rrule) {
-    event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, vevent.entries.rrule[0].line);
+    event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.timezone, event.startTime, vevent.entries.rrule[0].line);
   } else {
     event.recurrenceRule = null;
   }
