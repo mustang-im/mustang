@@ -583,10 +583,8 @@ export class Event extends Observable {
    * Saves the event to the server and to the database.
    */
   async save() {
-    // Temporary to work around #1127 - save to server first,
-    // while the event's parent is still unedited.
-    await this.saveToServer();
     await this.saveLocally();
+    await this.saveToServer();
   }
 
   /**
