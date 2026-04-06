@@ -249,44 +249,48 @@ export class OWAAccount extends MailAccount {
       }
     }
     let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
-    request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
-    request.addField("Message", "Subject", email.subject, "item:Subject");
-    request.addField("Message", "Body", {
-      __type: "BodyContentType:#Exchange",
-      BodyType: email.html ? "HTML" : "Text",
-      Value: email.html || email.text,
-    }, "item:Body");
-    if (email.attachments.hasItems) {
-      request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
-        __type: "FileAttachment:#Exchange",
-        Name: attachment.filename,
-        ContentType: attachment.mimeType,
-        ContentID: attachment.contentID,
-        Size: attachment.size,
-        IsInline: attachment.disposition == ContentDisposition.inline,
-        Content: await blobToBase64(attachment.content),
-      }))), "item:Attachments");
+    if (email.sendRawMIME) {
+      request.addField("Message", "MimeContent", btoa(email.sendRawMIME), "item:MimeContent");
+    } else {
+      request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
+      request.addField("Message", "Subject", email.subject, "item:Subject");
+      request.addField("Message", "Body", {
+        __type: "BodyContentType:#Exchange",
+        BodyType: email.html ? "HTML" : "Text",
+        Value: email.html || email.text,
+      }, "item:Body");
+      if (email.attachments.hasItems) {
+        request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
+          __type: "FileAttachment:#Exchange",
+          Name: attachment.filename,
+          ContentType: attachment.mimeType,
+          ContentID: attachment.contentID,
+          Size: attachment.size,
+          IsInline: attachment.disposition == ContentDisposition.inline,
+          Content: await blobToBase64(attachment.content),
+        }))), "item:Attachments");
+      }
+      if (email.headers.hasItems) {
+        request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
+          ExtendedFieldURI: {
+            PropertyName: header,
+            DistinguishedPropertySetId: "InternetHeaders",
+            PropertyType: "String",
+          },
+          Value: value,
+        })), null);
+      }
+      if (email.inReplyTo) {
+        request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+      }
+      if (email.replyTo) {
+        addRecipients(request, "ReplyTo", [email.replyTo]);
+      }
+      addRecipients(request, "ToRecipients", email.to.contents);
+      addRecipients(request, "CcReipients", email.cc.contents);
     }
-    if (email.headers.hasItems) {
-      request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
-        ExtendedFieldURI: {
-          PropertyName: header,
-          DistinguishedPropertySetId: "InternetHeaders",
-          PropertyType: "String",
-        },
-        Value: value,
-      })), null);
-    }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.replyTo) {
-      addRecipients(request, "ReplyTo", [email.replyTo]);
-    }
-    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
-    addRecipients(request, "ToRecipients", email.to.contents);
-    addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
+    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
     await this.callOWA(request);
   }
 
