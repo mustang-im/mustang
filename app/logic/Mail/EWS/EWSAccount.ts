@@ -165,44 +165,48 @@ export class EWSAccount extends MailAccount {
       }
     }
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
-    request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
-    request.addField("Message", "Subject", email.subject, "item:Subject");
-    request.addField("Message", "Body", {
-      BodyType: email.html ? "HTML" : "Text",
-      _TextContent_: email.html || email.text,
-    }, "item:Body");
-    if (email.attachments.hasItems) {
-      request.addField("Message", "Attachments", {
-        t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
-          t$Name: attachment.filename,
-          t$ContentType: attachment.mimeType,
-          t$ContentID: attachment.contentID,
-          t$Size: attachment.size,
-          t$IsInline: attachment.disposition == ContentDisposition.inline,
-          t$Content: await blobToBase64(attachment.content),
-        }))),
-      }, "item:Attachments");
+    if (email.sendRawMIME) {
+      request.addField("Message", "MimeContent", btoa(email.sendRawMIME), "item:MimeContent");
+    } else {
+      request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
+      request.addField("Message", "Subject", email.subject, "item:Subject");
+      request.addField("Message", "Body", {
+        BodyType: email.html ? "HTML" : "Text",
+        _TextContent_: email.html || email.text,
+      }, "item:Body");
+      if (email.attachments.hasItems) {
+        request.addField("Message", "Attachments", {
+          t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
+            t$Name: attachment.filename,
+            t$ContentType: attachment.mimeType,
+            t$ContentID: attachment.contentID,
+            t$Size: attachment.size,
+            t$IsInline: attachment.disposition == ContentDisposition.inline,
+            t$Content: await blobToBase64(attachment.content),
+          }))),
+        }, "item:Attachments");
+      }
+      if (email.inReplyTo) {
+        request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+      }
+      if (email.headers.hasItems) {
+        request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
+          t$ExtendedFieldURI: {
+            PropertyName: header,
+            DistinguishedPropertySetId: "InternetHeaders",
+            PropertyType: "String",
+            // TODO Sends header names as all-lowercase. Should preserve casing.
+          },
+          t$Value: value,
+        })), null);
+      }
+      // Older versions of Exchange require a specific order of parameters
+      addRecipients(request, "ToRecipients", email.to.contents);
+      addRecipients(request, "CcReipients", email.cc.contents);
     }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.headers.hasItems) {
-      request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
-        t$ExtendedFieldURI: {
-          PropertyName: header,
-          DistinguishedPropertySetId: "InternetHeaders",
-          PropertyType: "String",
-          // TODO Sends header names as all-lowercase. Should preserve casing.
-        },
-        t$Value: value,
-      })), null);
-    }
-    // Older versions of Exchange require a specific order of parameters
-    addRecipients(request, "ToRecipients", email.to.contents);
-    addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
     addRecipients(request, "From", [email.from]);
-    if (email.replyTo) {
+    if (!email.sendRawMIME && email.replyTo) {
       addRecipients(request, "ReplyTo", [email.replyTo]);
     }
     await this.callEWS(request);
