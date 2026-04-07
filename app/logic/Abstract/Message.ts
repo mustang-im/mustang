@@ -51,6 +51,9 @@ export class Message extends Observable {
     if (this._rawHTML) {
       return this._text = convertHTMLToText(this._rawHTML);
     }
+    if (this._rawHTML === "" || this._text === "") {
+      return "";
+    }
     return null;
   }
   /** Must also set `.html` (or at least get `.html` to auto-generate it),
