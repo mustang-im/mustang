@@ -4,19 +4,32 @@ import type { Person } from "../../Abstract/Person";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
+import { readAutoCryptKeys } from "./PGP/AutoCrypt";
+import type { EMail } from "../EMail";
 import { findAllIdentities, type MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
 import { UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
-export function getPublicKeyByKeyID(id: string | null): PublicKey | null {
+export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Promise<PublicKey | null> {
   if (!id) {
     return null;
   }
-  for (let person of appGlobal.persons.each) {
-    for (let key of person.encryptionPublicKeys.each) {
-      if (key.id == id) {
-        return key;
+  if (email?.from) {
+    let person = email.from.findPerson();
+    if (person) {
+      for (let key of person.encryptionPublicKeys.each) {
+        if (key.id == id) {
+          return key;
+        }
+      }
+    }
+  } else {
+    for (let person of appGlobal.persons.each) {
+      for (let key of person.encryptionPublicKeys.each) {
+        if (key.id == id) {
+          return key;
+        }
       }
     }
   }
@@ -26,6 +39,9 @@ export function getPublicKeyByKeyID(id: string | null): PublicKey | null {
         return key;
       }
     }
+  }
+  if (email) {
+    return await readAutoCryptKeys(email);
   }
   return null;
 }

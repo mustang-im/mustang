@@ -22,20 +22,16 @@ export function sendAutoCryptHeader(identity: MailIdentity, privateKey: PGPPriva
   return header;
 }
 
-/** Reads the AutoCrypt keys from the sender of this email,
- * and adds them to the contact.
- * If the contact does not exist yet, creates the contact in the
- * collected addressbook. */
-export async function importAutoCryptKeys(mail: EMail) {
+/** Reads the AutoCrypt keys from the sender of this email. */
+export async function readAutoCryptKeys(mail: EMail): Promise<PGPPublicKey> {
+  await mail.loadMIME();
   await mail.parseHeaders();
   let header = sanitize.nonemptystring(mail.headers.get("autocrypt"), null);
-  if (!header) {
-    return;
-  }
-  let params = parseHeaderParameters(header);
-  if (params.addr != mail.from?.emailAddress ||
-      !params.keydata) {
-    return;
+  let params = header ? parseHeaderParameters(header) : null;
+  if (!header ||
+      !params?.keydata ||
+      params.addr != mail.from?.emailAddress) {
+    return null;
   }
   let preferEncrypted = params["prefer-encrypt"] == "mutual";
 
@@ -44,6 +40,19 @@ export async function importAutoCryptKeys(mail: EMail) {
   let publicKey = await PGPPublicKey.importPublicKey(publicKeyArmored);
   publicKey.trustLevel = TrustLevel.Sender;
   publicKey.encryptByDefault = preferEncrypted;
+  return publicKey;
+}
+
+/** Reads the AutoCrypt keys from the sender of this email,
+ * and adds them to the contact.
+ * If the contact does not exist yet, creates the contact in the
+ * collected addressbook. */
+export async function importAutoCryptKeys(mail: EMail) {
+  let publicKey = await readAutoCryptKeys(mail);
+  if (!publicKey) {
+    return;
+  }
+  let preferEncrypted = publicKey.encryptByDefault;
 
   let person = mail.from.createPerson(appGlobal.collectedAddressbook);
   let existing = person.encryptionPublicKeys.find(key => key.id == publicKey.id);
