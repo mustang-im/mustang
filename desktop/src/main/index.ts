@@ -3,7 +3,7 @@ import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, t
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
 
@@ -134,11 +134,8 @@ async function whenReady() {
 
   allowCrossDomainRequestsFromFrontend();
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+    watchWindowShortcuts(window);
   })
 
   createMenu();
@@ -258,6 +255,24 @@ function setWindowOpenHandler(webContents: WebContents) {
   webContents.setWindowOpenHandler((details) => {
     return { action: 'deny' };
   });
+}
+
+/**
+ * Enable DevTools by F12 shortcut in development only.
+ */
+function watchWindowShortcuts(window: BrowserWindow) {
+  if (is.dev) {
+    window.webContents.on('before-input-event', (event, input) => {
+      if (input.type === 'keyDown' && input.code === 'F12') {
+        if (window.webContents.isDevToolsOpened()) {
+          window.webContents.closeDevTools();
+        } else {
+          window.webContents.openDevTools();
+        }
+        event.preventDefault();
+      }
+    });
+  }
 }
 
 // In this file you can include the rest of your app"s specific main process
