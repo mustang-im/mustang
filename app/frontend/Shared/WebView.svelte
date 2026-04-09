@@ -152,7 +152,21 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(new KeyboardEvent("keydown", event));
+        // Electron InputEvent uses shift / control / alt / meta, but
+        // KeyboardEvent init needs shiftKey / ctrlKey / altKey / metaKey.
+        // see https://www.electronjs.org/docs/latest/api/web-contents#event-before-input-event
+        // see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+        onKeyOnMessage(new KeyboardEvent("keydown", {
+          key: event.key,
+          code: event.code,
+          repeat: event.isAutoRepeat,
+          isComposing: event.isComposing,
+          shiftKey: event.shift,
+          ctrlKey: event.control,
+          altKey: event.alt,
+          metaKey: event.meta,
+          location: event.location,
+        }));
       }
     });
   }
