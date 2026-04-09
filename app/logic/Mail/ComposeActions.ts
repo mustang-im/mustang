@@ -171,7 +171,7 @@ export class ComposeActions {
     let a = new Attachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
-    a.filename = this.email.subject + ".eml";
+    a.filename = sanitize.filename(this.email.subject, "email") + ".eml";
     a.content = new File([this.email.mime], a.filename);
     a.size = this.email.size;
     forward.attachments.add(a);
