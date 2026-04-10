@@ -73,8 +73,8 @@ export class Calendar extends Account {
     });
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
-    return participants.map(participant => ({ participant, availability: [] }));
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
+    return [];
   }
 
   async save(): Promise<void> {

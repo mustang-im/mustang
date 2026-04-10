@@ -61,7 +61,7 @@
     to.setDate(to.getDate() + showDays);
     let availability = await calendar.arePersonsFree(participants.contents, from, to);
     console.log("availability", availability);
-    if (!availability?.length) { // || availability.filter(avp => avp.availability.length).length <= 1) {
+    if (!availability.some(avp => avp.availability)) {
       throw new UserError(gt`No way to know`);
     }
     for (let day = startDay; day <= startDay + showDays; day++) {
@@ -80,7 +80,7 @@
 
         let participantsInfo = availability.map(avp => ({
           participant: avp.participant,
-          free: avp.availability.find(av => av.from <= startTime && endTime <= av.to)?.free,
+          free: avp.availability?.every(av => av.to <= startTime || endTime <= av.from || av.free),
         }));
         let freeParticipants = participantsInfo.filter(avp => avp.free === true).map(avp => avp.participant);
         let busyParticipants = participantsInfo.filter(avp => avp.free === false).map(avp => avp.participant);
@@ -103,7 +103,7 @@
         let participantsStatus =
           (busyParticipants.length ? gt`Busy` + ": " + busyParticipants.map(p => p.name).join(", ") + "\n" : "") +
           (freeParticipants.length ? gt`Free` + ": " + freeParticipants.map(p => p.name).join(", ") + "\n" : "") +
-          (unknownParticipants ? gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ") : "");
+          (unknownParticipants.length ? gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ") : "");
         event.color =
           isFree ? "#CBF3E1" : // green
           isBusy ? "#FF7676" : // red
