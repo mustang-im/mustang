@@ -62,10 +62,14 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
+    await this.startup();
+  }
+
+  async startup() {
     if (await this.hasCapability('NAMESPACE')) {
       this.namespaces = await this.getNamespaces();
     }
-    await this.listFolders();
+    await super.startup();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
   }

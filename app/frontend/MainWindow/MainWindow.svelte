@@ -77,7 +77,7 @@
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
   import DemoBarLeft from "./DemoBarLeft.svelte";
   import DemoBarTop from "./DemoBarTop.svelte";
-  import { catchErrors, backgroundError } from "../Util/error";
+  import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
@@ -119,7 +119,7 @@
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
-      await loginOnStartup(console.error, backgroundError);
+      await loginOnStartup(console.error);
       // Setting $selectedApp late would overwrite commandline/URL handlers
       $selectedAccount = appGlobal.emailAccounts.first;
       $selectedFolder = $selectedAccount.inbox;

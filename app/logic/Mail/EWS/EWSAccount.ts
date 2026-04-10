@@ -9,9 +9,9 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
+import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
-import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -105,23 +105,26 @@ export class EWSAccount extends MailAccount {
     await super.login(interactive);
     await this.loginCommon(interactive);
 
-    await this.listFolders();
+    await this.startup();
+  }
+
+  async startup() {
+    await super.startup();
 
     // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .then(() => addressbook.username != this.username && this.streamNotifications((addressbook as EWSAddressbook).folderID))
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .then(() => calendar.username != this.username && this.streamNotifications((calendar as EWSCalendar).folderID))
-          .catch(this.errorCallback);
-      }
+    // We can't use `startupDependentAccounts()` here, because we need to special-case
+    // notifications, which we only want to happen once the sync completes.
+    for (let dependent of this.dependentAccounts()) {
+      dependent.startup()
+        .then(() => {
+          // delegated account of another user
+          if (dependent.username != this.username &&
+              (dependent instanceof EWSAddressbook || dependent instanceof EWSCalendar)) {
+            this.streamNotifications(dependent.folderID);
+          }
+        })
+        .catch(dependent.errorCallback);
     }
 
     appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));

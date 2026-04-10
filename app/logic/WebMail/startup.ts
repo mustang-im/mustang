@@ -29,21 +29,18 @@ export async function getStartObjects(): Promise<void> {
  *
  * @param startupErrorCallback Called for login errors.
  *   May be called multiple times, e.g. once per account.
- * @param backgroundErrorCallback Called for errors while updating the folder etc.
- *   Called later on, if there are errors on processing server responses,
- *   e.g. the account being logged out, malformed data etc..
  */
-export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
+export async function loginOnStartup(startupErrorCallback: (ex: Error) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    await account.login(false);
+    if (!account.isDependentAccount) {
+      account.login(false).catch(startupErrorCallback);
+    }
   }
 
   for (let account of appGlobal.emailAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    await account.login(false);
-    assert(account.inbox, "Inbox not found");
-    await account.inbox.getNewMessages();
+    account.login(false).catch(startupErrorCallback);
   }
 }
 
