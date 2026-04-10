@@ -24,6 +24,7 @@ import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -38,16 +39,18 @@ export class EWSAccount extends MailAccount {
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
-  throttle = new Throttle(50, 1);
-  semaphore = new Semaphore(20);
+  protected throttle = new Throttle(50, 1);
+  protected semaphore = new Semaphore(20);
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
   // null: if this is our account
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
-  sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
   // AbortControllers for all currently streaming notifications
-  notificationAbort = new Set<AbortController>();
+  protected notificationAbort = new Set<AbortController>();
   // Subscription IDs for all subscribed notificaions
-  subscriptions: string[] = [];
+  protected subscriptions: string[] = [];
 
   constructor() {
     super();
@@ -96,40 +99,44 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (this.mainAccount) {
-      await this.mainAccount.login(interactive);
-      await this.listFolders();
-      return;
-    }
-    await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
-    await super.login(interactive);
-    await this.loginCommon(interactive);
+    await this.loginRunOnce.runOnce(async () => {
+      if (this.mainAccount) {
+        await this.mainAccount.login(interactive);
+        await this.listFolders();
+        return;
+      }
+      await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
+      await super.login(interactive);
+      await this.loginCommon(interactive);
+    });
 
     await this.startup();
   }
 
   async startup() {
-    await super.startup();
+    await this.startupRunOnce.runOnce(async () => {
+      await super.startup();
 
-    // `listFolders()` will subscribe to new user-added addressbooks and calendars
+      // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-    // We can't use `startupDependentAccounts()` here, because we need to special-case
-    // notifications, which we only want to happen once the sync completes.
-    for (let dependent of this.dependentAccounts()) {
-      dependent.startup()
-        .then(() => {
-          // delegated account of another user
-          if (dependent.username != this.username &&
+      // We can't use `startupDependentAccounts()` here, because we need to special-case
+      // notifications, which we only want to happen once the sync completes.
+      for (let dependent of this.dependentAccounts()) {
+        dependent.startup()
+          .then(() => {
+            // delegated account of another user
+            if (dependent.username != this.username &&
               (dependent instanceof EWSAddressbook || dependent instanceof EWSCalendar)) {
-            this.streamNotifications(dependent.folderID);
-          }
-        })
-        .catch(dependent.errorCallback);
-    }
+              this.streamNotifications(dependent.folderID);
+            }
+          })
+          .catch(dependent.errorCallback);
+      }
 
-    appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
 
-    await this.streamNotifications();
+      await this.streamNotifications();
+    });
   }
 
   async logout(): Promise<void> {

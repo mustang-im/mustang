@@ -76,7 +76,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveCalendar) {
       await this.listCalendars();
     }
-    this.startupDependentAccounts();
+    await this.startupDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {

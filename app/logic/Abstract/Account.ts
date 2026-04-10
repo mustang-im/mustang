@@ -72,7 +72,7 @@ export class Account extends Observable {
    * Convenience method for accounts to use to start up dependent accounts.
    * This should be called after the account has finished its own startup.
    */
-  protected startupDependentAccounts() {
+  protected async startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
       dependent.startup()
         .catch(dependent.errorCallback);
