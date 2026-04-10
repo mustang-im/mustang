@@ -42,9 +42,11 @@ export class PGPPrivateKey extends PGPPublicKey implements PrivateKey {
     }
     openPGP ??= await import("openpgp");
     assert(this.privateKeyArmored, `Have no private key stored for ${this.userIDs.first} ${this.name}`);
-    let encryptedKey = await openPGP.readPrivateKey({ armoredKey: this.privateKeyArmored });
-    let password = this.passphrase; // TODO
-    return await openPGP.decryptKey({ privateKey: encryptedKey, passphrase: password });
+    let key = await openPGP.readPrivateKey({ armoredKey: this.privateKeyArmored });
+    if (this.passphrase) {
+      key = await openPGP.decryptKey({ privateKey: key, passphrase: this.passphrase });
+    }
+    return key;
   }
 
   privateKeyAsFile(): File {

@@ -47,7 +47,8 @@ export class OAuth2 extends WebBasedAuth {
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Tab;
   protected ui: OAuth2UI | null = null;
-  protected runOnce = new RunOnce();
+  protected loginRunOnce = new RunOnce<string>();
+  protected accessTokenRunOnce = new RunOnce();
 
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
@@ -96,27 +97,29 @@ export class OAuth2 extends WebBasedAuth {
     if (this.isLoggedIn) {
       return this.accessToken;
     }
-    this.refreshToken ??= await this.getRefreshTokenFromStorage();
-    if (this.refreshToken) {
-      try {
-        return await this.getAccessTokenFromRefreshToken(this.refreshToken);
-      } catch (ex) {
-        console.error(ex);
-        this.refreshToken = null;
-        await this.deleteRefreshTokenFromStorage();
+    return await this.loginRunOnce.runOnce(async () => {
+      this.refreshToken ??= await this.getRefreshTokenFromStorage();
+      if (this.refreshToken) {
+        try {
+          return await this.getAccessTokenFromRefreshToken(this.refreshToken);
+        } catch (ex) {
+          console.error(ex);
+          this.refreshToken = null;
+          await this.deleteRefreshTokenFromStorage();
+        }
       }
-    }
-    if (this.account.password && this.tokenURLPasswordAuth) {
-      try {
-        return await this.loginWithPassword(this.account.username, this.account.password);
-      } catch (ex) {
-        console.error(ex);
+      if (this.account.password && this.tokenURLPasswordAuth) {
+        try {
+          return await this.loginWithPassword(this.account.username, this.account.password);
+        } catch (ex) {
+          console.error(ex);
+        }
       }
-    }
-    if (!interactive) {
-      throw new OAuth2LoginNeeded();
-    }
-    return await this.loginWithUI();
+      if (!interactive) {
+        throw new OAuth2LoginNeeded();
+      }
+      return await this.loginWithUI();
+    });
   }
 
   /**
@@ -203,7 +206,7 @@ export class OAuth2 extends WebBasedAuth {
    * @throws OAuth2Error
    */
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
-    await this.runOnce.runOnce(async () => {
+    await this.accessTokenRunOnce.runOnce(async () => {
       params.scope = this.scope;
       params.client_id = this.clientID;
       if (this.clientSecret) {

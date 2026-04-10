@@ -13,20 +13,24 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { type PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
+  import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   /** out */
   export let isExpanded = false;
 
-  $: signingKey = getPublicKeyByKeyID($message.signed);
-  $: signed = $message.signed && $signingKey?.trustLevel != TrustLevel.Distrusted;
+  let signingKey: PublicKey;
+  $: getPublicKeyByKeyID($message.signed, message)
+    .then(key => signingKey = key)
+    .catch(showError);
+  $: signed = $message.signed && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: keyName = $signingKey?.name ?? $message.signed?.substring(2, 6);

@@ -37,6 +37,7 @@
           <label>
             <input type="radio"
               value={TrustLevel.Personal}
+              on:change={onSave}
               bind:group={key.trustLevel} />
             {$t`I have personally checked the verification code with ${personName}`}
           </label>

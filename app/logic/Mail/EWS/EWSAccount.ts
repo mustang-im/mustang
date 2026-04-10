@@ -9,9 +9,9 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
+import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
-import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -24,12 +24,13 @@ import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da>
+/** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
 
 export interface EWSSubscribable extends Account {
@@ -45,16 +46,18 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
-  throttle = new Throttle(50, 1);
-  semaphore = new Semaphore(20);
-  // null: if this is our account
-  // msgfolderroot: if this is an account shared with us
-  // inbox: if this is an inbox shared with us
-  sharedFolderRoot: "msgfolderroot" | "inbox" | null;
-  // AbortController for streaming notifications
-  notificationAbort: Record<string, AbortController> = {};
-  // Subscription ID for unsubscribing on disconnect
-  subscriptionID: string;
+  protected throttle = new Throttle(50, 1);
+  protected semaphore = new Semaphore(20);
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
+  /** null: if this is our account
+   * msgfolderroot: if this is an account shared with us
+   * inbox: if this is an inbox shared with us */
+  protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  /** AbortController for streaming notifications */
+  protected notificationAbort = new Set<AbortController>();
+  /** Subscription ID for unsubscribing on disconnect */
+  protected subscriptions: string[] = [];
 
   constructor() {
     super();
@@ -107,30 +110,30 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (this.mainAccount) {
-      await this.mainAccount.login(interactive);
-      return;
-    }
-    await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
-    await super.login(interactive);
-    await this.loginCommon(interactive);
+    await this.loginRunOnce.runOnce(async () => {
+      if (this.mainAccount) {
+        await this.mainAccount.login(interactive);
+        return;
+      }
+      await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
+      await super.login(interactive);
+      await this.loginCommon(interactive);
+    });
 
-    await this.listFolders();
-
-    // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-    for (let account of this.dependentAccounts()) {
-      account.startup().catch(this.errorCallback);
-    }
-
-    appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
-
-    await this.subscribeToNotifications();
+    await this.startup();
   }
 
-  async logout(): Promise<void> {
-    await super.logout();
-    await this.oAuth2?.logout();
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      await super.startup();
+
+      await this.startupDependentAccounts();
+
+      // `listFolders()` will subscribe to new user-added addressbooks and calendars
+      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+
+      await this.subscribeToNotifications();
+    });
   }
 
   async disconnect(): Promise<void> {
@@ -170,44 +173,48 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
       }
     }
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
-    request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
-    request.addField("Message", "Subject", email.subject, "item:Subject");
-    request.addField("Message", "Body", {
-      BodyType: email.html ? "HTML" : "Text",
-      _TextContent_: email.html || email.text,
-    }, "item:Body");
-    if (email.attachments.hasItems) {
-      request.addField("Message", "Attachments", {
-        t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
-          t$Name: attachment.filename,
-          t$ContentType: attachment.mimeType,
-          t$ContentID: attachment.contentID,
-          t$Size: attachment.size,
-          t$IsInline: attachment.disposition == ContentDisposition.inline,
-          t$Content: await blobToBase64(attachment.content),
-        }))),
-      }, "item:Attachments");
+    if (email.sendRawMIME) {
+      request.addField("Message", "MimeContent", btoa(email.sendRawMIME), "item:MimeContent");
+    } else {
+      request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
+      request.addField("Message", "Subject", email.subject, "item:Subject");
+      request.addField("Message", "Body", {
+        BodyType: email.html ? "HTML" : "Text",
+        _TextContent_: email.html || email.text,
+      }, "item:Body");
+      if (email.attachments.hasItems) {
+        request.addField("Message", "Attachments", {
+          t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
+            t$Name: attachment.filename,
+            t$ContentType: attachment.mimeType,
+            t$ContentID: attachment.contentID,
+            t$Size: attachment.size,
+            t$IsInline: attachment.disposition == ContentDisposition.inline,
+            t$Content: await blobToBase64(attachment.content),
+          }))),
+        }, "item:Attachments");
+      }
+      if (email.inReplyTo) {
+        request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+      }
+      if (email.headers.hasItems) {
+        request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
+          t$ExtendedFieldURI: {
+            PropertyName: header,
+            DistinguishedPropertySetId: "InternetHeaders",
+            PropertyType: "String",
+            // TODO Sends header names as all-lowercase. Should preserve casing.
+          },
+          t$Value: value,
+        })), null);
+      }
+      // Older versions of Exchange require a specific order of parameters
+      addRecipients(request, "ToRecipients", email.to.contents);
+      addRecipients(request, "CcReipients", email.cc.contents);
     }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.headers.hasItems) {
-      request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
-        t$ExtendedFieldURI: {
-          PropertyName: header,
-          DistinguishedPropertySetId: "InternetHeaders",
-          PropertyType: "String",
-          // TODO Sends header names as all-lowercase. Should preserve casing.
-        },
-        t$Value: value,
-      })), null);
-    }
-    // Older versions of Exchange require a specific order of parameters
-    addRecipients(request, "ToRecipients", email.to.contents);
-    addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
     addRecipients(request, "From", [email.from]);
-    if (email.replyTo) {
+    if (!email.sendRawMIME && email.replyTo) {
       addRecipients(request, "ReplyTo", [email.replyTo]);
     }
     await this.callEWS(request);

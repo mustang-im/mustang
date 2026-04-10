@@ -13,6 +13,7 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
+import type { EncryptionSystem } from "./Encryption/PublicKey";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -23,7 +24,6 @@ import { notifyChangedProperty } from "../util/Observable";
 import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
-import type { EncryptionSystem } from "./Encryption/PublicKey";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -217,9 +217,9 @@ export class EMail extends Message {
     await archive.moveMessageHere(this);
   }
 
-  async deleteMessage() {
+  async deleteMessage(strategy?: DeleteStrategy) {
     await this.deleteMessageLocally();
-    await this.deleteMessageOnServer();
+    await this.deleteMessageOnServer(strategy);
   }
 
   async deleteMessageLocally() {
@@ -233,7 +233,7 @@ export class EMail extends Message {
     await contentDeletes.wait();
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy?: DeleteStrategy) {
   }
 
   async addTag(tag: Tag) {

@@ -18,6 +18,7 @@ import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -39,16 +40,18 @@ export class ActiveSyncAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
-  readonly pingsMRU = new ArrayColl<ActiveSyncPingable>();
-  heartbeat = 60;
-  maxPings = kMaxCount;
-  listening = false;
-  policyKey: Promise<string> | string;
-  syncKeyBusy: Promise<any> | null;
   protocolVersion: string;
-  throttle = new Throttle(50, 1);
-  semaphore = new Semaphore(20);
-  retries = 0;
+  protected readonly pingsMRU = new ArrayColl<ActiveSyncPingable>();
+  protected maxPings = kMaxCount;
+  protected heartbeat = 60;
+  protected retries = 0;
+  protected listening = false;
+  protected policyKey: Promise<string> | string;
+  protected syncKeyBusy: Promise<any> | null;
+  protected throttle = new Throttle(50, 1);
+  protected semaphore = new Semaphore(20);
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -76,57 +79,50 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await ensureLicensed();
-    await super.login(interactive);
-    if (this.authMethod == AuthMethod.OAuth2) {
-      this.oAuth2 ??= getOAuth2BuiltIn(this);
-      assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
-      this.oAuth2.subscribe(() => this.notifyObservers());
-      await this.oAuth2.login(interactive);
-    }
-    this.protocolVersion = this.getStorageItem("protocolVersion");
-    if (this.protocolVersion == "14.0") {
-      let request = {
-        DeviceInformation: {
-          Set: {
-            Model: "Computer",
+    await this.loginRunOnce.runOnce(async () => {
+      await ensureLicensed();
+      await super.login(interactive);
+      if (this.authMethod == AuthMethod.OAuth2) {
+        this.oAuth2 ??= getOAuth2BuiltIn(this);
+        assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
+        this.oAuth2.subscribe(() => this.notifyObservers());
+        await this.oAuth2.login(interactive);
+      }
+      this.protocolVersion = this.getStorageItem("protocolVersion");
+      if (this.protocolVersion == "14.0") {
+        let request = {
+          DeviceInformation: {
+            Set: {
+              Model: "Computer",
+            },
           },
-        },
-      };
-      let response = await this.callEAS("Settings", request);
-      if (response.DeviceInformation.Status != "1") {
-        throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
+        };
+        let response = await this.callEAS("Settings", request);
+        if (response.DeviceInformation.Status != "1") {
+          throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
+        }
       }
-    }
+    });
 
-    await this.listFolders();
-
-    // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .catch(this.errorCallback);
-      }
-    }
-
-    appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
-
-    // ActiveSync doesn't have streaming notifications, instead it
-    // provides the Ping operation which will tell us when a pingable
-    // has gone out of sync. This only makes sense once the pingable
-    // is in sync, so each pingable registers with the account when
-    // it's ready to be specified in the Ping operation.
+    await this.startup();
   }
 
-  async logout(): Promise<void> {
-    await this.oAuth2?.logout();
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      await super.startup();
+
+      // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
+      appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+
+      // ActiveSync doesn't have streaming notifications, instead it
+      // provides the Ping operation which will tell us when a pingable
+      // has gone out of sync. This only makes sense once the pingable
+      // is in sync, so each pingable registers with the account when
+      // it's ready to be specified in the Ping operation.
+
+      await this.startupDependentAccounts();
+    });
   }
 
   needsLicense(): boolean {

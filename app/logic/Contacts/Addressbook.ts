@@ -5,6 +5,7 @@ import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
 import { SQLGroup } from "./SQL/SQLGroup";
 import { appGlobal } from "../app";
+import { RunOnce } from "../util/flow/RunOnce";
 import { AbstractFunction, NotReached } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
@@ -17,6 +18,7 @@ export class Addressbook extends Account {
   readonly contacts: Collection<Contact> = mergeColl(this.persons as Collection<Contact>, this.groups as Collection<Contact>);
   storage: AddressbookStorage | null = null;
   syncState: string | null = null;
+  readDBRunOnce = new RunOnce();
 
   newPerson(): Person {
     return new Person(this);
@@ -31,6 +33,7 @@ export class Addressbook extends Account {
   }
 
   async startup() {
+    await super.startup();
     await this.listContacts();
   }
 
@@ -39,12 +42,14 @@ export class Addressbook extends Account {
   }
 
   async readContactsFromDB() {
-    if (!this.dbID) {
-      await this.save();
-    }
-    if (this.persons.isEmpty && this.groups.isEmpty) {
-      await SQLGroup.readAll(this); // also reads persons
-    }
+    await this.readDBRunOnce.runOnce(async () => {
+      if (!this.dbID) {
+        await this.save();
+      }
+      if (this.persons.isEmpty && this.groups.isEmpty) {
+        await SQLGroup.readAll(this); // also reads persons
+      }
+    });
   }
 
   /**

@@ -26,13 +26,14 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Semaphore } from "../../util/flow/Semaphore";
 import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -46,7 +47,7 @@ export class OWAAccount extends MailAccount {
    * But we have to special-case the root folder,
    * since Mustang doesn't use a dedicated root folder object.
    */
-  msgFolderRootID: string | undefined;
+  protected msgFolderRootID: string | undefined;
   /**
    * OAuth2 authorization header for Hotmail or Office 365 environments.
    * In future it might be possible to perform requests from the front end?
@@ -54,14 +55,16 @@ export class OWAAccount extends MailAccount {
   authorizationHeader: string | undefined;
   /** requests only work after the login form has been successfully submitted */
   @notifyChangedProperty
-  hasLoggedIn = false;
+  protected hasLoggedIn = false;
   protected notifications: OWANotifications;
-  throttle = new Throttle(50, 1);
-  semaphore = new Semaphore(20);
+  protected throttle = new Throttle(50, 1);
+  protected semaphore = new Semaphore(20);
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
   // null: if this is our account
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
-  sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
 
   constructor() {
     super();
@@ -165,63 +168,59 @@ export class OWAAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (this.mainAccount) {
-      await this.mainAccount.login(interactive);
-      await this.listFolders();
-      return;
-    }
-    await ensureLicensed();
-    await super.login(interactive);
-    await this.loginCommon(interactive);
-    this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
-    this.hasLoggedIn = true;
-    await this.listFolders();
-
-    // `listFolders()` will subscribe to new user-added calendars
-
-    // Create primary addressbook automatically
-    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
-    if (!haveAddressbook) {
-      let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
-      let addressbook = this.createAddressbookAccount(folder, true);
-      appGlobal.addressbooks.add(addressbook);
-      await addressbook.save();
-    }
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
+    await this.loginRunOnce.runOnce(async () => {
+      if (this.mainAccount) {
+        await this.mainAccount.login(interactive);
+        await this.listFolders();
+        return;
       }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .catch(this.errorCallback);
+      await ensureLicensed();
+      await super.login(interactive);
+      await this.loginCommon(interactive);
+      this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
+      this.hasLoggedIn = true;
+    });
+
+    await this.startup();
+  }
+
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      // `listFolders()` will subscribe to new user-added calendars
+      await super.startup();
+
+      // Create primary addressbook automatically
+      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
+      if (!haveAddressbook) {
+        let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+        let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+        let addressbook = this.createAddressbookAccount(folder, true);
+        appGlobal.addressbooks.add(addressbook);
+        await addressbook.save();
       }
-    }
 
-    appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+      appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
 
-    await this.callOWA(new OWASubscribeToNotificationRequest());
+      await this.callOWA(new OWASubscribeToNotificationRequest());
 
-    this.notifications = this.isOffice365()
-      ? new OWAOffice365Notifications(this)
-      : new OWAExchangeNotifications(this);
-    this.notifications.start()
-      .catch(this.errorCallback);
+      this.notifications = this.isOffice365()
+        ? new OWAOffice365Notifications(this)
+        : new OWAExchangeNotifications(this);
+      this.notifications.start()
+        .catch(this.errorCallback);
+
+      await this.startupDependentAccounts();
+    });
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
+    if (this.mainAccount) { // TODO Why?
       await this.mainAccount.logout();
       return;
     }
     this.hasLoggedIn = false;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    } else {
+    await super.logout();
+    if (!this.oAuth2) {
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
     }
   }
@@ -249,44 +248,48 @@ export class OWAAccount extends MailAccount {
       }
     }
     let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: folder.id } }, MessageDisposition: "SendAndSaveCopy" });
-    request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
-    request.addField("Message", "Subject", email.subject, "item:Subject");
-    request.addField("Message", "Body", {
-      __type: "BodyContentType:#Exchange",
-      BodyType: email.html ? "HTML" : "Text",
-      Value: email.html || email.text,
-    }, "item:Body");
-    if (email.attachments.hasItems) {
-      request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
-        __type: "FileAttachment:#Exchange",
-        Name: attachment.filename,
-        ContentType: attachment.mimeType,
-        ContentID: attachment.contentID,
-        Size: attachment.size,
-        IsInline: attachment.disposition == ContentDisposition.inline,
-        Content: await blobToBase64(attachment.content),
-      }))), "item:Attachments");
+    if (email.sendRawMIME) {
+      request.addField("Message", "MimeContent", btoa(email.sendRawMIME), "item:MimeContent");
+    } else {
+      request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
+      request.addField("Message", "Subject", email.subject, "item:Subject");
+      request.addField("Message", "Body", {
+        __type: "BodyContentType:#Exchange",
+        BodyType: email.html ? "HTML" : "Text",
+        Value: email.html || email.text,
+      }, "item:Body");
+      if (email.attachments.hasItems) {
+        request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
+          __type: "FileAttachment:#Exchange",
+          Name: attachment.filename,
+          ContentType: attachment.mimeType,
+          ContentID: attachment.contentID,
+          Size: attachment.size,
+          IsInline: attachment.disposition == ContentDisposition.inline,
+          Content: await blobToBase64(attachment.content),
+        }))), "item:Attachments");
+      }
+      if (email.headers.hasItems) {
+        request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
+          ExtendedFieldURI: {
+            PropertyName: header,
+            DistinguishedPropertySetId: "InternetHeaders",
+            PropertyType: "String",
+          },
+          Value: value,
+        })), null);
+      }
+      if (email.inReplyTo) {
+        request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
+      }
+      if (email.replyTo) {
+        addRecipients(request, "ReplyTo", [email.replyTo]);
+      }
+      addRecipients(request, "ToRecipients", email.to.contents);
+      addRecipients(request, "CcReipients", email.cc.contents);
     }
-    if (email.headers.hasItems) {
-      request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
-        ExtendedFieldURI: {
-          PropertyName: header,
-          DistinguishedPropertySetId: "InternetHeaders",
-          PropertyType: "String",
-        },
-        Value: value,
-      })), null);
-    }
-    if (email.inReplyTo) {
-      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
-    }
-    if (email.replyTo) {
-      addRecipients(request, "ReplyTo", [email.replyTo]);
-    }
-    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
-    addRecipients(request, "ToRecipients", email.to.contents);
-    addRecipients(request, "CcReipients", email.cc.contents);
     addRecipients(request, "BccRecipients", email.bcc.contents);
+    request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
     await this.callOWA(request);
   }
 
