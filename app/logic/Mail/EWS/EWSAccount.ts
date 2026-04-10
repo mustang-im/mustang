@@ -9,8 +9,8 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
-import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
@@ -30,16 +30,6 @@ import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json 
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-/** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
-const HiddenPidTag = "0x10F4";
-
-export interface EWSSubscribable extends Account {
-  // FolderId to subscribe to
-  readonly folderID: string;
-  // SubscriptionId for unsubscribing on disconnect
-  subscriptionID?: string;
-}
-
 export class EWSAccount extends MailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
   readonly port: number = 443;
@@ -55,13 +45,9 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
    * inbox: if this is an inbox shared with us */
   protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
   /** AbortController for streaming notifications */
-  protected notificationAbort = new Set<AbortController>();
-  /** Subscription ID for unsubscribing on disconnect */
-  protected subscriptions: string[] = [];
-
-  constructor() {
-    super();
-  }
+  protected notificationAbort: Record<string, AbortController> = {};
+  /** SubscriptionId for unsubscribing on disconnect */
+  subscriptionID?: string;
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
@@ -126,11 +112,14 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
       await super.startup();
-
+      if (this.isDependentAccount) {
+        await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
+        return;
+      }
       await this.startupDependentAccounts();
 
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
       appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+      // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
       await this.subscribeToNotifications();
     });
@@ -142,12 +131,6 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     } else {
       await this.unsubscribeAllSubscriptions();
     }
-  }
-
-  async startup() {
-    assert(this.isDependentAccount, "Not supported for main accounts yet");
-    await this.listFolders();
-    await (this.mainAccount as EWSAccount).subscribeToNotifications(this);
   }
 
   needsLicense(): boolean {
@@ -505,29 +488,8 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     }
   }
 
-  async subscribeToNotifications(account?: EWSSubscribable) {
-    let subscribe = account
-    ? {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$FolderIds: {
-            t$FolderId: {
-              Id: account.folderID,
-            },
-          },
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-            ],
-          },
-        },
-      },
-    }
-    : {
+  async subscribeToNotifications() {
+    let subscribe = {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
           t$EventTypes: {
@@ -545,9 +507,36 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
       },
     };
     let response = await this.callEWS(subscribe);
-    assert(!(account ?? this).subscriptionID, "startup code is broken");
-    (account ?? this).subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications(account?.username);
+    assert(!this.subscriptionID, "stream notification started twice");
+    this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+    await this.streamNotifications();
+  }
+
+  async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
+    let subscribe = {
+        m$Subscribe: {
+          m$StreamingSubscriptionRequest: {
+            t$FolderIds: {
+              t$FolderId: {
+                Id: account.folderID,
+              },
+            },
+            t$EventTypes: {
+              t$EventType: [
+                "CopiedEvent",
+                "CreatedEvent",
+                "DeletedEvent",
+                "ModifiedEvent",
+                "MovedEvent",
+              ],
+            },
+          },
+        },
+      };
+    let response = await this.callEWS(subscribe);
+    assert(!account.subscriptionID, "stream notification started twice");
+    account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+    await this.streamNotifications(account.username);
   }
 
   async streamNotifications(username = "") {
@@ -1081,7 +1070,17 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
   }
 }
 
+export interface EWSSubscribable extends Account {
+  /** FolderId to subscribe to */
+  readonly folderID: string;
+  /** SubscriptionId for unsubscribing on disconnect */
+  subscriptionID?: string;
+}
+
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
+
+/** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
+const HiddenPidTag = "0x10F4";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {
