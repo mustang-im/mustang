@@ -110,6 +110,8 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+    await this.disconnect();
+    await this.oAuth2?.logout();
   }
 
   /**

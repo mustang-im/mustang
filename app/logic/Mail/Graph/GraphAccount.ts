@@ -357,11 +357,8 @@ export class GraphAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async disconnect(): Promise<void> {
     this.stopPolling();
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    }
   }
 
   async send(email: EMail): Promise<void> {

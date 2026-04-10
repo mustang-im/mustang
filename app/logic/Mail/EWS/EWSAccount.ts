@@ -140,12 +140,11 @@ export class EWSAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
+    if (this.mainAccount) { // TODO Why?
       await this.mainAccount.logout();
       return;
     }
-    await this.unsubscribeAllNotifications();
-    await this.oAuth2?.logout();
+    await super.logout();
   }
 
   async disconnect(): Promise<void> {

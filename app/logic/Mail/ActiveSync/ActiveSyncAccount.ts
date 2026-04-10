@@ -125,10 +125,6 @@ export class ActiveSyncAccount extends MailAccount {
     });
   }
 
-  async logout(): Promise<void> {
-    await this.oAuth2?.logout();
-  }
-
   needsLicense(): boolean {
     return true;
   }

@@ -214,14 +214,13 @@ export class OWAAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
+    if (this.mainAccount) { // TODO Why?
       await this.mainAccount.logout();
       return;
     }
     this.hasLoggedIn = false;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    } else {
+    await super.logout();
+    if (!this.oAuth2) {
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
     }
   }

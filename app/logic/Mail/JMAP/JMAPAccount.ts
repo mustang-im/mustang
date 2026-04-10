@@ -407,12 +407,10 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async disconnect(): Promise<void> {
     this.stopPolling();
     this.session = null;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    }
+    await super.logout();
   }
 
   async send(email: EMail): Promise<void> {
