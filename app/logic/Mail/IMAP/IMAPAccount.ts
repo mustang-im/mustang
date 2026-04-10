@@ -55,7 +55,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }
@@ -76,7 +76,7 @@ export class IMAPAccount extends MailAccount {
 
   async verifyLogin(): Promise<void> {
     await this.connection(true);
-    this.logout(false);
+    await this.logout(false);
   }
 
   async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
@@ -408,7 +408,7 @@ export class IMAPAccount extends MailAccount {
         continue;
       }
       this.log(null, conn, "logout");
-      conn.logout();
+      await conn.logout();
       this.connections.delete(purpose);
       this.connectionLock.delete(conn);
     }

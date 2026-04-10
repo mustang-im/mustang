@@ -147,36 +147,38 @@ export class JMAPEMail extends EMail {
   }
 
   async download() {
-    let account = this.folder.account;
-    if (!this.mimeBlobId) {
-      let response = await account.makeSingleCall(
-        "Email/get", {
-        accountId: account.accountID,
-        "ids": [this.jmapID],
-        properties: ["blobId"],
-      },
-      ) as TJMAPGetResponse<TJMAPEMailHeaders>;
-      let json = response.list[0];
-      assert(json, "JMAP: EMail no longer on server");
-      this.mimeBlobId = sanitize.string(json.blobId);
-    }
+    await this.downloadRunOnce.runOnce(async () => {
+      let account = this.folder.account;
+      if (!this.mimeBlobId) {
+        let response = await account.makeSingleCall(
+          "Email/get", {
+          accountId: account.accountID,
+          "ids": [this.jmapID],
+          properties: ["blobId"],
+        },
+        ) as TJMAPGetResponse<TJMAPEMailHeaders>;
+        let json = response.list[0];
+        assert(json, "JMAP: EMail no longer on server");
+        this.mimeBlobId = sanitize.string(json.blobId);
+      }
 
-    let url = account.session.downloadUrl;
-    url = url
-      .replace("{accountId}", account.accountID)
-      .replace("{blobId}", this.mimeBlobId)
-      .replace("{name}", "email")
-      .replace("{type}", "message/rfc822");
-    let response = await account.httpGet(url, {
-      headers: {
-        "Accept": "message/rfc822",
-        "Content-Type": undefined, // override
-      },
-      result: "blob",
+      let url = account.session.downloadUrl;
+      url = url
+        .replace("{accountId}", account.accountID)
+        .replace("{blobId}", this.mimeBlobId)
+        .replace("{name}", "email")
+        .replace("{type}", "message/rfc822");
+      let response = await account.httpGet(url, {
+        headers: {
+          "Accept": "message/rfc822",
+          "Content-Type": undefined, // override
+        },
+        result: "blob",
+      });
+      this.mime = new Uint8Array(await response.arrayBuffer());
+      await this.parseMIME();
+      await this.saveCompleteMessage();
     });
-    this.mime = new Uint8Array(await response.arrayBuffer());
-    await this.parseMIME();
-    await this.saveCompleteMessage();
   }
 
   async markRead(read = true) {

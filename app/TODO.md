@@ -1,5 +1,6 @@
 # Bugs
-* IMAP Message download race condition (see IMAPEmail)
+* Mail: Move multiple mails (desktop) - UI and backend buggy
+* Composer: Bulleted lists - Paragraphs vs. lines
 * Mobile
   * Composer
   * Contacts Person page
@@ -28,8 +29,19 @@
 
 # Next
   * JMAP Calendar and Contacts
+    * Fix bugs
+    * Calendar: Recurrence
   * Graph Calendar and Contacts
   * PGP
+    * PGP: Read signature properly
+    * Send and read: Protected headers in encrypted emails
+       <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
+    * Data: Move to ContactEntry
+    * Data: Move EMail properties into class
+    * Composer
+      * Dropdown for PGP vs. S/MIME (if private keys for both systems)
+    * Msg reader
+      * Expander scrollable, maybe whole header
   * SML
     * Purchase
     * Poll
@@ -56,16 +68,13 @@
   * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
   * Setup mail
-    * After account delete: remove general panel
     * Scroll inside dialog, not whole window
 
 # Feedback
 ## Zucca
-* TB import: doppelte eigene Identity
-* Attachments einlesen mit email headers
-* Search server
-* CardDAV: Mehrere Addressbücher
-* CardDAV: "invalid string length" bei smartCollectionSync()
+* TB import: Duplicated own Identity
+* Attachments list: Fetch with email headers (not only during full download)
+* Mail: Search on server
 ## Elena
 * Clear profile
 * Debug dump of settings

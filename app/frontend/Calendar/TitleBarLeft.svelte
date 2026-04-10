@@ -12,10 +12,9 @@
 <script lang="ts">
   import RoundButton from "../Shared/RoundButton.svelte";
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
-  import { createEventDispatcher } from 'svelte';
   import { t } from "../../l10n/l10n";
-
-  const dispatch = createEventDispatcher();
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher<{ addEvent: void }>();
 
   function addEvent() {
     dispatch('addEvent');

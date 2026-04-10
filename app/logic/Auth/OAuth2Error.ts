@@ -1,5 +1,6 @@
-import { UserError } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { UserError } from "../util/util";
+import { gt } from "../../l10n/l10n";
 
 export class OAuth2Error extends Error {
   authFail = true;
@@ -9,7 +10,7 @@ export class OAuth2Error extends Error {
 export class OAuth2LoginNeeded extends UserError {
   authFail = true;
   constructor() {
-    super("Please login");
+    super(gt`Please login`);
   }
 }
 

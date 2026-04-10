@@ -54,7 +54,7 @@
             <HeaderGroupBox>
               <hbox slot="header">{$t`Criteria`}</hbox>
               <vbox class="content">
-                <SearchCriteria search={rule.criteria} />
+                <SearchCriteria search={rule.criteria} showAccount={false} />
               </vbox>
             </HeaderGroupBox>
 

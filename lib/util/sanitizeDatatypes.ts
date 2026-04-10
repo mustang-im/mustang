@@ -203,7 +203,7 @@ class Sanitize {
       filename = filename.replace(this.regexpHostname_ASCII, "").trim();
     }
     if (!filename) {
-      return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
+      return haveError("Filename cannot have only punctuation and control characters", unchecked, fallback);
     }
     const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
     if (filename.length < 5 && kDeviceNames.includes(filename)) {

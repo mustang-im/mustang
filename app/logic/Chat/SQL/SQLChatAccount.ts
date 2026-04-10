@@ -53,7 +53,7 @@ export class SQLChatAccount {
       WHERE idStr = ${accountRow.idStr}
       `) as any;
     acc.storage = new SQLChatStorage();
-    if (row.id) {
+    if (row?.id) {
       acc.dbID = row.id;
     } else {
       // When the type-specific DB has been deleted, but not the accounts DB.

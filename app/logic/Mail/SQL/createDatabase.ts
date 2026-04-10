@@ -86,6 +86,7 @@ export const mailDatabaseSchema = sql`
       REFERENCES folder (ID)
       ON DELETE CASCADE
   );
+  CREATE INDEX index_email_folderID_dateSent ON email (folderID, dateSent DESC);
 
   CREATE TABLE "emailAttachment" (
     "id" INTEGER PRIMARY KEY,

@@ -171,7 +171,7 @@ export class EWSAddressbook extends Addressbook {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         try {
-          let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
+          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id));
           if (person) {
             person.fromXML(result.Items.Contact);
             await person.saveLocally();
@@ -218,7 +218,7 @@ export class EWSAddressbook extends Addressbook {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         try {
-          let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
+          let group = this.getGroupByItemID(sanitize.nonemptystring(result.Items.DistributionList.ItemId.Id));
           if (group) {
             group.fromXML(result.Items.DistributionList);
             await group.saveLocally();
@@ -288,7 +288,7 @@ export class EWSAddressbook extends Addressbook {
       },
     };
     let result = await this.account.callEWS(request);
-    return result.Folders.ContactsFolder.PermissionSet.Permissions.Permission.map(permission => new ExchangePermission(permission));
+    return sanitize.array(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, []).map(permission => new ExchangePermission(permission));
   }
 
   async setPermissions(permissions: ExchangePermission[]) {

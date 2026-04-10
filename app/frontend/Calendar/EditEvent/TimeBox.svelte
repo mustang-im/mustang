@@ -74,12 +74,12 @@
           </hbox>
         </hbox>
         <hbox class="time-in-timezone">
-          {$event.startTime?.toLocaleString(getDateTimeFormatPref(), {
+          {$event.startTime?.toLocaleString(getDateTimeLocale(), {
               hour: "numeric", minute: "numeric",
               timeZone: event.timezone,
            })}
           -
-          {$event.endTime?.toLocaleString(getDateTimeFormatPref(), {
+          {$event.endTime?.toLocaleString(getDateTimeLocale(), {
             hour: "numeric", minute: "numeric",
             timeZone: event.timezone,
          })}
@@ -115,7 +115,7 @@
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
   import { myTimezone, isSameTimezone } from "../../Util/date";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
 

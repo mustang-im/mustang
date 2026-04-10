@@ -308,6 +308,9 @@ export class JMAPFolder extends Folder {
     let semaphore = new Semaphore(kMaxParallelCount);
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
+      if (msg.downloadRunOnce.running) {
+        continue;
+      }
       let lock = await semaphore.lock();
       (async () => {
         try {
@@ -317,7 +320,7 @@ export class JMAPFolder extends Folder {
         } finally {
           lock.release();
         }
-      })();
+      })().catch(this.account.errorCallback);
     }
     return downloadedMsgs;
   }
@@ -432,21 +435,7 @@ export class JMAPFolder extends Folder {
     await this.listChangedMessages();
   }
 
-  async moveMessagesHere(messages: Collection<JMAPEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("move", messages);
-  }
-
-  async copyMessagesHere(messages: Collection<JMAPEMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    return await this.moveOrCopyMessagesOnServer("copy", messages);
-  }
-
-  async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
     let targetFolderID = this.id;
     let updates: Record<string, Record<string, boolean>> = {};
     for (let msg of messages) {

@@ -13,13 +13,13 @@
   import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
-  import { getDateTimeFormatPref } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
   /** Time where the cell (not the event) starts */
   export let start: Date;
 
-  $: startTime = $event.startTime.toLocaleString(getDateTimeFormatPref(), {
+  $: startTime = $event.startTime.toLocaleString(getDateTimeLocale(), {
     hour: "numeric",
     minute: $event.startTime.getMinutes() != 0 ? "2-digit" : undefined,
   });

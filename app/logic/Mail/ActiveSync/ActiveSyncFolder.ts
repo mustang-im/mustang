@@ -4,7 +4,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount"
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { ensureArray, NotImplemented, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -150,13 +150,13 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     await this.makeSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
-          let email = this.getEmailByServerID(item.ServerId);
+          let email = this.getEmailByServerID(sanitize.nonemptystring(item.ServerId));
           if (email) {
             email.setFlags(item.ApplicationData);
             await this.storage.saveMessageWritableProps(email);
           } else {
             email = this.newEMail();
-            email.serverID = item.ServerId;
+            email.serverID = sanitize.nonemptystring(item.ServerId);
             email.fromWBXML(item.ApplicationData);
             await this.storage.saveMessage(email);
             newMsgs.add(email);
@@ -167,7 +167,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       }
       for (let item of ensureArray(response.Commands?.Delete)) {
         try {
-          let email = this.getEmailByServerID(item.ServerId);
+          let email = this.getEmailByServerID(sanitize.nonemptystring(item.ServerId));
           if (email) {
             await email.deleteMessageLocally();
           }
@@ -186,6 +186,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
+      batch = batch.filter((email) => !email.downloadRunOnce.running);
       let request = {
         Fetch: batch.map(email => ({
           Store: "Mailbox",
@@ -231,10 +232,12 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     return this.messages.find(m => m.serverID == id);
   }
 
-  async moveMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
+  async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
+    throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
+  }
+
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<ActiveSyncEMail>) {
+    assert(action == "move", gt`ActiveSync does not permit messages to be copied`);
     let request = {
       Move: messages.contents.map(msg => ({
         SrcMsgId: msg.serverID,
@@ -250,10 +253,6 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
         console.error(`ActiveSync MoveItems status ${response.Status}`);
       }
     }
-  }
-
-  async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
   }
 
   async addMessage(message: ActiveSyncEMail) {
@@ -286,7 +285,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     // email.copyFrom didn't work
     email.mime = message.mime;
     await email.parseMIME();
-    email.serverID = response.Responses.Add.ServerId;
+    email.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
     email.sent = email.received = new Date();
     email.isRead = true;
     await email.saveCompleteMessage();

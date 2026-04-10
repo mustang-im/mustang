@@ -11,7 +11,7 @@ import type { Calendar } from "../../Calendar/Calendar";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { appGlobal } from "../../app";
-import { base64ToArrayBuffer, assert } from "../../util/util";
+import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { Collection, ArrayColl } from "svelte-collections";
 
@@ -27,11 +27,13 @@ export class OWAEMail extends EMail {
   }
 
   async download() {
-    let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
-    let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+    await this.downloadRunOnce.runOnce(async () => {
+      let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
+      let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
+      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromJSON(json: Record<string, any>) {
@@ -64,7 +66,7 @@ export class OWAEMail extends EMail {
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[json.ItemClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(json.ItemClass)] || InvitationMessage.None;
   }
 
   setFlags(json: Record<string, any>) {
@@ -73,7 +75,7 @@ export class OWAEMail extends EMail {
     this.isStarred = json.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(json.IsDraft);
-    this.tags.replaceAll((json.Categories || []).map(name => getTagByName(name)));
+    this.tags.replaceAll(ensureArray(json.Categories).map(name => getTagByName(sanitize.string(name))));
   }
 
   async markRead(read = true) {

@@ -313,6 +313,7 @@ export class IMAPFolder extends Folder {
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
       let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount);
+      downloadingMsgs = downloadingMsgs.filter((msg) => !msg.downloadRunOnce.running);
       needMsgs.removeAll(downloadingMsgs);
       let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
@@ -328,7 +329,7 @@ export class IMAPFolder extends Folder {
         }, { uid: true });
         for await (let msgInfo of msgInfos) {
           try {
-            if (this.deletions.has(msgInfo.uid)) {
+            if (!msgInfo.envelope || this.deletions.has(msgInfo.uid)) {
               continue;
             }
             let msg = this.getEMailByUID(msgInfo.uid);
@@ -525,38 +526,14 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async moveMessagesHere(messages: Collection<IMAPEMail>) {
-    if (await this.moveOrCopyMessages("move", messages)) {
-      return;
-    }
-    let sourceFolder = messages.first.folder;
-    sourceFolder.countTotal -= messages.length;
-    this.countTotal += messages.length;
-    for (let sourceMsg of messages) {
-      await sourceMsg.deleteMessageLocally();
-    }
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    await sourceFolder.runCommand(async conn => {
-      this.account.log(this, conn, "move message from", sourceFolder.id, ids);
-      await conn.messageMove(ids, this.path, { uid: true });
-    });
-    if (![SpecialFolder.Trash, SpecialFolder.Spam].includes(this.specialFolder)) {
-      await this.listNewMessages();
-    }
-  }
-
-  async copyMessagesHere(messages: Collection<IMAPEMail>) {
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
-    this.countTotal += messages.length;
+  protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<IMAPEMail>) {
+    let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" });
     let sourceFolder = messages.first.folder;
     let ids = messages.contents.map(msg => msg.uid).join(",");
     await sourceFolder.runCommand(async conn => {
-      this.account.log(this, conn, "copy message from", sourceFolder.id, ids);
-      await conn.messageCopy(ids, this.path, { uid: true });
+      this.account.log(this, conn, action, "message from", sourceFolder.id, ids);
+      await conn["message" + actionVerb](ids, this.path, { uid: true });
     });
-    await this.listNewMessages();
   }
 
   async addMessage(message: EMail) {

@@ -15,6 +15,7 @@
       {:else}
         <Recipient recipient={$message.from} />
       {/if}
+      <EncryptionButtons {message} bind:isExpanded={isEncryptionExpanded} />
     </hbox>
     <hbox flex />
     <vbox class="top-right">
@@ -40,6 +41,9 @@
       </hbox>
     </vbox>
   </hbox>
+  {#if isEncryptionExpanded}
+    <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
+  {/if}
   <vbox class="recipients">
     {#if $message.to.hasItems}
       <hbox class="to font-small">
@@ -63,7 +67,7 @@
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
-    <value class="date font-small" title={$message.sent?.toLocaleString(getDateTimeFormatPref())}>
+    <value class="date font-small" title={$message.sent?.toLocaleString(getDateTimeLocale())}>
       {getDateTimeString($message.sent)}
     </value>
     {#if !$appGlobal.isSmall}
@@ -97,14 +101,16 @@
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import { onDestroy } from "svelte";
-  import { getDateTimeFormatPref, t } from "../../../l10n/l10n";
 
   export let message: EMail;
 
@@ -133,6 +139,12 @@
   onDestroy(() => {
     clearTimeout(readTimeout);
   });
+
+  let isEncryptionExpanded = false;
+  $: $message, closeEncryption()
+  function closeEncryption() {
+    isEncryptionExpanded = false;
+  }
 
   // TODO Duplicated in MailApp.svelte
   $: selectPerson(message?.contact);

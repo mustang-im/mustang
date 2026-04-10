@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
-import { app, shell, BrowserWindow, session } from 'electron'
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
@@ -87,6 +87,30 @@ function createWindow(): void {
   }
 }
 
+function createMenu() {
+  // <copied from="https://github.com/electron/electron/blob/main/lib/browser/default-menu.ts#L48-L60">
+  const macAppMenu: MenuItemConstructorOptions = { role: 'appMenu' };
+  const menu = Menu.buildFromTemplate([
+    ...(process.platform === 'darwin' ? [macAppMenu] : []),
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    { role: 'windowMenu' },
+  ]);
+  Menu.setApplicationMenu(menu);
+}
+
 const gotLock = app.requestSingleInstanceLock();
 if (gotLock) {
   app.whenReady()
@@ -117,6 +141,7 @@ async function whenReady() {
     optimizer.watchWindowShortcuts(window)
   })
 
+  createMenu();
   createWindow();
 
   app.on('activate', function () {
@@ -191,6 +216,13 @@ function allowCrossDomainRequestsFromFrontend() {
         case "origin":
         case "referer":
           delete requestHeaders[name];
+          break;
+        case "user-agent":
+          // Fake out the User-Agent on all ActiveSync requests, because Office.
+          if (details.url.toLowerCase().includes("/microsoft-server-activesync")) {
+            requestHeaders[name] = requestHeaders[name].replace(/\).*/, ") Gecko/20100101");
+          }
+          break;
         }
       }
       callback({ requestHeaders: requestHeaders });
@@ -204,13 +236,14 @@ function allowCrossDomainRequestsFromFrontend() {
       for (let name in responseHeaders) {
         let lowercase = name.toLowerCase();
         if (lowercase.startsWith("access-control-allow-")) {
-          delete responseHeaders[lowercase];
+          delete responseHeaders[name];
         }
       }
       // Allow frontend to access other servers
       responseHeaders["Access-Control-Allow-Origin"] = ["*"];
       responseHeaders["Access-Control-Allow-Methods"] = ["*"];
       responseHeaders["Access-Control-Allow-Headers"] = ["*"];
+      responseHeaders["Access-Control-Expose-Headers"] = ["*"];
       // Pretend that all CORS preflight requests succeed
       let statusLine = details.method == "OPTIONS" ? "HTTP/1.1 200 OK" : details.statusLine;
       // console.log("Response", details.url, responseHeaders);

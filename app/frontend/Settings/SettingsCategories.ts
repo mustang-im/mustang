@@ -20,6 +20,7 @@ import MailRules from "./Mail/Rules.svelte";
 import MailSharing from "./Mail/Sharing.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
+import AccountSubAccounts from "./AccountSubAccounts.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
 import AccountFolders from "./Mail/Account/Folders.svelte";
 import AccountIdentity from "./Mail/Account/Identity.svelte";
@@ -37,6 +38,12 @@ import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
+import { Addressbook } from "../../logic/Contacts/Addressbook";
+import { Calendar } from "../../logic/Calendar/Calendar";
+import { CardDAVAddressbook } from "../../logic/Contacts/CardDAV/CardDAVAddressbook";
+import { CalDAVCalendar } from "../../logic/Calendar/CalDAV/CalDAVCalendar";
+import ContactsImportExport from "./Contacts/ImportExport.svelte";
+import CalendarImportExport from "./Calendar/ImportExport.svelte";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
@@ -47,6 +54,7 @@ import SIP from "./Meet/SIP.svelte";
 import { gt } from "../../l10n/l10n";
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
+accountSettings.add(new AccSetting(Account, "acc-sub", gt`Sub-Accounts`, AccountSubAccounts, true));
 
 const globalSettings = new SettingsCategory("global", gt`General`, null, true);
 globalSettings.subCategories.addAll([
@@ -105,6 +113,8 @@ calendarSettings.newAccountURL = "/setup/calendar";
 // #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
+accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
+accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 
 const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, true);
 contactsSettings.subCategories.addAll([
@@ -115,6 +125,8 @@ contactsSettings.newAccountURL = "/setup/contacts";
 // #endif
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
+accountSettings.add(new AccSetting(Addressbook, "contacts-import", gt`Import/Export`, ContactsImportExport, true));
+accountSettings.add(new AccSetting(CardDAVAddressbook, "contacts-server", gt`Server`, AccountURLServer));
 
 // #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);

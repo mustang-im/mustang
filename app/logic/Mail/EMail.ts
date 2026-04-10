@@ -13,16 +13,17 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
-import { gt } from "../../l10n/l10n";
+import type { EncryptionSystem } from "./Encryption/PublicKey";
+import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
-import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
-import { logError } from "../../frontend/Util/error";
+import { RunOnce } from "../util/flow/RunOnce";
+import { notifyChangedProperty } from "../util/Observable";
+import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
-import PostalMIME from "postal-mime";
+import PostalMIME, { type Email as MIME } from "postal-mime";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -82,6 +83,29 @@ export class EMail extends Message {
   /** For composer only. Optional. */
   identity: MailIdentity;
 
+  /** PGP or S/MIME or none */
+  system: EncryptionSystem | null = null;
+  /** For composer/send only: This email should be end-to-end encrypted. */
+  @notifyChangedProperty
+  shouldEncrypt = false;
+  /** For composer/send only: This email must be end-to-end encrypted, e.g.
+   * because it quotes from an encrypted email. */
+  @notifyChangedProperty
+  _mustEncrypt = false;
+  /** This email was end-to-end encrypted on the wire.
+   * It has now been decrypted and stored in decrypted form. */
+  @notifyChangedProperty
+  wasEncrypted = false;
+  /** This email was correctly signed with this public key.
+   * The signature was valid and the public key matches `From:`.
+   * This gives you the specific public key that was used to sign.
+   * Format: `PublicKey.id` */
+  @notifyChangedProperty
+  signed: string | null = null;
+  /** Contains the complete MIME message for sending.
+   * Used for encrypted messages. */
+  sendRawMIME: string | null = null;
+
   /** Allows data-specific processors to add data to the message.
    * ExtraData.extraDataName -> ExtraData */
   extraData = new MapColl<string, ExtraData>();
@@ -114,6 +138,18 @@ export class EMail extends Message {
 
   get storage(): MailAccountStorage {
     return this.folder.account.storage;
+  }
+
+  get mustEncrypt(): boolean {
+    return this._mustEncrypt;
+  }
+  set mustEncrypt(val: boolean) {
+    if (!val) {
+      // cannot disable once enforced
+      return;
+    }
+    this._mustEncrypt = val;
+    this.shouldEncrypt = val;
   }
 
   allRecipients(): Collection<PersonUID> {
@@ -181,18 +217,23 @@ export class EMail extends Message {
     await archive.moveMessageHere(this);
   }
 
-  async deleteMessage() {
+  async deleteMessage(strategy?: DeleteStrategy) {
     await this.deleteMessageLocally();
-    await this.deleteMessageOnServer();
+    await this.deleteMessageOnServer(strategy);
   }
 
   async deleteMessageLocally() {
     this.isDeleted = true;
     this.folder.messages.remove(this);
     await this.storage.deleteMessage(this);
+    let contentDeletes = new PromiseAllDone();
+    for (let contentStorage of this.folder.account.contentStorage) {
+      contentDeletes.add(contentStorage.deleteIt(this));
+    }
+    await contentDeletes.wait();
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy?: DeleteStrategy) {
   }
 
   async addTag(tag: Tag) {
@@ -250,23 +291,13 @@ export class EMail extends Message {
     // indirectly calls @see `ICalEMailProcessor.process()`
   }
 
-  async parseMIME() {
+  async parseMIME(): Promise<MIME> {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     // We may need access to internal PostalMIME data.
     let postalMIME = new PostalMIME();
     let mail = await postalMIME.parse(this.mime);
-
-    // Headers
-    /** TODO header.key returns Uint8Array
-    for (let header of mail.headers) {
-      try {
-        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-      }
-    }*/
 
     this.id ??= sanitize.string(mail.messageId, this.id ?? "");
     this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
@@ -303,13 +334,17 @@ export class EMail extends Message {
 
     // Attachments
     let fallbackID = 0;
-    this.attachments.clear();
-    this.attachments.addAll(mail.attachments.map(a => {
+    let oldAttachments = new ArrayColl<Attachment>(this.attachments);
+    this.attachments.replaceAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
         attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
         attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
         attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+        attachment.filepathLocal = oldAttachments.find(old =>
+          old.contentID == attachment.contentID &&
+          old.filename == attachment.filename)
+          ?.filepathLocal;
         attachment.disposition = sanitize.translate(a.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
@@ -323,15 +358,45 @@ export class EMail extends Message {
         return null;
       }
     }).filter(attachment => !!attachment));
+    oldAttachments.clear();
 
     // Run processors, filters, calendar invitations, SML, etc.
     for (let processor of EMailProcessorList.processors) {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      processor.process(this, postalMIME)
-        .catch(logError);
+      await processor.process(this, mail);
     }
+    return mail;
+  }
+
+  async parseHeaders() {
+    if (this.headers.hasItems) {
+      return;
+    }
+    assert(this.mime instanceof Uint8Array, "Need MIME");
+    let mail = await new PostalMIME().parse(this.mime);
+    for (let header of mail.headers) {
+      try {
+        let name = sanitize.nonemptystring(header.key).toLowerCase();
+        let value = sanitize.nonemptystring(header.value);
+        this.headers.set(name, value);
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+    }
+  }
+
+  /** Used by encrypted messages.
+   * Let `parseMIME()` set all properties. */
+  resetProperties() {
+    // This MUST list all properties where `parseMIME()` does `this.prop ??=` or `if (!this.prop)`
+    this.id = null;
+    this.subject = "";
+    this.sent = null;
+    this.from = new PersonUID();
+    this.replyTo = null;
+    this.inReplyTo = null;
   }
 
   /**
@@ -430,6 +495,9 @@ export class EMail extends Message {
     return super.html;
   }
   set html(val: string) {
+    if (this._rawHTML == val) {
+      return;
+    }
     super.html = val;
     this.loadedBody = false;
   }
@@ -445,6 +513,7 @@ export class EMail extends Message {
     super.loadExternalImages = val;
   }
 
+  readonly downloadRunOnce = new RunOnce<void>();
   async download() {
     throw new AbstractFunction();
     //this.mime = await SMTPAccount.getMIME(this);
@@ -489,18 +558,27 @@ export class EMail extends Message {
   }
 
   copyFrom(other: EMail): void {
-    super.copyFrom(other);
+    super.copyFrom(other, true);
+    // <copied to="SendEncrypted.cloneEMail()">
+    other.folder = this.folder;
+    other.identity = this.identity;
     other.from = this.from;
     other.replyTo = this.replyTo;
     other.to.replaceAll(this.to);
     other.cc.replaceAll(this.cc);
+    // </copied>
     other.bcc.replaceAll(this.bcc);
     other.tags.replaceAll(this.tags);
-    other.headers.replaceAll(this.headers);
+    //other.headers.replaceAll(this.headers);
+    other.headers.clear();
+    for (let name of this.headers.keys()) {
+      other.headers.set(name, this.headers.get(name));
+    }
     other.size = this.size;
     if (this.references) {
       other.references = this.references.slice();
     }
+    other.threadID = this.threadID;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
     other.isDraft = this.isDraft;
@@ -508,9 +586,17 @@ export class EMail extends Message {
     other.mime = this.mime;
     other.invitationMessage = this.invitationMessage;
     other.event = this.event;
-    other.folder = this.folder;
-    other.threadID = this.threadID;
-    other.identity = this.identity;
+    other.sml = this.sml;
+    //other.extraData.replaceAll(this.extraData);
+    other.extraData.clear();
+    for (let name of this.extraData.keys()) {
+      other.extraData.set(name, this.extraData.get(name));
+    }
+
+    other.mustEncrypt = this.mustEncrypt;
+    other.shouldEncrypt = this.shouldEncrypt;
+    other.wasEncrypted = this.wasEncrypted;
+    other.signed = this.signed;
   }
 
   /**

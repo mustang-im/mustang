@@ -1,7 +1,9 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import type { Collection } from "svelte-collections";
 
 export function getICal(event: Event, method?: iCalMethod): string | null {
   assert(event, "Need event");
@@ -98,6 +100,25 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   lines.push(["END", "VEVENT"]);
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
+}
+
+/**
+ * Exports the given events into a single large iCal .ics file with all contacts
+ * concatenated
+ * @param events what to export
+ * @param filenameWithoutExt a suggested filename, without extension.
+ *    The name will be name filesystem-safe.
+ * @returns iCal file contents, as UTF8 text file
+ */
+export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
+  let fileContents = "";
+  for (let event of events) {
+    // TODO Don't wrap *each* `VEVENT` with `VCALENDAR`, but all with a single one
+    fileContents += getICal(event);
+  }
+  let filename = sanitize.filename(filenameWithoutExt) + ".ics";
+  let file = new File([fileContents], filename, { type: "text/calendar" });
+  return file;
 }
 
 function line2ical(line: string | string[]): string {

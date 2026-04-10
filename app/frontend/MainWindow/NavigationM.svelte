@@ -4,13 +4,13 @@
   import { showError } from "../Util/error";
   import { App } from "@capacitor/app";
   import { gestures } from "@composi/gestures";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../AppsBar/selectedApp";
 
   gestures();
 
   App.addListener("backButton", ({canGoBack}) => {
     if (canGoBack) {
-      navigate(-1);
+      goBack();
     } else {
       App.minimizeApp();
     }

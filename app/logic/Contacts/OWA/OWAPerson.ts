@@ -18,19 +18,19 @@ export class OWAPerson extends Person {
   }
 
   fromJSON(json: any): OWAPerson {
-    this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
+    this.personaID = sanitize.nonemptystring(json.PersonaId?.Id);
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.firstName = sanitize.nonemptystring(json.GivenName, "");
     this.lastName = sanitize.nonemptystring(json.Surname, "");
     this.emailAddresses.replaceAll(json.EmailAddresses
       ?.filter(address => !address.RoutingType || address.RoutingType == "SMTP")
       .map(address =>
-        new ContactEntry(sanitize.nonemptystring(address.EmailAddress), "work", "mailto")
+        new ContactEntry(sanitize.emailAddress(address.EmailAddress), "work", "mailto")
       ) || []);
     this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, ...keys]) =>
       keys.map(key => json[key + "Array"]?.[0]?.Value?.Number)
       .filter(Boolean).map(number =>
-        new ContactEntry(number, purpose, protocol))));
+        new ContactEntry(sanitize.string(number), purpose, protocol))));
     this.chatAccounts.replaceAll(json.ImAddress ? [
       new ContactEntry(sanitize.string(json.ImAddress), "other")
     ] : []);

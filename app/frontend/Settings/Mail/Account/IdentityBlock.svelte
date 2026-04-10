@@ -16,6 +16,7 @@
 
       <label for="emailaddress">{$t`Your email address`}</label>
       <input type="email" bind:value={identity.emailAddress} required
+        bind:this={emailInput}
         autofocus={!$identity.emailAddress}
         name="emailaddress" class="emailaddress" />
 
@@ -74,10 +75,15 @@
       </vbox>
     {/if}
 
+    {#if showEncryption || showEncryptionOverride}
+      <Encryption {identity} bind:showCreateOverride={showEncryptionOverride} />
+    {/if}
+
     <ExpanderButtons>
       <ExpanderButton bind:expanded={showReplyTo} label={$t`Reply-To`} />
       <ExpanderButton bind:expanded={showOrganisation} label={$t`Organisation`} />
       <ExpanderButton bind:expanded={showSignature} label={$t`Signature`} />
+      <ExpanderButton bind:expanded={showEncryption} label={$t`Encryption`} on:expand={addEcryption} />
     </ExpanderButtons>
   </vbox>
 </HeaderGroupBox>
@@ -88,6 +94,7 @@
   import SentByExplainer from "./SentByExplainer.svelte";
   import HTMLEditor from "../../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import Encryption from "./Encryption.svelte";
   import ExpanderButton from "../../../Shared/ExpanderButton.svelte";
   import ExpanderButtons from "../../../Shared/ExpanderButtons.svelte";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
@@ -95,9 +102,11 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import type { Editor } from "@tiptap/core";
-  import { createEventDispatcher, onMount } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
+  import { checkInputField } from "../../../Util/util";
+  import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
   import { t } from "../../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;
@@ -108,7 +117,16 @@
   let showSignature = !!identity.signatureHTML;
   let showSentBy = !gLicense.license;
   let showSentByExplainer = false;
+  $: keys = identity.encryptionPrivateKeys;
+  $: showEncryption = $keys.hasItems;
+  let showEncryptionOverride = false;
   let editor: Editor;
+  let emailInput: HTMLInputElement;
+  $: $identity.emailAddress && checkInputField(() => sanitize.emailAddress($identity.emailAddress), emailInput);
+
+  function addEcryption() {
+    showEncryptionOverride = true;
+  }
 
   function onDelete() {
     dispatchEvent("delete", identity);
@@ -130,6 +148,7 @@
   }
   .emailaddress:invalid {
     background-color: #FFF160;
+    color: black;
   }
   .catch-all {
     font-style: italic;

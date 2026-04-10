@@ -51,7 +51,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }
@@ -594,6 +594,9 @@ export class JMAPAccount extends MailAccount {
       await cal.save();
     }
   }
+
+  // The list of accounts (with accountIds) you have access to is in the JMAP session object.
+  // Get the shared mailboxes using Mailbox/query or Mailbox/get using the accountId of the account that shared the mailbox to you.
 
   hasCapability(capa: string): boolean {
     if (!this.session) {

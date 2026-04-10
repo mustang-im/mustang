@@ -52,7 +52,7 @@ export class SQLAddressbook {
       FROM addressbook
       WHERE idStr = ${accountRow.idStr}
       `) as any;
-    if (row.id) {
+    if (row?.id) {
       acc.dbID = row.id;
     } else {
       // When the type-specific DB has been deleted, but not the accounts DB.

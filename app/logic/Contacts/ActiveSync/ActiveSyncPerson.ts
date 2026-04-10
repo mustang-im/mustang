@@ -18,10 +18,14 @@ export class ActiveSyncPerson extends Person {
   fromWBXML(wbxmljs: any) {
     this.firstName = sanitize.nonemptystring(wbxmljs.FirstName, "");
     this.lastName = sanitize.nonemptystring(wbxmljs.LastName, "");
-    this.name = this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName;
-    this.emailAddresses.replaceAll([wbxmljs.Email1Address, wbxmljs.Email2Address, wbxmljs.Email3Address].filter(Boolean).map(address => new ContactEntry((parseOneAddress(address) as ParsedMailbox).address, "work", "mailto")));
-    this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, count]) => ["", "2"].slice(0, count).map(index => wbxmljs[`${ContactElements[purpose]}${index}${ContactElements[protocol]}Number`]).filter(Boolean).map(value => new ContactEntry(value, purpose, protocol))));
-    this.chatAccounts.replaceAll([wbxmljs.IMAddress, wbxmljs.IMAddress2, wbxmljs.IMAddress3].filter(Boolean).map(address => new ContactEntry(address, "other")));
+    if (wbxmljs.DisplayName) { // only for GAL search results
+      this.name = sanitize.nonemptylabel(wbxmljs.DisplayName);
+    } else {
+      this.name = sanitize.nonemptylabel(this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName);
+    }
+    this.emailAddresses.replaceAll([wbxmljs.Email1Address, wbxmljs.Email2Address, wbxmljs.Email3Address].filter(Boolean).map(address => new ContactEntry(sanitize.emailAddress((parseOneAddress(address) as ParsedMailbox).address), "work", "mailto")));
+    this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, count]) => ["", "2"].slice(0, count).map(index => wbxmljs[`${ContactElements[purpose]}${index}${ContactElements[protocol]}Number`]).filter(Boolean).map(value => new ContactEntry(sanitize.string(value), purpose, protocol))));
+    this.chatAccounts.replaceAll([wbxmljs.IMAddress, wbxmljs.IMAddress2, wbxmljs.IMAddress3].filter(Boolean).map(address => new ContactEntry(sanitize.string(address), "other")));
     this.streetAddresses.replaceAll(["home", "work", "other"]
       .map(purpose => ActiveSyncPerson.fromWBXMLToStreetAddress(wbxmljs, purpose))
       .filter(ce => !!ce));
@@ -92,7 +96,7 @@ export class ActiveSyncPerson extends Person {
         if (response.Responses.Add.Status != "1") {
           throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.addressbook);
         }
-        this.serverID = response.Responses.Add.ServerId;
+        this.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
       }
     }
   }

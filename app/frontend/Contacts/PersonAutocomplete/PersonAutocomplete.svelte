@@ -62,6 +62,11 @@
           person.name?.toLowerCase().includes(inputPart) ||
           person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
       }
+      await Promise.all(appGlobal.searchOnlyAddressbooks.map(async ab => {
+        let results = new ArrayColl<Person>;
+        await ab.quickSearchAsync(inputStr.toLowerCase(), results);
+        persons = persons.concat(results.contents);
+      }));
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {
         for (let c of person.emailAddresses.sortBy(c => c.preference)) {
@@ -77,6 +82,7 @@
       return emailAddresses;
     } catch (ex) {
       showError(ex);
+      return [];
     }
   }
 

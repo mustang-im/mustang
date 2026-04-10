@@ -1,5 +1,5 @@
 
-export function assert(test: boolean | Object | null | undefined, errorMessage: string): asserts test {
+export function assert(test: boolean | object | string | null | undefined, errorMessage: string): asserts test {
   if (!test) {
     throw new Error(errorMessage);
   }
@@ -36,6 +36,13 @@ export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }
 
+export function capitalizeStart(str: string): string {
+  return str[0].toLocaleUpperCase() + str.substring(1);
+}
+export function capitalizeWords(str: string): string {
+  return str.split(" ").map(word => capitalizeStart(word)).join(" ");
+}
+
 export async function blobToBase64(blob: Blob): Promise<string> {
   let dataURL = await blobToDataURL(blob)
   return dataURL.split(",")[1];
@@ -62,6 +69,7 @@ export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {
   return await res.blob();
 }
 
+/** TODO Implement this correctly */
 export function fileExtensionForMIMEType(mimetype: string) {
   if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {
     let type = mimetype.split("/")[1];

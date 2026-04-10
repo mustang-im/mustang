@@ -41,12 +41,12 @@ export class SQLPerson {
           WHERE id = ${person.dbID}
           `);
       }
-      SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
-      SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
-      SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
-      SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
-      SQLPerson.saveContacts(person, person.urls, ContactType.URL);
-      SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
+      await SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
+      await SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
+      await SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
+      await SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
+      await SQLPerson.saveContacts(person, person.urls, ContactType.URL);
+      await SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
     } finally {
       lock.release();
     }
@@ -61,7 +61,7 @@ export class SQLPerson {
       `);
 
     for (let contact of contacts) {
-      SQLPerson.saveContact(person, contact, contactType);
+      await SQLPerson.saveContact(person, contact, contactType);
     }
   }
 
@@ -123,7 +123,7 @@ export class SQLPerson {
         person.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
       }
     }
-    SQLPerson.readContacts(person);
+    await SQLPerson.readContacts(person);
     return person;
   }
 

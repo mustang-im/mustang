@@ -38,7 +38,8 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       if (!trackPub.isSubscribed || !trackPub.track) {
         continue;
       }
-      this.addTrack(trackPub.track);
+      this.addTrack(trackPub.track)
+        .catch(conf.account.errorCallback); // TODO throw
     }
   }
   protected updateProps() {
@@ -113,13 +114,13 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
   async trackMuted(trackPub: TrackPublication) {
     this.updateProps();
     if (trackPub.videoTrack) {
-      this.removeTrack(trackPub.videoTrack);
+      await this.removeTrack(trackPub.videoTrack);
     }
   }
   async trackUnmuted(trackPub: TrackPublication) {
     this.updateProps();
     if (trackPub.videoTrack) {
-      this.addTrack(trackPub.videoTrack);
+      await this.addTrack(trackPub.videoTrack);
     }
   }
 }

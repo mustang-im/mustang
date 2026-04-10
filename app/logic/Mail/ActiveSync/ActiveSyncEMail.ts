@@ -32,26 +32,28 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      Fetch: {
-        Store: "Mailbox",
-        ServerId: this.serverID,
-        CollectionId: this.folder.id,
-        Options: {
-          MIMESupport: "2",
-          BodyPreference: {
-            Type: "4",
+    await this.downloadRunOnce.runOnce(async () => {
+      let request = {
+        Fetch: {
+          Store: "Mailbox",
+          ServerId: this.serverID,
+          CollectionId: this.folder.id,
+          Options: {
+            MIMESupport: "2",
+            BodyPreference: {
+              Type: "4",
+            },
           },
         },
-      },
-    };
-    let response = await this.folder.account.callEAS("ItemOperations", request);
-    if (response.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
-    }
-    this.mime = response.Response.Fetch.Properties.Body.RawData;
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      };
+      let response = await this.folder.account.callEAS("ItemOperations", request);
+      if (response.Response.Fetch.Status != "1") {
+        throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
+      }
+      this.mime = response.Response.Fetch.Properties.Body.RawData;
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromWBXML(wbxmljs: any) {
@@ -68,7 +70,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[wbxmljs.MessageClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(wbxmljs.MessageClass, "")] || InvitationMessage.None;
     /* Can't use this data because the description is missing.
     if (wbxmljs.MeetingRequest) {
       let event = new ActiveSyncEvent();
@@ -86,7 +88,7 @@ export class ActiveSyncEMail extends EMail {
     }
     this.tags.clear();
     if (wbxmljs.Categories) {
-      this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(name)));
+      this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(sanitize.string(name))));
     }
   }
 

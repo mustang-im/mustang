@@ -53,10 +53,10 @@ export class SQLMailAccount {
       FROM emailAccount
       WHERE idStr = ${accountRow.idStr}
       `) as any;
-    if (row.id) {
+    if (row?.id) {
       acc.dbID = row.id;
     } else {
-      // When the type-specific (e.g. mail) DB has been deleted, but not the accounts DB.
+      // When the type-specific DB has been deleted, but not the accounts DB.
       await SQLMailAccount.save(acc);
     }
     acc.storage = new SQLMailStorage();

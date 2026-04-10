@@ -4,6 +4,7 @@ import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { capitalizeWords } from "../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class PersonUID extends Observable {
@@ -22,6 +23,13 @@ export class PersonUID extends Observable {
 
   static fromPerson(person: Person) {
     let puid = new PersonUID(person.emailAddresses.first?.value, person.name);
+    puid.person = person;
+    return puid;
+  }
+
+  /** from `Person.emailAddresses` */
+  static fromContactEntry(person: Person, entry: ContactEntry) {
+    let puid = new PersonUID(entry.value, person.name);
     puid.person = person;
     return puid;
   }
@@ -55,8 +63,14 @@ export class PersonUID extends Observable {
     return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
   }
 
-  toString() {
+  get nameAndEMail(): string {
     return this.name + " <" + this.emailAddress + ">";
+  }
+  get nameOrEMail(): string {
+    return this.name || this.emailAddress;
+  }
+  toString() {
+    return this.nameOrEMail;
   }
 }
 
@@ -136,7 +150,7 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
 export function nameFromEmailAddress(emailAddress: string): string {
   let name = emailAddress.split("@")[0];
   name = name.replace(/\./g, " ");
-  name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize
+  name = capitalizeWords(name);
   return name;
 }
 

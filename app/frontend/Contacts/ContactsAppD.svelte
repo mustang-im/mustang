@@ -2,7 +2,7 @@
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
     <PersonsActionToolbar bind:selectedAddressbook {selectedPersons} />
-    <PersonsList {persons} bind:selected={$selectedPerson} bind:searchTerm={$globalSearchTerm} bind:selectedPersons />
+    <PersonsList {persons} bind:selected={$selectedPerson} searchTerm={$globalSearchTerm} bind:selectedPersons />
   </vbox>
   <vbox flex class="right-pane background-pattern" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}

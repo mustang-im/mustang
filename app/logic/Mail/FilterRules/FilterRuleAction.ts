@@ -24,8 +24,16 @@ export class FilterRuleAction extends Observable {
    * - Delete/spam actions with toFolder or markAsStarred
    */
   /** Move or copy (`copyToFolder`) the email to this folder. */
+  _toFolder: Folder | null = null;
   @notifyChangedProperty
-  toFolder: Folder | null = null;
+  toFolderID: string | undefined;
+  get toFolder(): Folder | null {
+    return (this.toFolderID && (this._toFolder ??= this.account.findFolder(folder => folder.id == this.toFolderID))) ?? null;
+  }
+  set toFolder(folder: Folder | null) {
+    this._toFolder = folder;
+    this.toFolderID = folder?.id;
+  }
   /** If `toFolder` and `copyToFolder`, then copy the email. instead of moving. */
   @notifyChangedProperty
   copy: boolean | null = null;
@@ -49,10 +57,10 @@ export class FilterRuleAction extends Observable {
 
   constructor(account: MailAccount, criteria?: SearchEMail) {
     super();
-    this.account = account;
     if (criteria) {
       this.criteria = criteria;
     }
+    this.criteria.account = this.account = account;
   }
 
   /** Checks for a match, and runs the filter action, as needed. */
@@ -87,7 +95,7 @@ export class FilterRuleAction extends Observable {
       await email.deleteMessage();
       return;
     }
-    if (this.toFolder) {
+    if (this.toFolderID) {
       if (this.copy) {
         await this.toFolder.copyMessageHere(email);
       } else {
@@ -101,6 +109,7 @@ export class FilterRuleAction extends Observable {
     this.name = sanitize.nonemptystring(json.name, "-");
     this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
     this.criteria.fromJSON(json.criteria);
+    this.criteria.account = this.account;
     function boolean(value: boolean | undefined): boolean | undefined {
       return typeof (value) == "boolean" ? value : undefined;
     }
@@ -111,7 +120,8 @@ export class FilterRuleAction extends Observable {
     this.deleteImmediately = boolean(json.deleteImmediately);
     this.copy = boolean(json.copy);
     // let folderAccount = appGlobal.emailAccounts.find(acc => acc.id == json.toFolderAccountID);
-    this.toFolder = this.account.findFolder(folder => folder.id == json.toFolder) ?? undefined;
+    this.toFolderID = sanitize.nonemptystring(json.toFolder, null);
+    this._toFolder = null;
     this.addTags.replaceAll(sanitize.array(json.addTags, [])?.map(name => getTagByName(name)));
   }
 
@@ -127,7 +137,7 @@ export class FilterRuleAction extends Observable {
       deleteImmediately: this.deleteImmediately,
       copy: this.copy,
       // toFolderAccountID: this.toFolder?.account?.id,
-      toFolder: this.toFolder?.id,
+      toFolder: this.toFolderID,
       tags: this.addTags.contents.map(tag => tag.name),
     };
   }

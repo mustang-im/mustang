@@ -5,7 +5,7 @@ import { appGlobal } from "../../app";
 export class XMPPGroupChat extends XMPPChat {
   async init() {
     let nick = appGlobal.me.name ?? this.account.jid.split("@")[0];
-    this.account.client.joinRoom(this.id, nick);
+    await this.account.client.joinRoom(this.id, nick);
   }
   async listMembers() {
     // let config = await this.account.client.getRoomConfig(room);

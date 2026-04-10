@@ -17,6 +17,7 @@
       <IdentitySelector bind:selectedIdentity={fromIdentity}
         bind:fromAddress={mail.from.emailAddress}
         bind:fromName={mail.from.name} />
+      <EncryptionButtons {mail} identity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         {#if !appGlobal.isMobile}
@@ -40,7 +41,7 @@
           iconSize="20px"
           padding="6px"
           filled
-          disabled={!mail.subject || $to.isEmpty}
+          disabled={!!sendDisabledTooltip}
           onClick={onSend}
           tabindex={2}
           />
@@ -52,7 +53,7 @@
           iconSize="18px"
           onClick={onSend}
           classes="filled"
-          disabled={!mail.subject || $to.isEmpty}
+          disabled={!!sendDisabledTooltip}
           />
         -->
       </hbox>
@@ -61,7 +62,7 @@
       <hbox>
         {#if showCC || showBCC}
           <hbox class="label">
-              {$t`To`}
+            {$t`To`}
           </hbox>
         {/if}
       </hbox>
@@ -89,25 +90,28 @@
             />
         </hbox>
       </hbox>
-    {#if showCC}
-      <hbox class="label">{$t`Cc`}</hbox>
-      <MailAutocomplete addresses={mail.cc} placeholder={$t`Add CC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:person={person}>
-          <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
-          <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(person)} />
-        </svelte:fragment>
-      </MailAutocomplete>
-    {/if}
-    {#if showBCC}
-      <hbox class="label">{$t`Bcc`}</hbox>
-      <MailAutocomplete addresses={mail.bcc} placeholder={$t`Add BCC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:person>
-          <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
-          <Button plain label={$t`CC`} onClick={() => onMoveToCC(person)} />
-        </svelte:fragment>
-      </MailAutocomplete>
-    {/if}
+      {#if showCC}
+        <hbox class="label">{$t`Cc`}</hbox>
+        <MailAutocomplete addresses={mail.cc} placeholder={$t`Add CC recipient`} tabindex={1}>
+          <svelte:fragment slot="person-popup-buttons" let:person={person}>
+            <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
+            <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(person)} />
+          </svelte:fragment>
+        </MailAutocomplete>
+      {/if}
+      {#if showBCC}
+        <hbox class="label">{$t`Bcc`}</hbox>
+        <MailAutocomplete addresses={mail.bcc} placeholder={$t`Add BCC recipient`} tabindex={1}>
+          <svelte:fragment slot="person-popup-buttons" let:person>
+            <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
+            <Button plain label={$t`CC`} onClick={() => onMoveToCC(person)} />
+          </svelte:fragment>
+        </MailAutocomplete>
+      {/if}
     </grid>
+    {#if $mail.shouldEncrypt}
+      <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
+    {/if}
     <HTMLEditorToolbar {editor}>
       <Button
         label={$t`Spell check`}
@@ -196,6 +200,8 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
@@ -213,7 +219,7 @@
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
-  import { navigate } from "svelte-navigator";
+  import { goBack } from "../../AppsBar/selectedApp";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -222,6 +228,7 @@
   $: to = mail.to;
   let fromIdentity: MailIdentity;
   let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
+  let encryptionError: string | null = null;
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>
@@ -316,10 +323,8 @@
   async function onAddAttachment() {
     let file = await fileSelector.selectFile();
     if (!file) {
-      console.log("no file selected");
       return;
     }
-    console.log("Selected attachment file", file);
     mail.attachments.add(Attachment.fromFile(file));
   }
 
@@ -337,7 +342,9 @@
 
   $: sendDisabledTooltip =
     !mail.subject ? $t`Please enter a subject` :
-    $to.isEmpty ? $t`Please add some recipients` : null;
+    $to.isEmpty ? $t`Please add some recipients` :
+    encryptionError ??
+    null;
 
   async function onSend() {
     mail.text = null;
@@ -365,7 +372,7 @@
 
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
-    navigate(-1);
+    goBack();
   }
 
   let showSMLAdd = false;

@@ -81,6 +81,12 @@ export class MailAccount extends TCPAccount {
     }
   }
 
+  /**
+   * Send the email purely on the protocol level,
+   * and save it in the Sent folder. Nothing else.
+   * All higher-level send preparations (signature, encryption etc.)
+   * are done in `ComposeActions.send()`.
+   */
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
   }
@@ -110,6 +116,7 @@ export class MailAccount extends TCPAccount {
   }
 
   async save(): Promise<void> {
+    await super.save();
     console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
     await this.storage?.saveAccount(this);
   }
@@ -170,19 +177,23 @@ export class MailAccount extends TCPAccount {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
     this.identities.clear();
-    this.identities.addAll(sanitize.array(json.identities, []).map(json =>
-      MailIdentity.fromConfigJSON(json, this)));
-    this.filterRuleActions.clear();
-    this.filterRuleActions.addAll(sanitize.array(json.filterRuleActions, []).map(json => {
+    for (let idJSON of sanitize.array(json.identities, [])) {
       try {
-        let rule = new FilterRuleAction(this);
-        rule.fromJSON(json);
-        return rule;
+        this.identities.add(MailIdentity.fromConfigJSON(idJSON, this));
       } catch (ex) {
         this.errorCallback(ex);
-        return null;
       }
-    }).filter(rule => !!rule));
+    }
+    this.filterRuleActions.clear();
+    for (let filterJSON of sanitize.array(json.filterRuleActions, [])) {
+      try {
+        let rule = new FilterRuleAction(this);
+        rule.fromJSON(filterJSON);
+        this.filterRuleActions.add(rule);
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
     if (json.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());

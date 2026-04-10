@@ -37,6 +37,7 @@ export class JSONEMail {
     this.saveRecipients(email, json);
     json.attachments = this.saveAttachments(email);
     json.tags = this.saveTags(email);
+    //json.headers = email.headers.contentKeyValues();
     return json;
   }
 
@@ -69,6 +70,14 @@ export class JSONEMail {
 
     if (email.invitationMessage) {
       json.invitationMessage = email.invitationMessage;
+    }
+
+    if (email.signed || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
+      let e = json.encryption = {} as any;
+      e.signedPublicKeyID = email.signed;
+      e.wasEncrypted = email.wasEncrypted;
+      e.mustEncrypt = email.mustEncrypt;
+      e.shouldEncrypt = email.shouldEncrypt;
     }
   }
 
@@ -137,12 +146,19 @@ export class JSONEMail {
         email.html = html;
       }
     }
+
     this.readWritableProps(email, json);
     this.readRecipients(email, json);
     this.readAttachments(email, json);
     this.readExtraData(email, json);
     this.readTags(email, json);
     email.contact = email.outgoing ? email.to.first : email.from;
+    /*email.headers.clear();
+    for (let name in json.headers) {
+      email.headers.set(
+        sanitize.nonemptystring(name),
+        sanitize.nonemptystring(json.headers[name]));
+    }*/
     return email;
   }
 
@@ -202,6 +218,14 @@ export class JSONEMail {
       email.sml.fromJSON(json.sml);
     }
     email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
+
+    let e = json.encryption;
+    if (e) {
+      email.signed = sanitize.alphanumdash(e.signedPublicKeyID, null);
+      email.wasEncrypted = sanitize.boolean(e.wasEncrypted, false);
+      email.shouldEncrypt = sanitize.boolean(e.shouldEncrypt, false);
+      email.mustEncrypt = sanitize.boolean(e.mustEncrypt, false);
+    }
   }
 
   static readRecipients(email: EMail, json: any): void {

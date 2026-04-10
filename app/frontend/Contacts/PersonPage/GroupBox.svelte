@@ -3,6 +3,7 @@
     <slot name="icon" />
     <h3>{headerName}</h3>
     <hbox flex class="actions">
+      <slot name="buttons-top-right" />
       {#if addFunc && !appGlobal.isMobile}
         <Button
           on:click={addFunc}

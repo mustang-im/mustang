@@ -35,6 +35,20 @@ export class JMAPEvent extends Event {
     this.original = jmap;
   }
 
+  updateRecurrenceOverrides(exceptions: ArrayColl<Event>) {
+    let ro = this.original.recurrenceOverrides;
+    for (let override in ro) {
+      let recurrenceStartTime = JSCalendarEvent.toDate(override, this.original);
+      if (ro[override].excluded) {
+        this.makeExclusionLocally(recurrenceStartTime);
+      } else {
+        let instance = this.getOccurrenceByDate(recurrenceStartTime);
+        JSCalendarEvent.toEvent(ro[override], instance);
+        exceptions.add(instance);
+      }
+    }
+  }
+
   get outgoingInvitation() {
     return new JMAPOutgoingInvitation(this);
   }

@@ -34,24 +34,26 @@ export class EWSEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$IncludeMimeContent: true,
-        },
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
+    await this.downloadRunOnce.runOnce(async () => {
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$IncludeMimeContent: true,
+          },
+          m$ItemIds: {
+            t$ItemId: {
+              Id: this.itemID,
+            },
           },
         },
-      },
-    };
-    let result = await this.folder.account.callEWS(request);
-    let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-    await this.parseMIME();
-    await this.saveCompleteMessage();
+      };
+      let result = await this.folder.account.callEWS(request);
+      let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      await this.parseMIME();
+      await this.saveCompleteMessage();
+    });
   }
 
   fromXML(xmljs: Record<string, any>) {
@@ -84,7 +86,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.invitationMessage = ExchangeScheduling[xmljs.ItemClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[sanitize.string(xmljs.ItemClass, null)] || InvitationMessage.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -104,13 +106,13 @@ export class EWSEMail extends EMail {
       let attachments = ensureArray(xmljs.Attachments.FileAttachment);
       this.attachments.replaceAll(attachments.map(a => {
         let attachment = new Attachment();
-        attachment.filename = a.Name;
-        attachment.mimeType = a.ContentType;
+        attachment.filename = sanitize.filename(a.Name);
+        attachment.mimeType = sanitize.nonemptystring(a.ContentType);
         attachment.disposition = a.IsInline == "true" ? ContentDisposition.inline : ContentDisposition.attachment;
         if (a.ContentId) {
-          attachment.contentID = a.ContentId;
+          attachment.contentID = sanitize.nonemptystring(a.ContentId);
         }
-        attachment.size = Number(a.Size);
+        attachment.size = sanitize.integer(a.Size, null);
         return attachment;
       }));
     }
@@ -123,7 +125,7 @@ export class EWSEMail extends EMail {
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft, false);
-    this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(name)));
+    this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(sanitize.string(name))));
   }
 
   async markRead(read = true) {
@@ -144,10 +146,10 @@ export class EWSEMail extends EMail {
       SuppressReadReceipts: true,
     });
     request.addField("Message", "Flag", {
-      t$CompleteDate: null,
-      t$DueDate: null,
-      t$StartDate: null,
       t$FlagStatus: starred ? "Flagged" : "NotFlagged",
+      t$StartDate: null,
+      t$DueDate: null,
+      t$CompleteDate: null,
     }, "item:Flag");
     await this.folder.account.callEWS(request);
     await super.markStarred(starred);

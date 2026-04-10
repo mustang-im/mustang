@@ -84,5 +84,6 @@ export class WebDAVAccount extends FileSharingAccount {
 
   async save() {
     throw new NotImplemented(); // TODO DB for files
+    await super.save();
   }
 }

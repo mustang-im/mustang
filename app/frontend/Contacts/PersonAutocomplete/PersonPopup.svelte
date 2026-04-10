@@ -91,8 +91,9 @@
   import MailIcon from "lucide-svelte/icons/mail";
   import { createIsSame, onKeyEnter } from "../../Util/util";
   import { backgroundError, catchErrors } from "../../Util/error";
-  import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher, onMount } from 'svelte';
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   export let personUID: PersonUID;
   export let disabled = false;

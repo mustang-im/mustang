@@ -76,7 +76,7 @@ export class OWAEvent extends Event {
     if (json.DueDate) {
       this.endTime = sanitize.date(json.DueDate);
     }
-    this.timezone = fromWindowsZone(json.StartTimeZoneId);
+    this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
     if (json.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);

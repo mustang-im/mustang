@@ -1,3 +1,6 @@
+import type { EMail } from "../../../logic/Mail/EMail";
+import { mailMustangApp } from "../MailMustangApp";
+import { DeleteStrategy } from "../../../logic/Mail/MailAccount";
 import { selectedMessage, selectedMessages } from "../Selected";
 import { get } from "svelte/store";
 
@@ -13,39 +16,121 @@ export async function onKeyOnList(event: KeyboardEvent) {
     return;
   }
   let message = get(selectedMessage) ?? messages[0];
+
+  function goToNextMessage(previous = false) {
+    selectedMessagesColl.clear();
+    selectedMessagesColl.add(message.nextMessage(previous));
+  }
+
+  // No modifier
   if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-    if (event.key == "m") {
+    if (event.key == "m") { // Thunderbird
       event.stopPropagation();
       let isRead = majority(messages, msg => msg.isRead);
       await Promise.allSettled(messages.map(msg =>
         msg.markRead(!isRead)));
       return;
-    } else if (event.key == "s") {
+    } else if (event.key == "s" || event.key == "Insert") { // s: Thunderbird, Insert: Outlook
       event.stopPropagation();
       let isStarred = majority(messages, msg => msg.isStarred);
       await Promise.allSettled(messages.map(msg =>
         msg.markStarred(!isStarred)));
       return;
-    } else if (event.key == "j") {
+    } else if (event.key == "j") { // Thunderbird
       event.stopPropagation();
-      selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.nextMessage(false));
+      goToNextMessage();
       await Promise.allSettled(messages.map(msg =>
         msg.treatSpam()));
       return;
-    } else if (event.key == "Delete") {
+    } else if (event.key == "Delete" || event.key == "Backspace") {
       event.stopPropagation();
-      selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.nextMessage(false));
+      goToNextMessage();
       await Promise.allSettled(messages.map(msg =>
         msg.deleteMessage()));
+      return;
+    } else if (event.key == "f") { // Thunderbird
+      event.stopPropagation();
+      goToNextMessage();
+      return;
+    } else if (event.key == "b") { // Thunderbird
+      event.stopPropagation();
+      goToNextMessage(true);
+      return;
+    } else if (event.key == "F5" || event.key == "F9") { // F5: Thunderbird, F9: Outlook
+      event.stopPropagation();
+      await message.folder.getNewMessages();
+      return;
+    }
+  }
+  // Ctrl+ (or Cmd+)
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
+    if (event.key == "r") { // Thunderbird
+      event.stopPropagation();
+      openComposer(message.compose.replyToAuthor());
+      return;
+    } else if (event.key == "l") { // Thunderbird
+      event.stopPropagation();
+      openComposer(await message.compose.forward());
+      return;
+    } else if (event.key == "u") { // Outlook
+        event.stopPropagation();
+        await Promise.allSettled(messages.map(msg =>
+          msg.markRead(false)));
+        return;
+    } else if (event.key == "q") { // Outlook
+      event.stopPropagation();
+      await Promise.allSettled(messages.map(msg =>
+        msg.markRead(true)));
+      return;
+    } else if (event.key == "m") { // Outlook
+      event.stopPropagation();
+      await message.folder.getNewMessages();
+      return;
+    } else if (event.key == "n") { // Thunderbird
+      event.stopPropagation();
+      openComposer(message.folder.account.newEMailFrom());
+      return;
+    } else if (event.key == "e") { // Thunderbird
+      event.stopPropagation();
+      openComposer(await message.compose.editAsNew());
+      return;
+    }
+  }
+  // Ctrl+Shift+
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && !event.altKey) {
+    if (event.key == "R") { // Thunderbird
+      event.stopPropagation();
+      openComposer(message.compose.replyAll());
+      return;
+    } else if (event.key == "L") { // Thunderbird
+      event.stopPropagation();
+      openComposer(await message.compose.forwardAsAttachment());
+      return;
+    } else if (event.key == "N") { // Mustang
+      event.stopPropagation();
+      openComposer(message.compose.newToAll());
+      return;
+    }
+  }
+  // Shift+
+  if (event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    if (event.key == "J") { // Thunderbird
+      event.stopPropagation();
+      await Promise.allSettled(messages.map(msg =>
+        msg.treatSpam(false)));
+      return;
+    } else if (event.key == "Delete" || event.key == "Backspace") { // Thunderbird
+      event.stopPropagation();
+      goToNextMessage();
+      await Promise.allSettled(messages.map(msg =>
+        msg.deleteMessage(DeleteStrategy.DeleteImmediately)));
       return;
     }
   }
 }
 
 export async function onKeyOnMessage(event: KeyboardEvent) {
-  onKeyOnList(event);
+  await onKeyOnList(event);
 
   let message = get(selectedMessage);
   let selectedMessagesColl = get(selectedMessages);
@@ -60,34 +145,14 @@ export async function onKeyOnMessage(event: KeyboardEvent) {
       selectedMessagesColl.add(next);
       return;
     }
-    /*
-    if (event.key == "m") {
-      event.stopPropagation();
-      let isRead = message.isRead;
-      await message.markRead(!isRead);
-      return;
-    } else if (event.key == "s") {
-      event.stopPropagation();
-      let isStarred = message.isStarred;
-      await message.markStarred(!isStarred);
-      return;
-    } else if (event.key == "j") {
-      event.stopPropagation();
-      selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.action.nextMessage(false));
-      await message.treatSpam();
-      return;
-    } else if (event.key == "Delete") {
-      event.stopPropagation();
-      selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.action.nextMessage(false));
-      await message.deleteMessage();
-      return;
-    }
-    */
+    // Message shortcuts already work just with `onKeyOnList()`
   }
 }
 
 function majority<T>(array: Array<T>, condition: (item: T) => boolean): boolean {
   return array.filter(condition).length / array.length > 0.5;
+}
+
+function openComposer(mail: EMail) {
+  mailMustangApp.writeMail(mail);
 }

@@ -154,7 +154,7 @@
         return;
       }
       await tick();
-      let contentRow = contentE?.firstChild?.firstChild as HTMLElement;
+      let contentRow = contentE?.firstElementChild?.firstElementChild as HTMLElement;
       if (!contentRow) {
         return;
       }

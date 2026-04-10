@@ -38,14 +38,14 @@
   import Button from "../../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import SaveIcon from "lucide-svelte/icons/save";
-  import { assert } from "../../../../logic/util/util";
+  import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
   import { catchErrors } from "../../../Util/error";
+  import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
 
   export let account: MailAccount;
 
   $: identities = (account as MailAccount).identities;
-  $: console.log("identities", $identities.contents);
 
   function onAdd() {
     let id = new MailIdentity(account);
@@ -59,6 +59,9 @@
   }
   async function onSave() {
     assert(identities.hasItems, $t`Need at least 1 identity`);
+    for (let identity of identities) {
+      sanitize.emailAddress(identity.emailAddress);
+    }
     account.emailAddress = identities.first.emailAddress;
     account.realname = identities.first.realname;
     await account.save();

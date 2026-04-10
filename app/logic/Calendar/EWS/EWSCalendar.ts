@@ -61,8 +61,8 @@ export class EWSCalendar extends Calendar {
     return participants.map((participant, i) => ({
       participant,
       availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
-        from: new Date(event.StartTime + "Z"),
-        to: new Date(event.EndTime + "Z"),
+        from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
+        to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
         free: event.BusyType == "Free",
       })),
     }));
@@ -300,7 +300,7 @@ export class EWSCalendar extends Calendar {
       },
     };
     let result = await this.account.callEWS(request);
-    return result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission.map(permission => new ExchangePermission(permission));
+    return sanitize.array(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission, []).map(permission => new ExchangePermission(permission));
   }
 
   async setPermissions(permissions: ExchangePermission[]) {
