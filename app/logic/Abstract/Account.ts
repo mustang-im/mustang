@@ -122,12 +122,6 @@ export class Account extends Observable {
   }
 
   /**
-   * Used to start a newly-added subaccount.
-   */
-  async startup(): Promise<void> {
-  }
-
-  /**
    * If the main account is loaded, this child account should be loaded automatically after.
    * If the main account is deleted, then this account should be deleted as well.
    * Child accounts share the OAuth2 login with their main accounts.
