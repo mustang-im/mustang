@@ -410,7 +410,6 @@ export class JMAPAccount extends MailAccount {
   async disconnect(): Promise<void> {
     this.stopPolling();
     this.session = null;
-    await super.logout();
   }
 
   async send(email: EMail): Promise<void> {
