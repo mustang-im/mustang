@@ -217,8 +217,6 @@
 
 <style>
   .time-box {
-    border: 1px solid var(--border);
-    border-radius: 5px;
     padding: 12px 16px;
   }
   .date-input {

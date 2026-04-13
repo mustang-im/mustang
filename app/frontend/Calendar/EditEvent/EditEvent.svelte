@@ -1,9 +1,15 @@
 <vbox flex class="event-edit-window">
   <DialogHeader bind:event />
   <Scroll>
-    <vbox class="columns" flex class:show-description={showDescription}>
+    <vbox class="columns" flex class:show-description={showDescription}  bind:offsetWidth={width}>
       <vbox class="column1">
-        <TimeBox {event} />
+        <hbox class="time-box" >
+          <TimeBox {event} />
+          <vbox flex />
+          {#if width > 600}
+            <EventInDayView {event} />
+          {/if}
+        </hbox>
         <Section label={$t`Title`}>
           <TitleBox {event} />
         </Section>
@@ -19,7 +25,7 @@
         </Section>
         {#if showRepeat}
           <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} bind:this={repeatBox} />
+            <RepeatBox {event} />
           </Section>
         {/if}
         {#if showReminder}
@@ -72,6 +78,7 @@
   import LocationBox from './LocationBox.svelte';
   import OnlineMeetingBox from './OnlineMeetingBox.svelte';
   import DescriptionBox from './DescriptionBox.svelte';
+  import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import Section from "./Section.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   import DialogHeader from "./DialogHeader.svelte";
@@ -95,7 +102,7 @@
   $: showOnlineMeeting = $event.isOnline;
   $: showDescription = !!$event.descriptionHTML;
 
-  let repeatBox: RepeatBox;
+  let width: number;
 
   function expandRepeat(): void {
     event.newRecurrenceRule(Frequency.Weekly);
@@ -133,6 +140,13 @@
   }
   .columns {
     padding: 12px 16px 4px 16px;
+  }
+  .time-box {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+  }
+  .time-box :global(.calendar) {
+    max-width: 300px;
   }
   .description :global(.section > .icon) {
     display: none;
