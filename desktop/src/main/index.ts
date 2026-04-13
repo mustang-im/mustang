@@ -3,7 +3,7 @@ import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, t
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
 
@@ -133,13 +133,6 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
 
   createMenu();
   createWindow();
