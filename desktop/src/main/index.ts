@@ -165,7 +165,6 @@ async function whenReady() {
   }
 }
 
-// Reject opening new windows initially. It can be overriden to allow later.
 app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webContents));
 
 // Quit when all windows are closed, except on macOS. There, it's common
