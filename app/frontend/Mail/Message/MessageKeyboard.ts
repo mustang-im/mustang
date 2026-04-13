@@ -4,6 +4,26 @@ import { DeleteStrategy } from "../../../logic/Mail/MailAccount";
 import { selectedMessage, selectedMessages } from "../Selected";
 import { get } from "svelte/store";
 
+/**
+ * Electron InputEvent uses shift / control / alt / meta, but
+ * KeyboardEvent init needs shiftKey / ctrlKey / altKey / metaKey.
+ * @see https://www.electronjs.org/docs/latest/api/web-contents#event-before-input-event
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+ */
+export function newElectronKeyboardEvent(event: any) {
+  return new KeyboardEvent("keydown", {
+    key: event.key,
+    code: event.code,
+    repeat: event.isAutoRepeat,
+    isComposing: event.isComposing,
+    shiftKey: event.shift,
+    ctrlKey: event.control,
+    altKey: event.alt,
+    metaKey: event.meta,
+    location: event.location,
+  });
+}
+
 // <https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values>
 
 export async function onKeyOnList(event: KeyboardEvent) {
