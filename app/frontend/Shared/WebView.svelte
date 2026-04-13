@@ -23,7 +23,7 @@
 <script lang="ts">
   // #if [!WEBMAIL]
   import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
-  import { onKeyOnMessage } from "../Mail/Message/MessageKeyboard";
+  import { newElectronKeyboardEvent, onKeyOnMessage } from "../Mail/Message/MessageKeyboard";
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
   // #endif
@@ -152,7 +152,7 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(new KeyboardEvent("keydown", event));
+        onKeyOnMessage(newElectronKeyboardEvent(event));
       }
     });
   }
