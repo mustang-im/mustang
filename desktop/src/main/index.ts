@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
-import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
@@ -165,6 +165,8 @@ async function whenReady() {
   }
 }
 
+app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webContents));
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -250,6 +252,12 @@ function allowCrossDomainRequestsFromFrontend() {
       callback({ responseHeaders, statusLine });
     }
   );
+}
+
+function setWindowOpenHandler(webContents: WebContents) {
+  webContents.setWindowOpenHandler((details) => {
+    return { action: 'deny' };
+  });
 }
 
 // In this file you can include the rest of your app"s specific main process
