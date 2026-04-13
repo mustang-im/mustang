@@ -170,9 +170,7 @@
       if (!url) {
         return;
       }
-      let modifiers = event.modifiers.map(m => m.toLowerCase());
-      let isLeft = ["left", "leftbuttondown"].some(left => modifiers.some(mod => mod == left));
-      if (isLeft && event.type == "mouseDown") {
+      if (event.type == "mouseDown" && event.button == "left") {
         await openExternalURL(url);
       }
     });
