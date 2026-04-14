@@ -46,7 +46,6 @@
   "M6xyI9": "Pridať video konferenčný účet",
   "sxkWRg": "Pokročilé",
   "rhIUmV": "Po zobrazovaní na # sekundy",
-  "1kLn6M": "Celý deň",
   "+bHmdA": "Všetky stiahnuté.",
   "4xBHUg": "Odpoveď",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Presuňte tento e-mail do archívneho priečinka",
   "W1Abqa": "Presun do priečinka {0}",
   "/5R4hg": "Presun na iné poštové konto",
-  "6vx0g5": "Viacero dní",
   "R7SsBE": "Vypnutie zvuku",
   "hYDc6B": "Meno nemôže byť prázdne",
   "s3RKlM": "Názov adresy",
@@ -364,7 +362,6 @@
   "fx5vX/": "Zvuk",
   "wdxz7K": "Zdroj",
   "XgqUre": "Zdroj nie je k dispozícii",
-  "klTRd9": "Uveďte čas",
   "RfFYKi": "Hviezda",
   "x5G8x9": "Začnite chat iba s touto osobou",
   "T1ySTP": "Začiatok konferencie",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Ak chcete túto správu zašifrovať, pridajte certifikáty pre týchto príjemcov",
   "GZISRB": "Fráza pre súbor s tajným kľúčom",
   "tQuHhm": "Odoslali ste tento e-mail",
-  "ZT0r/B": "{0} tvrdí, že je to správne"
+  "ZT0r/B": "{0} tvrdí, že je to správne",
+  "D3d9y2": "Zavrieť a prípadne uložiť",
+  "SVKMDD": "Exportovať ako súbor",
+  "+bs3UE": "Doručená pošta nebola nájdená",
+  "VAlOyH": "Inštalácia aktualizácie...",
+  "J+/IsA": "Uložte tento e-mail do súboru v počítači"
 }

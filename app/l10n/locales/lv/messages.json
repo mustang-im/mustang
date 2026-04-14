@@ -58,7 +58,6 @@
   "rhIUmV": "Pēc # sekunžu rādīšanas",
   "N40H+G": "Visi",
   "Mxjwaz": "Visi konti",
-  "1kLn6M": "Visu dienu",
   "+bHmdA": "Visi lejupielādētie.",
   "dtwyLS": "Visi ziņojumi",
   "4xBHUg": "Atbilde",
@@ -301,7 +300,6 @@
   "/5R4hg": "Pārcelšanās uz citu pasta kontu",
   "S3wq2O": "Pārcelšanās uz darba vietu",
   "2yMZTC": "Pārvietot, atzīmēt vai dzēst",
-  "6vx0g5": "Vairākas dienas",
   "R7SsBE": "Izslēgt mikrofonu",
   "6YtxFj": "Nosaukums",
   "hYDc6B": "Nosaukums nedrīkst būt tukšs",
@@ -492,7 +490,6 @@
   "XgqUre": "Avots nav pieejams",
   "t8dIOP": "Spams",
   "KFBiPv": "Surogātpasta mape nav iestatīta. Lūdzu, dodieties uz mapes īpašībām un iestatiet Izmantot kā: Spam.",
-  "klTRd9": "Norādiet laiku",
   "LECpWm": "Burtu pārbaude",
   "RfFYKi": "Ar zvaigznīti",
   "x5G8x9": "Sākt tērzēšanu tikai ar šo personu",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Lai šifrētu šo ziņojumu, pievienojiet sertifikātus šādiem saņēmējiem.",
   "GZISRB": "Slepenās atslēgas frāze",
   "tQuHhm": "Jūs nosūtījāt šo e-pasta vēstuli",
-  "ZT0r/B": "{0} apgalvo, ka tas ir pareizi"
+  "ZT0r/B": "{0} apgalvo, ka tas ir pareizi",
+  "D3d9y2": "Aizvērt un pēc izvēles saglabāt",
+  "SVKMDD": "Eksportēt kā failu",
+  "+bs3UE": "Iesūtne nav atrasta",
+  "VAlOyH": "Atjauninājumu instalēšana...",
+  "J+/IsA": "Saglabājiet šo e-pasta vēstuli failā savā datorā"
 }

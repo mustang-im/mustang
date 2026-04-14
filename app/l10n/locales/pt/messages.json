@@ -46,7 +46,6 @@
   "M6xyI9": "Adicionar conta de conferência de vídeo",
   "sxkWRg": "Avançado",
   "rhIUmV": "Após exibir por # segundos",
-  "1kLn6M": "O dia todo",
   "+bHmdA": "Todos baixados.",
   "4xBHUg": "Responder",
   "bFDrW8": "Barra de aplicativos",
@@ -229,7 +228,6 @@
   "ohUPGv": "Mova este e-mail para a pasta de arquivos",
   "W1Abqa": "Mover para a pasta {0}",
   "/5R4hg": "Mudar para outra conta de correio",
-  "6vx0g5": "Vários dias",
   "R7SsBE": "Silenciar",
   "hYDc6B": "O nome não pode estar vazio",
   "s3RKlM": "Nome do catálogo de endereços",
@@ -364,7 +362,6 @@
   "fx5vX/": "Som",
   "wdxz7K": "fonte",
   "XgqUre": "Fonte não disponível",
-  "klTRd9": "Especificar a hora",
   "RfFYKi": "Marcado",
   "x5G8x9": "Iniciar um chat com apenas esta pessoa",
   "T1ySTP": "Iniciar conferência",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Para encriptar esta mensagem, adicione certificados para os seguintes destinatários",
   "GZISRB": "Frase-chave para o ficheiro de chave secreta",
   "tQuHhm": "Enviou esta mensagem de correio eletrónico",
-  "ZT0r/B": "{0} afirma que isto é correto"
+  "ZT0r/B": "{0} afirma que isto é correto",
+  "D3d9y2": "Fechar e, opcionalmente, guardar",
+  "SVKMDD": "Exportar como ficheiro",
+  "+bs3UE": "Caixa de entrada não encontrada",
+  "VAlOyH": "Instalar a atualização...",
+  "J+/IsA": "Guardar este e-mail num ficheiro no seu computador"
 }

@@ -46,7 +46,6 @@
   "M6xyI9": "Aggiungi account video conferenza",
   "sxkWRg": "Avanzato",
   "rhIUmV": "Dopo la visualizzazione per # secondi",
-  "1kLn6M": "Tutto il giorno",
   "+bHmdA": "Tutti scaricati.",
   "4xBHUg": "Risposta",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Spostare questa e-mail nella cartella archivio",
   "W1Abqa": "Sposta nella cartella {0}",
   "/5R4hg": "Passare ad un altro account di posta",
-  "6vx0g5": "Più giorni",
   "R7SsBE": "Silenzia",
   "hYDc6B": "Il nome non può essere vuoto",
   "s3RKlM": "Nome della rubrica",
@@ -364,7 +362,6 @@
   "fx5vX/": "Suono",
   "wdxz7K": "Fonte",
   "XgqUre": "Fonte non disponibile",
-  "klTRd9": "Specificare l'ora",
   "RfFYKi": "Preferiti",
   "x5G8x9": "Avvia una chat con solo questa persona",
   "T1ySTP": "Inizia conferenza",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Per crittografare questo messaggio, aggiungere i certificati per i seguenti destinatari",
   "GZISRB": "Passphrase per il file della chiave segreta",
   "tQuHhm": "Hai inviato questa e-mail",
-  "ZT0r/B": "{0} sostiene che questo è corretto"
+  "ZT0r/B": "{0} sostiene che questo è corretto",
+  "D3d9y2": "Chiudere e salvare facoltativamente",
+  "SVKMDD": "Esportazione come file",
+  "+bs3UE": "Posta in arrivo non trovata",
+  "VAlOyH": "Installazione dell'aggiornamento...",
+  "J+/IsA": "Salvate questa e-mail in un file sul vostro computer"
 }

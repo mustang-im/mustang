@@ -46,7 +46,6 @@
   "M6xyI9": "Lägga till videokonferenskonto",
   "sxkWRg": "Avancerad",
   "rhIUmV": "Efter visning i # sekunder",
-  "1kLn6M": "Hela dagen",
   "+bHmdA": "Alla nerladdade.",
   "4xBHUg": "Svar",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Flytta detta e-postmeddelande till arkivmappen",
   "W1Abqa": "Flytta till mapp {0}",
   "/5R4hg": "Flytta till annat e-postkonto",
-  "6vx0g5": "Flera dagar",
   "R7SsBE": "Tysta",
   "hYDc6B": "Namnet kan inte vara tomt",
   "s3RKlM": "Namnet på adressboken",
@@ -364,7 +362,6 @@
   "fx5vX/": "Ljud",
   "wdxz7K": "Källa",
   "XgqUre": "Källa inte tillgänglig",
-  "klTRd9": "Ange tid",
   "RfFYKi": "Stjärnmärkta",
   "x5G8x9": "Starta en chatt med endast denna person",
   "T1ySTP": "Starta konferens",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "För att kryptera detta meddelande lägger du till certifikat för följande mottagare",
   "GZISRB": "Lösenord för hemlig nyckelfil",
   "tQuHhm": "Du skickade detta e-postmeddelande",
-  "ZT0r/B": "{0} hävdar att detta är korrekt"
+  "ZT0r/B": "{0} hävdar att detta är korrekt",
+  "D3d9y2": "Stäng och spara eventuellt",
+  "SVKMDD": "Exportera som fil",
+  "+bs3UE": "Inkorgen hittades inte",
+  "VAlOyH": "Installation av uppdatering...",
+  "J+/IsA": "Spara detta e-postmeddelande till en fil på din dator"
 }

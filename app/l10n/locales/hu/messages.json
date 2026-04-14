@@ -46,7 +46,6 @@
   "M6xyI9": "Video konferencia fiók hozzáadása",
   "sxkWRg": "Fejlett",
   "rhIUmV": "Miután megjelenítette a # másodperceket",
-  "1kLn6M": "Minden nap",
   "+bHmdA": "Minden letöltött.",
   "4xBHUg": "Válasz",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Mozgassa ezt az e-mailt az archív mappába",
   "W1Abqa": "Mozgás a mappába {0}",
   "/5R4hg": "Másik e-mail fiókba költözés",
-  "6vx0g5": "Több nap",
   "R7SsBE": "Mute",
   "hYDc6B": "A név nem lehet üres",
   "s3RKlM": "A címfüzet neve",
@@ -364,7 +362,6 @@
   "fx5vX/": "Hang",
   "wdxz7K": "Forrás",
   "XgqUre": "Forrás nem elérhető",
-  "klTRd9": "Adja meg az időt",
   "RfFYKi": "Kezdőlap",
   "x5G8x9": "Indítsa el a csevegést csak ez a személy",
   "T1ySTP": "Kezdőlap",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Az üzenet titkosításához adjon tanúsítványokat a következő címzettekhez",
   "GZISRB": "Jelszó a titkos kulcsfájlhoz",
   "tQuHhm": "Ön küldte ezt az e-mailt",
-  "ZT0r/B": "{0} azt állítja, hogy ez így van"
+  "ZT0r/B": "{0} azt állítja, hogy ez így van",
+  "D3d9y2": "Bezárás és opcionális mentés",
+  "SVKMDD": "Exportálás fájlként",
+  "+bs3UE": "A beérkezett üzenetek nem találhatók",
+  "VAlOyH": "Frissítés telepítése...",
+  "J+/IsA": "Mentsd el ezt az e-mailt egy fájlba a számítógépeden"
 }

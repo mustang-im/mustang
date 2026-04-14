@@ -58,7 +58,6 @@
   "rhIUmV": "Etter visning i # sekunder",
   "N40H+G": "Alle",
   "Mxjwaz": "Alle kontoer",
-  "1kLn6M": "Hele dagen",
   "+bHmdA": "Alt lastet ned.",
   "dtwyLS": "Alle meldinger",
   "4xBHUg": "Svar",
@@ -301,7 +300,6 @@
   "/5R4hg": "Flytt til en annen e-postkonto",
   "S3wq2O": "Flytt til arbeidsområdet",
   "2yMZTC": "Flytt, merk eller slett",
-  "6vx0g5": "Flere dager",
   "R7SsBE": "Mute",
   "6YtxFj": "Navn",
   "hYDc6B": "Navnet kan ikke være tomt",
@@ -492,7 +490,6 @@
   "XgqUre": "Kilde ikke tilgjengelig",
   "t8dIOP": "Søppelpost",
   "KFBiPv": "Søppelpostmappen er ikke angitt. Gå til mappeegenskaper og angi Bruk som: Søppelpost.",
-  "klTRd9": "Angi tid",
   "LECpWm": "Stavekontroll",
   "RfFYKi": "Stjernemerket",
   "x5G8x9": "Start en chat med bare denne personen",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "For å kryptere denne meldingen må du legge til sertifikater for følgende mottakere",
   "GZISRB": "Passordfrase for hemmelig nøkkelfil",
   "tQuHhm": "Du sendte denne e-posten",
-  "ZT0r/B": "{0} hevder at dette er riktig"
+  "ZT0r/B": "{0} hevder at dette er riktig",
+  "D3d9y2": "Lukk og lagre (valgfritt)",
+  "SVKMDD": "Eksporter som fil",
+  "+bs3UE": "Innboks ikke funnet",
+  "VAlOyH": "Installerer oppdatering...",
+  "J+/IsA": "Lagre denne e-posten i en fil på datamaskinen din"
 }

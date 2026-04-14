@@ -46,7 +46,6 @@
   "M6xyI9": "Ajouter un compte vidéo conférence",
   "sxkWRg": "Avancé",
   "rhIUmV": "Après # secondes d'affichage",
-  "1kLn6M": "Toute la journée",
   "+bHmdA": "Tous téléchargés.",
   "4xBHUg": "Répondre",
   "bFDrW8": "Barre d'applications",
@@ -229,7 +228,6 @@
   "ohUPGv": "Déplacer cet email dans le dossier d'archive",
   "W1Abqa": "Déplacer vers un dossier {0}",
   "/5R4hg": "Déplacer vers un autre compte de messagerie",
-  "6vx0g5": "Plusieurs jours",
   "R7SsBE": "Couper le son",
   "hYDc6B": "Le nom ne peut pas être vide",
   "s3RKlM": "Nom du carnet d'adresses",
@@ -364,7 +362,6 @@
   "fx5vX/": "Sonnerie",
   "wdxz7K": "Source",
   "XgqUre": "Source non disponible",
-  "klTRd9": "Préciser l'heure",
   "RfFYKi": "Favoris",
   "x5G8x9": "Commencer une conversation avec cette personne uniquement",
   "T1ySTP": "Démarrer la conférence",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Pour crypter ce message, ajoutez des certificats pour les destinataires suivants",
   "GZISRB": "Phrase de passe pour le fichier de clés secrètes",
   "tQuHhm": "Vous avez envoyé ce courriel",
-  "ZT0r/B": "{0} affirme que c'est correct"
+  "ZT0r/B": "{0} affirme que c'est correct",
+  "D3d9y2": "Fermer et éventuellement enregistrer",
+  "SVKMDD": "Exporter en tant que fichier",
+  "+bs3UE": "Boîte de réception introuvable",
+  "VAlOyH": "Installation de la mise à jour...",
+  "J+/IsA": "Enregistrez cet e-mail dans un fichier sur votre ordinateur"
 }

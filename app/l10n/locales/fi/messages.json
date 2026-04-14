@@ -46,7 +46,6 @@
   "M6xyI9": "Lisää videokonferenssitili",
   "sxkWRg": "Edistynyt",
   "rhIUmV": "# sekunnin näytön jälkeen",
-  "1kLn6M": "Koko päivä",
   "+bHmdA": "Kaikki ladattu.",
   "4xBHUg": "Vastaa",
   "bFDrW8": "Sovelluspalkki",
@@ -229,7 +228,6 @@
   "ohUPGv": "Siirrä tämä sähköposti arkistokansioon",
   "W1Abqa": "Siirrä kansioon {0}",
   "/5R4hg": "Siirry toiselle sähköpostitilille",
-  "6vx0g5": "Useita päiviä",
   "R7SsBE": "Mykistä",
   "hYDc6B": "Nimi ei voi olla tyhjä",
   "s3RKlM": "Osoitekirjan nimi",
@@ -364,7 +362,6 @@
   "fx5vX/": "Ääni",
   "wdxz7K": "Lähde",
   "XgqUre": "Lähde ei ole käytettävissä",
-  "klTRd9": "Määritä aika",
   "RfFYKi": "Suosikit",
   "x5G8x9": "Aloita keskustelu vain tämän henkilön kanssa",
   "T1ySTP": "Aloita konferenssi",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Jos haluat salata tämän viestin, lisää varmenteet seuraaville vastaanottajille",
   "GZISRB": "Salaisen avaintiedoston salasana",
   "tQuHhm": "Lähetit tämän sähköpostin",
-  "ZT0r/B": "{0} väittää, että tämä on oikein"
+  "ZT0r/B": "{0} väittää, että tämä on oikein",
+  "D3d9y2": "Sulje ja tallenna valinnaisesti",
+  "SVKMDD": "Vie tiedostona",
+  "+bs3UE": "Saapuneita ei löydy",
+  "VAlOyH": "Päivityksen asentaminen...",
+  "J+/IsA": "Tallenna tämä sähköposti tiedostoksi tietokoneellesi"
 }

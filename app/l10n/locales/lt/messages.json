@@ -58,7 +58,6 @@
   "rhIUmV": "Po # sekundžių rodymo",
   "N40H+G": "Visi",
   "Mxjwaz": "Visos sąskaitos",
-  "1kLn6M": "Visą dieną",
   "+bHmdA": "Visi atsisiųsti.",
   "dtwyLS": "Visi pranešimai",
   "4xBHUg": "Atsakymas",
@@ -301,7 +300,6 @@
   "/5R4hg": "Perkėlimas į kitą pašto paskyrą",
   "S3wq2O": "Perkėlimas į darbo vietą",
   "2yMZTC": "Perkelti, pažymėti arba ištrinti",
-  "6vx0g5": "Kelios dienos",
   "R7SsBE": "Nutildyti",
   "6YtxFj": "Pavadinimas",
   "hYDc6B": "Pavadinimas negali būti tuščias",
@@ -492,7 +490,6 @@
   "XgqUre": "Šaltinis nepateiktas",
   "t8dIOP": "Spam",
   "KFBiPv": "Spamo aplankas nenustatytas. Eikite į aplanko savybes ir nustatykite Naudoti kaip: Spam.",
-  "klTRd9": "Nurodykite laiką",
   "LECpWm": "Rašybos tikrinimas",
   "RfFYKi": "Žvaigždė",
   "x5G8x9": "Pradėkite pokalbį tik su šiuo asmeniu",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Norėdami užšifruoti šį pranešimą, pridėkite sertifikatus šiems gavėjams",
   "GZISRB": "Slaptojo rakto failo slaptoji frazė",
   "tQuHhm": "Jūs išsiuntėte šį el. laišką",
-  "ZT0r/B": "{0} teigia, kad tai teisinga"
+  "ZT0r/B": "{0} teigia, kad tai teisinga",
+  "D3d9y2": "Uždaryti ir pasirinktinai išsaugoti",
+  "SVKMDD": "Eksportuoti kaip failą",
+  "+bs3UE": "Gautieji nerandami",
+  "VAlOyH": "Atnaujinimo diegimas...",
+  "J+/IsA": "Išsaugokite šį el. laišką kompiuteryje esančiame faile"
 }

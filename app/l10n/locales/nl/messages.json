@@ -46,7 +46,6 @@
   "M6xyI9": "Voeg videoconferentie account toe",
   "sxkWRg": "Vertaling:",
   "rhIUmV": "Na weergave voor # seconden",
-  "1kLn6M": "Hele dag",
   "+bHmdA": "Alles gedownload.",
   "4xBHUg": "Beantwoorden",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Verplaats deze e-mail naar het archief",
   "W1Abqa": "Verplaatsen naar map {0}",
   "/5R4hg": "Verplaatsen naar ander e-mailaccount",
-  "6vx0g5": "Meerdere dagen",
   "R7SsBE": "Dempen",
   "hYDc6B": "Naam mag niet leeg zijn",
   "s3RKlM": "Naam van het adresboek",
@@ -364,7 +362,6 @@
   "fx5vX/": "Geluid",
   "wdxz7K": "Bron",
   "XgqUre": "Bron niet beschikbaar",
-  "klTRd9": "Tijd specificeren",
   "RfFYKi": "Met sterretje",
   "x5G8x9": "Begin een chat met alleen deze persoon",
   "T1ySTP": "Conferentie beginnen",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Om dit bericht te versleutelen, voegt u certificaten toe voor de volgende ontvangers",
   "GZISRB": "Passphrase voor geheime sleutelbestand",
   "tQuHhm": "U hebt deze e-mail verzonden",
-  "ZT0r/B": "{0} beweert dat dit juist is"
+  "ZT0r/B": "{0} beweert dat dit juist is",
+  "D3d9y2": "Sluiten en optioneel opslaan",
+  "SVKMDD": "Exporteren als bestand",
+  "+bs3UE": "Postvak IN niet gevonden",
+  "VAlOyH": "Update installeren...",
+  "J+/IsA": "Sla deze e-mail op in een bestand op uw computer"
 }

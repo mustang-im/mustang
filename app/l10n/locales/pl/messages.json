@@ -46,7 +46,6 @@
   "M6xyI9": "Strona internetowa",
   "sxkWRg": "Zaawansowany",
   "rhIUmV": "Po wyświetleniu przez # sekund",
-  "1kLn6M": "Cały dzień",
   "+bHmdA": "Wszystkie pobrane.",
   "4xBHUg": "Odpowiedz",
   "bFDrW8": "Pasek aplikacji",
@@ -229,7 +228,6 @@
   "ohUPGv": "Move this email to the archive folder (ang.)",
   "W1Abqa": "Przenieś do folderu {0}",
   "/5R4hg": "Przeniesienie na inne konto pocztowe",
-  "6vx0g5": "Wiele dni",
   "R7SsBE": "Wycisz",
   "hYDc6B": "Nazwa nie może być pusta",
   "s3RKlM": "Nazwa książki adresowej",
@@ -364,7 +362,6 @@
   "fx5vX/": "Dźwięk",
   "wdxz7K": "Źródło",
   "XgqUre": "Źródło niedostępne",
-  "klTRd9": "Określ czas",
   "RfFYKi": "Oznaczone gwiazdką",
   "x5G8x9": "Rozpocznij czat tylko z tą osobą",
   "T1ySTP": "Rozpocznij konferencję",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Aby zaszyfrować tę wiadomość, należy dodać certyfikaty dla następujących odbiorców",
   "GZISRB": "Hasło dla pliku klucza tajnego",
   "tQuHhm": "Wysłałeś tę wiadomość e-mail",
-  "ZT0r/B": "{0} twierdzi, że to prawda"
+  "ZT0r/B": "{0} twierdzi, że to prawda",
+  "D3d9y2": "Zamknij i opcjonalnie zapisz",
+  "SVKMDD": "Eksportuj jako plik",
+  "+bs3UE": "Nie znaleziono skrzynki odbiorczej",
+  "VAlOyH": "Instalowanie aktualizacji...",
+  "J+/IsA": "Zapisz tę wiadomość e-mail w pliku na komputerze"
 }

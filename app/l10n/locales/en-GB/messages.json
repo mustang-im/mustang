@@ -58,7 +58,6 @@
   "rhIUmV": "After displaying for # seconds",
   "N40H+G": "All",
   "Mxjwaz": "All accounts",
-  "1kLn6M": "All day",
   "+bHmdA": "All downloaded.",
   "dtwyLS": "All messages",
   "4xBHUg": "Answer",
@@ -301,7 +300,6 @@
   "/5R4hg": "Move to other mail account",
   "S3wq2O": "Move to workspace",
   "2yMZTC": "Move, tag, or delete",
-  "6vx0g5": "Multiple days",
   "R7SsBE": "Mute",
   "6YtxFj": "Name",
   "hYDc6B": "Name cannot be empty",
@@ -492,7 +490,6 @@
   "XgqUre": "Source not available",
   "t8dIOP": "Spam",
   "KFBiPv": "Spam folder is not set. Please go to folder properties and set Use As: Spam.",
-  "klTRd9": "Specify time",
   "LECpWm": "Spell check",
   "RfFYKi": "Starred",
   "x5G8x9": "Start a chat with only this person",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "To encrypt this message, add certificates for the following recipients",
   "GZISRB": "Passphrase for secret key file",
   "tQuHhm": "You sent this email",
-  "ZT0r/B": "{0} claims that this is correct"
+  "ZT0r/B": "{0} claims that this is correct",
+  "D3d9y2": "Close and optionally save",
+  "SVKMDD": "Export as file",
+  "+bs3UE": "Inbox not found",
+  "VAlOyH": "Installing update...",
+  "J+/IsA": "Save this email to a file on your computer"
 }

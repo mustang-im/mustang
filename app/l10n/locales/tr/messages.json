@@ -46,7 +46,6 @@
   "M6xyI9": "Video konferans hesabı ekle",
   "sxkWRg": "Gelişmiş",
   "rhIUmV": "# saniye boyunca görüntülendikten sonra",
-  "1kLn6M": "Bütün gün",
   "+bHmdA": "Tüm indirildi.",
   "4xBHUg": "Cevap",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Bu e-postayı arşiv klasörüne taşıyın",
   "W1Abqa": "Klasöre taşı {0}",
   "/5R4hg": "Diğer posta hesabına taşıma",
-  "6vx0g5": "Birden fazla gün",
   "R7SsBE": "Sessiz",
   "hYDc6B": "İsim boş olamaz",
   "s3RKlM": "Adresin adı",
@@ -364,7 +362,6 @@
   "fx5vX/": "Ses",
   "wdxz7K": "Kaynak Kaynağı",
   "XgqUre": "Mevcut olmayan kaynaklar",
-  "klTRd9": "Zaman belirtin",
   "RfFYKi": "Yıldızlı",
   "x5G8x9": "Sadece bu kişiyle bir sohbete başlayın",
   "T1ySTP": "Başlangıç",
@@ -1075,5 +1072,10 @@
   "l7UKoO": "Bu mesajı şifrelemek için aşağıdaki alıcılar için sertifika ekleyin",
   "GZISRB": "Gizli anahtar dosyası için parola",
   "tQuHhm": "Bu e-postayı göndermişsiniz",
-  "ZT0r/B": "{0} bunun doğru olduğunu iddia ediyor"
+  "ZT0r/B": "{0} bunun doğru olduğunu iddia ediyor",
+  "D3d9y2": "Kapatın ve isteğe bağlı olarak kaydedin",
+  "SVKMDD": "Dosya olarak dışa aktar",
+  "+bs3UE": "Gelen kutusu bulunamadı",
+  "VAlOyH": "Güncelleme yükleniyor...",
+  "J+/IsA": "Bu e-postayı bilgisayarınızdaki bir dosyaya kaydedin"
 }
