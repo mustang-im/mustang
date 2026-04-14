@@ -2,9 +2,12 @@
   required
   min={toHTMLString(min)} max={toHTMLString(max)}
   bind:value
-  on:change={onChangeDebounced}
+  on:change={onChangeEvent}
   on:blur={onChange}
   on:change
+  on:keydown={() => isUsingKeyboard = true}
+  on:mousedown={() => isUsingKeyboard = false}
+  on:pointerdown={() => isUsingKeyboard = false}
   {disabled}
   />
 
@@ -37,7 +40,18 @@
     return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
   }
 
+  // <copied to="TimeInput.svelte">
   const onChangeDebounced = debounce(() => onChange(), 1000);
+  let isUsingKeyboard = false;
+  function onChangeEvent() {
+    if (isUsingKeyboard) {
+      onChangeDebounced();
+    } else {
+      onChange();
+    }
+  }
+  // </copied>
+
   function onChange() {
     if (!value) {
       return;

@@ -1,8 +1,11 @@
 <input type="time"
   bind:value={userValue}
-  on:change={onChangeDebounced}
+  on:change={onChangeEvent}
   on:blur={onChange}
   on:change
+  on:keydown={() => isUsingKeyboard = true}
+  on:mousedown={() => isUsingKeyboard = false}
+  on:pointerdown={() => isUsingKeyboard = false}
   bind:this={inputE}
   {disabled}
   />
@@ -31,7 +34,18 @@
     }
   }
 
+  // <copied from="DateInput.svelte">
   const onChangeDebounced = debounce(() => onChange(), 1000);
+  let isUsingKeyboard = false;
+  function onChangeEvent() {
+    if (isUsingKeyboard) {
+      onChangeDebounced();
+    } else {
+      onChange();
+    }
+  }
+  // </copied>
+
   export function onChange() {
     try {
       let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);
