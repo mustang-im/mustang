@@ -1,4 +1,5 @@
-<select id="duration-unit" bind:value={unitInSeconds} {disabled}>
+<select id="duration-unit" bind:value={unitInSeconds} {disabled}
+  on:change={unitChanged}>
   {#if !onlyDays}
     <option value={k1MinuteS}>{$plural(durationInUnit, { one: 'minute', other: 'minutes' })}</option>
     <option value={k1HourS}>{$plural(durationInUnit, { one: 'hour', other: 'hours' })}</option>
@@ -22,20 +23,13 @@
     durationInSeconds = durationInUnit * unitInSeconds;
   }
 
-  $: durationInUnit = durationInSeconds / unitInSeconds;
+  function unitChanged() {
+    durationInSeconds = durationInUnit * unitInSeconds;
+  }
 
-  const onlyRoundNumbers = false;
-  $: unitInSeconds, onlyRoundNumbers && onUnitChanged()
-  function onUnitChanged() {
-    if (!durationInUnit) { // startup
-      return;
-    }
-    // After changing unit, and after re-calculating `durationInUnit`,
-    // ensure round numbers
-    if (durationInUnit % 1 != 0) {
-      durationInUnit = Math.ceil(durationInUnit);
-      durationInSeconds = durationInUnit * unitInSeconds;
-    }
+  $: durationInSeconds, secondsToUnit()
+  function secondsToUnit() {
+    durationInUnit = durationInSeconds / unitInSeconds;
   }
 
   $: onlyDays && onDaysOnly()
