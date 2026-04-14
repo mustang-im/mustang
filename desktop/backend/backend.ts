@@ -6,6 +6,7 @@ import { WebContents } from './WebContents';
 import { Observable, notifyChangedProperty } from '../../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
+import * as sqliteVec from "sqlite-vec";
 import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences } from "electron";
@@ -68,6 +69,7 @@ async function createSharedAppObject() {
     // openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
+    addSQLiteVector,
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
@@ -377,6 +379,10 @@ function getSQLiteDatabase(filename: string, options: any): Database {
     filename = path.join(getConfigDir(), filename);
   }
   return new Database(filename, options);
+}
+
+function addSQLiteVector(db: Database) {
+  sqliteVec.load(db);
 }
 
 async function sendMailNodemailer(transport, mail) {

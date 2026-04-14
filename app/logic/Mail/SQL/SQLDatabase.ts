@@ -16,6 +16,7 @@ export async function getDatabase(): Promise<Database> {
   await mailDatabase.migrate(mailDatabaseSchema, createFolderIDDateSentIndex);
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = WAL');
+  await appGlobal.remoteApp.addSQLiteVector(mailDatabase);
   return mailDatabase;
 }
 
