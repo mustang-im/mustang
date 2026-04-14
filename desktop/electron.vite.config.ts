@@ -6,6 +6,9 @@ import replace from '@rollup/plugin-replace';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { production, webMail, includeProprietary } from '../app/logic/build';
 import { defaultClientConditions } from 'vite';
+import { resolve } from 'node:path';
+
+const projectRoot = resolve(import.meta.dirname, "..");
 
 export default defineConfig({
   main: {
@@ -48,7 +51,22 @@ export default defineConfig({
     resolve: {
       // Explicitly set the resolve conditions for Vite 7+
       conditions: [...defaultClientConditions],
+      alias: {
+        // Because the code is served directly in dev
+        // and ../../app remains the same index.html
+        // but when fetching the JS it is normalized to
+        // /app. /app cannot be found in the filesystem.
+        '/app': resolve(projectRoot, "app"),
+      },
     },
     publicDir: '../../../app/public',
+    server: {
+      fs: {
+        // @fs is used to fetch assets in dev
+        // but it cannot access files outside
+        // the /renderer directory.
+        allow: [projectRoot],
+      },
+    },
   }
 })
