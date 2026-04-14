@@ -28,7 +28,8 @@
         <DateInput bind:date={event.endTime}
           min={$event.startTime}
           deltaInDays={$event.allDay ? -1 : null} />
-      {:else}
+      <!--
+      {:else if $event.allDay}
         <hbox class="buttons">
           <RoundButton
             label={$t`Multiple days`}
@@ -39,12 +40,14 @@
             iconSize="16px"
             />
         </hbox>
+      -->
       {/if}
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
         <TimeInput bind:time={event.endTime} on:change={onTimeChanged} />
       {/if}
+      <!--
       <hbox class="buttons">
         <RoundButton
           label={$event.allDay ? $t`Specify time` : $t`All day`}
@@ -55,6 +58,7 @@
           iconSize="16px"
           />
       </hbox>
+      -->
     </hbox>
 
     {#if showTimezone}
