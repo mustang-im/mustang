@@ -89,15 +89,21 @@
       <hbox class="timezone" />
     {/if}
     <hbox class="duration" title={$t`Duration`}>
-      <input type="number"
-          min={1} max={2000}
-          bind:value={durationInUnit}
-          on:input={durationUnit.onDurationInUnitChanged} />
-      <DurationUnit
-        bind:durationInSeconds={event.duration}
-        bind:durationInUnit
-        bind:this={durationUnit}
-        onlyDays={$event.allDay} />
+      {#if kOptionsInS.includes($event.duration)}
+        <vbox class="duration-selector">
+          <DurationSelector bind:duration={event.duration} onlyDays={$event.allDay} />
+        </vbox>
+      {:else}
+        <input type="number"
+            min={1} max={2000}
+            bind:value={durationInUnit}
+            on:input={durationUnit.onDurationInUnitChanged} />
+        <DurationUnit
+          bind:durationInSeconds={event.duration}
+          bind:durationInUnit
+          bind:this={durationUnit}
+          onlyDays={$event.allDay} />
+      {/if}
     </hbox>
   </grid>
 </vbox>
@@ -107,6 +113,7 @@
   import DateInput from "./DateInput.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
+  import DurationSelector, { kOptionsInS } from "./DurationSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AllDayIcon from '../../asset/icon/calendar/24h.svg?raw';
   import ClockIcon from "lucide-svelte/icons/clock";
@@ -256,6 +263,9 @@
   .date-input :global(input),
   .time-input :global(input) {
     font-size: 16px;
+  }
+  .duration-selector {
+    margin-block: 6px;
   }
   .duration input {
     margin-inline-end: 6px;
