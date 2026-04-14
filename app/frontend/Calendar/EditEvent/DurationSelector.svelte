@@ -15,11 +15,11 @@
     {/each}
     <option value={1 * k1DayS}>{$plural(2, { one: 'day', other: 'days' })}</option>
   {/if}
-  <option value={allDay ? 3 * k1DayS : 1 * k1MinuteS}>Other</option>
+  <option value={allDay ? 3 * k1DayS : 1 * k1MinuteS}>{$t`Other`}</option>
 </select>
 
 <script lang="ts">
-  import { plural } from "../../../l10n/l10n";
+  import { plural, t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ setAllDay: boolean }>();
 
