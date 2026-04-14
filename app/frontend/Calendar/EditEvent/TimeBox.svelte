@@ -89,11 +89,7 @@
       <hbox class="timezone" />
     {/if}
     <hbox class="duration" title={$t`Duration`}>
-      {#if kOptionsInS.includes($event.duration)}
-        <vbox class="duration-selector">
-          <DurationSelector bind:duration={event.duration} onlyDays={$event.allDay} />
-        </vbox>
-      {:else}
+      {#if customDuration}
         <input type="number"
             min={1} max={2000}
             bind:value={durationInUnit}
@@ -103,6 +99,10 @@
           bind:durationInUnit
           bind:this={durationUnit}
           onlyDays={$event.allDay} />
+      {:else}
+        <vbox class="duration-selector">
+          <DurationSelector bind:duration={event.duration} onlyDays={$event.allDay} />
+        </vbox>
       {/if}
     </hbox>
   </grid>
@@ -131,6 +131,7 @@
   $: isMultipleDays = $event.startTime && $event.endTime &&
     // all day events have the non-inclusive next day as end
     new Date($event.endTime.getTime() - ($event.allDay ? 80000 : 0)).toDateString() != $event.startTime.toDateString();
+  $: customDuration = customDuration || !kOptionsInS.includes($event.duration);
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;
@@ -265,7 +266,7 @@
     font-size: 16px;
   }
   .duration-selector {
-    margin-block: 6px;
+    margin-block: 5px;
   }
   .duration input {
     margin-inline-end: 6px;
