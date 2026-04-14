@@ -5,13 +5,8 @@
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
       {#if appGlobal.isMobile}
-        <hbox class="delete buttons">
-          <Button
-            label={$t`Discard`}
-            icon={TrashIcon}
-            iconSize="15px" iconOnly
-            onClick={onDelete}
-            />
+        <hbox class="close buttons mobile">
+          <CloseButton {mail} on:close={onClose} />
         </hbox>
       {/if}
       <IdentitySelector bind:selectedIdentity={fromIdentity}
@@ -21,19 +16,8 @@
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         {#if !appGlobal.isMobile}
-          <Button
-            label={$t`Discard`}
-            icon={TrashIcon}
-            iconSize="15px" iconOnly
-            onClick={onDelete}
-            />
+          <CloseButton {mail} on:close={onClose} />
         {/if}
-        <Button
-          label={$t`Save`}
-          icon={CloseIcon}
-          iconSize="15px" iconOnly
-          onClick={onSave}
-          />
         <RoundButton
           classes="send"
           label={sendDisabledTooltip ?? $t`Send`}
@@ -190,9 +174,11 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { goBack } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
+  import CloseButton from "./CloseButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -212,14 +198,11 @@
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import SendIcon from "lucide-svelte/icons/send";
-  import TrashIcon from "lucide-svelte/icons/trash-2";
-  import CloseIcon from "lucide-svelte/icons/save";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import SMLIcon from "lucide-svelte/icons/list-checks";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
-  import { goBack } from "../../AppsBar/selectedApp";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -352,15 +335,6 @@
     onClose();
   }
 
-  async function onSave() {
-    await mail.compose.saveAsDraft();
-    onClose();
-  }
-  async function onDelete() {
-    onClose();
-    await mail.compose.deleteDrafts();
-  }
-
   let closing = false;
   let doOnClose: (() => void)[] = [];
   function onClose() {
@@ -414,7 +388,7 @@
   .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
   }
-  .delete.buttons {
+  .close.buttons.mobile {
     margin-inline-end: 8px;
   }
   .close.buttons {
@@ -422,9 +396,6 @@
   }
   .close.buttons :global(svg) {
     stroke-width: 1.5px;
-  }
-  .close.buttons :global(button) {
-    border: 1px solid var(--border);
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;

@@ -1,6 +1,7 @@
 <input type="time"
   bind:value={userValue}
-  on:change={onChange}
+  on:change={onChangeDebounced}
+  on:blur={onChange}
   on:change
   bind:this={inputE}
   {disabled}
@@ -8,6 +9,7 @@
 
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
+  import debounce from "lodash/debounce";
 
   export let time: Date; /* in/out */
   export let disabled = false;
@@ -29,6 +31,7 @@
     }
   }
 
+  const onChangeDebounced = debounce(() => onChange(), 1000);
   export function onChange() {
     try {
       let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);

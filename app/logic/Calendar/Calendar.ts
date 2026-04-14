@@ -2,14 +2,15 @@ import { Account } from "../Abstract/Account";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
+import type { EMail } from "../Mail/EMail";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
 import { SQLEvent } from "./SQL/SQLEvent";
-import type { EMail } from "../Mail/EMail";
-import { appGlobal } from "../app";
-import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 import { recurrenceColl } from "./RecurrenceColl";
+import { appGlobal } from "../app";
+import { RunOnce } from "../util/flow/RunOnce";
 import { gt } from "../../l10n/l10n";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -23,6 +24,7 @@ export class Calendar extends Account {
   readonly canAcceptAnyInvitation: boolean = true;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
+  readDBRunOnce = new RunOnce();
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
@@ -51,17 +53,24 @@ export class Calendar extends Account {
     return new ICalIncomingInvitation(this, message);
   }
 
+  async startup() {
+    await super.startup();
+    await this.listEvents();
+  }
+
   async listEvents() {
     await this.readEventsFromDB();
   }
 
   async readEventsFromDB() {
-    if (!this.dbID) {
-      await this.save();
-    }
-    if (this.events.isEmpty) {
-      await SQLEvent.readAll(this);
-    }
+    await this.readDBRunOnce.runOnce(async () => {
+      if (!this.dbID) {
+        await this.save();
+      }
+      if (this.events.isEmpty) {
+        await SQLEvent.readAll(this);
+      }
+    });
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {

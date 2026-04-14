@@ -19,6 +19,10 @@ export class SMTPAccount extends MailAccount {
     }
   }
 
+  // Should not be called, but do nothing, just in case.
+  async startup() {
+  }
+
   protected getTransportOptions() {
     // Auth method
     let usePassword = [
