@@ -1,23 +1,41 @@
-<select bind:value={duration}>
-  <option value={onlyDays ? 3 * k1DayS : 1 * k1MinuteS}>Other</option>
-  {#if !onlyDays}
+<select
+  on:change={event => adaptAllDays(event.target.value)}
+  bind:value={durationInSeconds}><!-- `on:change` must be before `bind:value` in the code, to get the value before the `Event.duration` setter adapts it -->
+  {#if allDay}
+    <option value={1 * k1HourS}>{$plural(1, { one: 'hour', other: 'hours' })}</option>
+    {#each kDayOptions as day}
+      <option value={day * k1DayS}>{day} {$plural(day, { one: 'day', other: 'days' })}</option>
+    {/each}
+  {:else}
     {#each kMinOptions as min}
       <option value={min * k1MinuteS}>{min} {$plural(min, { one: 'minute', other: 'minutes' })}</option>
     {/each}
     {#each kHourOptions as hour}
       <option value={hour * k1HourS}>{hour} {$plural(hour, { one: 'hour', other: 'hours' })}</option>
     {/each}
+    <option value={1 * k1DayS}>{$plural(2, { one: 'day', other: 'days' })}</option>
   {/if}
-  {#each kDayOptions as day}
-    <option value={day * k1DayS}>{day} {$plural(day, { one: 'day', other: 'days' })}</option>
-  {/each}
+  <option value={allDay ? 3 * k1DayS : 1 * k1MinuteS}>Other</option>
 </select>
 
 <script lang="ts">
   import { plural } from "../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ setAllDay: boolean }>();
 
-  export let duration: number;
-  export let onlyDays = false;
+  /** fh in/out */
+  export let durationInSeconds: number;
+  /** in only */
+  export let allDay = false;
+
+  function adaptAllDays(newValue: number) {
+    console.log("adapt", newValue, durationInSeconds);
+    if (newValue < k1DayS) {
+      dispatchEvent("setAllDay", false);
+    } else if (kDayOptions.includes(newValue / k1DayS)) {
+      dispatchEvent("setAllDay", true);
+    }
+  }
 </script>
 
 <script lang="ts" context="module">

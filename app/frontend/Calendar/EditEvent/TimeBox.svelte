@@ -98,10 +98,16 @@
           bind:durationInSeconds={event.duration}
           bind:durationInUnit
           bind:this={durationUnit}
-          onlyDays={$event.allDay} />
+          allDay={event.allDay}
+          on:setAllDay={ev => setAllDay(ev.detail)}
+          />
       {:else}
         <vbox class="duration-selector">
-          <DurationSelector bind:duration={event.duration} onlyDays={$event.allDay} />
+          <DurationSelector
+            bind:durationInSeconds={event.duration}
+            allDay={event.allDay}
+            on:setAllDay={ev => setAllDay(ev.detail)}
+            />
         </vbox>
       {/if}
     </hbox>
@@ -140,20 +146,19 @@
 
   function onMultipleDays() {
     if (!event.allDay) {
-      event.allDay = true;
-      setAllDay();
+      setAllDay(true);
     }
     event.durationDays += 1;
   }
 
   function onAllDayToggle() {
-    event.allDay = !event.allDay;
-    setAllDay();
+    setAllDay(!event.allDay);
   }
 
   // Move into `Event.allDay` setter?
-  function setAllDay() {
-    if (event.allDay) {
+  function setAllDay(allDay: boolean) {
+    event.allDay = allDay;
+    if (allDay) {
       previousTimezone = event.timezone;
       event.timezone = null;
       previousStartTime = new Date(event.startTime);
