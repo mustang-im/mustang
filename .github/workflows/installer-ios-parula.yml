@@ -82,7 +82,7 @@ jobs:
           fi
 
       - name: Upload to GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: env.RELEASE == 'true'
         with:
           tag_name: ${{ env.APP_VERSION }}
