@@ -2,7 +2,6 @@
   bind:value={userValue}
   on:change={onChangeEvent}
   on:blur={onChange}
-  on:change
   on:keydown={() => isUsingKeyboard = true}
   on:mousedown={() => isUsingKeyboard = false}
   on:pointerdown={() => isUsingKeyboard = false}
@@ -13,9 +12,14 @@
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
   import debounce from "lodash/debounce";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: Date }>();
 
   export let time: Date; /* in/out */
   export let disabled = false;
+  /** true (default): automatically set `time` to the user-entered value
+   * false: let caller handle updates by listen to the `change` event */
+  export let changeTime = true;
 
   let inputE: HTMLInputElement;
   let userValue: string = "";
@@ -68,8 +72,16 @@
       if (minute > 59) {
         throw new Error($t`Minute must be less than 59`);
       }
-      time.setHours(hour, minute, 0, 0);
-      time = time; // force refresh - TODO Doesn't work on `event.startTime` to trigger `event` notifications
+
+      if (changeTime) {
+        time.setHours(hour, minute, 0, 0);
+        time = time; // force refresh - TODO Doesn't work on `event.startTime` to trigger `event` notifications
+        dispatchEvent("change", time);
+      } else {
+        let newTime = new Date(time);
+        newTime.setHours(hour, minute, 0, 0);
+        dispatchEvent("change", newTime);
+      }
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
     }

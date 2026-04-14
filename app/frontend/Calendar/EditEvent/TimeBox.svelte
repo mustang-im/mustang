@@ -2,11 +2,13 @@
   <grid class="time" class:isMultipleDays class:allDay={$event.allDay}>
     <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput bind:date={event.startTime} />
+      <DateInput bind:date={event.startTime}
+        on:change={ev => onStartTimeChanged(ev.detail)} changeTime={false} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.startTime} on:change={onTimeChanged} />
+        <TimeInput bind:time={event.startTime}
+          on:change={ev => onStartTimeChanged(ev.detail)} changeTime={false} />
         {#if !showTimezone}
           <hbox class="buttons">
             <RoundButton
@@ -45,7 +47,7 @@
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.endTime} on:change={onTimeChanged} />
+        <TimeInput bind:time={event.endTime} />
       {/if}
       <!--
       <hbox class="buttons">
@@ -189,10 +191,10 @@
     event.notifyObservers();
   }
 
-  function onTimeChanged() {
-    // `<TimeInput>` sets only the properties of the `Date` object,
-    // so we need to manually trigger change notifications
-    event.notifyObservers();
+  function onStartTimeChanged(newTime: Date) {
+    let duration = event.duration;
+    event.startTime = newTime;
+    event.duration = duration;
   }
 
   function checkEndTime() {
