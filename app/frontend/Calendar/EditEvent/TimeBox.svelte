@@ -159,7 +159,6 @@
     setAllDay(!event.allDay);
   }
 
-  // Move into `Event.allDay` setter?
   function setAllDay(allDay: boolean) {
     event.allDay = allDay;
     if (allDay) {

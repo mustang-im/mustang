@@ -6,16 +6,18 @@
     {#each kDayOptions as day}
       <option value={day * k1DayS}>{day} {$plural(day, { one: 'day', other: 'days' })}</option>
     {/each}
-  {:else}
+    <option value={3 * k1DayS}>{$t`Other`}</option>
+{:else}
     {#each kMinOptions as min}
       <option value={min * k1MinuteS}>{min} {$plural(min, { one: 'minute', other: 'minutes' })}</option>
     {/each}
     {#each kHourOptions as hour}
       <option value={hour * k1HourS}>{hour} {$plural(hour, { one: 'hour', other: 'hours' })}</option>
     {/each}
-    <option value={1 * k1DayS}>{$plural(2, { one: 'day', other: 'days' })}</option>
+    <option value={1 * k1DayS}>1 {$plural(1, { one: 'day', other: 'days' })}</option>
+    <option value={2 * k1DayS}>2+ {$plural(2, { one: 'day', other: 'days' })}</option>
+    <option value={1 * k1MinuteS}>{$t`Other`}</option>
   {/if}
-  <option value={allDay ? 3 * k1DayS : 1 * k1MinuteS}>{$t`Other`}</option>
 </select>
 
 <script lang="ts">
@@ -34,6 +36,7 @@
       dispatchEvent("setAllDay", false);
     } else if (kDayOptions.includes(newValue / k1DayS)) {
       dispatchEvent("setAllDay", true);
+      durationInSeconds = newValue;
     }
   }
 </script>
