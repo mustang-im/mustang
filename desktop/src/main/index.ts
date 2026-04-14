@@ -1,11 +1,9 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
-import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate } from '../../backend/backend';
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater from 'electron-updater';
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
-const { autoUpdater } = electronUpdater;
 
 function createWindow(): void {
   try {
@@ -144,11 +142,15 @@ async function whenReady() {
   })
 
   try {
-    await autoUpdater.checkForUpdatesAndNotify();
+    await checkForUpdateAndNotify();
     setInterval(async () => {
       try {
+        if (updateState.haveUpdate) {
+          console.log(`Already have update waiting.`);
+          return; // `checkForUpdates()` downloads the update on every call
+        }
         console.log("Routinely checking for app updates...");
-        await autoUpdater.checkForUpdatesAndNotify();
+        await checkForUpdateAndNotify();
       } catch (ex) {
         console.error(ex);
       }
@@ -164,10 +166,19 @@ app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webC
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+  if (process.platform == 'darwin') {
+    updateAndRestartNowIfNeeded();
+  } else {
+    app.quit();
   }
-})
+});
+
+async function updateAndRestartNowIfNeeded() {
+  if (await updateState.updateDownloaded()) {
+    await installUpdate();
+    // TODO restart after install, but open only a background window
+  } // else do nothing
+}
 
 // macOS: Capture URL during launch
 app.on("open-url", (_event, url) => {
