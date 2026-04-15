@@ -6,67 +6,52 @@ import replace from '@rollup/plugin-replace';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { production, webMail, includeProprietary } from '../app/logic/build';
 import { defaultClientConditions } from 'vite';
-import { resolve } from 'node:path';
 
-const projectRoot = resolve(import.meta.dirname, "..");
-
-export default defineConfig({
-  main: {
-    plugins: [
-      externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
-      replace({
-        __dirname: 'import.meta.dirname',
-      }),
-    ],
-  },
-  preload: {
-    plugins: [
-      externalizeDepsPlugin(),
-    ],
-  },
-  renderer: {
-    build: {
-      sourcemap: production,
+export default defineConfig(({ command }) => {
+  const isDev = command == "serve";
+  return {
+    main: {
+      plugins: [
+        externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
+        replace({
+          __dirname: 'import.meta.dirname',
+        }),
+      ],
     },
-    plugins: [
-      conditionalCompile({
-        // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
-        env: {
-          // For conditional `// #if [FOO]` statements in the code
-          WEBMAIL: webMail && includeProprietary ? webMail : undefined,
-          PROPRIETARY: includeProprietary ? true : undefined,
-          PRODUCTION: production ? true : undefined,
-          DEV: !production ? true : undefined,
-        },
-      }),
-      nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
-      svelte(),
-      sentryVitePlugin({
-        org: "mustang-jq",
-        project: "mustang",
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        disable: !production,
-      }),
-    ],
-    resolve: {
-      // Explicitly set the resolve conditions for Vite 7+
-      conditions: [...defaultClientConditions],
-      alias: {
-        // Because the code is served directly in dev
-        // and ../../app remains the same index.html
-        // but when fetching the JS it is normalized to
-        // /app. /app cannot be found in the filesystem.
-        '/app': resolve(projectRoot, "app"),
+    preload: {
+      plugins: [
+        externalizeDepsPlugin(),
+      ],
+    },
+    renderer: isDev ? undefined : {
+      build: {
+        sourcemap: production,
       },
-    },
-    publicDir: '../../../app/public',
-    server: {
-      fs: {
-        // @fs is used to fetch assets in dev
-        // but it cannot access files outside
-        // the /renderer directory.
-        allow: [projectRoot],
+      plugins: [
+        conditionalCompile({
+          // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
+          env: {
+            // For conditional `// #if [FOO]` statements in the code
+            WEBMAIL: webMail && includeProprietary ? webMail : undefined,
+            PROPRIETARY: includeProprietary ? true : undefined,
+            PRODUCTION: production ? true : undefined,
+            DEV: !production ? true : undefined,
+          },
+        }),
+        nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
+        svelte(),
+        sentryVitePlugin({
+          org: "mustang-jq",
+          project: "mustang",
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+          disable: !production,
+        }),
+      ],
+      resolve: {
+        // Explicitly set the resolve conditions for Vite 7+
+        conditions: [...defaultClientConditions],
       },
-    },
+      publicDir: '../../../app/public',
+    }
   }
-})
+});
