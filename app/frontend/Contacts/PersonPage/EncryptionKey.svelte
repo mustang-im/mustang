@@ -120,7 +120,7 @@
         </hbox>
         <hbox>
           <hbox class="label">{$t`ID`}</hbox>
-          <hbox class="value">{key.id}</hbox>
+          <hbox class="value">{key.id.slice(-16)}</hbox>
         </hbox>
         {#if key.cipher}
           <hbox>
