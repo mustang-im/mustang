@@ -3,10 +3,9 @@
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
   import { mailMustangApp } from "./MailMustangApp";
-  import { openEMailMessage } from "./open";
+  import { openFileInternally } from "../Files/open";
   import { bringAppToFront } from "../AppsBar/selectedApp";
   import { selectedFolder } from "./Selected";
-  import { allAccountsAccount } from "../../logic/Mail/AccountsList/ShowAccounts";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
   import { assert, sleep, type URLString } from "../../logic/util/util";
@@ -45,11 +44,7 @@
       let mime = await appGlobal.remoteApp.readFile(file);
 
       await waitForStartup();
-      let account = allAccountsAccount; // copy to folder must be a different account
-      let email = account.inbox.newEMail();
-      email.mime = mime;
-      await email.parseMIME();
-      openEMailMessage(email);
+      await openFileInternally(mime, "message/rfc822");
       bringAppToFront();
     }
   }
