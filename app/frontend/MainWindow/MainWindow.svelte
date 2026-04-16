@@ -22,7 +22,7 @@
       <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
-        <Router primary={false}>
+        <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
             <vbox flex class="sidebar" slot="top">
               <svelte:component this={sidebar} />
@@ -32,7 +32,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router {basepath} primary={false}>
+        <Router {basepath} primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -49,7 +49,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp, history } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
