@@ -189,6 +189,15 @@ app.on("open-url", (_event, url) => {
     createWindow();
   }
 });
+// macOS: Capture file open during launch
+app.on("open-file", (_event, file) => {
+  startupArgs.file = file;
+  startupArgs.notifyObservers();
+
+  if (BrowserWindow.getAllWindows().length == 0 && app.isReady()) {
+    createWindow();
+  }
+});
 
 /** Called within the primary instance when a second instance of our app was called. */
 app.on("second-instance", (_, argv) => {
@@ -204,6 +213,9 @@ function handleCommandline(args: string[]) {
     if (lastArg?.includes(":")) {
       let urlObj = new URL(lastArg); // Check syntax
       startupArgs.url = urlObj.href;
+    }
+    if (lastArg?.startsWith("/") && lastArg.includes(".")) {
+      startupArgs.file = lastArg;
     }
     startupArgs.notifyObservers();
   } catch (ex) {

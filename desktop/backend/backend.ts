@@ -291,13 +291,20 @@ function openFileInNativeApp(filePath: string) {
 }
 
 class StartupArgs extends Observable {
-  /** URL that our app should open, e.g. mailto: URL */
+  /** URL that our app should open
+   * E.g. a `mailto:` URL */
   @notifyChangedProperty
   url: string | null = null;
+  /** File that our app should open
+   * E.g. `/home/u/email.eml` */
+  @notifyChangedProperty
+  file: string | null = null;
+
   /** All OS commandline arguments.
    * Note: First argument is typically the app itself. */
   @notifyChangedProperty
   commandline: string[] | null = null;
+
   /** Clear parameters when a specific handler has understood and handled them */
   handled() {
     this.url = null;

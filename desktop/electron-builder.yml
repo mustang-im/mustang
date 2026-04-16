@@ -48,6 +48,8 @@ linux:
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Network
   icon: build/icon.icns
+  mimeTypes:
+    - message/rfc822
 appImage:
   artifactName: ${name}-${version}.${ext}
 deb:
@@ -67,3 +69,10 @@ publish:
 extraMetadata:
   # <https://github.com/electron-userland/electron-builder/issues/6714#issuecomment-2150777424>
   productName: Mustang
+fileAssociations:
+  ext: eml
+  name: E-Mail Message
+  description: RFC 822 email message
+  role: Viewer
+  rank: Default
+  mimeType: message/rfc822
