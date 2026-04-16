@@ -33,21 +33,14 @@ export class EWSCalendar extends Calendar implements EWSSubscribable {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   async disconnect(): Promise<void> {
     await this.account.unsubscribeNotifications(this);
   }
 
   async startup(): Promise<void> {
     await super.startup();
-    if (this.username != this.account.emailAddress) {
-      await this.account.subscribeToNotifications(this);
+    if (this.username != this.account.username) {
+      await this.account.subscribeToNotificationsForSubaccount(this);
     }
   }
 
