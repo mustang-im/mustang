@@ -51,6 +51,7 @@
     "lucide-svelte": "^0.562.0",
     "markdown-it": "^14.1.0",
     "matrix-js-sdk": "^40.1.0-rc.0",
+    "node-forge": "^1.4.0",
     "openpgp": "^6.3.0",
     "password-salt": "^5.0.1",
     "pkce-challenge": "^5.0.1",
