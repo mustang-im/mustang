@@ -1,10 +1,11 @@
 import type { MustangApp } from "./MustangApp";
+import { createHashHistory } from "../Util/hashHistory";
+import type AnyObject from "svelte-navigator/types/AnyObject";
 import { appGlobal } from "../../logic/app";
 import { backgroundError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
-import { writable, type Writable } from "svelte/store";
-import { createHashHistory } from "../Util/hashHistory";
-import type AnyObject from "svelte-navigator/types/AnyObject";
+import { writable, get, type Writable } from "svelte/store";
+import type RawLocation from "svelte-navigator/types/RawLocation";
 
 export const selectedApp: Writable<MustangApp> = writable(null);
 export const sidebarApp: Writable<MustangApp> = writable(null);
@@ -33,6 +34,25 @@ export function goTo(pageURL: string, params: PageParams) {
 export function goBack() {
   history.navigate(-1);
 }
+
+/** When `goTo()` is called, we need to update `selectedApp` accordingly */
+function syncSelectedApp(params: { location: RawLocation }) {
+  let url = params.location.pathname as string;
+  let matchingLength = 0;
+  let selectedAppURL = get(selectedApp)?.appURL;
+  if (selectedAppURL &&
+      url.startsWith(selectedAppURL)) {
+    matchingLength = selectedAppURL.length;
+  }
+  for (let app of mustangApps) {
+    if (url.startsWith(app.appURL) &&
+        app.appURL.length > matchingLength) {
+      selectedApp.set(app);
+      return;
+    }
+  }
+}
+history.listen(syncSelectedApp);
 
 export function bringAppToFront() {
   window.focus();
