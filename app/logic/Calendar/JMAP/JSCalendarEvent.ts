@@ -247,6 +247,9 @@ export class JSCalendarEvent {
   }
 
   static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
+    if (!date) {
+      return null;
+    }
     if (/Z$/.test(date) || !jmap.timeZone || jmap.showWithoutTime) {
       // Easy cases:
       // - date was already in UTC
