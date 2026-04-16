@@ -22,16 +22,14 @@ export class JMAPChangeError extends Error {
 
 /** @throws if the server reported an error */
 export function checkChangeError(response: TJMAPChangeResponse<any>) {
-  if (response.notCreated) {
-    let first = getFirst(response.notCreated);
+  let first: any;
+  if (first = getFirst(response.notCreated)) {
     throw new JMAPChangeError(first, "Failed to add on server");
   }
-  if (response.notUpdated) {
-    let first = getFirst(response.notUpdated);
+  if (first = getFirst(response.notUpdated)) {
     throw new JMAPChangeError(first, "Failed to update on server");
   }
-  if (response.notDestroyed) {
-    let first = getFirst(response.notDestroyed);
+  if (first = getFirst(response.notDestroyed)) {
     throw new JMAPChangeError(first, "Failed to delete on server");
   }
   // else: return without error
