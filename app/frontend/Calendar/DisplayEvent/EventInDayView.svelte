@@ -17,7 +17,7 @@
     events={appGlobal.calendarEvents}
     overlayEvents={new ArrayColl([event])}
     start={calendarStart}
-    showHours={4}
+    {showHours}
     showDays={1}
     defaultFocusHour={calendarStart.getHours() + calendarStart.getMinutes() / 60 - 1}
     >
@@ -43,6 +43,7 @@
   import { ArrayColl } from "svelte-collections";
 
   export let event: Event;
+  export let showHours = 4;
 
   $: calendarStart = new Date($event?.startTime?.getTime());
 </script>

@@ -1,68 +1,71 @@
 <vbox flex class="event-edit-window">
   <DialogHeader bind:event />
   <Scroll>
-    <vbox class="columns" flex class:show-description={showDescription}  bind:offsetWidth={width}>
-      <vbox class="column1">
-        <hbox class="time-box" >
-          <TimeBox {event} />
-          <vbox flex />
-          {#if width > 600}
-            <EventInDayView {event} />
+    <hbox flex>
+      <vbox class="columns" flex class:show-description={showDescription}  bind:offsetWidth={width}>
+        <vbox class="column1">
+          <hbox class="time-box" >
+            <TimeBox {event} />
+          </hbox>
+          <Section label={$t`Title`}>
+            <TitleBox {event} />
+          </Section>
+          <Section>
+            <ExpanderButtons>
+              <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
+              <!--<ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />-->
+              <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
+              <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
+              <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
+              <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
+            </ExpanderButtons>
+          </Section>
+          {#if showRepeat}
+            <Section label={$t`Repeat`} icon={RepeatIcon}>
+              <RepeatBox {event} />
+            </Section>
           {/if}
-        </hbox>
-        <Section label={$t`Title`}>
-          <TitleBox {event} />
-        </Section>
-        <Section>
-          <ExpanderButtons>
-            <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
-            <!--<ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />-->
-            <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
-            <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
-            <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
-            <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
-          </ExpanderButtons>
-        </Section>
-        {#if showRepeat}
-          <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} />
-          </Section>
-        {/if}
-        {#if showReminder}
-          <Section label={$t`Reminder`} icon={ReminderIcon}>
-            <SectionTitle label={$t`Reminder`}>
-              <ReminderBox {event} />
-            </SectionTitle>
-          </Section>
-        {/if}
-        {#if showParticipants}
-          <Section label={$t`Invite`} icon={ParticipantsIcon}>
-            <ParticipantsBox {event} />
-          </Section>
-        {/if}
-        {#if showLocation}
-          <Section label={$t`Location`} icon={LocationIcon}>
-            <SectionTitle label={$t`Location`}>
-              <LocationBox {event} />
-            </SectionTitle>
-          </Section>
-        {/if}
-        {#if showOnlineMeeting}
-          <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
-            <SectionTitle label={$t`Online meeting`}>
-              <OnlineMeetingBox {event} />
-            </SectionTitle>
-          </Section>
-        {/if}
+          {#if showReminder}
+            <Section label={$t`Reminder`} icon={ReminderIcon}>
+              <SectionTitle label={$t`Reminder`}>
+                <ReminderBox {event} />
+              </SectionTitle>
+            </Section>
+          {/if}
+          {#if showParticipants}
+            <Section label={$t`Invite`} icon={ParticipantsIcon}>
+              <ParticipantsBox {event} />
+            </Section>
+          {/if}
+          {#if showLocation}
+            <Section label={$t`Location`} icon={LocationIcon}>
+              <SectionTitle label={$t`Location`}>
+                <LocationBox {event} />
+              </SectionTitle>
+            </Section>
+          {/if}
+          {#if showOnlineMeeting}
+            <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
+              <SectionTitle label={$t`Online meeting`}>
+                <OnlineMeetingBox {event} />
+              </SectionTitle>
+            </Section>
+          {/if}
+        </vbox>
+        <vbox class="column2 description" flex>
+          {#if showDescription}
+            <Section label={$t`Description`} icon={DescriptionIcon} flex>
+              <DescriptionBox {event} />
+            </Section>
+          {/if}
+        </vbox>
       </vbox>
-      <vbox class="column2 description" flex>
-        {#if showDescription}
-          <Section label={$t`Description`} icon={DescriptionIcon} flex>
-            <DescriptionBox {event} />
-          </Section>
-        {/if}
-      </vbox>
-    </vbox>
+      {#if width > 600}
+        <vbox class="mycalendar">
+          <EventInDayView {event} showHours={10} />
+        </vbox>
+      {/if}
+    </hbox>
   </Scroll>
 </vbox>
 
@@ -145,9 +148,6 @@
     border: 1px solid var(--border);
     border-radius: 5px;
   }
-  .time-box :global(.calendar) {
-    max-width: 300px;
-  }
   .description :global(.section > .icon) {
     display: none;
   }
@@ -166,6 +166,9 @@
       order: 1;
       margin-inline-end: 24px;
     }*/
+  }
+  .mycalendar {
+    width: 150px;
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
