@@ -10,10 +10,13 @@
   import { catchErrors } from "../Util/error";
   import { assert, sleep, type URLString } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
+  import { onMount } from "svelte";
+
+  onMount(() => {
+    newMailListener();
+  });
 
   $: emailAccounts = appGlobal.emailAccounts;
-  $: catchErrors(() => newMailListener($emailAccounts));
-
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;
   $: catchErrors(() => startupArgs?.url ? runURL($startupArgs.url) : null);
   $: catchErrors(() => startupArgs?.file ? openFile($startupArgs.file) : null);
