@@ -4,6 +4,7 @@ import { backgroundError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
 import { navigate, createHistory, createMemorySource } from "svelte-navigator";
+
 import type AnyObject from "svelte-navigator/types/AnyObject";
 
 export const selectedApp: Writable<MustangApp> = writable(null);
@@ -22,8 +23,8 @@ export function openApp(app: MustangApp, params: PageParams) {
 }
 
 export function goTo(pageURL: string, params: PageParams) {
-  let replace = pageURL == window.location.pathname;
-  console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.pathname, "with params", params);
+  let replace = pageURL == window.location.hash;
+  console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.hash, "with params", params);
   history.navigate(pageURL, {
     replace,
     state: addParams(params),
