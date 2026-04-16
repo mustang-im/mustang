@@ -6,10 +6,6 @@
         <vbox class="column1">
           <hbox class="time-box" >
             <TimeBox {event} />
-            <vbox flex />
-            {#if width > 600}
-              <EventInDayView {event} />
-            {/if}
           </hbox>
           <Section label={$t`Title`}>
             <TitleBox {event} />
@@ -67,6 +63,11 @@
         {#if showAttachments}
           <vbox class="column3 attachments">
             <AttachmentsPane message={event} />
+          </vbox>
+        {/if}
+        {#if width > 600}
+          <vbox class="mycalendar">
+            <EventInDayView {event} showHours={10} />
           </vbox>
         {/if}
       </vbox>
@@ -178,9 +179,6 @@
     border: 1px solid var(--border);
     border-radius: 5px;
   }
-  .time-box :global(.calendar) {
-    max-width: 300px;
-  }
   .description :global(.section > .icon) {
     display: none;
   }
@@ -209,6 +207,9 @@
       order: 1;
       margin-inline-end: 24px;
     }*/
+  }
+  .mycalendar {
+    width: 150px;
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
