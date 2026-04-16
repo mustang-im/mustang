@@ -72,6 +72,7 @@
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
+  import { msgHasSearchTerm } from '../../../logic/Mail/Store/SearchEMail';
   import { appGlobal } from '../../../logic/app';
   import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
@@ -130,19 +131,12 @@
       searchMessages = null;
       return;
     }
+    let searchTerms = searchTerm.split(" ").filter(Boolean);
     searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
       (!isShowAttachments || msg.hasVisibleAttachments === true) &&
-      (!searchTerm || searchTerm.length > 1) &&
-      (!searchTerm ||
-        msg.subject?.toLowerCase().includes(searchTerm) ||
-        msg.contact?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
-        msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm) ||
-          to.emailAddress?.toLowerCase().includes(searchTerm)) ||
-        msg.text?.toLowerCase().includes(searchTerm))
+      (!searchTerms.length || searchTerms.every(term => msgHasSearchTerm(msg, term)))
     ) as ArrayColl<EMail>;
   }
 
