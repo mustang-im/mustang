@@ -153,12 +153,12 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Subject:</span> <span class="value">
-          ${this.email.subject}
+          ${this.email.subject ?? ""}
         </span>
       </div>
     </p>
     <p></p>
-    ${ this.email.html}`;
+    ${ this.email.html }`;
     forward.attachments.addAll(this.email.attachments.map(a => a.clone()));
     return forward;
   }
