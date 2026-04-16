@@ -48,7 +48,7 @@ export function fixNewlines(text: string): string {
 
 export function sanitizeHTML(html: string): string {
   if (!html) {
-    return null;
+    return "";
   }
   includeExternal = false;
   let sanitized = DOMPurify.sanitize(html, {
@@ -61,7 +61,7 @@ export function sanitizeHTML(html: string): string {
 
 export function sanitizeHTMLExternal(html: string): string {
   if (!html) {
-    return null;
+    return "";
   }
   includeExternal = true;
   let sanitized = DOMPurify.sanitize(html, {

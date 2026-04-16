@@ -200,13 +200,17 @@ export class ComposeActions {
   }
 
   convertInlineAttachmentsURLs() {
-    let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous, "text/html");
+    let changed = false;
+    let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous ?? "", "text/html");
     for (let node of html.querySelectorAll("img[src]")) {
       let img = node as HTMLImageElement;
       // img.src = this.convertBlobURLToCIDURL(img.src);
       img.src = this.convertDataURLToCIDURL(img.src);
+      changed = true;
     }
-    this.email.rawHTMLDangerous = html.documentElement.outerHTML;
+    if (changed) {
+      this.email.rawHTMLDangerous = html.documentElement.outerHTML;
+    }
   }
 
   protected convertDataURLToCIDURL(url: URLString): URLString {
@@ -295,7 +299,8 @@ export class ComposeActions {
       this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.realname);
     }
     let account = fromIdentity.account;
-    this.email.html ??= "";
+
+    this.convertInlineAttachmentsURLs();
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
@@ -321,7 +326,6 @@ export class ComposeActions {
     }
     this.email.isDraft = false;
 
-    this.convertInlineAttachmentsURLs();
     let mail = await SendEncrypted.encryptAsNeeded(this.email);
     await account.send(mail);
 
