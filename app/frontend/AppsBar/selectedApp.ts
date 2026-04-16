@@ -3,8 +3,7 @@ import { appGlobal } from "../../logic/app";
 import { backgroundError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
-import { navigate, createHistory, createMemorySource } from "svelte-navigator";
-
+import { createHistory, createMemorySource } from "svelte-navigator";
 import type AnyObject from "svelte-navigator/types/AnyObject";
 
 export const selectedApp: Writable<MustangApp> = writable(null);
