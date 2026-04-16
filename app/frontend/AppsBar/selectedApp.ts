@@ -3,7 +3,7 @@ import { appGlobal } from "../../logic/app";
 import { backgroundError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
-import { createHashHistory } from "../Util/hashHistory";
+import { createHistory, createMemorySource } from "svelte-navigator";
 import type AnyObject from "svelte-navigator/types/AnyObject";
 
 export const selectedApp: Writable<MustangApp> = writable(null);
@@ -13,7 +13,7 @@ export const mustangApps = new ArrayColl<MustangApp>;
 /** Search bar in the window title, applies to all apps */
 export const globalSearchTerm: Writable<string> = writable(null);
 
-export const history = createHashHistory();
+export const history = createHistory(createMemorySource());
 
 export type PageParams = Record<string, any>;
 export function openApp(app: MustangApp, params: PageParams) {
