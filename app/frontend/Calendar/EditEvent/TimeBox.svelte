@@ -2,13 +2,13 @@
   <grid class="time" class:isMultipleDays class:allDay={$event.allDay}>
     <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput bind:date={event.startTime}
-        on:change={ev => onStartTimeChanged(ev.detail)} changeTime={false} />
+      <DateInput date={event.startTime}
+        on:change={ev => onStartTimeChanged(ev.detail)} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.startTime}
-          on:change={ev => onStartTimeChanged(ev.detail)} changeTime={false} />
+        <TimeInput time={event.startTime}
+          on:change={ev => onStartTimeChanged(ev.detail)} />
         {#if !showTimezone}
           <hbox class="buttons">
             <RoundButton
