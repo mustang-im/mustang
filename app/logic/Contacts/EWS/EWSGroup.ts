@@ -21,7 +21,7 @@ export class EWSGroup extends Group {
   }
 
   fromXML(xmljs: any) {
-    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.itemID = sanitize.base64(xmljs.ItemId.Id);
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.description = sanitize.nonemptystring(xmljs.Body?.Value, "");
     this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(getEmailAddressOrX400(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
@@ -42,7 +42,7 @@ export class EWSGroup extends Group {
       })),
     } : "", "distributionlist:Members");
     let response = await this.addressbook.account.callEWS(request);
-    this.itemID = sanitize.nonemptystring(response.Items.DistributionList.ItemId.Id);
+    this.itemID = sanitize.base64(response.Items.DistributionList.ItemId.Id);
   }
 
   async deleteFromServer() {

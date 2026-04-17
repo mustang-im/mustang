@@ -50,7 +50,7 @@ export class EWSEvent extends Event {
   }
 
   fromXML(xmljs: Record<string, any>) {
-    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.itemID = sanitize.base64(xmljs.ItemId.Id);
     this.calUID = sanitize.nonemptystring(xmljs.UID, null);
     this.title = sanitize.nonemptystring(xmljs.Subject, "");
     if (xmljs.Body?.BodyType == "Text") {

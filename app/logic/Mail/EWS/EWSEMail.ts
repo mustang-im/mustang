@@ -57,8 +57,8 @@ export class EWSEMail extends EMail {
   }
 
   fromXML(xmljs: Record<string, any>) {
-    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
-    this.id = sanitize.nonemptystring(xmljs.InternetMessageId, "");
+    this.itemID = sanitize.base64(xmljs.ItemId.Id);
+    this.id = sanitize.base64(xmljs.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(xmljs.Subject, "");
     this.sent = sanitize.date(xmljs.DateTimeSent, new Date());
     this.received = sanitize.date(xmljs.DateTimeReceived, new Date());
@@ -110,7 +110,7 @@ export class EWSEMail extends EMail {
         attachment.mimeType = sanitize.nonemptystring(a.ContentType);
         attachment.disposition = a.IsInline == "true" ? ContentDisposition.inline : ContentDisposition.attachment;
         if (a.ContentId) {
-          attachment.contentID = sanitize.nonemptystring(a.ContentId);
+          attachment.contentID = sanitize.base64(a.ContentId);
         }
         attachment.size = sanitize.integer(a.Size, null);
         return attachment;

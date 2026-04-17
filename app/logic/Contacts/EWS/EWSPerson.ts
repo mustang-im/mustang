@@ -18,7 +18,7 @@ export class EWSPerson extends Person {
   }
 
   fromXML(xmljs: any) {
-    this.itemID = sanitize.nonemptystring(xmljs.ItemId?.Id, "");
+    this.itemID = sanitize.base64(xmljs.ItemId?.Id, "");
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
@@ -129,7 +129,7 @@ export class EWSPerson extends Person {
     request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     // console.log("EWSPerson.save()", request);
     let response = await this.addressbook.account.callEWS(request);
-    this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
+    this.itemID = sanitize.base64(response.Items.Contact.ItemId.Id);
   }
 
   async deleteFromServer() {

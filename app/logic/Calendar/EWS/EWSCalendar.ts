@@ -116,7 +116,7 @@ export class EWSCalendar extends Calendar {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+          let event = this.getEventByItemID(sanitize.base64(deletion.ItemId.Id));
           if (event) {
             await event.deleteLocally();
           }
@@ -231,7 +231,7 @@ export class EWSCalendar extends Calendar {
     for (let result of results) {
       let item = result.Items.CalendarItem || result.Items.Task;
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
+        let event = this.getEventByItemID(sanitize.base64(item.ItemId.Id));
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
@@ -334,7 +334,7 @@ export class EWSCalendar extends Calendar {
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
-    this.folderID = sanitize.string(json.folderID, null);
+    this.folderID = sanitize.base64(json.folderID, null);
     this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {

@@ -83,12 +83,12 @@ export class EWSAddressbook extends Addressbook {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+          let person = this.getPersonByItemID(sanitize.base64(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
             await person.deleteLocally();
           }
-          let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+          let group = this.getGroupByItemID(sanitize.base64(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
             await group.deleteIt();
@@ -171,7 +171,7 @@ export class EWSAddressbook extends Addressbook {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         try {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id));
+          let person = this.getPersonByItemID(sanitize.base64(result.Items.Contact.ItemId.Id));
           if (person) {
             person.fromXML(result.Items.Contact);
             await person.saveLocally();
@@ -218,7 +218,7 @@ export class EWSAddressbook extends Addressbook {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         try {
-          let group = this.getGroupByItemID(sanitize.nonemptystring(result.Items.DistributionList.ItemId.Id));
+          let group = this.getGroupByItemID(sanitize.base64(result.Items.DistributionList.ItemId.Id));
           if (group) {
             group.fromXML(result.Items.DistributionList);
             await group.saveLocally();
@@ -322,7 +322,7 @@ export class EWSAddressbook extends Addressbook {
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
-    this.folderID = sanitize.string(json.folderID, null);
+    this.folderID = sanitize.base64(json.folderID, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();

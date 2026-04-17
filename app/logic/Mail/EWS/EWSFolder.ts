@@ -30,7 +30,7 @@ export class EWSFolder extends Folder {
   }
 
   fromXML(xmljs: any) {
-    this.id = sanitize.nonemptystring(xmljs.FolderId.Id);
+    this.id = sanitize.base64(xmljs.FolderId.Id);
     this.name = sanitize.nonemptylabel(xmljs.DisplayName);
     this.countTotal = sanitize.integer(xmljs.TotalCount);
     this.countUnread = sanitize.integer(xmljs.UnreadCount);
@@ -133,7 +133,7 @@ export class EWSFolder extends Folder {
       if (!isDirectList) {
         change = getEWSItem(change);
       }
-      let email = this.getEmailByItemID(sanitize.nonemptystring(change.ItemId.Id));
+      let email = this.getEmailByItemID(sanitize.base64(change.ItemId.Id));
       if (email) {
         await eachCallback.call(this, email, change);
       } else {

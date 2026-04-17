@@ -607,7 +607,7 @@ export class EWSAccount extends MailAccount {
     }
     for (let folderID of folderIDs) {
       try {
-        let mailFolder = this.folderMap.get(sanitize.string(folderID));
+        let mailFolder = this.folderMap.get(sanitize.base64(folderID));
         if (mailFolder) {
           await mailFolder.updateChangedMessages();
           continue;
@@ -976,10 +976,10 @@ export class EWSAccount extends MailAccount {
     addressbook.initFromMainAccount(this);
     addressbook.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     addressbook.username = person.emailAddress;
-    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    addressbook.folderID = sanitize.base64(folder.FolderId.Id);
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await this.streamNotifications(sanitize.base64(folder.FolderId.Id));
     return addressbook;
   }
 
@@ -1008,10 +1008,10 @@ export class EWSAccount extends MailAccount {
     calendar.initFromMainAccount(this);
     calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
-    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    calendar.folderID = sanitize.base64(folder.FolderId.Id);
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await this.streamNotifications(sanitize.base64(folder.FolderId.Id));
     return calendar;
   }
 
