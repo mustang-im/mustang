@@ -247,19 +247,14 @@
   }
 
   async function onChangeRemainder() {
-    let master = event.calendar.newEvent();
-    master.startEditing();
-    master.copyEditableFieldsFrom(event);
-    master.calUID = null;
-    if (event.parentEvent.recurrenceRule) {
-      let { frequency, interval, week, weekdays } = event.parentEvent.recurrenceRule;
-      master.newRecurrenceRule(frequency, interval, week, weekdays);
-    }
-    await saveEvent(master);
-    master.finishEditing();
-    event.parentEvent.cancelEditing();
+    let start = new Date(event.startTime);
+    let oldMaster = event.parentEvent;
+    let newMaster = await event.cloneSeriesStartingAt(start);
+    oldMaster.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence();
+    oldMaster.setRecurrenceEndTime(start);
+    await newMaster.save();
+    await oldMaster.save();
     onClose();
   }
 
@@ -292,9 +287,11 @@
   }
 
   async function onDeleteRemainder() {
-    event.parentEvent.cancelEditing();
+    let oldMaster = event.parentEvent;
+    oldMaster.cancelEditing();
     event.cancelEditing();
-    await event.truncateRecurrence();
+    oldMaster.setSeriesEnd(event.startTime);
+    await oldMaster.save();
     $selectedEvent = null;
     onClose();
   }
