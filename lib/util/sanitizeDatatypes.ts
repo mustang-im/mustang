@@ -150,6 +150,16 @@ class Sanitize {
     return str;
   }
 
+  regexpBase64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})?$/
+
+  base64(unchecked: string | null | undefined, fallback: string | null | Symbol = throwErrors): string {
+    let str = this.string(unchecked, fallback);
+    if (!this.regexpBase64.test(str)) {
+      return haveError("Invalid base64 string", unchecked, fallback);
+    }
+    return str;
+  }
+
   // EAI like ндрис@уайлддк.орг need to pass
   regexpEMailAddress = /^[\p{Letter}\p{Number}\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
   regexpEMailAddress_ASCII = /^[a-zA-Z0-9\-+_\.]+@[a-zA-Z0-9\-\.]+\.(?:[a-zA-Z]+|xn--[a-z0-9]+)$/;
