@@ -61,7 +61,7 @@
     to.setDate(to.getDate() + showDays);
     let availability = await calendar.arePersonsFree(participants.contents, from, to);
     console.log("availability", availability);
-    if (!availability?.length || availability.filter(avp => avp.availability.length).length <= 1) {
+    if (!availability?.length) { // || availability.filter(avp => avp.availability.length).length <= 1) {
       throw new UserError(gt`No way to know`);
     }
     for (let day = startDay; day <= startDay + showDays; day++) {
@@ -118,7 +118,7 @@
 <style>
   .availability-grid {
     height: 300px;
-    width: 400px;
+    width: 100%;
 
     margin-block-start: 4px;
     padding-block-start: 8px;
@@ -132,7 +132,7 @@
   .availability-grid :global(.event .title) {
     white-space-collapse: preserve;
   }
-  .availability-grid :global(.day-header) {
+  .availability-grid :global(.day-header .date-day) {
     padding: 4px 8px;
   }
   .availability-grid :global(.day-header .date) {

@@ -172,7 +172,8 @@
     overflow: hidden;
   }
   @container (max-height: 1000px)  {
-    .day-header {
+    .day-header .date-day {
+      flex-direction: row;
       padding: 4px 8px;
     }
     .day-header .date {
@@ -184,9 +185,6 @@
       flex: 1 0 0;
       margin-block-start: 1px;
       margin-inline-start: 8px;
-    }
-    .day-header .date-day {
-      flex-direction: row;
     }
   }
 </style>

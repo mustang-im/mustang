@@ -74,8 +74,6 @@
     text-decoration: line-through;
   }
   .availability-grid {
-    max-height: 350px;
-    max-width: 400px;
     margin-block-start: 18px;
   }
   .availability-grid .header {
