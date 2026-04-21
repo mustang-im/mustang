@@ -178,7 +178,7 @@ export class SQLEvent extends Event {
       }
     }
     if (row.recurrenceRule) {
-      event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, row.recurrenceRule);
+      event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.timezone, event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
       event.generateRecurringInstances(); // TODO the exclusion should keep the parent in sync automatically
     }

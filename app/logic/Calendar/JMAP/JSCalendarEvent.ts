@@ -37,6 +37,7 @@ export class JSCalendarEvent {
       let r = jmap.recurrenceRule;
       let rrinit: RecurrenceInit = {
         masterDuration: event.duration,
+        timezone: event.timezone,
         seriesStartTime: event.startTime,
         seriesEndTime: this.toDate(r.until, jmap, null),
         count: sanitize.integer(r.count, Infinity),
