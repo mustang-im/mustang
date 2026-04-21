@@ -37,8 +37,7 @@
     text-overflow: ellipsis;
   }
   .event.conflict {
-    outline: 2px solid red;
-    /* TODO use box-shadow */
+    /*outline: 2px solid red; TODO use box-shadow */
   }
   .event.cancelled {
     opacity: 30%;
