@@ -10,7 +10,7 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour}
+  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay}
     on:celldblclick={(param) => addEvent(param.detail.start)} />
 </vbox>
 
@@ -36,6 +36,7 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
+  export let enlargeSelectedDay = false;
 
   function goToToday() {
     start = getToday();

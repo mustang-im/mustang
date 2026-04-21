@@ -1,6 +1,9 @@
 <vbox class="day-view-grid" flex bind:offsetHeight={visibleHeight}>
   <Scroll bind:this={scrollE}>
-    <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;"
+    <grid flex class="week"
+      columns={showDays}
+      style="min-height: {scrollHeight}px;"
+      class:enlargeSelectedDay
       on:swipeleft={onNextDay}
       on:swiperight={onPreviousDay}
       >
@@ -52,6 +55,7 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
+  export let enlargeSelectedDay = false;
 
   let startHour = 0;
   let endHour = 24;
@@ -124,9 +128,15 @@
     grid-template-columns: max-content auto;
   }
   .week[columns="2"] {
+    grid-template-columns: max-content 1fr 1fr;
+  }
+  .week.enlargeSelectedDay[columns="2"] {
     grid-template-columns: max-content 3fr 1fr;
   }
   .week[columns="7"] {
+    grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  }
+  .week.enlargeSelectedDay[columns="7"] {
     grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
   }
   .header {
