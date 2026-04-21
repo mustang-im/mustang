@@ -80,12 +80,12 @@ jobs:
             echo "RELEASE=true" >> $GITHUB_ENV
           fi
 
-      - name: Upload to GitHub release
-        uses: softprops/action-gh-release@v3
-        if: env.RELEASE == 'true'
-        with:
-          tag_name: ${{ env.APP_VERSION }}
-          files: ${{ env.IPA_FILE_PATH }}
+      # - name: Upload to GitHub release
+      #   uses: softprops/action-gh-release@v3
+      #   if: env.RELEASE == 'true'
+      #   with:
+      #     tag_name: ${{ env.APP_VERSION }}
+      #     files: ${{ env.IPA_FILE_PATH }}
 
       - name: Upload app to TestFlight
         uses: apple-actions/upload-testflight-build@v4
