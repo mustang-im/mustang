@@ -70,12 +70,13 @@
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {
         for (let c of person.emailAddresses.sortBy(c => c.preference)) {
-          if (skipPersons.find(p => p.emailAddress == c.value)) {
+          let n = new PersonUID(c.value, person.name);
+          n.person = person;
+          if (emailAddresses.find(e => e.emailAddress == n.emailAddress && e.name == n.name) ||
+              skipPersons.find(e => e.emailAddress == n.emailAddress)) {
             continue;
           }
-          let uid = new PersonUID(c.value, person.name);
-          uid.person = person;
-          emailAddresses.push(uid);
+          emailAddresses.push(n);
         }
       }
       console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
