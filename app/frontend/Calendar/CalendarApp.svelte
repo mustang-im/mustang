@@ -8,7 +8,7 @@
       <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
         <hbox slot="top-left">
           {#if !$appGlobal.isMobile}
-            <TitleBarLeft on:addEvent={() => catchErrors(addEvent)}  />
+            <TitleBarLeft />
           {/if}
         </hbox>
         <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
@@ -29,9 +29,7 @@
 <CalendarInBackground />
 
 <script lang="ts">
-  import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
-  import { setNewEventTime } from "./event";
-  import { openEventFromOtherApp } from "./open";
+  import { selectedCalendar, selectedDateInterval, selectedEvent, startDate } from "./selected";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
@@ -40,19 +38,8 @@
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import { catchErrors } from "../Util/error";
-  import { assert } from "../../logic/util/util";
-  import { t } from "../../l10n/l10n";
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
-
-  function addEvent() {
-    $selectedCalendar ??= appGlobal.calendars.first;
-    assert($selectedCalendar, $t`Please set up a calendar first`);
-    let event = $selectedCalendar.newEvent();
-    setNewEventTime(event, false, $selectedDate);
-    openEventFromOtherApp(event, true);
-  }
 </script>
 
 <style>
