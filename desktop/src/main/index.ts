@@ -28,9 +28,18 @@ function createWindow(): void {
     })
     setMainWindow(mainWindow);
 
-    mainWindow.on('ready-to-show', () => {
-      mainWindow.show()
-    })
+    if (process.platform == "linux" && app.commandLine.getSwitchValue("ozone-platform") == "wayland") {
+      // The "ready-to-show" event doesn't always fire on Wayland.
+      // "did-finish-load" works and is close enough.
+      // https://github.com/electron/electron/issues/48859
+      mainWindow.webContents.on("did-finish-load", () => {
+        mainWindow.show();
+      });
+    } else {
+      mainWindow.on("ready-to-show", () => {
+        mainWindow.show();
+      });
+    }
 
     mainWindow.on('closed', shutdownBackend);
 
