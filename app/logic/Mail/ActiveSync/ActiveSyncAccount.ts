@@ -113,7 +113,9 @@ export class ActiveSyncAccount extends MailAccount {
 
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-      appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+      if (!this.isDependentAccount) {
+        appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+      }
 
       // ActiveSync doesn't have streaming notifications, instead it
       // provides the Ping operation which will tell us when a pingable

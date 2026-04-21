@@ -133,7 +133,9 @@ export class EWSAccount extends MailAccount {
           .catch(dependent.errorCallback);
       }
 
-      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+      if (!this.isDependentAccount) {
+        appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+      }
 
       await this.streamNotifications();
     });
