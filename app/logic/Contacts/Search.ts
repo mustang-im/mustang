@@ -1,7 +1,9 @@
 import type { Person } from "../Abstract/Person";
 import { PersonUID } from "../Abstract/PersonUID";
-import { ArrayColl, type Collection } from "svelte-collections";
 import { appGlobal } from "../app";
+import { promiseErrors } from "../util/flow/promiseUtil";
+import { logError } from "../../frontend/Util/error";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 /** Search all address books and server-based query-only address books for
  * a person whose name or email address matches the search string.
@@ -17,11 +19,12 @@ export async function searchContacts(searchStr: string, skip: Collection<PersonU
       person.name?.toLowerCase().includes(inputPart) ||
       person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
   }
-  await Promise.all(appGlobal.searchOnlyAddressbooks.map(async ab => {
+  let results = await Promise.allSettled(appGlobal.searchOnlyAddressbooks.map(async ab => {
     let results = new ArrayColl<Person>;
     await ab.quickSearchAsync(searchStr.toLowerCase(), results);
     persons = persons.concat(results.contents);
   }));
+  promiseErrors(results).forEach(ex => logError(ex));
   let emailAddresses: PersonUID[] = [];
   for (let person of persons) {
     for (let c of person.emailAddresses.sortBy(c => c.preference)) {
