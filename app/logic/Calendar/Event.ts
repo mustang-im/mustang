@@ -367,9 +367,11 @@ export class Event extends Observable {
     this.recurrenceStartTime = original.recurrenceStartTime;
     this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
-    this.instances.replaceAll(original.instances);
-    this.exceptions.replaceAll(original.exceptions);
-    this.exclusions.replaceAll(original.exclusions);
+    if (this.recurrenceRule) {
+      this.instances.replaceAll(original.instances);
+      this.exceptions.replaceAll(original.exceptions);
+      this.exclusions.replaceAll(original.exclusions);
+    }
     this.parentEvent = original.parentEvent;
   }
 
