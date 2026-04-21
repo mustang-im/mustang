@@ -19,9 +19,6 @@
   export let min: Date | null = null;
   export let max: Date | null = null;
   export let disabled = false;
-  /** true (default): automatically set `time` to the user-entered value
-   * false: let caller handle updates by listen to the `change` event */
-  export let changeTime = true;
   /** Show the date this many days later (positive) or earlier (negative)
    * than the `date` given. Works in both directions.
    * This is used for `allDay` events, which in iCal and on 0:00 the next day,
@@ -65,15 +62,10 @@
     let month = parseInt(monthStr) - 1;
     let day = parseInt(dayStr) - deltaInDays;
 
-    if (changeTime) {
-      date.setFullYear(year, month, day);
-      date = new Date(date);
-      dispatchEvent("change", date);
-    } else {
-      let newDate = new Date(date);
-      newDate.setFullYear(year, month, day);
-      dispatchEvent("change", newDate);
-    }
+    let newDate = new Date(date);
+    newDate.setFullYear(year, month, day);
+    dispatchEvent("change", newDate);
+    date = newDate; // in case the variable was bound
   }
 </script>
 

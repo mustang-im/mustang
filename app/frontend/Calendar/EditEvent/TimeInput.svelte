@@ -17,9 +17,6 @@
 
   export let time: Date; /* in/out */
   export let disabled = false;
-  /** true (default): automatically set `time` to the user-entered value
-   * false: let caller handle updates by listen to the `change` event */
-  export let changeTime = true;
 
   let inputE: HTMLInputElement;
   let userValue: string = "";
@@ -73,15 +70,10 @@
         throw new Error($t`Minute must be less than 59`);
       }
 
-      if (changeTime) {
-        time.setHours(hour, minute, 0, 0);
-        time = time; // force refresh - TODO Doesn't work on `event.startTime` to trigger `event` notifications
-        dispatchEvent("change", time);
-      } else {
-        let newTime = new Date(time);
-        newTime.setHours(hour, minute, 0, 0);
-        dispatchEvent("change", newTime);
-      }
+      let newTime = new Date(time); // force refresh
+      newTime.setHours(hour, minute, 0, 0);
+      dispatchEvent("change", newTime);
+      time = newTime; // in case the variable was bound
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
     }
