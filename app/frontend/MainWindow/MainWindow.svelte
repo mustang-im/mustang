@@ -32,7 +32,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router {basepath} primary={false} {history}>
+        <Router primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -96,11 +96,6 @@
   $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   categoriesLoaded; /* make sure to import the file, so that that categories load */
-
-  let basepath: string; // default: no basepath
-  if (window.location.pathname[2] == ":") { // #854 Windows in production mode has URL pathnames like `/D:/mail/`
-    basepath = window.location.pathname.substring(0, 3);
-  }
 
   onMount(() => catchErrors(onLoad));
 
