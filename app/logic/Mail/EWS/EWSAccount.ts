@@ -150,6 +150,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async disconnect(): Promise<void> {
+    let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
+    if (galAB) {
+      appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
     await this.unsubscribeAllNotifications();
   }
 
