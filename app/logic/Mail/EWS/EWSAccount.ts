@@ -514,25 +514,25 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
 
   async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
     let subscribe = {
-        m$Subscribe: {
-          m$StreamingSubscriptionRequest: {
-            t$FolderIds: {
-              t$FolderId: {
-                Id: account.folderID,
-              },
-            },
-            t$EventTypes: {
-              t$EventType: [
-                "CopiedEvent",
-                "CreatedEvent",
-                "DeletedEvent",
-                "ModifiedEvent",
-                "MovedEvent",
-              ],
+      m$Subscribe: {
+        m$StreamingSubscriptionRequest: {
+          t$FolderIds: {
+            t$FolderId: {
+              Id: account.folderID,
             },
           },
+          t$EventTypes: {
+            t$EventType: [
+              "CopiedEvent",
+              "CreatedEvent",
+              "DeletedEvent",
+              "ModifiedEvent",
+              "MovedEvent",
+            ],
+          },
         },
-      };
+      },
+    };
     let response = await this.callEWS(subscribe);
     assert(!account.subscriptionID, "stream notification started twice");
     account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
