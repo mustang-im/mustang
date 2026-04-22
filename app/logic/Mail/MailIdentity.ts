@@ -142,6 +142,9 @@ export class MailIdentity extends Observable {
 }
 
 export function findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+  if (!emailAddress) {
+    return null;
+  }
   for (let account of appGlobal.emailAccounts) {
     for (let identity of account.identities) {
       if (identity.isEMailAddress(emailAddress)) {

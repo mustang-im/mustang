@@ -37,6 +37,7 @@ export class JSCalendarEvent {
       let r = jmap.recurrenceRule;
       let rrinit: RecurrenceInit = {
         masterDuration: event.duration,
+        timezone: event.timezone,
         seriesStartTime: event.startTime,
         seriesEndTime: this.toDate(r.until, jmap, null),
         count: sanitize.integer(r.count, Infinity),
@@ -247,6 +248,9 @@ export class JSCalendarEvent {
   }
 
   static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
+    if (!date) {
+      return null;
+    }
     if (/Z$/.test(date) || !jmap.timeZone || jmap.showWithoutTime) {
       // Easy cases:
       // - date was already in UTC

@@ -22,7 +22,7 @@
       <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
-        <Router primary={false}>
+        <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
             <vbox flex class="sidebar" slot="top">
               <svelte:component this={sidebar} />
@@ -32,7 +32,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router {basepath} primary={false}>
+        <Router primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -49,7 +49,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp, history } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
@@ -96,11 +96,6 @@
   $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   categoriesLoaded; /* make sure to import the file, so that that categories load */
-
-  let basepath: string; // default: no basepath
-  if (window.location.pathname[2] == ":") { // #854 Windows in production mode has URL pathnames like `/D:/mail/`
-    basepath = window.location.pathname.substring(0, 3);
-  }
 
   onMount(() => catchErrors(onLoad));
 

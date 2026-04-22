@@ -113,7 +113,9 @@ export class ActiveSyncAccount extends MailAccount {
 
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-      appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+      if (!this.isDependentAccount) {
+        appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+      }
 
       // ActiveSync doesn't have streaming notifications, instead it
       // provides the Ping operation which will tell us when a pingable
@@ -158,7 +160,7 @@ export class ActiveSyncAccount extends MailAccount {
   async verifyLogin(): Promise<void> {
     let options: any = {
       headers: {
-        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
+        "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
       },
       method: "OPTIONS",
     };
@@ -243,7 +245,7 @@ export class ActiveSyncAccount extends MailAccount {
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
-        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
+        "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
       },
       method: "POST",
       signal: AbortSignal.timeout(heartbeat * 1000 + 25000), // extra timeout for Ping commands

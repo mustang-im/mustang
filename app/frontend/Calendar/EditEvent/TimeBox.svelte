@@ -2,11 +2,13 @@
   <grid class="time" class:isMultipleDays class:allDay={$event.allDay}>
     <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput bind:date={event.startTime} />
+      <DateInput date={event.startTime}
+        on:change={ev => onStartTimeChanged(ev.detail)} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.startTime} on:change={onTimeChanged} />
+        <TimeInput time={event.startTime}
+          on:change={ev => onStartTimeChanged(ev.detail)} />
         {#if !showTimezone}
           <hbox class="buttons">
             <RoundButton
@@ -28,7 +30,8 @@
         <DateInput bind:date={event.endTime}
           min={$event.startTime}
           deltaInDays={$event.allDay ? -1 : null} />
-      {:else}
+      <!--
+      {:else if $event.allDay}
         <hbox class="buttons">
           <RoundButton
             label={$t`Multiple days`}
@@ -39,12 +42,14 @@
             iconSize="16px"
             />
         </hbox>
+      -->
       {/if}
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.endTime} on:change={onTimeChanged} />
+        <TimeInput bind:time={event.endTime} />
       {/if}
+      <!--
       <hbox class="buttons">
         <RoundButton
           label={$event.allDay ? $t`Specify time` : $t`All day`}
@@ -55,6 +60,7 @@
           iconSize="16px"
           />
       </hbox>
+      -->
     </hbox>
 
     {#if showTimezone}
@@ -89,15 +95,27 @@
       <hbox class="timezone" />
     {/if}
     <hbox class="duration" title={$t`Duration`}>
-      <input type="number"
-          min={1} max={2000}
-          bind:value={durationInUnit}
-          on:input={durationUnit.onDurationInUnitChanged} />
-      <DurationUnit
-        bind:durationInSeconds={event.duration}
-        bind:durationInUnit
-        bind:this={durationUnit}
-        onlyDays={$event.allDay} />
+      {#if customDuration}
+        <input type="number"
+            min={1} max={2000}
+            bind:value={durationInUnit}
+            on:input={durationUnit.onDurationInUnitChanged} />
+        <DurationUnit
+          bind:durationInSeconds={event.duration}
+          bind:durationInUnit
+          bind:this={durationUnit}
+          allDay={event.allDay}
+          on:setAllDay={ev => setAllDay(ev.detail)}
+          />
+      {:else}
+        <vbox class="duration-selector">
+          <DurationSelector
+            bind:durationInSeconds={event.duration}
+            allDay={event.allDay}
+            on:setAllDay={ev => setAllDay(ev.detail)}
+            />
+        </vbox>
+      {/if}
     </hbox>
   </grid>
 </vbox>
@@ -107,6 +125,7 @@
   import DateInput from "./DateInput.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
+  import DurationSelector, { kOptionsInS } from "./DurationSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AllDayIcon from '../../asset/icon/calendar/24h.svg?raw';
   import ClockIcon from "lucide-svelte/icons/clock";
@@ -124,6 +143,7 @@
   $: isMultipleDays = $event.startTime && $event.endTime &&
     // all day events have the non-inclusive next day as end
     new Date($event.endTime.getTime() - ($event.allDay ? 80000 : 0)).toDateString() != $event.startTime.toDateString();
+  $: customDuration = customDuration || !kOptionsInS.includes($event.duration);
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;
@@ -132,20 +152,18 @@
 
   function onMultipleDays() {
     if (!event.allDay) {
-      event.allDay = true;
-      setAllDay();
+      setAllDay(true);
     }
     event.durationDays += 1;
   }
 
   function onAllDayToggle() {
-    event.allDay = !event.allDay;
-    setAllDay();
+    setAllDay(!event.allDay);
   }
 
-  // Move into `Event.allDay` setter?
-  function setAllDay() {
-    if (event.allDay) {
+  function setAllDay(allDay: boolean) {
+    event.allDay = allDay;
+    if (allDay) {
       previousTimezone = event.timezone;
       event.timezone = null;
       previousStartTime = new Date(event.startTime);
@@ -173,10 +191,10 @@
     event.notifyObservers();
   }
 
-  function onTimeChanged() {
-    // `<TimeInput>` sets only the properties of the `Date` object,
-    // so we need to manually trigger change notifications
-    event.notifyObservers();
+  function onStartTimeChanged(newTime: Date) {
+    let duration = event.duration;
+    event.startTime = newTime;
+    event.duration = duration;
   }
 
   function checkEndTime() {
@@ -217,8 +235,6 @@
 
 <style>
   .time-box {
-    border: 1px solid var(--border);
-    border-radius: 5px;
     padding: 12px 16px;
   }
   .date-input {
@@ -258,6 +274,9 @@
   .date-input :global(input),
   .time-input :global(input) {
     font-size: 16px;
+  }
+  .duration-selector {
+    margin-block: 5px;
   }
   .duration input {
     margin-inline-end: 6px;

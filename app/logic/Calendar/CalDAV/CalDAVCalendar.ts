@@ -79,7 +79,7 @@ export class CalDAVCalendar extends Calendar {
     return davAB;
   };
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return [];
   }
 

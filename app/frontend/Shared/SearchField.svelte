@@ -34,10 +34,11 @@
   let searchInput: string;
   $: searchInput = searchTerm;
   function onInput() {
-    if (searchTerm == searchInput) {
+    let searchInputLower = searchInput?.toLowerCase();
+    if (searchTerm == searchInputLower) {
       return;
     }
-    searchTerm = searchInput?.toLowerCase();
+    searchTerm = searchInputLower;
     dispatchEvent("input", searchTerm);
   }
   function onClear() {

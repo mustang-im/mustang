@@ -19,6 +19,11 @@
         onClick={onTentative}
         icon={MaybeIcon}
         classes="maybe font-normal" />
+      <MenuItem
+        label={$t`Invite other people`}
+        onClick={onForward}
+        icon={ForwardIcon}
+        classes="forward font-normal" />
     </ButtonMenu>
   {:else if myParticipation == InvitationResponse.Decline}
     <Button
@@ -38,6 +43,11 @@
         onClick={onTentative}
         icon={MaybeIcon}
         classes="maybe font-normal" />
+      <MenuItem
+        label={$t`Invite other people`}
+        onClick={onForward}
+        icon={ForwardIcon}
+        classes="forward font-normal" />
     </ButtonMenu>
   {:else}
     <Button
@@ -56,6 +66,11 @@
         onClick={onTentative}
         icon={MaybeIcon}
         classes="maybe font-normal" />
+      <MenuItem
+        label={$t`Invite other people`}
+        onClick={onForward}
+        icon={ForwardIcon}
+        classes="forward font-normal" />
     </ButtonMenu>
   {/if}
 </hbox>
@@ -64,13 +79,17 @@
   import { Event } from "../../../logic/Calendar/Event";
   import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { openEventFromOtherApp } from "../open";
+  import { openComposer } from "../../Mail/open";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
+  import ForwardIcon from "lucide-svelte/icons/forward";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { NotReached } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
@@ -114,6 +133,16 @@
       throw new NotReached();
     }
     openEventFromOtherApp(calEvent);
+  }
+
+  async function onForward() {
+    let mail: EMail;
+    if (invitation instanceof IncomingInvitation) {
+      mail = await invitation.message.compose.forward();
+    } else if (invitation instanceof Event) {
+      mail = OutgoingInvitation.forwardEventByMail(invitation);
+    }
+    openComposer(mail);
   }
 </script>
 

@@ -163,7 +163,6 @@
 </vbox>
 
 <script lang="ts">
-  import type { Account } from "../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
   import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
@@ -173,7 +172,6 @@
   import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
-  import { appName } from "../../../logic/build";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import StatusMessage from "../../Setup/Shared/StatusMessage.svelte";
@@ -183,9 +181,8 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
-  import { ArrayColl, Collection } from "svelte-collections";
+  import { ArrayColl } from "svelte-collections";
 
   export let account: MailAccount;
   let sharedWith = new ArrayColl<PersonUID>();
@@ -198,6 +195,9 @@
   }
 
   async function mergePersons(persons?: ArrayColl<PersonUID>) {
+    if (!persons) {
+      return;
+    }
     for (let person of persons) {
       if (!sharedWith.some(otherPerson => otherPerson.emailAddress == person.emailAddress)) {
         sharedWith.add(person);

@@ -79,6 +79,7 @@ export class PGPSend {
 
     return [
       `MIME-Version: 1.0`,
+      `Date: ` + toRFC822DateString(new Date()),
       `From: ` + recipient(mail.from),
       `To: ` + mail.to.contents.map(p => recipient(p)),
       `CC: ` + mail.cc.contents.map(p => recipient(p)),
@@ -210,4 +211,28 @@ export class PGPSend {
     msg.appendChild(encryptedNode);
     return msg.serialize()
   }*/
+}
+
+export function toRFC822DateString(date: Date) {
+  return "" +
+    date.toLocaleString("en-gb", {
+      weekday: "short",
+      timeZone: "UTC",
+    }) +
+    ", " +
+    date.toLocaleString("en-gb", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }) +
+    " " +
+    date.toLocaleString("en-gb", {
+      hour: "2-digit",
+      hour12: false,
+      minute: "2-digit",
+      second: "2-digit",
+      timeZone: "UTC",
+    }) +
+    " +0000";
 }

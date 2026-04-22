@@ -60,7 +60,7 @@
   async function onSave() {
     assert(identities.hasItems, $t`Need at least 1 identity`);
     for (let identity of identities) {
-      sanitize.emailAddress(identity.emailAddress);
+      sanitize.emailAddress(identity.emailAddress.replace("*", "any"));
     }
     account.emailAddress = identities.first.emailAddress;
     account.realname = identities.first.realname;

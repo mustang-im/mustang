@@ -199,7 +199,9 @@ export class OWAAccount extends MailAccount {
         await addressbook.save();
       }
 
-      appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+      if (!this.isDependentAccount) {
+        appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+      }
 
       await this.callOWA(new OWASubscribeToNotificationRequest());
 

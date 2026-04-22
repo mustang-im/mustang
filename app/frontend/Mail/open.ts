@@ -41,3 +41,7 @@ export async function openEMailMessage(message: EMail, tab?: SearchView) {
     selectedSearchTab.set(tab);
   }
 }
+
+export function openComposer(mail: EMail) {
+  mailMustangApp.writeMail(mail);
+}
