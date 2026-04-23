@@ -43,6 +43,7 @@ linux:
     - AppImage
     # - snap
     - deb
+    - pacman
     - rpm
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
