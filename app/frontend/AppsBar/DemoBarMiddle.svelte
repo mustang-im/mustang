@@ -7,7 +7,7 @@
 {/if}
 
 <script lang="ts">
-  import { isDemo } from "../AppsBar/demo";
+  import { isDemo } from "./demo";
 </script>
 
 <style>
@@ -17,10 +17,7 @@
     color: #160C27;
     z-index: 5;
     width: 18px;
-    /* position: absolute;
-    top: 0px;
-    left: 0px;
-    height: 100%; */
+    height: 100%;
   }
   .text {
     transform: rotate(-90deg);
