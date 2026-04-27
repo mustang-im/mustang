@@ -15,7 +15,6 @@
     align-items: center;
     background-color: #FFF160;
     color: #160C27;
-    z-index: 5;
     width: 18px;
     height: 100%;
   }
