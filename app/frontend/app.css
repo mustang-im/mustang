@@ -29,8 +29,9 @@
   --selected-hover-fg: white;
   --main-bg: var(--bg);
   --main-fg: var(--fg);
-  --main-pattern-bg: #E6F2F1;
-  --main-pattern-fg: #160C27;
+  /** Encryption, Island Selected faint */
+  --offset-bg: #E6F2F1;
+  --offset-fg: #160C27;
   --leftbar-bg: #F9F9FD; /* #F9F9FD, #F9F9F9, #716E7D */
   --leftbar-fg: #160C27;
   --headerbar-bg: #EEEEEE;
@@ -79,8 +80,8 @@
     --selected-hover-fg: white;
     --main-bg: var(--bg);
     --main-fg: var(--fg);
-    --main-pattern-bg: #0E201E;
-    --main-pattern-fg: #C1C1C2;
+    --offset-bg: #22312F;
+    --offset-fg: #C1C1C2;
     --leftbar-bg: #1E1E1E;
     --leftbar-fg: #C1C1C2;
     --windowheader-bg: #202022;
@@ -364,16 +365,18 @@ a:hover {
   color: var(--selected-hover-fg);
 }
 
-/* App background pattern */
+/* App background pattern, e.g. Contacts app */
 .background-pattern {
   background: url(./asset/background-repeat.png) repeat;
-  background-color: var(--main-pattern-bg);
   background-blend-mode: soft-light;
-  color: var(--main-pattern-fg);
+  background-color: #E6F2F1;
+  color: #160C27;
 }
 @media (prefers-color-scheme: dark) {
   .background-pattern {
     background-blend-mode: overlay;
+    background-color: #141416;
+    color: #C1C1C2;
   }
 }
 

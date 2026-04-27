@@ -72,8 +72,8 @@
     margin-inline-start: 8px;
     margin-block-start: 3px;
 
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border-radius: 2px;
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;

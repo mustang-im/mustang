@@ -26,9 +26,9 @@
 <style>
   .person-page {
     background: url(../asset/background-repeat.png) repeat;
-    background-color: var(--main-pattern-bg);
     background-blend-mode: soft-light;
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     padding: 8px;
   }
   .person-page :global(input),
