@@ -131,7 +131,7 @@
       searchMessages = null;
       return;
     }
-    let searchTerms = searchTerm.split(" ").filter(Boolean);
+    let searchTerms = searchTerm ? searchTerm.split(" ").filter(Boolean) : [];
     searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
