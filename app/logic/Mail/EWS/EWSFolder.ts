@@ -648,6 +648,7 @@ export class ExchangePermission {
   }
 
   matchesEMailAddress(emailAddress: string) {
+    // (Null check: Permissions for the special users "Default" and "Anonymous" don't have an email address)
     return this.emailAddress?.toLowerCase() == emailAddress.toLowerCase();
   }
 
