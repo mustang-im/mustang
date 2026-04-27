@@ -68,6 +68,7 @@
     order: 1;
     margin-block-start: 8px;
   }
+  /** Overridden in Meet/Participantsbar/Sidebar.svelte */
   .persons :global(.row.odd:not(.selected):not(:hover) hbox.person) {
     background-color: var(--bg);
     color: var(--fg);
