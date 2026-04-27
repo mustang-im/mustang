@@ -70,7 +70,7 @@
   }
   /** Overridden in Meet/Participantsbar/Sidebar.svelte */
   .persons :global(.row.odd:not(.selected):not(:hover) hbox.person) {
-    background-color: var(--bg);
+    background-color: var(--main-bg);
     color: var(--fg);
   }
 </style>
