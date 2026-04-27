@@ -648,7 +648,7 @@ export class ExchangePermission {
   }
 
   matchesEMailAddress(emailAddress: string) {
-    return this.emailAddress.toLowerCase() == emailAddress.toLowerCase();
+    return this.emailAddress?.toLowerCase() == emailAddress.toLowerCase();
   }
 
   toEWSFolderPermission() {
