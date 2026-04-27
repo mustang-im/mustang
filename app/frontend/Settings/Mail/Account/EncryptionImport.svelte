@@ -95,6 +95,7 @@
   export let identity: MailIdentity;
   /** in/out */
   export let isOpen: boolean;
+  export let showObsolete: boolean;
 
   let showPassword = false;
   let passphrase: string;
@@ -104,7 +105,7 @@
   }
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", "text/plain" ];
+  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", ".key", "text/plain" ];
   async function onImportFile(passphrase: string) {
     let file = await fileSelector.selectFile();
     if (!file) {
@@ -113,6 +114,9 @@
     let fileContent = await file.text();
     let key = await importPrivateKey(fileContent, passphrase);
     identity.encryptionPrivateKeys.add(key);
+    if (key.obsolete) {
+      showObsolete = true;
+    }
     isOpen = false;
     await identity.account.save();
   }
