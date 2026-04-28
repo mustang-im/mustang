@@ -38,7 +38,7 @@
 
   export let person: Person;
 
-  const kDefaultLimit = 20;
+  const kDefaultLimit = 200;
   const kAddMore = 1000;
   let limit = kDefaultLimit;
   $: messages = searchLog(person, limit) as ArrayColl<LogEntry>;
