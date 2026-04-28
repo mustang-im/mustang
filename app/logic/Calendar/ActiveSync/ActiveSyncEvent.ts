@@ -33,44 +33,64 @@ export class ActiveSyncEvent extends Event {
   }
 
   fromWBXML(wbxmljs: Record<string, any>) {
-    this.calUID = sanitize.nonemptystring(wbxmljs.UID, null);
-    this.title = sanitize.nonemptystring(wbxmljs.Subject, "");
+    if (wbxmljs.UID != undefined) {
+      this.calUID = sanitize.nonemptystring(wbxmljs.UID, null);
+    }
+    if (wbxmljs.Subject != undefined) {
+      this.title = sanitize.nonemptystring(wbxmljs.Subject, "");
+    }
     if (wbxmljs.Body?.Type == "2") {
       this.rawHTMLDangerous = sanitize.nonemptystring(wbxmljs.Body.Data, "");
       this.rawText = null;
-    } else {
-      this.rawText = sanitize.nonemptystring(wbxmljs.Body?.Data, "");
+    } else if (wbxmljs.Body) {
+      this.rawText = sanitize.nonemptystring(wbxmljs.Body.Data, "");
       this.rawHTMLDangerous = null;
     }
     if (wbxmljs.DtStamp) {
       this.lastUpdateTime = fromCompact(sanitize.nonemptystring(wbxmljs.DtStamp));
     }
-    if (wbxmljs.ExceptionStartTime) {
+    if (wbxmljs.ExceptionId) { // for ActiveSync 16.1
+      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionId);
+      // In case it's not otherwise provided to us.
+      this.startTime = new Date(this.recurrenceStartTime);
+    }
+    if (wbxmljs.ExceptionStartTime) { // for ActiveSync 14.x
       this.recurrenceStartTime = fromCompact(sanitize.nonemptystring(wbxmljs.ExceptionStartTime));
       // In case it's not otherwise provided to us.
       this.startTime = new Date(this.recurrenceStartTime);
     }
+    if (wbxmljs.AllDayEvent) {
+      this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
+    }
     if (wbxmljs.StartTime) {
-      this.startTime = fromCompact(sanitize.nonemptystring(wbxmljs.StartTime));
+      this.startTime = fromCompact(sanitize.nonemptystring(wbxmljs.StartTime), this.allDay && this.calendar.account.protocolVersion == "16.1");
     }
     if (wbxmljs.EndTime) {
-      this.endTime = fromCompact(sanitize.nonemptystring(wbxmljs.EndTime));
+      this.endTime = fromCompact(sanitize.nonemptystring(wbxmljs.EndTime), this.allDay && this.calendar.account.protocolVersion == "16.1");
     }
-    this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
-    this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
+    if (wbxmljs.Timezone) { // Omitted in 16.1 for all day events
+      this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
+    }
     if (wbxmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionStartTime)));
+          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime)));
         }
       }
     } else {
       this.recurrenceRule = null;
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
-    this.location = sanitize.nonemptystring(wbxmljs.Location, "");
-    this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
+    if (wbxmljs.EnhancedLocation != undefined) {
+      this.location = sanitize.nonemptystring(wbxmljs.EnhancedLocation.DisplayName, "");
+    }
+    if (wbxmljs.Location != undefined) {
+      this.location = sanitize.nonemptystring(wbxmljs.Location, "");
+    }
+    if (wbxmljs.MeetingStatus) {
+      this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
+    }
     let attendees = ensureArray(wbxmljs.Attendees?.Attendee);
     if (wbxmljs.OrganizerEmail && attendees.length) {
       for (let attendee of attendees) {
@@ -89,14 +109,16 @@ export class ActiveSyncEvent extends Event {
       }
     }
     this.participants.replaceAll(attendees.map(attendee => new Participant(attendee.Email, sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
-    this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    if (wbxmljs.ResponseType) {
+      this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    }
   }
 
   protected newRecurrenceRuleFromWBXML(wbxmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
     let timezone = this.timezone;
     let seriesStartTime = this.startTime;
-    let seriesEndTime = wbxmljs.Until ? fromCompact(sanitize.nonemptystring(wbxmljs.Until)) : null;
+    let seriesEndTime = wbxmljs.Until ? fromCompact(sanitize.nonemptystring(wbxmljs.Until), this.allDay && this.calendar.account.protocolVersion == "16.1") : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
     let frequency = kRecurrenceTypes[sanitize.integer(wbxmljs.Type, 0)];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
@@ -107,18 +129,24 @@ export class ActiveSyncEvent extends Event {
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []): any {
+    let version16_1 = this.calendar.account.protocolVersion == "16.1";
     return {
-      ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
-      Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
-      AllDayEvent: this.allDay ? "1" : "0",
+      // First the fields only in code page 4.
+      ExceptionStartTime: this.recurrenceStartTime && !version16_1 ? toCompact(this.recurrenceStartTime) : [],
+      Exceptions: exceptions,
+      Timezone: version16_1 && this.allDay ? [] : this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
       Attendees: (!this.recurrenceStartTime || this.participants.hasItems) ? {
         Attendee: this.participants.contents.map(entry => ({ Email: entry.emailAddress, Name: entry.name, AttendeeType: kRequiredAttendee })),
-      } : [],
-      EndTime: toCompact(this.endTime),
-      Location: this.location || {}, // Allows exception to have no location
-      Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : [],
-      StartTime: toCompact(this.startTime),
-      UID: !this.parentEvent && this.calUID || [],
+      } : version16_1 ? {} : [],
+      // Now the fields that exist in either code page 2 or 4.
+      // Since the above fields were in code page 4, we should keep that page.
+      // Attendee is guaranteed in ActiveSync 16.1 and Timezone is in 14.x.
+      AllDayEvent: this.allDay ? "1" : "0",
+      EndTime: toCompact(this.endTime, version16_1 && this.allDay),
+      Location: version16_1 ? [] : this.location || {}, // Allows exception to have no location
+      Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : version16_1 ? {} : [],
+      StartTime: toCompact(this.startTime, version16_1 && this.allDay),
+      UID: !version16_1 && !this.parentEvent && this.calUID || [],
       Recurrence: this.recurrenceRule ? {
         Type: String(kRecurrenceTypes.indexOf(this.recurrenceRule.frequency) + +!!this.recurrenceRule.week),
         Occurrences: this.recurrenceRule.count < Infinity ? String(this.recurrenceRule.count) : [],
@@ -126,13 +154,14 @@ export class ActiveSyncEvent extends Event {
         WeekOfMonth: this.recurrenceRule.week ? String(this.recurrenceRule.week) : [],
         DayOfWeek: this.recurrenceRule.weekdays ? String(this.recurrenceRule.weekdays.reduce((bitmask, day) => bitmask | 1 << day, 0)) : this.recurrenceRule.week ? String(1 << this.recurrenceRule.seriesStartTime.getUTCDay()) : [],
         MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.seriesStartTime.getUTCMonth() + 1) : [],
-        Until: toCompact(this.recurrenceRule.seriesEndTime) || [],
+        Until: toCompact(this.recurrenceRule.seriesEndTime, version16_1 && this.allDay) || [],
         DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.seriesStartTime.getUTCDate()) : [],
         FirstDayOfWeek: this.calendar.account.protocolVersion == "14.0" ? [] : this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
-      } : [],
+      } : version16_1 ? {} : [],
       Subject: this.title,
+      // These fields are in code page 17.
       Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
-      Exceptions: exceptions,
+      EnhancedLocation: version16_1 ? { DisplayName: this.location || [] } : [],
     };
   }
 
@@ -144,7 +173,7 @@ export class ActiveSyncEvent extends Event {
     await this.prepareSaveToServer();
 
     // Not supporting tasks for now.
-    if (this.parentEvent) {
+    if (this.parentEvent && this.calendar.account.protocolVersion != "16.1") {
       await this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
@@ -153,7 +182,10 @@ export class ActiveSyncEvent extends Event {
         this.calUID = sanitize.nonemptystring(event.calUID);
       }
     }
-    await super.saveToServer();
+    // ActiveSync 16.1 automatically sends invitations.
+    if (this.calendar.account.protocolVersion != "16.1") {
+      await this.sendInvitationsDirectly();
+    }
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -162,6 +194,7 @@ export class ActiveSyncEvent extends Event {
       Commands: {
         Change: {
           ServerId: this.serverID,
+          ExceptionId: this.parentEvent ? toCompact(this.recurrenceStartTime, this.allDay) : [],
           ApplicationData: fields,
         },
       },
@@ -184,12 +217,17 @@ export class ActiveSyncEvent extends Event {
           throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.calendar);
         }
         this.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
+        if (response.Responses.Add.ApplicationData?.UID) {
+          // ActiveSync 16.1 requires us to use the server's UID
+          this.calUID = response.Responses.Add.ApplicationData.UID;
+        }
+        await this.saveLocally();
       }
     }
   }
 
   async deleteFromServer(): Promise<void> {
-    if (this.parentEvent) {
+    if (this.parentEvent && this.calendar.account.protocolVersion != "16.1") {
       await this.parentEvent.saveFields(this.parentEvent.toFields({
         Exception: {
           Deleted: "1",
@@ -202,7 +240,8 @@ export class ActiveSyncEvent extends Event {
         GetChanges: "0",
         Commands: {
           Delete: {
-            ServerId: this.serverID,
+            ServerId: this.parentEvent ? this.parentEvent.serverID : this.serverID,
+            ExceptionId: this.parentEvent ? toCompact(this.recurrenceStartTime, this.allDay) : [],
           },
         },
       };
@@ -239,31 +278,38 @@ export class ActiveSyncEvent extends Event {
   }
 
   async makeExclusions(exclusions: ActiveSyncEvent[]) {
+    let exceptionField = this.calendar.account.protocolVersion == "16.1" ? "ExceptionId" : "ExceptionStartTime";
     await this.saveFields(this.toFields(exclusions.map(event => ({
       Exception: {
         Deleted: "1",
-        ExceptionStartTime: toCompact(event.recurrenceStartTime),
+        [exceptionField]: toCompact(event.recurrenceStartTime, this.calendar.account.protocolVersion == "16.1" && this.allDay),
       },
     }))));
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
+    let SendResponse = this.calendar.account.protocolVersion == "16.1" ? {} : [];
     let request = {
       // TODO support ActiveSync 14.0
       Request: this.serverID ? {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
         RequestId: this.serverID,
+        SendResponse,
       } : {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
         RequestId: this.parentEvent.serverID,
         InstanceId: this.recurrenceStartTime.toISOString(),
+        SendResponse,
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await super.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
+    // We asked ActiveSync 16.1 to send the response for us.
+    if (this.calendar.account.protocolVersion != "16.1") {
+      await super.respondToInvitation(response, this.calendar.account);
+    }
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
 }
@@ -273,11 +319,23 @@ function extractWeekdays(daysOfWeek: number): Weekday[] | null {
 }
 
 /// Returns the compact date time of a date
-function toCompact(date?: Date): string | null {
+function toCompact(date?: Date, v16AllDay?: boolean): string | null {
+  if (date && v16AllDay) {
+    return date.getFullYear() + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0") + "T000000Z";
+  }
   return date && date.toISOString().replace(/-|:|\..../g, "");
 }
 
-export function fromCompact(date: string): Date {
+export function fromCompact(date: string, v16AllDay?: boolean): Date {
+  // In ActiveSync 14.1, all-day events are sent with a time zone,
+  // and the start and end times are midnight in that zone,
+  // but they are then converted to UTC.
+  // In ActiveSync 16.1, all-day events are not sent with a time zone.
+  // Start and end times are sent as if they were midnight in UTC.
+  // We want them to show up as the user's local midnight.
+  if (v16AllDay) {
+    date = date.replace(/Z/, "");
+  }
   // In case the string isn't in compact format, compactify it first.
   return new Date(date.replace(/-|:|\..../g, "").replace(/(..)(..T..)(..)/, "-$1-$2:$3:"));
 }
