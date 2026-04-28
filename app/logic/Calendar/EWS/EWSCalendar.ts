@@ -33,18 +33,11 @@ export class EWSCalendar extends Calendar {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   getIncomingInvitationForEMail(message: EWSEMail) {
     return new EWSIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let request = {
       m$GetUserAvailabilityRequest: {
         m$MailboxDataArray: {
@@ -67,7 +60,7 @@ export class EWSCalendar extends Calendar {
     let results = await this.account.callEWS(request);
     return participants.map((participant, i) => ({
       participant,
-      availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
+      availability: results[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
         from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
         to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
         free: event.BusyType == "Free",

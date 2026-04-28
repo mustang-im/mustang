@@ -51,7 +51,7 @@ export class Message extends Observable {
     if (this._rawHTML) {
       return this._text = convertHTMLToText(this._rawHTML);
     }
-    return null;
+    return "";
   }
   /** Must also set `.html` (or at least get `.html` to auto-generate it),
    * to keep them in sync. */
@@ -90,13 +90,10 @@ export class Message extends Observable {
       if (this._text) {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
-      if (this._rawHTML === "" || this._text === "") {
-        return "";
-      }
     } catch (ex) {
       backgroundError(ex);
     }
-    return null;
+    return "";
   }
 
   /** Must also set `.text` (or at least get `.text` to auto-generate it),

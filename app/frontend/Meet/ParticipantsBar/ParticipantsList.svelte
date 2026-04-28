@@ -2,6 +2,7 @@
   <PersonsList
     persons={$participantsSorted}
     bind:selected
+    {selectedPersons}
     showSearch={false}>
     <hbox slot="top-right" let:person>
       {#if person instanceof MeetingParticipant}
@@ -20,12 +21,14 @@
   import ParticipantListItem from "./ParticipantListItem.svelte";
   import InviteeListItem from "./InviteeListItem.svelte";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
-  import type { Collection } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
 
   export let participants: Collection<MeetingParticipant>;
   export let invited: Collection<MeetingParticipant>;
   export let selected: MeetingParticipant;
   export let userIsModerator = false;
+
+  let selectedPersons = new ArrayColl<MeetingParticipant>;
 
   $: participantsSorted = $participants
     .sortBy(person => person.role)

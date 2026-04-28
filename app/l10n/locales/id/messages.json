@@ -46,7 +46,6 @@
   "M6xyI9": "Tambahkan akun konferensi video",
   "sxkWRg": "Lanjutan",
   "rhIUmV": "Setelah ditampilkan untuk # detik",
-  "1kLn6M": "Sepanjang hari.",
   "+bHmdA": "Semua diunduh.",
   "4xBHUg": "Jawaban",
   "bFDrW8": "Bilah aplikasi",
@@ -229,7 +228,6 @@
   "ohUPGv": "Pindahkan email ini ke folder arsip",
   "W1Abqa": "Pindah ke folder {0}",
   "/5R4hg": "Pindah ke akun email lain",
-  "6vx0g5": "Beberapa hari",
   "R7SsBE": "Bisu",
   "hYDc6B": "Nama tidak bisa kosong",
   "s3RKlM": "Nama buku alamat",
@@ -364,7 +362,6 @@
   "fx5vX/": "Suara",
   "wdxz7K": "Sumber",
   "XgqUre": "Sumber tidak tersedia",
-  "klTRd9": "Tentukan waktu",
   "RfFYKi": "Dibintangi",
   "x5G8x9": "Mulai obrolan hanya dengan orang ini",
   "T1ySTP": "Photogallery",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Untuk mengenkripsi pesan ini, tambahkan sertifikat untuk penerima berikut",
   "GZISRB": "Kata sandi untuk file kunci rahasia",
   "tQuHhm": "Anda mengirim email ini",
-  "ZT0r/B": "{0} mengklaim bahwa ini benar"
+  "ZT0r/B": "{0} mengklaim bahwa ini benar",
+  "D3d9y2": "Tutup dan simpan secara opsional",
+  "SVKMDD": "Ekspor sebagai file",
+  "+bs3UE": "Kotak masuk tidak ditemukan",
+  "VAlOyH": "Menginstal pembaruan...",
+  "J+/IsA": "Simpan email ini ke file di komputer Anda",
+  "JknIwf": "Undang orang lain"
 }

@@ -27,7 +27,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { type PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { findIdentityForEMailAddress } from "../../../logic/Mail/MailIdentity";
   import EncryptionKey from "../../Contacts/PersonPage/EncryptionKey.svelte";
@@ -35,14 +35,18 @@
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
+  import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   /** out */
   export let isExpanded = false;
 
-  $: signingKey = getPublicKeyByKeyID($message.signed);
-  $: signed = $message.signed && $signingKey?.trustLevel != TrustLevel.Distrusted;
+  let signingKey: PublicKey;
+  $: getPublicKeyByKeyID($message.signed, message)
+    .then(key => signingKey = key)
+    .catch(showError);
+  $: signed = $message.signed && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: identity = $message.outgoing ? findIdentityForEMailAddress($message.from?.emailAddress) : null;
@@ -68,8 +72,8 @@
     margin-inline-start: 8px;
     margin-block-start: 3px;
 
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border-radius: 2px;
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;

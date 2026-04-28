@@ -33,13 +33,6 @@ export class OWACalendar extends Calendar {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   callOWA(aRequest: any) {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
@@ -54,11 +47,11 @@ export class OWACalendar extends Calendar {
     return new OWAIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     return participants.map((participant, i) => ({
       participant,
-      availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
+      availability: results.Responses[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
         from: new Date(event.Start + "Z"),
         to: new Date(event.End + "Z"),
         free: event.FreeBusyType == "Free",

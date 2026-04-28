@@ -46,7 +46,6 @@
   "M6xyI9": "Adăugați un cont de videoconferință",
   "sxkWRg": "Avansat",
   "rhIUmV": "După afișare pentru # secunde",
-  "1kLn6M": "Toată ziua",
   "+bHmdA": "Toate descărcate.",
   "4xBHUg": "Răspuns",
   "bFDrW8": "Bară de aplicații",
@@ -229,7 +228,6 @@
   "ohUPGv": "Mutați acest e-mail în folderul de arhivă",
   "W1Abqa": "Mutare în dosar {0}",
   "/5R4hg": "Mutarea în alt cont de e-mail",
-  "6vx0g5": "Mai multe zile",
   "R7SsBE": "Amuțit",
   "hYDc6B": "Numele nu poate fi gol",
   "s3RKlM": "Numele agendei",
@@ -364,7 +362,6 @@
   "fx5vX/": "Sunet",
   "wdxz7K": "Sursa",
   "XgqUre": "Sursa nu este disponibilă",
-  "klTRd9": "Specificați ora",
   "RfFYKi": "Marcate",
   "x5G8x9": "Începe o conversație doar cu această persoană",
   "T1ySTP": "Începe conferința",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Pentru a cripta acest mesaj, adăugați certificate pentru următorii destinatari",
   "GZISRB": "Frază de acces pentru fișierul cheie secretă",
   "tQuHhm": "Ați trimis acest e-mail",
-  "ZT0r/B": "{0} susține că acest lucru este corect"
+  "ZT0r/B": "{0} susține că acest lucru este corect",
+  "D3d9y2": "Închideți și, opțional, salvați",
+  "SVKMDD": "Export ca fișier",
+  "+bs3UE": "Inbox nu a fost găsit",
+  "VAlOyH": "Instalarea actualizării...",
+  "J+/IsA": "Salvați acest e-mail într-un fișier de pe computer",
+  "JknIwf": "Invitați alte persoane"
 }

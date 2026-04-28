@@ -116,6 +116,7 @@ export class ActiveSyncEvent extends Event {
 
   protected newRecurrenceRuleFromWBXML(wbxmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
+    let timezone = this.timezone;
     let seriesStartTime = this.startTime;
     let seriesEndTime = wbxmljs.Until ? fromCompact(sanitize.nonemptystring(wbxmljs.Until), this.allDay && this.calendar.account.protocolVersion == "16.1") : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
@@ -124,7 +125,7 @@ export class ActiveSyncEvent extends Event {
     let weekdays = extractWeekdays(sanitize.integer(wbxmljs.DayOfWeek, 0));
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
-    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, timezone, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []): any {
@@ -151,10 +152,10 @@ export class ActiveSyncEvent extends Event {
         Occurrences: this.recurrenceRule.count < Infinity ? String(this.recurrenceRule.count) : [],
         Interval: String(this.recurrenceRule.interval),
         WeekOfMonth: this.recurrenceRule.week ? String(this.recurrenceRule.week) : [],
-        DayOfWeek: this.recurrenceRule.weekdays ? String(this.recurrenceRule.weekdays.reduce((bitmask, day) => bitmask | 1 << day, 0)) : this.recurrenceRule.week ? String(1 << this.recurrenceRule.seriesStartTime.getDay()) : [],
-        MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.seriesStartTime.getMonth() + 1) : [],
+        DayOfWeek: this.recurrenceRule.weekdays ? String(this.recurrenceRule.weekdays.reduce((bitmask, day) => bitmask | 1 << day, 0)) : this.recurrenceRule.week ? String(1 << this.recurrenceRule.seriesStartTime.getUTCDay()) : [],
+        MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.seriesStartTime.getUTCMonth() + 1) : [],
         Until: toCompact(this.recurrenceRule.seriesEndTime, version16_1 && this.allDay) || [],
-        DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.seriesStartTime.getDate()) : [],
+        DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.seriesStartTime.getUTCDate()) : [],
         FirstDayOfWeek: this.calendar.account.protocolVersion == "14.0" ? [] : this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
       } : version16_1 ? {} : [],
       Subject: this.title,

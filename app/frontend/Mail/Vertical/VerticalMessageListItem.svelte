@@ -258,11 +258,17 @@
   }
   .direction :global(svg.outgoing) {
     stroke-width: 1px;
-    color: darkred;
+  }
+  @media (prefers-color-scheme: light) {
+    .direction :global(svg.outgoing) {
+      color: darkred;
+    }
+    .direction :global(svg.reply) {
+      color: grey;
+    }
   }
   .direction :global(svg.reply) {
     stroke-width: 1px;
-    color: grey;
   }
   .star :global(svg) {
     stroke-width: 1px;

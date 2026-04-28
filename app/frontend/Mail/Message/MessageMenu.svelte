@@ -47,6 +47,11 @@
   label={$t`Translate`}
   tooltip={$t`Use an online translation service to translate this message to your default language.`}
   icon={TranslateIcon} />
+<MenuItem
+  onClick={save}
+  label={$t`Export as file`}
+  tooltip={$t`Save this email to a file on your computer`}
+  icon={SaveIcon} />
 {#if printE}
   <MenuItem
     onClick={print}
@@ -81,11 +86,14 @@
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import TranslateIcon from "lucide-svelte/icons/languages";
+  import SaveIcon from "lucide-svelte/icons/save";
   import PrintIcon from "lucide-svelte/icons/printer";
   import SourceIcon from "lucide-svelte/icons/code-xml";
+  import { saveBlobAsFile } from "../../Util/util";
   import { showError } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
   export let message: EMail;
   export let printE: Print | null = null;
@@ -137,10 +145,19 @@
     message = message.nextMessage();
   }
 
+  async function save() {
+    await message.loadMIME();
+    let content = message.mime as Uint8Array<ArrayBuffer>;
+    let filename = sanitize.filename(message.subject, "email") + ".eml";
+    let file = new File([content], filename, { type: "message/rfc822" });
+    saveBlobAsFile(file);
+  }
+
   async function print() {
     printE.print()
       .catch(showError);
   }
+
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");
     setting.value = setting.value == "source" ? "html" : "source";

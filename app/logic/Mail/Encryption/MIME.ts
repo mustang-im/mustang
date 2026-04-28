@@ -19,7 +19,9 @@ export function parseHeaderParameters(headerValue: string): Record<string, strin
   let params: Record<string, string> = {};
    // TODO ignore `;` and `=` within `"` quotes
   let paramsSplit = headerValue.split(";");
-  params.$main = paramsSplit.shift() ?? "";
+  params.$main = paramsSplit[0].includes("=")
+    ? ""
+    : paramsSplit.shift() ?? "";
   for (let paramStr of paramsSplit) {
     let pos = paramStr.indexOf("=");
     if (pos == -1) {

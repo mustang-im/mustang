@@ -46,7 +46,6 @@
   "M6xyI9": "Videokonferenz-Konto hinzufügen",
   "sxkWRg": "Weitere Optionen",
   "rhIUmV": "Nach # Sekunden",
-  "1kLn6M": "Ganztägig",
   "+bHmdA": "Alle heruntergeladen.",
   "4xBHUg": "Antworten",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Verschiebe diese E-Mail in den Archiv-Ordner",
   "W1Abqa": "In Ordner verschieben {0}",
   "/5R4hg": "Zu einem anderen E-Mail-Konto wechseln",
-  "6vx0g5": "Mehrere Tage",
   "R7SsBE": "Stumm schalten",
   "hYDc6B": "Name darf nicht leer sein",
   "s3RKlM": "Name des Adressbuchs",
@@ -364,7 +362,6 @@
   "fx5vX/": "Ton",
   "wdxz7K": "Quelle",
   "XgqUre": "Quelle nicht verfügbar",
-  "klTRd9": "Zeit angeben",
   "RfFYKi": "Markiert",
   "x5G8x9": "Starte einen Chat mit dieser Person",
   "T1ySTP": "Konferenz starten",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Um diese Nachricht zu verschlüsseln, fügen Sie Zertifikate für die folgenden Empfänger hinzu",
   "GZISRB": "Passphrase für geheime Schlüsseldatei",
   "tQuHhm": "Sie haben diese E-Mail gesendet",
-  "ZT0r/B": "{0} behauptet, dass dies richtig ist"
+  "ZT0r/B": "{0} behauptet, dass dies richtig ist",
+  "D3d9y2": "Schließen und optional speichern",
+  "SVKMDD": "Als Datei exportieren",
+  "+bs3UE": "Posteingang nicht gefunden",
+  "VAlOyH": "Installation des Updates...",
+  "J+/IsA": "Speichern Sie diese E-Mail in einer Datei auf Ihrem Computer",
+  "JknIwf": "Andere Personen einladen"
 }

@@ -25,10 +25,11 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { fileSize } from "../../Files/fileSize";
+  import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
-  import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -36,7 +37,17 @@
   export let message: EMail;
 
   async function onOpen() {
-    await attachment.openOSApp();
+    if (canOpenFileInternally(attachment.mimeType)) {
+      if (!attachment.content) {
+        await message.loadAttachments();
+      }
+      await openFileInternallyFromFile(attachment.content);
+    } else {
+      if (!message.downloadComplete) {
+        await message.loadAttachments();
+      }
+      await attachment.openOSApp();
+    }
   }
 
   let iconEl: HTMLDivElement;

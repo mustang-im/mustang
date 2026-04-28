@@ -206,3 +206,14 @@ function createSetColl<Item>(initial: Item[]): SetColl<Item> {
 function matchesBoolean(search: boolean | undefined, value: boolean) {
   return search === null || search === undefined || search === value;
 }
+
+export function msgHasSearchTerm(msg: EMail, searchTerm: string) {
+  return msg.subject?.toLowerCase().includes(searchTerm) ||
+    msg.contact?.name?.toLowerCase().includes(searchTerm) ||
+    msg.from?.name?.toLowerCase().includes(searchTerm) ||
+    msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
+    msg.to?.some(to =>
+      to.name?.toLowerCase().includes(searchTerm) ||
+      to.emailAddress?.toLowerCase().includes(searchTerm)) ||
+    msg.text?.toLowerCase().includes(searchTerm);
+}

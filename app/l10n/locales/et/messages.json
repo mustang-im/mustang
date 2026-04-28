@@ -58,7 +58,6 @@
   "rhIUmV": "Pärast # sekundit kestnud kuvamist",
   "N40H+G": "Kõik",
   "Mxjwaz": "Kõik kontod",
-  "1kLn6M": "Kogu päev",
   "+bHmdA": "Kõik alla laaditud.",
   "dtwyLS": "Kõik sõnumid",
   "4xBHUg": "Vastus",
@@ -301,7 +300,6 @@
   "/5R4hg": "Üleminek teisele postikontole",
   "S3wq2O": "Liikumine tööruumi",
   "2yMZTC": "Liigutage, märgistage või kustutage",
-  "6vx0g5": "Mitu päeva",
   "R7SsBE": "Mute",
   "6YtxFj": "Nimi",
   "hYDc6B": "Nimi ei saa olla tühi",
@@ -492,7 +490,6 @@
   "XgqUre": "Allikas ei ole kättesaadav",
   "t8dIOP": "Spam",
   "KFBiPv": "Rämpsposti kaust ei ole määratud. Palun minge kausta omadustesse ja määrake Use As: Spam.",
-  "klTRd9": "Määrake aeg",
   "LECpWm": "Õigekirja kontroll",
   "RfFYKi": "Tähtedega",
   "x5G8x9": "Alusta vestlust ainult selle inimesega",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Selle sõnumi krüpteerimiseks lisage sertifikaadid järgmistele adressaatidele",
   "GZISRB": "Salajase võtmefaili paroolifraas",
   "tQuHhm": "Saatsite selle e-kirja",
-  "ZT0r/B": "{0} väidab, et see on õige"
+  "ZT0r/B": "{0} väidab, et see on õige",
+  "D3d9y2": "Sulge ja valikuliselt salvesta",
+  "SVKMDD": "Eksportida failina",
+  "+bs3UE": "Postkasti ei leitud",
+  "VAlOyH": "Uuenduse paigaldamine...",
+  "J+/IsA": "Salvestage see e-kiri oma arvutis asuvasse faili",
+  "JknIwf": "Kutsuge teisi inimesi"
 }

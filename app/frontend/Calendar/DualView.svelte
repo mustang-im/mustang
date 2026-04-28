@@ -1,5 +1,5 @@
 <SplitterBidirectional horizontal={$appGlobal.isSmall} initialSecondRatio={1} firstMinPx={200} secondMinPx={200}>
-  <WeekView bind:start={$selectedDate} {events} showDays={2} slot="first">
+  <WeekView bind:start={$selectedDate} {events} showDays={2} slot="first" enlargeSelectedDay={true}>
     <slot name="top-left" slot="top-left" />
   </WeekView>
   <MonthView {start} {events} showDays={35} slot="second">

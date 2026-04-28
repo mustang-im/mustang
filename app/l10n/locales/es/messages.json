@@ -46,7 +46,6 @@
   "M6xyI9": "Añadir una cuenta para videoconferencia",
   "sxkWRg": "Avanzado",
   "rhIUmV": "Mostrar después de # segundos",
-  "1kLn6M": "Todo el día",
   "+bHmdA": "Todo lo descargado.",
   "4xBHUg": "Respuesta",
   "bFDrW8": "Barra de la aplicacion",
@@ -229,7 +228,6 @@
   "ohUPGv": "Mover este correo electrónico a la carpeta de archivo",
   "W1Abqa": "Mover a carpeta {0}",
   "/5R4hg": "Mover a otra cuenta de correo",
-  "6vx0g5": "Varios días",
   "R7SsBE": "Silenciar",
   "hYDc6B": "El nombre no puede estar vacío",
   "s3RKlM": "Nombre de la agenda",
@@ -364,7 +362,6 @@
   "fx5vX/": "Sonido",
   "wdxz7K": "Fuente",
   "XgqUre": "Fuente no disponible",
-  "klTRd9": "Especifique la hora",
   "RfFYKi": "Favoritos",
   "x5G8x9": "Iniciar un chat privado con esta persona",
   "T1ySTP": "Iniciar conferencia",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Para cifrar este mensaje, añada certificados para los siguientes destinatarios",
   "GZISRB": "Frase de contraseña para el archivo de clave secreta",
   "tQuHhm": "Usted envió este correo electrónico",
-  "ZT0r/B": "{0} afirma que esto es correcto"
+  "ZT0r/B": "{0} afirma que esto es correcto",
+  "D3d9y2": "Cerrar y, opcionalmente, guardar",
+  "SVKMDD": "Exportar como archivo",
+  "+bs3UE": "Bandeja de entrada no encontrada",
+  "VAlOyH": "Instalando actualización...",
+  "J+/IsA": "Guarde este correo electrónico en un archivo de su ordenador",
+  "JknIwf": "Invitar a otras personas"
 }

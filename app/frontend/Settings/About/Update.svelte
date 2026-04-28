@@ -3,8 +3,12 @@
     <div class="status">{$t`Checking for updates…`}</div>
   {:then}
     {#if haveUpdate === true}
-      <div class="status">{$t`You can update`}</div>
-      <Button label={$t`Install update`} onClick={installUpdate} />
+      {#if installingUpdate}
+        <div class="status">{$t`Installing update...`}</div>
+      {:else}
+        <div class="status">{$t`You can update`}</div>
+        <Button label={$t`Install update`} onClick={installUpdate} />
+      {/if}
     {:else if haveUpdate === false}
       <div class="status">{$t`This is the latest version`}</div>
       <Button label={$t`Check for update`} onClick={checkForUpdate} errorCallback={showError} />
@@ -32,6 +36,7 @@
   import { t } from '../../../l10n/l10n';
 
   let haveUpdate = false;
+  let installingUpdate = false;
 
   /** @returns have update */
   async function checkForUpdate(): Promise<boolean> {
@@ -41,6 +46,7 @@
 
   async function installUpdate() {
     await appGlobal.remoteApp.installUpdate();
+    installingUpdate = true;
   }
 
   let errorEx: Error;

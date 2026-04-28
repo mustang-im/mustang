@@ -5,7 +5,7 @@
   </hbox>-->
   <hbox class="length">
     <hbox class="label">{$t`Duration`}</hbox>
-    <DurationSelector bind:duration={timePoll.duration} />
+    <DurationSelector bind:durationInSeconds={timePoll.duration} />
   </hbox>
   <Splitter initialRightRatio={0.3} leftMinWidth={600} rightMinWidth={300} name="meeting-time-poll-edit">
     <EditCalendar {options} duration={timePoll.duration} slot="left" />

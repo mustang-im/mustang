@@ -46,7 +46,6 @@
   "M6xyI9": "Tilføj videokonference",
   "sxkWRg": "Avanceret avanceret",
   "rhIUmV": "Efter visning i # sekunder",
-  "1kLn6M": "Hele dagen",
   "+bHmdA": "Alle downloadet.",
   "4xBHUg": "Svar",
   "bFDrW8": "Appbar",
@@ -229,7 +228,6 @@
   "ohUPGv": "Flytte denne e-mail til arkivmappen",
   "W1Abqa": "Flyt til mappe {0}",
   "/5R4hg": "Flyt til en anden mailkonto",
-  "6vx0g5": "Flere dage",
   "R7SsBE": "Lydløs",
   "hYDc6B": "Navn må ikke være tomt",
   "s3RKlM": "Adressebogens navn",
@@ -364,7 +362,6 @@
   "fx5vX/": "Lyd",
   "wdxz7K": "Kilde",
   "XgqUre": "Kilde ikke tilgængelig",
-  "klTRd9": "Angiv tid",
   "RfFYKi": "Stjernemarkerede",
   "x5G8x9": "Start en chat med kun denne person",
   "T1ySTP": "Start konference",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "For at kryptere denne besked skal du tilføje certifikater til følgende modtagere",
   "GZISRB": "Passphrase til hemmelig nøglefil",
   "tQuHhm": "Du har sendt denne e-mail",
-  "ZT0r/B": "{0} hævder, at dette er korrekt"
+  "ZT0r/B": "{0} hævder, at dette er korrekt",
+  "D3d9y2": "Luk og gem eventuelt",
+  "SVKMDD": "Eksporter som fil",
+  "+bs3UE": "Indbakke ikke fundet",
+  "VAlOyH": "Installation af opdatering...",
+  "J+/IsA": "Gem denne e-mail i en fil på din computer",
+  "JknIwf": "Inviter andre mennesker"
 }

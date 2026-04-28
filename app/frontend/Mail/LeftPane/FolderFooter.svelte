@@ -53,18 +53,15 @@
         placeholder={$t`Search only this folder`}
         showX={true}
         autofocus={true} />
-      <hbox flex />
-      {#if searchMessages && $searchMessages?.hasItems}
-        <hbox class="msg-count">
+      <hbox class="result-msg-count">
+        {#if searchMessages}
           {$searchMessages.length}
-        </hbox>
-      {/if}
-      <hbox flex />
+        {/if}
+      </hbox>
     {:else if !appGlobal.isMobile}
-      <hbox flex />
+      <hbox flex class="no-search" on:click={toggleShowSearchField} />
       <FolderMsgCount {folder} {searchMessages} />
     {/if}
-    <hbox flex />
   </hbox>
 {/if}
 
@@ -72,6 +69,7 @@
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
+  import { msgHasSearchTerm } from '../../../logic/Mail/Store/SearchEMail';
   import { appGlobal } from '../../../logic/app';
   import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
@@ -130,19 +128,12 @@
       searchMessages = null;
       return;
     }
+    let searchTerms = searchTerm ? searchTerm.split(" ").filter(Boolean) : [];
     searchMessages = folder.messages.filterOnce(msg =>
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
       (!isShowAttachments || msg.hasVisibleAttachments === true) &&
-      (!searchTerm || searchTerm.length > 1) &&
-      (!searchTerm ||
-        msg.subject?.toLowerCase().includes(searchTerm) ||
-        msg.contact?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
-        msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm) ||
-          to.emailAddress?.toLowerCase().includes(searchTerm)) ||
-        msg.text?.toLowerCase().includes(searchTerm))
+      (!searchTerms.length || searchTerms.every(term => msgHasSearchTerm(msg, term)))
     ) as ArrayColl<EMail>;
   }
 
@@ -176,7 +167,7 @@
   .folder-header {
     align-items: center;
     justify-content: center;
-    max-height: 20px;
+    max-height: 32px;
     padding-block-start: 2px;
     padding-block-end: 2px;
     padding-inline-start: 4px;
@@ -210,22 +201,28 @@
     stroke-width: 1.5px;
   }
   .folder-header :global(.search) {
-    height: 18px;
+    flex: 1 0 0;
+    height: 100%;
     margin-inline-start: 8px;
+    margin-inline-end: 8px;
   }
   .folder-header :global(input[type="search"]) {
-    height: 18px;
+    font-size: 15px;
   }
   :global(.mobile) .folder-header :global(.search),
   :global(.mobile) .folder-header :global(input[type="search"]) {
     height: 32px;
-    font-size: 16px;
   }
-  .msg-count {
+  .result-msg-count {
     align-items: center;
+    justify-content: end;
     padding-inline-start: 4px;
     padding-inline-end: 8px;
     opacity: 70%;
+    min-width: 1.5em;
+  }
+  .no-search {
+    height: 100%;
   }
   .attachment:not(.on) {
     opacity: 80%;

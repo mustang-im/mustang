@@ -122,7 +122,7 @@
   let showEncryptionOverride = false;
   let editor: Editor;
   let emailInput: HTMLInputElement;
-  $: $identity.emailAddress && checkInputField(() => sanitize.emailAddress($identity.emailAddress), emailInput);
+  $: $identity.emailAddress && checkInputField(() => sanitize.emailAddress($identity.emailAddress.replace("*", "any")), emailInput);
 
   function addEcryption() {
     showEncryptionOverride = true;

@@ -35,13 +35,6 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   async ping() {
     await this.listEvents();
   }
@@ -50,7 +43,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     return new ActiveSyncIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return Promise.all(participants.map(async participant => {
       let request = {
         To: participant.emailAddress,
@@ -63,7 +56,8 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       };
       let result = await this.account.callEAS("ResolveRecipients", request);
       if (result.Response.Status != "1") {
-        throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
+        //throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
+        return { participant };
       }
       let freebusy = sanitize.nonemptystring(result.Response.Recipient.Availability.MergedFreeBusy, "");
       let availability = freebusy.split("").map((c: string, i: number) => ({

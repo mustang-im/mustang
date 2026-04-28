@@ -108,21 +108,24 @@
   let yearWeekOptions: RadioOption[];
 
   $: startTime = $event.startTime.getTime();
+  $: timezone = $event.timezone;
   $: duration = $event.duration;
-  $: startTime, duration, updateDateUI();
+  $: startTime, timezone, duration, updateDateUI();
   function updateDateUI() {
     master.startEditing();
     master.startTime = event.startTime;
+    master.timezone = event.timezone;
     master.duration = event.duration;
     master.newRecurrenceRule(frequency, interval, week, weekdays);
+    let localStartTime = master.recurrenceRule.seriesStartTime;
     week = master.recurrenceRule.week;
-    weekdays = master.recurrenceRule.weekdays?.slice() ?? [$event.startTime.getDay()];
+    weekdays = master.recurrenceRule.weekdays?.slice() ?? [localStartTime.getUTCDay()];
 
-    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", month: "long" })}`, value: 0 }];
-    monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}. of every month`, value: 0 }];
+    yearWeekOptions = [{ label: $t`On ${localStartTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", month: "long", timeZone: "UTC" })}`, value: 0 }];
+    monthWeekOptions = [{ label: $t`On ${localStartTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", timeZone: "UTC" })}. of every month`, value: 0 }];
 
-    let weekday = event.startTime.toLocaleDateString(getDateTimeLocale(), { weekday: "long" });
-    let weekno = Math.ceil(event.startTime.getDate() / 7);
+    let weekday = localStartTime.toLocaleDateString(getDateTimeLocale(), { weekday: "long", timeZone: "UTC" });
+    let weekno = Math.ceil(localStartTime.getUTCDay() / 7);
     if (weekno < 5) {
       let weekname = [
         $t`first *=> as in: On the first Wednesday in July`,
@@ -130,19 +133,19 @@
         $t`third *=> as in: On the third Wednesday in July`,
         $t`fourth *=> as in: On the fourth Wednesday in July`,
       ][weekno - 1];
-      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeLocale(), { month: "long" })} *=> On the third Wednesday in September`, value: weekno });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${localStartTime.toLocaleDateString(getDateTimeLocale(), { month: "long", timeZone: "UTC" })} *=> On the third Wednesday in September`, value: weekno });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: weekno });
     }
 
-    if (isLastWeekOfMonth(event.startTime)) {
+    if (isLastWeekOfMonth(localStartTime)) {
       let weekname = $t`last *=> as in: On the last Wednesday in July`;
-      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getDateTimeLocale(), { month: "long" })} *=> On the third Wednesday in September`, value: 5 });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${localStartTime.toLocaleDateString(getDateTimeLocale(), { month: "long", timeZone: "UTC" })} *=> On the third Wednesday in September`, value: 5 });
       monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday} *=> On the third Wednesday of each month`, value: 5 });
     }
 
     weekdayOptions = kAllWeekdays.map(weekday => ({
       value: weekday,
-      disabled: weekday == event.startTime.getDay(),
+      disabled: weekday == localStartTime.getUTCDay(),
       label: weekdayLabel(weekday, "narrow"),
       tooltip: weekdayLabel(weekday, "long"),
     }));
@@ -158,8 +161,8 @@
 
   function isLastWeekOfMonth(date: Date) {
     date = new Date(date);
-    date.setDate(date.getDate() + 7);
-    return date.getDate() < 8;
+    date.setUTCDate(date.getUTCDate() + 7);
+    return date.getUTCDate() < 8;
   }
 
   function onDailyOptionChanged() {

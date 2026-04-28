@@ -58,7 +58,6 @@
   "rhIUmV": "Po # sekundah prikaza",
   "N40H+G": "Vse",
   "Mxjwaz": "Vsi računi",
-  "1kLn6M": "Ves dan",
   "+bHmdA": "Vse preneseno.",
   "dtwyLS": "Vsa sporočila",
   "4xBHUg": "Odgovor",
@@ -301,7 +300,6 @@
   "/5R4hg": "Premik v drug poštni račun",
   "S3wq2O": "Premik v delovni prostor",
   "2yMZTC": "premikanje, označevanje ali brisanje",
-  "6vx0g5": "Več dni",
   "R7SsBE": "Izklopite glasnost",
   "6YtxFj": "Ime",
   "hYDc6B": "Ime ne sme biti prazno",
@@ -492,7 +490,6 @@
   "XgqUre": "Vir ni na voljo",
   "t8dIOP": "Spam",
   "KFBiPv": "Mapa za nezaželeno pošto ni nastavljena. Pojdite v lastnosti mape in nastavite Uporabi kot: Spam.",
-  "klTRd9": "Določite čas",
   "LECpWm": "Preverjanje črkovanja",
   "RfFYKi": "Zvezda",
   "x5G8x9": "Začnite klepet samo s to osebo",
@@ -1075,5 +1072,11 @@
   "l7UKoO": "Če želite šifrirati to sporočilo, dodajte potrdila za naslednje prejemnike",
   "GZISRB": "Geslo za datoteko s tajnim ključem",
   "tQuHhm": "To e-poštno sporočilo ste poslali",
-  "ZT0r/B": "{0} trdi, da je to pravilno"
+  "ZT0r/B": "{0} trdi, da je to pravilno",
+  "D3d9y2": "Zapri in po želji shrani",
+  "SVKMDD": "Izvozi kot datoteko",
+  "+bs3UE": "Prejeto ni bilo najdeno",
+  "VAlOyH": "Namestitev posodobitve...",
+  "J+/IsA": "To e-poštno sporočilo shranite v datoteko v računalniku",
+  "JknIwf": "Povabite druge osebe"
 }

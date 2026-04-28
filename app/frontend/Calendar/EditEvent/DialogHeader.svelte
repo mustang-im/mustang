@@ -257,8 +257,8 @@
     }
     await saveEvent(master);
     master.finishEditing();
-    event.parentEvent.cancelEditing();
     event.cancelEditing();
+    event.parentEvent.cancelEditing();
     await event.truncateRecurrence();
     onClose();
   }
@@ -292,8 +292,8 @@
   }
 
   async function onDeleteRemainder() {
-    event.parentEvent.cancelEditing();
     event.cancelEditing();
+    event.parentEvent.cancelEditing();
     await event.truncateRecurrence();
     $selectedEvent = null;
     onClose();

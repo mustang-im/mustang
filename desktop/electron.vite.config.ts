@@ -5,6 +5,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import replace from '@rollup/plugin-replace';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { production, webMail, includeProprietary } from '../app/logic/build';
+import { defaultClientConditions } from 'vite';
 
 export default defineConfig({
   main: {
@@ -44,6 +45,10 @@ export default defineConfig({
         disable: !production,
       }),
     ],
+    resolve: {
+      // Explicitly set the resolve conditions for Vite 7+
+      conditions: [...defaultClientConditions],
+    },
     publicDir: '../../../app/public',
   }
 })
