@@ -13,7 +13,7 @@
 <style>
   .demo-bar {
     align-items: center;
-    background-color: #FFF160;
+    background: linear-gradient(to top, #FFF160 60%, transparent 95%) !important;
     color: #160C27;
     width: 18px;
     height: 100%;
