@@ -11,7 +11,7 @@ export class ActiveSyncGAL extends SearchOnlyAddressbook {
 
   constructor(account: ActiveSyncAccount) {
     super();
-    this.account = account;
+    this.mainAccount = this.account = account;
     this.errorCallback = account.errorCallback;
   }
 

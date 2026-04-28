@@ -10,7 +10,7 @@ export class EWSGAL extends SearchOnlyAddressbook {
 
   constructor(account: EWSAccount) {
     super();
-    this.account = account;
+    this.mainAccount = this.account = account;
     this.errorCallback = account.errorCallback;
   }
 

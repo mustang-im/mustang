@@ -227,6 +227,13 @@ export class OWAAccount extends MailAccount {
     }
   }
 
+  async disconnect() {
+    let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
+    if (galAB) {
+      appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
+  }
+
   needsLicense(): boolean {
     return true;
   }

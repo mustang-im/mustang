@@ -131,6 +131,11 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     } else {
       await this.unsubscribeAllSubscriptions();
     }
+
+    let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
+    if (galAB) {
+      appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
   }
 
   needsLicense(): boolean {
