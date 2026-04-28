@@ -9,8 +9,8 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { EWSError, EWSItemError } from "./EWSError";
-import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
@@ -30,10 +30,7 @@ import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json 
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-// <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da>
-const HiddenPidTag = "0x10F4";
-
-export class EWSAccount extends MailAccount {
+export class EWSAccount extends MailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
@@ -43,21 +40,21 @@ export class EWSAccount extends MailAccount {
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
-  // null: if this is our account
-  // msgfolderroot: if this is an account shared with us
-  // inbox: if this is an inbox shared with us
+  /** null: if this is our account
+   * msgfolderroot: if this is an account shared with us
+   * inbox: if this is an inbox shared with us */
   protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
-  // AbortControllers for all currently streaming notifications
-  protected notificationAbort = new Set<AbortController>();
-  // Subscription IDs for all subscribed notificaions
-  protected subscriptions: string[] = [];
-
-  constructor() {
-    super();
-  }
+  /** AbortController for streaming notifications */
+  protected notificationAbort: Record<string, AbortController> = {};
+  /** SubscriptionId for unsubscribing on disconnect */
+  subscriptionID?: string;
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
+  }
+
+  get folderID(): string {
+    return this.inbox.id;
   }
 
   get isLoggedIn(): boolean {
@@ -102,7 +99,6 @@ export class EWSAccount extends MailAccount {
     await this.loginRunOnce.runOnce(async () => {
       if (this.mainAccount) {
         await this.mainAccount.login(interactive);
-        await this.listFolders();
         return;
       }
       await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
@@ -116,45 +112,30 @@ export class EWSAccount extends MailAccount {
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
       await super.startup();
+      if (this.isDependentAccount) {
+        await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
+        return;
+      }
+      await this.startupDependentAccounts();
 
+      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-      // We can't use `startupDependentAccounts()` here, because we need to special-case
-      // notifications, which we only want to happen once the sync completes.
-      for (let dependent of this.dependentAccounts()) {
-        dependent.startup()
-          .then(() => {
-            // delegated account of another user
-            if (dependent.username != this.username &&
-              (dependent instanceof EWSAddressbook || dependent instanceof EWSCalendar)) {
-              this.streamNotifications(dependent.folderID);
-            }
-          })
-          .catch(dependent.errorCallback);
-      }
-
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
-      }
-
-      await this.streamNotifications();
+      await this.subscribeToNotifications();
     });
   }
 
-  async logout(): Promise<void> {
-    if (this.mainAccount) { // TODO Why?
-      await this.mainAccount.logout();
-      return;
-    }
-    await super.logout();
-  }
-
   async disconnect(): Promise<void> {
+    if (this.mainAccount) {
+      await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
+    } else {
+      await this.unsubscribeAllSubscriptions();
+    }
+
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
     }
-    await this.unsubscribeAllNotifications();
   }
 
   needsLicense(): boolean {
@@ -410,9 +391,8 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  async callStream(request: Json, responseCallback: (message: Record<string, any>) => Promise<void>) {
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>) {
     let lastAttempt: number;
-    let abort = new AbortController();
     let signal = abort.signal;
     do {
       try {
@@ -429,7 +409,6 @@ export class EWSAccount extends MailAccount {
           console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
-        this.notificationAbort.add(abort);
         for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
           data += chunk;
           while (data.includes(endEnvelope)) {
@@ -459,6 +438,11 @@ export class EWSAccount extends MailAccount {
           }
         }
       } catch (ex) {
+        if (signal.aborted) {
+          // Log only for development purposes.
+          console.log(signal.reason);
+          break;
+        }
         if (ex?.message == "terminated") {
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
@@ -466,23 +450,18 @@ export class EWSAccount extends MailAccount {
         }
         this.errorCallback(ex);
         break;
-      } finally {
-        this.notificationAbort.delete(abort);
       }
     } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
-  async unsubscribeAllNotifications() {
-    for (let abort of this.notificationAbort) {
-      abort.abort();
+  async unsubscribeAllSubscriptions() {
+    for (let emailAddress in this.notificationAbort) {
+      this.notificationAbort[emailAddress].abort("Disconnect requested");
     }
-    this.notificationAbort.clear();
-    if (!this.subscriptions.length) {
-      return;
-    }
+    this.notificationAbort = {};
     let unsubscribe = {
       m$Unsubscribe: {
-        m$SubscriptionId: this.subscriptions,
+        m$SubscriptionId: [this, ...this.dependentAccounts()].map(account => (account as EWSSubscribable).subscriptionID).filter(Boolean),
       },
     };
     try {
@@ -490,32 +469,32 @@ export class EWSAccount extends MailAccount {
     } catch (ex) {
       this.errorCallback(ex);
     }
-    this.subscriptions.length = 0;
+    this.subscriptionID = undefined;
+    for (let account of this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)) {
+      account.subscriptionID = undefined;
+    }
   }
 
-  async streamNotifications(folderID?: string) {
-    let subscribe = folderID
-    ? {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$FolderIds: {
-            t$FolderId: {
-              Id: folderID,
-            },
-          },
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-            ],
-          },
-        },
-      },
+  async unsubscribeNotifications(account: EWSSubscribable) {
+    if (!account.subscriptionID) {
+      return;
     }
-    : {
+    try {
+      let unsubscribe = {
+        m$Unsubscribe: {
+          m$SubscriptionId: account.subscriptionID,
+        },
+      };
+      await this.callEWS(unsubscribe);
+      account.subscriptionID = undefined;
+      await this.streamNotifications(account.username);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
+
+  async subscribeToNotifications() {
+    let subscribe = {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
           t$EventTypes: {
@@ -533,11 +512,53 @@ export class EWSAccount extends MailAccount {
       },
     };
     let response = await this.callEWS(subscribe);
-    this.subscriptions.push(sanitize.nonemptystring(response.SubscriptionId));
+    assert(!this.subscriptionID, "stream notification started twice");
+    this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+    await this.streamNotifications();
+  }
+
+  async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
+    let subscribe = {
+      m$Subscribe: {
+        m$StreamingSubscriptionRequest: {
+          t$FolderIds: {
+            t$FolderId: {
+              Id: account.folderID,
+            },
+          },
+          t$EventTypes: {
+            t$EventType: [
+              "CopiedEvent",
+              "CreatedEvent",
+              "DeletedEvent",
+              "ModifiedEvent",
+              "MovedEvent",
+            ],
+          },
+        },
+      },
+    };
+    let response = await this.callEWS(subscribe);
+    assert(!account.subscriptionID, "stream notification started twice");
+    account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+    await this.streamNotifications(account.username);
+  }
+
+  async streamNotifications(username = "") {
+    this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
+    this.notificationAbort[username] = new AbortController();
+    let subscriptions = username
+      ? this.dependentAccounts().contents.filter(
+          (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
+        ).map(account => account.subscriptionID)
+      : [this.subscriptionID];
+    if (!subscriptions.length) {
+      return;
+    }
     let streamRequest = {
       m$GetStreamingEvents: {
         m$SubscriptionIds: {
-          t$SubscriptionId: response.SubscriptionId,
+          t$SubscriptionId: subscriptions,
         },
         // Maximum number of minutes to keep a stream open.
         // In minutes, between 1 and 30, inclusive.
@@ -545,7 +566,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     // Now, connect and wait for the notifications. Runs 29 minutes long, so don't `await` it.
-    this.callStream(streamRequest, async message => {
+    this.callStream(streamRequest, this.notificationAbort[username], async message => {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
@@ -953,7 +974,7 @@ export class EWSAccount extends MailAccount {
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.listFolders();
+    await account.startup();
     return account;
   }
 
@@ -984,8 +1005,7 @@ export class EWSAccount extends MailAccount {
     addressbook.username = person.emailAddress;
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.addressbooks.add(addressbook);
-    await addressbook.listContacts();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await addressbook.startup();
     return addressbook;
   }
 
@@ -1016,8 +1036,7 @@ export class EWSAccount extends MailAccount {
     calendar.username = person.emailAddress;
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.calendars.add(calendar);
-    await calendar.listEvents();
-    await this.streamNotifications(sanitize.nonemptystring(folder.FolderId.Id));
+    await calendar.startup();
     return calendar;
   }
 
@@ -1056,7 +1075,17 @@ export class EWSAccount extends MailAccount {
   }
 }
 
+export interface EWSSubscribable extends Account {
+  /** FolderId to subscribe to */
+  readonly folderID: string;
+  /** SubscriptionId for unsubscribing on disconnect */
+  subscriptionID?: string;
+}
+
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
+
+/** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
+const HiddenPidTag = "0x10F4";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {

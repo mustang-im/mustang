@@ -26,6 +26,7 @@ jobs:
       with:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 24.x
+    - run: sudo apt-get -y install libarchive-tools
 
     - run: cd app/build; bash fix-installer-filenames.sh
     - run: cd app/build; bash parula-brand.sh
@@ -52,3 +53,4 @@ jobs:
           desktop/dist/*.AppImage
           desktop/dist/*.flatpak
           desktop/dist/*.snap
+          desktop/dist/*.pacman

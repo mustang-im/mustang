@@ -15,11 +15,9 @@
   {/if}
   <hbox flex>
     {#if !appGlobal.isMobile}
-      <DemoBarLeft />
       <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     {/if}
     <vbox flex>
-      <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
         <Router primary={false} {history}>
@@ -75,8 +73,6 @@
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
-  import DemoBarLeft from "./DemoBarLeft.svelte";
-  import DemoBarTop from "./DemoBarTop.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { getUILocale, t } from "../../l10n/l10n";

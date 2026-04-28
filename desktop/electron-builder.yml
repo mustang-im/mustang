@@ -43,6 +43,7 @@ linux:
     - AppImage
     # - snap
     - deb
+    - pacman
     - rpm
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
@@ -54,6 +55,22 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 deb:
   packageName: mustang-mail
+pacman:
+  depends:
+    # Only way to remove http-parser (unnecessary and non-existing). electron-builder bug <https://github.com/electron-userland/electron-builder/issues/9429>
+    - c-ares
+    - ffmpeg
+    - gtk3
+    - libevent
+    - libvpx
+    - libxslt
+    - libxss
+    - minizip
+    - nss
+    - re2
+    - snappy
+    - libnotify
+    - libappindicator-gtk3
 protocols:
   name: Send mail
   schemes:

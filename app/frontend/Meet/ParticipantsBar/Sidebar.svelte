@@ -34,6 +34,11 @@
     color: white;
     box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 46%);
   }
+  /** Override Contacts/Person/PersonsList.svelte */
+  .participants-sidebar :global(.row.odd:not(.selected):not(:hover) hbox.person) {
+    background-color: inherit; /*#403c4d;*/
+    color: inherit;
+  }
   .participants-header {
     align-items: center;
     margin-block-start: 12px;

@@ -2,14 +2,14 @@ import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addres
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
-import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export class EWSAddressbook extends Addressbook {
+export class EWSAddressbook extends Addressbook implements EWSSubscribable {
   readonly protocol: string = "addressbook-ews";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
@@ -30,6 +30,17 @@ export class EWSAddressbook extends Addressbook {
 
   get isLoggedIn(): boolean {
     return this.account.isLoggedIn;
+  }
+
+  async disconnect(): Promise<void> {
+    await this.account.unsubscribeNotifications(this);
+  }
+
+  async startup(): Promise<void> {
+    await super.startup();
+    if (this.username != this.account.username) {
+      await this.account.subscribeToNotificationsForSubaccount(this);
+    }
   }
 
   async listContacts() {
