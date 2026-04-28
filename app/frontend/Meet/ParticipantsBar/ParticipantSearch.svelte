@@ -3,7 +3,7 @@
   <PersonAutocomplete
     bind:typedText={searchText}
     placeholder={$t`Add or search a participant`}
-    on:addPerson={event => catchErrors(() => addPerson(event.detail), showError)}
+    onAddPerson={person => catchErrors(() => addPerson(person), showError)}
     autofocus={false}
     />
   <hbox class="buttons">
