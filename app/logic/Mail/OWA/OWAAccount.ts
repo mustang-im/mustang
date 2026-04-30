@@ -317,7 +317,7 @@ export class OWAAccount extends MailAccount {
         },
       });
       if (this.authorizationHeader) {
-        await this.callOWA(request, { attachment });
+        await this.callOWAWithOffice365Attachment(request, attachment);
       } else {
         request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
         await this.callOWA(request);
@@ -338,22 +338,12 @@ export class OWAAccount extends MailAccount {
     }));
   }
 
-  /**
-   * Calls the main OWA service with the given request.
-   * When `attachment` is provided, calls the Office365
-   * CreateAttachmentFromLocalFile API service instead.
-   */
-  async callOWA(aRequest: any, { mailbox = null, attachment = null }: { mailbox?: string, attachment?: Attachment } = {}): Promise<any> {
+  async callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment, mailbox?: string) {
     if (this.mainAccount) {
       let mainAccount = this.mainAccount as OWAAccount;
-      return await mainAccount.callOWA(aRequest, { mailbox: this.username, attachment });
+      return await mainAccount.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
     }
-    if (!this.hasLoggedIn) {
-      throw new LoginError(null, gt`Please login`);
-    }
-    let url = this.url + (attachment ? "service.svc/CreateAttachmentFromLocalFile" : "service.svc");
-    let options = attachment
-    ? {
+    return await this.callOWAShared(this.url + "service.svc/CreateAttachmentFromLocalFile", {
       // n.b. use `await attachment.content.arrayBuffer` if you want to inspect
       body: attachment.content,
       headers: {
@@ -365,8 +355,15 @@ export class OWAAccount extends MailAccount {
         "x-owa-urlpostdata": encodeURIComponent(JSON.stringify(aRequest)),
       },
       method: "POST",
+    });
+  }
+
+  async callOWA(aRequest: any, mailbox?: string): Promise<any> {
+    if (this.mainAccount) {
+      let mainAccount = this.mainAccount as OWAAccount;
+      return await mainAccount.callOWA(aRequest, this.username);
     }
-    : {
+    return await this.callOWAShared(this.url + "service.svc", {
       body: JSON.stringify(aRequest),
       headers: {
         Action: aRequest.action,
@@ -377,7 +374,13 @@ export class OWAAccount extends MailAccount {
         "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
       },
       method: "POST",
-    };
+    });
+  }
+
+  async callOWAShared(url: string, options: RequestInit) {
+    if (!this.hasLoggedIn) {
+      throw new LoginError(null, gt`Please login`);
+    }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -424,7 +427,7 @@ export class OWAAccount extends MailAccount {
       result = result.ResponseMessages.Items[0];
     }
     if (this.isThrottleError(result)) {
-      return await this.callOWA(aRequest, { mailbox, attachment });
+      return await this.callOWAShared(url, options);
     }
     if (result.MessageText) {
       this.throttle.waitForSecond(1);
