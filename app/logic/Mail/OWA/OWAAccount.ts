@@ -15,14 +15,16 @@ import { OWAGAL } from "../../Contacts/OWA/OWAGAL";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
+import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
+import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
-import { ContentDisposition } from "../../Abstract/Attachment";
+import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
@@ -268,15 +270,8 @@ export class OWAAccount extends MailAccount {
         Value: email.html || email.text,
       }, "item:Body");
       if (email.attachments.hasItems) {
-        request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
-          __type: "FileAttachment:#Exchange",
-          Name: attachment.filename,
-          ContentType: attachment.mimeType,
-          ContentID: attachment.contentID,
-          Size: attachment.size,
-          IsInline: attachment.disposition == ContentDisposition.inline,
-          Content: await blobToBase64(attachment.content),
-        }))), "item:Attachments");
+        delete request.Body.SavedItemFolderId;
+        request.Body.MessageDisposition = "SaveOnly";
       }
       if (email.headers.hasItems) {
         request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
@@ -299,19 +294,76 @@ export class OWAAccount extends MailAccount {
     }
     addRecipients(request, "BccRecipients", email.bcc.contents);
     request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
-    await this.callOWA(request);
+    let response = await this.callOWA(request);
+    if (request.Body.MessageDisposition == "SendAndSaveCopy") {
+      return;
+    }
+    let itemID = response.Items[0].ItemId.Id;
+    for (let attachment of email.attachments) {
+      let request = new OWARequest("CreateAttachment", {
+        __type: "CreateAttachmentRequest:#Exchange",
+        Attachments: [{
+          __type: "FileAttachment:#Exchange",
+          Name: attachment.filename,
+          ContentType: attachment.mimeType,
+          ContentId: attachment.contentID,
+          Size: attachment.size,
+          IsInline: attachment.disposition == ContentDisposition.inline,
+          Content: "",
+        }],
+        ParentItemId: {
+          __type: "ItemId:#Exchange",
+          Id: itemID,
+        },
+      });
+      if (this.authorizationHeader) {
+        await this.callOWAWithOffice365Attachment(request, attachment);
+      } else {
+        request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
+        await this.callOWA(request);
+      }
+    }
+    await this.callOWA(new OWAUpdateItemRequest(itemID, {
+      ComposeOperation: "newMail",
+      SavedItemFolderId: {
+        __type: "TargetFolderId:#Exchange",
+        BaseFolderId: {
+          __type: "FolderId:#Exchange",
+          Id: folder.id,
+        }
+      },
+      MessageDisposition: "SendAndSaveCopy",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: false
+    }));
   }
 
-  async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
+  async callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment, mailbox?: string) {
     if (this.mainAccount) {
       let mainAccount = this.mainAccount as OWAAccount;
-      return await mainAccount.callOWA(aRequest, { mailbox: this.username });
+      return await mainAccount.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
     }
-    if (!this.hasLoggedIn) {
-      throw new LoginError(null, gt`Please login`);
+    return await this.callOWAShared(this.url + "service.svc/CreateAttachmentFromLocalFile", {
+      // n.b. use `await attachment.content.arrayBuffer` if you want to inspect
+      body: attachment.content,
+      headers: {
+        Action: "CreateAttachmentFromLocalFile",
+        Authorization: this.authorizationHeader,
+        "x-anchormailbox": mailbox ?? this.emailAddress,
+        "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
+        "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
+        "x-owa-urlpostdata": encodeURIComponent(JSON.stringify(aRequest)),
+      },
+      method: "POST",
+    });
+  }
+
+  async callOWA(aRequest: any, mailbox?: string): Promise<any> {
+    if (this.mainAccount) {
+      let mainAccount = this.mainAccount as OWAAccount;
+      return await mainAccount.callOWA(aRequest, this.username);
     }
-    let url = this.url + 'service.svc';
-    let options = {
+    return await this.callOWAShared(this.url + "service.svc", {
       body: JSON.stringify(aRequest),
       headers: {
         Action: aRequest.action,
@@ -322,7 +374,13 @@ export class OWAAccount extends MailAccount {
         "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
       },
       method: "POST",
-    };
+    });
+  }
+
+  async callOWAShared(url: string, options: RequestInit) {
+    if (!this.hasLoggedIn) {
+      throw new LoginError(null, gt`Please login`);
+    }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -369,7 +427,7 @@ export class OWAAccount extends MailAccount {
       result = result.ResponseMessages.Items[0];
     }
     if (this.isThrottleError(result)) {
-      return await this.callOWA(aRequest);
+      return await this.callOWAShared(url, options);
     }
     if (result.MessageText) {
       this.throttle.waitForSecond(1);
