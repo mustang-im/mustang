@@ -50,8 +50,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    // return !!this.connectionMain?.authenticated; TODO authenticated is always false
-    return !!this.connections.get(ConnectionPurpose.Main) || this.oAuth2?.isLoggedIn;
+    return !!this.connections.get(ConnectionPurpose.Main)?.authenticated;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -258,6 +257,9 @@ export class IMAPAccount extends MailAccount {
   }
 
   async hasCapability(capa: string): Promise<boolean> {
+    if (!this.isLoggedIn) {
+      throw new LoginError(null, gt`Please login`);
+    }
     let conn = await this.connection();
     // conn.capabilities was automatically updated via `getNamespaces`
     return await conn.capabilities.has(capa);
