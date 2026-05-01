@@ -66,7 +66,6 @@ export class IMAPAccount extends MailAccount {
   }
 
   async startup() {
-    this.namespaces = await this.getNamespaces();
     await super.startup();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
@@ -157,6 +156,8 @@ export class IMAPAccount extends MailAccount {
       this.connections.set(purpose, connection);
       this.connectionLock.set(connection, new Lock());
       if (purpose == ConnectionPurpose.Main) {
+        // Get namespaces and refresh connection early to avoid race condition.
+        this.namespaces = await this.getNamespaces();
         this.notifyObservers();
       }
       this.log(null, connection, "connected");
