@@ -295,10 +295,12 @@ export class OWAAccount extends MailAccount {
     addRecipients(request, "BccRecipients", email.bcc.contents);
     request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
     let response = await this.callOWA(request);
-    if (request.Body.MessageDisposition == "SendAndSaveCopy") {
-      return;
+    if (request.Body.MessageDisposition == "SaveOnly") {
+      await this.addAttachmentsAndSend(email, folder, response.Items[0].ItemId.Id);
     }
-    let itemID = response.Items[0].ItemId.Id;
+  }
+
+  async addAttachmentsAndSend(email: EMail, folder: OWAFolder, itemID: string): Promise<void> {
     for (let attachment of email.attachments) {
       let request = new OWARequest("CreateAttachment", {
         __type: "CreateAttachmentRequest:#Exchange",
