@@ -22,19 +22,25 @@
       {#if appGlobal.isMobile}
         <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
-            <vbox flex class="sidebar" slot="top">
-              <svelte:component this={sidebar} />
-            </vbox>
-            <AppContentRoutes slot="bottom" />
+            <ErrorBoundary>
+              <vbox flex class="sidebar" slot="top">
+                <svelte:component this={sidebar} />
+              </vbox>
+              <AppContentRoutes slot="bottom" />
+            </ErrorBoundary>
           </SplitterHorizontal>
           <NavigationM />
         </Router>
       {:else if $selectedApp}
         <Router primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
-            <AppContentRoutes slot="left"/>
+            <ErrorBoundary slot="left">
+              <AppContentRoutes />
+            </ErrorBoundary>
             <vbox flex class="sidebar" slot="right">
-              <svelte:component this={sidebar} />
+              <ErrorBoundary>
+                <svelte:component this={sidebar} />
+              </ErrorBoundary>
             </vbox>
           </Splitter>
         </Router>
@@ -68,11 +74,12 @@
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
   import NavigationM from "./NavigationM.svelte";
-  import Splitter from "../Shared/Splitter.svelte";
-  import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
+  import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
+  import ErrorBoundary from "../Shared/ErrorBoundary.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { getUILocale, t } from "../../l10n/l10n";
