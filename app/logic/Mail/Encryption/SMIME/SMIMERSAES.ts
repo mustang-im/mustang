@@ -143,7 +143,7 @@ function Uint8ArrayFromHex(hex: string): Uint8Array {
   return Uint8Array.fromHex?.(hex) ?? Uint8Array.from(hex.match(/../g), s => parseInt(s, 16));
 }
 
-function Uint8ArrayToHex(data: Uint8Array): string {
+export function Uint8ArrayToHex(data: Uint8Array): string {
   return data.toHex?.() ?? Array.from(data, n => n.toString(16).padStart(2, "0")).join("");
 }
 

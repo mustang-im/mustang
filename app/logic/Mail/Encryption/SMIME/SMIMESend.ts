@@ -55,7 +55,7 @@ export class SMIMESend {
       };
       let rawKey = await privateKey.decryptKey();
       let signature = decrypt(padFF(DigestInfo.encode(digestInfo), rawKey), rawKey);
-      let myCertificate = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE"});
+      let myCertificate = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
       let signerInfo = {
         version: 1n,
         sid: {
@@ -94,28 +94,6 @@ export class SMIMESend {
       for (let cert of privateKey.chain) {
         signedData.content.certificates.push(Certificate.decodePEM(cert.certificate, { label: "CERTIFICATE" }));
       }
-      /*
-      let forge = await import("node-forge");
-      let pkcs7 = forge.pkcs7.createSignedData();
-      pkcs7.content = forge.util.createBuffer(mimeAsText, "utf8");
-      pkcs7.addCertificate(privateKey.certificate);
-      for (let key of privateKey.chain) {
-        pkcs7.addCertificate(key.certificate);
-      }
-      pkcs7.addSigner({
-        key: await privateKey.decryptKey(),
-        certificate: privateKey.certificate,
-        digestAlgorithm: forge.pki.oids.sha256,
-        authenticatedAttributes: [
-          { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
-          { type: forge.pki.oids.messageDigest },
-          { type: forge.pki.oids.signingTime },
-        ],
-      });
-      pkcs7.sign({ detached: true });
-      let asn1 = pkcs7.toAsn1();
-      let der = forge.asn1.toDer(asn1);
-      */
       let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
       mimeAsText = [
         `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha256; boundary="${boundary}"`,

@@ -143,6 +143,53 @@
             {/each}
           </vbox>
         </hbox>
+        {#if chain}
+          <vbox>
+            {#await keyStatusAsync then keyStatus}
+              {#if keyStatus == KeyStatus.NoCertificate}
+                <hbox>
+                  <Button
+                    label={$t`Please add this private key's certificate.`}
+                    onClick={onAddCertificateSMIME}
+                    />
+                </hbox>
+              {:else if keyStatus == KeyStatus.ChainInvalid}
+                <hbox>{$t`The certificate chain could not be verified.`}</hbox>
+              {:else if keyStatus == KeyStatus.ChainIncomplete}
+                <hbox>
+                  <Button
+                    label={$t`Please add the intermediate certificate.`}
+                    onClick={onAddCertificateSMIME}
+                    />
+                </hbox>
+              {:else if keyStatus == KeyStatus.SelfSignedRoot}
+                <hbox>{$t`WARNING This private key uses a self-signed root certificate.`}</hbox>
+              {:else if keyStatus == KeyStatus.Valid}
+                <hbox>{$t`This private key has a valid certificate.`}</hbox>
+              {:else}
+                <hbox>Unexpected private key status</hbox>
+              {/if}
+            {:catch error}
+              <hbox>Something went wrong: {error.message}</hbox>
+            {/await}
+            <hbox class="label">{$t`Certificate chain *=> Any additional certificates that might be required to authenticate this key`}</hbox>
+            {#each $chain.each as certificate}
+              <hbox>
+                <hbox class="label">{$t`Common Name`}</hbox>
+                <hbox class="value" flex>{certificate.commonName}</hbox>
+                <RoundButton
+                  label={$t`Delete`}
+                  icon={DeleteIcon}
+                  onClick={() => onRemoveFromChain(certificate)}
+                  />
+              </hbox>
+              <hbox class="fingerprint" class:obsolete={certificate.obsolete}>
+                <hbox class="label">{$t`Fingerprint`}</hbox>
+                <pre wrap class="value">{certificate.fingerprintDisplay}</pre>
+              </hbox>
+            {/each}
+          </vbox>
+        {/if}
         <hbox>
           <hbox class="label" />
           <hbox class="buttons">
@@ -163,12 +210,16 @@
   {/if}
 </vbox>
 
+<FileSelector {acceptFileTypes} bind:this={fileSelector} />
+
 <script lang="ts">
   import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { SMIMEPublicKey, KeyStatus } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
+  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import IdentitySelector from "../../Mail/Composer/IdentitySelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -200,6 +251,9 @@
   $: myPrivateKey = myIdentity ? getMyPrivateKey(myIdentity) : null;
   $: personName = person?.name ?? personUID?.name ?? $t`this person`;
 
+  $: chain = key instanceof SMIMEPublicKey ? key.chain : null;
+  $: keyStatusAsync = key instanceof SMIMEPublicKey ? key.keyStatus() : null;
+
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());
   }
@@ -216,6 +270,23 @@
       return;
     }
     person.encryptionPublicKeys.remove(key);
+    await person.save();
+  }
+  let fileSelector: FileSelector;
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
+  async function onAddCertificateSMIME() {
+    let file = await fileSelector.selectFile();
+    if (!file) {
+      return;
+    }
+    let fileContent = await file.text();
+    await (key as SMIMEPublicKey).addCertificate(fileContent);
+    keyStatusAsync = key.keyStatus();
+    await person.save();
+  }
+  async function onRemoveFromChain(certificate) {
+    key.chain.remove(certificate);
+    keyStatusAsync = key.keyStatus();
     await person.save();
   }
 </script>

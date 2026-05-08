@@ -100,7 +100,7 @@ export class PublicKey extends Observable {
     json.name = this.name;
     json.id = this.id;
     json.fingerprint = this.fingerprint;
-    json.created = this.created?.toISOString();
+    json.created = this.created.toISOString();
     json.expires = this.expires?.toISOString();
     json.cipher = this.cipher;
     json.keyLengthInBits = this.keyLengthInBits;
@@ -117,8 +117,8 @@ export class PublicKey extends Observable {
     this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
     this.id = sanitize.alphanumdash(json.id);
     this.name = sanitize.label(json.name, this.id.substring(0, 4));
-    this.fingerprint = sanitize.alphanumdash(json.fingerprint, "");
-    this.created = sanitize.date(json.created, null);
+    this.fingerprint = sanitize.alphanumdash(json.fingerprint);
+    this.created = sanitize.date(json.created);
     this.expires = sanitize.date(json.expires, null);
     this.cipher = sanitize.nonemptylabel(json.cipher, null);
     this.keyLengthInBits = sanitize.integer(json.keyLengthInBits, null);
@@ -151,6 +151,8 @@ export enum TrustLevel {
    * E.g. S/MIME CAs, my company, PGP key servers
    */
   ThirdParty = "third-party",
+  /** The user's local operating system has confirmed this certificate. */
+  OS = "operating-system",
   /** A person that we talk with has sent us this certificate via
    * untrusted channels. */
   Sender = "sender",
@@ -161,6 +163,7 @@ export enum TrustLevel {
 const kTrustOrder = [
   TrustLevel.Distrusted,
   TrustLevel.Sender,
+  TrustLevel.OS,
   TrustLevel.ThirdParty,
   TrustLevel.Personal,
 ];
@@ -172,6 +175,7 @@ export function trustOrder(trustLevel: TrustLevel): number {
 export const trustColor = {
   [TrustLevel.Personal]: "green",
   [TrustLevel.ThirdParty]: "blue",
+  [TrustLevel.OS]: "orange",
   [TrustLevel.Sender]: "yellow",
   [TrustLevel.Distrusted]: "red",
 }
@@ -179,6 +183,7 @@ export const trustColor = {
 export const trustColorFG = {
   [TrustLevel.Personal]: "white",
   [TrustLevel.ThirdParty]: "white",
+  [TrustLevel.OS]: "black",
   [TrustLevel.Sender]: "black",
   [TrustLevel.Distrusted]: "white",
 }

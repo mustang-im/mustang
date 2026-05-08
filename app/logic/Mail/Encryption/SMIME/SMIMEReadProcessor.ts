@@ -2,7 +2,7 @@ import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo } from "./SMIMEASN1";
+import { DigestAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt } from "./SMIMERSAES";
 import { parseMIMEDirectSubparts } from "../MIME";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -90,7 +90,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
           console.log("signature was not signed with RSA");
           return;
         }
-        let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, { sha1: "SHA-1", sha256: "SHA-256", sha384: "SHA-384", sha512: "SHA-512" });
+        let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
         let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, new TextEncoder().encode(clearText)));
         let digestAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "messageDigest");
         if (!digestAttribute) {
@@ -103,7 +103,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
         }
         let signedAttrs = Attributes.encode(signerInfo.signedAttrs);
         let attributesDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, signedAttrs));
-        /* This doesn't work fsr
+        /* `await crypto.subtle.verify()` returns `false` on
+         * correctly signed messages...
         let key = await crypto.subtle.importKey("spki", SubjectPublicKeyInfo.encode(publicKey), { name: "RSASSA-PKCS1-v1_5", hash: digestAlgorithm }, false, ["verify"]);
         if (await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signerInfo.encryptedDigest, attributesDigest)) {
           let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);

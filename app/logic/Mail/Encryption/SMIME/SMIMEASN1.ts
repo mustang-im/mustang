@@ -3,10 +3,13 @@ import { define } from "../../../../../lib/asn1/api";
 /** Object identifiers */
 const oids = {
   "1.2.840.113549.1.1.1": "rsaEncryption",
+  "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
   "1.2.840.113549.1.1.7": "rsaESOAEP",
   "1.2.840.113549.1.1.8": "mgf1",
   "1.2.840.113549.1.1.9": "pSpecified",
   "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
+  "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
+  "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
   "1.2.840.113549.1.5.12": "pkcs5PBKDF2",
   "1.2.840.113549.1.5.13": "pkcs5PBES2",
   "1.2.840.113549.1.7.1": "data",
@@ -44,6 +47,37 @@ const oids = {
   "2.16.840.1.101.3.4.2.3": "sha512",
 };
 
+type WebCryptoAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
+
+/** Converts a digest (hashing) algorithm name to WebCrypto. */
+export const DigestAlgorithm: Record<string, WebCryptoAlgorithm> = {
+  sha1: "SHA-1",
+  sha256: "SHA-256",
+  sha384: "SHA-384",
+  sha512: "SHA-512",
+};
+
+/** Extracts the WebCrypto hash algorithm used by a signature algorithm. */
+export const SignatureAlgorithm: Record<string, WebCryptoAlgorithm> = {
+  sha1WithRSAEncryption: "SHA-1",
+  sha256WithRSAEncryption: "SHA-256",
+  sha384WithRSAEncryption: "SHA-384",
+  sha512WithRSAEncryption: "SHA-512",
+}
+
+/** Extracts the WebCrypto hash algorithm used by a key derivation algorithm. */
+export const KeyDerivationAlgorithm: Record<string, WebCryptoAlgorithm> = {
+  hmacWithSHA1: "SHA-1",
+  hmacWithSHA256: "SHA-256",
+  hmacWithSHA384: "SHA-384",
+  hmacWithSHA512: "SHA-512",
+}
+
+export interface BitString {
+  unused: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  data: Uint8Array;
+}
+
 export const Null = define<void>("Null", function() {
   this.null();
 });
@@ -61,7 +95,11 @@ export const GeneralTime = define<number>("GeneralTime", function() {
 });
 
 /** An algorithm */
-export const AlgorithmIdentifier = define("AlgorithmIdentifier", function() {
+export interface AlgorithmIdentifier {
+  algorithm: string | number[];
+  parameters: Uint8Array;
+}
+export const AlgorithmIdentifier = define<AlgorithmIdentifier>("AlgorithmIdentifier", function() {
   this.seq().obj(
     this.key("algorithm").objid(oids),
     this.key("parameters").optional().any(),
@@ -75,7 +113,14 @@ export const AlgorithmIdentifier = define("AlgorithmIdentifier", function() {
  * The spec only mentions some of the string types,
  * but I've seen other ones in real certificates.
  */
-const AttributeValue = define("AttributeValue", function() {
+interface AttributeValue {
+  type: string | number[],
+  value: {
+    type: "utf8str" | "numstr" | "printstr" | "t61str" | "ia5str" | "visstr" | "unistr" | "bmpstr";
+    value: string;
+  }
+}
+const AttributeValue = define<AttributeValue>("AttributeValue", function() {
   this.set().obj(
     this.seq(
       this.key("type").objid(oids),
@@ -84,7 +129,15 @@ const AttributeValue = define("AttributeValue", function() {
   );
 });
 
-export const SubjectPublicKeyInfo = define("SubjectPublicKeyInfo", function() {
+export const RDNSequence = define<AttributeValue[]>("RDNSequence", function() {
+  this.seqof(AttributeValue);
+});
+
+export interface SubjectPublicKeyInfo {
+  algorithmIdenfitier: AlgorithmIdentifier;
+  subjectPublicKey: BitString;
+}
+export const SubjectPublicKeyInfo = define<SubjectPublicKeyInfo>("SubjectPublicKeyInfo", function() {
   this.seq().obj(
     this.key("algorithmIdentifier").use(AlgorithmIdentifier),
     /* When decoding, we could use .contains(RSAPublicKey) to
@@ -107,8 +160,13 @@ export const RSAPublicKey = define<RSAPublicKey>("RSAPublicKey", function() {
   );
 });
 
-/* A certificate extension */
-const Extension = define("Extension", function() {
+/** A certificate extension */
+interface Extension {
+  extnID: string | number[],
+  critical?: boolean,
+  extnValue: Uint8Array,
+}
+const Extension = define<Extension>("Extension", function() {
   this.seq().obj(
     this.key("extnID").objid(oids),
     this.key("critical").optional().bool(),
@@ -131,30 +189,52 @@ export const SubjectAlternativeName = define("SubjectAlternativeName", function(
   this.seqof(GeneralName);
 });
 
-/* An X.509 certificate */
-export const Certificate = define("Certificate", function() {
+/** The part of a certificate that is (to be) signed */
+export interface TBSCertificate {
+  version?: bigint,
+  serialNumber: bigint,
+  signature: AlgorithmIdentifier,
+  issuer: AttributeValue[],
+  validity: Record<"notBefore" | "notAfter", { type: "utctime" | "gentime", value: number }>,
+  subject: AttributeValue[],
+  publicKey: SubjectPublicKeyInfo,
+  issuerUniqueId?: BitString,
+  subjectUniqueId?: BitString,
+  extensions: Extension[],
+}
+export const TBSCertificate = define<TBSCertificate>("TBSCertificate", function() {
   this.seq().obj(
-    this.key("tbsCertificate").seq().obj(
-      this.key("version").optional().explicit(0).int(),
-      this.key("serialNumber").int(),
-      this.key("signature").use(AlgorithmIdentifier),
-      this.key("issuer").seqof(AttributeValue),
-      this.key("validity").seq().obj(
-        this.key("notBefore").choice({ utctime: this.utctime(), gentime: this.gentime() }),
-        this.key("notAfter").choice({ utctime: this.utctime(), gentime: this.gentime() }),
-      ),
-      this.key("subject").seqof(AttributeValue),
-      this.key("publicKey").use(SubjectPublicKeyInfo),
-      this.key("issuerUniqueID").optional().implicit(1).bitstr(),
-      this.key("subjectUniqueID").optional().implicit(2).bitstr(),
-      this.key("extensions").optional().explicit(3).seqof(Extension),
+    this.key("version").optional().explicit(0).int(),
+    this.key("serialNumber").int(),
+    this.key("signature").use(AlgorithmIdentifier),
+    this.key("issuer").seqof(AttributeValue),
+    this.key("validity").seq().obj(
+      this.key("notBefore").choice({ utctime: this.utctime(), gentime: this.gentime() }),
+      this.key("notAfter").choice({ utctime: this.utctime(), gentime: this.gentime() }),
     ),
+    this.key("subject").seqof(AttributeValue),
+    this.key("publicKey").use(SubjectPublicKeyInfo),
+    this.key("issuerUniqueID").optional().implicit(1).bitstr(),
+    this.key("subjectUniqueID").optional().implicit(2).bitstr(),
+    this.key("extensions").optional().explicit(3).seqof(Extension),
+  );
+});
+
+/** An X.509 certificate */
+export interface Certificate {
+  tbsCertificate: TBSCertificate;
+  signatureAlgorithm: AlgorithmIdentifier;
+  signatureValue: BitString;
+}
+export const Certificate = define<Certificate>("Certificate", function() {
+  this.seq().obj(
+    this.key("tbsCertificate").use(TBSCertificate),
     this.key("signatureAlgorithm").use(AlgorithmIdentifier),
     this.key("signatureValue").bitstr(),
   );
 });
 
-/* RSA Private key */
+/** An RSA Private key */
 export interface RSAPrivateKey extends RSAPublicKey {
   d: bigint; // private exponent
   p: bigint; // prime 1
@@ -186,13 +266,21 @@ export const PrivateKeyInfo = define("PrivateKeyInfo", function() {
   );
 });
 
-export const EncryptedPrivateKeyInfo = define("EncryptedPrivateKeyInfo", function() {
+export interface EncryptedPrivateKeyInfo {
+  encryptionAlgorithm: AlgorithmIdentifier;
+  encryptedData: Uint8Array;
+}
+export const EncryptedPrivateKeyInfo = define<EncryptedPrivateKeyInfo>("EncryptedPrivateKeyInfo", function() {
   this.seq().obj(
     this.key("encryptionAlgorithm").use(AlgorithmIdentifier),
     this.key("encryptedData").octstr(),
   );
 });
 
+export interface PBES2Params {
+  keyDerivationFunc: AlgorithmIdentifier;
+  encryptionScheme: AlgorithmIdentifier;
+}
 export const PBES2Params = define("PBES2Params", function() {
   this.seq().obj(
     this.key("keyDerivationFunc").use(AlgorithmIdentifier),
@@ -200,12 +288,18 @@ export const PBES2Params = define("PBES2Params", function() {
   );
 });
 
-export const PBKDF2Params = define("PBKDF2Params", function() {
+export interface PBKDF2Params {
+  salt: { type: "specified", value: Uint8Array } | { type: "other", value: AlgorithmIdentifier };
+  iterationCount: bigint;
+  keyLength?: bigint;
+  prf: AlgorithmIdentifier;
+}
+export const PBKDF2Params = define<PBKDF2Params>("PBKDF2Params", function() {
   this.seq().obj(
     this.key("salt").choice({ "specified": this.octstr(), "other": this.use(AlgorithmIdentifier) }),
     this.key("iterationCount").int(),
     this.key("keyLength").optional().int(),
-    this.key("prf").use(AlgorithmIdentifier).def("hmacWithSHA1"),
+    this.key("prf").use(AlgorithmIdentifier).def({ algorithm: "hmacWithSHA1" }),
   );
 });
 
@@ -314,6 +408,23 @@ export const SignedData = define("SignedData", function() {
       this.key("crls").implicit(1).optional().setof(Any),
       this.key("signerInfos").setof(SignerInfo),
     ),
+  );
+});
+
+export const CertificationRequestInfo = define("CertificationRequestInfo", function() {
+  this.seq().obj(
+    this.key("version").int(),
+    this.key("subject").seqof(AttributeValue),
+    this.key("subjectPublicKeyInfo").use(SubjectPublicKeyInfo),
+    this.key("attributes").implicit(0).setof(Any),
+  );
+});
+
+export const CertificationRequest = define("CertificationRequest", function() {
+  this.seq().obj(
+    this.key("certificationRequestInfo").use(CertificationRequestInfo),
+    this.key("signatureAlgorithm").use(AlgorithmIdentifier),
+    this.key("signature").bitstr(),
   );
 });
 

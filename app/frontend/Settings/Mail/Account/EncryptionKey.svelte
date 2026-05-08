@@ -62,15 +62,15 @@
       <hbox class="verification-code" class:obsolete={$key.obsolete}>
         <hbox class="label">{$t`Verification code`}</hbox>
         <vbox class="value">
-          <hbox>{key.fingerprintDisplay.substring(0, 24)}</hbox>
-          <hbox>{key.fingerprintDisplay.substring(25)}</hbox>
+          <hbox>{$key.fingerprintDisplay.substring(0, 24)}</hbox>
+          <hbox>{$key.fingerprintDisplay.substring(25)}</hbox>
         </vbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`Created`}</hbox>
-        <hbox class="value">{getDateString(key.created)}</hbox>
+        <hbox class="value">{getDateString($key.created)}</hbox>
         <hbox class="label-2-column">{$t`Expires *=> No longer valid after this date`}</hbox>
-        <hbox class="value" title={key.expires ? getDateTimeString(key.expires) : null}>{key.expires ? getDateString(key.expires) : "-"}</hbox>
+        <hbox class="value" title={$key.expires ? getDateTimeString(key.expires) : null}>{$key.expires ? getDateString(key.expires) : "-"}</hbox>
       </hbox>
       <hbox>
         <hbox class="label">{$t`ID`}</hbox>
@@ -100,25 +100,135 @@
       </hbox>
       {#if chain}
         <vbox>
+          {#await keyStatusAsync then keyStatus}
+            {#if keyStatus == KeyStatus.NoCertificate}
+              <hbox>
+                <Button
+                  label={$t`Please add this private key's certificate.`}
+                  onClick={onAddCertificateSMIME}
+                  />
+                {#if CSRParams}
+                  <ButtonMenu buttonIcon={PlusIcon} label={$t`Toggle fields`}>
+                    <MenuItem
+                      label={$t`EMail address`}
+                      disabled={true}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`Common name`}
+                      disabled={true}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`Organizational unit`}
+                      onClick={() => toggleCSRParam("OU")}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`Organization`}
+                      onClick={() => toggleCSRParam("O")}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`City / Locality`}
+                      onClick={() => toggleCSRParam("L")}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`State / Region`}
+                      onClick={() => toggleCSRParam("ST")}
+                      classes="font-normal" />
+                    <MenuItem
+                      label={$t`Country`}
+                      onClick={() => toggleCSRParam("C")}
+                      classes="font-normal" />
+                  </ButtonMenu>
+                {:else}
+                  <Button
+                    label={$t`Make a certificate request for this private key.`}
+                    onClick={newCSRParams}
+                    />
+                {/if}
+              </hbox>
+              {#if CSRParams}
+                <form bind:this={CSRForm}>
+                  <hbox>
+                    <hbox class="label">{$t`EMail address`}</hbox>
+                    <input type="email" bind:value={CSRParams.E} spellcheck={false} required />
+                  </hbox>
+                  <hbox>
+                    <hbox class="label">{$t`Common name`}</hbox>
+                    <input type="text" bind:value={CSRParams.CN} spellcheck={false} required />
+                  </hbox>
+                  {#if CSRParams.OU != undefined}
+                    <hbox>
+                      <hbox class="label">{$t`Organizational Unit`}</hbox>
+                      <input type="text" bind:value={CSRParams.OU} spellcheck={false} />
+                    </hbox>
+                  {/if}
+                  {#if CSRParams.O != undefined}
+                    <hbox>
+                      <hbox class="label">{$t`Organization`}</hbox>
+                      <input type="text" bind:value={CSRParams.O} spellcheck={false} />
+                    </hbox>
+                  {/if}
+                  {#if CSRParams.L != undefined}
+                    <hbox>
+                      <hbox class="label">{$t`City / Locality`}</hbox>
+                      <input type="text" bind:value={CSRParams.L} spellcheck={false} />
+                    </hbox>
+                  {/if}
+                  {#if CSRParams.ST != undefined}
+                    <hbox>
+                      <hbox class="label">{$t`State / Region`}</hbox>
+                      <input type="text" bind:value={CSRParams.ST} spellcheck={false} />
+                    </hbox>
+                  {/if}
+                  {#if CSRParams.C != undefined}
+                    <hbox>
+                      <hbox class="label">{$t`Country code`}</hbox>
+                      <input type="text" bind:value={CSRParams.C} spellcheck={false} size=2 minlength=2 maxlength=2 pattern="[A-Za-z]+" />
+                    </hbox>
+                  {/if}
+                  <hbox>
+                    <Button
+                      label={$t`Save certificate request to file...`}
+                      icon={FileIcon}
+                      onClick={onExportCSR}
+                      />
+                  </hbox>
+                </form>
+              {/if}
+            {:else if keyStatus == KeyStatus.ChainInvalid}
+              <hbox>{$t`The certificate chain could not be verified.`}</hbox>
+            {:else if keyStatus == KeyStatus.ChainIncomplete}
+              <hbox>
+                <Button
+                  label={$t`Please add the intermediate certificate(s).`}
+                  onClick={onAddCertificateSMIME}
+                  />
+              </hbox>
+            {:else if keyStatus == KeyStatus.SelfSignedRoot}
+              <hbox>{$t`WARNING This private key uses a self-signed root certificate.`}</hbox>
+            {:else if keyStatus == KeyStatus.Valid}
+              <hbox>{$t`This private key has a valid certificate.`}</hbox>
+            {:else}
+              <hbox>Unexpected private key status</hbox>
+            {/if}
+          {:catch error}
+            <hbox>Something went wrong: {error.message}</hbox>
+          {/await}
           <hbox class="label">{$t`Certificate chain *=> Any additional certificates that might be required to authenticate this key`}</hbox>
           {#each $chain.each as certificate}
-            <hbox class="verification-code">
-              <pre wrap class="value">{certificate.fingerprintDisplay}</pre>
-              <vbox>
-                <RoundButton
-                  label={$t`Delete`}
-                  icon={DeleteIcon}
-                  onClick={() => onRemoveFromChain(certificate)}
-                  />
-              </vbox>
+            <hbox>
+              <hbox class="label">{$t`Common Name`}</hbox>
+              <hbox class="value" flex>{certificate.commonName}</hbox>
+              <RoundButton
+                label={$t`Delete`}
+                icon={DeleteIcon}
+                onClick={() => onRemoveFromChain(certificate)}
+                />
+            </hbox>
+            <hbox class="fingerprint" class:obsolete={certificate.obsolete}>
+              <hbox class="label">{$t`Fingerprint`}</hbox>
+              <hbox class="value">{certificate.fingerprintDisplay}</hbox>
             </hbox>
           {/each}
-          <hbox>
-            <Button
-              label={$t`Add certificate… *=> Add the certificate for this private key, or an additional certificate in the chain`}
-              onClick={onFileCertificate}
-              />
-          </hbox>
         </vbox>
       {/if}
       <hbox>
@@ -169,14 +279,19 @@
 <script lang="ts">
   import type { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
   import type { PrivateKey } from "../../../../logic/Mail/Encryption/PrivateKey";
-  import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+  import type { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+  import { SMIMEPublicKey, KeyStatus } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import { saveBlobAsFile } from "../../../Util/util";
   import { appName } from "../../../../logic/build";
   import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
+  import ButtonMenu from "../../../Shared/Menu/ButtonMenu.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
+  import PlusIcon from "lucide-svelte/icons/plus";
+  import FileIcon from "lucide-svelte/icons/file-lock";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import UnusedIcon from "lucide-svelte/icons/circle-dashed";
@@ -194,8 +309,11 @@
   export let identity: MailIdentity;
 
   $: chain = key instanceof SMIMEPublicKey ? key.chain : null;
+  $: keyStatusAsync = key instanceof SMIMEPublicKey ? key.keyStatus() : null;
 
   let isExpanded = key.justCreated;
+  let CSRParams: Record<string, string | undefined>;
+  let CSRForm: HTMLFormElement;
 
   let showSecretPassphrase = false;
   async function onExportPrivate() {
@@ -230,19 +348,38 @@
     await identity.account.save();
   }
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt" ];
-  async function onFileCertificate() {
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
+  async function onAddCertificateSMIME() {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
     let fileContent = await file.text();
-    await (key as SMIMEPublicKey).addCertificate(fileContent);
+    await (key as SMIMEPrivateKey).addCertificate(fileContent);
+    keyStatusAsync = (key as SMIMEPrivateKey).keyStatus();
     await identity.account.save();
   }
   async function onRemoveFromChain(certificate) {
-    key.chain.remove(certificate);
+    (key as SMIMEPrivateKey).chain.remove(certificate);
+    keyStatusAsync = (key as SMIMEPrivateKey).keyStatus();
     await identity.account.save();
+  }
+  function newCSRParams() {
+    CSRParams = {
+      E: identity.emailAddress,
+      CN: identity.realname,
+      C: new Intl.Locale(navigator.language).region,
+    };
+  }
+  function toggleCSRParam(field: string) {
+    CSRParams[field] = CSRParams[field] == undefined ? "" : undefined;
+  }
+  async function onExportCSR() {
+    CSRParams.C = CSRParams.C?.toUpperCase();
+    if (CSRForm.reportValidity()) {
+      await saveBlobAsFile(await (key as SMIMEPrivateKey).generateCSRFile(CSRParams));
+      CSRParams = undefined;
+    }
   }
 </script>
 
@@ -300,9 +437,11 @@
   .verification-code:not(.obsolete) {
     margin-block: 24px;
   }
+  .fingerprint .label,
   .verification-code .label {
     padding-block: 7px;
   }
+  .fingerprint .value,
   .verification-code .value,
   .passphrase .value {
     padding-block: 8px;
@@ -310,6 +449,7 @@
     font-family: 'Courier New', Courier, monospace;
     font-size: 15px;
   }
+  .fingerprint:not(.obsolete) .value,
   .verification-code:not(.obsolete) .value,
   .passphrase .value {
     background-color: var(--bg);
