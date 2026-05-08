@@ -74,7 +74,7 @@
       </hbox>
       <hbox>
         <hbox class="label">{$t`ID`}</hbox>
-        <hbox class="value">{key.id}</hbox>
+        <hbox class="value">{key.id.slice(-16)}</hbox>
       </hbox>
       {#if key.cipher}
         <hbox>
@@ -98,6 +98,29 @@
           {/each}
         </vbox>
       </hbox>
+      {#if chain}
+        <vbox>
+          <hbox class="label">{$t`Certificate chain *=> Any additional certificates that might be required to authenticate this key`}</hbox>
+          {#each $chain.each as certificate}
+            <hbox class="verification-code">
+              <pre wrap class="value">{certificate.fingerprintDisplay}</pre>
+              <vbox>
+                <RoundButton
+                  label={$t`Delete`}
+                  icon={DeleteIcon}
+                  onClick={() => onRemoveFromChain(certificate)}
+                  />
+              </vbox>
+            </hbox>
+          {/each}
+          <hbox>
+            <Button
+              label={$t`Add certificate… *=> Add the certificate for this private key, or an additional certificate in the chain`}
+              onClick={onFileCertificate}
+              />
+          </hbox>
+        </vbox>
+      {/if}
       <hbox>
         <hbox class="buttons">
           {#if !key.obsolete}
@@ -141,12 +164,16 @@
   {/if}
 </vbox>
 
+<FileSelector {acceptFileTypes} bind:this={fileSelector} />
+
 <script lang="ts">
   import type { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
   import type { PrivateKey } from "../../../../logic/Mail/Encryption/PrivateKey";
+  import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import { saveBlobAsFile } from "../../../Util/util";
   import { appName } from "../../../../logic/build";
+  import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Button from "../../../Shared/Button.svelte";
@@ -166,7 +193,9 @@
   export let key: PublicKey & PrivateKey;
   export let identity: MailIdentity;
 
-  let isExpanded = false;
+  $: chain = key instanceof SMIMEPublicKey ? key.chain : null;
+
+  let isExpanded = key.justCreated;
 
   let showSecretPassphrase = false;
   async function onExportPrivate() {
@@ -198,6 +227,21 @@
       }
     }
     identity.encryptionPrivateKeys.remove(key);
+    await identity.account.save();
+  }
+  let fileSelector: FileSelector;
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt" ];
+  async function onFileCertificate() {
+    let file = await fileSelector.selectFile();
+    if (!file) {
+      return;
+    }
+    let fileContent = await file.text();
+    await (key as SMIMEPublicKey).addCertificate(fileContent);
+    await identity.account.save();
+  }
+  async function onRemoveFromChain(certificate) {
+    key.chain.remove(certificate);
     await identity.account.save();
   }
 </script>
