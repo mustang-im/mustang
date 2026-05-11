@@ -1,13 +1,19 @@
-Mustang
+# Parula
 
-This is a new full-featured email client, chat, video conference,
-calendar, contacts and files app.
+Parula (codename Mustang) is a new full-featured email client,
+chat, video conference, calendar, contacts and files app.
+
+https://parula.app
+
+# Architecture
 
 It is a full desktop client for Linux, Windows, macOS, Android and iOS,
 running as local app, and written entirely in TypeScript and HTML.
-
 It is currently based on Electron and CapacitorJS as runtime,
 but can use other runtimes like Gecko as well.
+
+Data is stored and processed locally, and not passing through a server
+or cloud service (apart from your IMAP mail server et al, obviously).
 
 It makes an emphasis on clean code architecture and design and APIs,
 with a strict separation between logic and UI code, and observers,
