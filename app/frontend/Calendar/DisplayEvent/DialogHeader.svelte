@@ -19,7 +19,7 @@
               slot="control"
               label={$t`Delete event`}
               icon={DeleteIcon}
-              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              onClick={() => isDeleteSeriesOpen = !isDeleteSeriesOpen}
               classes="plain delete"
               border={false}
               iconSize="16px"
