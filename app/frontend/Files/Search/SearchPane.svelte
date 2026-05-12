@@ -4,6 +4,7 @@
     <hbox flex />
     <hbox class="buttons top-right">
       <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={true} classes="small"
+        <!-- TODO: Check why on:click -->
         on:click={onClear} />
     </hbox>
   </hbox>

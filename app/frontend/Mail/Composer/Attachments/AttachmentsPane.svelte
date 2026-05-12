@@ -6,6 +6,7 @@
     <hbox class="buttons">
       <RoundButton
         icon={AddIcon} label={$t`Add attachment`}
+        <!-- TODO: Check why on:click -->
         on:click={onAdd}
         />
     </hbox>

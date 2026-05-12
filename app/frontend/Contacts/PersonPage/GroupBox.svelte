@@ -23,6 +23,7 @@
           label={addLabel}
           plain classes="add text" />
         <RoundButton
+          <!-- TODO: Check why on:click -->
           on:click={addFunc}
           label={addLabel}
           icon={AddCircleIcon}
