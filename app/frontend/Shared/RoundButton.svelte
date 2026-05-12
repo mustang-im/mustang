@@ -58,6 +58,8 @@
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
+    event.stopPropagation();
+    event.preventDefault();
     let previousDisabled = disabled;
     disabled = true;
     let loadTimeout = setTimeout(() => {
