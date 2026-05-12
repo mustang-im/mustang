@@ -28,11 +28,13 @@
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
   $: isContinued = $event.startTime < start;
 
-  function onSelect() {
+  function onSelect(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
   }
 
-  function onOpen() {
+  function onOpen(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
     openEventFromOtherApp(event, true);
   }
