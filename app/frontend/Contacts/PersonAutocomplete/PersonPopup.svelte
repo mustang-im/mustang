@@ -43,6 +43,7 @@
           on:click={() => isEditing = true}
           {disabled}
           />
+        <!-- TODO: Check why on:click -->
       </vbox>
     {/if}
   </hbox>

@@ -60,6 +60,7 @@
           </MailAutocomplete>
         </hbox>
         <hbox class="cc buttons">
+          <!-- TODO: Check why on:click -->
           <Button
             label={$t`Cc`}
             on:click={() => {showCCForce = !showCCForce}}

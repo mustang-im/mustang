@@ -6,6 +6,7 @@
           {event.title}
         </div>
       </hbox>
+      <!-- TODO: Check why on:click -->
       <Button plain
         classes="description-collapse"
         label={showDescription ? $t`Collapse description` : $t`Show meeting description`}

@@ -27,6 +27,7 @@
         label={$t`More info about this error`}
         on:click={() => onErrorInfo(notification.ex)}
         />
+        <!-- TODO: Check why on:click -->
     {/if}
     <RoundButton
       icon={XIcon}

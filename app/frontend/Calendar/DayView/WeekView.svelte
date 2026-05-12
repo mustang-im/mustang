@@ -4,6 +4,7 @@
     <hbox flex />
     <slot name="top-center">
       <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
+      <!-- TODO: Check why on:click -->
       <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
     </slot>
     <slot name="top-center" />

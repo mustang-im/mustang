@@ -31,6 +31,7 @@
   </hbox>
   <hbox class="actions edit">
     {#if !appGlobal.isMobile}
+      <!-- TODO: Check why on:click -->
       <Button
         on:click={stopEditing}
         icon={OKIcon}

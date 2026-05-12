@@ -4,6 +4,7 @@
     on:keydown={event => onKeyEnter(event, onEnter)}>
   {#if !appGlobal.isMobile}
     <hbox class="actions">
+      <!-- TODO: Check why on:click -->
       <Button
         on:click={stopEditing}
         icon={OKIcon}

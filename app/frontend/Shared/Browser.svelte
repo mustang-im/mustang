@@ -16,6 +16,7 @@
         on:click={onClose}
         classes="small"
         />
+        <!-- TODO: Check why on:click -->
     </hbox>
   </hbox>
 {/if}

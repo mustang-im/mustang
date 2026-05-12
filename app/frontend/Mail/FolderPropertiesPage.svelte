@@ -19,6 +19,7 @@
           iconSize="16px"
           on:click={onClose}
           />
+          <!-- TODO: Check why on:click -->
         </hbox>
     </hbox>
     <vbox class="properties">
@@ -30,6 +31,7 @@
     </vbox>
     <hbox flex />
     <hbox class="buttons">
+      <!-- TODO: Check why on:click -->
       <Button label={$t`Close`}
         icon={CloseIcon}
         classes="close"

@@ -15,6 +15,7 @@
     disabled={!folder?.account || status != Status.Waiting}
     on:click={() => catchErrors(getMail)}
     />
+    <!-- TODO: Check why on:click -->
 </hbox>
 
 <script lang="ts">

@@ -12,6 +12,7 @@
           label={$t`New account for ${category.name}`}
           on:click={onNewAccount}
           />
+          <!-- TODO: Check why on:click -->
       {/if}
     </hbox>
     {#each $accounts.each as account}

@@ -17,6 +17,7 @@
               label={$t`Create folder`}
               on:click={() => isCreating = "toplevel"}
               />
+              <!-- TODO: Check why on:click -->
           </hbox>
         </hbox>
       </FolderList>

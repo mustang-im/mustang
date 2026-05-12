@@ -10,6 +10,7 @@
     showAllOption={$t`Enter URL`}
     />
   <hbox class="buttons">
+    <!-- TODO: Check why on:click -->
     <Button
       label={$t`Copy`}
       icon={CopyIcon}

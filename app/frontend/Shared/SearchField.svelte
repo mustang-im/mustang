@@ -13,6 +13,7 @@
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={onClear} />
   {/if}
+      <!-- TODO: Check why on:click -->
 </hbox>
 
 <script lang="ts">
