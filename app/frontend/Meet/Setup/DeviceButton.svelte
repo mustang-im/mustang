@@ -82,7 +82,6 @@
 
   let isMenuOpen: boolean;
   function onMenuToggle(event: Event) {
-    event.stopPropagation();
     isMenuOpen = !isMenuOpen;
   }
 </script>

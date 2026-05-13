@@ -254,7 +254,6 @@
     ViewGallery2x2Icon;
 
   function onShowViewSelector(event: Event) {
-    event.stopPropagation();
     showViewSelector = !showViewSelector;
   }
 </script>

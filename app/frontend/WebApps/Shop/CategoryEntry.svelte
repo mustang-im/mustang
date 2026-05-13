@@ -33,7 +33,6 @@
   let isOpen = false;
   function toggleOpenClose(event: Event) {
     isOpen = !isOpen;
-    event.stopPropagation();
   }
 </script>
 
