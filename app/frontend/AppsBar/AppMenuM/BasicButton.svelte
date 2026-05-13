@@ -1,5 +1,5 @@
 <RoundButton
-  {label} {icon} onClick={myOnClick}
+  {label} {icon} {onClick}
   classes="plain {classes}"
   iconSize="24px"
   padding="12px"
@@ -19,11 +19,6 @@
   export let params = {};
 
   export let classes = "";
-
-  async function myOnClick(event: Event) {
-    event.stopPropagation();
-    await onClick();
-  }
 
   function onClickPage() {
     goTo(page, params);
