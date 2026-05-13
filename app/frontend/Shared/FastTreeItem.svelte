@@ -5,7 +5,7 @@
       label={isExpanded ? $t`Collapse` : $t`Expand`}
       icon={isExpanded ? CollapseIcon : ExpandIcon}
       iconOnly plain
-      on:click={(event) => onExpandCollapse(event)}
+      onClick={(event) => onExpandCollapse(event)}
       />
   {:else}
     <hbox class="button-placeholder" />
