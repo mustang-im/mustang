@@ -11,9 +11,8 @@
     spellcheck={false} />
   {#if showX || searchInput && showX === null }
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
-      on:click={onClear} />
+      onClick={onClear} />
   {/if}
-      <!-- TODO: Check why on:click -->
 </hbox>
 
 <script lang="ts">

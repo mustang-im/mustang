@@ -4,9 +4,8 @@
     on:keydown={event => onKeyEnter(event, onEnter)}>
   {#if !appGlobal.isMobile}
     <hbox class="actions">
-      <!-- TODO: Check why on:click -->
       <Button
-        on:click={stopEditing}
+        onClick={stopEditing}
         icon={OKIcon}
         iconOnly plain iconSize="14px"
         classes="save"
@@ -20,7 +19,7 @@
   {#if !appGlobal.isMobile}
     <hbox class="actions value">
       <Button
-        on:click={startEditing}
+        onClick={startEditing}
         icon={PencilIcon}
         iconOnly plain iconSize="12px"
         classes="edit"

@@ -6,14 +6,13 @@
     <hbox class="label time">{$event.alarm.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}</hbox>
     <!--<TimeInput bind:time={$event.alarm} />-->
   {/if}
-  <!-- TODO: Check why on:click -->
   <Button
     label={$t`Remove`}
     icon={XIcon}
     iconSize="16px"
     iconOnly
     plain
-    on:click={onRemove}
+    onClick={onRemove}
     />
 </hbox>
 

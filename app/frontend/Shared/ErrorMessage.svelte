@@ -10,8 +10,7 @@
     </hbox>
     <hbox flex />
     <RoundButton icon={CloseIcon} iconSize="16px" classes="plain small" border={false}
-      on:click={onClose} />
-      <!-- TODO: Check why on:click -->
+      onClick={onClose} />
   </StatusMessage>
 </vbox>
 

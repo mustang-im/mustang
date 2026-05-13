@@ -31,15 +31,14 @@
   </hbox>
   <hbox class="actions edit">
     {#if !appGlobal.isMobile}
-      <!-- TODO: Check why on:click -->
       <Button
-        on:click={stopEditing}
+        onClick={stopEditing}
         icon={OKIcon}
         iconOnly plain iconSize="14px"
         label={$t`Finish editing and save`} />
     {/if}
     <Button
-      on:click={remove}
+      onClick={remove}
       icon={DeleteIcon}
       iconOnly plain iconSize="14px"
       label={$t`Delete this information`} />
@@ -64,12 +63,12 @@
       {/if}
       <slot name="actions display" />
       <Button
-        on:click={copyValue}
+        onClick={copyValue}
         icon={CopyIcon}
         iconOnly plain iconSize="14px"
         label={$t`Copy info to clipboard`} />
       <Button
-        on:click={startEditing}
+        onClick={startEditing}
         icon={PencilIcon}
         iconOnly plain iconSize="14px"
         label={$t`Edit`} />

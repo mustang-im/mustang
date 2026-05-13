@@ -63,13 +63,13 @@
           <!-- TODO: Check why on:click -->
           <Button
             label={$t`Cc`}
-            on:click={() => {showCCForce = !showCCForce}}
+            onClick={() => {showCCForce = !showCCForce}}
             disabled={hasCC}
             selected={showCC}
             />
           <Button
             label={$t`Bcc`}
-            on:click={() => {showBCCForce = !showBCCForce}}
+            onClick={() => {showBCCForce = !showBCCForce}}
             disabled={hasBCC}
             selected={showBCC}
             />

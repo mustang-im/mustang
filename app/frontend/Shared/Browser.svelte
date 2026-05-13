@@ -13,10 +13,9 @@
       <RoundButton
         label={$t`Close`}
         icon={CloseIcon}
-        on:click={onClose}
+        onClick={onClose}
         classes="small"
         />
-        <!-- TODO: Check why on:click -->
     </hbox>
   </hbox>
 {/if}

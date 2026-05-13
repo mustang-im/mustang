@@ -25,15 +25,14 @@
         icon={ErrorInfoIcon}
         classes="error-info small"
         label={$t`More info about this error`}
-        on:click={() => onErrorInfo(notification.ex)}
+        onClick={() => onErrorInfo(notification.ex)}
         />
-        <!-- TODO: Check why on:click -->
     {/if}
     <RoundButton
       icon={XIcon}
       classes="close small"
       label={$t`Remove this message`}
-      on:click={() => onClose(notification)}
+      onClick={() => onClose(notification)}
       />
   </hbox>
 {/if}

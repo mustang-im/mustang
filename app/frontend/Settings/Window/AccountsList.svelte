@@ -10,9 +10,8 @@
           padding="3px"
           classes="small"
           label={$t`New account for ${category.name}`}
-          on:click={onNewAccount}
+          onClick={onNewAccount}
           />
-          <!-- TODO: Check why on:click -->
       {/if}
     </hbox>
     {#each $accounts.each as account}

@@ -5,9 +5,8 @@
     <hbox flex class="actions">
       <slot name="buttons-top-right" />
       {#if addFunc && !appGlobal.isMobile}
-        <!-- TODO: Check why on:click -->
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddIcon}
           iconOnly plain classes="add top" />
@@ -20,16 +19,15 @@
     {#if addFunc && appGlobal.isMobile && isEditing}
       <hbox class="add-row">
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           plain classes="add text" />
         <RoundButton
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddCircleIcon}
           border={false}
           iconSize="24px" classes="plain add bottom" />
-          <!-- TODO: Check why on:click -->
       </hbox>
     {/if}
   </vbox>
