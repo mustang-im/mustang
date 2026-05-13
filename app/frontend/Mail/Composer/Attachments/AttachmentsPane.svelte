@@ -6,7 +6,7 @@
     <hbox class="buttons">
       <RoundButton
         icon={AddIcon} label={$t`Add attachment`}
-        on:click={onAdd}
+        onClick={onAdd}
         />
     </hbox>
   </Scroll>

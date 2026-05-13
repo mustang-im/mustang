@@ -17,7 +17,7 @@
       iconOnly
       plain
       disabled={!hasURL}
-      on:click={onCopyMeetingURL}
+      onClick={onCopyMeetingURL}
       />
     <Button
       label={$t`Open`}
@@ -26,7 +26,7 @@
       iconOnly
       plain
       disabled={!hasURL}
-      on:click={onOpenMeetingURL}
+      onClick={onOpenMeetingURL}
       />
     <Button
       label={$t`Delete`}
@@ -35,7 +35,7 @@
       iconOnly
       plain
       disabled={!event.isOnline}
-      on:click={onRemove}
+      onClick={onRemove}
       />
   </hbox>
 </hbox>

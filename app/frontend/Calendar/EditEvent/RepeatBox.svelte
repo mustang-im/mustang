@@ -26,7 +26,7 @@
             <RoundButton
               label={weekday.tooltip}
               selected={weekdays.includes(weekday.value)}
-              onClick={() => catchErrors(() => onWeekdayChanged(weekday.value))}
+              onClick={() => onWeekdayChanged(weekday.value)}
               disabled={weekday.disabled}
               border={false}
               classes="plain weekday"

@@ -12,7 +12,7 @@
     iconSize="16px"
     iconOnly
     plain
-    on:click={onRemove}
+    onClick={onRemove}
     />
 </hbox>
 

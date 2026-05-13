@@ -40,7 +40,7 @@
         <Button plain iconOnly iconSize="14px"
           label={$t`Edit name and email address`}
           icon={EditIcon}
-          on:click={() => isEditing = true}
+          onClick={() => isEditing = true}
           {disabled}
           />
       </vbox>

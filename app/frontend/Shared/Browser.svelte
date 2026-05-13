@@ -13,7 +13,7 @@
       <RoundButton
         label={$t`Close`}
         icon={CloseIcon}
-        on:click={onClose}
+        onClick={onClose}
         classes="small"
         />
     </hbox>

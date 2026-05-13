@@ -30,7 +30,6 @@
 
   function onExpandToggle(event: MouseEvent) {
     expanded = !expanded;
-    event.stopPropagation();
   }
 </script>
 

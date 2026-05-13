@@ -1,7 +1,7 @@
 <hbox class="category">
   <hbox flex class="name" on:click={onSelect}>{category.nameTranslated}</hbox>
   {#if hasChildCategories}
-    <Button plain classes="openClose" on:click={toggleOpenClose} icon={isOpen ? ChevronUpIcon : ChevronDownIcon} />
+    <Button plain classes="openClose" onClick={toggleOpenClose} icon={isOpen ? ChevronUpIcon : ChevronDownIcon} />
   {/if}
 </hbox>
 {#if isOpen}
@@ -33,7 +33,6 @@
   let isOpen = false;
   function toggleOpenClose(event: Event) {
     isOpen = !isOpen;
-    event.stopPropagation();
   }
 </script>
 

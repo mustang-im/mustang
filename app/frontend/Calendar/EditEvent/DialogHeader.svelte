@@ -19,7 +19,7 @@
               slot="control"
               label={$t`Delete event`}
               icon={DeleteIcon}
-              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              onClick={() => isDeleteSeriesOpen = !isDeleteSeriesOpen}
               classes="plain delete"
               border={false}
               iconSize="16px"
@@ -92,7 +92,7 @@
                 slot="control"
                 label={willSend ? $t`Send invitation` : $t`Save`}
                 icon={willSend ? SendIcon : SaveIcon}
-                onClick={event => { isSaveSeriesOpen = !isSaveSeriesOpen; event.stopPropagation(); }}
+                onClick={() => isSaveSeriesOpen = !isSaveSeriesOpen}
                 classes="plain save-or-close"
                 filled={true}
                 iconSize="16px"

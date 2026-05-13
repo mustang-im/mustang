@@ -18,7 +18,7 @@
       iconSize="22px"
       padding="9px
       classes="large create"
-      on:click={() => catchErrors(addGroup)}
+      onClick={addGroup}
       />
     -->
   </hbox>

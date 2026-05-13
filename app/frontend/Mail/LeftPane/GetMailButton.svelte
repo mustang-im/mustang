@@ -13,7 +13,7 @@
     {iconSize}
     padding="0px"
     disabled={!folder?.account || status != Status.Waiting}
-    on:click={() => catchErrors(getMail)}
+    onClick={getMail}
     />
 </hbox>
 
@@ -27,7 +27,7 @@
   import NewIcon from "lucide-svelte/icons/sparkle";
   import LoginIcon from "lucide-svelte/icons/key-round";
   import ErrorIcon from "lucide-svelte/icons/server-crash";
-  import { catchErrors, showError } from "../../Util/error";
+  import { showError } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 

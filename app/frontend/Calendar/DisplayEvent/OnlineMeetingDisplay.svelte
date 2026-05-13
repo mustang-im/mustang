@@ -9,7 +9,7 @@
       iconSize="16px"
       iconOnly
       plain
-      on:click={onCopyMeetingURL}
+      onClick={onCopyMeetingURL}
       />
     <a href={$event.onlineMeetingURL} target="_blank" class="link-button">
       <Button
