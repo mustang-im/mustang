@@ -16,7 +16,7 @@
           <Button
             label="Save and restart"
             icon={RestartIcon}
-            on:click={onSaveLanguage}
+            onClick={onSaveLanguage}
             classes="restart"
             />
         {/if}

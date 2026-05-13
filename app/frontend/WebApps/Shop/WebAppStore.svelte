@@ -8,8 +8,7 @@
     <Scroll>
       <hbox class="toolbar">
         <hbox flex />
-        <RoundButton on:click={closeStore} icon={XIcon} label={$t`Close`} />
-        <!-- TODO: Check why on:click -->
+        <RoundButton onClick={closeStore} icon={XIcon} label={$t`Close`} />
       </hbox>
       {#if selectedCategory}
         <CategoryPage category={selectedCategory} bind:selectedApp />

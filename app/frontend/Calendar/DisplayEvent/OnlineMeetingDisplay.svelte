@@ -11,7 +11,6 @@
       plain
       onClick={onCopyMeetingURL}
       />
-    <!-- TODO: Check why on:click -->
     <a href={$event.onlineMeetingURL} target="_blank" class="link-button">
       <Button
         label={$t`Open`}
