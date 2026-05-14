@@ -3,18 +3,19 @@
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
       {#each $workspaces.each as workspace}
-        <hbox class="workspace"
-          on:click={event => onChange(workspace, event)}
-          style="background-color: {workspace.color}"
-          >
-          <input type="radio"
-            checked={workspace == selectedWorkspace}
-            value={workspace}
-            name="workspace"
-            on:change={event => onChange(workspace, event)}
-            />
-          <label for="workspace" class="name">{workspace.name}</label>
-        </hbox>
+        <Clickable onClick={event => onChange(workspace, event)}>
+          <hbox class="workspace"
+            style="background-color: {workspace.color}"
+            >
+            <input type="radio"
+              checked={workspace == selectedWorkspace}
+              value={workspace}
+              name="workspace"
+              on:change={event => onChange(workspace, event)}
+              />
+            <label for="workspace" class="name">{workspace.name}</label>
+          </hbox>
+        </Clickable>
       {/each}
     </vbox>
   </vbox>
@@ -23,6 +24,7 @@
 <script lang="ts">
   import type { Workspace } from "../../../logic/Abstract/Workspace";
   import { appGlobal } from "../../../logic/app";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let selectedWorkspace: Workspace = appGlobal.workspaces.last;
