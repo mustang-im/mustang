@@ -13,9 +13,11 @@
     </hbox>
   {/if}
 {:else}
-  <div class="value" on:dblclick={startEditing}>
-    {value}
-  </div>
+  <Clickable onDoubleClick={startEditing}>
+    <div class="value">
+      {value}
+    </div>
+  </Clickable>
   {#if !appGlobal.isMobile}
     <hbox class="actions value">
       <Button
@@ -31,6 +33,7 @@
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";
   import { onKeyEnter } from "../../Util/util";
