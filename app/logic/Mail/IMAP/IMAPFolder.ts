@@ -164,7 +164,7 @@ export class IMAPFolder extends Folder {
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
     let lock = await this.listMessagesLock.lock();
     try {
-      let { newMessages } = await this.fetchMessageList({ all: true }, {});
+      let { newMessages } = await this.fetchMessageList({ all: true }, { uid: true });
       this.messages.addAll(newMessages);
       await this.storage.saveFolderProperties(this);
       await this.saveNewMsgs(newMessages);
@@ -178,6 +178,7 @@ export class IMAPFolder extends Folder {
    * Works only with CONDSTORE server capability. */
   protected async listChangedMessages(): Promise<ArrayColl<IMAPEMail>> {
     let { newMessages } = await this.fetchMessageList({ all: true }, {
+      uid: true,
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
     this.messages.addAll(newMessages);
