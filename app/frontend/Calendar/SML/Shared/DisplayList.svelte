@@ -8,29 +8,32 @@
       </hbox>
     {/if}
 
-    <hbox class="option added" class:showEndTime on:click={() => dispatchEvent("optionclick", option)}>
-      <hbox class="start-time">
-        {getTimeString(option)}
+    <Clickable onClick={() => dispatchEvent("optionclick", option)}>
+      <hbox class="option added" class:showEndTime>
+        <hbox class="start-time">
+          {getTimeString(option)}
+        </hbox>
+        {#if showEndTime}
+          <hbox class="end-separator">
+            -
+          </hbox>
+          <hbox class="end-time">
+            {end = new Date(option), end.setMinutes(end.getMinutes() + duration), getTimeString(end)}
+          </hbox>
+        {/if}
+        <hbox flex />
+        <slot name="center" {option} />
+        <hbox flex />
+        <slot name="right" {option} />
       </hbox>
-      {#if showEndTime}
-        <hbox class="end-separator">
-          -
-        </hbox>
-        <hbox class="end-time">
-          {end = new Date(option), end.setMinutes(end.getMinutes() + duration), getTimeString(end)}
-        </hbox>
-      {/if}
-      <hbox flex />
-      <slot name="center" {option} />
-      <hbox flex />
-      <slot name="right" {option} />
-    </hbox>
+    </Clickable>
   {/each}
 </vbox>
 
 <script lang="ts">
   import { getDateString, getTimeString } from "../../../Util/date";
   import { Collection } from "svelte-collections";
+  import Clickable from "../../../Shared/Clickable.svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ optionclick: Date }>();
 
