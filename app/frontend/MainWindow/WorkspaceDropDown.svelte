@@ -1,22 +1,24 @@
 <vbox class="workspace-selector">
   {#each [null, ...appGlobal.workspaces.each] as workspace}
-    <hbox class="workspace"
-      on:click={event => onWorkspaceSelected(workspace, event)}
-      style="--workspace-color: {workspace?.color ?? "black"}"
-      class:selected={workspace == $selectedWorkspace}
-      >
-      <!--
-      <input type="radio"
-        checked={workspace == $selectedWorkspace}
-        value={workspace}
-        name="workspace"
-        on:input={event => onWorkspaceSelected(workspace, event)}
-        />
-      -->
-      <!--<Icon data={workspace?.icon} />-->
-      <hbox class="button" />
-      <label for="workspace" class="name">{workspace?.name ?? "All"}</label>
-    </hbox>
+    <Clickable onClick={() => onWorkspaceSelected(workspace)}>
+      <hbox class="workspace"
+        style="--workspace-color: {workspace?.color ?? "black"}"
+        class:selected={workspace == $selectedWorkspace}
+        >
+        <!--
+        <input type="radio"
+          checked={workspace == $selectedWorkspace}
+          value={workspace}
+          name="workspace"
+          on:input={event => onWorkspaceSelected(workspace, event)}
+          />
+        -->
+        <!--<Icon data={workspace?.icon} />-->
+        <hbox class="button" />
+        <label for="workspace" class="name">{workspace?.name ?? "All"}</label>
+      </hbox>
+
+    </Clickable>
   {/each}
 </vbox>
 
@@ -24,11 +26,11 @@
   import { Workspace } from "../../logic/Abstract/Workspace";
   import { selectedWorkspace } from "./Selected";
   import { appGlobal } from "../../logic/app";
+  import Clickable from "../Shared/Clickable.svelte";
 
   export let open: boolean;
 
-  function onWorkspaceSelected(workspace: Workspace, event: Event) {
-    event.stopPropagation();
+  function onWorkspaceSelected(workspace: Workspace) {
     open = false;
     $selectedWorkspace = workspace;
   }
