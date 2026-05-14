@@ -277,6 +277,7 @@ export function setMainAccounts(): void {
     let mainID = account._mainAccountID;
     if (mainID && !account.mainAccount) {
       account.mainAccount = accounts.find(acc => acc.id == mainID);
+      account.notifyObservers();
     }
   }
 }

@@ -102,9 +102,9 @@ export class ActiveSyncAccount extends MailAccount {
           throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
         }
       }
-    });
 
-    await this.startup();
+      await this.startup();
+    });
   }
 
   async startup() {

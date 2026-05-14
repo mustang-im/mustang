@@ -90,7 +90,7 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     if (this.authMethod == AuthMethod.OAuth2) {
       this.oAuth2 ??= getOAuth2BuiltIn(this);
       assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
-      this.oAuth2.subscribe(() => this.notifyObservers());
+      this.oAuth2.subscribe(() => this.notifyObserversIncludingSubaccounts());
       await this.oAuth2.login(interactive);
     }
   }
@@ -104,9 +104,9 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
       await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
       await super.login(interactive);
       await this.loginCommon(interactive);
-    });
 
-    await this.startup();
+      await this.startup();
+    });
   }
 
   async startup() {
@@ -125,6 +125,14 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     });
   }
 
+  async logout(): Promise<void> {
+    if (this.mainAccount) {
+      await this.mainAccount.logout();
+      return;
+    }
+    await super.logout();
+  }
+
   async disconnect(): Promise<void> {
     if (this.mainAccount) {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
@@ -135,6 +143,15 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
+  }
+
+  notifyObserversIncludingSubaccounts() {
+    this.notifyObservers();
+    for (let account of appGlobal.emailAccounts) {
+      if (account.mainAccount == this) {
+        account.notifyObservers();
+      }
     }
   }
 
