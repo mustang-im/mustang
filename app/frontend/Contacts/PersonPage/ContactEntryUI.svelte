@@ -45,17 +45,23 @@
   </hbox>
 {:else}
   {#if protocolLabels}
-    <hbox class="protocol display" on:click={startEditing}>
-      {displayProtocol(entry.protocol)}
-    </hbox>
+    <Clickable onClick={startEditing}>
+      <hbox class="protocol display">
+        {displayProtocol(entry.protocol)}
+      </hbox>
+    </Clickable>
   {:else}
-    <hbox class="purpose display" on:click={startEditing}>
-      {displayPurpose(entry.purpose)}
-    </hbox>
+    <Clickable onClick={startEditing}>
+      <hbox class="purpose display">
+        {displayPurpose(entry.purpose)}
+      </hbox>
+    </Clickable>
   {/if}
-  <hbox class="value" on:click={startEditing}>
-    <slot name="display" />
-  </hbox>
+  <Clickable onClick={startEditing}>
+    <hbox class="value">
+      <slot name="display" />
+    </hbox>
+  </Clickable>
   <hbox class="actions contact-entry">
     {#if !appGlobal.isMobile}
       {#if copied}
@@ -83,6 +89,7 @@
   import { selectedContactEntry } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
   import OKIcon from "lucide-svelte/icons/check";
