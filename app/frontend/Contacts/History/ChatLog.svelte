@@ -1,17 +1,19 @@
-<vbox on:click={() => catchErrors(onOpen)}>
-  {#if message.subject}
-    <div class="subject">
-      {message.subject}
+<Clickable onClick={onOpen}>
+  <vbox>
+    {#if message.subject}
+      <div class="subject">
+        {message.subject}
+      </div>
+    {/if}
+    <div class="body">
+      {message.text?.substring(0, 120)}
     </div>
-  {/if}
-  <div class="body">
-    {message.text?.substring(0, 120)}
-  </div>
-</vbox>
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { ChatMessage } from "../../../logic/Chat/Message";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   export let message: ChatMessage;
 
