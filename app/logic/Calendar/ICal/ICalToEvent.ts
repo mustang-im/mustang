@@ -7,6 +7,7 @@ import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
 import { gt } from "../../../l10n/l10n";
+import type { ArrayColl } from "svelte-collections";
 
 /**
  * @param ics iCal .ics contents to be parsed
@@ -29,16 +30,20 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
  * @param iCalFile file contents
  * @param newEvent Factory function to create the subclass of Event that you need
  */
-export function convertICalToEvents(iCalFile: string, newEvent: () => Event): Event[] {
+export function convertICalToEvents(iCalFile: string, newEvent: () => Event, errorCallback: (ex: Error) => void): Event[] {
   let events = [];
   let parsed = new ICalParser(iCalFile);
   if (!parsed.containers.vevent) {
     throw new Error(gt`No iCal found`);
   }
   for (let iCal of parsed.containers.vevent) {
-    let event = newEvent();
-    convertICalContainerToEvent(iCal, event);
-    events.push(event);
+    try {
+      let event = newEvent();
+      convertICalContainerToEvent(iCal, event);
+      events.push(event);
+    } catch (ex) {
+      errorCallback(ex);
+    }
   }
   return events;
 }

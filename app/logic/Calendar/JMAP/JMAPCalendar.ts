@@ -258,18 +258,22 @@ export class JMAPCalendar extends Calendar {
     let newEvents = new ArrayColl<JMAPEvent>();
     let updatedEvents = new ArrayColl<JMAPEvent>();
     for (let json of events) {
-      let id = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(id)) {
-        continue;
-      }
-      let event = checkUpdates && this.getEventByJMAPID(id);
-      if (event) {
-        event.fromJMAP(json);
-        updatedEvents.add(event);
-      } else {
-        event = this.newEvent();
-        event.fromJMAP(json);
-        newEvents.add(event);
+      try {
+        let id = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(id)) {
+          continue;
+        }
+        let event = checkUpdates && this.getEventByJMAPID(id);
+        if (event) {
+          event.fromJMAP(json);
+          updatedEvents.add(event);
+        } else {
+          event = this.newEvent();
+          event.fromJMAP(json);
+          newEvents.add(event);
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
       }
     }
     return { newEvents, updatedEvents };

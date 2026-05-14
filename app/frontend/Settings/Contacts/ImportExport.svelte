@@ -35,10 +35,14 @@
       return;
     }
     let fileContents = await file.text();
-    let persons = convertVCardsToPersons(fileContents, () => account.newPerson());
+    let persons = convertVCardsToPersons(fileContents, () => account.newPerson(), ex => account.errorCallback(ex));
     account.persons.addAll(persons);
     for (let person of persons) {
-      await person.save();
+      try {
+        await person.save();
+      } catch (ex) {
+        account.errorCallback(ex);
+      }
     }
     await account.save();
   }

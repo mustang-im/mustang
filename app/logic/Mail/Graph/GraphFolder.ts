@@ -164,18 +164,22 @@ export class GraphFolder extends Folder {
     let newMessages = new ArrayColl<GraphEMail>();
     let updatedMessages = new ArrayColl<GraphEMail>();
     for (let json of msgs) {
-      let pID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(pID)) {
-        continue;
-      }
-      let msg = checkUpdates && this.getEMailByPID(pID);
-      if (msg) {
-        msg.fromGraph(json);
-        updatedMessages.add(msg);
-      } else {
-        msg = this.newEMail();
-        msg.fromGraph(json);
-        newMessages.add(msg);
+      try {
+        let pID = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(pID)) {
+          continue;
+        }
+        let msg = checkUpdates && this.getEMailByPID(pID);
+        if (msg) {
+          msg.fromGraph(json);
+          updatedMessages.add(msg);
+        } else {
+          msg = this.newEMail();
+          msg.fromGraph(json);
+          newMessages.add(msg);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return { newMessages, updatedMessages };

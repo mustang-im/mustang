@@ -127,13 +127,17 @@ export function updatePerson(vcard: ICalContainer, person: Person) {
  * @param vcardFile file contents
  * @param newPerson Factory function to create the subclass of Person that you need
  */
-export function convertVCardsToPersons(vcardFile: string, newPerson: () => Person): Person[] {
+export function convertVCardsToPersons(vcardFile: string, newPerson: () => Person, errorCallback: (ex: Error) => void): Person[] {
   let persons = [];
   let cards = parseAddressbook(vcardFile);
   for (let vCard of cards) {
-    let person = newPerson();
-    updatePerson(vCard, person);
-    persons.push(person);
+    try {
+      let person = newPerson();
+      updatePerson(vCard, person);
+      persons.push(person);
+    } catch (ex) {
+      errorCallback(ex);
+    }
   }
   return persons;
 }

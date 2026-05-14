@@ -248,18 +248,22 @@ export class JMAPAddressbook extends Addressbook {
     let newPersons = new ArrayColl<JMAPPerson>();
     let updatedPersons = new ArrayColl<JMAPPerson>();
     for (let json of persons) {
-      let id = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(id)) {
-        continue;
-      }
-      let person = checkUpdates && this.getPersonByJMAPID(id);
-      if (person) {
-        person.fromJMAP(json);
-        updatedPersons.add(person);
-      } else {
-        person = this.newPerson();
-        person.fromJMAP(json);
-        newPersons.add(person);
+      try {
+        let id = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(id)) {
+          continue;
+        }
+        let person = checkUpdates && this.getPersonByJMAPID(id);
+        if (person) {
+          person.fromJMAP(json);
+          updatedPersons.add(person);
+        } else {
+          person = this.newPerson();
+          person.fromJMAP(json);
+          newPersons.add(person);
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
       }
     }
     return { newPersons, updatedPersons };

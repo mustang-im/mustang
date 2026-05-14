@@ -264,18 +264,22 @@ export class JMAPFolder extends Folder {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
-      let jmapID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(jmapID)) {
-        continue;
-      }
-      let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
-      if (msg) {
-        msg.fromJMAP(json);
-        updatedMessages.add(msg);
-      } else {
-        msg = this.newEMail();
-        msg.fromJMAP(json);
-        newMessages.add(msg);
+      try {
+        let jmapID = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(jmapID)) {
+          continue;
+        }
+        let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
+        if (msg) {
+          msg.fromJMAP(json);
+          updatedMessages.add(msg);
+        } else {
+          msg = this.newEMail();
+          msg.fromJMAP(json);
+          newMessages.add(msg);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return { newMessages, updatedMessages };
