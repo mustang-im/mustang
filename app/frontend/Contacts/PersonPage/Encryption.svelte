@@ -17,26 +17,27 @@
         <EncryptionKey {key} {person} />
       {/each}
       {#if $keys.filterObservable(key => key.obsolete).hasItems}
-        <vbox class="expired-header"
-          class:expanded={showObsolete}
-          on:click={() => showObsolete = !showObsolete}>
-          <hbox class="first-row">
-            <hbox class="label font-smallest" flex>
-              {$t`Expired *=> No longer valid`}
+        <Clickable onClick={() => showObsolete = !showObsolete}>
+          <vbox class="expired-header"
+            class:expanded={showObsolete}>
+            <hbox class="first-row">
+              <hbox class="label font-smallest" flex>
+                {$t`Expired *=> No longer valid`}
+              </hbox>
+              <RoundButton
+                label={showObsolete ? $t`Collapse` : $t`Expand`}
+                icon={showObsolete ? ChevronUp : ChevronDown}
+                border={false}
+                classes="plain"
+                />
             </hbox>
-            <RoundButton
-              label={showObsolete ? $t`Collapse` : $t`Expand`}
-              icon={showObsolete ? ChevronUp : ChevronDown}
-              border={false}
-              classes="plain"
-              />
-          </hbox>
-          {#if showObsolete}
-            <hbox class="subtitle font-smallest" flex>
-              {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to validate the signatures of previous emails that you have received and stored.`}
-            </hbox>
-          {/if}
-        </vbox>
+            {#if showObsolete}
+              <hbox class="subtitle font-smallest" flex>
+                {$t`These below are certificates that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to validate the signatures of previous emails that you have received and stored.`}
+              </hbox>
+            {/if}
+          </vbox>
+        </Clickable>
       {/if}
       {#if showObsolete}
         {#each keys.filterObservable(key => key.obsolete).each as key}
@@ -54,6 +55,7 @@
   import EncryptionImport from "./EncryptionImport.svelte";
   import GroupBox from "./GroupBox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import EcryptionIcon from "lucide-svelte/icons/lock";
   import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
