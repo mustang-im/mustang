@@ -195,7 +195,7 @@ export class IMAPFolder extends Folder {
       if (this.countTotal === 0) {
         return new ArrayColl();
       }
-      let fromUID = this.getHighestUID() ?? "1";
+      let fromUID = this.getHighestUID() ?? 1;
       let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
@@ -218,7 +218,7 @@ export class IMAPFolder extends Folder {
         envelope: true,
         flags: true,
       };
-      this.account.log(this, conn, "fetchMessageList", range);
+      this.account.log(this, conn, "fetchMessageList", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       let modseq: bigint;
       for await (let msgInfo of msgsAsyncIterator) {
@@ -249,7 +249,7 @@ export class IMAPFolder extends Folder {
         flags: true,
         //threadId: true,
       };
-      this.account.log(this, conn, "fetchFlags", range);
+      this.account.log(this, conn, "fetchFlags", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.flags || this.deletions.has(msgInfo.uid)) {
