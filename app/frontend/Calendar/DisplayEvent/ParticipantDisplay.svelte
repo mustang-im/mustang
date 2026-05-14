@@ -1,12 +1,13 @@
-<hbox class="participant-name"
-  on:click={() => catchErrors(() => onOpenParticipant(participant))}>
-  {participant.name}
-</hbox>
+<Clickable onClick={() => onOpenParticipant(participant)}>
+  <hbox class="participant-name">
+    {participant.name}
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import { Participant } from "../../../logic/Calendar/Participant";
   import { openPersonFromOtherApp } from "../../Contacts/open";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   export let participant: Participant;
 
