@@ -1,21 +1,24 @@
-<hbox class="day font-small" on:click={selectDay} on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
-  <hbox class="date-number">
-    {day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}
-  </hbox>
-  {#if withMonthOnFirst && day.getDate() == 1 ||
-          withMonthOnMonday && day.getDay() == 1 }
-    <hbox class="month">
-      {day.toLocaleDateString(getDateTimeLocale(), { month: "short" })}
+<Clickable onClick={selectDay} onDoubleClick={changeToDay}>
+  <hbox class="day font-small" class:today={day.getTime() == today.getTime()}>
+    <hbox class="date-number">
+      {day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}
     </hbox>
-  {/if}
-  <hbox class="today-icon" flex>
-    <TodayIcon size={14} />
+    {#if withMonthOnFirst && day.getDate() == 1 ||
+            withMonthOnMonday && day.getDay() == 1 }
+      <hbox class="month">
+        {day.toLocaleDateString(getDateTimeLocale(), { month: "short" })}
+      </hbox>
+    {/if}
+    <hbox class="today-icon" flex>
+      <TodayIcon size={14} />
+    </hbox>
   </hbox>
-</hbox>
+</Clickable>
 
 <script lang="ts">
   import { selectedDate, selectedDateInterval } from "../selected";
   import { getToday } from "../../Util/date";
+  import Clickable from "../../Shared/Clickable.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
