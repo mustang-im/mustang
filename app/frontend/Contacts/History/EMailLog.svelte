@@ -1,19 +1,20 @@
-<vbox class="email" flex
-  title={message.subject + "\n\n" + (message.text?.substring(0, 300) ?? "")}
-  on:click={() => catchErrors(onOpen)}>
-  <div class="subject">
-    {message.subject}
-  </div>
-  <div class="body">
-    {message.text?.substring(0, 240) ?? ""}
-  </div>
-</vbox>
+<Clickable onClick={onOpen}>
+  <vbox class="email" flex
+    title={message.subject + "\n\n" + (message.text?.substring(0, 300) ?? "")}>
+    <div class="subject">
+      {message.subject}
+    </div>
+    <div class="body">
+      {message.text?.substring(0, 240) ?? ""}
+    </div>
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { openEMailMessage } from "../../Mail/open";
   import { SearchView } from "../../Mail/LeftPane/SearchSwitcher.svelte";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   export let message: EMail;
 
