@@ -1,23 +1,23 @@
-<hbox class="event font-small" flex
-  on:click
-  on:click={onSelect}
-  on:dblclick={onOpen}
-  title={eventAsText}>
-  {#if showTime}
-    <!--{event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}-->
-    <hbox class="time">{startTime}</hbox>
-  {:else if forceShowText}
-    <hbox class="time">…</hbox>
-  {/if}
-  {#if showTitle}
-    <hbox class="title">{$event.title}</hbox>
-  {/if}
-</hbox>
+<Clickable onClick={onSelect} onDoubleClick={onSelect}>
+  <hbox class="event font-small" flex
+    title={eventAsText}>
+    {#if showTime}
+      <!--{event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}-->
+      <hbox class="time">{startTime}</hbox>
+    {:else if forceShowText}
+      <hbox class="time">…</hbox>
+    {/if}
+    {#if showTitle}
+      <hbox class="title">{$event.title}</hbox>
+    {/if}
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
@@ -34,12 +34,10 @@
   $: showTitle = showTime || forceShowText;
 
   function onSelect(ev: MouseEvent) {
-    ev.stopPropagation();
     $selectedEvent = event;
   }
 
   function onOpen(ev: MouseEvent) {
-    ev.stopPropagation();
     $selectedEvent = event;
     openEventFromOtherApp(event, true);
   }
