@@ -54,10 +54,12 @@
       <vbox class="other-email-addresses">
         {#each person.emailAddresses.each as altContactEntry}
           {#if contactEntry != altContactEntry}
-            <hbox class="other-email-address font-small" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
-              <MailIcon size={12} />
-              {altContactEntry.value}
-            </hbox>
+            <Clickable onClick={() => useOtherEmailAddress(altContactEntry.value)}>
+              <hbox class="other-email-address font-small">
+                <MailIcon size={12} />
+                {altContactEntry.value}
+              </hbox>
+            </Clickable>
           {/if}
         {/each}
       </vbox>
@@ -85,12 +87,13 @@
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import AvatarFallbackIcon from "lucide-svelte/icons/user";
   import EditIcon from "lucide-svelte/icons/pencil";
   import CheckIcon from "lucide-svelte/icons/check";
   import MailIcon from "lucide-svelte/icons/mail";
   import { createIsSame, onKeyEnter } from "../../Util/util";
-  import { backgroundError, catchErrors } from "../../Util/error";
+  import { backgroundError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void }>();
