@@ -1,34 +1,34 @@
-<hbox class="directory line"
-  class:selected={dir == $selectedFile}
-  on:click={() => catchErrors(toggleOpen)}
-  >
-  <hbox class="firstColumn">
-    {#each {length: indent} as _}
-      <hbox class="indention" />
-    {/each}
-    <button class="icon">
-      {#if open}
-        <FolderOpenIcon size="16" />
-      {:else}
-        <FolderClosedIcon size="16" />
+<Clickable onClick={toggleOpen}>
+  <hbox class="directory line"
+    class:selected={dir == $selectedFile}>
+    <hbox class="firstColumn">
+      {#each {length: indent} as _}
+        <hbox class="indention" />
+      {/each}
+      <button class="icon">
+        {#if open}
+          <FolderOpenIcon size="16" />
+        {:else}
+          <FolderClosedIcon size="16" />
+        {/if}
+      </button>
+      <hbox class="name">
+        {dir?.name}
+      </hbox>
+    </hbox>
+    <hbox class="type">
+      {$t`Folder`}
+    </hbox>
+    <hbox class="size">
+      {#if $subDirs.hasItems || $files.hasItems}
+        {$t`${$subDirs?.length + $files?.length} entries`}
       {/if}
-    </button>
-    <hbox class="name">
-      {dir?.name}
+    </hbox>
+    <hbox class="time">
+      {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
     </hbox>
   </hbox>
-  <hbox class="type">
-    {$t`Folder`}
-  </hbox>
-  <hbox class="size">
-    {#if $subDirs.hasItems || $files.hasItems}
-      {$t`${$subDirs?.length + $files?.length} entries`}
-    {/if}
-  </hbox>
-  <hbox class="time">
-    {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
-  </hbox>
-</hbox>
+</Clickable>
 
 {#if open}
   <FileOrDirLines {files} dirs={subDirs} indent={indent + 1} />
@@ -39,6 +39,7 @@
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
   import FileOrDirLines from "./FileOrDirLines.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { catchErrors } from "../../Util/error";
