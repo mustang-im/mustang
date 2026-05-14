@@ -12,15 +12,17 @@
   <vbox class="configs">
     {#each $uniqueConfigs.each as altConfig}
       <vbox class="alt">
-        <hbox class="protocol-header" on:click={event => onChange(altConfig, event)}>
-          <input type="radio"
-            checked={altConfig == config}
-            value={altConfig.protocol}
-            name="protocol"
-            on:change={event => onChange(altConfig, event)}
-            />
-          <label class="protocol" for={altConfig.protocol}>{labelForMailProtocol(altConfig.protocol)}</label>
-        </hbox>
+        <Clickable onClick={event => onChange(altConfig, event)}>
+          <hbox class="protocol-header">
+            <input type="radio"
+              checked={altConfig == config}
+              value={altConfig.protocol}
+              name="protocol"
+              on:change={event => onChange(altConfig, event)}
+              />
+            <label class="protocol" for={altConfig.protocol}>{labelForMailProtocol(altConfig.protocol)}</label>
+          </hbox>
+        </Clickable>
         {#if altConfig == config}
           <hbox class="display">
             <DisplayConfig config={altConfig} />
@@ -36,6 +38,7 @@
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import { filterUnique } from "../../../logic/util/collections";
   import type { ArrayColl } from "svelte-collections";
