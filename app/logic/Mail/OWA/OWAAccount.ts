@@ -237,7 +237,7 @@ export class OWAAccount extends MailAccount {
   }
 
   notifyObserversOfSubaccounts() {
-    for (let account of appGlobal.emailAccounts) {
+    for (let account of this.dependentAccounts()) {
       if (account.mainAccount == this) {
         account.notifyObservers();
       }

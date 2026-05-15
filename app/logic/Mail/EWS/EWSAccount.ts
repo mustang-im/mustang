@@ -90,7 +90,10 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     if (this.authMethod == AuthMethod.OAuth2) {
       this.oAuth2 ??= getOAuth2BuiltIn(this);
       assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
-      this.oAuth2.subscribe(() => this.notifyObserversIncludingSubaccounts());
+      this.oAuth2.subscribe(() => {
+        this.notifyObservers();
+        this.notifyObserversOfSubaccounts();
+      });
       await this.oAuth2.login(interactive);
     }
   }
@@ -146,9 +149,8 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
     }
   }
 
-  notifyObserversIncludingSubaccounts() {
-    this.notifyObservers();
-    for (let account of appGlobal.emailAccounts) {
+  notifyObserversOfSubaccounts() {
+    for (let account of this.dependentAccounts()) {
       if (account.mainAccount == this) {
         account.notifyObservers();
       }

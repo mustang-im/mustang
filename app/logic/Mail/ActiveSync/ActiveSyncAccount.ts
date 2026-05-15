@@ -85,7 +85,10 @@ export class ActiveSyncAccount extends MailAccount {
       if (this.authMethod == AuthMethod.OAuth2) {
         this.oAuth2 ??= getOAuth2BuiltIn(this);
         assert(this.oAuth2, gt`Could not find OAuth2 config for ${this.hostname}`);
-        this.oAuth2.subscribe(() => this.notifyObservers());
+        this.oAuth2.subscribe(() => {
+          this.notifyObservers();
+          this.notifyObserversOfSubaccounts();
+        });
         await this.oAuth2.login(interactive);
       }
       this.protocolVersion = this.getStorageItem("protocolVersion");
@@ -131,6 +134,14 @@ export class ActiveSyncAccount extends MailAccount {
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
+  }
+
+  notifyObserversOfSubaccounts() {
+    for (let account of this.dependentAccounts()) {
+      if (account.mainAccount == this) {
+        account.notifyObservers();
+      }
     }
   }
 

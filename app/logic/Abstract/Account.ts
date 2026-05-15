@@ -36,6 +36,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   realname: string = appGlobal.me?.name;
   /** @see `mainAccount` */
+  @notifyChangedProperty
   _mainAccount: Account | null = null;
   /** Internal. Used only during load. */
   _mainAccountID: string | null = null;
@@ -277,7 +278,6 @@ export function setMainAccounts(): void {
     let mainID = account._mainAccountID;
     if (mainID && !account.mainAccount) {
       account.mainAccount = accounts.find(acc => acc.id == mainID);
-      account.notifyObservers();
     }
   }
 }
