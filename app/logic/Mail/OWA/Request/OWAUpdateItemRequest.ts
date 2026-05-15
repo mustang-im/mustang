@@ -13,7 +13,7 @@ export class OWAUpdateItemRequest extends OWARequest {
     }],
   };
 
-  constructor(id: string, attributes?: { [key: string]: string | boolean }) {
+  constructor(id: string, attributes?: { [key: string]: string | boolean | object }) {
     super("UpdateItem");
     this.itemChange.ItemId.Id = id;
     Object.assign(this.Body, attributes);
