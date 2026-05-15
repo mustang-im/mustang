@@ -217,7 +217,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) { // TODO Why?
+    if (this.isDependentAccount) {
       await this.mainAccount.logout();
       return;
     }
@@ -238,9 +238,7 @@ export class OWAAccount extends MailAccount {
 
   notifyObserversOfSubaccounts() {
     for (let account of this.dependentAccounts()) {
-      if (account.mainAccount == this) {
-        account.notifyObservers();
-      }
+      account.notifyObservers();
     }
   }
 

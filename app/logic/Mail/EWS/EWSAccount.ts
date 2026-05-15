@@ -129,7 +129,7 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
+    if (this.isDependentAccount) {
       await this.mainAccount.logout();
       return;
     }
@@ -151,9 +151,7 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
 
   notifyObserversOfSubaccounts() {
     for (let account of this.dependentAccounts()) {
-      if (account.mainAccount == this) {
-        account.notifyObservers();
-      }
+      account.notifyObservers();
     }
   }
 

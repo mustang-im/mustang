@@ -139,9 +139,7 @@ export class ActiveSyncAccount extends MailAccount {
 
   notifyObserversOfSubaccounts() {
     for (let account of this.dependentAccounts()) {
-      if (account.mainAccount == this) {
-        account.notifyObservers();
-      }
+      account.notifyObservers();
     }
   }
 
