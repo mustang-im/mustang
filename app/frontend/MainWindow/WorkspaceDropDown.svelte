@@ -1,6 +1,6 @@
 <vbox class="workspace-selector">
   {#each [null, ...appGlobal.workspaces.each] as workspace}
-    <Clickable onClick={() => onWorkspaceSelected(workspace)}>
+    <Clickable onClick={event => onWorkspaceSelected(workspace, event)}>
       <hbox class="workspace"
         style="--workspace-color: {workspace?.color ?? "black"}"
         class:selected={workspace == $selectedWorkspace}
@@ -30,7 +30,7 @@
 
   export let open: boolean;
 
-  function onWorkspaceSelected(workspace: Workspace) {
+  function onWorkspaceSelected(workspace: Workspace, event: Event) {
     open = false;
     $selectedWorkspace = workspace;
   }
