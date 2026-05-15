@@ -1,12 +1,15 @@
-<hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
-  title={eventAsText}
-  style="--account-color: {event.calendar?.color}"
-  class:selected={$selectedEvent == event}>
-  <hbox class="title">{event.title}</hbox>
-</hbox>
+<Clickable onClick={onSelect} onDoubleClick={onOpen}>
+  <hbox class="event font-small"
+    title={eventAsText}
+    style="--account-color: {event.calendar?.color}"
+    class:selected={$selectedEvent == event}>
+    <hbox class="title">{event.title}</hbox>
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { openEventFromOtherApp } from "../open";
   import { selectedEvent } from "../selected";
 
