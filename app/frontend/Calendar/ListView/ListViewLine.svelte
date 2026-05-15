@@ -6,22 +6,22 @@
     {startTime}
   {/if}
 </hbox>
-<Clickable onClick={onSelect} onDoubleClick={onOpen}>
-  <hbox class="event title"
-    title={eventAsText}
-    style="--color: {event.color ?? event.calendar?.color}"
-    class:all-day={$event.allDay}
-    class:selected={$selectedEvent == event}
-    >
-    {$event.title}
-  </hbox>
-</Clickable>
+<hbox class="event title"
+  on:click
+  on:click={onSelect}
+  on:dblclick={onOpen}
+  title={eventAsText}
+  style="--color: {event.color ?? event.calendar?.color}"
+  class:all-day={$event.allDay}
+  class:selected={$selectedEvent == event}
+  >
+  {$event.title}
+</hbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedEvent } from "../selected";
   import { openEventFromOtherApp } from "../open";
-  import Clickable from "../../Shared/Clickable.svelte";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
