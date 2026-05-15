@@ -1,8 +1,8 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<hbox on:click={myOnClick} on:dblclick={myOnDoubleClick}
+<div on:click={myOnClick} on:dblclick={myOnDoubleClick}
   disabled={!!disabled} class:disabled title={tooltip}>
   <slot />
-</hbox>
+</div>
 
 <script lang="ts">
   import { showError } from '../Util/error';
@@ -54,7 +54,7 @@
 </script>
 
 <style>
-  hbox {
-    height: 100%; /* TODO Use flex directives instead */
+  div {
+    display: contents; /* Use child container CSS rules */
   }
 </style>
