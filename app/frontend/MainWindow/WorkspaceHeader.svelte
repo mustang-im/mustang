@@ -1,22 +1,23 @@
-<hbox class="workspace" bind:this={workspaceE}
-  class:in-settings={$selectedApp == settingsMustangApp}
-  class:in-settings-workspaces={$selectedApp == settingsMustangApp && $selectedCategory?.id == "global-workspaces"}
-  style="--workspace-color: {$selectedWorkspace?.color ?? "inherit" }"
-  class:is-workspace-selected={$selectedWorkspace}
-  on:click={onWorkspaceToggle}>
-  {#if $selectedWorkspace}
-    <hbox class="dot" />
-    <hbox class="label">
-      {$selectedWorkspace.name}
-    </hbox>
-  {:else}
-    <RoundButton label={$t`Workspace`} icon={WorkspaceIcon}
-      iconSize="12px" filled={false} border={false} padding="0px" classes="workspace" />
-  {/if}
-  <Popup bind:popupOpen={showWorkspaceDropdown} popupAnchor={workspaceE} placement="bottom-start" boundaryElSel="body">
-    <WorkspaceDropDown bind:open={showWorkspaceDropdown} />
-  </Popup>
-</hbox>
+<Clickable onClick={onWorkspaceToggle}>
+  <hbox class="workspace" bind:this={workspaceE}
+    class:in-settings={$selectedApp == settingsMustangApp}
+    class:in-settings-workspaces={$selectedApp == settingsMustangApp && $selectedCategory?.id == "global-workspaces"}
+    style="--workspace-color: {$selectedWorkspace?.color ?? "inherit" }"
+    class:is-workspace-selected={$selectedWorkspace}>
+    {#if $selectedWorkspace}
+      <hbox class="dot" />
+      <hbox class="label">
+        {$selectedWorkspace.name}
+      </hbox>
+    {:else}
+      <RoundButton label={$t`Workspace`} icon={WorkspaceIcon}
+        iconSize="12px" filled={false} border={false} padding="0px" classes="workspace" />
+    {/if}
+    <Popup bind:popupOpen={showWorkspaceDropdown} popupAnchor={workspaceE} placement="bottom-start" boundaryElSel="body">
+      <WorkspaceDropDown bind:open={showWorkspaceDropdown} />
+    </Popup>
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import { selectedWorkspace } from "./Selected";
@@ -26,6 +27,7 @@
   import WorkspaceDropDown from "./WorkspaceDropDown.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Clickable from "../Shared/Clickable.svelte";
   import WorkspaceIcon from 'lucide-svelte/icons/circle';
   import { t } from "../../l10n/l10n";
 

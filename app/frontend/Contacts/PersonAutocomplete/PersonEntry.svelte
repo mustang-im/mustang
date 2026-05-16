@@ -1,18 +1,19 @@
-<hbox class="person"
-  class:selected={popupOpen}
-  class:no-pic={!$person.person?.picture}
-  title={person.name + "\n" + person.emailAddress}
-  bind:this={popupAnchor}
-  on:click={onPopupToggle}>
-  <slot name="before-avatar" />
-  {#if $person.person?.picture}
-    <PersonPicture person={$person.person} size={24} />
-  {/if}
-  <vbox flex class="right">
-    <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
-  </vbox>
-  <slot name="after-name" />
-</hbox>
+<Clickable onClick={onPopupToggle}>
+  <hbox class="person"
+    class:selected={popupOpen}
+    class:no-pic={!$person.person?.picture}
+    title={person.name + "\n" + person.emailAddress}
+    bind:this={popupAnchor}>
+    <slot name="before-avatar" />
+    {#if $person.person?.picture}
+      <PersonPicture person={$person.person} size={24} />
+    {/if}
+    <vbox flex class="right">
+      <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
+    </vbox>
+    <slot name="after-name" />
+  </hbox>
+</Clickable>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
   <PersonPopup personUID={person}
     {onRemovePerson}
@@ -32,6 +33,7 @@
   import PersonPopup from "./PersonPopup.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Popup from "../../Shared/Popup.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
@@ -52,7 +54,6 @@
 
   function onPopupToggle(event: MouseEvent) {
     popupOpen = !popupOpen;
-    event.stopPropagation();
   }
 
   function onPopupClose() {

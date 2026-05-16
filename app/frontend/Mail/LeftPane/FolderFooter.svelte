@@ -59,7 +59,9 @@
         {/if}
       </hbox>
     {:else if !appGlobal.isMobile}
-      <hbox flex class="no-search" on:click={toggleShowSearchField} />
+      <Clickable onClick={toggleShowSearchField}>
+        <hbox flex class="no-search" />
+      </Clickable>
       <FolderMsgCount {folder} {searchMessages} />
     {/if}
   </hbox>
@@ -75,6 +77,7 @@
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
   import RoundButton from '../../Shared/RoundButton.svelte';
+  import Clickable from "../../Shared/Clickable.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";

@@ -1,8 +1,10 @@
-<vbox class="settings-category" class:selected on:click={onSelect}>
-  <hbox class="label font-small" class:main={category.isMain}>
-    {category.name}
-  </hbox>
-</vbox>
+<Clickable onClick={onSelect}>
+  <vbox class="settings-category" class:selected>
+    <hbox class="label font-small" class:main={category.isMain}>
+      {category.name}
+    </hbox>
+  </vbox>
+</Clickable>
 {#if isSectionOpen}
   <SubCategoriesList subCategories={category.subCategories} mainCategory={category} />
   <AccountsList {category} />
@@ -13,6 +15,7 @@
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { appGlobal } from "../../../logic/app";
 
   /** in */

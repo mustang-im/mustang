@@ -2,7 +2,7 @@
   <vbox class="font-small">
     {#if signed || encrypted}
       <vbox class="signed key-{trustLevel} plain">
-        <hbox on:click={() => isExpanded = false}>
+        <Clickable onClick={() => isExpanded = false}>
           <RoundButton
             label={title}
             icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
@@ -11,7 +11,7 @@
             border={false}
             />
           <div class="title">{title}</div>
-        </hbox>
+        </Clickable>
         <div class="msg">{msg}</div>
       </vbox>
     {/if}
@@ -32,6 +32,7 @@
   import { findIdentityForEMailAddress } from "../../../logic/Mail/MailIdentity";
   import EncryptionKey from "../../Contacts/PersonPage/EncryptionKey.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";

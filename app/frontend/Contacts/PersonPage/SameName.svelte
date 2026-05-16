@@ -7,12 +7,14 @@
       {/if}
       <grid class="other-person">
         {#each $sameName.each as other}
-          <hbox on:click={() => catchErrors(() => openPerson(other))} class="linked-object">
-            {#if other?.picture}
-              <PersonPicture person={other} size={24} />
-            {/if}
-            <hbox class="name">{other.name}</hbox>
-          </hbox>
+          <Clickable onClick={() => openPerson(other)}>
+            <hbox class="linked-object">
+              {#if other?.picture}
+                <PersonPicture person={other} size={24} />
+              {/if}
+              <hbox class="name">{other.name}</hbox>
+            </hbox>
+          </Clickable>
           <hbox class="email-address">{other.emailAddresses.first?.value ?? ""}</hbox>
           <hbox class="addressbook-icon"
             style="color: {other.addressbook?.color ?? "black"}"
@@ -44,6 +46,7 @@
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Button from "../../Shared/Button.svelte";
   import Icon from "../../Shared/Icon.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import MergeIcon from "lucide-svelte/icons/combine";
   import PersonsIcon from "lucide-svelte/icons/users";
   import AccountIcon from "lucide-svelte/icons/book-user";

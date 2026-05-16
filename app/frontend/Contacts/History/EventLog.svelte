@@ -1,14 +1,15 @@
-<vbox class="event" flex
-  on:click={() => catchErrors(onOpen)}>
-  <div class="title">
-    {event.title}
-  </div>
-</vbox>
+<Clickable onClick={onOpen}>
+  <vbox class="event" flex>
+    <div class="title">
+      {event.title}
+    </div>
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { openEventFromOtherApp } from "../../Calendar/open";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   export let event: Event;
 

@@ -2,9 +2,11 @@
   <Scroll>
     <grid>
       {#each $meetings.each as meeting}
-        <hbox class="time" on:click={ev => myOnClick(ev, meeting)}>
-          {getDateTimeString(meeting.startTime)}
-        </hbox>
+        <Clickable onClick={ev => myOnClick(ev, meeting)} {errorCallback}>
+          <hbox class="time">
+            {getDateTimeString(meeting.startTime)}
+          </hbox>
+        </Clickable>
         <hbox class="location">
           {#if meeting.isOnline}
             <VideoIcon />
@@ -12,9 +14,11 @@
             <PinIcon />
           {/if}
         </hbox>
-        <hbox class="title" on:click={ev => myOnClick(ev, meeting)}>
-          {meeting.title}
-        </hbox>
+        <Clickable onClick={ev => myOnClick(ev, meeting)} {errorCallback}>
+          <hbox class="title">
+            {meeting.title}
+          </hbox>
+        </Clickable>
       {/each}
     </grid>
   </Scroll>
@@ -24,6 +28,7 @@
 
 <script lang="ts">
   import type { Event as CalendarEvent} from "../../../logic/Calendar/Event";
+  import Clickable from "../../Shared/Clickable.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import PinIcon from 'lucide-svelte/icons/map-pin';
@@ -40,8 +45,6 @@
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
-    event.stopPropagation();
-    event.preventDefault();
     disabled = true;
     try {
       await onClick(meeting);

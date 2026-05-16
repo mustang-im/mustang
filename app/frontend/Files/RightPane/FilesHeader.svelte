@@ -11,9 +11,11 @@
 
   <hbox class="parent-dirs font-small">
     {#each parentDirs as parent, i}
-      <hbox class="parent-dir" on:click={changeTo(parent)}>
-        {parent.name}
-      </hbox>
+      <Clickable onClick={() => changeTo(parent)}>
+        <hbox class="parent-dir">
+          {parent.name}
+        </hbox>
+      </Clickable>
       {#if i < parentDirs.length}
         <hbox class="dir-separator">
           <SubIcon size="16px" />
@@ -47,6 +49,7 @@
   import { selectedFolder } from "../selected";
   import { NotImplemented } from "../../../logic/util/util";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import RightViewSwitcher from "./RightViewSwitcher.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import BackIcon from "lucide-svelte/icons/chevron-left";
