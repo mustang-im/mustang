@@ -44,20 +44,16 @@
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  {#if protocolLabels}
-    <Clickable onClick={startEditing}>
+  <Clickable onClick={startEditing}>
+    {#if protocolLabels}
       <hbox class="protocol display">
         {displayProtocol(entry.protocol)}
       </hbox>
-    </Clickable>
-  {:else}
-    <Clickable onClick={startEditing}>
+    {:else}
       <hbox class="purpose display">
         {displayPurpose(entry.purpose)}
       </hbox>
-    </Clickable>
-  {/if}
-  <Clickable onClick={startEditing}>
+    {/if}
     <hbox class="value">
       <slot name="display" />
     </hbox>
