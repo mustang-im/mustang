@@ -32,30 +32,32 @@
   <hbox class="actions edit">
     {#if !appGlobal.isMobile}
       <Button
-        on:click={stopEditing}
+        onClick={stopEditing}
         icon={OKIcon}
         iconOnly plain iconSize="14px"
         label={$t`Finish editing and save`} />
     {/if}
     <Button
-      on:click={remove}
+      onClick={remove}
       icon={DeleteIcon}
       iconOnly plain iconSize="14px"
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  {#if protocolLabels}
-    <hbox class="protocol display" on:click={startEditing}>
-      {displayProtocol(entry.protocol)}
+  <Clickable onClick={startEditing}>
+    {#if protocolLabels}
+      <hbox class="protocol display">
+        {displayProtocol(entry.protocol)}
+      </hbox>
+    {:else}
+      <hbox class="purpose display">
+        {displayPurpose(entry.purpose)}
+      </hbox>
+    {/if}
+    <hbox class="value">
+      <slot name="display" />
     </hbox>
-  {:else}
-    <hbox class="purpose display" on:click={startEditing}>
-      {displayPurpose(entry.purpose)}
-    </hbox>
-  {/if}
-  <hbox class="value" on:click={startEditing}>
-    <slot name="display" />
-  </hbox>
+  </Clickable>
   <hbox class="actions contact-entry">
     {#if !appGlobal.isMobile}
       {#if copied}
@@ -63,12 +65,12 @@
       {/if}
       <slot name="actions display" />
       <Button
-        on:click={copyValue}
+        onClick={copyValue}
         icon={CopyIcon}
         iconOnly plain iconSize="14px"
         label={$t`Copy info to clipboard`} />
       <Button
-        on:click={startEditing}
+        onClick={startEditing}
         icon={PencilIcon}
         iconOnly plain iconSize="14px"
         label={$t`Edit`} />
@@ -83,6 +85,7 @@
   import { selectedContactEntry } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
   import OKIcon from "lucide-svelte/icons/check";

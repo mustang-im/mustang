@@ -71,12 +71,12 @@
   </hbox>
   <hbox class="spam button">
     <Button
-      icon={SpamIcon}
+      icon={$message.isSpam ? NotSpamIcon : SpamIcon}
       iconSize="16px"
       iconOnly
-      label={$t`Mark as spam`}
-      tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-      onClick={markAsSpam}
+      label={$message.isSpam ? $t`Mark as not spam` : $t`Mark as spam`}
+      tooltip={$message.isSpam ? $t`This email is *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+      onClick={toggleSpam}
       plain
       />
   </hbox>
@@ -121,6 +121,7 @@
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
@@ -138,11 +139,11 @@
   async function toggleStar() {
     await message.markStarred(!message.isStarred);
   }
+  async function toggleSpam() {
+    await message.treatSpam(!message.isSpam);
+  }
   async function deleteMessage() {
     await message.deleteMessage();
-  }
-  async function markAsSpam() {
-    await message.treatSpam(true);
   }
 
   let contextMenu: ContextMenu;
@@ -244,11 +245,17 @@
   }
   .direction :global(svg.outgoing) {
     stroke-width: 1px;
-    color: darkred;
   }
   .direction :global(svg.reply) {
     stroke-width: 1px;
-    color: grey;
+  }
+  @media (prefers-color-scheme: light) {
+    .direction :global(svg.outgoing) {
+      color: darkred;
+    }
+    .direction :global(svg.reply) {
+      color: grey;
+    }
   }
   :global(.row.selected) .direction :global(svg.reply) {
     color: var(--selected-fg);

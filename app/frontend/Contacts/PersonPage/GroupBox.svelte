@@ -6,7 +6,7 @@
       <slot name="buttons-top-right" />
       {#if addFunc && !appGlobal.isMobile}
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddIcon}
           iconOnly plain classes="add top" />
@@ -19,11 +19,11 @@
     {#if addFunc && appGlobal.isMobile && isEditing}
       <hbox class="add-row">
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           plain classes="add text" />
         <RoundButton
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddCircleIcon}
           border={false}

@@ -37,16 +37,21 @@
   label={$t`Delete`}
   icon={TrashIcon} />
 <MenuItem
-  onClick={markAsSpam}
-  classes="danger"
-  label={$t`Mark as spam`}
-  tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-  icon={SpamIcon} />
+  onClick={toggleSpam}
+  classes={$message.isSpam ? "" : "danger"}
+  label={$message.isSpam ? $t`Mark as not spam` : $t`Mark as spam`}
+  tooltip={$message.isSpam ? $t`Treat this email as *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+  icon={$message.isSpam ? NotSpamIcon : SpamIcon} />
 <MenuItem
   onClick={translate}
   label={$t`Translate`}
   tooltip={$t`Use an online translation service to translate this message to your default language.`}
   icon={TranslateIcon} />
+<MenuItem
+  onClick={save}
+  label={$t`Export as file`}
+  tooltip={$t`Save this email to a file on your computer`}
+  icon={SaveIcon} />
 {#if printE}
   <MenuItem
     onClick={print}
@@ -80,12 +85,16 @@
   import EditAsNewIcon from "lucide-svelte/icons/iteration-ccw";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import TranslateIcon from "lucide-svelte/icons/languages";
+  import SaveIcon from "lucide-svelte/icons/save";
   import PrintIcon from "lucide-svelte/icons/printer";
   import SourceIcon from "lucide-svelte/icons/code-xml";
+  import { saveBlobAsFile } from "../../Util/util";
   import { showError } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
   export let message: EMail;
   export let printE: Print | null = null;
@@ -128,8 +137,8 @@
     await message.deleteMessage();
     goToNextMessage();
   }
-  async function markAsSpam() {
-    await message.treatSpam(true);
+  async function toggleSpam() {
+    await message.treatSpam(!message.isSpam);
     goToNextMessage();
   }
 
@@ -137,10 +146,19 @@
     message = message.nextMessage();
   }
 
+  async function save() {
+    await message.loadMIME();
+    let content = message.mime as Uint8Array<ArrayBuffer>;
+    let filename = sanitize.filename(message.subject, "email") + ".eml";
+    let file = new File([content], filename, { type: "message/rfc822" });
+    saveBlobAsFile(file);
+  }
+
   async function print() {
     printE.print()
       .catch(showError);
   }
+
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");
     setting.value = setting.value == "source" ? "html" : "source";

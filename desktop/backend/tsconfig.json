@@ -2,7 +2,8 @@
   "include": [
     "./*",
     "../../lib/**/*",
-    "../../app/logic/*"
+    "../../app/logic/*",
+    "../../app/logic/**/*"
   ],
   // <copied from="../tsconfig.json">
   // <copied from="../tsconfig.node.json">

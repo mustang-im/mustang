@@ -2,7 +2,7 @@
   <source src={videoURL} type="video/mp4">
 </video>
 <vbox class="button">
-  <Button classes="pause" label={paused ? $t`Play` : $t`Pause`} icon={paused ? PlayIcon : PauseIcon} on:click={pause} iconSize="16px" plain iconOnly />
+  <Button classes="pause" label={paused ? $t`Play` : $t`Pause`} icon={paused ? PlayIcon : PauseIcon} onClick={pause} iconSize="16px" plain iconOnly />
 </vbox>
 
 <script lang="ts">

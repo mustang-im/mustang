@@ -27,8 +27,8 @@
     margin-inline-end: -6px;
   }
   .island.faint :global(button.selected:not(.hover)) {
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border: none;
   }
   .island.specific :global(button:not(.selected)) {

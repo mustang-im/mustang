@@ -1,21 +1,22 @@
-<hbox class="recipient"
-  on:click={(event) => catchErrors(() => onOpen(event))}
-  bind:this={anchor}
-  class:is-contact={recipient.findPerson()}
-  >
-  <div class="name" title={recipient.name + "\n" + recipient.emailAddress}>
-    {personDisplayName(recipient)}
-  </div>
-  {#if !recipient.findPerson()}
-    {#if recipient.emailAddress}
-      <div class="domain" title={recipient.emailAddress}>
-        @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
-      </div>
-    {:else}
-      <hbox class="invalid">{$t`Invalid address`}</hbox>
+<Clickable onClick={onOpen}>
+  <hbox class="recipient"
+    bind:this={anchor}
+    class:is-contact={recipient.findPerson()}
+    >
+    <div class="name" title={recipient.name + "\n" + recipient.emailAddress}>
+      {personDisplayName(recipient)}
+    </div>
+    {#if !recipient.findPerson()}
+      {#if recipient.emailAddress}
+        <div class="domain" title={recipient.emailAddress}>
+          @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
+        </div>
+      {:else}
+        <hbox class="invalid">{$t`Invalid address`}</hbox>
+      {/if}
     {/if}
-  {/if}
-</hbox>
+  </hbox>
+</Clickable>
 
 <Menu bind:isMenuOpen={isPopupOpen} {anchor} placement="bottom-start">
   {#if existingPersons?.hasItems}
@@ -50,7 +51,7 @@
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -61,7 +62,6 @@
   let existingPersons: ArrayColl<Person>;
 
   function onOpen(event: Event) {
-    event.stopPropagation();
     let person = recipient.findPerson(); // based on email address
     if (person) {
       openPersonFromOtherApp(person);

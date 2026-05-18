@@ -3,17 +3,24 @@
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
   import { mailMustangApp } from "./MailMustangApp";
+  import { openFileInternally } from "../Files/open";
   import { bringAppToFront } from "../AppsBar/selectedApp";
+  import { selectedFolder } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
-  import { assert, type URLString } from "../../logic/util/util";
+  import { assert, sleep, type URLString } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
+  import { onMount } from "svelte";
+
+  onMount(() => {
+    newMailListener();
+  });
 
   $: emailAccounts = appGlobal.emailAccounts;
-  $: catchErrors(() => newMailListener($emailAccounts));
-
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;
-  $: catchErrors(() => startupArgs ? runURL($startupArgs.url) : null);
+  $: catchErrors(() => startupArgs?.url ? runURL($startupArgs.url) : null);
+  $: catchErrors(() => startupArgs?.file ? openFile($startupArgs.file) : null);
+
   async function runURL(url: URLString) {
     if (!url) {
       return;
@@ -32,5 +39,27 @@
     mail.compose.populateFromMailtoURL(url);
     mailMustangApp.writeMail(mail);
     bringAppToFront();
+  }
+
+  async function openFile(file: string) {
+    if (file.endsWith(".eml")) {
+      startupArgs.handled();
+      let mime = await appGlobal.remoteApp.readFile(file);
+
+      await waitForStartup();
+      await openFileInternally(mime, "message/rfc822");
+      bringAppToFront();
+    }
+  }
+
+  async function waitForStartup(): Promise<boolean> {
+    if ($selectedFolder) {
+      return false;
+    }
+    let counter = 0;
+    while (!$selectedFolder && counter++ < 100) {
+      await sleep(0.1);
+    }
+    return true;
   }
 </script>

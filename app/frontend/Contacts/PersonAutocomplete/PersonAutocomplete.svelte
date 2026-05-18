@@ -30,14 +30,13 @@
 
 <script lang="ts">
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import type { Person } from "../../../logic/Abstract/Person";
-  import { appGlobal } from "../../../logic/app";
+  import { searchContacts } from "../../../logic/Contacts/Search";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
   // <https://github.com/pstanoev/simple-svelte-autocomplete>
   // <http://simple-svelte-autocomplete.surge.sh>
   import Autocomplete from 'simple-svelte-autocomplete';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { tick } from 'svelte';
   import { catchErrors, showError } from "../../Util/error";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { assert } from "../../../logic/util/util";
@@ -50,36 +49,9 @@
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
 
-  export async function search(inputStr: string): Promise<PersonUID[]> {
-    if (!inputStr || inputStr.length < 2) {
-      return [];
-    }
+  async function search(inputStr: string) {
     try {
-      let inputParts = inputStr.toLowerCase().split(" ");
-      let persons: Person[] = [];
-      for (let ab of appGlobal.addressbooks) {
-        persons.push(...ab.persons.filterOnce(person => inputParts.every(inputPart =>
-          person.name?.toLowerCase().includes(inputPart) ||
-          person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
-      }
-      await Promise.all(appGlobal.searchOnlyAddressbooks.map(async ab => {
-        let results = new ArrayColl<Person>;
-        await ab.quickSearchAsync(inputStr.toLowerCase(), results);
-        persons = persons.concat(results.contents);
-      }));
-      let emailAddresses: PersonUID[] = [];
-      for (let person of persons) {
-        for (let c of person.emailAddresses.sortBy(c => c.preference)) {
-          if (skipPersons.find(p => p.emailAddress == c.value)) {
-            continue;
-          }
-          let uid = new PersonUID(c.value, person.name);
-          uid.person = person;
-          emailAddresses.push(uid);
-        }
-      }
-      console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
-      return emailAddresses;
+      return await searchContacts(inputStr, skipPersons);
     } catch (ex) {
       showError(ex);
       return [];

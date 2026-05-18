@@ -16,10 +16,11 @@
   <vbox class="accounts-list">
     {#each $accounts.each as account}
       <hbox class="account">
-        <hbox class="name page-link"
-          on:click={() => catchErrors(() => onOpenAccount(account))}>
-          {account.name}
-        </hbox>
+        <Clickable onClick={() => onOpenAccount(account)}>
+          <hbox class="name page-link">
+            {account.name}
+          </hbox>
+        </Clickable>
         <hbox class="spacer" flex />
         <hbox class="buttons">
           <WorkspaceAccountMenu {account} {workspace} />
@@ -40,8 +41,8 @@
   import { changedWorkspace } from "../../MainWindow/Selected";
   import WorkspaceAccountMenu from "./WorkspaceAccountMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
-  import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";

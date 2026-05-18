@@ -6,5 +6,6 @@
     "a11y-no-static-element-interactions": "ignore",
     "a11y-no-noninteractive-tabindex": "ignore"
   },
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "css.lint.emptyRules": "ignore"
 }

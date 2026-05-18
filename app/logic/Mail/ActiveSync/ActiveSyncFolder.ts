@@ -33,6 +33,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   declare account: ActiveSyncAccount;
   declare readonly messages: EMailCollection<ActiveSyncEMail>;
   declare readonly subFolders: ArrayColl<ActiveSyncFolder>;
+  declare readonly deletions: Set<string>;
   readonly folderClass = "Email";
 
   get serverID() {
@@ -112,7 +113,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
             }, data),
           },
         };
-        response = await this.account.callEAS("Sync", request, { allowV16: true });
+        response = await this.account.callEAS("Sync", request);
         if (!response) {
           return null;
         }
@@ -148,15 +149,20 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       },
     };
     await this.makeSyncRequest(data, async response => {
-      for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
+      let addedOrChanged = ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change));
+      for (let item of addedOrChanged) {
         try {
-          let email = this.getEmailByServerID(sanitize.nonemptystring(item.ServerId));
+          let serverID = sanitize.nonemptystring(item.ServerId);
+          if (this.deletions.has(serverID)) {
+            continue;
+          }
+          let email = this.getEmailByServerID(serverID);
           if (email) {
             email.setFlags(item.ApplicationData);
             await this.storage.saveMessageWritableProps(email);
           } else {
             email = this.newEMail();
-            email.serverID = sanitize.nonemptystring(item.ServerId);
+            email.serverID = serverID;
             email.fromWBXML(item.ApplicationData);
             await this.storage.saveMessage(email);
             newMsgs.add(email);

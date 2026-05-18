@@ -5,7 +5,7 @@
   {#if !appGlobal.isMobile}
     <hbox class="actions">
       <Button
-        on:click={stopEditing}
+        onClick={stopEditing}
         icon={OKIcon}
         iconOnly plain iconSize="14px"
         classes="save"
@@ -13,13 +13,15 @@
     </hbox>
   {/if}
 {:else}
-  <div class="value" on:dblclick={startEditing}>
-    {value}
-  </div>
+  <Clickable onDoubleClick={startEditing}>
+    <div class="value">
+      {value}
+    </div>
+  </Clickable>
   {#if !appGlobal.isMobile}
     <hbox class="actions value">
       <Button
-        on:click={startEditing}
+        onClick={startEditing}
         icon={PencilIcon}
         iconOnly plain iconSize="12px"
         classes="edit"
@@ -31,6 +33,7 @@
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";
   import { onKeyEnter } from "../../Util/util";

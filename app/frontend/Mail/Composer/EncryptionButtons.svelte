@@ -8,7 +8,7 @@
         tooltip={signDisabledReason ?? encryptDisabledReason ?? mail.shouldEncrypt ? $t`Encrypt and sign` : mail.signed ? $t`Sign digitally` : $t`Sign or encrypt`}
         icon={mail.shouldEncrypt ? EncryptIcon : mail.signed ? SignIcon : NoEncryptIcon}
         selected={!!mail.signed || mail.shouldEncrypt}
-        onClick={event => { isMenuOpen = !isMenuOpen; event.stopPropagation(); }}
+        onClick={() => isMenuOpen = !isMenuOpen}
         disabled={mail.mustEncrypt || !!signDisabledReason && !!encryptDisabledReason}
         classes="plain"
         border={false}

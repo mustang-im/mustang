@@ -9,3 +9,5 @@ yarn.lock
 package-lock.json
 app/dist/
 *.acebase/
+claude/
+.devcontainer/

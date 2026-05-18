@@ -1,17 +1,18 @@
 <vbox class="expander">
-   <hbox class="header" class:box={headerBox}
-      on:click={onExpandToggle}>
+  <Clickable onClick={onExpandToggle}>
+    <hbox class="header" class:box={headerBox}>
       <slot name="header" />
-    <hbox flex />
-    <hbox class="buttons top-right">
-      <Button plain
-        icon={expanded ? CollapseIcon : ExpandIcon}
-        label={expanded ? $t`Collapse` : $t`Expand`}
-        onClick={onExpandToggle}
-        classes="expand"
-        iconOnly iconSize="16px" />
+      <hbox flex />
+      <hbox class="buttons top-right">
+        <Button plain
+          icon={expanded ? CollapseIcon : ExpandIcon}
+          label={expanded ? $t`Collapse` : $t`Expand`}
+          onClick={onExpandToggle}
+          classes="expand"
+          iconOnly iconSize="16px" />
+      </hbox>
     </hbox>
-   </hbox>
+  </Clickable>
    {#if expanded}
      <slot />
    {/if}
@@ -19,6 +20,7 @@
 
 <script lang="ts">
   import Button from "./Button.svelte";
+  import Clickable from "./Clickable.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
   import { t } from "../../l10n/l10n";
@@ -30,7 +32,6 @@
 
   function onExpandToggle(event: MouseEvent) {
     expanded = !expanded;
-    event.stopPropagation();
   }
 </script>
 

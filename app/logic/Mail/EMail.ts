@@ -13,6 +13,7 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
+import type { EncryptionSystem } from "./Encryption/PublicKey";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -23,7 +24,6 @@ import { notifyChangedProperty } from "../util/Observable";
 import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
-import type { EncryptionSystem } from "./Encryption/PublicKey";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -161,32 +161,38 @@ export class EMail extends Message {
 
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(isSpam = true) {
-    let strategy = this.folder.account.spamStrategy;
-    if (strategy == DeleteStrategy.MoveToTrash) {
-      let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
-      assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
-      if (isSpam) {
-        /** Immediate reaction for end user */
-        await this.deleteMessageLocally();
-        await this.markSpam(isSpam);
-        await spamFolder.moveMessageHere(this);
-      } else {
-        await this.markSpam(isSpam);
-        if (this.folder == spamFolder) {
-          await this.folder.account.inbox.moveMessageHere(this);
+    if (this.pID) {
+      this.folder.deletions.add(this.pID);
+    }
+    try {
+      let strategy = this.folder.account.spamStrategy;
+      if (strategy == DeleteStrategy.MoveToTrash) {
+        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
+        assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+        if (isSpam) {
+          /** Immediate reaction for end user */
+          await this.deleteMessageLocally();
+          await this.markSpam(isSpam);
+          await spamFolder.moveMessageHere(this);
+        } else {
+          await this.markSpam(isSpam);
+          if (this.folder == spamFolder) {
+            await this.folder.account.inbox.moveMessageHere(this);
+          }
+        }
+      } else if (strategy == DeleteStrategy.DeleteImmediately) {
+        if (isSpam) {
+          /** Immediate reaction for end user */
+          await this.deleteMessageLocally();
+          await this.markSpam(isSpam);
+          await this.deleteMessage();
+        } else {
+          await this.markSpam(isSpam);
         }
       }
-    } else if (strategy == DeleteStrategy.DeleteImmediately) {
-      if (isSpam) {
-        /** Immediate reaction for end user */
-        await this.deleteMessageLocally();
-        await this.markSpam(isSpam);
-        /* The spam flag change might trigger a folder listener
-        * from the server, which re-adds this message to the local list.
-        * So, we might have to delete it locally again */
-        await this.deleteMessage();
-      } else {
-        await this.markSpam(isSpam);
+    } finally {
+      if (this.pID) {
+        this.folder.deletions.delete(this.pID);
       }
     }
   }
@@ -217,9 +223,9 @@ export class EMail extends Message {
     await archive.moveMessageHere(this);
   }
 
-  async deleteMessage() {
+  async deleteMessage(strategy?: DeleteStrategy) {
     await this.deleteMessageLocally();
-    await this.deleteMessageOnServer();
+    await this.deleteMessageOnServer(strategy);
   }
 
   async deleteMessageLocally() {
@@ -233,7 +239,7 @@ export class EMail extends Message {
     await contentDeletes.wait();
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy?: DeleteStrategy) {
   }
 
   async addTag(tag: Tag) {
@@ -321,7 +327,7 @@ export class EMail extends Message {
         sanitize.nonemptylabel(p.name, null));
     }
     if (!this.inReplyTo) {
-      this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
+      this.inReplyTo = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
 
@@ -533,7 +539,7 @@ export class EMail extends Message {
     }
   }
 
-  async findThread(messages: Collection<EMail>): Promise<string | null>{
+  async findThread(messages: Collection<EMail>): Promise<string | null> {
     if (!this.dbID) {
       return null;
     }

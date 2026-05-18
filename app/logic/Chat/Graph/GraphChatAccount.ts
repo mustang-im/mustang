@@ -14,18 +14,8 @@ export class GraphChatAccount extends ChatAccount {
     return this.mainAccount as GraphAccount;
   }
 
-  /** Login to this account on the server. Opens network connection.
-   * You must call this after creating the object and having set its properties.
-   * This will populate `persons` and `chats`. */
-  async login(interactive: boolean) {
-    await super.login(interactive);
-    if (!this.account.isLoggedIn) {
-      await this.account.login(interactive);
-    }
-    await this.afterConnect();
+  async startup() {
     await this.listRooms();
-  };
-  protected async afterConnect() {
   }
 
   async listRooms(): Promise<void> {

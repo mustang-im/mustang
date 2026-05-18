@@ -17,9 +17,9 @@ export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
   declare readonly messages: EMailCollection<IMAPEMail>;
   declare readonly subFolders: ArrayColl<IMAPFolder>;
+  declare readonly deletions: Set<number>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<number>();
 
   constructor(account: IMAPAccount) {
     super(account);
@@ -164,7 +164,7 @@ export class IMAPFolder extends Folder {
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
     let lock = await this.listMessagesLock.lock();
     try {
-      let { newMessages } = await this.fetchMessageList({ all: true }, {});
+      let { newMessages } = await this.fetchMessageList({ all: true }, { uid: true });
       this.messages.addAll(newMessages);
       await this.storage.saveFolderProperties(this);
       await this.saveNewMsgs(newMessages);
@@ -178,6 +178,7 @@ export class IMAPFolder extends Folder {
    * Works only with CONDSTORE server capability. */
   protected async listChangedMessages(): Promise<ArrayColl<IMAPEMail>> {
     let { newMessages } = await this.fetchMessageList({ all: true }, {
+      uid: true,
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
     this.messages.addAll(newMessages);
@@ -195,7 +196,7 @@ export class IMAPFolder extends Folder {
       if (this.countTotal === 0) {
         return new ArrayColl();
       }
-      let fromUID = this.getHighestUID() ?? "1";
+      let fromUID = this.getHighestUID() ?? 1;
       let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
@@ -218,7 +219,7 @@ export class IMAPFolder extends Folder {
         envelope: true,
         flags: true,
       };
-      this.account.log(this, conn, "fetchMessageList", range);
+      this.account.log(this, conn, "fetchMessageList", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       let modseq: bigint;
       for await (let msgInfo of msgsAsyncIterator) {
@@ -249,7 +250,7 @@ export class IMAPFolder extends Folder {
         flags: true,
         //threadId: true,
       };
-      this.account.log(this, conn, "fetchFlags", range);
+      this.account.log(this, conn, "fetchFlags", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.flags || this.deletions.has(msgInfo.uid)) {

@@ -2,7 +2,7 @@
   <hbox class="actions top">
     {#if $showingWebApp}
       <Button
-        on:click={closeApp}
+        onClick={closeApp}
         icon={CloseIcon}
         iconSize="24px"
         iconOnly
@@ -24,7 +24,7 @@
   <hbox flex />
   <hbox class="actions bottom">
     <Button
-      on:click={startStore}
+      onClick={startStore}
       icon={AddIcon}
       iconSize="32px"
       iconOnly

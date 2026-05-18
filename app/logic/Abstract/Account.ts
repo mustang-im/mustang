@@ -58,6 +58,27 @@ export class Account extends Observable {
     this.color = randomAccountColor();
   }
 
+  /**
+   * For local accounts, this is the startup entry point. It is overridden
+   * e.g. for contacts and calendar to load data from the database.
+   * Startup for accounts that need to log in will attempt to use a
+   * noninteractive `login` call instead. However if this is successful
+   * then the account's login code should finish by running its startup code.
+   */
+  async startup() {
+  }
+
+  /**
+   * Convenience method for accounts to use to start up dependent accounts.
+   * This should be called after the account has finished its own startup.
+   */
+  protected async startupDependentAccounts() {
+    for (let dependent of this.dependentAccounts()) {
+      dependent.startup()
+        .catch(dependent.errorCallback);
+    }
+  }
+
   get isLoggedIn(): boolean {
     return false;
   }
@@ -77,6 +98,10 @@ export class Account extends Observable {
    */
   async login(interactive: boolean): Promise<void> {
     this.errors.clear();
+
+    if (this.isDependentAccount && !this.isLoggedIn) {
+      await this.mainAccount.login(interactive);
+    }
   }
 
   /** For setup only. Test that the login works. */
@@ -85,6 +110,8 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+    await this.disconnect();
+    await this.oAuth2?.logout();
   }
 
   /**

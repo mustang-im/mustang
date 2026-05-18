@@ -23,7 +23,7 @@
       <PlaintextDisplay plaintext={getSource($message)} />
     {/await}
   {:else if mode == DisplayMode.Thread}
-    <ThreadDisplay {message} />
+    <ChatDisplay {message} />
   {:else}
     {$t`Unknown display mode`}
   {/if}
@@ -34,7 +34,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
-  import ThreadDisplay from "./ThreadDisplay.svelte";
+  import ChatDisplay from "./ChatDisplay.svelte";
   import ErrorMessage from "../../Shared/ErrorMessageInline.svelte";
   import { sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";

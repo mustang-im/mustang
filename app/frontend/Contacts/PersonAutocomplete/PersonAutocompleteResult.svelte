@@ -5,7 +5,7 @@
       <hbox flex class="name font-normal">{person.name}</hbox>
     </hbox>
     <hbox class="bottom-row">
-      <hbox class="email-address font-small" let:person>
+      <hbox class="email-address font-small">
         {person.emailAddress}
       </hbox>
       <slot name="bottom-row" />

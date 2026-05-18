@@ -59,7 +59,11 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
-    await this.listFolders();
+    await this.startup();
+  }
+
+  async startup() {
+    await super.startup();
     this.startPushListener()
       .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
@@ -72,20 +76,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveCalendar) {
       await this.listCalendars();
     }
-    if (this.haveContacts) {
-      for (let addressbook of appGlobal.addressbooks) {
-        if (addressbook.mainAccount == this) {
-          await addressbook.listContacts();
-        }
-      }
-    }
-    if (this.haveCalendar) {
-      for (let calendar of appGlobal.calendars) {
-        if (calendar.mainAccount == this) {
-          await calendar.listEvents();
-        }
-      }
-    }
+    await this.startupDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {
@@ -416,12 +407,9 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async disconnect(): Promise<void> {
     this.stopPolling();
     this.session = null;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    }
   }
 
   async send(email: EMail): Promise<void> {

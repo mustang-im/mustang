@@ -1,35 +1,36 @@
 <vbox class="key" class:obsolete={$key.obsolete}>
-  <hbox class="main-row"
-    on:click={() => isExpanded = !isExpanded}>
-    <hbox class="usage"
-      style:background-color={$key.obsolete ? "grey" : "green"}
-      style:color={$key.obsolete ? "black" : "white"}>
-      {#if $key.obsolete}
-        <DistrustIcon title={$t`Obsolete`} size="16px" />
-      {:else if $key.encryptByDefault}
-        <EncryptIcon title={$t`Use for encryption and signing`} size="16px" />
-      {:else if $key.useToSign}
-        <SignIcon title={$t`Use only for signing messages`} size="16px" />
+  <Clickable onClick={() => isExpanded = !isExpanded}>
+    <hbox class="main-row">
+      <hbox class="usage"
+        style:background-color={$key.obsolete ? "grey" : "green"}
+        style:color={$key.obsolete ? "black" : "white"}>
+        {#if $key.obsolete}
+          <DistrustIcon title={$t`Obsolete`} size="16px" />
+        {:else if $key.encryptByDefault}
+          <EncryptIcon title={$t`Use for encryption and signing`} size="16px" />
+        {:else if $key.useToSign}
+          <SignIcon title={$t`Use only for signing messages`} size="16px" />
+        {:else}
+          <UnusedIcon title={$t`Used only on demand`} size="16px" />
+        {/if}
+      </hbox>
+      <hbox class="name">{$key.name}</hbox>
+      {#if isExpanded}
+        <hbox class="keytype" flex>{$t`Secret key`}</hbox>
       {:else}
-        <UnusedIcon title={$t`Used only on demand`} size="16px" />
+        <hbox flex />
       {/if}
+      <hbox class="system font-small">
+        {key.system}
+      </hbox>
+      <RoundButton
+        label={isExpanded ? $t`Collapse` : $t`Expand`}
+        icon={isExpanded ? ChevronUp : ChevronDown}
+        border={false}
+        classes="plain"
+        />
     </hbox>
-    <hbox class="name">{$key.name}</hbox>
-    {#if isExpanded}
-      <hbox class="keytype" flex>{$t`Secret key`}</hbox>
-    {:else}
-      <hbox flex />
-    {/if}
-    <hbox class="system font-small">
-      {key.system}
-    </hbox>
-    <RoundButton
-      label={isExpanded ? $t`Collapse` : $t`Expand`}
-      icon={isExpanded ? ChevronUp : ChevronDown}
-      border={false}
-      classes="plain"
-      />
-  </hbox>
+  </Clickable>
   {#if isExpanded}
     <vbox class="details">
       {#if $key.obsolete}
@@ -289,6 +290,7 @@
   import ButtonMenu from "../../../Shared/Menu/ButtonMenu.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import Clickable from "../../../Shared/Clickable.svelte";
   import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import FileIcon from "lucide-svelte/icons/file-lock";
@@ -385,8 +387,8 @@
 
 <style>
   .key {
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border-radius: 2px;
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;

@@ -10,14 +10,16 @@
       <Scroll>
         <hbox class="screens">
           {#each $screens.each as screen}
-            <vbox class="screen" on:click={() => onSelect(screen)}>
-              <img src={screen.thumbnailURL}
-                width={kThumbnailWidth} height={kThumbnailHeight}
-                alt="" />
-              <hbox class="name" style="--thumbnail-width: {kThumbnailWidth}px">
-                {screen.name}
-              </hbox>
-            </vbox>
+            <Clickable onClick={() => onSelect(screen)}>
+              <vbox class="screen">
+                <img src={screen.thumbnailURL}
+                  width={kThumbnailWidth} height={kThumbnailHeight}
+                  alt="" />
+                <hbox class="name" style="--thumbnail-width: {kThumbnailWidth}px">
+                  {screen.name}
+                </hbox>
+              </vbox>
+            </Clickable>
           {/each}
         </hbox>
       </Scroll>
@@ -51,6 +53,7 @@
   import { appGlobal } from "../../logic/app";
   import Popup from "../Shared/Popup.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import Clickable from "../Shared/Clickable.svelte";
   import { t } from "../../l10n/l10n";
   import { onDestroy } from "svelte";
   import { ArrayColl } from "svelte-collections";

@@ -1,8 +1,10 @@
-<vbox class="account" class:selected={itemSelected} on:click={onSelect}>
-  <hbox class="label font-small">
-    {$account.name}
-  </hbox>
-</vbox>
+<Clickable onClick={onSelect}>
+  <vbox class="account" class:selected={itemSelected}>
+    <hbox class="label font-small">
+      {$account.name}
+    </hbox>
+  </vbox>
+</Clickable>
 {#if accountSelected}
   <SubCategoriesList {subCategories} mainCategory={category} />
 {/if}
@@ -13,6 +15,7 @@
   import { accountSettings, type SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   /** in */
   export let account: Account;

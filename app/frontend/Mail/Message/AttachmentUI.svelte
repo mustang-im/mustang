@@ -1,42 +1,54 @@
-<hbox class="attachment"
-  draggable="true"
-  on:dragstart={onDragStart}
-  on:click={() => catchErrors(onOpen)}
-  >
-  <hbox bind:this={iconEl}>
-    <hbox class="icon">
-      <FileIcon ext={$attachment.ext} localFilePath={$attachment.filepathLocal} size={24} />
-    </hbox>
-    <vbox class="info">
-      <hbox title={$attachment.filename} class="filename top-row font-normal">
-        {$attachment.filename}
+<Clickable onClick={onOpen}>
+  <hbox class="attachment"
+    draggable="true"
+    on:dragstart={onDragStart}
+    >
+    <hbox bind:this={iconEl}>
+      <hbox class="icon">
+        <FileIcon ext={$attachment.ext} localFilePath={$attachment.filepathLocal} size={24} />
       </hbox>
-      <hbox class="bottom-row font-smallest">
-        <hbox class="size">
-          {$attachment.size ? fileSize($attachment.size) : $t`Not downloaded`}
+      <vbox class="info">
+        <hbox title={$attachment.filename} class="filename top-row font-normal">
+          {$attachment.filename}
         </hbox>
-        <hbox flex />
-        <AttachmentMenu {attachment} />
-      </hbox>
-    </vbox>
+        <hbox class="bottom-row font-smallest">
+          <hbox class="size">
+            {$attachment.size ? fileSize($attachment.size) : $t`Not downloaded`}
+          </hbox>
+          <hbox flex />
+          <AttachmentMenu {attachment} />
+        </hbox>
+      </vbox>
+    </hbox>
   </hbox>
-</hbox>
+</Clickable>
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { fileSize } from "../../Files/fileSize";
+  import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
-  import { fileSize } from "../../Files/fileSize";
-  import { catchErrors } from "../../Util/error";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
   export let message: EMail;
 
   async function onOpen() {
-    await attachment.openOSApp();
+    if (canOpenFileInternally(attachment.mimeType)) {
+      if (!attachment.content) {
+        await message.loadAttachments();
+      }
+      await openFileInternallyFromFile(attachment.content);
+    } else {
+      if (!message.downloadComplete) {
+        await message.loadAttachments();
+      }
+      await attachment.openOSApp();
+    }
   }
 
   let iconEl: HTMLDivElement;

@@ -1,20 +1,22 @@
-<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if $displayEvents?.hasItems}
-    <Scroll>
-      {#each $displayEvents.each as event (event.id)}
-        {#if event.startTime && event.endTime}
-          <EventContainer {event} {start} />
-        {/if}
-      {/each}
-    </Scroll>
-  {/if}
-  {#if withMonthOnFirst && start.getDate() == 1 ||
-    withMonthOnMonday && start.getDay() == 1 }
-    <hbox class="month-name font-normal">
-      {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
-    </hbox>
-  {/if}
-</vbox>
+<Clickable onClick={selectDay} onDoubleClick={addEvent}>
+  <vbox flex class="events">
+    {#if $displayEvents?.hasItems}
+      <Scroll>
+        {#each $displayEvents.each as event (event.id)}
+          {#if event.startTime && event.endTime}
+            <EventContainer {event} {start} />
+          {/if}
+        {/each}
+      </Scroll>
+    {/if}
+    {#if withMonthOnFirst && start.getDate() == 1 ||
+      withMonthOnMonday && start.getDay() == 1 }
+      <hbox class="month-name font-normal">
+        {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
+      </hbox>
+    {/if}
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
@@ -23,6 +25,7 @@
   import { openEventFromOtherApp } from "../open";
   import { appGlobal } from "../../../logic/app";
   import EventContainer from "./EventContainer.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";

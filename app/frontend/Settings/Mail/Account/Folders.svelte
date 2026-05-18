@@ -15,7 +15,7 @@
               padding="3px"
               classes="small"
               label={$t`Create folder`}
-              on:click={() => isCreating = "toplevel"}
+              onClick={() => isCreating = "toplevel"}
               />
           </hbox>
         </hbox>

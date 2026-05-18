@@ -15,24 +15,27 @@ import { OWAGAL } from "../../Contacts/OWA/OWAGAL";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
+import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
+import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
-import { ContentDisposition } from "../../Abstract/Attachment";
+import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
-import { Semaphore } from "../../util/flow/Semaphore";
 import { Throttle } from "../../util/flow/Throttle";
+import { Semaphore } from "../../util/flow/Semaphore";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -46,7 +49,7 @@ export class OWAAccount extends MailAccount {
    * But we have to special-case the root folder,
    * since Mustang doesn't use a dedicated root folder object.
    */
-  msgFolderRootID: string | undefined;
+  protected msgFolderRootID: string | undefined;
   /**
    * OAuth2 authorization header for Hotmail or Office 365 environments.
    * In future it might be possible to perform requests from the front end?
@@ -54,14 +57,16 @@ export class OWAAccount extends MailAccount {
   authorizationHeader: string | undefined;
   /** requests only work after the login form has been successfully submitted */
   @notifyChangedProperty
-  hasLoggedIn = false;
+  protected hasLoggedIn = false;
   protected notifications: OWANotifications;
-  throttle = new Throttle(50, 1);
-  semaphore = new Semaphore(20);
+  protected throttle = new Throttle(50, 1);
+  protected semaphore = new Semaphore(20);
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
   // null: if this is our account
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
-  sharedFolderRoot: "msgfolderroot" | "inbox" | null;
+  protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
 
   constructor() {
     super();
@@ -165,64 +170,69 @@ export class OWAAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (this.mainAccount) {
-      await this.mainAccount.login(interactive);
-      await this.listFolders();
-      return;
-    }
-    await ensureLicensed();
-    await super.login(interactive);
-    await this.loginCommon(interactive);
-    this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
-    this.hasLoggedIn = true;
-    await this.listFolders();
-
-    // `listFolders()` will subscribe to new user-added calendars
-
-    // Create primary addressbook automatically
-    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
-    if (!haveAddressbook) {
-      let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-      let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
-      let addressbook = this.createAddressbookAccount(folder, true);
-      appGlobal.addressbooks.add(addressbook);
-      await addressbook.save();
-    }
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
+    await this.loginRunOnce.runOnce(async () => {
+      if (this.mainAccount) {
+        await this.mainAccount.login(interactive);
+        await this.listFolders();
+        return;
       }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        calendar.listEvents()
-          .catch(this.errorCallback);
+      await ensureLicensed();
+      await super.login(interactive);
+      await this.loginCommon(interactive);
+      this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
+      this.hasLoggedIn = true;
+    });
+
+    await this.startup();
+  }
+
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      // `listFolders()` will subscribe to new user-added calendars
+      await super.startup();
+
+      // Create primary addressbook automatically
+      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
+      if (!haveAddressbook) {
+        let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+        let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+        let addressbook = this.createAddressbookAccount(folder, true);
+        appGlobal.addressbooks.add(addressbook);
+        await addressbook.save();
       }
-    }
 
-    appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+      if (!this.isDependentAccount) {
+        appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+      }
 
-    await this.callOWA(new OWASubscribeToNotificationRequest());
+      await this.callOWA(new OWASubscribeToNotificationRequest());
 
-    this.notifications = this.isOffice365()
-      ? new OWAOffice365Notifications(this)
-      : new OWAExchangeNotifications(this);
-    this.notifications.start()
-      .catch(this.errorCallback);
+      this.notifications = this.isOffice365()
+        ? new OWAOffice365Notifications(this)
+        : new OWAExchangeNotifications(this);
+      this.notifications.start()
+        .catch(this.errorCallback);
+
+      await this.startupDependentAccounts();
+    });
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) {
+    if (this.mainAccount) { // TODO Why?
       await this.mainAccount.logout();
       return;
     }
     this.hasLoggedIn = false;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    } else {
+    await super.logout();
+    if (!this.oAuth2) {
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
+  }
+
+  async disconnect() {
+    let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
+    if (galAB) {
+      appGlobal.searchOnlyAddressbooks.remove(galAB);
     }
   }
 
@@ -260,15 +270,8 @@ export class OWAAccount extends MailAccount {
         Value: email.html || email.text,
       }, "item:Body");
       if (email.attachments.hasItems) {
-        request.addField("Message", "Attachments", await Promise.all(email.attachments.contents.map(async attachment => ({
-          __type: "FileAttachment:#Exchange",
-          Name: attachment.filename,
-          ContentType: attachment.mimeType,
-          ContentID: attachment.contentID,
-          Size: attachment.size,
-          IsInline: attachment.disposition == ContentDisposition.inline,
-          Content: await blobToBase64(attachment.content),
-        }))), "item:Attachments");
+        delete request.Body.SavedItemFolderId;
+        request.Body.MessageDisposition = "SaveOnly";
       }
       if (email.headers.hasItems) {
         request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
@@ -291,19 +294,78 @@ export class OWAAccount extends MailAccount {
     }
     addRecipients(request, "BccRecipients", email.bcc.contents);
     request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");
-    await this.callOWA(request);
+    let response = await this.callOWA(request);
+    if (request.Body.MessageDisposition == "SaveOnly") {
+      await this.addAttachmentsAndSend(email, folder, response.Items[0].ItemId.Id);
+    }
   }
 
-  async callOWA(aRequest: any, { mailbox = null } = {}): Promise<any> {
+  async addAttachmentsAndSend(email: EMail, folder: OWAFolder, itemID: string): Promise<void> {
+    for (let attachment of email.attachments) {
+      let request = new OWARequest("CreateAttachment", {
+        __type: "CreateAttachmentRequest:#Exchange",
+        Attachments: [{
+          __type: "FileAttachment:#Exchange",
+          Name: attachment.filename,
+          ContentType: attachment.mimeType,
+          ContentId: attachment.contentID,
+          Size: attachment.size,
+          IsInline: attachment.disposition == ContentDisposition.inline,
+          Content: "",
+        }],
+        ParentItemId: {
+          __type: "ItemId:#Exchange",
+          Id: itemID,
+        },
+      });
+      if (this.authorizationHeader) {
+        await this.callOWAWithOffice365Attachment(request, attachment);
+      } else {
+        request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
+        await this.callOWA(request);
+      }
+    }
+    await this.callOWA(new OWAUpdateItemRequest(itemID, {
+      ComposeOperation: "newMail",
+      SavedItemFolderId: {
+        __type: "TargetFolderId:#Exchange",
+        BaseFolderId: {
+          __type: "FolderId:#Exchange",
+          Id: folder.id,
+        }
+      },
+      MessageDisposition: "SendAndSaveCopy",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: false
+    }));
+  }
+
+  async callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment, mailbox?: string) {
     if (this.mainAccount) {
       let mainAccount = this.mainAccount as OWAAccount;
-      return await mainAccount.callOWA(aRequest, { mailbox: this.username });
+      return await mainAccount.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
     }
-    if (!this.hasLoggedIn) {
-      throw new LoginError(null, gt`Please login`);
+    return await this.callOWAShared(this.url + "service.svc/CreateAttachmentFromLocalFile", {
+      // n.b. use `await attachment.content.arrayBuffer` if you want to inspect
+      body: attachment.content,
+      headers: {
+        Action: "CreateAttachmentFromLocalFile",
+        Authorization: this.authorizationHeader,
+        "x-anchormailbox": mailbox ?? this.emailAddress,
+        "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
+        "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
+        "x-owa-urlpostdata": encodeURIComponent(JSON.stringify(aRequest)),
+      },
+      method: "POST",
+    });
+  }
+
+  async callOWA(aRequest: any, mailbox?: string): Promise<any> {
+    if (this.mainAccount) {
+      let mainAccount = this.mainAccount as OWAAccount;
+      return await mainAccount.callOWA(aRequest, this.username);
     }
-    let url = this.url + 'service.svc';
-    let options = {
+    return await this.callOWAShared(this.url + "service.svc", {
       body: JSON.stringify(aRequest),
       headers: {
         Action: aRequest.action,
@@ -314,7 +376,13 @@ export class OWAAccount extends MailAccount {
         "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
       },
       method: "POST",
-    };
+    });
+  }
+
+  async callOWAShared(url: string, options: RequestInit) {
+    if (!this.hasLoggedIn) {
+      throw new LoginError(null, gt`Please login`);
+    }
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -361,7 +429,7 @@ export class OWAAccount extends MailAccount {
       result = result.ResponseMessages.Items[0];
     }
     if (this.isThrottleError(result)) {
-      return await this.callOWA(aRequest);
+      return await this.callOWAShared(url, options);
     }
     if (result.MessageText) {
       this.throttle.waitForSecond(1);

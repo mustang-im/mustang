@@ -1,35 +1,36 @@
 <vbox class="key" class:obsolete={$key.obsolete} class:short>
-  <hbox class="main-row"
-    on:click={() => isExpanded = !isExpanded}>
-    {#if showIcon}
-      <hbox class="usage-icon"
-        style:background-color={trustColor[$key.trustLevel] ?? "grey"}
-        style:color={trustColorFG[$key.trustLevel] ?? "black"}>
-        {#if $key.trustLevel == TrustLevel.Distrusted}
-          <DistrustIcon title={$t`Untrusted`} size="16px" />
-        {:else if $key.encryptByDefault}
-          <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
-        {:else}
-          <SignIcon title={$t`Use only for checking signatures`} size="16px" />
-        {/if}
+  <Clickable onClick={() => isExpanded = !isExpanded}>
+    <hbox class="main-row">
+      {#if showIcon}
+        <hbox class="usage-icon"
+          style:background-color={trustColor[$key.trustLevel] ?? "grey"}
+          style:color={trustColorFG[$key.trustLevel] ?? "black"}>
+          {#if $key.trustLevel == TrustLevel.Distrusted}
+            <DistrustIcon title={$t`Untrusted`} size="16px" />
+          {:else if $key.encryptByDefault}
+            <EncryptIcon title={$t`Use for encryption and checking signatures`} size="16px" />
+          {:else}
+            <SignIcon title={$t`Use only for checking signatures`} size="16px" />
+          {/if}
+        </hbox>
+      {/if}
+      <hbox class="name">{$key.name}</hbox>
+      {#if isExpanded}
+        <hbox class="keytype" flex>{$t`Certificate`}</hbox>
+      {:else}
+        <hbox flex />
+      {/if}
+      <hbox class="system font-small">
+        {key.system}
       </hbox>
-    {/if}
-    <hbox class="name">{$key.name}</hbox>
-    {#if isExpanded}
-      <hbox class="keytype" flex>{$t`Certificate`}</hbox>
-    {:else}
-      <hbox flex />
-    {/if}
-    <hbox class="system font-small">
-      {key.system}
+      <RoundButton
+        label={isExpanded ? $t`Collapse` : $t`Expand`}
+        icon={isExpanded ? ChevronUp : ChevronDown}
+        border={false}
+        classes="plain"
+        />
     </hbox>
-    <RoundButton
-      label={isExpanded ? $t`Collapse` : $t`Expand`}
-      icon={isExpanded ? ChevronUp : ChevronDown}
-      border={false}
-      classes="plain"
-      />
-  </hbox>
+  </Clickable>
   {#if isExpanded}
     <vbox class="details">
       <hbox class="acceptance">
@@ -37,6 +38,7 @@
           <label>
             <input type="radio"
               value={TrustLevel.Personal}
+              on:change={onSave}
               bind:group={key.trustLevel} />
             {$t`I have personally checked the verification code with ${personName}`}
           </label>
@@ -224,6 +226,7 @@
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
@@ -293,8 +296,8 @@
 
 <style>
   .key {
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border-radius: 2px;
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;

@@ -78,11 +78,11 @@ export class JMAPEMail extends EMail {
 
   static getJMAPFlags(email: EMail): Record<string, boolean> {
     let flags: Record<string, boolean> = {};
-    flags["$seen"] = email.isRead ? true : null;
-    flags["$flagged"] = email.isStarred ? true : null;
-    flags["$answered"] = email.isReplied ? true : null;
-    flags["$draft"] = email.isDraft ? true : null;
-    flags["$junk"] = email.isSpam ? true : null;
+    flags["$seen"] = email.isRead ? true : undefined;
+    flags["$flagged"] = email.isStarred ? true : undefined;
+    flags["$answered"] = email.isReplied ? true : undefined;
+    flags["$draft"] = email.isDraft ? true : undefined;
+    flags["$junk"] = email.isSpam ? true : undefined;
     for (let tag of email.tags) {
       flags[tag.name] = true;
     }
@@ -107,7 +107,7 @@ export class JMAPEMail extends EMail {
       size: upload.size,
       type: mimeType,
       name: filename,
-      charset: mimeType.startsWith("text/") ? "utf-8" : null,
+      charset: mimeType.startsWith("text/") ? "utf-8" : undefined,
     };
   }
 
@@ -125,7 +125,7 @@ export class JMAPEMail extends EMail {
       cc: JMAPEMail.getJMAPEmailAddresses(email.cc),
       bcc: JMAPEMail.getJMAPEmailAddresses(email.bcc),
       textBody: [await JMAPEMail.uploadEmailBodyPart(Buffer.from(email.text), "text/plain", null, account)],
-      htmlBody: doHTML ? [await JMAPEMail.uploadEmailBodyPart(Buffer.from(email.html), "text/html", null, account)] : null,
+      htmlBody: doHTML ? [await JMAPEMail.uploadEmailBodyPart(Buffer.from(email.html), "text/html", null, account)] : undefined,
       attachments: [],
       sentAt: email.sent?.toISOString(),
       receivedAt: email.received?.toISOString(),

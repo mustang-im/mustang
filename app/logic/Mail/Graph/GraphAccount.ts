@@ -9,25 +9,28 @@ import type { GraphChatAccount } from "../../Chat/Graph/GraphChatAccount";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
-import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class GraphAccount extends MailAccount {
   readonly protocol: string = "graph";
   accountID: string;
   userID: UUID;
-  allFolders = new MapColl<string, GraphFolder>();
+  protected allFolders = new MapColl<string, GraphFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   logging = false;
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -39,66 +42,31 @@ export class GraphAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await ensureLicensed();
-    await super.login(interactive);
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
-    assert([AuthMethod.OAuth2].includes(this.authMethod), "MS Graph supports only OAuth2");
-
-    await this.loginOAuth2(interactive);
-    await this.listFolders();
-    let inbox = this.inbox as GraphFolder;
-    assert(inbox, "Inbox not found");
-    inbox.startPolling();
-
-    /*
-    let haveAddressbook = appGlobal.addressbooks.find(acc => acc.mainAccount == this);
-    if (!haveAddressbook) {
-      let addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
-      addressbook.name = this.name;
-      addressbook.url = this.url;
-      addressbook.initFromMainAccount(this);
-      await addressbook.save();
-      appGlobal.addressbooks.add(addressbook);
-    }
-
-    let haveCalendar = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
-    if (!haveCalendar) {
-      let calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
-      calendar.initFromMainAccount(this);
-      await calendar.save();
-      appGlobal.calendars.add(calendar);
-    }
-    */
-
-    let haveChatAccount = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
-    if (!haveChatAccount) {
-      let chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
-      chatAccount.initFromMainAccount(this);
-      await chatAccount.save();
-      appGlobal.chatAccounts.add(chatAccount);
-    }
-
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.mainAccount == this) {
-        addressbook.listContacts()
-          .catch(this.errorCallback);
+    await this.loginRunOnce.runOnce(async () => {
+      await ensureLicensed();
+      await super.login(interactive);
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
       }
-    }
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.mainAccount == this) {
-        await calendar.listEvents()
-          .catch(this.errorCallback);
-      }
-    }
-    for (let chatAccount of appGlobal.chatAccounts) {
-      if (chatAccount.mainAccount == this) {
-        await chatAccount.listRooms()
-          .catch(this.errorCallback);
-      }
-    }
+      await this.storage.readFolderHierarchy(this);
+      assert([AuthMethod.OAuth2].includes(this.authMethod), "MS Graph supports only OAuth2");
+
+      await this.loginOAuth2(interactive);
+    });
+
+    await this.startup();
+  }
+
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      await super.startup();
+      let inbox = this.inbox as GraphFolder;
+      assert(inbox, "Inbox not found");
+      inbox.startPolling();
+
+      await this.createDefaultDependentAccounts();
+      await this.startupDependentAccounts();
+    });
   }
 
   async verifyLogin(): Promise<void> {
@@ -389,11 +357,8 @@ export class GraphAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async disconnect(): Promise<void> {
     this.stopPolling();
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    }
   }
 
   async send(email: EMail): Promise<void> {
@@ -416,6 +381,36 @@ export class GraphAccount extends MailAccount {
       },
     });
     console.log("send response", sendResponse);
+  }
+
+  protected async createDefaultDependentAccounts() {
+    /*
+    let haveAddressbook = appGlobal.addressbooks.find(acc => acc.mainAccount == this);
+    if (!haveAddressbook) {
+      let addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
+      addressbook.name = this.name;
+      addressbook.url = this.url;
+      addressbook.initFromMainAccount(this);
+      await addressbook.save();
+      appGlobal.addressbooks.add(addressbook);
+    }
+
+    let haveCalendar = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
+    if (!haveCalendar) {
+      let calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
+      calendar.initFromMainAccount(this);
+      await calendar.save();
+      appGlobal.calendars.add(calendar);
+    }
+    */
+
+    let haveChatAccount = appGlobal.chatAccounts.find(acc => acc.mainAccount == this);
+    if (!haveChatAccount) {
+      let chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
+      chatAccount.initFromMainAccount(this);
+      await chatAccount.save();
+      appGlobal.chatAccounts.add(chatAccount);
+    }
   }
 
   fromConfigJSON(config: any) {

@@ -110,6 +110,7 @@
     newAccount.mainAccount = account;
     getAppGlobalListForAccount(newAccount).add(newAccount);
     await newAccount.save();
+    await newAccount.startup();
   }
 </script>
 

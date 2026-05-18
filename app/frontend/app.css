@@ -29,8 +29,9 @@
   --selected-hover-fg: white;
   --main-bg: var(--bg);
   --main-fg: var(--fg);
-  --main-pattern-bg: #E6F2F1;
-  --main-pattern-fg: #160C27;
+  /** Encryption, Island Selected faint */
+  --offset-bg: #E6F2F1;
+  --offset-fg: #160C27;
   --leftbar-bg: #F9F9FD; /* #F9F9FD, #F9F9F9, #716E7D */
   --leftbar-fg: #160C27;
   --headerbar-bg: #EEEEEE;
@@ -71,25 +72,25 @@
     --fg: #C1C1C2;
     --inverted-bg: #C1C1C2;
     --inverted-fg: #141416;
-    --selected-bg: #20AE9E;
+    --selected-bg: #1F897E;
     --selected-fg: white;
     --hover-bg: #1E6A63;
     --hover-fg: #C1C1C2;
     --selected-hover-bg: #1C998B;
     --selected-hover-fg: white;
-    --main-bg: var(--bg);
+    --main-bg: #1B1B1B;
     --main-fg: var(--fg);
-    --main-pattern-bg: #141416;
-    --main-pattern-fg: #C1C1C2;
-    --leftbar-bg: #1B1A1E;
+    --offset-bg: #22312F;
+    --offset-fg: #C1C1C2;
+    --leftbar-bg: #1E1E1E;
     --leftbar-fg: #C1C1C2;
     --windowheader-bg: #202022;
     --windowheader-fg: #C1C1C2;
     --headerbar-bg: #202022;
     --headerbar-fg: #C1C1C2;
-    --appbar-bg: #2C2930;
-    --appbar-fg: white;
-    --border: #3A3A3B;
+    --appbar-bg: #242626;
+    --appbar-fg: #FAFAFA;
+    --border: #333335;
     --outstanding-bg: #666666;
     --outstanding-fg: #C1C1C2;
     --input-bg: transparent;
@@ -364,16 +365,18 @@ a:hover {
   color: var(--selected-hover-fg);
 }
 
-/* App background pattern */
+/* App background pattern, e.g. Contacts app */
 .background-pattern {
   background: url(./asset/background-repeat.png) repeat;
-  background-color: var(--main-pattern-bg);
   background-blend-mode: soft-light;
-  color: var(--main-pattern-fg);
+  background-color: #E6F2F1;
+  color: #160C27;
 }
 @media (prefers-color-scheme: dark) {
   .background-pattern {
     background-blend-mode: overlay;
+    background-color: #141416;
+    color: #C1C1C2;
   }
 }
 

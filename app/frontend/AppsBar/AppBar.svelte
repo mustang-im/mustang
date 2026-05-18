@@ -10,6 +10,7 @@
     <SubAppsList mainApp={app} bind:selectedApp />
   {/each}
   <vbox flex class="middle">
+    <DemoBarMiddle />
   </vbox>
   // #if [!WEBMAIL]
   <vbox class="above-setup">
@@ -25,6 +26,7 @@
   import AppIcon from "./AppIcon.svelte";
   import SubAppsList from "./SubAppsList.svelte";
   import DemoToggle from "./DemoToggle.svelte";
+  import DemoBarMiddle from "./DemoBarMiddle.svelte";
   import { catchErrors } from "../Util/error";
   import type { Collection } from "svelte-collections";
 

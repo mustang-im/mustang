@@ -140,18 +140,23 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let data = {
-      DeletesAsMoves: "1",
-      GetChanges: "0",
-      Commands: {
-        Delete: {
-          ServerId: this.serverID,
+    try {
+      this.folder.deletions.add(this.serverID);
+      let data = {
+        DeletesAsMoves: "1",
+        GetChanges: "0",
+        Commands: {
+          Delete: {
+            ServerId: this.serverID,
+          },
         },
-      },
-    };
-    let response = await this.folder.makeSyncRequest(data);
-    if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      };
+      let response = await this.folder.makeSyncRequest(data);
+      if (response.Responses) {
+        throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      }
+    } finally {
+      this.folder.deletions.delete(this.serverID);
     }
   }
 

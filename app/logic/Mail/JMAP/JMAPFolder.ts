@@ -19,11 +19,11 @@ export class JMAPFolder extends Folder {
   declare account: JMAPAccount;
   declare readonly messages: EMailCollection<JMAPEMail>;
   declare readonly subFolders: ArrayColl<JMAPFolder>;
+  declare readonly deletions: Set<string>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<string>();
 
   constructor(account: JMAPAccount) {
     super(account);
@@ -264,18 +264,22 @@ export class JMAPFolder extends Folder {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
-      let jmapID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(jmapID)) {
-        continue;
-      }
-      let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
-      if (msg) {
-        msg.fromJMAP(json);
-        updatedMessages.add(msg);
-      } else {
-        msg = this.newEMail();
-        msg.fromJMAP(json);
-        newMessages.add(msg);
+      try {
+        let jmapID = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(jmapID)) {
+          continue;
+        }
+        let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
+        if (msg) {
+          msg.fromJMAP(json);
+          updatedMessages.add(msg);
+        } else {
+          msg = this.newEMail();
+          msg.fromJMAP(json);
+          newMessages.add(msg);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return { newMessages, updatedMessages };

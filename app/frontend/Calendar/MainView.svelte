@@ -9,7 +9,7 @@
     <slot name="top-right" slot="top-right" />
   </WeekView>
 {:else if dateInterval == 7}
-  <WeekView bind:start {events}>
+  <WeekView bind:start {events} enlargeSelectedDay={true}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>

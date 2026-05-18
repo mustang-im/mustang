@@ -1,13 +1,13 @@
 <hbox class="identity-selector">
   {#if selectedIdentity.isCatchAll}
     <label for="customFrom">{$t`From`}</label>
-    {beforeCustom}
+    <hbox class="before-custom">{beforeCustom}</hbox>
     <input type="email" bind:value={editableCustom}
       name="customFrom" spellcheck="false"
       on:change={() => catchErrors(onCustomEdited)}
       size={editableCustom?.length}
       />
-    {afterCustom}
+    <hbox class="after-custom">{afterCustom}</hbox>
     <hbox class="account">
       {selectedIdentity.account?.name}
     </hbox>
@@ -29,9 +29,8 @@
 
 <script lang="ts">
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { appGlobal } from "../../../logic/app";
   import { catchErrors } from "../../Util/error";
-  import { ArrayColl, type Collection } from "svelte-collections";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let selectedIdentity: MailIdentity; /* in/out */
@@ -81,6 +80,15 @@
   }
   label {
     margin-inline-end: 12px;
+  }
+  input[type=email] {
+    min-width: 20vw;
+    width: 20%;
+  }
+  .before-custom,
+  .after-custom,
+  .account {
+    overflow-x: hidden; /* TODO not working. Problem: Mobile, with long domains. */
   }
   select.catch-all {
     width: 20px;

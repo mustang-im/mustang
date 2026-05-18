@@ -25,7 +25,7 @@
     justify-content: center;
     margin: 20px 20px 0px 20px;
     padding: 5px;
-    color: var(--main-pattern-fg);
+    color: var(--offset-fg);
     opacity: 60%; /* TODO Should change only text color */
   }
 </style>

@@ -36,10 +36,14 @@
       return;
     }
     let fileContents = await file.text();
-    let events = convertICalToEvents(fileContents, () => account.newEvent());
+    let events = convertICalToEvents(fileContents, () => account.newEvent(), ex => account.errorCallback(ex));
     account.events.addAll(events);
     for (let event of events) {
-      await event.save();
+      try {
+        await event.save();
+      } catch (ex) {
+        account.errorCallback(ex);
+      }
     }
     await account.save();
   }

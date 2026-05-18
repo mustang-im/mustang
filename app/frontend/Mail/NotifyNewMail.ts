@@ -5,20 +5,12 @@ import { mailMustangApp } from "./MailMustangApp";
 import { openApp, bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
 import { getLocalStorage } from "../Util/LocalStorage";
-import { sleep } from "../../logic/util/util";
 import MailIcon from '../asset/icon/appBar/mail.svg?raw';
 import { backgroundError, logError, showError } from "../Util/error";
-import { CollectionObserver, type Collection } from "svelte-collections";
+import { CollectionObserver } from "svelte-collections";
 
-export async function newMailListener(emailAccounts: Collection<MailAccount>) {
-  await sleep(10);
-  let observer = new NewMessageObserver();
-  for (let acc of emailAccounts) {
-    console.log("observe account", acc.name, acc?.inbox?.messages.length);
-    acc.inbox?.messages.registerObserver(observer);
-    // TODO unregister previous observers:
-    // let currentObservers = new Map<MailAccount, NewMessageObserver>();
-  }
+export async function newMailListener() {
+  appGlobal.emailAccounts.registerObserver(accountsObserver);
 }
 
 export async function showNewMail(messages: EMail[]) {
@@ -171,3 +163,18 @@ class NewMessageObserver extends CollectionObserver<EMail> {
     // do nothing
   }
 }
+let newMessageObserver = new NewMessageObserver();
+
+class AccountsObserver extends CollectionObserver<MailAccount> {
+  added(accounts: MailAccount[]) {
+    for (let account of accounts) {
+      account.inbox?.messages.registerObserver(newMessageObserver);
+    }
+  }
+  removed(accounts: MailAccount[]) {
+    for (let account of accounts) {
+      account.inbox?.messages.unregisterObserver(newMessageObserver);
+    }
+  }
+}
+let accountsObserver = new AccountsObserver();

@@ -1,34 +1,36 @@
-<vbox class="app-menu" on:click={onClose} flex>
-  <hbox class="top">
-    <vbox class="left" flex>
-      <!--<WorkspaceDropDown />-->
-    </vbox>
-    <vbox class="center" flex>
-      <hbox class="date font-small">
-        {getFormattedDateString(new Date(), { weekday: "short", day: "2-digit", month: "short" })}
-      </hbox>
-      <hbox class="time">
-        {getTimeString(new Date())}
-      </hbox>
-    </vbox>
-    <vbox class="right" flex />
-  </hbox>
-  <hbox flex />
-  <!--<RecentPersons />-->
-  <hbox flex />
-  <grid class="apps">
-    <!-- each app must add exactly 5 elements -->
-    <TopAppMenu />
-    <!--<WebAppsAppMenu />-->
-    <FilesAppMenu />
-    <CalendarAppMenu />
-    <MeetAppMenu />
-    <ChatAppMenu />
-    <MailAppMenu />
-    <ContactsAppMenu />
-    <BottomAppMenu />
-  </grid>
-</vbox>
+<Clickable onClick={onClose}>
+  <vbox class="app-menu" flex>
+    <hbox class="top">
+      <vbox class="left" flex>
+        <!--<WorkspaceDropDown />-->
+      </vbox>
+      <vbox class="center" flex>
+        <hbox class="date font-small">
+          {getFormattedDateString(new Date(), { weekday: "short", day: "2-digit", month: "short" })}
+        </hbox>
+        <hbox class="time">
+          {getTimeString(new Date())}
+        </hbox>
+      </vbox>
+      <vbox class="right" flex />
+    </hbox>
+    <hbox flex />
+    <!--<RecentPersons />-->
+    <hbox flex />
+    <grid class="apps">
+      <!-- each app must add exactly 5 elements -->
+      <TopAppMenu />
+      <!--<WebAppsAppMenu />-->
+      <FilesAppMenu />
+      <CalendarAppMenu />
+      <MeetAppMenu />
+      <ChatAppMenu />
+      <MailAppMenu />
+      <ContactsAppMenu />
+      <BottomAppMenu />
+    </grid>
+  </vbox>
+</Clickable>
 <AppMenuBarM />
 
 <script lang="ts">
@@ -44,6 +46,7 @@
   import BottomAppMenu from "./BottomAppMenu.svelte";
   import AppMenuBarM from "./AppMenuBarM.svelte";
   import RecentPersons from "./RecentPersons.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { goBack } from "../selectedApp";
 
   function onClose() {
