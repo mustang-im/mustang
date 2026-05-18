@@ -327,7 +327,7 @@ export class EMail extends Message {
         sanitize.nonemptylabel(p.name, null));
     }
     if (!this.inReplyTo) {
-      this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
+      this.inReplyTo = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
 
@@ -539,7 +539,7 @@ export class EMail extends Message {
     }
   }
 
-  async findThread(messages: Collection<EMail>): Promise<string | null>{
+  async findThread(messages: Collection<EMail>): Promise<string | null> {
     if (!this.dbID) {
       return null;
     }
