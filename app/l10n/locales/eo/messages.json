@@ -752,7 +752,6 @@
   "MSxkuX": "Ne interreta kunveno, aŭ ne konata aliĝ-URL.",
   "4XbsEl": "Ne en kunveno",
   "zT60IT": "Ankoraŭ ne certa",
-  "1xspS3": "Ankoraŭ ne funkcias - Baldaŭ",
   "At5fs9": "Nur tel:-URL-oj estas subtenataj.",
   "6BjJ+/": "Malfermu kalendaron",
   "ZdWg0V": "Malfermu en retumilo",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Enirkesto ne trovita",
   "VAlOyH": "Instaliĝas ĝisdatigo...",
   "J+/IsA": "Konservu ĉi tiun retpoŝton en dosieron sur via komputilo.",
-  "JknIwf": "Invitu aliajn homojn"
+  "JknIwf": "Invitu aliajn homojn",
+  "f8aSmE": "Ĉi tiu retpoŝto *ne* estas spamo.",
+  "UNx6Nw": "Traktu ĉi tiun retpoŝton kiel *ne* spamon.",
+  "KDw4GX": "Provu denove"
 }

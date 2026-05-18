@@ -787,7 +787,6 @@
   "X1IUi+": "Inicio de sesión en línea",
   "g8gV5K": "Esto fue borrado en el servidor",
   "2x9Z/v": "Configure primero un calendario",
-  "1xspS3": "Aún no funciona - Próximamente",
   "Du+zn+": "Buscando...",
   "yHwG3y": "Pronto",
   "Lr5HND": "Crear su primera cuenta",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Bandeja de entrada no encontrada",
   "VAlOyH": "Instalando actualización...",
   "J+/IsA": "Guarde este correo electrónico en un archivo de su ordenador",
-  "JknIwf": "Invitar a otras personas"
+  "JknIwf": "Invitar a otras personas",
+  "f8aSmE": "Este correo electrónico *no* es spam",
+  "UNx6Nw": "Tratar este correo como *no* spam",
+  "KDw4GX": "Inténtalo de nuevo"
 }

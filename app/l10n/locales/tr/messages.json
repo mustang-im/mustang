@@ -787,7 +787,6 @@
   "X1IUi+": "Satır içi giriş",
   "g8gV5K": "Bu sunucuda silindi",
   "2x9Z/v": "Lütfen önce bir takvim oluşturun",
-  "1xspS3": "Henüz çalışmıyor - Yakında geliyor",
   "Du+zn+": "Aranıyor.",
   "yHwG3y": "Yakında",
   "Lr5HND": "İlk hesabınızı oluşturun",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Gelen kutusu bulunamadı",
   "VAlOyH": "Güncelleme yükleniyor...",
   "J+/IsA": "Bu e-postayı bilgisayarınızdaki bir dosyaya kaydedin",
-  "JknIwf": "Diğer kişileri davet edin"
+  "JknIwf": "Diğer kişileri davet edin",
+  "f8aSmE": "Bu e-posta * spam değildir",
+  "UNx6Nw": "Bu e-postayı * spam değil* olarak değerlendirin",
+  "KDw4GX": "Tekrar deneyin"
 }

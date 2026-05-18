@@ -787,7 +787,6 @@
   "X1IUi+": "Sisene sisselogimine",
   "g8gV5K": "See kustutati serverist",
   "2x9Z/v": "Palun seadistage kõigepealt kalender",
-  "1xspS3": "Ei tööta veel - tulemas varsti",
   "Du+zn+": "Otsin...",
   "yHwG3y": "Varsti",
   "Lr5HND": "Seadistage oma esimene konto",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Postkasti ei leitud",
   "VAlOyH": "Uuenduse paigaldamine...",
   "J+/IsA": "Salvestage see e-kiri oma arvutis asuvasse faili",
-  "JknIwf": "Kutsuge teisi inimesi"
+  "JknIwf": "Kutsuge teisi inimesi",
+  "f8aSmE": "See e-kiri on *ei* rämpspost",
+  "UNx6Nw": "Käsitle seda e-kirja *ei* rämpspostina",
+  "KDw4GX": "Proovi uuesti"
 }

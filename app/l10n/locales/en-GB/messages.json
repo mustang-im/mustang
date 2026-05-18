@@ -787,7 +787,6 @@
   "X1IUi+": "Login inline",
   "g8gV5K": "This was deleted on the server",
   "2x9Z/v": "Please set up a calendar first",
-  "1xspS3": "Not working yet - Coming soon",
   "Du+zn+": "Searching...",
   "yHwG3y": "Soon",
   "/lLfdi": "Copy email address",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Inbox not found",
   "VAlOyH": "Installing update...",
   "J+/IsA": "Save this email to a file on your computer",
-  "JknIwf": "Invite other people"
+  "JknIwf": "Invite other people",
+  "f8aSmE": "This email is *not* spam",
+  "UNx6Nw": "Treat this email as *not* spam",
+  "KDw4GX": "Try again"
 }

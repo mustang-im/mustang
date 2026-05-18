@@ -787,7 +787,6 @@
   "X1IUi+": "Logowanie inline",
   "g8gV5K": "Zostało to usunięte na serwerze",
   "2x9Z/v": "Najpierw skonfiguruj kalendarz",
-  "1xspS3": "Jeszcze nie działa - wkrótce",
   "Du+zn+": "Wyszukiwanie...",
   "yHwG3y": "Wkrótce",
   "Lr5HND": "Skonfiguruj swoje pierwsze konto",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Nie znaleziono skrzynki odbiorczej",
   "VAlOyH": "Instalowanie aktualizacji...",
   "J+/IsA": "Zapisz tę wiadomość e-mail w pliku na komputerze",
-  "JknIwf": "Zapraszanie innych osób"
+  "JknIwf": "Zapraszanie innych osób",
+  "f8aSmE": "Ta wiadomość *nie* jest spamem",
+  "UNx6Nw": "Potraktuj tę wiadomość jako *nie* spam",
+  "KDw4GX": "Spróbuj ponownie"
 }

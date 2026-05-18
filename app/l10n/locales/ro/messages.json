@@ -787,7 +787,6 @@
   "X1IUi+": "Conectare în linie",
   "g8gV5K": "Acest lucru a fost șters pe server",
   "2x9Z/v": "Vă rugăm să configurați mai întâi un calendar",
-  "1xspS3": "Nu funcționează încă - În curând",
   "Du+zn+": "Căutarea...",
   "yHwG3y": "În curând",
   "Lr5HND": "Configurați primul dvs. cont",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Inbox nu a fost găsit",
   "VAlOyH": "Instalarea actualizării...",
   "J+/IsA": "Salvați acest e-mail într-un fișier de pe computer",
-  "JknIwf": "Invitați alte persoane"
+  "JknIwf": "Invitați alte persoane",
+  "f8aSmE": "Acest e-mail *nu* este spam",
+  "UNx6Nw": "Tratați acest e-mail ca *nu* spam",
+  "KDw4GX": "Încercați din nou"
 }

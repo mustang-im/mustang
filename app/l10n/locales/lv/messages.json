@@ -787,7 +787,6 @@
   "X1IUi+": "Pieslēgšanās inline",
   "g8gV5K": "Tas tika dzēsts serverī",
   "2x9Z/v": "Lūdzu, vispirms iestatiet kalendāru",
-  "1xspS3": "Vēl nedarbojas - Drīzumā būs pieejams",
   "Du+zn+": "Meklēšana...",
   "yHwG3y": "Drīzumā",
   "Lr5HND": "Pirmā konta iestatīšana",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Iesūtne nav atrasta",
   "VAlOyH": "Atjauninājumu instalēšana...",
   "J+/IsA": "Saglabājiet šo e-pasta vēstuli failā savā datorā",
-  "JknIwf": "Uzaiciniet citus cilvēkus"
+  "JknIwf": "Uzaiciniet citus cilvēkus",
+  "f8aSmE": "Šis e-pasta vēstule *nav* surogātpasts",
+  "UNx6Nw": "Uzskatiet šo e-pasta vēstuli par *ne* surogātpastu",
+  "KDw4GX": "Mēģiniet vēlreiz"
 }

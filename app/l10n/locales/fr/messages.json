@@ -787,7 +787,6 @@
   "X1IUi+": "Connexion en ligne",
   "g8gV5K": "Il a été supprimé sur le serveur",
   "2x9Z/v": "Veuillez d'abord établir un calendrier",
-  "1xspS3": "Pas encore opérationnel - Prochainement",
   "Du+zn+": "Recherche...",
   "yHwG3y": "Bientôt",
   "Lr5HND": "Créez votre premier compte",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Boîte de réception introuvable",
   "VAlOyH": "Installation de la mise à jour...",
   "J+/IsA": "Enregistrez cet e-mail dans un fichier sur votre ordinateur",
-  "JknIwf": "Inviter d'autres personnes"
+  "JknIwf": "Inviter d'autres personnes",
+  "f8aSmE": "Ce courriel n'est *pas* du spam",
+  "UNx6Nw": "Traiter cet e-mail comme *non* spam",
+  "KDw4GX": "Réessayer"
 }

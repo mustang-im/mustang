@@ -787,7 +787,6 @@
   "X1IUi+": "Sisäänkirjautuminen inline",
   "g8gV5K": "Tämä poistettiin palvelimelta",
   "2x9Z/v": "Määritä kalenteri ensin",
-  "1xspS3": "Ei toimi vielä - Tulossa pian",
   "Du+zn+": "Etsin...",
   "yHwG3y": "Pian",
   "Lr5HND": "Ensimmäisen tilin perustaminen",
@@ -1077,5 +1076,8 @@
   "+bs3UE": "Saapuneita ei löydy",
   "VAlOyH": "Päivityksen asentaminen...",
   "J+/IsA": "Tallenna tämä sähköposti tiedostoksi tietokoneellesi",
-  "JknIwf": "Kutsu muita ihmisiä"
+  "JknIwf": "Kutsu muita ihmisiä",
+  "f8aSmE": "Tämä sähköposti ei ole *ei* roskapostia",
+  "UNx6Nw": "Käsittele tätä sähköpostia *ei* roskapostina",
+  "KDw4GX": "Yritä uudelleen"
 }
