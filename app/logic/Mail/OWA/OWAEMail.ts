@@ -121,8 +121,13 @@ export class OWAEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
-    await this.folder.account.callOWA(request);
+    try {
+      this.folder.deletions.add(this.itemID);
+      let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      await this.folder.account.callOWA(request);
+    } finally {
+      this.folder.deletions.delete(this.itemID);
+    }
   }
 
   async addTagOnServer(tag: Tag) {

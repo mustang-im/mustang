@@ -24,6 +24,7 @@ export class OWAFolder extends Folder {
   declare account: OWAAccount;
   declare readonly messages: EMailCollection<OWAEMail>;
   declare readonly subFolders: ArrayColl<OWAFolder>;
+  declare readonly deletions: Set<string>;
   // Whether a folder scan or notification changed the counts
   dirty: boolean = false;
 
@@ -104,13 +105,17 @@ export class OWAFolder extends Folder {
         let messages = result.RootFolder.Items;
         let newMessageIDs: string[] = [];
         for (let message of messages) {
-          let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+          let id = sanitize.nonemptystring(message.ItemId.Id);
+          if (this.deletions.has(id)) {
+            continue;
+          }
+          let email = this.getEmailByItemID(id);
           if (email) {
             email.setFlags(message);
             await this.storage.saveMessageWritableProps(email);
             allMsgs.add(email);
           } else {
-            newMessageIDs.push(message.ItemId.Id);
+            newMessageIDs.push(id);
           }
         }
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
