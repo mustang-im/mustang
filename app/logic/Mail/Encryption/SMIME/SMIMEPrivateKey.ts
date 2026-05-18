@@ -1,5 +1,5 @@
 import type { PrivateKey } from "../PrivateKey";
-import { SMIMEPublicKey } from "./SMIMEPublicKey";
+import { SMIMEPublicKey, splitPEM } from "./SMIMEPublicKey";
 import { KeyDerivationAlgorithm, PrivateKeyInfo, EncryptedPrivateKeyInfo, PBES2Params, PBKDF2Params, RSAPrivateKey, RSAPublicKey, CertificationRequestInfo, DigestInfo, CertificationRequest, Null, OctetString } from "./SMIMEASN1";
 import { decrypt, padFF } from "./SMIMERSAES";
 import { SMIMEReadProcessor } from "./SMIMEReadProcessor";
@@ -31,6 +31,11 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     if (this._encryptByDefault) {
       this.useToSign = true;
     }
+  }
+
+  async matches(key: RSAPublicKey, _default: boolean): Promise<boolean> {
+    let rawKey = await this.decryptKey();
+    return key.n == rawKey.n && key.e == rawKey.e;
   }
 
   async decryptKey(): Promise<RSAPrivateKey> {
@@ -148,7 +153,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     let key = new SMIMEPrivateKey();
     key.privateKeyArmored = EncryptedPrivateKeyInfo.encodePEM(encryptedKey, { label: "ENCRYPTED PRIVATE KEY" });
     key.passphrase = passphrase;
-    key.id = rsaKey.n.toString(16);
+    key.id = rsaKey.n.toString(16).slice(-16);
     key.keyLengthInBits = 4096;
     key.justCreated = true;
     key.created = new Date();
@@ -161,9 +166,8 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
    * Factory function.
    */
   static async importPrivateKey(privateKey: string, passphrase?: string): Promise<SMIMEPrivateKey> {
-    let parts = splitPEM(privateKey);
     let key = new SMIMEPrivateKey();
-    key.privateKeyArmored = parts.shift();
+    key.privateKeyArmored = splitPEM(privateKey).shift();
     key.passphrase = passphrase;
     let rawKey = await key.decryptKey();
     assert(rawKey.n == rawKey.p * rawKey.q, "modulus should be product of primes");
@@ -172,14 +176,13 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     assert(rawKey.dP == rawKey.d % (rawKey.p - 1n), "prime 1 exponent does not match private exponent");
     assert(rawKey.dQ == rawKey.d % (rawKey.q - 1n), "prime 2 exponent does not match private exponent");
     assert(rawKey.qInv * rawKey.q % rawKey.p == 1n, "inverse does not match primes");
-    key.id = rawKey.n.toString(16);
-    key.keyLengthInBits = key.id.length * 4;
+    let id = rawKey.n.toString(16);
+    key.id = id.slice(-16);
+    key.keyLengthInBits = id.length * 4;
     key.justCreated = true;
     key.created = new Date();
     key.fingerprint = "--";
-    for (let part of parts) {
-      key.addCertificate(part);
-    }
+    await key.addCertificates(privateKey);
     return key;
   }
 
@@ -198,29 +201,6 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     this.didBackup = sanitize.boolean(json.didBackup, null);
     this.passphrase = sanitize.string(json.passphrase, null);
   }
-}
-
-function splitPEM(key: string): string[] {
-  let result: string[] = [];
-  let label: string | null = null;
-  let pem: string | null = null;
-  for (let line of key.split(/[\r\n]+/)) {
-    if (line.endsWith("-----")) {
-      if (line.startsWith("-----BEGIN ")) {
-        label = line.slice(11, -5);
-        pem = line + "\n";
-      } else if (line.startsWith("-----END ")) {
-        if (label && line.slice(9, -5) == label) {
-          result.push(pem + line);
-        }
-        label = null;
-        pem = null;
-      }
-    } else if (pem) {
-      pem += line + "\n";
-    }
-  }
-  return result;
 }
 
 const attributeTypes: Record<string, "printstr" | "utf8str" | "ia5str"> = {

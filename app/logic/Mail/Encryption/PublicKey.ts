@@ -175,7 +175,7 @@ export function trustOrder(trustLevel: TrustLevel): number {
 export const trustColor = {
   [TrustLevel.Personal]: "green",
   [TrustLevel.ThirdParty]: "blue",
-  [TrustLevel.OS]: "orange",
+  [TrustLevel.OS]: "#005eff", // lighter blue
   [TrustLevel.Sender]: "yellow",
   [TrustLevel.Distrusted]: "red",
 }
@@ -183,7 +183,7 @@ export const trustColor = {
 export const trustColorFG = {
   [TrustLevel.Personal]: "white",
   [TrustLevel.ThirdParty]: "white",
-  [TrustLevel.OS]: "black",
+  [TrustLevel.OS]: "white",
   [TrustLevel.Sender]: "black",
   [TrustLevel.Distrusted]: "white",
 }

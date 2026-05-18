@@ -1,3 +1,6 @@
+// ASN.1 object definitions and identifiers, taken from various RFCs.
+// RFCs are Copyright (c) IETF Trust and their authors.
+// Code components are licenced under the BSD licence.
 import { define } from "../../../../../lib/asn1/api";
 
 /** Object identifiers */

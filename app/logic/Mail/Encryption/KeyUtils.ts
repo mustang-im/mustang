@@ -69,11 +69,9 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
   assert(!fileContent.includes("PRIVATE KEY"), gt`This is a secret key. If this is your key, go to Settings | Mail | Identity | Encryption and import it there.`);
   if (fileContent.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
     return await PGPPublicKey.importPublicKey(fileContent);
-  } else if (fileContent.includes("-----BEGIN CERTIFICATE-----")) {
+  } else if (fileContent.includes("-----BEGIN CERTIFICATE-----") ||
+    fileContent.includes("-----BEGIN TRUSTED CERTIFICATE-----")) {
     return await SMIMEPublicKey.importPublicKey(fileContent);
-  } else if (fileContent.includes("-----BEGIN TRUSTED CERTIFICATE-----")) {
-    // This is an OpenSSL certificate which we convert to a regular certificate.
-    return await SMIMEPublicKey.importPublicKey(fileContent, 'TRUSTED CERTIFICATE');
   }
   throw new UserError(gt`Could not find a key in this file`);
 }

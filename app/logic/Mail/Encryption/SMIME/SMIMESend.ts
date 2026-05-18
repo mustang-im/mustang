@@ -23,6 +23,7 @@ export class SMIMESend {
   static async encryptAndSign(mail: EMail): Promise<EMail> {
     let privateKey = getMyPrivateKey(mail.identity, SMIMEPrivateKey);
     assert(privateKey, gt`Please first set up S/MIME encryption for yourself, in Settings | Mail | Identity | Encryption`);
+    let rawKey = await privateKey.decryptKey();
     let result = SendEncrypted.cloneEMail(mail);
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
@@ -53,7 +54,6 @@ export class SMIMESend {
         },
         digest: attributesDigest,
       };
-      let rawKey = await privateKey.decryptKey();
       let signature = decrypt(padFF(DigestInfo.encode(digestInfo), rawKey), rawKey);
       let myCertificate = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
       let signerInfo = {
@@ -123,7 +123,7 @@ export class SMIMESend {
       mime = new TextEncoder().encode(mimeAsText);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPerson(puid.findPerson(), SMIMEPublicKey));
-      if (!recipientKeys.some(key => key.id == privateKey.id)) {
+      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey, false)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
       let symmetricKey = new Uint8Array(32);

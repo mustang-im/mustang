@@ -30,18 +30,25 @@ export class SMIMEPublicKey extends PublicKey {
     return cn?.value?.value ?? "";
   }
 
+  async matches(key: RSAPublicKey, _default: boolean): Promise<boolean> {
+    if (!this.publicKeyArmored) {
+      return _default;
+    }
+    let cert = Certificate.decodePEM(this.publicKeyArmored, { label: "Certificate" });
+    let rawKey = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    return key.n == rawKey.n && key.e == rawKey.e;
+  }
+
   /**
    * Parses the given certificate and sets it as the public key.
    */
-  async setCertificate(certificate: string, label = "CERTIFICATE") {
+  async setCertificate(certificate: string, label: string) {
     let cert = Certificate.decodePEM(certificate, { label });
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data) as RSAPublicKey;
-    let id = rsa.n.toString(16);
+    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
     if (!this.id) {
-      this.id = id;
+      let id = rsa.n.toString(16);
+      this.id = id.slice(-16);
       this.keyLengthInBits = id.length * 4;
-    } else if (id != this.id) {
-      throw new Error("Certificate does not match private key");
     }
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
     try {
@@ -62,19 +69,29 @@ export class SMIMEPublicKey extends PublicKey {
     this.obsolete = now < notBefore.value || now > notAfter.value;
   }
 
-  async addCertificate(certificate: string) {
-    let label = certificate.includes("-----BEGIN TRUSTED CERTIFICATE-----") ? "TRUSTED CERTIFICATE" : "CERTIFICATE";
+  async addCertificate(certificate: string, label: string) {
     let cert = Certificate.decodePEM(certificate, { label });
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data) as RSAPublicKey;
-    let id = rsa.n.toString(16);
-    if (!this.id || this.id == id) {
+    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    if (await this.matches(rsa, true)) {
       await this.setCertificate(certificate, label);
-    } else {
-      let key = this.chain.find(key => key.id == id);
-      if (key) {
+      return;
+    }
+    for (let key of this.chain) {
+      if (await key.matches(rsa, true)) {
         await key.setCertificate(certificate, label);
-      } else {
-        this.chain.add(await SMIMEPublicKey.importPublicKey(certificate, label));
+        return;
+      }
+    }
+    this.chain.add(await SMIMEPublicKey.importPublicKey(certificate));
+  }
+
+  async addCertificates(publicKey: string) {
+    let parts = splitPEM(publicKey);
+    for (let part of parts) {
+      if (part.startsWith("-----BEGIN CERTIFICATE-----")) {
+        await this.addCertificate(part, "CERTIFICATE");
+      } else if (part.startsWith("-----BEGIN TRUSTED CERTIFICATE-----")) {
+        await this.addCertificate(part, "TRUSTED CERTIFICATE");
       }
     }
   }
@@ -115,12 +132,10 @@ export class SMIMEPublicKey extends PublicKey {
 
   /** Reads an S/MIME certificate from a file.
    * @param publicKey The certificate in PEM format
-   * @param label The certificate type, default "CERTIFICATE",
-   *              but can be "TRUSTED CERTIFICATE" for an OpenSSL certificate.
    * Factory function. */
-  static async importPublicKey(publicKey: string, label?: string): Promise<SMIMEPublicKey> {
+  static async importPublicKey(publicKey: string): Promise<SMIMEPublicKey> {
     let key = new SMIMEPublicKey();
-    await key.setCertificate(publicKey, label);
+    await key.addCertificates(publicKey);
     return key;
   }
 
@@ -196,4 +211,27 @@ export enum KeyStatus {
   ChainIncomplete,
   SelfSignedRoot,
   Valid,
+}
+
+export function splitPEM(key: string): string[] {
+  let result: string[] = [];
+  let label: string | null = null;
+  let pem: string | null = null;
+  for (let line of key.split(/[\r\n]+/)) {
+    if (line.endsWith("-----")) {
+      if (line.startsWith("-----BEGIN ")) {
+        label = line.slice(11, -5);
+        pem = line + "\n";
+      } else if (line.startsWith("-----END ")) {
+        if (label && line.slice(9, -5) == label) {
+          result.push(pem + line);
+        }
+        label = null;
+        pem = null;
+      }
+    } else if (pem) {
+      pem += line + "\n";
+    }
+  }
+  return result;
 }

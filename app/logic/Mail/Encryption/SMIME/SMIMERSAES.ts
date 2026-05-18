@@ -1,5 +1,7 @@
 // RSAES-PKCS1.5-v1_5 operations. See RFC8017 section 7.2
 // https://datatracker.ietf.org/doc/html/rfc8017#section-7.2
+// RFCs are Copyright (c) IETF Trust and their authors.
+// Code components are licenced under the BSD licence.
 import type { RSAPublicKey, RSAPrivateKey } from "./SMIMEASN1";
 
 export enum BlockType {

@@ -119,7 +119,7 @@
         </hbox>
         <hbox>
           <hbox class="label">{$t`ID`}</hbox>
-          <hbox class="value">{key.id.slice(-16)}</hbox>
+          <hbox class="value">{key.id}</hbox>
         </hbox>
         {#if key.cipher}
           <hbox>
@@ -185,7 +185,7 @@
               </hbox>
               <hbox class="fingerprint" class:obsolete={certificate.obsolete}>
                 <hbox class="label">{$t`Fingerprint`}</hbox>
-                <pre wrap class="value">{certificate.fingerprintDisplay}</pre>
+                <hbox class="value">{certificate.fingerprintDisplay}</hbox>
               </hbox>
             {/each}
           </vbox>
@@ -280,13 +280,13 @@
       return;
     }
     let fileContent = await file.text();
-    await (key as SMIMEPublicKey).addCertificate(fileContent);
-    keyStatusAsync = key.keyStatus();
+    await (key as SMIMEPublicKey).addCertificates(fileContent);
+    keyStatusAsync = (key as SMIMEPublicKey).keyStatus();
     await person.save();
   }
   async function onRemoveFromChain(certificate) {
-    key.chain.remove(certificate);
-    keyStatusAsync = key.keyStatus();
+    (key as SMIMEPublicKey).chain.remove(certificate);
+    keyStatusAsync = (key as SMIMEPublicKey).keyStatus();
     await person.save();
   }
 </script>
@@ -361,15 +361,18 @@
   .short .verification-code:not(.obsolete) {
     margin-block-start: 6px;
   }
+  .fingerprint .label,
   .verification-code .label {
     padding-block: 7px;
     max-width: max-content;
   }
+  .fingerprint .value,
   .verification-code .value {
     letter-spacing: 0.05em;
     padding-block: 8px;
     font-family: 'Courier New', Courier, monospace;
   }
+  .fingerprint:not(.obsolete) .value,
   .verification-code:not(.obsolete) .value {
     background-color: var(--bg);
     color: var(--fg);

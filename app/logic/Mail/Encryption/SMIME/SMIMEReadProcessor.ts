@@ -121,7 +121,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
           console.log("signature did not match attributes");
           return;
         }
-        email.signed = rsa.n.toString(16);
+        email.signed = rsa.n.toString(16).slice(-16);
       }
     }
   }

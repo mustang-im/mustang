@@ -219,12 +219,11 @@ function newHTTPServer() {
 }
 
 function getCACertificates(type: string) {
-  try {
+  if (tls.getCACertificates) {
     return tls.getCACertificates(type);
-  } catch (ex) {
-    console.error(ex);
-    return type == "bundled" ? tls.rootCertificates : [];
   }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */
