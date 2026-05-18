@@ -1,11 +1,25 @@
 {#if $openFolderProperties}
- <FolderPropertiesPage bind:folder={$selectedFolder} {accounts} bind:selectedAccount={$selectedAccount} />
+  <FolderPropertiesPage
+    bind:folder={$selectedFolder}
+    bind:selectedAccount={$selectedAccount}
+    {accounts} />
 {:else if view == "chat"}
   <MailChat {accounts} />
 {:else if view == "vertical"}
- <VerticalLayout {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  <VerticalLayout {accounts} {folders} {messages}
+    bind:searchMessages
+    bind:selectedAccount={$selectedAccount}
+    bind:selectedFolder={$selectedFolder}
+    bind:selectedMessage={$selectedMessage}
+    bind:selectedMessages={$selectedMessages} />
 {:else}
-  <ThreePane {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} horizontal={view != "widetable"} />
+  <ThreePane {accounts} {folders} {messages}
+    bind:searchMessages
+    bind:selectedAccount={$selectedAccount}
+    bind:selectedFolder={$selectedFolder}
+    bind:selectedMessage={$selectedMessage}
+    bind:selectedMessages={$selectedMessages}
+    horizontal={view != "widetable"} />
 {/if}
 
 <script lang="ts">
