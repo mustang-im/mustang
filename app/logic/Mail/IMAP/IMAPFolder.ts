@@ -17,9 +17,9 @@ export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
   declare readonly messages: EMailCollection<IMAPEMail>;
   declare readonly subFolders: ArrayColl<IMAPFolder>;
+  declare readonly deletions: Set<number>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<number>();
 
   constructor(account: IMAPAccount) {
     super(account);

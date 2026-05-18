@@ -24,6 +24,7 @@ export class EWSFolder extends Folder {
   declare account: EWSAccount;
   declare readonly messages: EMailCollection<EWSEMail>;
   declare readonly subFolders: ArrayColl<EWSFolder>;
+  declare readonly deletions: Set<string>;
 
   newEMail(): EWSEMail {
     return new EWSEMail(this);
@@ -133,7 +134,11 @@ export class EWSFolder extends Folder {
       if (!isDirectList) {
         change = getEWSItem(change);
       }
-      let email = this.getEmailByItemID(sanitize.nonemptystring(change.ItemId.Id));
+      let id = sanitize.nonemptystring(change.ItemId.Id);
+      if (this.deletions.has(id)) {
+        continue;
+      }
+      let email = this.getEmailByItemID(id);
       if (email) {
         await eachCallback.call(this, email, change);
       } else {

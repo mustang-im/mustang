@@ -19,11 +19,11 @@ export class JMAPFolder extends Folder {
   declare account: JMAPAccount;
   declare readonly messages: EMailCollection<JMAPEMail>;
   declare readonly subFolders: ArrayColl<JMAPFolder>;
+  declare readonly deletions: Set<string>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<string>();
 
   constructor(account: JMAPAccount) {
     super(account);

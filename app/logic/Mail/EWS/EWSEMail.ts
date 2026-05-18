@@ -183,8 +183,13 @@ export class EWSEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
-    await this.folder.account.callEWS(request);
+    try {
+      this.folder.deletions.add(this.itemID);
+      let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      await this.folder.account.callEWS(request);
+    } finally {
+      this.folder.deletions.delete(this.itemID);
+    }
   }
 
   async addTagOnServer(tag: Tag) {
