@@ -44,13 +44,13 @@
       plain
       />
   </hbox>
-  <hbox class="spam">
+  <hbox class="spam" class:notspam={$message.isSpam}>
     <Button
-      icon={SpamIcon}
+      icon={$message.isSpam ? NotSpamIcon : SpamIcon}
       iconSize="16px"
       iconOnly
-      label={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-      onClick={markAsSpam}
+      label={$message.isSpam ? $t`This email is *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+      onClick={toggleSpam}
       disabled={!message}
       plain
       />
@@ -113,6 +113,7 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { ArrayColl } from "svelte-collections";
@@ -141,8 +142,8 @@
   async function deleteMessage() {
     await message.deleteMessage();
   }
-  async function markAsSpam() {
-    await message.treatSpam(true);
+  async function toggleSpam() {
+    await message.treatSpam(!message.isSpam);
   }
   async function editDraft() {
     await message.loadMIME();

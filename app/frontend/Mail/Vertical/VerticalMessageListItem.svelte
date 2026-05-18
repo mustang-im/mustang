@@ -1,3 +1,5 @@
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
@@ -38,12 +40,12 @@
     <hbox class="buttons hover">
       <hbox class="spam button">
         <Button
-          icon={SpamIcon}
+          icon={$message.isSpam ? NotSpamIcon : SpamIcon}
           iconSize="16px"
           iconOnly
-          label={$t`Mark as spam`}
-          tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-          onClick={markAsSpam}
+          label={$message.isSpam ? $t`Mark as not spam` : $t`Mark as spam`}
+          tooltip={$message.isSpam ? $t`This email is *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+          onClick={toggleSpam}
           plain
           />
       </hbox>
@@ -120,8 +122,6 @@
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
-  import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import SpamIcon from "lucide-svelte/icons/shield-x";
   import { isMobile } from "../../../logic/build";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
@@ -139,11 +139,14 @@
   async function toggleStar() {
     await message.markStarred(!message.isStarred);
   }
-  async function deleteMessage() {
-    await message.deleteMessage();
+  async function toggleSpam() {
+    await message.treatSpam(!message.isSpam);
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+  }
+  async function deleteMessage() {
+    await message.deleteMessage();
   }
 
   let contextMenu: ContextMenu;

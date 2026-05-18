@@ -37,11 +37,11 @@
   label={$t`Delete`}
   icon={TrashIcon} />
 <MenuItem
-  onClick={markAsSpam}
-  classes="danger"
-  label={$t`Mark as spam`}
-  tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-  icon={SpamIcon} />
+  onClick={toggleSpam}
+  classes={$message.isSpam ? "" : "danger"}
+  label={$message.isSpam ? $t`Mark as not spam` : $t`Mark as spam`}
+  tooltip={$message.isSpam ? $t`Treat this email as *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+  icon={$message.isSpam ? NotSpamIcon : SpamIcon} />
 <MenuItem
   onClick={translate}
   label={$t`Translate`}
@@ -85,6 +85,7 @@
   import EditAsNewIcon from "lucide-svelte/icons/iteration-ccw";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import TranslateIcon from "lucide-svelte/icons/languages";
   import SaveIcon from "lucide-svelte/icons/save";
   import PrintIcon from "lucide-svelte/icons/printer";
@@ -136,8 +137,8 @@
     await message.deleteMessage();
     goToNextMessage();
   }
-  async function markAsSpam() {
-    await message.treatSpam(true);
+  async function toggleSpam() {
+    await message.treatSpam(!message.isSpam);
     goToNextMessage();
   }
 
