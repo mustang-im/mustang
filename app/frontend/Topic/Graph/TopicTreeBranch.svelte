@@ -1,5 +1,5 @@
 <vbox>
-  <Clickable onClick={() => selectedTopic = topic}>
+  <Clickable onClick={onSelect}>
     <hbox class="topic">
       <hbox class="name">{$topic.name}</hbox>
       <hbox flex />
@@ -42,6 +42,7 @@
 
 <script lang="ts">
   import { Topic } from "../../../logic/Topic/Topic";
+  import { rootTopic } from "../../../logic/Topic/TopicAccounts";
   import Clickable from "../../Shared/Clickable.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
@@ -55,6 +56,10 @@
   export let selectedTopic: Topic;
 
   $: children = topic.children;
+
+  function onSelect() {
+    selectedTopic = topic == rootTopic ? null : topic;
+  }
 
   let isAdding = false;
   let newName: string;
