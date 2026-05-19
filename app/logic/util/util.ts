@@ -1,5 +1,5 @@
 
-export function assert(test: boolean | object | string | null | undefined, errorMessage: string): asserts test {
+export function assert(test: boolean | object | string | number | null | undefined, errorMessage: string): asserts test {
   if (!test) {
     throw new Error(errorMessage);
   }

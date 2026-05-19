@@ -17,6 +17,9 @@
   <Route path="meet/*">
     <MeetAppRoutes />
   </Route>
+  <Route path="topic/*">
+    <TopicRoutes />
+  </Route>
   <Route path="webapp/*">
     <WebAppsRoutes />
   </Route>
@@ -48,6 +51,7 @@
   import FilesAppRoutes from "../Files/FilesRoutes.svelte";
   import CalendarRoutes from "../Calendar/CalendarRoutes.svelte";
   import MeetAppRoutes from "../Meet/MeetRoutes.svelte";
+  import TopicRoutes from "../Topic/TopicRoutes.svelte";
   import WebAppsRoutes from "../WebApps/WebAppsRoutes.svelte";
   import SettingsRoutes from "../Settings/SettingsRoutes.svelte";
   // #if [!WEBMAIL]

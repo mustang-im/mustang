@@ -5,6 +5,7 @@ import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
 import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readFileSharingAccounts } from './Files/AccountsList/FileSharingAccounts';
+import { readTopicAccounts } from './Topic/TopicAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
@@ -27,6 +28,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.fileSharingAccounts.addAll(await readFileSharingAccounts());
   appGlobal.addressbooks.addAll(await readAddressbooks());
   appGlobal.calendars.addAll(await readCalendars());
+  appGlobal.topicAccounts.addAll(await readTopicAccounts());
   setMainAccounts();
 
   // TODO Save the address book type and ensure that they are of the right type

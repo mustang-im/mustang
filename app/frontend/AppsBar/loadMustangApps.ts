@@ -7,6 +7,7 @@ import { mailMustangApp } from "../Mail/MailMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 // #if [!WEBMAIL]
 import { filesMustangApp } from "../Files/FilesMustangApp";
+import { topicMustangApp } from "../Topic/TopicMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 // #endif
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
@@ -43,6 +44,7 @@ export function loadDemoMustangApps() {
     // #endif
     calendarMustangApp,
     filesMustangApp,
+    topicMustangApp,
     webAppsMustangApp,
     settingsMustangApp,
   ]);

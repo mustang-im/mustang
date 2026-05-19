@@ -81,6 +81,7 @@ export enum AccountType {
   Files = 5,
   Apps = 6,
   Meet = 7,
+  Topic = 8,
 }
 
 export type AccountDBRow = {
