@@ -1,7 +1,7 @@
 <vbox>
   <Clickable onClick={() => selectedTopic = topic}>
     <hbox class="topic">
-      <hbox class="name">{topic.name}</hbox>
+      <hbox class="name">{$topic.name}</hbox>
       <hbox flex />
       <hbox class="buttons">
         <RoundButton

@@ -5,7 +5,7 @@ import type { Group } from "../Abstract/Group";
 import type { Message } from "../Abstract/Message";
 import type { Event } from "../Calendar/Event";
 import type { File } from "../Files/File";
-import { Observable } from "../util/Observable";
+import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
 
@@ -16,6 +16,7 @@ export class Topic extends Observable {
    * Shown in graph as node title, in page as page title, and
    * in linked data as tag name.
    * Also `#<name>` in text. */
+  @notifyChangedProperty
   name: string;
   dbID: number;
 

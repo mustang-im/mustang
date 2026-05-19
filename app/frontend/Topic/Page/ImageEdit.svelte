@@ -1,6 +1,6 @@
 <vbox class="image">
   <!-- TODO allow resize -->
-  <img src={image.src} alt={image.description} />
+  <img src={$image.src} alt={$image.description} />
   <Button
     classes="danger"
     onClick={onDelete}
