@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import { Topic } from "../../logic/Topic/Topic";
-  import TopicGraph from "./Graph/TopicGraph.svelte";
+  import TopicGraph from "./Graph/TopicGraphPane.svelte";
   import TopicPage from "./Page/TopicPage.svelte";
   import Splitter from "../Shared/Splitter.svelte";
 

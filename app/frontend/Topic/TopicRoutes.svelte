@@ -15,7 +15,7 @@
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import TopicApp from "./TopicApp.svelte";
-  import TopicGraph from "./Graph/TopicGraph.svelte";
+  import TopicGraph from "./Graph/TopicGraphPane.svelte";
   import TopicPage from "./Page/TopicPage.svelte";
   import { Route, useLocation } from "svelte-navigator";
 
