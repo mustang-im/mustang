@@ -637,11 +637,16 @@ export class IMAPFolder extends Folder {
     if (!await this.account.hasCapability("ACL")) {
       return undefined;
     }
-    let conn = await this.account.connection();
     let attributes: Array<{ type: string, value: string }>;
     let persons = new ArrayColl<PersonUID>();
-    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
-    await response.next();
+    let conn = await this.account.connection();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+      await response.next();
+    } finally {
+      lock.release();
+    }
     for (let i = 1; i < attributes.length; i += 2) {
       let name = sanitize.nonemptystring(attributes[i].value);
       if (name == this.account.username) {
@@ -655,14 +660,24 @@ export class IMAPFolder extends Folder {
 
   async addPermission(permission: PersonUID, rights: string) {
     let conn = await this.account.connection();
-    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
-    await response.next();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
+      await response.next();
+    } finally {
+      lock.release();
+    }
   }
 
   async removePermission(permission: PersonUID) {
     let conn = await this.account.connection();
-    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
-    await response.next();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+      await response.next();
+    } finally {
+      lock.release();
+    }
   }
 
   fromExtraJSON(json: any) {
