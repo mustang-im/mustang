@@ -84,7 +84,6 @@ export class SQLTopic {
         if (content.type == "paragraph") {
           let c = new Paragraph(topic);
           c.rawHTMLDangerous = sanitize.string(content.html, "");
-          topic.content.add(c);
         }
       } catch (ex) {
         backgroundError(ex);

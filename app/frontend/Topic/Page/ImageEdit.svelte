@@ -3,7 +3,7 @@
   <img src={$image.src} alt={$image.description} />
   <Button
     classes="danger"
-    onClick={onDelete}
+    onClick={myOnDelete}
     label={$t`Delete`}
     icon={TrashIcon}
     />
@@ -18,10 +18,17 @@
 
   export let topic: Topic;
   export let image: Image;
+  /** When set, called instead of mutating topic.content directly.
+   *  Provided by the TipTap node view so deletion goes through the editor. */
+  export let onDelete: (() => void) | null = null;
 
-  async function onDelete() {
-    topic.content.remove(image);
-    await topic.save();
+  function myOnDelete() {
+    if (onDelete) {
+      onDelete();
+    } else {
+      topic.content.remove(image);
+      topic.save();
+    }
   }
 </script>
 

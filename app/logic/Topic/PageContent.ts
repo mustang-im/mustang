@@ -10,7 +10,8 @@ import { sanitizeHTML } from "../util/convertHTML";
 
 /** A section that appears on a page for a Topic */
 export class PageContent extends Observable {
-  readonly topic: Topic;
+  readonly contentType: string = "unknown";
+  topic: Topic;
 
   constructor(topic: Topic) {
     super();
@@ -20,6 +21,7 @@ export class PageContent extends Observable {
 }
 
 export class Paragraph extends PageContent {
+  readonly contentType = "paragraph";
   /** not sanitized */
   @notifyChangedProperty
   rawHTMLDangerous: string = "";
@@ -34,6 +36,7 @@ export class Paragraph extends PageContent {
 }
 
 export class Image extends PageContent {
+  readonly contentType = "image";
   /** sanitized */
   @notifyChangedProperty
   src: URLString;

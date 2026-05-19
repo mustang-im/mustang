@@ -34,61 +34,115 @@
         <hbox class="title">
           <input type="text" bind:value={topic.name} />
         </hbox>
-
         <vbox class="content">
-          {#each $contents.each as content}
-            {#if content instanceof Paragraph}
-              <ParagraphEdit {topic} paragraph={content} bind:editor />
-            {:else if content instanceof Image}
-              <ImageEdit {topic} image={content} />
-            {/if}
-          {/each}
+          <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions} />
         </vbox>
-        <Clickable onClick={onEditLast}>
-          <vbox class="last" flex />
-        </Clickable>
       </vbox>
     </Paper>
   </Scroll>
 </vbox>
 
 <script lang="ts">
-  import { Image, Paragraph } from "../../../logic/Topic/PageContent";
+  import type { PageContent } from "../../../logic/Topic/PageContent";
   import { Topic } from "../../../logic/Topic/Topic";
-  import ParagraphEdit from "./ParagraphEdit.svelte";
-  import ImageEdit from "./ImageEdit.svelte";
+  import { toPageBlocks, applyPageBlocks, type PageBlock } from "../../../logic/Topic/PageBlock";
+  import { TopicHeadingID } from "./TopicHeadingID";
+  import { EmbeddedContent, type EmbeddedRenderer } from "../../Shared/Editor/EmbeddedContent";
+  import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import ImageEdit from "./ImageEdit.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import Clickable from "../../Shared/Clickable.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import { gt, t } from "../../../l10n/l10n";
   import type { Editor } from "@tiptap/core";
+  import { DOMSerializer } from "@tiptap/pm/model";
+  import { mount, unmount } from "svelte";
 
   export let topic: Topic;
 
-  $: contents = topic.content;
   let editor: Editor;
   let isMenuOpen = false;
 
-  async function onSave() {
-    for (let p of topic.content) {
-      if (p instanceof Paragraph) {
-        console.log("p", p.rawHTMLDangerous)
-      }
-    }
-    topic.trimEnd();
-    await topic.save();
-    new Paragraph(topic);
+  // Maps contentID (stable UUID) → live PageContent object for this editing session
+  let contentRegistry = new Map<string, PageContent>();
+
+  let imageRenderer: EmbeddedRenderer = (target, content, deleteNode) => {
+    let instance = mount(ImageEdit, {
+      target,
+      props: { topic: content.topic, image: content, onDelete: deleteNode },
+    });
+    return { destroy: () => unmount(instance) };
+  };
+
+  // Configured once; getContent closes over the stable Map reference so it
+  // sees updated entries after topic navigation triggers a registry rebuild.
+  let extraExtensions = [
+    EmbeddedContent.configure({
+      getContent: (id: string) => contentRegistry.get(id) ?? null,
+      renderers: { image: imageRenderer },
+    }),
+    TopicHeadingID,
+  ];
+
+  let pageHTML: string;
+  $: topic, reload();
+  function reload() {
+    contentRegistry.clear();
+    pageHTML = blocksToHTML(toPageBlocks(topic, (content) => {
+      let id = crypto.randomUUID();
+      contentRegistry.set(id, content);
+      return id;
+    }));
   }
 
-  function onEditLast() {
-    new Paragraph(topic);
+  /** Converts neutral PageBlocks to the TipTap-specific HTML the editor parses. */
+  function blocksToHTML(blocks: PageBlock[]): string {
+    let html = "";
+    for (let block of blocks) {
+      if (block.kind === "text") {
+        html += block.html;
+      } else if (block.kind === "embed") {
+        html += `<div data-type="embedded-content" data-content-type="${block.contentType}" data-content-id="${block.contentID}"></div>`;
+      } else if (block.kind === "heading") {
+        let idAttr = block.topicID ? ` data-topic-id="${block.topicID}"` : "";
+        html += `<h${block.level}${idAttr}>${escapeHTML(block.text)}</h${block.level}>`;
+      }
+    }
+    return html || "<p></p>";
+  }
+
+  function escapeHTML(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function onSave() {
+    let serializer = DOMSerializer.fromSchema(editor.schema);
+    let blocks: PageBlock[] = [];
+    let htmlAccum = "";
+
+    editor.state.doc.forEach((node) => {
+      if (node.type.name === "embedded-content") {
+        if (htmlAccum) { blocks.push({ kind: "text", html: htmlAccum }); htmlAccum = ""; }
+        blocks.push({ kind: "embed", contentType: node.attrs.contentType, contentID: node.attrs.contentID });
+      } else if (node.type.name === "heading") {
+        if (htmlAccum) { blocks.push({ kind: "text", html: htmlAccum }); htmlAccum = ""; }
+        blocks.push({ kind: "heading", level: node.attrs.level as number, text: node.textContent, topicID: node.attrs.topicID ?? null });
+      } else {
+        let fragment = serializer.serializeNode(node);
+        let div = document.createElement("div");
+        div.appendChild(fragment);
+        htmlAccum += div.innerHTML;
+      }
+    });
+    if (htmlAccum) blocks.push({ kind: "text", html: htmlAccum });
+
+    await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
   }
 
   async function onDelete() {
@@ -130,7 +184,7 @@
     font-size: 48px;
     font-weight: bold;
   }
-  .content :global(.paragraph:last-of-type .html-editor) {
+  .content {
     min-height: 10em;
   }
 </style>

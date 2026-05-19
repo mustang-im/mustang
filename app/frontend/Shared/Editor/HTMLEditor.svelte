@@ -22,6 +22,8 @@
   /** out only */
   export let editor: Editor;
   export let tabindex = null;
+  /** Additional TipTap extensions to include alongside the defaults */
+  export let extraExtensions: any[] = [];
 
   let rootEl: HTMLDivElement;
   let lastHTML: string = null;
@@ -56,6 +58,7 @@
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
+        ...extraExtensions,
       ],
       content: html,
       onTransaction: () => {
