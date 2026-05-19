@@ -470,11 +470,11 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * number of emails in the folder changed */
-  async countChanged(newCount: number, oldCount: number, connection: ImapFlow): Promise<void> {
+  async countChanged(newCount: number, oldCount: number): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
     if (hasChanged) {
-      this.account.log(this, connection, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
+      this.account.log(this, null, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
       await this.getNewMessages();
     }
   }
