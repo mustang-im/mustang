@@ -15,6 +15,7 @@ export class PageContent extends Observable {
   constructor(topic: Topic) {
     super();
     this.topic = topic;
+    topic.content.add(this);
   }
 }
 
@@ -24,6 +25,10 @@ export class Paragraph extends PageContent {
 
   get html(): string {
     return sanitizeHTML(this.rawHTMLDangerous);
+  }
+
+  get hasContent(): boolean {
+    return this.rawHTMLDangerous && this.rawHTMLDangerous != "<p></p>";
   }
 }
 

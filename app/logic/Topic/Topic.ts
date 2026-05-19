@@ -1,5 +1,5 @@
 import type { TopicAccount } from "./TopicAccount";
-import type { PageContent } from "./PageContent";
+import { Paragraph, type PageContent } from "./PageContent";
 import type { Person } from "../Abstract/Person";
 import type { Group } from "../Abstract/Group";
 import type { Message } from "../Abstract/Message";
@@ -40,6 +40,14 @@ export class Topic extends Observable {
   /** Paragraphs and data elements in the page.
    * In the order that they appear on the page. */
   readonly content = new ArrayColl<PageContent>();
+
+  trimEnd() {
+    let p = this.content.last;
+    while (p instanceof Paragraph && !p.hasContent) {
+      this.content.remove(p);
+      p = this.content.last;
+    }
+  }
 
   async newChild(name: string): Promise<Topic> {
     assert(this.account, "Need account");
