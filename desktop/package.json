@@ -42,7 +42,7 @@
     "@sentry/vite-plugin": "^4.6.1",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^25.5.0",
-    "electron": "^41.1.1",
+    "electron": "^41.6.1",
     "electron-builder": "^26.7.0",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.2",
