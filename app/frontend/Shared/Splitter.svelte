@@ -2,20 +2,28 @@
   <hbox class="splitter" bind:clientWidth={containerWidth}
     class:mobile={appGlobal.isMobile}>
     <hbox class="left" bind:clientWidth={currentLeftWidth}>
-      <slot name="left" />
+      <ErrorBoundary>
+        <slot name="left" />
+      </ErrorBoundary>
     </hbox>
     <hbox class="splitter-bar"
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
     <hbox class="right" style="flex: {rightRatio} 0 0;">
-      <slot name="right" />
+      <ErrorBoundary>
+        <slot name="right" />
+      </ErrorBoundary>
     </hbox>
   </hbox>
 {:else if hasLeft}
-  <slot name="left" />
+  <ErrorBoundary>
+    <slot name="left" />
+  </ErrorBoundary>
 {:else if hasRight}
-  <slot name="right" />
+  <ErrorBoundary>
+    <slot name="right" />
+  </ErrorBoundary>
 {:else}
   <vbox class="splitter" />
 {/if}
@@ -28,6 +36,7 @@
 <script lang="ts">
 	import { appGlobal } from "../../logic/app";
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+  import ErrorBoundary from "./ErrorBoundary.svelte";
 
   /** Left pane cannot be made smaller than this
    * in px */

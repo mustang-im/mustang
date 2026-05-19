@@ -1,7 +1,9 @@
 {#if hasTop && hasBottom}
   <vbox class="splitter" bind:clientHeight={containerHeight} class:mobile={appGlobal.isMobile}>
     <hbox class="top" bind:clientHeight={currentTopHeight}>
-      <slot name="top" />
+      <ErrorBoundary>
+        <slot name="top" />
+      </ErrorBoundary>
     </hbox>
     <hbox
       class="splitter-bar"
@@ -9,13 +11,19 @@
       style="height: {barHeight}px;"
       />
     <hbox class="bottom" style="flex: {bottomRatio} 0 0;">
-      <slot name="bottom" />
+      <ErrorBoundary>
+        <slot name="bottom" />
+      </ErrorBoundary>
     </hbox>
   </vbox>
 {:else if hasTop}
-  <slot name="top" />
+  <ErrorBoundary>
+    <slot name="top" />
+  </ErrorBoundary>
 {:else if hasBottom}
-  <slot name="bottom" />
+  <ErrorBoundary>
+    <slot name="bottom" />
+  </ErrorBoundary>
 {:else}
   <vbox class="splitter" />
 {/if}
@@ -28,6 +36,7 @@
 <script lang="ts">
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
   import { appGlobal } from "../../logic/app";
+  import ErrorBoundary from "./ErrorBoundary.svelte";
 
   /** Copy of <Splitter> */
 
