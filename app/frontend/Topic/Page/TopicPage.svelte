@@ -32,7 +32,8 @@
     <Paper>
       <vbox class="topic-page" flex>
         <hbox class="title">
-          <input type="text" bind:value={topic.name} />
+          <input type="text" bind:value={topic.name}
+            on:keydown={event => onKeyEnter(event, onTitleEnter)}/>
         </hbox>
         <vbox class="content">
           <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions} />
@@ -63,6 +64,7 @@
   import type { Editor } from "@tiptap/core";
   import { DOMSerializer } from "@tiptap/pm/model";
   import { mount, unmount } from "svelte";
+  import { onKeyEnter } from "../../Util/util";
 
   export let topic: Topic;
 
@@ -121,6 +123,11 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  async function onTitleEnter() {
+    editor.commands.focus();
+    await topic.save();
+  }
+
   async function onSave() {
     let serializer = DOMSerializer.fromSchema(editor.schema);
     let blocks: PageBlock[] = [];
@@ -142,6 +149,7 @@
     });
     if (htmlAccum) blocks.push({ kind: "text", html: htmlAccum });
 
+    await topic.save();
     await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
   }
 

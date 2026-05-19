@@ -322,7 +322,7 @@
     }
   }
 
-  $: selectedTopic, paneW, paneH, rebuildLayout();
+  $: $selectedTopic, paneW, paneH, rebuildLayout();
   function rebuildLayout() {
     let layout = buildLayout(selectedTopic ?? rootTopic, paneW, paneH);
     nodes = layout.nodes;

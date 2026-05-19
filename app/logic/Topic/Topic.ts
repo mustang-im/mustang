@@ -63,6 +63,7 @@ export class Topic extends Observable {
 
   async save() {
     await this.account.storage.saveTopic(this);
+    this.notifyObservers("content");
   }
 
   async deleteIt() {
