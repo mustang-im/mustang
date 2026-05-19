@@ -38,7 +38,7 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - if: inputs.release_type == 'release'
+    - if: inputs.release_type == 'release' || github.event_name == 'push'
       run: cd desktop; yarn run build:release:linux
     - if: inputs.release_type == 'prerelease'
       run: cd desktop; yarn run build:prerelease:linux
