@@ -7,48 +7,51 @@ import conditionalCompile from "vite-plugin-conditional-compile";
 import { production, webMail, includeProprietary } from '../app/logic/build';
 import { defaultClientConditions } from 'vite';
 
-export default defineConfig({
-  main: {
-    plugins: [
-      externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
-      replace({
-        __dirname: 'import.meta.dirname',
-      }),
-    ],
-  },
-  preload: {
-    plugins: [
-      externalizeDepsPlugin(),
-    ],
-  },
-  renderer: {
-    build: {
-      sourcemap: production,
+export default defineConfig(({ command }) => {
+  const isDev = command == "serve";
+  return {
+    main: {
+      plugins: [
+        externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
+        replace({
+          __dirname: 'import.meta.dirname',
+        }),
+      ],
     },
-    plugins: [
-      conditionalCompile({
-        // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
-        env: {
-          // For conditional `// #if [FOO]` statements in the code
-          WEBMAIL: webMail && includeProprietary ? webMail : undefined,
-          PROPRIETARY: includeProprietary ? true : undefined,
-          PRODUCTION: production ? true : undefined,
-          DEV: !production ? true : undefined,
-        },
-      }),
-      nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
-      svelte(),
-      sentryVitePlugin({
-        org: "mustang-jq",
-        project: "mustang",
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        disable: !production,
-      }),
-    ],
-    resolve: {
-      // Explicitly set the resolve conditions for Vite 7+
-      conditions: [...defaultClientConditions],
+    preload: {
+      plugins: [
+        externalizeDepsPlugin(),
+      ],
     },
-    publicDir: '../../../app/public',
+    renderer: isDev ? undefined : {
+      build: {
+        sourcemap: production,
+      },
+      plugins: [
+        conditionalCompile({
+          // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
+          env: {
+            // For conditional `// #if [FOO]` statements in the code
+            WEBMAIL: webMail && includeProprietary ? webMail : undefined,
+            PROPRIETARY: includeProprietary ? true : undefined,
+            PRODUCTION: production ? true : undefined,
+            DEV: !production ? true : undefined,
+          },
+        }),
+        nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
+        svelte(),
+        sentryVitePlugin({
+          org: "mustang-jq",
+          project: "mustang",
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+          disable: !production,
+        }),
+      ],
+      resolve: {
+        // Explicitly set the resolve conditions for Vite 7+
+        conditions: [...defaultClientConditions],
+      },
+      publicDir: '../../../app/public',
+    }
   }
-})
+});
