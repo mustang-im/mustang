@@ -55,6 +55,17 @@ export async function applyPageBlocks(
   let seenChildTopics = new Set<Topic>();
   let processedParents = new Set<Topic>([topic]);
 
+  // Build a flat ID→Topic map over the whole subtree before any modifications,
+  // so we can find topics that changed level (moved to a different parent).
+  let topicByID = new Map<string, Topic>();
+  function buildIDMap(t: Topic) {
+    for (let child of t.children) {
+      topicByID.set(child.id, child);
+      buildIDMap(child);
+    }
+  }
+  buildIDMap(topic);
+
   for (let block of blocks) {
     let currentTopic = topicStack[topicStack.length - 1];
 
@@ -75,9 +86,28 @@ export async function applyPageBlocks(
       while (topicStack.length > block.level) topicStack.pop();
       let parent = topicStack[topicStack.length - 1];
       processedParents.add(parent);
-      let child = block.topicID
-        ? [...parent.children].find(t => t.id === block.topicID)
-        : [...parent.children].find(t => t.name === block.text);
+
+      let child: Topic | undefined;
+      if (block.topicID) {
+        let found = topicByID.get(block.topicID);
+        if (found && !seenChildTopics.has(found)) {
+          child = found;
+          if (child.parent !== parent) {
+            // Topic changed level — reparent it and schedule old parent for cleanup.
+            let oldParent = child.parent;
+            if (oldParent) {
+              processedParents.add(oldParent);
+              oldParent.children.remove(child);
+            }
+            child.parent = parent;
+            parent.children.add(child);
+          }
+        }
+      }
+      if (!child) {
+        // Name-match, but skip topics already consumed (e.g. same-name paste copy).
+        child = [...parent.children].find(t => t.name === block.text && !seenChildTopics.has(t));
+      }
       if (child) {
         child.name = block.text;
         child.content.clear();
