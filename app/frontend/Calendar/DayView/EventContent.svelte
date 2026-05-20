@@ -1,4 +1,4 @@
-<Clickable onClick={onSelect} onDoubleClick={onSelect}>
+<Clickable onClick={onSelect} onDoubleClick={onOpen}>
   <hbox class="event font-small" flex
     title={eventAsText}>
     {#if showTime}
