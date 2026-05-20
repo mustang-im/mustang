@@ -65,7 +65,7 @@
   $: filteredMessages = $globalSearchTerm
     ? personMessages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : personMessages;
-  $: account = personMessages.first?.folder.account ?? accounts.first;
+  $: account = $personMessages.first?.folder.account ?? $accounts.first;
   $: chatRoom = new MailChatRoom(account, selectedPerson, personMessages);
 </script>
 
