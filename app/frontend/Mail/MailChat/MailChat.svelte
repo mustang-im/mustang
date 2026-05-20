@@ -13,11 +13,11 @@
     <ViewSwitcher />
   </vbox>
   <vbox class="right-pane" slot="right">
-    {#if filteredMessages && selectedPerson }
+    {#if $filteredMessages.hasItems && selectedPerson }
       <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
       <Header person={selectedPerson} />
       <vbox flex class="messages background-pattern">
-        <MessageList messages={filteredMessages}>
+        <MessageList messages={$filteredMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             <MailMessage {message} {previousMessage} />
           </svelte:fragment>
@@ -57,15 +57,15 @@
   export let accounts: Collection<MailAccount>; /** in */
 
   let selectedPerson: PersonUID;
-  $: folders = mergeColls<Folder>($accounts.map(account => account.rootFolders));
+  $: folders = mergeColls<Folder>(accounts.map(account => account.rootFolders));
   // $: folders = $accounts.map(account => account.inbox);
-  $: allMessages = mergeColls<EMail>($folders.map(folder => folder.messages)).sortBy(msg => -msg.sent.getTime());
-  $: persons = $allMessages.map(msg => msg.contact as PersonUID).unique();
-  $: personMessages = $allMessages.filterObservable(msg => msg.contact == selectedPerson);
+  $: allMessages = mergeColls<EMail>(folders.map(folder => folder.messages)).sortBy(msg => -msg.sent.getTime());
+  $: persons = allMessages.map(msg => msg.contact as PersonUID).unique();
+  $: personMessages = allMessages.filterObservable(msg => msg.contact == selectedPerson);
   $: filteredMessages = $globalSearchTerm
     ? personMessages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : personMessages;
-  $: account = $personMessages.first?.folder.account ?? $accounts.first;
+  $: account = personMessages.first?.folder.account ?? accounts.first;
   $: chatRoom = new MailChatRoom(account, selectedPerson, personMessages);
 </script>
 
