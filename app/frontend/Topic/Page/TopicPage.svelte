@@ -154,7 +154,9 @@
         blocks.push({ kind: "embed", contentType: node.attrs.contentType, contentID: node.attrs.contentID });
       } else if (node.type.name === "heading") {
         flushText();
-        blocks.push({ kind: "heading", level: node.attrs.level as number, text: node.textContent, topicID: node.attrs.topicID ?? null });
+        if (node.textContent) {
+          blocks.push({ kind: "heading", level: node.attrs.level as number, text: node.textContent, topicID: node.attrs.topicID ?? null });
+        }
       } else {
         // Serialize to HTML and accumulate until interrupted by a heading or embed.
         let fragment = serializer.serializeNode(node);
