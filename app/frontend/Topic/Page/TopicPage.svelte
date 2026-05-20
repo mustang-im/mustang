@@ -130,8 +130,8 @@
 
   async function onSave() {
     let blocks = editorToBlocks();
-    await topic.save();
     await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
+    await topic.save();
   }
 
   /** Converts the current TipTap document to neutral PageBlocks. */
