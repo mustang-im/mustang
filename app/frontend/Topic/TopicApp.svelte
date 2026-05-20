@@ -1,7 +1,7 @@
 <vbox class="topic-app" flex>
   <Splitter initialRightRatio={2} leftMinWidth={100} rightMinWidth={500} hasRight={!!selectedTopic}>
     <TopicGraph bind:selectedTopic slot="left" />
-    <TopicPage topic={selectedTopic} slot="right" />
+    <TopicPage bind:topic={selectedTopic} slot="right" />
   </Splitter>
 </vbox>
 

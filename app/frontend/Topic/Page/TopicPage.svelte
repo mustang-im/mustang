@@ -176,7 +176,9 @@
         return;
       }
     }
+    let parent = topic.parent;
     await topic.deleteIt();
+    topic = parent;
   }
 </script>
 

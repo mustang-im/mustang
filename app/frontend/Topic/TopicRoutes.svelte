@@ -3,7 +3,7 @@
 </Route>
   <Route path="page/:topicID" let:params={urlParams}>
   {$selectedTopic = params?.topic ?? appGlobal.topics.find(topic => topic.id == urlParams.topicID) ?? $selectedTopic ?? requiredParam(), ""}
-  <TopicPage topic={$selectedTopic} />
+  <TopicPage bind:topic={$selectedTopic} />
 </Route>
 <Route path="/">
   <TopicApp />
