@@ -15,7 +15,7 @@ export interface EmbeddedContentOptions {
  *
  * The node is atom (cursor skips over it, not into it).
  * The host page registers a renderer function per content type.
- * All data lives in the renderer's closure — TipTap only stores two
+ * All data lives in the renderer's closure, because TipTap only stores two
  * opaque string attributes (contentType, contentID) for round-tripping. */
 export let EmbeddedContent = Node.create<EmbeddedContentOptions>({
   name: "embedded-content",

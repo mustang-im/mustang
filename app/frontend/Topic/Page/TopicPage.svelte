@@ -129,28 +129,42 @@
   }
 
   async function onSave() {
+    let blocks = editorToBlocks();
+    await topic.save();
+    await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
+  }
+
+  /** Converts the current TipTap document to neutral PageBlocks. */
+  function editorToBlocks(): PageBlock[] {
     let serializer = DOMSerializer.fromSchema(editor.schema);
     let blocks: PageBlock[] = [];
+    // Consecutive plain nodes (paragraphs etc.) are accumulated into a single text block.
     let htmlAccum = "";
+
+    function flushText() {
+      if (htmlAccum) {
+        blocks.push({ kind: "text", html: htmlAccum });
+        htmlAccum = "";
+      }
+    }
 
     editor.state.doc.forEach((node) => {
       if (node.type.name === "embedded-content") {
-        if (htmlAccum) { blocks.push({ kind: "text", html: htmlAccum }); htmlAccum = ""; }
+        flushText();
         blocks.push({ kind: "embed", contentType: node.attrs.contentType, contentID: node.attrs.contentID });
       } else if (node.type.name === "heading") {
-        if (htmlAccum) { blocks.push({ kind: "text", html: htmlAccum }); htmlAccum = ""; }
+        flushText();
         blocks.push({ kind: "heading", level: node.attrs.level as number, text: node.textContent, topicID: node.attrs.topicID ?? null });
       } else {
+        // Serialize to HTML and accumulate until interrupted by a heading or embed.
         let fragment = serializer.serializeNode(node);
         let div = document.createElement("div");
         div.appendChild(fragment);
         htmlAccum += div.innerHTML;
       }
     });
-    if (htmlAccum) blocks.push({ kind: "text", html: htmlAccum });
-
-    await topic.save();
-    await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
+    flushText();
+    return blocks;
   }
 
   async function onDelete() {

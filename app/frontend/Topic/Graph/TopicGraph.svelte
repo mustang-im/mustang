@@ -1,6 +1,6 @@
-<div class="graph-container" bind:clientWidth={paneW} bind:clientHeight={paneH}>
-  {#if paneW && paneH}
-  <svg width={paneW} height={paneH}>
+<div class="graph-container" bind:clientWidth={paneWidth} bind:clientHeight={paneHeight}>
+  {#if paneWidth && paneHeight}
+  <svg width={paneWidth} height={paneHeight}>
     <defs>
       <filter id="tg-glow-lg" x="-60%" y="-60%" width="220%" height="220%">
         <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -49,7 +49,7 @@
       {/if}
     {/each}
 
-    <!-- pass 2: labels only — separate layer, no filtered siblings, stays sharp -->
+    <!-- pass 2: labels only. separate layer, no filtered siblings, stays sharp -->
     {#each nodes as node (node.id)}
       {@const pos = $anim[node.id]}
       {#if pos && node.labelLines.length > 0}
@@ -79,19 +79,19 @@
 
   export let selectedTopic: Topic;
 
-  let paneW = 0;
-  let paneH = 0;
+  let paneWidth = 0;
+  let paneHeight = 0;
 
   /** Radius of the center (selected) node */
-  const centerR = 52;
+  const centerRadius = 52;
   /** Radius of child nodes (orbit 1) */
-  const childR = 30;
+  const childRadius = 30;
   /** Radius of grandchild nodes (orbit 2) */
-  const grandR = 22;
+  const grandRadius = 22;
   /** Radius of level-4 dot nodes (orbit 3) */
-  const dotR = 7;
+  const dotRadius = 7;
   /** Radius of the add-child button */
-  const addBtnR = 13;
+  const addBtnRadius = 13;
 
   type NodeLevel = "center" | "l2" | "l3" | "l4" | "add";
 
@@ -116,6 +116,8 @@
    *  animate in from their old location instead of snapping in from (0,0) */
   let prevPositions: AnimState = {};
 
+  // Custom interpolator that animates all nodes simultaneously.
+  // Nodes added since the last layout fade in; removed nodes fade out.
   let anim = tweened<AnimState>({}, {
     duration: 500,
     easing: cubicOut,
@@ -123,7 +125,9 @@
       let result: AnimState = {};
       let keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
       for (let key of keys) {
+        // Node absent in prev → fade in from its target position (opacity 0 → 1).
         let from = prev[key] ?? { ...(next[key]), opacity: 0 };
+        // Node absent in next → fade out toward its last known position (opacity 1 → 0).
         let to   = next[key] ?? { ...(prev[key]), opacity: 0 };
         result[key] = {
           x:       from.x + (to.x - from.x) * t,
@@ -142,27 +146,30 @@
       return [name];
     }
     let words = name.split(" ");
-    let out: string[] = [];
+    let lines: string[] = [];
     let cur = "";
     for (let word of words) {
-      if (!cur) {
-        cur = word;
-        continue;
-      }
-      if ((cur + " " + word).length <= maxChars) {
-        cur += " " + word;
+      // Try appending the next word to the current line.
+      let candidate = cur ? cur + " " + word : word;
+      if (candidate.length <= maxChars) {
+        cur = candidate;
       } else {
-        out.push(cur);
+        // Word overflows: commit the current line and start a new one.
+        if (cur) {
+          lines.push(cur);
+        }
         cur = word;
-        if (out.length === 1) {
+        // Stop after one committed line. the remaining text goes into the final push below.
+        if (lines.length === 1) {
           break;
         }
       }
     }
+    // Commit the last line, truncating if it is still too long.
     if (cur) {
-      out.push(cur.length > maxChars + 3 ? cur.slice(0, maxChars) + "…" : cur);
+      lines.push(cur.length > maxChars + 3 ? cur.slice(0, maxChars) + "…" : cur);
     }
-    return out.slice(0, 2);
+    return lines.slice(0, 2);
   }
 
   /**
@@ -190,11 +197,15 @@
       return { nodes: [], lines: [], positions: {} as AnimState };
     }
 
-    let cx = width / 2;
-    let cy = height / 2;
-    let slotCount = topic.children.length + 1; // +1 for the add button
-    let minOrbit = (childR * 2 + 14) * slotCount / (2 * Math.PI);
-    let childOrbit = Math.max(centerR + childR + 20, Math.min(minOrbit, Math.min(width, height) * 0.28));
+    /** Center point of the pane. all orbit positions are relative to this. */
+    let centerX = width / 2;
+    let centerY = height / 2;
+    /** Reserve one extra slot among the children for the add-child button. */
+    let slotCount = topic.children.length + 1;
+    /** Minimum orbit radius so adjacent child nodes don't overlap each other. */
+    let minOrbit = (childRadius * 2 + 14) * slotCount / (2 * Math.PI);
+    /** Clamp orbit: at least enough to clear the center node, at most 28% of the smaller pane edge. */
+    let childOrbit = Math.max(centerRadius + childRadius + 20, Math.min(minOrbit, Math.min(width, height) * 0.28));
     let grandOrbit = 90;
     let dotOrbit = 44;
 
@@ -202,13 +213,14 @@
     let lineList: LineDef[] = [];
     let positions: AnimState = {};
 
-    /** Registers a node in the layout at position (x, y) with radius r */
+    /** Registers a node and its position in the layout. */
     function addNode(id: string, x: number, y: number, r: number, nd: NodeDef) {
       nodeList.push(nd);
       positions[id] = { x, y, r, opacity: 1 };
     }
 
-    addNode(topic.id, cx, cy, centerR, {
+    /** Center node, i.e. the topic currently being viewed. */
+    addNode(topic.id, centerX, centerY, centerRadius, {
       id: topic.id,
       topic,
       level: "center",
@@ -217,7 +229,7 @@
       clickable: false,
     });
 
-    // Ancestor chain: root on the far left, direct parent closest to center
+    // Ancestor chain: root on the far left, direct parent closest to center.
     let ancestors: Topic[] = [];
     let ancestor = topic.parent;
     while (ancestor) {
@@ -225,11 +237,12 @@
       ancestor = ancestor.parent;
     }
     if (ancestors.length > 0) {
-      let spacing = childR * 2 + 14;
-      ancestors.forEach((anc, i) => {
-        let ancX = childR + 10 + i * spacing;
-        let ancY = childR + 10;
-        addNode(anc.id, ancX, ancY, childR, {
+      let spacing = childRadius * 2 + 14;
+      let i = 0;
+      for (let anc of ancestors) {
+        let ancX = childRadius + 10 + i * spacing;
+        let ancY = childRadius + 10;
+        addNode(anc.id, ancX, ancY, childRadius, {
           id: anc.id,
           topic: anc,
           level: "l2",
@@ -237,19 +250,19 @@
           labelLines: wrapText(anc.name, 8),
           clickable: true,
         });
+        // Chain each ancestor to the previous one (left → right = root → parent).
         if (i > 0) {
           lineList.push({ fromID: ancestors[i - 1].id, toID: anc.id, fromLevel: "parent" });
         }
-      });
-      lineList.push({ fromID: topic.id, toID: ancestors[ancestors.length - 1].id, fromLevel: "parent" });
+        i++;
+      }
+      // Connect the direct parent (rightmost) to the center node.
+      lineList.push({ fromID: topic.id, toID: ancestors.at(-1)!.id, fromLevel: "parent" });
     }
 
-    let i = 0;
-    for (let child of topic.children) {
-      let childAngle = (2 * Math.PI * i / slotCount) - Math.PI / 2;
-      let childX = cx + childOrbit * Math.cos(childAngle);
-      let childY = cy + childOrbit * Math.sin(childAngle);
-      addNode(child.id, childX, childY, childR, {
+    /** Lays out one child node and all its grandchild / dot descendants. */
+    function layoutChildBranch(child: Topic, childX: number, childY: number, childAngle: number) {
+      addNode(child.id, childX, childY, childRadius, {
         id: child.id,
         topic: child,
         level: "l2",
@@ -266,7 +279,7 @@
         let grandAngle = grandAngles[j];
         let grandX = childX + grandOrbit * Math.cos(grandAngle);
         let grandY = childY + grandOrbit * Math.sin(grandAngle);
-        addNode(grand.id, grandX, grandY, grandR, {
+        addNode(grand.id, grandX, grandY, grandRadius, {
           id: grand.id,
           topic: grand,
           level: "l3",
@@ -280,9 +293,10 @@
         let dotAngles = spreadAngles(grandAngle, greatKids.length, Math.min(Math.PI * 0.6, greatKids.length * 0.5));
         let k = 0;
         for (let great of greatKids) {
-          let dotX = grandX + dotOrbit * Math.cos(dotAngles[k]);
-          let dotY = grandY + dotOrbit * Math.sin(dotAngles[k]);
-          addNode(great.id, dotX, dotY, dotR, {
+          let dotAngle = dotAngles[k];
+          let dotX = grandX + dotOrbit * Math.cos(dotAngle);
+          let dotY = grandY + dotOrbit * Math.sin(dotAngle);
+          addNode(great.id, dotX, dotY, dotRadius, {
             id: great.id,
             topic: great,
             level: "l4",
@@ -295,12 +309,23 @@
         }
         j++;
       }
+    }
+
+    let i = 0;
+    for (let child of topic.children) {
+      let childAngle = (2 * Math.PI * i / slotCount) - Math.PI / 2;
+      let childX = centerX + childOrbit * Math.cos(childAngle);
+      let childY = centerY + childOrbit * Math.sin(childAngle);
+      layoutChildBranch(child, childX, childY, childAngle);
       i++;
     }
 
+    // Add-child button: last orbit slot, slightly inward so it reads as secondary.
     let addAngle = (2 * Math.PI * topic.children.length / slotCount) - Math.PI / 2;
     let addNodeId = topic.id + "/add";
-    addNode(addNodeId, cx + childOrbit * 0.85 * Math.cos(addAngle), cy + childOrbit * 0.85 * Math.sin(addAngle), addBtnR, {
+    let addX = centerX + childOrbit * 0.85 * Math.cos(addAngle);
+    let addY = centerY + childOrbit * 0.85 * Math.sin(addAngle);
+    addNode(addNodeId, addX, addY, addBtnRadius, {
       id: addNodeId,
       topic,
       level: "add",
@@ -322,12 +347,14 @@
     }
   }
 
-  $: $selectedTopic, paneW, paneH, rebuildLayout();
+  $: $selectedTopic, paneWidth, paneHeight, rebuildLayout();
   function rebuildLayout() {
-    let layout = buildLayout(selectedTopic ?? rootTopic, paneW, paneH);
+    let layout = buildLayout(selectedTopic ?? rootTopic, paneWidth, paneHeight);
     nodes = layout.nodes;
     lines = layout.lines;
 
+    // Seed the animation from previous positions so nodes glide to their new spots.
+    // Brand-new nodes (absent from prevPositions) start at their target with opacity 0.
     let fromState: AnimState = {};
     for (let [id, target] of Object.entries(layout.positions)) {
       fromState[id] = prevPositions[id]
@@ -335,6 +362,7 @@
         : { ...target, opacity: 0 };
     }
 
+    // Snap to the from-state instantly, then animate forward to the new layout.
     anim.set(fromState, { duration: 0 });
     anim.set(layout.positions);
     prevPositions = layout.positions;
@@ -398,14 +426,14 @@
     stroke: var(--gc-c3);
   }
 
-  /* labels — sharp, spaced, no filter inheritance */
+  /* labels: sharp, spaced, no filter inheritance */
   .graph-container :global(.gc-label) {
     fill: var(--gc-text);
     font-family: inherit;
     letter-spacing: 0.06em;
   }
 
-  /* fills — opaque background of each node */
+  /* fills: opaque background of each node */
   .graph-container :global(.gc-fill) {
     stroke: none;
   }
@@ -422,7 +450,7 @@
     fill: var(--gc-fill-dim);
   }
 
-  /* halos — drawn AFTER fill so glow is visible both inside and outside the ring.
+  /* halos. drawn *after* fill, so that glow is visible both inside and outside the ring.
      thick stroke + tight blur = glow that fades border-color → transparent. */
   .graph-container :global(.gc-halo) {
     fill: none;
@@ -448,7 +476,7 @@
     filter: url(#tg-glow-sm);
   }
 
-  /* crisp rings — no fill, so inner glow from halo remains visible */
+  /* crisp rings: no fill, so inner glow from halo remains visible */
   .graph-container :global(.gc-ring) {
     fill: none;
   }
