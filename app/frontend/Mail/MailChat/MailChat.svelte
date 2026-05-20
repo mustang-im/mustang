@@ -13,7 +13,7 @@
     <ViewSwitcher />
   </vbox>
   <vbox class="right-pane" slot="right">
-    {#if $filteredMessages.hasItems && selectedPerson }
+    {#if $filteredMessages && selectedPerson }
       <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
       <Header person={selectedPerson} />
       <vbox flex class="messages background-pattern">
