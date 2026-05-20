@@ -74,7 +74,7 @@
   let tags = search.tags;
   let attachmentTypes = search.hasAttachmentMIMETypes;
 
-  $: isOpen && $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
+  $: isOpen && $globalSearchTerm, $tags, $attachmentTypes, startSearchDebounced();
   const startSearchDebounced = debounce(() => startSearch(), 300);
   async function startSearch() {
     try {
