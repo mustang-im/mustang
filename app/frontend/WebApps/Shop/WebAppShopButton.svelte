@@ -20,10 +20,10 @@
           classes="add create {adding ? "hidden" : ""}"
           />
       </hbox>
-      {#if instances.hasItems}
+      {#if $instances.hasItems}
         <vbox class="instances-separator" />
         <vbox class="instances">
-          {#each instances.each as iapp, i}
+          {#each $instances.each as iapp, i}
             <hbox class="instance">
               {#if iapp.account}
                 <RoundButton
@@ -82,7 +82,7 @@
   }
 
   $: myApps = appGlobal.webApps.myApps;
-  $: instances = $myApps.filterObservable(a => a.id == app.id);
+  $: instances = myApps.filterObservable(a => a.id == app.id);
 
   function onAdd() {
     adding = true;

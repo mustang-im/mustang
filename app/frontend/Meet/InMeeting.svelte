@@ -30,8 +30,8 @@
   let selectedParticipant: MeetingParticipant = null;
   $: me = meeting.myParticipant;
   $: allStreams = meeting.videos;
-  $: videos = $allStreams.filterObservable(video => video.hasVideo || video.isScreenShare);
-  $: audioOnlyStreams = $allStreams.filterObservable(video => !video.hasVideo && !video.isMe);
+  $: videos = allStreams.filterObservable(video => video.hasVideo || video.isScreenShare);
+  $: audioOnlyStreams = allStreams.filterObservable(video => !video.hasVideo && !video.isMe);
 
   // Show sidebar only when there are no participants, and
   // close it when the first person joins
