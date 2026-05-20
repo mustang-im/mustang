@@ -44,8 +44,8 @@ export function loadDemoMustangApps() {
     // #endif
     calendarMustangApp,
     filesMustangApp,
-    topicMustangApp,
     webAppsMustangApp,
+    topicMustangApp,
     settingsMustangApp,
   ]);
   selectedApp.set(contactsMustangApp);
