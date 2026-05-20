@@ -181,9 +181,10 @@ export class OWAAccount extends MailAccount {
       await this.loginCommon(interactive);
       this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
       this.hasLoggedIn = true;
-    });
+      this.notifyObserversOfSubaccounts();
 
-    await this.startup();
+      await this.startup();
+    });
   }
 
   async startup() {
@@ -218,11 +219,12 @@ export class OWAAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    if (this.mainAccount) { // TODO Why?
+    if (this.isDependentAccount) {
       await this.mainAccount.logout();
       return;
     }
     this.hasLoggedIn = false;
+    this.notifyObserversOfSubaccounts();
     await super.logout();
     if (!this.oAuth2) {
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
@@ -233,6 +235,12 @@ export class OWAAccount extends MailAccount {
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
+    }
+  }
+
+  notifyObserversOfSubaccounts() {
+    for (let account of this.dependentAccounts()) {
+      account.notifyObservers();
     }
   }
 

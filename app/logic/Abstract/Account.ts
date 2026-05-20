@@ -36,6 +36,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   realname: string = appGlobal.me?.name;
   /** @see `mainAccount` */
+  @notifyChangedProperty
   _mainAccount: Account | null = null;
   /** Internal. Used only during load. */
   _mainAccountID: string | null = null;
