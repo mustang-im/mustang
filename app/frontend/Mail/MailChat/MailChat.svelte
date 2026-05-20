@@ -17,7 +17,7 @@
       <PaymentBar account={$selectedAccount} showWhenNoAccount={false} />
       <Header person={selectedPerson} />
       <vbox flex class="messages background-pattern">
-        <MessageList messages={$filteredMessages}>
+        <MessageList messages={filteredMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             <MailMessage {message} {previousMessage} />
           </svelte:fragment>
