@@ -35,7 +35,7 @@
           <input type="text" bind:value={topic.name}
             on:keydown={event => onKeyEnter(event, onTitleEnter)}/>
         </hbox>
-        <vbox class="content">
+        <vbox class="content" flex>
           <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions} />
         </vbox>
       </vbox>
