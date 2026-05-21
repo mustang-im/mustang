@@ -19,7 +19,6 @@
     {/if}
     <vbox flex>
       <NotificationBar notifications={$notifications} />
-      URL: {location.href}
       {#if appGlobal.isMobile}
         <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>

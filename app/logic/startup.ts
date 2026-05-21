@@ -15,55 +15,24 @@ import { production, webMail } from './build';
 import { logError } from '../frontend/Util/error';
 import { assert } from './util/util';
 
-/** Read before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
+/** Read JPC secret from frontent URL hash `jpcSecret=password`.
+ * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
 let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecret");
 
 /**
- * Desktop (Electron): the main process puts the per-process JPC secret in
- *   the URL fragment when it loads the renderer; we capture it above at
- *   module-load time so the router doesn't get a chance to clobber it.
- * Mobile (Capacitor): the Node.js process generated the secret. The web
- *   view asks for it over Capacitor's IPC bridge (separate from the
- *   WebSocket we use for everything else). We reach for the plugin via
- *   the runtime-registered `Capacitor.Plugins.NodeJS` rather than
- *   importing `capacitor-nodejs` — keeps app/ free of mobile-only deps.
+ * Desktop: frontend URL hash `jpcSecret=password`
+ * Mobile: Capacitor IPC bridge
  */
 async function getJPCSecret(): Promise<string> {
   // #if [MOBILE]
-  const Capacitor = (globalThis as any).Capacitor;
-  const plugins = Capacitor?.Plugins ?? {};
-  // The mustang-im fork may register the plugin under a different name than
-  // upstream's "NodeJS". Probe a few likely names; if none match, the error
-  // lists what IS registered so we can read it off the screen / from logcat.
-  const NodeJS =
-    plugins.NodeJS ??
-    plugins.NodeJs ??
-    plugins.CapacitorNodeJS ??
-    plugins.CapacitorNodeJs;
-  assert(NodeJS,
-    "Capacitor Node.js plugin not on Capacitor.Plugins. Registered plugins: " +
-    Object.keys(plugins).join(", "));
+  // runtime-registered `Capacitor.Plugins.NodeJS` from `capacitor-nodejs`
+  const NodeJS = (globalThis as any).Capacitor?.Plugins?.CapacitorNodeJS;
   await NodeJS.whenReady();
   return await new Promise<string>(async (resolve, reject) => {
     try {
-      const listener = await NodeJS.addListener('jpc:secret', (data: any) => {
+      const listener = await NodeJS.addListener('jpc:secret', (data: { args: any[] }) => {
         listener.remove();
-        // capacitor-nodejs delivers `channel.send(name, ...args)` to the
-        // listener in one of two shapes, depending on version/fork:
-        //   - args spread directly:        (secret) => ...
-        //   - wrapped event object:        ({ args: [secret] }) => ...
-        // Accept both.
-        const secret =
-          typeof data === 'string' ? data :
-          typeof data?.args?.[0] === 'string' ? data.args[0] :
-          typeof data?.[0] === 'string' ? data[0] :
-          null;
-        if (typeof secret !== 'string') {
-          reject(new Error("JPC: unexpected secret payload shape from Node: " +
-            JSON.stringify(data)));
-        } else {
-          resolve(secret);
-        }
+        resolve(data.args[0]);
       });
       await NodeJS.send({ eventName: 'jpc:get-secret', args: [] });
     } catch (ex) {
