@@ -95,3 +95,4 @@ jobs:
           issuer-id: ${{ secrets.IOS_APPSTORE_API_ISSUER }}
           api-key-id: ${{ secrets.IOS_APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.IOS_APPSTORE_API_KEY }}
+          backend: altool
