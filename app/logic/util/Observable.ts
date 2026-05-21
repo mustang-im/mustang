@@ -22,12 +22,7 @@ export class Observable {
   }
   private callObserver(observer: observerFunc<this>, propertyName: string | null, oldValue: any): void {
     try {
-      // Svelte 5 skips re-renders when the store emits the same object reference (===).
-      // Pass a new prototype-delegate on change notifications so Svelte marks effects dirty.
-      // The initial subscription call (propertyName === null) still passes `this` so the
-      // subscriber can use it as a direct reference.
-      let subject = propertyName === null ? this : Object.create(this) as this;
-      observer(subject, propertyName, oldValue);
+      observer(this, propertyName, oldValue);
     } catch (ex) {
       console.error(ex);
     }
