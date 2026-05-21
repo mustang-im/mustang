@@ -75,11 +75,11 @@ jobs:
           echo "RELEASE=true" >> $GITHUB_ENV
         fi
 
-    - name: Upload to GitHub release
-      uses: softprops/action-gh-release@v3
-      if: env.RELEASE == 'true'
-      with:
-        tag_name: ${{ env.APP_VERSION }}
-        files: |
-          mobile/android/app/build/outputs/apk/release/*.apk
-          mobile/android/app/build/outputs/bundle/release/*.aab
+    # - name: Upload to GitHub release
+    #   uses: softprops/action-gh-release@v3
+    #   if: env.RELEASE == 'true'
+    #   with:
+    #     tag_name: ${{ env.APP_VERSION }}
+    #     files: |
+    #       mobile/android/app/build/outputs/apk/release/*.apk
+    #       mobile/android/app/build/outputs/bundle/release/*.aab
