@@ -29,6 +29,9 @@ export default defineConfig(({}) => {
         ignoreDynamicRequires: true,
       },
       rollupOptions: {
+        // `bridge` is the runtime-provided IPC module from capacitor-nodejs.
+        // It exists at execution time but not as npm, so don't try to bundle it.
+        external: ['bridge'],
         output: {
           entryFileNames: 'index.mjs',
         },

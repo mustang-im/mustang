@@ -11,14 +11,47 @@ import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
 import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { production } from './build';
+import { production, webMail } from './build';
 import { logError } from '../frontend/Util/error';
+import { assert } from './util/util';
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Read before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
+let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecret");
+
+/**
+ * Desktop (Electron): the main process puts the per-process JPC secret in
+ *   the URL fragment when it loads the renderer; we capture it above at
+ *   module-load time so the router doesn't get a chance to clobber it.
+ * Mobile (Capacitor): the Node.js process generated the secret. The web
+ *   view asks for it over Capacitor's IPC bridge (separate from the
+ *   WebSocket we use for everything else). We reach for the plugin via
+ *   the runtime-registered `Capacitor.Plugins.NodeJS` rather than
+ *   importing `capacitor-nodejs` — keeps app/ free of mobile-only deps.
+ */
+async function getJPCSecret(): Promise<string> {
+  // #if [MOBILE]
+  const NodeJS = (globalThis as any).Capacitor?.Plugins?.NodeJS;
+  await NodeJS.whenReady();
+  return await new Promise<string>(async (resolve) => {
+    const listener = await NodeJS.addListener('jpc:secret', (event: any) => {
+      listener.remove();
+      resolve(event.args[0]);
+    });
+    await NodeJS.send({ eventName: 'jpc:get-secret' });
+  });
+  // #else
+  if (webMail) {
+    return "";
+  }
+  assert(jpcSecretFromURL, "No JPC secret was passed in the frontend URL");
+  return jpcSecretFromURL;
+  // #endif
+}
 
 export async function getStartObjects(): Promise<void> {
+  const secret = await getJPCSecret();
   let jpc = new JPCWebSocket(null);
-  await jpc.connect(kSecret, "localhost", production ? 5455 : 5453);
+  await jpc.connect(secret, "localhost", production ? 5455 : 5453);
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
