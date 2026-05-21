@@ -30,7 +30,19 @@ let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecre
  */
 async function getJPCSecret(): Promise<string> {
   // #if [MOBILE]
-  const NodeJS = (globalThis as any).Capacitor?.Plugins?.NodeJS;
+  const Capacitor = (globalThis as any).Capacitor;
+  const plugins = Capacitor?.Plugins ?? {};
+  // The mustang-im fork may register the plugin under a different name than
+  // upstream's "NodeJS". Probe a few likely names; if none match, the error
+  // lists what IS registered so we can read it off the screen / from logcat.
+  const NodeJS =
+    plugins.NodeJS ??
+    plugins.NodeJs ??
+    plugins.CapacitorNodeJS ??
+    plugins.CapacitorNodeJs;
+  assert(NodeJS,
+    "Capacitor Node.js plugin not on Capacitor.Plugins. Registered plugins: " +
+    Object.keys(plugins).join(", "));
   await NodeJS.whenReady();
   return await new Promise<string>(async (resolve, reject) => {
     try {
