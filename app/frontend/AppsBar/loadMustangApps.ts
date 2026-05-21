@@ -29,6 +29,7 @@ export function loadMustangApps() {
     // #if [!WEBMAIL]
     filesMustangApp,
     webAppsMustangApp,
+    topicMustangApp,
     // #endif
     settingsMustangApp,
   ]);
