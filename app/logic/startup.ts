@@ -32,12 +32,16 @@ async function getJPCSecret(): Promise<string> {
   // #if [MOBILE]
   const NodeJS = (globalThis as any).Capacitor?.Plugins?.NodeJS;
   await NodeJS.whenReady();
-  return await new Promise<string>(async (resolve) => {
-    const listener = await NodeJS.addListener('jpc:secret', (event: any) => {
-      listener.remove();
-      resolve(event.args[0]);
-    });
-    await NodeJS.send({ eventName: 'jpc:get-secret' });
+  return await new Promise<string>(async (resolve, reject) => {
+    try {
+      const listener = await NodeJS.addListener('jpc:secret', (secret: string) => {
+        listener.remove();
+        resolve(secret);
+      });
+      await NodeJS.send({ eventName: 'jpc:get-secret', args: [] });
+    } catch (ex) {
+      reject(ex);
+    }
   });
   // #else
   if (webMail) {

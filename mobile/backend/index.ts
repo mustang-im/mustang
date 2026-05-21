@@ -1,6 +1,8 @@
 import { startupBackend, shutdownBackend, createJPCSecret } from './backend';
-// @ts-ignore - 'bridge' is provided at runtime by capacitor-nodejs
-import { channel } from 'bridge';
+import { createRequire } from 'node:module';
+// `bridge` is a runtime-provided module from capacitor-nodejs, registered only as CJS
+const require = createRequire(import.meta.url);
+const { channel } = require('bridge') as { channel: any };
 
 const jpcSecret = createJPCSecret();
 
