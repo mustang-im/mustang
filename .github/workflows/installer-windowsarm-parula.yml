@@ -2,6 +2,14 @@ name: Parula Installers for Windows ARM
 
 on:
   workflow_dispatch: # manually triggered
+    inputs:
+      release_type:
+        type: choice
+        options:
+          - release
+          - prerelease
+          - test
+        default: 'test'
   push:
     tags: 'v*'
 
@@ -28,7 +36,15 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - run: cd desktop; yarn run build:release:win
+    - run: |
+        cd desktop
+        if [[ "${{ inputs.release_type }}" == "prerelease" ]]; then
+          yarn run build:prerelease:win
+        elif [[ "${{ inputs.release_type }}" == "test" ]]; then
+          yarn run build:win
+        else
+          yarn run build:release:win
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

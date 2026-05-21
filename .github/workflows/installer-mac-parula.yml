@@ -2,6 +2,14 @@ name: Parula Installers for Mac OS X
 
 on:
   workflow_dispatch: # manually triggered
+    inputs:
+      release_type:
+        type: choice
+        options:
+          - release
+          - prerelease
+          - test
+        default: 'test'
   push:
     tags: 'v*'
 
@@ -29,7 +37,15 @@ jobs:
     - run: |
         mkdir -p ~/private_keys/
         echo '${{ secrets.APPLE_API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-    - run: cd desktop; yarn run build:release:mac
+    - run: |
+        cd desktop
+        if [[ "${{ inputs.release_type }}" == "prerelease" ]]; then
+          yarn run build:prerelease:mac
+        elif [[ "${{ inputs.release_type }}" == "test" ]]; then
+          yarn run build:mac
+        else
+          yarn run build:release:mac
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_LINK: ${{ secrets.CSC_LINK }}
