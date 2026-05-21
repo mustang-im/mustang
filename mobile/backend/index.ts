@@ -6,9 +6,8 @@ const { channel } = require('bridge') as { channel: any };
 
 const jpcSecret = createJPCSecret();
 
-// The Capacitor WebView asks for the secret via this channel before it
-// opens its WebSocket. We only respond once `startupBackend()` has actually
-// started listening, so the WebView can connect immediately after.
+// Unlike Electron, the Capacitor WebView loads *before* the backend,
+// so wait for the backend WebSocket to start up, so that the frontend knows when to connect.
 let resolveStarted: () => void;
 const started = new Promise<void>(resolve => { resolveStarted = resolve; });
 
