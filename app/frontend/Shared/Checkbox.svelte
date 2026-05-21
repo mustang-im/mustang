@@ -183,15 +183,16 @@
       inset 0 1px 2px rgba(255, 255, 255, 0.2);
   }
   :global(.mobile) .checkbox {
-    min-height: 44px;
+    min-height: 32px;
   }
   :global(.mobile) .knob {
-    top: 14px;
+    height: 32px;
+    width: 32px;
   }
   :global(.mobile) .knob-wrapper {
-    height: 44px;
-    width: 44px;
-    min-width: 44px;
+    height: 32px;
+    width: 64px;
+    min-width: 64px;
   }
   :global(.mobile) .indetermined .knob {
     left: 16px;
