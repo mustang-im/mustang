@@ -46,9 +46,24 @@ async function getJPCSecret(): Promise<string> {
   await NodeJS.whenReady();
   return await new Promise<string>(async (resolve, reject) => {
     try {
-      const listener = await NodeJS.addListener('jpc:secret', (secret: string) => {
+      const listener = await NodeJS.addListener('jpc:secret', (data: any) => {
         listener.remove();
-        resolve(secret);
+        // capacitor-nodejs delivers `channel.send(name, ...args)` to the
+        // listener in one of two shapes, depending on version/fork:
+        //   - args spread directly:        (secret) => ...
+        //   - wrapped event object:        ({ args: [secret] }) => ...
+        // Accept both.
+        const secret =
+          typeof data === 'string' ? data :
+          typeof data?.args?.[0] === 'string' ? data.args[0] :
+          typeof data?.[0] === 'string' ? data[0] :
+          null;
+        if (typeof secret !== 'string') {
+          reject(new Error("JPC: unexpected secret payload shape from Node: " +
+            JSON.stringify(data)));
+        } else {
+          resolve(secret);
+        }
       });
       await NodeJS.send({ eventName: 'jpc:get-secret', args: [] });
     } catch (ex) {
