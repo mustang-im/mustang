@@ -18,11 +18,6 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      # For Sentry source maps. Otherwise, vite build is out of memory
-      NODE_OPTIONS: '--max-old-space-size=32768'
 
     steps:
     - uses: actions/checkout@v6
@@ -38,12 +33,20 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - if: inputs.release_type == 'release' || github.event_name == 'push'
-      run: cd desktop; yarn run build:release:linux
-    - if: inputs.release_type == 'prerelease'
-      run: cd desktop; yarn run build:prerelease:linux
-    - if: inputs.release_type == 'test'
-      run: cd desktop; yarn run build:linux
+    - run: |
+        cd desktop
+        if [[ "${{ inputs.release_type }}" == "prerelease" ]]; then
+          yarn run build:prerelease:linux
+        elif [[ "${{ inputs.release_type }}" == "test" ]]; then
+          yarn run build:linux
+        else
+          yarn run build:release:linux
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Sentry source maps. Otherwise, vite build is out of memory
+        NODE_OPTIONS: '--max-old-space-size=32768'
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
