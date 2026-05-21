@@ -7,6 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import crypto from "node:crypto";
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -18,10 +19,10 @@ const OWA = {
 
 let jpc: JPCWebSocket | null = null;
 
-export async function startupBackend() {
+export async function startupBackend(jpcSecret: string) {
   let appGlobal = await createSharedAppObject();
   jpc = new JPCWebSocket(appGlobal);
-  await jpc.listen(kSecret, production ? 5455 : 5453, false);
+  await jpc.listen(jpcSecret, production ? 5455 : 5453, false);
 }
 
 export async function shutdownBackend() {
@@ -29,7 +30,10 @@ export async function shutdownBackend() {
   jpc = null;
 }
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Returns a passcode with at least 32 chars. Only alpha-num-dash. */
+export function createJPCSecret(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
 
 async function createSharedAppObject() {
   return {

@@ -1,4 +1,4 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate } from '../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
 import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
@@ -7,7 +7,9 @@ import icon from '../../build/icon.png?asset'
 
 function createWindow(): void {
   try {
-    startupBackend();
+    let jpcSecret = createJPCSecret();
+    startupBackend(jpcSecret)
+      .catch(console.error);
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -83,11 +85,11 @@ function createWindow(): void {
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (is.dev && true) {
-      mainWindow.loadURL('http://localhost:5454');
+      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret);
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#jpcSecret=' + jpcSecret)
     } else {
-      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+      mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'jpcSecret=' + jpcSecret })
     }
   } catch (ex) {
     console.error(ex);

@@ -18,15 +18,16 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import crypto from "node:crypto";
 import { RunOnce } from '../../app/logic/util/flow/RunOnce';
 const { autoUpdater } = electronUpdater;
 
 let jpc: JPCWebSocket | null = null;
 
-export async function startupBackend() {
+export async function startupBackend(jpcSecret: string) {
   let appGlobal = await createSharedAppObject();
   jpc = new JPCWebSocket(appGlobal);
-  await jpc.listen(kSecret, production ? 5455 : 5453, false);
+  await jpc.listen(jpcSecret, production ? 5455 : 5453, false);
 }
 
 export async function shutdownBackend() {
@@ -34,7 +35,17 @@ export async function shutdownBackend() {
   jpc = null;
 }
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Returns a passcode with at least 32 chars. Only alpha-num-dash. */
+export function createJPCSecret(): string {
+  if (!production) {
+    // For tests, get it from env var. developer has to set it.
+    const env = process.env.JPC_SECRET;
+    if (env && env.length >= 32) {
+      return env;
+    }
+  }
+  return crypto.randomBytes(32).toString("hex"); // 256-bit hex secret
+}
 
 async function createSharedAppObject() {
   return {

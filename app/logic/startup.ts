@@ -11,14 +11,47 @@ import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
 import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { production } from './build';
+import { production, webMail } from './build';
 import { logError } from '../frontend/Util/error';
+import { assert } from './util/util';
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Read JPC secret from frontent URL hash `jpcSecret=password`.
+ * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
+let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecret");
+
+/**
+ * Desktop: frontend URL hash `jpcSecret=password`
+ * Mobile: Capacitor IPC bridge
+ */
+async function getJPCSecret(): Promise<string> {
+  // #if [MOBILE]
+  // runtime-registered `Capacitor.Plugins.NodeJS` from `capacitor-nodejs`
+  const NodeJS = (globalThis as any).Capacitor?.Plugins?.CapacitorNodeJS;
+  await NodeJS.whenReady();
+  return await new Promise<string>(async (resolve, reject) => {
+    try {
+      const listener = await NodeJS.addListener('jpc:secret', (data: { args: any[] }) => {
+        listener.remove();
+        resolve(data.args[0]);
+      });
+      await NodeJS.send({ eventName: 'jpc:get-secret', args: [] });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+  // #else
+  if (webMail) {
+    return "";
+  }
+  assert(jpcSecretFromURL, "No JPC secret was passed in the frontend URL");
+  return jpcSecretFromURL;
+  // #endif
+}
 
 export async function getStartObjects(): Promise<void> {
+  const secret = await getJPCSecret();
   let jpc = new JPCWebSocket(null);
-  await jpc.connect(kSecret, "localhost", production ? 5455 : 5453);
+  await jpc.connect(secret, "localhost", production ? 5455 : 5453);
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
