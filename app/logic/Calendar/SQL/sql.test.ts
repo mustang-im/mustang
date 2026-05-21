@@ -3,7 +3,7 @@ import { SQLCalendar } from './SQLCalendar';
 import { SQLEvent } from './SQLEvent';
 import { FakeAddressbook, FakeCalendar, FakeChatPerson, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { expect, test } from 'vitest';
 import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
 
@@ -83,9 +83,3 @@ test("Save and read calendars from SQL database", { timeout: 10000 }, async () =
   }
 });
 
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}

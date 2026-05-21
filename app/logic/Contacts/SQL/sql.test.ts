@@ -5,7 +5,7 @@ import { SQLGroup } from './SQLGroup';
 import { SQLPerson } from './SQLPerson';
 import { FakeAddressbook, FakeChatPerson, fakeGroups, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { Collection } from 'svelte-collections';
 import { expect, test } from 'vitest';
 
@@ -111,9 +111,3 @@ function compareContactEntries(readEntries: Collection<ContactEntry>, originalEn
   }
 }
 
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}

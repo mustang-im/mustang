@@ -6,7 +6,7 @@ import { SQLChatMessage } from './SQLChatMessage';
 import { FakeChatAccount, FakeChatPerson, FakeAddressbook, fakePersons } from '../../testData';
 import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
 import { appGlobal } from '../../app';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { ArrayColl } from 'svelte-collections';
 import { expect, test } from 'vitest';
 
@@ -88,9 +88,3 @@ test("Save and read chats from SQL database", { timeout: 10000 }, async () => {
   }
 });
 
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}

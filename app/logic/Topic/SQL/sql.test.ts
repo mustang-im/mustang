@@ -5,7 +5,7 @@ import { newTopicAccountForProtocol } from '../TopicAccounts';
 import { Topic } from '../Topic';
 import { Paragraph } from '../PageContent';
 import { appGlobal } from '../../app';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { expect, test } from 'vitest';
 
 test("Save and read topics from SQL database", { timeout: 10000 }, async () => {
@@ -71,9 +71,3 @@ test("Save and read topics from SQL database", { timeout: 10000 }, async () => {
   expect(readChild.properties.first.value).toEqual("blue");
 });
 
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}
