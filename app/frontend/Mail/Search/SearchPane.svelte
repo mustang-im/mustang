@@ -74,19 +74,18 @@
   let tags = search.tags;
   let attachmentTypes = search.hasAttachmentMIMETypes;
 
+  $: search.bodyText = $globalSearchTerm;
   $: isOpen && $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
   const startSearchDebounced = debounce(() => startSearch(), 300);
   async function startSearch() {
     try {
-      let searchTerm = $globalSearchTerm;
       $selectedMessage = null;
-      if (searchTerm == null) {
+      if (search.bodyText == null) { // <==> $globalSearchTerm == null
         searchMessages = null;
         return;
       }
       searchMessages = new ArrayColl<EMail>();
 
-      search.bodyText = searchTerm;
       let result = await search.startSearch(kLimit + 1);
       if (!isOpen) {
         return;
