@@ -47,8 +47,8 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
-    - run: cd desktop; yarn run build:prelease:mac
-      if: inputs.release_type == 'prelease'
+    - run: cd desktop; yarn run build:prerelease:mac
+      if: inputs.release_type == 'prerelease'
       env: *build_env
     - run: cd desktop; yarn run build:mac
       if: inputs.release_type == 'test'

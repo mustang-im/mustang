@@ -51,8 +51,8 @@ jobs:
         NODE_OPTIONS: '--max-old-space-size=32768'
         # Work around <https://github.com/electron-userland/electron-builder/issues/9563>
         USE_SYSTEM_FPM: true
-    - run: cd desktop; yarn run build:prelease:linux
-      if: inputs.release_type == 'prelease'
+    - run: cd desktop; yarn run build:prerelease:linux
+      if: inputs.release_type == 'prerelease'
       env: *build_env
     - run: cd desktop; yarn run build:linux
       if: inputs.release_type == 'test'
