@@ -2,6 +2,14 @@ name: Parula Installers for Android
 
 on:
   workflow_dispatch: # manually triggered
+    inputs:
+      release_type:
+        type: choice
+        options:
+          - release
+          - prerelease
+          - test
+        default: 'test'
   push:
     tags: 'v*'
 
@@ -69,17 +77,14 @@ jobs:
         cd mobile
         VERSION=$(jq -r '.version' package.json)
         echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
-        if [[ "$VERSION" == *dev ]]; then
-          echo "RELEASE=false" >> $GITHUB_ENV
-        else
-          echo "RELEASE=true" >> $GITHUB_ENV
-        fi
 
     - name: Upload to GitHub release
       uses: softprops/action-gh-release@v3
-      if: env.RELEASE == 'true'
+      if: inputs.release_type != 'test'
       with:
         tag_name: ${{ env.APP_VERSION }}
+        prerelease: ${{ inputs.release_type == 'prerelease' }}
+        make_latest: ${{ inputs.release_type != 'prerelease' }}
         files: |
           mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab
