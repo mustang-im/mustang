@@ -32,20 +32,19 @@ jobs:
     - run: cd lib; yarn install
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
-    - run: |
-        cd desktop
-        if [[ "${{ inputs.release_type }}" == "prerelease" ]]; then
-          yarn run build:prerelease:win
-        elif [[ "${{ inputs.release_type }}" == "test" ]]; then
-          yarn run build:win
-        else
-          yarn run build:release:win
-        fi
-      env:
+    - run: cd desktop; yarn run build:release:win
+      if: github.event_name == 'push' || inputs.release_type == 'release'
+      env: &build_env
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
+    - run: cd desktop; yarn run build:prelease:win
+      if: inputs.release_type == 'prelease'
+      env: *build_env
+    - run: cd desktop; yarn run build:win
+      if: inputs.release_type == 'test'
+      env: *build_env
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
