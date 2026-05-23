@@ -6,7 +6,6 @@
   },
   "include": [
     "vite.config.ts",
-    "logic/build.ts",
     "build/**/*"
   ]
 }
