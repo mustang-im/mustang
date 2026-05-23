@@ -26,7 +26,7 @@ export class OWAAddressbook extends Addressbook {
   callOWA(aRequest: any) {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
-      : this.account.callOWA(aRequest, { mailbox: this.username });
+      : this.account.callOWA(aRequest, this.username);
   }
 
   newPerson(): OWAPerson {
