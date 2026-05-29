@@ -367,14 +367,14 @@ a:hover {
 
 /* App background pattern, e.g. Contacts app */
 .background-pattern {
-  background: url(./asset/background-repeat.png) repeat;
-  background-blend-mode: soft-light;
-  background-color: #E6F2F1;
+  /*background: url(./asset/background-repeat.png) repeat;
+  background-blend-mode: soft-light;*/
+  background-color: #2958960f;
   color: #160C27;
 }
 @media (prefers-color-scheme: dark) {
   .background-pattern {
-    background-blend-mode: overlay;
+    /*background-blend-mode: overlay;*/
     background-color: #141416;
     color: #C1C1C2;
   }
