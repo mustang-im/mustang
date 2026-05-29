@@ -1,6 +1,8 @@
 <RoundButton
   label={$t`Write new email`}
   icon={WriteIcon}
+  iconSize="22px"
+  padding="6px"
   classes="create"
   disabled={!account}
   onClick={newMail}
@@ -11,7 +13,7 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import WriteIcon from "lucide-svelte/icons/pencil";
+  import WriteIcon from "lucide-svelte/icons/plus";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
 
