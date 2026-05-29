@@ -129,7 +129,7 @@
   }
   .main-info {
     margin-inline-start: 12px;
-    margin-block-start: 16px;
+    margin-block-start: 4px;
     margin-block-end: 16px;
   }
   .no-avatar {
