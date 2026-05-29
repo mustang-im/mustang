@@ -125,7 +125,7 @@ export class IMAPAccount extends MailAccount {
         maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
-        socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
+        socketTimeout: 2 * 60 * 1000, // 2 mins of inactivity - MUST be longer than the IDLE above, but also kills unused Fetch and Display connections
         logger: false, // true, // Run backend using: `yarn run dev | npx pino-pretty -i time,msg`
         emitLogs: this.logLibrary,
       }
