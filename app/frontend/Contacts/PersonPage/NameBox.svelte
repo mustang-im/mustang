@@ -67,25 +67,27 @@
     </hbox>
     <hbox flex class="main-right">
       <hbox class="call-buttons">
-        <CallButtons {person} />
-      </hbox>
-      <hbox flex />
-      <hbox class="main-right-top">
         {#if isEditing}
           <RoundButton
             label={$t`Save`}
             onClick={save}
             icon={SaveIcon}
-            classes="edit-save"
+            iconSize="20px"
+            classes="edit-save large secondary action"
             />
         {:else}
           <RoundButton
             label={$t`Edit`}
             onClick={() => isEditing = !isEditing}
             icon={PencilIcon}
-            classes="edit-save"
+            iconSize="20px"
+            classes="edit-save large secondary action"
             />
         {/if}
+        <CallButtons {person} />
+      </hbox>
+      <hbox flex />
+      <hbox class="main-right-top">
         <AddressbookChanger {person} />
         <PersonMenu {person} />
       </hbox>
@@ -171,14 +173,15 @@
     align-items: start;
     margin-block-start: px;
   }
-  .main-right-top :global(.edit-save) {
-    margin-inline-end: 16px;
-  }
   .main-right-top :global(.account-selector .icon) {
     width: 20px;
     height: 20px;
   }
   .call-buttons {
     align-items: center;
+    gap: 10px;
+  }
+  .call-buttons :global(.edit-save svg) {
+    stroke-width: 1.5px;
   }
 </style>
