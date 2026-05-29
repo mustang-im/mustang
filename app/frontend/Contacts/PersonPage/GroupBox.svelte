@@ -60,11 +60,6 @@
   .header h3 {
     font-weight: normal;
   }
-  @media (prefers-color-scheme: dark) {
-    .header {
-      background-color: #20202270;
-    }
-  }
   h3 {
     margin-inline-start: 10px;
     margin-block-start: 0px;
