@@ -1,10 +1,21 @@
 <hbox class="top">
   <hbox class="buttons">
     <RoundButton
+      label={$t`Start a new meeting`}
+      onClick={startAdHocMeeting}
+      errorCallback={showError}
+      icon={PlusIcon}
+      iconSize="24px"
+      border={false}
+      classes="plain primary create" />
+    <RoundButton
       label={$t`Plan a meeting`}
-      icon={AddToCalendarIcon}
       onClick={addToCalendar}
-      classes="plain primary" border={false} iconSize="24px" />
+      errorCallback={showError}
+      icon={AddToCalendarIcon}
+      iconSize="24px"
+      border={false}
+      classes="plain primary" />
   </hbox>
   <hbox flex />
   <vbox class="payment-bar-container">
@@ -29,7 +40,7 @@
       {/if}
       <Button
         label={$t`Start a new meeting`}
-        icon={AddIcon}
+        icon={PlusIcon}
         onClick={startAdHocMeeting}
         errorCallback={showError}
         classes="primary filled" />
@@ -113,7 +124,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
-  import AddIcon from 'lucide-svelte/icons/plus';
+  import PlusIcon from 'lucide-svelte/icons/plus';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import { t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";
@@ -168,6 +179,11 @@
   .top {
     margin: 12px;
   }
+  .buttons {
+    column-gap: 12px;
+    margin-inline-start: 8px;
+    margin-block-start: 4px;
+  }
   .actions-container {
     align-items: center;
     justify-content: center;
@@ -191,9 +207,8 @@
   }
   .test .buttons {
     margin-block-end: 12px;
-  }
-  .test .buttons :global(> *) {
-    margin-block-end: 12px;
+    margin-inline-end: 12px;
+    row-gap: 8px;
   }
   .meeting-link {
     margin-inline-end: 4px;
