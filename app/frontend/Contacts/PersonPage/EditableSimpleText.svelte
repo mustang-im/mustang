@@ -2,43 +2,18 @@
   <input type="text" bind:value bind:this={inputEl}
     {placeholder}
     on:keydown={event => onKeyEnter(event, onEnter)}>
-  {#if !appGlobal.isMobile}
-    <hbox class="actions">
-      <Button
-        onClick={stopEditing}
-        icon={OKIcon}
-        iconOnly plain iconSize="14px"
-        classes="save"
-        label={$t`Finish editing and save`} />
-    </hbox>
-  {/if}
 {:else}
   <Clickable onDoubleClick={startEditing}>
     <div class="value">
       {value}
     </div>
   </Clickable>
-  {#if !appGlobal.isMobile}
-    <hbox class="actions value">
-      <Button
-        onClick={startEditing}
-        icon={PencilIcon}
-        iconOnly plain iconSize="12px"
-        classes="edit"
-        label={$t`Edit`} />
-    </hbox>
-  {/if}
 {/if}
 
 <script lang="ts">
-  import { appGlobal } from "../../../logic/app";
-  import Button from "../../Shared/Button.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
-  import PencilIcon from "lucide-svelte/icons/pencil";
-  import OKIcon from "lucide-svelte/icons/check";
   import { onKeyEnter } from "../../Util/util";
   import { createEventDispatcher, tick } from 'svelte';
-  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher();
 
   /** in/out */

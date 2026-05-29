@@ -30,13 +30,6 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions edit">
-    {#if !appGlobal.isMobile}
-      <Button
-        onClick={stopEditing}
-        icon={OKIcon}
-        iconOnly plain iconSize="14px"
-        label={$t`Finish editing and save`} />
-    {/if}
     <Button
       onClick={remove}
       icon={DeleteIcon}
@@ -65,15 +58,10 @@
       {/if}
       <slot name="actions display" />
       <Button
-        onClick={copyValue}
+        onClick={() => { copyValue(); /* Do not `await` */ }}
         icon={CopyIcon}
         iconOnly plain iconSize="14px"
         label={$t`Copy info to clipboard`} />
-      <Button
-        onClick={startEditing}
-        icon={PencilIcon}
-        iconOnly plain iconSize="14px"
-        label={$t`Edit`} />
     <!-- else mobile: Keep the <hbox>, so that the <grid> doesn't break -->
     {/if}
   </hbox>
@@ -86,9 +74,7 @@
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
-  import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
-  import OKIcon from "lucide-svelte/icons/check";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter } from "../../Util/util";
   import { sleep } from "../../../logic/util/util";
@@ -193,11 +179,12 @@
     align-items: center;
     justify-content: end;
     margin-inline-start: 16px;
+    margin-inline-end: -8px; /* align with [+] above */
+    gap: 8px;
   }
   .actions > :global(button) {
     min-width: 20px;
     height: 24px;
-    margin-right: 8px;
   }
   :global(.desktop) :global(.group:not(:hover)) .actions {
     visibility: hidden;

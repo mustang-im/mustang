@@ -10,7 +10,7 @@
         <hbox class="name">
           <EditableSimpleText bind:value={person.name}
             on:save={save}
-            bind:isEditing={isEditing}
+            bind:isEditing
             isName={true}
             placeholder={$t`First name Last name`} />
         </hbox>
@@ -19,14 +19,14 @@
             <EditableSimpleText
               bind:value={person.firstName}
               on:save={save}
-              bind:isEditing={isEditing}
+              bind:isEditing
               placeholder={$t`First name`} />
           </hbox>
           <hbox class="names lastname">
             <EditableSimpleText
               bind:value={person.lastName}
               on:save={save}
-              bind:isEditing={isEditing}
+              bind:isEditing
               placeholder={$t`Last name`} />
           </hbox>
         {/if}
@@ -36,7 +36,7 @@
               <EditableSimpleText
                 bind:value={person.position}
                 on:save={save}
-                bind:isEditing={isEditing}
+                bind:isEditing
                 placeholder={$t`Position`} />
             </hbox>
           {/if}
@@ -45,7 +45,7 @@
               <EditableSimpleText
                 bind:value={person.department}
                 on:save={save}
-                bind:isEditing={isEditing}
+                bind:isEditing
                 placeholder={$t`Department`} />
             </hbox>
           {/if}
@@ -54,7 +54,7 @@
               <EditableSimpleText
                 bind:value={person.company}
                 on:save={save}
-                bind:isEditing={isEditing}
+                bind:isEditing
                 placeholder={$t`Company`} />
             </hbox>
           {/if}
@@ -67,6 +67,21 @@
       </hbox>
       <hbox flex />
       <hbox class="main-right-top">
+        {#if isEditing}
+          <RoundButton
+            label={$t`Save`}
+            onClick={save}
+            icon={SaveIcon}
+            classes="edit-save"
+            />
+        {:else}
+          <RoundButton
+            label={$t`Edit`}
+            onClick={() => isEditing = !isEditing}
+            icon={PencilIcon}
+            classes="edit-save"
+            />
+        {/if}
         <AddressbookChanger {person} />
         <PersonMenu {person} />
       </hbox>
@@ -82,6 +97,9 @@
   import PersonMenu from "./PersonMenu.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import AddressbookChanger from "../AddressbookChanger.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import PencilIcon from "lucide-svelte/icons/pencil";
+  import SaveIcon from "lucide-svelte/icons/save";
   import { showError } from "../../Util/error";
   import { getUILocale, t } from "../../../l10n/l10n";
 
@@ -92,6 +110,7 @@
   async function save() {
     try {
       await person.save();
+      isEditing = false;
     } catch (ex) {
       showError(ex);
     }
@@ -144,6 +163,9 @@
     justify-content: end;
     align-items: start;
     margin-block-start: px;
+  }
+  .main-right-top :global(.edit-save) {
+    margin-inline-end: 16px;
   }
   .main-right-top :global(.account-selector .icon) {
     width: 20px;
