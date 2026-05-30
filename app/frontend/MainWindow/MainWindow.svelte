@@ -63,6 +63,7 @@
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { categoriesLoaded } from "../Settings/SettingsCategories";
+  import { applyColors } from "../Settings/Global/AppThemeColors";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -132,6 +133,8 @@
     assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
     appGlobal.remoteApp.setTheme(theme);
   }
+  let colorsSetting = getLocalStorage("appearance.colors", {});
+  $: applyColors($colorsSetting.value);
 
   let windowWidth: number;
   $: windowWidth, setSmall()
