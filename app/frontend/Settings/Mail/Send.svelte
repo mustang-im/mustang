@@ -161,7 +161,7 @@
     padding-inline-start: 8px;
   }
   .illustration blockquote[type=cite] {
-    border-left: 3px solid #20AE9E;
+    border-inline-start: 3px solid #20AE9E;
     padding-inline-start: 20px;
     margin-inline-start: 0px;
     margin-inline-end: 16px;
