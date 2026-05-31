@@ -159,16 +159,16 @@
     margin-block-start: -4px;
     margin-inline-start: 8px;
     padding-inline-start: 8px;
+    margin-inline-end: 16px;
   }
   .illustration blockquote[type=cite] {
     border-inline-start: 3px solid #20AE9E;
     padding-inline-start: 20px;
     margin-inline-start: 0px;
-    margin-inline-end: 16px;
+    margin-inline-end: 0px;
   }
   .illustration pre {
     margin-block-start: 16px;
-    padding-inline-end: 16px;
     font-size: 14px;
   }
   .illustration ul {
