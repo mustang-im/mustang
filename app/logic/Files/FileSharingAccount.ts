@@ -2,6 +2,7 @@ import { ArrayColl, Collection } from "svelte-collections";
 import { Account } from "../Abstract/Account";
 import { Directory } from "./Directory";
 import type { File } from "./File";
+import { appGlobal } from "../app";
 
 export class FileSharingAccount extends Account {
   readonly protocol: string = "files";
@@ -37,6 +38,7 @@ export class FileSharingAccount extends Account {
   async deleteIt(): Promise<void> {
     await this.storage?.deleteAccount(this);
     await super.deleteIt();
+    appGlobal.fileSharingAccounts.remove(this);
   }
 }
 

@@ -32,16 +32,16 @@
 
   const protocols: ProtocolDescription[] = [
     { label: `openCloud, ownCloud`, protocolID: "webdav" },
-    { label: `NextCloud`, protocolID: "webdav" },
+    { label: `NextCloud`, protocolID: "webdav-nextcloud" },
     { label: `OneDrive`, protocolID: "webdav" },
     { label: `SharePoint`, protocolID: "webdav" },
     { label: `GMX, web.de, 1&1`, protocolID: "webdav" },
-    { label: $t`WebDAV`, protocolID: "webdav" },
+    { label: `WebDAV`, protocolID: "webdav" },
   ];
 
   function onContinue() {
     config = newFileSharingAccountForProtocol(selectedProtocol);
-    if (selectedProtocol == "webdav") {
+    if (selectedProtocol.startsWith("webdav")) {
       showPage = WebDAVSetup;
     } else {
       throw new NotReached();

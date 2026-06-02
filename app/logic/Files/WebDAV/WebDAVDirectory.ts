@@ -13,12 +13,12 @@ export class WebDAVDirectory extends Directory {
   declare readonly subDirs: ArrayColl<WebDAVDirectory>;
   protected readonly listLock = new Lock();
 
-  newDirectory(name: string): WebDAVDirectory {
-    return super.newDirectory(name, new WebDAVDirectory()) as WebDAVDirectory;
+  newDirectory(name: string, dir = new WebDAVDirectory()): WebDAVDirectory {
+    return super.newDirectory(name, dir) as WebDAVDirectory;
   }
 
-  newFile(name: string): WebDAVFile {
-    return super.newFile(name, new WebDAVFile()) as WebDAVFile;
+  newFile(name: string, file = new WebDAVFile()): WebDAVFile {
+    return super.newFile(name, file) as WebDAVFile;
   }
 
   get etag(): string | null {

@@ -16,8 +16,8 @@ export class WebDAVAccount extends FileSharingAccount {
   client: WebDAVClient;
   protected readonly loginRunOnce = new RunOnce<void>();
 
-  newDirectory(name: string): WebDAVDirectory {
-    return super.newDirectory(name, new WebDAVDirectory()) as WebDAVDirectory;
+  newDirectory(name: string, dir = new WebDAVDirectory()): WebDAVDirectory {
+    return super.newDirectory(name, dir) as WebDAVDirectory;
   }
 
   async login(interactive: boolean) {

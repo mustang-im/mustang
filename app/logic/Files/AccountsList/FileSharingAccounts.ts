@@ -1,5 +1,6 @@
 import type { FileSharingAccount } from '../FileSharingAccount';
 import { WebDAVAccount } from '../WebDAV/WebDAVAccount';
+import { NextcloudAccount } from '../Nextcloud/NextcloudAccount';
 // #if [!WEBMAIL]
 import { myHarddrive } from '../Harddrive/HarddriveAccount';
 import { SQLFileSharingAccount } from '../SQL/SQLFileSharingAccount';
@@ -15,7 +16,9 @@ export function newFileSharingAccountForProtocol(protocol: string): FileSharingA
 }
 
 function _newFileSharingAccountForProtocol(protocol: string): FileSharingAccount {
-  if (protocol == "webdav") {
+  if (protocol == "webdav-nextcloud") {
+    return new NextcloudAccount();
+  } else if (protocol == "webdav") {
     return new WebDAVAccount();
   }
   throw new NotReached(`Unknown file sharing account type ${protocol}`);
