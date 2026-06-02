@@ -58,6 +58,7 @@ export class NextcloudFile extends WebDAVFile {
       app.pricePage = "";
       app.categoryFullIDs = ["productivity"];
       app.start = startURL;
+      app.webSessionID = this.account.webSessionID;
       apps.add(app);
     }
     return apps;
