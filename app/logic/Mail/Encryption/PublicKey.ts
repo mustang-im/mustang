@@ -151,6 +151,8 @@ export enum TrustLevel {
    * E.g. S/MIME CAs, my company, PGP key servers
    */
   ThirdParty = "third-party",
+  /** The user's local operating system has confirmed this certificate. */
+  OS = "operating-system",
   /** A person that we talk with has sent us this certificate via
    * untrusted channels. */
   Sender = "sender",
@@ -161,6 +163,7 @@ export enum TrustLevel {
 const kTrustOrder = [
   TrustLevel.Distrusted,
   TrustLevel.Sender,
+  TrustLevel.OS,
   TrustLevel.ThirdParty,
   TrustLevel.Personal,
 ];
@@ -172,6 +175,7 @@ export function trustOrder(trustLevel: TrustLevel): number {
 export const trustColor = {
   [TrustLevel.Personal]: "green",
   [TrustLevel.ThirdParty]: "blue",
+  [TrustLevel.OS]: "#005eff", // lighter blue
   [TrustLevel.Sender]: "yellow",
   [TrustLevel.Distrusted]: "red",
 }
@@ -179,6 +183,7 @@ export const trustColor = {
 export const trustColorFG = {
   [TrustLevel.Personal]: "white",
   [TrustLevel.ThirdParty]: "white",
+  [TrustLevel.OS]: "white",
   [TrustLevel.Sender]: "black",
   [TrustLevel.Distrusted]: "white",
 }

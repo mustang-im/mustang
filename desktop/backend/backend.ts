@@ -16,6 +16,7 @@ import { DAVClient } from "tsdav";
 import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
+import tls from "node:tls";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
@@ -89,6 +90,7 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    getCACertificates,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -228,6 +230,14 @@ export class HTTPFetchError extends Error {
 
 function newHTTPServer() {
   return new HTTPServer();
+}
+
+function getCACertificates(type: string) {
+  if (tls.getCACertificates) {
+    return tls.getCACertificates(type);
+  }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */
