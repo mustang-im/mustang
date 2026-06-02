@@ -32,7 +32,7 @@
         {#if $config.protocol == "ews"}
           <option value={AuthMethod.NTLM}>NTLM</option>
         {/if}
-        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
+        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA *=> Multi-factor authentication`}</option>
       </select>
     </hbox>
 

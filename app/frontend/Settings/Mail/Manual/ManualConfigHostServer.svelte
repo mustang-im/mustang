@@ -72,7 +72,7 @@
     <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required tabindex={5}>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
-        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
+        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA *=> Multi-factor authentication`}</option>
         <!--
         <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
         <option value={AuthMethod.NTLM}>NTLM</option>
