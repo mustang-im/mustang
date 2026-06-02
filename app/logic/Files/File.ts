@@ -27,6 +27,10 @@ export class File extends FileOrDirectory {
     URL.revokeObjectURL(url);
   });
 
+  get account() {
+    return this.parent?.account;
+  }
+
   setFileName(val: string) {
     this.name = val;
     let pos = val.lastIndexOf(".");
@@ -89,6 +93,14 @@ export class File extends FileOrDirectory {
       File.urlFinalizer.unregister(this);
     }
     this.url = null;
+  }
+
+  async save() {
+    await this.account.storage?.saveFile(this);
+  }
+
+  async deleteIt(): Promise<void> {
+    await this.account.storage?.deleteFile(this);
   }
 
   /** Open the native desktop app with this file */

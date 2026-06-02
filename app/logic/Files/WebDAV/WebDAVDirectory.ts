@@ -11,7 +11,6 @@ export class WebDAVDirectory extends Directory {
   declare account: WebDAVAccount;
   declare readonly files: ArrayColl<WebDAVFile>;
   declare readonly subDirs: ArrayColl<WebDAVDirectory>;
-  etag: string | null = null;
   protected readonly listLock = new Lock();
 
   newDirectory(name: string): WebDAVDirectory {
@@ -20,6 +19,13 @@ export class WebDAVDirectory extends Directory {
 
   newFile(name: string): WebDAVFile {
     return super.newFile(name, new WebDAVFile()) as WebDAVFile;
+  }
+
+  get etag(): string | null {
+    return this.syncState as string;
+  }
+  set etag(val: string | null) {
+    this.syncState = val;
   }
 
   async listContents() {
@@ -62,12 +68,25 @@ export class WebDAVDirectory extends Directory {
           }
         }
       }
+
       let removedFiles = this.files.filterOnce(file => !curFiles.has(file));
       let removedDirs = this.subDirs.filterOnce(dir => !curDirs.has(dir));
       this.files.removeAll(removedFiles);
       this.subDirs.removeAll(removedDirs);
       for (let file of removedFiles) {
         file.clearURL();
+        await file.deleteIt();
+      }
+      for (let dir of removedDirs) {
+        await dir.deleteIt();
+      }
+
+      await this.save();
+      for (let dir of curDirs) {
+        await dir.save();
+      }
+      for (let file of curFiles) {
+        await file.save();
       }
     } finally {
       lock.release();
@@ -110,12 +129,11 @@ export class WebDAVDirectory extends Directory {
     this.files.add(newFile);
     let bytes = await file.contents.arrayBuffer();
     let headers: Record<string, string> = {};
-    if (file.lastMod) {
-      // Honored by ownCloud, Nextcloud, openCloud, SabreDAV. Plain WebDAV ignores it.
-      headers["X-OC-MTime"] = Math.floor(file.lastMod.getTime() / 1000).toString();
-    }
+    // Honored by ownCloud, Nextcloud, openCloud, SabreDAV. Plain WebDAV ignores it.
+    headers["X-OC-MTime"] = Math.floor(file.lastMod.getTime() / 1000).toString();
     await this.account.client.putFileContents(newFile.path, bytes, { overwrite: false, headers });
     await newFile.stat();
+    await newFile.save();
   }
 
   async createSubdirectory(name: string): Promise<WebDAVDirectory> {
@@ -132,5 +150,6 @@ export class WebDAVDirectory extends Directory {
     if (this.parent) {
       (this.parent as WebDAVDirectory).subDirs.remove(this);
     }
+    super.deleteIt();
   }
 }

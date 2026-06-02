@@ -5,6 +5,8 @@ import { AbstractFunction, assert } from "../util/util";
 import { SetColl } from "svelte-collections";
 
 export class FileOrDirectory extends Observable implements TaggableObject {
+  /** Primary key in the local SQL cache. null = not yet saved. */
+  dbID: number | null = null;
   /** Full file path and name.
    * For directories, this must end with `/`. */
   path: string;
@@ -17,6 +19,7 @@ export class FileOrDirectory extends Observable implements TaggableObject {
   @notifyChangedProperty
   lastMod = new Date();
   readonly tags = new SetColl<Tag>();
+  syncState: string | number | null = null;
 
   get id() {
     return this.path;

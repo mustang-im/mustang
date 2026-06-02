@@ -100,6 +100,14 @@ export class Directory extends FileOrDirectory {
     throw new AbstractFunction();
   }
 
+  async save() {
+    await this.account.storage?.saveDirectory(this);
+  }
+
+  async deleteIt(): Promise<void> {
+    await this.account.storage?.deleteDirectory(this);
+  }
+
   /** Root-relative path of a child file of this directory. */
   childPath(name: string, directory = false): string {
     return this.path + name + (directory ? "/" : "");

@@ -26,30 +26,30 @@ export class WebDAVAccount extends FileSharingAccount {
       if (this.client) {
         return;
       }
-    let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
-    let usePassword = this.authMethod == AuthMethod.Password;
-    let options: { authType?: AuthType, username?: string, password?: string, token?: OAuthToken };
-    if (useOAuth2) {
-      assert(this.oAuth2, gt`Need OAuth2 configuration`);
-      if (!this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(interactive);
+      let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
+      let usePassword = this.authMethod == AuthMethod.Password;
+      let options: { authType?: AuthType, username?: string, password?: string, token?: OAuthToken };
+      if (useOAuth2) {
+        assert(this.oAuth2, gt`Need OAuth2 configuration`);
+        if (!this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(interactive);
+        }
+        options = {
+          authType: "token" as AuthType,
+          token: {
+            access_token: this.oAuth2.accessToken,
+            token_type: "Bearer",
+          },
+        };
+      } else if (usePassword) {
+        options = {
+          username: this.username,
+          password: this.password,
+        };
+      } else {
+        throw new NotReached(gt`Unknown authentication method`);
       }
-      options = {
-        authType: "token" as AuthType,
-        token: {
-          access_token: this.oAuth2.accessToken,
-          token_type: "Bearer",
-        },
-      };
-    } else if (usePassword) {
-      options = {
-        username: this.username,
-        password: this.password,
-      };
-    } else {
-      throw new NotReached(gt`Unknown authentication method`);
-    }
-    this.client = await appGlobal.remoteApp.createWebDAVClient(this.url, options);
+      this.client = await appGlobal.remoteApp.createWebDAVClient(this.url, options);
     });
   }
 
@@ -58,6 +58,7 @@ export class WebDAVAccount extends FileSharingAccount {
   }
 
   async sync() {
+    await super.sync();
     if (!this.client) {
       await this.login(false);
     }
@@ -65,8 +66,9 @@ export class WebDAVAccount extends FileSharingAccount {
       let root = this.newDirectory(gt`Files`);
       root.path = "/";
       this.rootDirs.add(root);
-      await root.listContents();
+      await root.save();
     }
+    await this.rootDirs.first.listContents();
   }
 
   /** For setup. Verify that the URL is a WebDAV endpoint and the credentials work. */

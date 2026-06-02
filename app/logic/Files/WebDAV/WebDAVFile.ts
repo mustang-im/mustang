@@ -6,13 +6,19 @@ import type { FileStat } from "webdav";
 
 export class WebDAVFile extends File {
   declare parent: WebDAVDirectory;
-  etag: string | null = null;
   /** URL of the file on the WebDAV server.
    * Can HTTP GET, but only with auth headers, not loadable from the frontend. */
   serverURL: URLString | null = null;
 
   get account() {
     return this.parent?.account;
+  }
+
+  get etag(): string | null {
+    return this.syncState as string;
+  }
+  set etag(val: string | null) {
+    this.syncState = val;
   }
 
   fromStat(stat: FileStat) {
@@ -53,6 +59,7 @@ export class WebDAVFile extends File {
     this.clearURL();
     this.contents = contents;
     await this.stat();
+    await this.save();
   }
 
   /** Refresh metadata for this file from the server.
@@ -70,5 +77,6 @@ export class WebDAVFile extends File {
     }
     this.clearURL();
     await this.account.client.deleteFile(this.path);
+    await this.account?.storage?.deleteFile(this);
   }
 }
