@@ -13,10 +13,7 @@ export class WebDAVAccount extends FileSharingAccount {
   client: WebDAVClient;
 
   newDirectory(name: string): WebDAVDirectory {
-    let dir = new WebDAVDirectory();
-    dir.name = name;
-    dir.account = this;
-    return dir;
+    return super.newDirectory(name, new WebDAVDirectory()) as WebDAVDirectory;
   }
 
   async login(interactive: boolean) {
