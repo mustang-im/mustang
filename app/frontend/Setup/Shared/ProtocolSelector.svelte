@@ -1,16 +1,9 @@
 <vbox class="protocol-selector">
   {#each protocols as protocol}
-    <Clickable onClick={event => onChange(protocol, event)}>
-      <hbox class="protocol">
-        <input type="radio"
-          checked={protocol.protocolID == selectedProtocol}
-          value={protocol}
-          name="protocol"
-          on:change={event => onChange(protocol, event)}
-          />
-        <label for="protocol" class="name">{protocol.label}</label>
-      </hbox>
-    </Clickable>
+    <label class="protocol">
+      <input type="radio" bind:group={selectedDescr} value={protocol} name="protocol" />
+      <span class="name">{protocol.label}</span>
+    </label>
   {/each}
 </vbox>
 
@@ -22,17 +15,13 @@
   }
 </script>
 <script lang="ts">
-  import Clickable from "../../Shared/Clickable.svelte";
-
   /** in */
   export let protocols: ProtocolDescription[];
   /** in/out */
   export let selectedProtocol: string = protocols[0]?.protocolID;
 
-  function onChange(newProtocol: ProtocolDescription, event: Event) {
-    selectedProtocol = newProtocol.protocolID;
-    event.stopPropagation();
-  }
+  let selectedDescr: ProtocolDescription = protocols.find(p => p.protocolID == selectedProtocol) ?? protocols[0];
+  $: selectedProtocol = selectedDescr?.protocolID;
 </script>
 
 <style>
