@@ -81,4 +81,21 @@ export class WebDAVFile extends File {
     await this.account.client.deleteFile(this.path);
     await this.account?.storage?.deleteFile(this);
   }
+
+  /** Convert a full WebDAV server-relative path
+   *   /remote.php/dav/files/<user>/Documents/foo.docx
+   * to a path rooted at the user root
+   *   /Documents/foo.docx
+   * Uses the account URL as the base — `this.url` is the file's blob: URL
+   * and is unset until `getURL()` runs. */
+  userRelativePath(webdavPath: string): string {
+    let prefix = new URL(this.account.url).pathname;
+    if (!prefix.endsWith("/")) {
+      prefix += "/";
+    }
+    if (webdavPath.startsWith(prefix)) {
+      return "/" + webdavPath.slice(prefix.length);
+    }
+    return webdavPath;
+  }
 }

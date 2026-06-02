@@ -1,11 +1,13 @@
 import { FileOrDirectory } from "./FileOrDirectory";
-import { appGlobal } from "../app";
+import type { WebAppListed } from "../WebApps/WebAppListed";
 import { openOSAppForFile } from "../util/os-integration";
 import { getFilesDir } from "../util/backend-wrapper";
+import { appGlobal } from "../app";
 import { RunOnce } from "../util/flow/RunOnce";
 import { notifyChangedProperty } from "../util/Observable";
 import { NotImplemented, assert, type URLString } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export class File extends FileOrDirectory {
   /** substring of `name`, excluding `fileExt` and dot */
@@ -106,10 +108,16 @@ export class File extends FileOrDirectory {
     await openOSAppForFile(this.filepathLocal);
   }
 
+  async availableOnlineEditors(): Promise<Collection<WebAppListed>> {
+    return new ArrayColl();
+  }
+
   protected async getLocalFilePath(): Promise<string> {
     filesDir ??= await getFilesDir();
-    let dir = sanitize.dirname(this.parent.path, false);
-    let fullDir = `${filesDir}/files/cloud/${dir}`;
+    let dir = sanitize.dirname(this.parent.path, false, "");
+    let fullDir = dir
+      ? `${filesDir}/files/cloud/${dir}`
+      : `${filesDir}/files/cloud`;
     await appGlobal.remoteApp.fs.mkdir(fullDir, { recursive: true, mode: 0o700 });
     return `${fullDir}/${sanitize.filename(this.name)}`;
   }

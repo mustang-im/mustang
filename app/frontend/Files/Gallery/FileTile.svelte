@@ -33,6 +33,7 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
+  import { startWebApp } from "../../WebApps/Runner/open";
   import { selectedFile } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
@@ -44,6 +45,14 @@
 
   async function openFile() {
     assert(file instanceof File, "Need file");
+    // Open web app from cloud provider
+    let editors = await file.availableOnlineEditors();
+    if (editors.hasItems) {
+      let webApp = editors.first.instantiate(file.parent?.account);
+      startWebApp(webApp);
+      return;
+    }
+    // Open native desktop app
     await file.download();
     console.log("open", file.filepathLocal);
     await file.openOSApp();

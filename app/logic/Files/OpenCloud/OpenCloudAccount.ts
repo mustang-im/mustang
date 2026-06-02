@@ -1,12 +1,17 @@
 import { WebDAVAccount } from "../WebDAV/WebDAVAccount";
 import { OpenCloudDirectory } from "./OpenCloudDirectory";
-import { assert } from "../../util/util";
+import type { EditorWebApp } from "../EditorWebApp";
+import { AuthMethod } from "../../Abstract/Account";
+import { appGlobal } from "../../app";
+import { assert, NotReached } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class OpenCloudAccount extends WebDAVAccount {
   readonly protocol: string = "webdav-opencloud";
   declare readonly rootDirs: ArrayColl<OpenCloudDirectory>;
+  protected editorsCache: EditorWebApp[] | null = null;
 
   newDirectory(name: string, dir = new OpenCloudDirectory()): OpenCloudDirectory {
     return super.newDirectory(name, dir) as OpenCloudDirectory;
@@ -26,5 +31,77 @@ export class OpenCloudAccount extends WebDAVAccount {
     }
 
     await super.verifyLogin();
+  }
+
+  /** List openCloud's enabled in-browser editors (Collabora, OnlyOffice, …).
+   * Cached per account instance — to refresh after the admin enables/disables
+   * an app, clear `editorsCache`. */
+  async listApps(): Promise<EditorWebApp[]> {
+    if (this.editorsCache) {
+      return this.editorsCache;
+    }
+    let appsByID = new Map<string, EditorWebApp>();
+    let json = await this.appCall("GET", "/app/list");
+    let entries = sanitize.array(json?.["mime-types"], []) as any[];
+    // openCloud's response is grouped by MIME type, with each entry carrying
+    // a list of app_providers. Flatten into a per-provider list.
+    for (let entry of entries) {
+      let mimeType = sanitize.nonemptystring(entry?.mime_type, null);
+      let apps = entry?.app_providers;
+      if (!mimeType || !sanitize.array(apps, null)) {
+        continue;
+      }
+      for (let app of apps) {
+        let name = sanitize.nonemptylabel(app?.name, null);
+        if (!name) {
+          continue;
+        }
+        let id = name.toLowerCase().replaceAll(" ", "-");
+        let existingApp = appsByID.get(id);
+        if (existingApp) {
+          if (!existingApp.mimetypes.includes(mimeType)) {
+            existingApp.mimetypes.push(mimeType);
+          }
+          continue;
+        }
+        let iconURL = new URL(this.url);
+        iconURL.pathname = `/apps/${id}/img/app.svg`;
+        let homeURL = new URL(this.url);
+        homeURL.pathname = `/apps/${id}`;
+        appsByID.set(id, {
+          id: id,
+          name: name,
+          mimetypes: [mimeType],
+          optionalMimetypes: [],
+          icon: sanitize.url(app?.icon, iconURL.href),
+          homepage: homeURL.href,
+        });
+      }
+    }
+    return this.editorsCache = Array.from(appsByID.values());
+  }
+
+  /** Generic openCloud app-provider HTTPS request, with Authorization header. */
+  async appCall(method: "GET" | "POST", path: string): Promise<any> {
+    let url = new URL(path, this.url).href;
+    let headers: Record<string, string> = {
+      "Accept": "application/json",
+    };
+    if (this.authMethod == AuthMethod.OAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        await this.oAuth2.login(false);
+      }
+      headers["Authorization"] = "Bearer " + this.oAuth2.accessToken;
+    } else if (this.authMethod == AuthMethod.Password) {
+      headers["Authorization"] = "Basic " + btoa(`${this.username}:${this.password}`);
+    }
+    let ky = await appGlobal.remoteApp.kyCreate({ headers, result: "json", timeout: 10000 });
+    if (method == "GET") {
+      return await ky.get(url, {});
+    } else if (method == "POST") {
+      return await ky.post(url, {});
+    } else {
+      throw new NotReached();
+    }
   }
 }
