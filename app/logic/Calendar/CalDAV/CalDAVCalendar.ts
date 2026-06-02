@@ -65,7 +65,7 @@ export class CalDAVCalendar extends Calendar {
         },
         defaultAccountType: "caldav",
       };
-      this.client = await appGlobal.remoteApp.createWebDAVClient(options);
+      this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
   }

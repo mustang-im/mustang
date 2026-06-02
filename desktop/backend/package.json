@@ -18,6 +18,7 @@
     "nodemailer": "^7.0.12",
     "tsdav": "^2.1.6",
     "utf-8-validate": "^6.0.6",
+    "webdav": "^5.10.0",
     "ws": "^8.19.0"
   },
   "devDependencies": {

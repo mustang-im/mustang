@@ -67,6 +67,7 @@ async function createSharedAppObject() {
     verifyServerNodemailer,
     getMIMENodemailer,
     createWebDAVClient,
+    createTSDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
@@ -313,9 +314,14 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   return buffer;
 }
 
-async function createWebDAVClient(options: any) {
+async function createTSDAVClient(options: any) {
   const { DAVClient } = await import("tsdav");
   return new DAVClient(options);
+}
+
+async function createWebDAVClient(serverURL: string, options: any) {
+  const { createClient } = await import("webdav");
+  return createClient(serverURL, options);
 }
 
 function newAdmZIP(filepath: string) {

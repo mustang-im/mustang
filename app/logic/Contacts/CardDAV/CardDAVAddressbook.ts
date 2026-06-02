@@ -70,7 +70,7 @@ export class CardDAVAddressbook extends Addressbook {
         },
         defaultAccountType: "carddav",
       };
-      this.client = await appGlobal.remoteApp.createWebDAVClient(options);
+      this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
   }

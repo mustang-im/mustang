@@ -92,7 +92,9 @@
     "vite": "^7.3.1",
     "vite-plugin-conditional-compile": "^1.4.5",
     "vite-plugin-node-polyfills": "^0.24.0",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "webdav": "^5.10.0",
+    "webdav-server": "^2.6.2"
   },
   "resolutions": {
     "vite": "^7.3.1"

@@ -1,10 +1,10 @@
 import { Directory } from "../Directory";
 import type { File } from "../File";
+import { HarddriveFile } from "./HarddriveFile";
 import type { HarddriveAccount } from "./HarddriveAccount";
 import { appGlobal } from "../../app";
 import { Lock } from "../../util/flow/Lock";
-import { AbstractFunction } from "../../util/util";
-import type { ArrayColl, Collection } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 export class HarddriveDirectory extends Directory {
   declare account: HarddriveAccount;
@@ -13,11 +13,11 @@ export class HarddriveDirectory extends Directory {
   protected readonly listLock = new Lock();
 
   newDirectory(name: string): HarddriveDirectory {
-    let dir = new HarddriveDirectory();
-    dir.name = name;
-    dir.account = this.account;
-    dir.parent = this;
-    return dir;
+    return super.newDirectory(name, new HarddriveDirectory()) as HarddriveDirectory;
+  }
+
+  newFile(name: string): HarddriveFile {
+    return super.newFile(name, new HarddriveFile()) as HarddriveFile;
   }
 
   async listContents() {
@@ -45,11 +45,4 @@ export class HarddriveDirectory extends Directory {
     }
   }
 
-  async moveFilesHere(files: Collection<File>) {
-    throw new AbstractFunction();
-  }
-
-  async copyFilesHere(files: Collection<File>) {
-    throw new AbstractFunction();
-  }
 }

@@ -13,6 +13,7 @@ import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
+import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -83,6 +84,7 @@ async function createSharedAppObject() {
     verifyServerNodemailer,
     getMIMENodemailer,
     createWebDAVClient,
+    createTSDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
@@ -413,8 +415,12 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+function createTSDAVClient(options: any) {
   return new DAVClient(options);
+}
+
+function createWebDAVClient(serverURL: string, options: any) {
+  return createWebDAVFileClient(serverURL, options);
 }
 
 function newAdmZIP(filepath: string) {

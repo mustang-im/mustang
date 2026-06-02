@@ -5,7 +5,8 @@ import { AbstractFunction, assert } from "../util/util";
 import { SetColl } from "svelte-collections";
 
 export class FileOrDirectory extends Observable implements TaggableObject {
-  /** Full file path and name */
+  /** Full file path and name.
+   * For directories, this must end with `/`. */
   path: string;
   /** Full path to the local file on user's disk. May be null */
   filepathLocal: string | null = null;

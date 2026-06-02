@@ -2,15 +2,15 @@ import { FileSharingAccount } from "../FileSharingAccount";
 import { WebDAVDirectory } from "./WebDAVDirectory";
 import { AuthMethod } from "../../Abstract/Account";
 import { ArrayColl } from "svelte-collections";
-import { NotImplemented, NotReached, assert } from "../../util/util";
+import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { appGlobal } from "../../app";
-import type { DAVClient } from "tsdav";
+import type { AuthType, OAuthToken, WebDAVClient } from "webdav";
 
 export class WebDAVAccount extends FileSharingAccount {
   readonly protocol: string = "webdav";
   declare readonly rootDirs: ArrayColl<WebDAVDirectory>;
-  client: DAVClient;
+  client: WebDAVClient;
 
   newDirectory(name: string): WebDAVDirectory {
     let dir = new WebDAVDirectory();
@@ -19,29 +19,31 @@ export class WebDAVAccount extends FileSharingAccount {
     return dir;
   }
 
-  async login(interactive: true) {
+  async login(interactive: boolean) {
     let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
     let usePassword = this.authMethod == AuthMethod.Password;
+    let options: { authType?: AuthType, username?: string, password?: string, token?: OAuthToken };
     if (useOAuth2) {
       assert(this.oAuth2, gt`Need OAuth2 configuration`);
       if (!this.oAuth2.isLoggedIn) {
         await this.oAuth2.login(interactive);
       }
-    }
-    assert(usePassword || useOAuth2, gt`Unknown authentication method`);
-    let options = {
-      serverUrl: this.url,
-      authType: useOAuth2 ? "Oauth" : "Basic",
-      credentials: useOAuth2 ? {
-        access_token: this.oAuth2.accessToken,
-      } : {
+      options = {
+        authType: "token" as AuthType,
+        token: {
+          access_token: this.oAuth2.accessToken,
+          token_type: "Bearer",
+        },
+      };
+    } else if (usePassword) {
+      options = {
         username: this.username,
-        password: usePassword ? this.password : undefined,
-      },
-      defaultAccountType: "webdav",
-    };
-    this.client = await appGlobal.remoteApp.createWebDAVClient(options);
-    await this.client.login();
+        password: this.password,
+      };
+    } else {
+      throw new NotReached(gt`Unknown authentication method`);
+    }
+    this.client = await appGlobal.remoteApp.createWebDAVClient(this.url, options);
   }
 
   get isLoggedIn(): boolean {
@@ -55,35 +57,14 @@ export class WebDAVAccount extends FileSharingAccount {
   }
 
   async sync() {
-    if (!this.dbID) {
-      await this.save();
+    if (!this.client) {
+      await this.login(false);
     }
-
-    let response = await this.client.collectionQuery({
-      url: this.url,
-      body: null, // TODO
-    });
-    let entries = new ArrayColl(response);
-    assert(entries.hasItems, "No files found");
-    console.log("Found WebDAV root directories", entries.contents);
-    this.rootDirs.clear();
-    for (let entry of entries) {
-      let dir = this.newDirectory("a"); // TODO entry.name
-      try {
-        // TODO convertVCardToPerson(entry.data, person);
-      } catch (ex) {
-        console.warn(ex);
-        continue;
-      }
-      // dir.syncState = entry.etag;
-      this.rootDirs.add(dir);
+    if (this.rootDirs.isEmpty) {
+      let root = this.newDirectory(gt`Files`);
+      root.path = "/";
+      this.rootDirs.add(root);
+      await root.listContents();
     }
-
-    await this.save();
-  }
-
-  async save() {
-    throw new NotImplemented(); // TODO DB for files
-    await super.save();
   }
 }

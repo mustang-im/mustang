@@ -10,4 +10,5 @@ package-lock.json
 app/dist/
 *.acebase/
 claude/
+.claude/
 .devcontainer/
