@@ -1,16 +1,18 @@
 import { FileSharingAccount } from "../FileSharingAccount";
 import { WebDAVDirectory } from "./WebDAVDirectory";
 import { AuthMethod } from "../../Abstract/Account";
+import { appGlobal } from "../../app";
+import { notifyChangedProperty } from "../../util/Observable";
 import { RunOnce } from "../../util/flow/RunOnce";
-import { ArrayColl } from "svelte-collections";
 import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { appGlobal } from "../../app";
+import { ArrayColl } from "svelte-collections";
 import type { AuthType, OAuthToken, WebDAVClient } from "webdav";
 
 export class WebDAVAccount extends FileSharingAccount {
   readonly protocol: string = "webdav";
   declare readonly rootDirs: ArrayColl<WebDAVDirectory>;
+  @notifyChangedProperty
   client: WebDAVClient;
   protected readonly loginRunOnce = new RunOnce<void>();
 
@@ -23,7 +25,7 @@ export class WebDAVAccount extends FileSharingAccount {
       return;
     }
     await this.loginRunOnce.runOnce(async () => {
-      if (this.client) {
+      if (this.isLoggedIn) {
         return;
       }
       let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
