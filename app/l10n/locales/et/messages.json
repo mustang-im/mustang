@@ -278,7 +278,6 @@
   "UODtG8": "Ühinemine",
   "xDAtGP": "Sõnum",
   "t7TeQU": "Sõnumid",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimeeri",
   "Q5uBUs": "Minut peab olema väiksem kui 59",
   "agRWc1": "Protokoll",
@@ -744,7 +743,6 @@
   "dnC/xs": "Kutse",
   "Q7Qbxi": "Korraldaja",
   "/tmE06": "Esialgne",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Juurdepääs oma pilvefailidele oma olemasoleva konto kaudu",
   "GgTY5U": "{num, plural, one {minut} other {minutit}}",
   "Xhyc0J": "{0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Valik",
   "FuS5eM": "Millal me kohtume?",
   "EBkkd6": "{0} kirjutas:",
-  "05Mye3": "Kell 8:00"
+  "05Mye3": "Kell 8:00",
+  "YxPSxZ": "Lisa konto…",
+  "tyri/E": "Seda dokumenti ei õnnestunud redigeerimiseks avada. Aadress {0} ei andnud kehtivat URL-i",
+  "HWKJwB": "Seda dokumenti ei õnnestunud redigeerimiseks avada. Redaktor ei leidnud ühtegi kehtivat URL-i",
+  "tmHWtF": "Toimetaja {0} ei leitud",
+  "lqcQmj": "Vaja on URL-i",
+  "pxJEx2": "See URL ei tundu olevat WebDAV-lõpppunkt. Nextcloudi puhul on URL-i vorm https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

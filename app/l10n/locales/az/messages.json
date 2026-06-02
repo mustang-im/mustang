@@ -213,7 +213,6 @@
   "UODtG8": "Bakı",
   "xDAtGP": "E-poçt",
   "t7TeQU": "Qeydiyyat",
-  "MClVbD": "MFA",
   "3TSz9S": "Pulsuz",
   "Q5uBUs": "Minute 59-dan az olmalıdır",
   "agRWc1": "Minutes",
@@ -864,7 +863,6 @@
   "b+mVb8": "İstifadəçi ekran paylaşımının seçimini ləğv etdi",
   "07yKJu": "Mövcud cihazdan istifadə edərək təsdiqləyin",
   "1lUuN3": "Brauzerinizdə girişi tamamlamanızı gözləyirik",
-  "Z6QE5q": "VebDAV",
   "q42wI1": "Geniş masa görünüşü",
   "Wz2FXx": "İş məkanları özünüzü təşkil etməyə imkan verir. Başlıq sətrindəki Parametrlərə keçərək bunu istənilən vaxt dəyişə bilərsiniz.",
   "pGU++M": "E-poçt yazın",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Seçim",
   "FuS5eM": "Nə vaxt görüşürük?",
   "EBkkd6": "{0} yazdı:",
-  "05Mye3": "Saat 8:00-da"
+  "05Mye3": "Saat 8:00-da",
+  "YxPSxZ": "Hesab əlavə et…",
+  "tyri/E": "Bu sənədi redaktə etmək üçün aça bilmədi. {0} etibarlı URL qaytarmadı.",
+  "HWKJwB": "Bu sənədi redaktə etmək üçün aça bilmədi. Redaktor etibarlı URL qaytarmadı.",
+  "tmHWtF": "Redaktor {0} tapılmadı",
+  "lqcQmj": "URL lazımdır",
+  "pxJEx2": "Bu URL WebDAV son nöqtəsi kimi görünmür. Nextcloud üçün URL bu formadadır: https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

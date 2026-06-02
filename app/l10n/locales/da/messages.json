@@ -211,7 +211,6 @@
   "UODtG8": "Flet",
   "xDAtGP": "Besked",
   "t7TeQU": "Beskeder",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimere",
   "Q5uBUs": "Minutter skal være mindre end 59",
   "agRWc1": "Minutter",
@@ -744,7 +743,6 @@
   "dnC/xs": "Indbydelse",
   "Q7Qbxi": "Arrangør",
   "/tmE06": "Foreløbig",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Få adgang til dine cloud-filer på din eksisterende konto",
   "GgTY5U": "{num, plural, one {minut} other {minutter}}",
   "Xhyc0J": "Den {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Udvalg",
   "FuS5eM": "Hvornår mødes vi?",
   "EBkkd6": "{0} skrev:",
-  "05Mye3": "Kl. 8.00"
+  "05Mye3": "Kl. 8.00",
+  "YxPSxZ": "Opret konto…",
+  "tyri/E": "Det var ikke muligt at åbne dette dokument til redigering. {0} returnerede ingen gyldig URL",
+  "HWKJwB": "Det var ikke muligt at åbne dette dokument til redigering. Redigeringsprogrammet fandt ingen gyldig URL",
+  "tmHWtF": "Redaktør {0} blev ikke fundet",
+  "lqcQmj": "URL kræves",
+  "pxJEx2": "Denne URL ser ikke ud til at være et WebDAV-endepunkt. I Nextcloud har URL'en formatet https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

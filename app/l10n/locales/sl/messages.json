@@ -278,7 +278,6 @@
   "UODtG8": "Združitev",
   "xDAtGP": "Sporočilo",
   "t7TeQU": "Sporočila",
-  "MClVbD": "MFA",
   "3TSz9S": "Zmanjšajte",
   "Q5uBUs": "Minuta mora biti krajša od 59",
   "agRWc1": "Zapisnik",
@@ -744,7 +743,6 @@
   "dnC/xs": "Vabilo",
   "Q7Qbxi": "Organizator",
   "/tmE06": "Okvirna spletna stran",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Dostopajte do svojih datotek v oblaku v obstoječem računu",
   "GgTY5U": "{num, plural, one {minuta} other {minut}}",
   "Xhyc0J": "Na {0} {1} {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Izbira",
   "FuS5eM": "Kdaj se dobimo?",
   "EBkkd6": "{0} je napisal:",
-  "05Mye3": "Ob 8.00"
+  "05Mye3": "Ob 8.00",
+  "YxPSxZ": "Dodaj račun…",
+  "tyri/E": "Tega dokumenta ni bilo mogoče odpreti za urejanje. Naslov {0} ni vseboval veljavnega URL-ja.",
+  "HWKJwB": "Tega dokumenta ni bilo mogoče odpreti za urejanje. Urejevalnik ni prejel veljavnega URL-ja.",
+  "tmHWtF": "Urednik {0} ni bil najden",
+  "lqcQmj": "Potrebujem URL",
+  "pxJEx2": "Ta URL-naslov očitno ni končna točka WebDAV. Pri Nextcloudu ima URL-naslov obliko https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

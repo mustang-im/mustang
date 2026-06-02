@@ -211,7 +211,6 @@
   "UODtG8": "Zlúčenie",
   "xDAtGP": "Aktuality",
   "t7TeQU": "Príspevky",
-  "MClVbD": "AKTUALITY",
   "3TSz9S": "Všeobecný",
   "Q5uBUs": "Minute musí byť menšia ako 59",
   "agRWc1": "Minúty",
@@ -744,7 +743,6 @@
   "dnC/xs": "Pozvánka",
   "Q7Qbxi": "Organizátor",
   "/tmE06": "Predbežné",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Prístup ku cloudovým súborom v existujúcom konte",
   "GgTY5U": "{num, plural, one {minúta} other {minút}}",
   "Xhyc0J": "V {0} {1}týždni",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Výber",
   "FuS5eM": "Kedy sa stretneme?",
   "EBkkd6": "{0} napísal:",
-  "05Mye3": "O 8:00"
+  "05Mye3": "O 8:00",
+  "YxPSxZ": "Pridať účet…",
+  "tyri/E": "Tento dokument sa nepodarilo otvoriť na úpravy. Adresa {0} neobsahuje platnú URL adresu.",
+  "HWKJwB": "Tento dokument sa nepodarilo otvoriť na úpravy. Editor nevrátil žiadnu platnú URL adresu",
+  "tmHWtF": "Redaktor {0} nebol nájdený",
+  "lqcQmj": "Potrebujete URL",
+  "pxJEx2": "Táto adresa URL nevyzerá ako koncový bod WebDAV. V prípade Nextcloud má adresa URL tvar https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

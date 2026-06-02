@@ -211,7 +211,6 @@
   "UODtG8": "Sammanfoga",
   "xDAtGP": "Meddelande",
   "t7TeQU": "Meddelanden",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimera",
   "Q5uBUs": "Minuten måste vara mindre än 59",
   "agRWc1": "Minuter",
@@ -744,7 +743,6 @@
   "dnC/xs": "Inbjudan",
   "Q7Qbxi": "Arrangör",
   "/tmE06": "Tentativ",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Få tillgång till dina molnfiler i ditt befintliga konto",
   "GgTY5U": "{num, plural, one {minut} other {minuter}}",
   "Xhyc0J": "På den {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Urval",
   "FuS5eM": "När träffas vi?",
   "EBkkd6": "{0} skrev:",
-  "05Mye3": "Klockan 08.00"
+  "05Mye3": "Klockan 08.00",
+  "YxPSxZ": "Lägg till konto…",
+  "tyri/E": "Det gick inte att öppna dokumentet för redigering. {0} returnerade ingen giltig URL",
+  "HWKJwB": "Det gick inte att öppna dokumentet för redigering. Redigeraren fick ingen giltig URL",
+  "tmHWtF": "Redaktör {0} hittades inte",
+  "lqcQmj": "Behöver en URL",
+  "pxJEx2": "Den här webbadressen verkar inte vara en WebDAV-slutpunkt. För Nextcloud har webbadressen formatet https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

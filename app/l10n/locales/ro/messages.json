@@ -211,7 +211,6 @@
   "UODtG8": "Îmbinare",
   "xDAtGP": "Mesaj",
   "t7TeQU": "Mesaje",
-  "MClVbD": "AMF",
   "3TSz9S": "Minimizați",
   "Q5uBUs": "Minuta trebuie să fie mai mică de 59",
   "agRWc1": "Minute",
@@ -744,7 +743,6 @@
   "dnC/xs": "Invitație",
   "Q7Qbxi": "Organizator",
   "/tmE06": "Tentativă",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Accesați fișierele cloud în contul dvs. existent",
   "GgTY5U": "{num, plural, one {minut} other {minute}}",
   "Xhyc0J": "În {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Selecție",
   "FuS5eM": "Când ne vedem?",
   "EBkkd6": "{0} a scris:",
-  "05Mye3": "La ora 8:00"
+  "05Mye3": "La ora 8:00",
+  "YxPSxZ": "Adaugă cont…",
+  "tyri/E": "Nu s-a putut deschide acest document pentru editare. Adresa {0} nu conține o adresă URL validă",
+  "HWKJwB": "Nu s-a putut deschide acest document pentru editare. Editorul nu a returnat nicio adresă URL validă",
+  "tmHWtF": "Editorul {0} nu a fost găsit",
+  "lqcQmj": "Este necesară adresa URL",
+  "pxJEx2": "Această adresă URL nu pare să fie un punct final WebDAV. În cazul Nextcloud, adresa URL are forma https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

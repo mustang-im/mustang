@@ -211,7 +211,6 @@
   "UODtG8": "한국어",
   "xDAtGP": "메시지",
   "t7TeQU": "메시지",
-  "MClVbD": "사이트맵",
   "3TSz9S": "옵션 정보",
   "Q5uBUs": "분은 59 미만이어야합니다",
   "agRWc1": "소요시간",
@@ -744,7 +743,6 @@
   "dnC/xs": "초대",
   "Q7Qbxi": "주최자",
   "/tmE06": "잠정",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "기존 계정에서 클라우드 파일에 액세스",
   "GgTY5U": "{num, plural, one {분} other {분}}",
   "Xhyc0J": "0} {1}에",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "선택",
   "FuS5eM": "언제 만나요?",
   "EBkkd6": "{0} 님의 글:",
-  "05Mye3": "8시 정각"
+  "05Mye3": "8시 정각",
+  "YxPSxZ": "계정 추가…",
+  "tyri/E": "이 문서를 편집 모드로 열 수 없습니다. {0}에서 유효한 URL이 반환되지 않았습니다.",
+  "HWKJwB": "이 문서를 편집 모드로 열 수 없습니다. 편집기가 유효한 URL을 반환하지 않았습니다.",
+  "tmHWtF": "편집자 {0}를 찾을 수 없습니다",
+  "lqcQmj": "URL이 필요합니다",
+  "pxJEx2": "이 URL은 WebDAV 엔드포인트로 보이지 않습니다. Nextcloud의 경우 URL 형식은 https://<host>/remote.php/dav/files/<username>/</username></host> 입니다<host>.</host>",
+  "phNO5X": "MFA"
 }

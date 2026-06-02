@@ -211,7 +211,6 @@
   "UODtG8": "合并",
   "xDAtGP": "留言",
   "t7TeQU": "留言",
-  "MClVbD": "MFA",
   "3TSz9S": "最小化",
   "Q5uBUs": "分钟必须小于 59",
   "agRWc1": "分钟",
@@ -744,7 +743,6 @@
   "dnC/xs": "邀请",
   "Q7Qbxi": "组织者",
   "/tmE06": "暂定",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "访问现有账户中的云文件",
   "GgTY5U": "{num, plural, one {分钟} other {分钟}}",
   "Xhyc0J": "在 {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "选择",
   "FuS5eM": "我们什么时候见面？",
   "EBkkd6": "{0} 写道：",
-  "05Mye3": "8:00"
+  "05Mye3": "8:00",
+  "YxPSxZ": "添加账户…",
+  "tyri/E": "无法打开此文档进行编辑。{0} 返回的 URL 无效",
+  "HWKJwB": "无法打开此文档进行编辑。编辑器未返回有效的 URL",
+  "tmHWtF": "找不到编辑器{0}",
+  "lqcQmj": "需要网址",
+  "pxJEx2": "该 URL 似乎不是 WebDAV 端点。对于 Nextcloud，URL 的格式应为 https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

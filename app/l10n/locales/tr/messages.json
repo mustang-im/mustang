@@ -211,7 +211,6 @@
   "UODtG8": "Birleştirme",
   "xDAtGP": "Mesaj",
   "t7TeQU": "Mesajlar",
-  "MClVbD": "MFA",
   "3TSz9S": "Miniksiyon",
   "Q5uBUs": "Minute 59'dan daha az olmalıdır",
   "agRWc1": "Dakika",
@@ -744,7 +743,6 @@
   "dnC/xs": "Davetiye",
   "Q7Qbxi": "Organizatör",
   "/tmE06": "Geçici",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Mevcut hesabınızdaki bulut dosyalarınıza erişin",
   "GgTY5U": "{num, plural, one {dakika} other {dakika}}",
   "Xhyc0J": "0} {1} üzerinde",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Seçim",
   "FuS5eM": "Ne zaman buluşacağız?",
   "EBkkd6": "{0} şöyle yazdı:",
-  "05Mye3": "Saat 8:00'de"
+  "05Mye3": "Saat 8:00'de",
+  "YxPSxZ": "Hesap ekle…",
+  "tyri/E": "Bu belge düzenleme amacıyla açılamadı. {0} adresi geçerli bir URL döndürmedi",
+  "HWKJwB": "Bu belge düzenleme amacıyla açılamadı. Düzenleyici geçerli bir URL bulamadı",
+  "tmHWtF": "{0}'i bulunamadı",
+  "lqcQmj": "URL gerekli",
+  "pxJEx2": "Bu URL, bir WebDAV uç noktası gibi görünmüyor. Nextcloud için URL şu biçimdedir: https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

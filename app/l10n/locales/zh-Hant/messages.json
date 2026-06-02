@@ -316,7 +316,6 @@
   "UODtG8": "合併",
   "xDAtGP": "訊息",
   "t7TeQU": "訊息",
-  "MClVbD": "MFA",
   "3TSz9S": "最小化",
   "Q5uBUs": "分鐘必須小於 59",
   "agRWc1": "分鐘",
@@ -744,7 +743,6 @@
   "dnC/xs": "邀請",
   "Q7Qbxi": "主辦單位",
   "/tmE06": "暫定",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "在現有帳戶中存取雲端檔案",
   "GgTY5U": "{num, plural, one {分鐘} other {分鐘}}",
   "Xhyc0J": "在 {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "選項",
   "FuS5eM": "我們什麼時候見面？",
   "EBkkd6": "{0} 寫道：",
-  "05Mye3": "上午8:00"
+  "05Mye3": "上午8:00",
+  "YxPSxZ": "新增帳戶…",
+  "tyri/E": "無法開啟此文件進行編輯。{0} 未傳回有效的 URL",
+  "HWKJwB": "無法開啟此文件進行編輯。編輯器未傳回有效的 URL",
+  "tmHWtF": "找不到編輯器 {0}",
+  "lqcQmj": "需要網址",
+  "pxJEx2": "此網址似乎不是 WebDAV 端點。對於 Nextcloud，網址的格式應為 https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

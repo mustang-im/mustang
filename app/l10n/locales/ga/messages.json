@@ -213,7 +213,6 @@
   "UODtG8": "Amharc ar gach eolas",
   "xDAtGP": "Teachtaireacht an Choimisiúin",
   "t7TeQU": "Toir agus Crainn bláthanna",
-  "MClVbD": "FA",
   "3TSz9S": "Íosmhéid",
   "Q5uBUs": "Ní mór Nóiméad a bheith níos lú ná 59",
   "agRWc1": "Miontuairiscí na Comhairle",
@@ -864,7 +863,6 @@
   "b+mVb8": "Chuir an t-úsáideoir stad le roghnú na scáileánroinnte",
   "07yKJu": "Fíoraigh ag úsáid an ghléis atá ann cheana",
   "1lUuN3": "Ag fanacht leat an logáil isteach a chur i gcrích i do bhrabhsálaí",
-  "Z6QE5q": "GréasánDAV",
   "q42wI1": "Léargas leathan ar an mbord",
   "Wz2FXx": "Ligeann spásanna oibre duit tú féin a eagrú. Is féidir leat é seo a athrú ag am ar bith, trí dhul go Socruithe sa bharr teidil.",
   "pGU++M": "Scríobh ríomhphost",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Roghnú",
   "FuS5eM": "Cén uair a chastar muid?",
   "EBkkd6": "Scríobh {0}:",
-  "05Mye3": "Ag 8:00"
+  "05Mye3": "Ag 8:00",
+  "YxPSxZ": "Cuir cuntas leis…",
+  "tyri/E": "Níorbh fhéidir an doiciméad seo a oscailt le haghaidh eagarthóireachta. Níor thug {0} URL bailí ar ais.",
+  "HWKJwB": "Níorbh fhéidir an doiciméad seo a oscailt le haghaidh eagarthóireachta. Níor thug an t-eagarthóir URL bailí ar ais.",
+  "tmHWtF": "Níor aimsíodh Eagarthóir {0}",
+  "lqcQmj": "Teastaíonn URL",
+  "pxJEx2": "Ní cosúil gur críochphointe WebDAV é an URL seo. I gcás Nextcloud, bíonn an fhoirm <host>seo a leanas</host> ar an URL<host>:</host> https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "Fíordheimhniú ilfhachtóra"
 }

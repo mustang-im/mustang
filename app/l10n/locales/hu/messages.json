@@ -211,7 +211,6 @@
   "UODtG8": "Összevonás",
   "xDAtGP": "Üzenet",
   "t7TeQU": "Üzenetek",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimális",
   "Q5uBUs": "Kevesebb, mint 59",
   "agRWc1": "Percek",
@@ -744,7 +743,6 @@
   "dnC/xs": "Meghívó",
   "Q7Qbxi": "Szervező",
   "/tmE06": "Tentatív",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Hozzáférés a felhőfájlokhoz a meglévő fiókjában",
   "GgTY5U": "{num, plural, one {perc} other {perc}}",
   "Xhyc0J": "A {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Kiválasztás",
   "FuS5eM": "Mikor találkozunk?",
   "EBkkd6": "{0} írta:",
-  "05Mye3": "8 órakor"
+  "05Mye3": "8 órakor",
+  "YxPSxZ": "Fiók hozzáadása…",
+  "tyri/E": "A dokumentumot nem sikerült szerkesztés céljából megnyitni. Az {0} nem adott vissza érvényes URL-címet.",
+  "HWKJwB": "A dokumentumot nem sikerült szerkesztés céljából megnyitni. A szerkesztő nem kapott érvényes URL-címet.",
+  "tmHWtF": "{0}-szerkesztő nem található",
+  "lqcQmj": "URL szükséges",
+  "pxJEx2": "Úgy tűnik, hogy ez az URL nem WebDAV-végpont. A Nextcloud esetében az URL formája a következő: https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

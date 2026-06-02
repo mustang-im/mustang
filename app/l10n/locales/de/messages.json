@@ -211,7 +211,6 @@
   "UODtG8": "Zusammenführen",
   "xDAtGP": "Nachricht",
   "t7TeQU": "Nachrichten",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimieren",
   "Q5uBUs": "Minute muss kleiner als 60 sein",
   "agRWc1": "Minuten",
@@ -744,7 +743,6 @@
   "dnC/xs": "Einladung",
   "Q7Qbxi": "Organisator",
   "/tmE06": "Vorläufige",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Zugriff auf Ihre Cloud-Dateien in Ihrem bestehenden Konto",
   "GgTY5U": "{num, plural, one {Minute} other {Minuten}}",
   "Xhyc0J": "Am {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Auswahl",
   "FuS5eM": "Wann treffen wir uns?",
   "EBkkd6": "{0} schrieb:",
-  "05Mye3": "Um 8:00 Uhr"
+  "05Mye3": "Um 8:00 Uhr",
+  "YxPSxZ": "Konto hinzufügen…",
+  "tyri/E": "Dieses Dokument konnte nicht zur Bearbeitung geöffnet werden. {0} hat keine gültige URL zurückgegeben.",
+  "HWKJwB": "Dieses Dokument konnte nicht zur Bearbeitung geöffnet werden. Der Editor hat keine gültige URL zurückgegeben.",
+  "tmHWtF": "Der Editor „{0}“ wurde nicht gefunden",
+  "lqcQmj": "URL erforderlich",
+  "pxJEx2": "Diese URL scheint kein WebDAV-Endpunkt zu sein. Bei Nextcloud hat die URL das Format https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

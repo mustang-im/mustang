@@ -211,7 +211,6 @@
   "UODtG8": "Samenvoegen",
   "xDAtGP": "Bericht",
   "t7TeQU": "Berichten",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimizeren",
   "Q5uBUs": "Minuut moet minder dan 59 zijn",
   "agRWc1": "Minuten",
@@ -744,7 +743,6 @@
   "dnC/xs": "Uitnodiging",
   "Q7Qbxi": "Organisator",
   "/tmE06": "Voorlopig",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Toegang tot uw cloudbestanden in uw bestaande account",
   "GgTY5U": "{num, plural, one {minuut} other {minuten}}",
   "Xhyc0J": "Op de {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Selectie",
   "FuS5eM": "Wanneer komen we bij elkaar?",
   "EBkkd6": "{0} schreef:",
-  "05Mye3": "Om 8.00 uur"
+  "05Mye3": "Om 8.00 uur",
+  "YxPSxZ": "Account toevoegen…",
+  "tyri/E": "Dit document kon niet worden geopend om te bewerken. {0} leverde geen geldige URL op",
+  "HWKJwB": "Dit document kon niet worden geopend om te bewerken. De editor heeft geen geldige URL teruggegeven",
+  "tmHWtF": "De editor {0} is niet gevonden",
+  "lqcQmj": "URL nodig",
+  "pxJEx2": "Deze URL lijkt geen WebDAV-eindpunt te zijn. Voor Nextcloud heeft de URL de vorm https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

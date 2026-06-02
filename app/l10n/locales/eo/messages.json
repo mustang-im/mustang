@@ -213,7 +213,6 @@
   "UODtG8": "Merge",
   "xDAtGP": "Mesaĝo",
   "t7TeQU": "Mesaĝoj",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimize",
   "Q5uBUs": "Minuto devas esti malpli ol 59",
   "agRWc1": "Minutoj",
@@ -864,7 +863,6 @@
   "b+mVb8": "Uzanto nuligis la elekton de ekrana kundivido.",
   "07yKJu": "Konfirmi per ekzistanta aparato",
   "1lUuN3": "Atendante, ke vi kompletigu la ensaluton en via retumilo",
-  "Z6QE5q": "RetaDAV",
   "q42wI1": "Larĝa tabela vido",
   "Wz2FXx": "Laboraj spacoj permesas al vi organizi vin. Vi povas ŝanĝi tion iam ajn, irante al Agordoj en la titolobreto.",
   "pGU++M": "Verku retpoŝton",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Elekto",
   "FuS5eM": "Kiam ni renkontiĝas?",
   "EBkkd6": "{0} skribis:",
-  "05Mye3": "Je la 8:00"
+  "05Mye3": "Je la 8:00",
+  "YxPSxZ": "Aldoni konton…",
+  "tyri/E": "Ne eblis malfermi ĉi tiun dokumenton por redaktado. {0} ne redonis validan URL-on.",
+  "HWKJwB": "Ne eblis malfermi ĉi tiun dokumenton por redaktado. La redaktilo ne redonis validan URL-on.",
+  "tmHWtF": "Redaktoro {0} ne trovita",
+  "lqcQmj": "URL bezonata",
+  "pxJEx2": "Ĉi tiu URL ŝajnas ne esti WebDAV-finpunkto. Por Nextcloud, la URL havas la formon https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

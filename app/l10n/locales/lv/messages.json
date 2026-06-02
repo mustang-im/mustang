@@ -278,7 +278,6 @@
   "UODtG8": "Apvienot",
   "xDAtGP": "Ziņa",
   "t7TeQU": "Ziņojumi",
-  "MClVbD": "MFA",
   "3TSz9S": "Minimizēt",
   "Q5uBUs": "Minūtai jābūt mazākai par 59",
   "agRWc1": "Protokols",
@@ -744,7 +743,6 @@
   "dnC/xs": "Ielūgums",
   "Q7Qbxi": "Organizators",
   "/tmE06": "Provizoriski",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Piekļūstiet saviem mākoņa failiem esošajā kontā",
   "GgTY5U": "{num, plural, one {minūte} other {minūtes}}",
   "Xhyc0J": "{0} {1} dienā",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Izvēle",
   "FuS5eM": "Kad mēs tiksimies?",
   "EBkkd6": "{0} rakstīja:",
-  "05Mye3": "Plkst. 8:00"
+  "05Mye3": "Plkst. 8:00",
+  "YxPSxZ": "Pievienot kontu…",
+  "tyri/E": "Šo dokumentu nevarēja atvērt rediģēšanai. Atrašanās vietas nosaukums „{0}“ neatbilst derīgai URL adresei",
+  "HWKJwB": "Šo dokumentu nevarēja atvērt rediģēšanai. Redaktors neatgriezās ar derīgu URL",
+  "tmHWtF": "Nav atrasts redaktors „{0}“",
+  "lqcQmj": "Nepieciešama URL adrese",
+  "pxJEx2": "Šī URL, šķiet, nav WebDAV galapunkts. Nextcloud gadījumā URL ir šādā formā: https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

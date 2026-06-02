@@ -211,7 +211,6 @@
   "UODtG8": "Yhdistä",
   "xDAtGP": "Viesti",
   "t7TeQU": "Viestit",
-  "MClVbD": "MF",
   "3TSz9S": "Vähennä",
   "Q5uBUs": "Minuutin on oltava alle 59",
   "agRWc1": "Minuuttia",
@@ -744,7 +743,6 @@
   "dnC/xs": "Kutsu",
   "Q7Qbxi": "Järjestäjä",
   "/tmE06": "Alustava",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Pääset käsiksi pilvitiedostoihin olemassa olevalla tililläsi",
   "GgTY5U": "{num, plural, one {minuutti} other {minuuttia}}",
   "Xhyc0J": "{0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Valinta",
   "FuS5eM": "Milloin tapaamme?",
   "EBkkd6": "{0} kirjoitti:",
-  "05Mye3": "Klo 8.00"
+  "05Mye3": "Klo 8.00",
+  "YxPSxZ": "Lisää tili…",
+  "tyri/E": "Tätä asiakirjaa ei voitu avata muokattavaksi. Osoitteeseen {0} ei löytynyt kelvollista URL-osoitetta.",
+  "HWKJwB": "Tätä asiakirjaa ei voitu avata muokattavaksi. Muokkausohjelma ei löytänyt kelvollista URL-osoitetta.",
+  "tmHWtF": "Toimittaja {0} ei löytynyt",
+  "lqcQmj": "Tarvitaan URL-osoite",
+  "pxJEx2": "Tämä URL-osoite ei näytä olevan WebDAV-päätelaite. Nextcloudissa URL-osoitteen muoto on https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }

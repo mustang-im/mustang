@@ -211,7 +211,6 @@
   "UODtG8": "Menggabungkan",
   "xDAtGP": "Pesan",
   "t7TeQU": "Pesan",
-  "MClVbD": "MFA",
   "3TSz9S": "Meminimalkan",
   "Q5uBUs": "Minute harus kurang dari 59",
   "agRWc1": "Menit",
@@ -744,7 +743,6 @@
   "dnC/xs": "Undangan",
   "Q7Qbxi": "Penyelenggara",
   "/tmE06": "Tentatif",
-  "Z6QE5q": "WebDAV",
   "2LQSbP": "Mengakses file cloud Anda di akun yang sudah ada",
   "GgTY5U": "{num, plural, one {menit} other {menit}}",
   "Xhyc0J": "Pada angka {0} {1}",
@@ -1098,5 +1096,12 @@
   "p7/fS2": "Pemilihan",
   "FuS5eM": "Kapan kita bertemu?",
   "EBkkd6": "{0} menulis:",
-  "05Mye3": "Pukul 08.00"
+  "05Mye3": "Pukul 08.00",
+  "YxPSxZ": "Tambahkan akun…",
+  "tyri/E": "Dokumen ini tidak dapat dibuka untuk diedit. {0} tidak mengembalikan URL yang valid",
+  "HWKJwB": "Dokumen ini tidak dapat dibuka untuk diedit. Editor tidak menemukan URL yang valid",
+  "tmHWtF": "Editor {0} tidak ditemukan",
+  "lqcQmj": "Butuh URL",
+  "pxJEx2": "URL ini tampaknya bukan titik akhir WebDAV. Untuk Nextcloud, URL-nya berbentuk https://<host>/remote.php/dav/files/<username>/</username></host>",
+  "phNO5X": "MFA"
 }
