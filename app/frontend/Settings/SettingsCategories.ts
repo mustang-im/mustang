@@ -52,6 +52,7 @@ import { SIPAccount } from "../../logic/Meet/SIP/SIPAccount";
 import SIP from "./Meet/SIP.svelte";
 // #endif
 import { gt } from "../../l10n/l10n";
+import { WebDAVAccount } from "../../logic/Files/WebDAV/WebDAVAccount";
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 accountSettings.add(new AccSetting(Account, "acc-sub", gt`Sub-Accounts`, AccountSubAccounts, true));
@@ -154,6 +155,7 @@ filesSettings.subCategories.addAll([
 filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
 filesSettings.newAccountURL = "/setup/files";
 filesSettings.forApp = filesMustangApp;
+accountSettings.add(new AccSetting(WebDAVAccount, "webdav-server", gt`Server`, AccountURLServer));
 settingsCategories.add(filesSettings);
 // #endif
 
