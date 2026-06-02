@@ -33,12 +33,14 @@ export class WebDAVFile extends File {
       if (this.contents) {
         return;
       }
+      await this.account.login(false);
       let buf = await this.account.client.getFileContents(this.path, { format: "binary" }) as ArrayBuffer;
       this.contents = new Blob([buf], this.mimetype ? { type: this.mimetype } : undefined);
     });
   }
 
   async saveContents(contents: Blob) {
+    await this.account.login(false);
     let bytes = await contents.arrayBuffer();
     let headers: Record<string, string> = {};
     if (this.etag) {
@@ -56,11 +58,13 @@ export class WebDAVFile extends File {
   /** Refresh metadata for this file from the server.
    * WebDAV: PROPFIND on the single file. */
   async stat() {
+    await this.account.login(false);
     let stat = await this.account.client.stat(this.path) as FileStat;
     this.fromStat(stat);
   }
 
   async deleteIt() {
+    await this.account.login(false);
     if (this.parent) {
       this.parent.files.remove(this);
     }

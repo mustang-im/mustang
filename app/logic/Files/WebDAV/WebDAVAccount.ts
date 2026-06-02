@@ -1,6 +1,7 @@
 import { FileSharingAccount } from "../FileSharingAccount";
 import { WebDAVDirectory } from "./WebDAVDirectory";
 import { AuthMethod } from "../../Abstract/Account";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { ArrayColl } from "svelte-collections";
 import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -11,12 +12,20 @@ export class WebDAVAccount extends FileSharingAccount {
   readonly protocol: string = "webdav";
   declare readonly rootDirs: ArrayColl<WebDAVDirectory>;
   client: WebDAVClient;
+  protected readonly loginRunOnce = new RunOnce<void>();
 
   newDirectory(name: string): WebDAVDirectory {
     return super.newDirectory(name, new WebDAVDirectory()) as WebDAVDirectory;
   }
 
   async login(interactive: boolean) {
+    if (this.isLoggedIn) {
+      return;
+    }
+    await this.loginRunOnce.runOnce(async () => {
+      if (this.client) {
+        return;
+      }
     let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
     let usePassword = this.authMethod == AuthMethod.Password;
     let options: { authType?: AuthType, username?: string, password?: string, token?: OAuthToken };
@@ -41,16 +50,11 @@ export class WebDAVAccount extends FileSharingAccount {
       throw new NotReached(gt`Unknown authentication method`);
     }
     this.client = await appGlobal.remoteApp.createWebDAVClient(this.url, options);
+    });
   }
 
   get isLoggedIn(): boolean {
-    if (this.authMethod == AuthMethod.OAuth2) {
-      return this.oAuth2.isLoggedIn;
-    } else if (this.authMethod == AuthMethod.Password) {
-      return !!this.password;
-    } else {
-      throw new NotReached(gt`Unknown authentication method`);
-    }
+    return !!this.client;
   }
 
   async sync() {

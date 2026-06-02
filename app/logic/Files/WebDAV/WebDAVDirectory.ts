@@ -25,6 +25,7 @@ export class WebDAVDirectory extends Directory {
   async listContents() {
     let lock = await this.listLock.lock();
     try {
+      await this.account.login(false);
       let stats = await this.account.client.getDirectoryContents(this.path) as FileStat[];
       let curFiles = new Set<WebDAVFile>();
       let curDirs = new Set<WebDAVDirectory>();
@@ -82,6 +83,7 @@ export class WebDAVDirectory extends Directory {
   }
 
   protected async moveOrCopyFilesOnServer(action: "move" | "copy", files: Collection<File>) {
+    await this.account.login(false);
     for (let file of files) {
       let target = this.childPath(file.name);
       if (action == "move") {
@@ -98,6 +100,7 @@ export class WebDAVDirectory extends Directory {
   }
 
   async addFile(file: File) {
+    await this.account.login(false);
     await file.download();
     let newFile = this.newFile(file.name);
     newFile.contents = file.contents;
@@ -116,6 +119,7 @@ export class WebDAVDirectory extends Directory {
   }
 
   async createSubdirectory(name: string): Promise<WebDAVDirectory> {
+    await this.account.login(false);
     let dir = this.newDirectory(name);
     await this.account.client.createDirectory(dir.path);
     await this.listContents();
@@ -123,6 +127,7 @@ export class WebDAVDirectory extends Directory {
   }
 
   async deleteIt() {
+    await this.account.login(false);
     await this.account.client.deleteFile(this.path);
     if (this.parent) {
       (this.parent as WebDAVDirectory).subDirs.remove(this);

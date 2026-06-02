@@ -50,6 +50,7 @@
     errorUI.clearError();
     config.authMethod = AuthMethod.Password;
     await config.verifyLogin();
+    await config.login(true);
     await config.save();
     appGlobal.fileSharingAccounts.add(config);
     showPage = null;
