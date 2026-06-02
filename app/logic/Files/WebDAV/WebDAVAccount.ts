@@ -64,4 +64,14 @@ export class WebDAVAccount extends FileSharingAccount {
       await root.listContents();
     }
   }
+
+  /** For setup. Verify that the URL is a WebDAV endpoint and the credentials work. */
+  async verifyLogin() {
+    await this.login(true);
+    let compliance = await this.client.getDAVCompliance("/");
+    assert(compliance.compliance?.length > 0,
+      gt`This URL does not appear to be a WebDAV endpoint. For Nextcloud, the URL has the form https://<host>/remote.php/dav/files/<username>/`);
+    // PROPFIND: verifies that auth works on the collection itself.
+    await this.client.getDirectoryContents("/");
+  }
 }

@@ -7,20 +7,22 @@
     <label for="name">{$t`Account name`}</label>
     <input type="text" bind:value={config.name} name="name"
       placeholder={$t`Private`} autofocus />
-    <label for="name">{$t`Server URL`}</label>
+    <label for="url">{$t`Server URL`}</label>
     <input type="text" bind:value={config.url} name="url"
-      placeholder="https://dav.yourcompany.com/files/" />
-    <label for="name">{$t`Username`}</label>
+      placeholder="https://files.yourcompany.com" />
+    <label for="username">{$t`Username`}</label>
     <input type="text" bind:value={config.username} name="username"
       placeholder={$t`fred`} />
-    <label for="name">{$t`Password`}</label>
+    <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
   </grid>
 </vbox>
 
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
-  canContinue={!!config.name}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
+  canContinue={!!config.name && !!config.url && !!config.username}
   canCancel={true}
   onCancel={onCancel}
   />
@@ -32,6 +34,8 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   /** in/out */
@@ -40,7 +44,10 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
+  let errorUI: ErrorMessageInline;
+
   async function onContinue() {
+    errorUI.clearError();
     config.authMethod = AuthMethod.Password;
     await config.verifyLogin();
     await config.save();
