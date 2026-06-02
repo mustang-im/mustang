@@ -1,9 +1,11 @@
 import { FileOrDirectory } from "./FileOrDirectory";
 import { appGlobal } from "../app";
+import { openOSAppForFile } from "../util/os-integration";
+import { getFilesDir } from "../util/backend-wrapper";
 import { RunOnce } from "../util/flow/RunOnce";
 import { notifyChangedProperty } from "../util/Observable";
-import { openOSAppForFile } from "../util/os-integration";
-import { NotImplemented, type URLString } from "../util/util";
+import { NotImplemented, assert, type URLString } from "../util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class File extends FileOrDirectory {
   /** substring of `name`, excluding `fileExt` and dot */
@@ -52,19 +54,15 @@ export class File extends FileOrDirectory {
   }
 
   async download() {
-    if (this.contents) {
-      return;
-    }
-    await this.downloadRunOnce.runOnce(async () => {
-      if (this.contents) {
-        return;
-      }
-      if (this.filepathLocal) {
-        this.contents = await appGlobal.remoteApp.fs.readFile(this.filepathLocal);
-      } else {
-        throw new NotImplemented("Download of remote file not yet implemented");
-      }
-    });
+    throw new NotImplemented(`Download of ${this.account.protocol} file not yet implemented`);
+  }
+
+  protected async saveAsLocalFile() {
+    assert(this.contents, "Need contents");
+    this.filepathLocal ??= await this.getLocalFilePath();
+    let contents = new Uint8Array(await this.contents.arrayBuffer());
+    await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
+    // TODO Watch local file for changes, in case user edited, and then trigger upload
   }
 
   async getURL(): Promise<URLString | null> {
@@ -107,4 +105,14 @@ export class File extends FileOrDirectory {
   async openOSApp() {
     await openOSAppForFile(this.filepathLocal);
   }
+
+  protected async getLocalFilePath(): Promise<string> {
+    filesDir ??= await getFilesDir();
+    let dir = sanitize.dirname(this.parent.path, false);
+    let fullDir = `${filesDir}/files/cloud/${dir}`;
+    await appGlobal.remoteApp.fs.mkdir(fullDir, { recursive: true, mode: 0o700 });
+    return `${fullDir}/${sanitize.filename(this.name)}`;
+  }
 }
+
+let filesDir: string = null;

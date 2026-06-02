@@ -42,6 +42,7 @@ export class WebDAVFile extends File {
       await this.account.login(false);
       let buf = await this.account.client.getFileContents(this.path, { format: "binary" }) as ArrayBuffer;
       this.contents = new Blob([buf], this.mimetype ? { type: this.mimetype } : undefined);
+      await this.saveAsLocalFile();
     });
   }
 
@@ -60,6 +61,7 @@ export class WebDAVFile extends File {
     this.contents = contents;
     await this.stat();
     await this.save();
+    await this.saveAsLocalFile();
   }
 
   /** Refresh metadata for this file from the server.

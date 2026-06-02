@@ -44,8 +44,8 @@
 
   async function openFile() {
     assert(file instanceof File, "Need file");
-    console.log("open", file.filepathLocal);
     await file.download();
+    console.log("open", file.filepathLocal);
     await file.openOSApp();
   }
 </script>
