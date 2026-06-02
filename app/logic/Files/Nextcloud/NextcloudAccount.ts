@@ -60,6 +60,27 @@ export class NextcloudAccount extends WebDAVAccount {
         homepage: homeURL,
       });
     }
+    // richdocuments (Collabora) doesn't register with directEditing, so it's
+    // missing from the editors list above. The capabilities endpoint reports
+    // it (with the MIME types it can open) when the app is installed.
+    let caps = await this.ocsCall("GET", "/ocs/v2.php/cloud/capabilities");
+    let rd = caps?.ocs?.data?.capabilities?.richdocuments;
+    if (rd) {
+      let id = "richdocuments";
+      let urlObj = new URL(this.url);
+      urlObj.pathname = `/apps/${id}/img/app.svg`;
+      let iconURL = urlObj.href;
+      urlObj.pathname = `/apps/${id}`;
+      let homeURL = urlObj.href;
+      this.editorsCache.push({
+        id: id,
+        name: sanitize.nonemptylabel(rd.productName, "Office"),
+        mimetypes: sanitize.array(rd.mimetypes).filter(mimetype => sanitize.nonemptystring(mimetype, null)),
+        optionalMimetypes: sanitize.array(rd.mimetypesNoDefaultOpen).filter(mimetype => sanitize.nonemptystring(mimetype, null)),
+        icon: iconURL,
+        homepage: homeURL,
+      });
+    }
     return this.editorsCache;
   }
 

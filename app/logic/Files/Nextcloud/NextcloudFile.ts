@@ -30,14 +30,25 @@ export class NextcloudFile extends WebDAVFile {
       if (!allMimetypes.includes(this.mimetype)) {
         continue;
       }
-      let json = await this.account.ocsCall("POST",
-        "/ocs/v2.php/apps/files/api/v1/directEditing/open",
-        {
-          path: this.userRelativePath(this.path),
-          editorId: editor.id,
-        });
-      let startURL = sanitize.url(json?.ocs?.data?.url, null);
-      assert(startURL, gt`Could not open this document for editing. ${`Direct Editing /open`} returned no valid URL`);
+      let startURL: string | null;
+      if (editor.id == "richdocuments") {
+        // richdocuments isn't a directEditing provider, so /open doesn't
+        // accept editorId=richdocuments. The app's own /apps/richdocuments/
+        // index URL accepts a path parameter and resolves it server-side.
+        let urlObj = new URL(this.account.url);
+        urlObj.pathname = "/apps/richdocuments/index";
+        urlObj.search = "?path=" + encodeURIComponent(this.userRelativePath(this.path));
+        startURL = sanitize.url(urlObj.href, null);
+      } else {
+        let json = await this.account.ocsCall("POST",
+          "/ocs/v2.php/apps/files/api/v1/directEditing/open",
+          {
+            path: this.userRelativePath(this.path),
+            editorId: editor.id,
+          });
+        startURL = sanitize.url(json?.ocs?.data?.url, null);
+      }
+      assert(startURL, gt`Could not open this document for editing. The editor returned no valid URL`);
       let app = new WebAppListed();
       app.id = this.account.id + "-" + editor.id;
       app.name = { en: editor.name };
