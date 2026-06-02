@@ -48,8 +48,8 @@ export class WebDAVFile extends File {
       overwrite: true,
       headers,
     });
+    this.clearURL();
     this.contents = contents;
-    this.url = null;
     await this.stat();
   }
 
@@ -64,6 +64,7 @@ export class WebDAVFile extends File {
     if (this.parent) {
       this.parent.files.remove(this);
     }
+    this.clearURL();
     await this.account.client.deleteFile(this.path);
   }
 }

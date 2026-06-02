@@ -3,7 +3,7 @@ import { appGlobal } from "../app";
 import { RunOnce } from "../util/flow/RunOnce";
 import { notifyChangedProperty } from "../util/Observable";
 import { openOSAppForFile } from "../util/os-integration";
-import { NotImplemented, blobToDataURL, type URLString } from "../util/util";
+import { NotImplemented, type URLString } from "../util/util";
 
 export class File extends FileOrDirectory {
   /** substring of `name`, excluding `fileExt` and dot */
@@ -20,6 +20,12 @@ export class File extends FileOrDirectory {
   contents: Blob;
   protected readonly downloadRunOnce = new RunOnce<void>();
   protected readonly getURLRunOnce = new RunOnce<URLString | null>();
+
+  /** If a File is GCed, the registered blob: URL is revoked automatically.
+   * @see Abstract/Attachment. */
+  protected static urlFinalizer = new FinalizationRegistry((url: URLString) => {
+    URL.revokeObjectURL(url);
+  });
 
   setFileName(val: string) {
     this.name = val;
@@ -69,8 +75,20 @@ export class File extends FileOrDirectory {
       if (!this.contents) {
         return null;
       }
-      return this.url = await blobToDataURL(this.contents);
+      this.url = URL.createObjectURL(this.contents); // blob: URL
+      File.urlFinalizer.register(this, this.url, this);
+      return this.url;
     });
+  }
+
+  /** Release the cached blob: URL, if any.
+   * Call when dropping the file or replacing `this.contents`. */
+  clearURL() {
+    if (this.url?.startsWith("blob:")) {
+      URL.revokeObjectURL(this.url);
+      File.urlFinalizer.unregister(this);
+    }
+    this.url = null;
   }
 
   /** Open the native desktop app with this file */

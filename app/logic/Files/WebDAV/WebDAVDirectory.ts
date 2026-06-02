@@ -61,8 +61,13 @@ export class WebDAVDirectory extends Directory {
           }
         }
       }
-      this.files.removeAll(this.files.filterOnce(f => !curFiles.has(f)));
-      this.subDirs.removeAll(this.subDirs.filterOnce(d => !curDirs.has(d)));
+      let removedFiles = this.files.filterOnce(file => !curFiles.has(file));
+      let removedDirs = this.subDirs.filterOnce(dir => !curDirs.has(dir));
+      this.files.removeAll(removedFiles);
+      this.subDirs.removeAll(removedDirs);
+      for (let file of removedFiles) {
+        file.clearURL();
+      }
     } finally {
       lock.release();
     }
