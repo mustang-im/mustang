@@ -36,22 +36,32 @@
     <RoundButton
       onClick={addFile}
       icon={PlusIcon}
-      iconSize="16px"
+      iconSize="18px"
       padding="4px"
       classes="create"
+      />
+    <RoundButton
+      onClick={newFolder}
+      icon={FolderPlusIcon}
+      iconSize="18px"
+      padding="4px"
+      classes="new-folder"
       />
     <RightViewSwitcher />
   </hbox>
 </hbox>
 
+<FileSelector bind:this={fileSelector} />
+
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
   import { selectedFolder } from "../selected";
-  import { NotImplemented } from "../../../logic/util/util";
+  import RightViewSwitcher from "./RightViewSwitcher.svelte";
+  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
-  import RightViewSwitcher from "./RightViewSwitcher.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
+  import FolderPlusIcon from "lucide-svelte/icons/folder-plus";
   import BackIcon from "lucide-svelte/icons/chevron-left";
   import SubIcon from "lucide-svelte/icons/chevron-right";
   import { t } from "../../../l10n/l10n";
@@ -79,8 +89,23 @@
     }
     changeTo(dir.parent);
   }
+
+  let fileSelector: FileSelector;
   async function addFile() {
-    throw new NotImplemented();
+    let fileBlob = await fileSelector.selectFile();
+    if (!fileBlob) {
+      console.log("no file selected");
+      return;
+    }
+    console.log("Selected attachment file", fileBlob);
+    let ourFile = dir.newFile(fileBlob.name);
+    ourFile.fromBrowserFile(fileBlob);
+    await dir.addFile(ourFile);
+  }
+  async function newFolder() {
+    let newFolder = dir.newDirectory($t`New Folder`);
+    // TODO open sidebar and focus rename
+    await dir.createSubDirectory(newFolder.name);
   }
 </script>
 
@@ -115,6 +140,11 @@
   }
   .buttons {
     align-items: center;
+    gap: 8px;
+    margin: 6px 8px 6px 0px;
+  }
+  .buttons :global(.new-folder svg path) {
+    stroke-width: 1.5px;
   }
   .hidden {
     display: none;

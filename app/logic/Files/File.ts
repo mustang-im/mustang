@@ -103,6 +103,17 @@ export class File extends FileOrDirectory {
     await this.account.storage?.deleteFile(this);
   }
 
+  /** Imports the browser `File` with its content
+   * and meta-data into this object.
+   * Call this on a new object. */
+  fromBrowserFile(fileBlob: globalThis.File) {
+    this.name = fileBlob.name;
+    this.contents = fileBlob;
+    this.mimetype = fileBlob.type;
+    this.size = fileBlob.size;
+    this.lastMod = new Date(fileBlob.lastModified);
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await openOSAppForFile(this.filepathLocal);

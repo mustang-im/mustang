@@ -36,9 +36,3 @@
     viewSetting.value = newView;
   }
 </script>
-
-<style>
-  .switcher {
-    margin: 6px 8px;
-  }
-</style>
