@@ -88,9 +88,7 @@
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
-  let sidebar;
-  const setSidebarDebounced = debounce(() => sidebar = $sidebarApp?.sidebar);
-  $: $sidebarApp?.sidebar, setSidebarDebounced();
+  $: sidebar = $sidebarApp?.sidebar;
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   categoriesLoaded; /* make sure to import the file, so that that categories load */
 
