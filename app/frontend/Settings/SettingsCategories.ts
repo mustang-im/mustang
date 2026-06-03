@@ -148,7 +148,6 @@ settingsCategories.add(meetSettings);
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 
-// #if [DEV]
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
 filesSettings.subCategories.addAll([
 ]);
@@ -157,7 +156,6 @@ filesSettings.newAccountURL = "/setup/files";
 filesSettings.forApp = filesMustangApp;
 accountSettings.add(new AccSetting(WebDAVAccount, "webdav-server", gt`Server`, AccountURLServer));
 settingsCategories.add(filesSettings);
-// #endif
 
 // #if [!WEBMAIL]
 const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
