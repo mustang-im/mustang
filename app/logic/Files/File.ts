@@ -116,6 +116,10 @@ export class File extends FileOrDirectory {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
+    if (!this.contents) {
+      await this.download();
+    }
+    console.log("open", this.filepathLocal);
     await openOSAppForFile(this.filepathLocal);
   }
 

@@ -42,7 +42,6 @@
   import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
-  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let dir: Directory;

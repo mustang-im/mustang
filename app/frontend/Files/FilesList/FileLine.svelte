@@ -1,4 +1,4 @@
-<Clickable onClick={openFile}>
+<Clickable onClick={onSelect} onDoubleClick={onOpenFile}>
   <hbox class="file line"
     class:selected={file == $selectedFile}>
     <hbox class="firstColumn">
@@ -37,7 +37,11 @@
   export let file: File;
   export let indent = 0;
 
-  async function openFile() {
+  function onSelect() {
+    $selectedFile = file;
+  }
+
+  async function onOpenFile() {
     assert(file instanceof File, "Need file");
     // Open web app from cloud provider
     let editors = await file.availableOnlineEditors();

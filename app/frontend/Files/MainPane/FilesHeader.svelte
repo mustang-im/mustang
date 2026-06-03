@@ -34,6 +34,13 @@
   </hbox>
   <hbox class="buttons">
     <RoundButton
+      onClick={refresh}
+      icon={RefreshIcon}
+      iconSize="14px"
+      padding="6px"
+      classes="refresh"
+      />
+    <RoundButton
       onClick={addFile}
       icon={PlusIcon}
       iconSize="18px"
@@ -62,6 +69,7 @@
   import Clickable from "../../Shared/Clickable.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import FolderPlusIcon from "lucide-svelte/icons/folder-plus";
+  import RefreshIcon from "lucide-svelte/icons/refresh-ccw";
   import BackIcon from "lucide-svelte/icons/chevron-left";
   import SubIcon from "lucide-svelte/icons/chevron-right";
   import { t } from "../../../l10n/l10n";
@@ -88,6 +96,9 @@
       return;
     }
     changeTo(dir.parent);
+  }
+  async function refresh() {
+    await dir.listContents();
   }
 
   let fileSelector: FileSelector;

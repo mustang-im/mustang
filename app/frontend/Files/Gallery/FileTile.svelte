@@ -53,8 +53,6 @@
       return;
     }
     // Open native desktop app
-    await file.download();
-    console.log("open", file.filepathLocal);
     await file.openOSApp();
   }
 </script>
