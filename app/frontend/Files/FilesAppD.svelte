@@ -26,7 +26,7 @@
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
-  import FilesHeader from "./RightPane/FilesHeader.svelte";
+  import FilesHeader from "./MainPane/FilesHeader.svelte";
   import FileViewer from "./FileViewer.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
