@@ -138,12 +138,12 @@ export class WebDAVDirectory extends Directory {
     await newFile.save();
   }
 
-  async createSubdirectory(name: string): Promise<WebDAVDirectory> {
+  async createSubDirectory(name: string): Promise<WebDAVDirectory> {
     await this.account.login(false);
-    let dir = this.newDirectory(name);
-    await this.account.client.createDirectory(dir.path);
+    let subDir = this.newDirectory(name);
+    await this.account.client.createDirectory(subDir.path);
     await this.listContents();
-    return this.subDirs.find(d => d.path == dir.path) ?? dir;
+    return this.subDirs.find(dir => dir.path == subDir.path) ?? subDir;
   }
 
   async deleteIt() {

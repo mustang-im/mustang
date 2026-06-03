@@ -45,4 +45,11 @@ export class HarddriveDirectory extends Directory {
     }
   }
 
+  async createSubDirectory(name: string): Promise<Directory> {
+    let subDir = this.newDirectory(name);
+    this.subDirs.add(subDir);
+    await appGlobal.remoteApp.fs.mkdir(subDir.path, { mode: 0o700 });
+    await this.listContents();
+    return this.subDirs.find(d => d.path == subDir.path) ?? subDir;
+  }
 }

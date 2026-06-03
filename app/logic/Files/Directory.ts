@@ -100,6 +100,12 @@ export class Directory extends FileOrDirectory {
     throw new AbstractFunction();
   }
 
+  async createSubDirectory(name: string): Promise<Directory> {
+    let subDir = this.newDirectory(name);
+    this.subDirs.add(subDir);
+    throw new AbstractFunction();
+  }
+
   async save() {
     await this.account.storage?.saveDirectory(this);
   }
