@@ -4,6 +4,7 @@ import type { WebDAVAccount } from "./WebDAVAccount";
 import type { File } from "../File";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Buffer } from "buffer";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { FileStat } from "webdav";
 
@@ -127,7 +128,8 @@ export class WebDAVDirectory extends Directory {
     newFile.size = file.size;
     newFile.lastMod = file.lastMod ?? new Date();
     this.files.add(newFile);
-    let bytes = await file.contents.arrayBuffer();
+
+    let bytes = Buffer.from(await file.contents.arrayBuffer()); // Buffer needed for JPC
     let headers: Record<string, string> = {};
     // Honored by ownCloud, Nextcloud, openCloud, SabreDAV. Plain WebDAV ignores it.
     headers["X-OC-MTime"] = Math.floor(file.lastMod.getTime() / 1000).toString();

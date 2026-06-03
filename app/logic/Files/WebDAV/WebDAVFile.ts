@@ -1,6 +1,7 @@
 import { File } from "../File";
 import type { WebDAVDirectory } from "./WebDAVDirectory";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Buffer } from "buffer";
 import type { URLString } from "../../util/util";
 import type { FileStat } from "webdav";
 
@@ -48,7 +49,7 @@ export class WebDAVFile extends File {
 
   async saveContents(contents: Blob) {
     await this.account.login(false);
-    let bytes = await contents.arrayBuffer();
+    let bytes = Buffer.from(await contents.arrayBuffer()); // Buffer needed for JPC
     let headers: Record<string, string> = {};
     if (this.etag) {
       headers["If-Match"] = this.etag;
