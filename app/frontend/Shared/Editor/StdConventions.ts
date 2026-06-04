@@ -26,8 +26,8 @@ export const BoldStar = Bold.extend({
   },
 });
 
-export const slashInputRegex = /(?:^|\s)((?:\/)((?:\S(?:[^*]*\S)?))(?:\/))$/
-export const slashPasteRegex = /(?:^|\s)((?:\/)((?:\S(?:[^*]*\S)?))(?:\/))/g
+export const slashInputRegex = /(?:^|\s)((?:\/)((?:\S(?:[^\/]*\S)?))(?:\/))$/
+export const slashPasteRegex = /(?:^|\s)((?:\/)((?:\S(?:[^\/]*\S)?))(?:\/))/g
 
 /** Makes `/abc/` _italic_ */
 export const ItalicSlash = Italic.extend({
