@@ -23,7 +23,7 @@
       <Thumbnail {file} size={200} />
       <hbox class="open-preview buttons">
         <RoundButton
-          onClick={onOpenPreview}
+          onClick={() => openPreview(file)}
           icon={OpenPreviewIcon}
           />
       </hbox>
@@ -32,24 +32,22 @@
   <vbox class="content" flex>
     <hbox class="open buttons">
       <Button
-        onClick={onOpenLocal}
+        onClick={() => file.openOSApp()}
         label={$t`Open`}
         label-should={$t`Open with ${"PhotoShop"}`}
         tooltip={$t`Open with a local application on your computer`}
         >
         <FileIcon ext={$file.ext} localFilePath={$file.path} size={20} slot="icon" />
       </Button>
-      <!--
       <RoundButton
-        onClick={onOpenCloud}
+        onClick={() => openFileInCloudApp(file)}
         icon={OpenCloudIcon}
         label={$t`Open with a cloud app on the web`}
         disabled={!editors || editors.isEmpty ? $t`${file.account.name} does not offer a cloud app for this file type` : null}
-        iconSize="24px"
-        padding="8px"
+        iconSize="20px"
+        padding="6px"
         classes="secondary"
         />
-      -->
     </hbox>
 
     <ErrorMessageInline bind:this={error} />
@@ -68,8 +66,8 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
-  import { fileSize, openFileInCloudApp } from "../file";
-  import { isRightSidebarExpanded, viewFile } from "../selected";
+  import { fileSize, openFileInCloudApp, openPreview } from "../file";
+  import { isRightSidebarExpanded, viewFile, fileViewer } from "../selected";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { kSupportedExt as kHTMLExt } from "../Thumbnail/HTMLThumbnail.svelte";
   import { kSupportedExt as kImageExt } from "../Thumbnail/ImageThumbnail.svelte";
@@ -83,6 +81,7 @@
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OpenPreviewIcon from "lucide-svelte/icons/expand";
+  import OpenCloudIcon from "lucide-svelte/icons/cloud";
   import CollapseIcon from "lucide-svelte/icons/chevrons-right";
   import XIcon from "lucide-svelte/icons/x";
   import { getDateTimeString } from "../../Util/date";
@@ -101,19 +100,9 @@
   const kPreviewExt = [...kHTMLExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
   $: canPreview = kPreviewExt.includes($file.ext);
 
-  /** Open native desktop app */
-  async function onOpenLocal() {
-    await file.openOSApp();
-  }
-  /** Open web app from cloud provider */
-  async function onOpenCloud() {
-    await openFileInCloudApp(file);
-  }
-  function onOpenPreview() {
-    $viewFile = file;
-  }
   function onClosePreview() {
     $viewFile = null;
+    $fileViewer = null;
   }
 </script>
 

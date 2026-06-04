@@ -28,7 +28,7 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
-  import { viewFile, isRightSidebarExpanded } from "../selected";
+  import { viewFile, fileViewer, isRightSidebarExpanded } from "../selected";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
@@ -43,6 +43,7 @@
   }
   function onClosePreview() {
     $viewFile = null;
+    $fileViewer = null;
   }
 </script>
 

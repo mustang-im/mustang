@@ -10,7 +10,11 @@
       {#if $viewFile}
         <hbox flex>
           <hbox flex>
-            <FileViewer file={$viewFile} />
+            {#if $fileViewer}
+              <WebAppRunner app={$fileViewer} />
+            {:else}
+              <FileViewer file={$viewFile} />
+            {/if}
           </hbox>
           {#if !$isRightSidebarExpanded}
             <FileThinRightPane file={$viewFile} />
@@ -41,11 +45,12 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { isRightSidebarExpanded, selectedFile, selectedFolder, selectedLeftTab, viewFile } from "./selected";
+  import { selectedFile, selectedFolder, selectedLeftTab, viewFile, fileViewer, isRightSidebarExpanded } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
   import FilesHeader from "./MainPane/FilesHeader.svelte";
+  import WebAppRunner from "../WebApps/Runner/WebAppRunner.svelte";
   import FileViewer from "./FileViewer.svelte";
   import FileThinRightPane from "./RightSidePane/FileThinRightPane.svelte";
   import FileRightPane from "./RightSidePane/FileRightPane.svelte";
@@ -69,7 +74,6 @@
       dir.listContents()));
   }
 
-
   $: $isRightSidebarExpanded = !$viewFile;
   $: console.log("isRightSidebarExpanded", $isRightSidebarExpanded, "view file", $viewFile);
 
@@ -78,6 +82,7 @@
   $: $selectedFolder, closeViewer();
   function closeViewer() {
     $viewFile = null;
+    $fileViewer = null;
   }
 </script>
 
