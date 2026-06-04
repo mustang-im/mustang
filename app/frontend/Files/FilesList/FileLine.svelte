@@ -1,4 +1,4 @@
-<Clickable onClick={onSelect} onDoubleClick={onOpenFile}>
+<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file)}>
   <hbox class="file line"
     class:selected={file == $selectedFile}>
     <hbox class="firstColumn">
@@ -6,54 +6,37 @@
         <hbox class="indention" />
       {/each}
       <button class="icon">
-        <FileIcon ext={file.ext} localFilePath={file.path} />
+        <FileIcon ext={$file.ext} localFilePath={$file.path} />
       </button>
       <hbox class="name">
-        {file.nameWithoutExt}
+        {$file.nameWithoutExt}
       </hbox>
     </hbox>
     <hbox class="type">
-      {file.ext}
+      {$file.ext}
     </hbox>
     <hbox class="size">
-      {fileSize(file.size)}
+      {fileSize($file.size)}
     </hbox>
     <hbox class="time">
-      {getDateTimeString(file.lastMod)}
+      {getDateTimeString($file.lastMod)}
     </hbox>
   </hbox>
 </Clickable>
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { fileSize } from "../fileSize";
-  import { startWebApp } from "../../WebApps/Runner/open";
+  import { openFileInDefaultApp, fileSize } from "../file";
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
   import Clickable from "../../Shared/Clickable.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
-  import { assert } from "../../../logic/util/util";
 
   export let file: File;
   export let indent = 0;
 
   function onSelect() {
     $selectedFile = file;
-  }
-
-  async function onOpenFile() {
-    assert(file instanceof File, "Need file");
-    // Open web app from cloud provider
-    let editors = await file.availableOnlineEditors();
-    if (editors.hasItems) {
-      let webApp = editors.first.instantiate(file.parent?.account);
-      startWebApp(webApp);
-      return;
-    }
-    // Open native desktop app
-    await file.download();
-    console.log("open", file.filepathLocal);
-    await file.openOSApp();
   }
 </script>
 

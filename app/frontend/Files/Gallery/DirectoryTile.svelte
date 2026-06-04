@@ -12,12 +12,12 @@
     </vbox>
     <vbox class="info">
       <hbox class="name">
-        {dir?.name}
+        {$dir?.name}
       </hbox>
       <hbox class="second">
         <hbox flex />
         <hbox class="time font-smallest">
-          {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
+          {$dir?.lastMod ? getDateTimeString($dir.lastMod) : ""}
         </hbox>
       </hbox>
     </vbox>

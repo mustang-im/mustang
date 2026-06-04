@@ -7,6 +7,7 @@
 
 <script lang="ts">
   import { File } from '../../../logic/Files/File';
+  import { selectedFile } from '../selected';
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -16,8 +17,9 @@
 
   async function deleteFile() {
     await file.deleteIt();
+
+    if ($selectedFile == file) {
+      $selectedFile = null;
+    }
   }
 </script>
-
-<style>
-</style>

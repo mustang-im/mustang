@@ -26,7 +26,7 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { fileSize } from "../../Files/fileSize";
+  import { fileSize } from "../../Files/file";
   import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";

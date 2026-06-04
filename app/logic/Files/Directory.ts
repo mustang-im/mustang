@@ -111,6 +111,7 @@ export class Directory extends FileOrDirectory {
   }
 
   async deleteIt(): Promise<void> {
+    this.parent?.subDirs.remove(this);
     await this.account.storage?.deleteDirectory(this);
   }
 

@@ -13,7 +13,7 @@
         {/if}
       </button>
       <hbox class="name">
-        {dir?.name}
+        {$dir?.name}
       </hbox>
     </hbox>
     <hbox class="type">
@@ -25,7 +25,7 @@
       {/if}
     </hbox>
     <hbox class="time">
-      {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
+      {$dir?.lastMod ? getDateTimeString($dir.lastMod) : ""}
     </hbox>
   </hbox>
 </Clickable>

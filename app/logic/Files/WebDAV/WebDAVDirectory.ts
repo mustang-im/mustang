@@ -147,11 +147,8 @@ export class WebDAVDirectory extends Directory {
   }
 
   async deleteIt() {
+    await super.deleteIt();
     await this.account.login(false);
     await this.account.client.deleteFile(this.path);
-    if (this.parent) {
-      (this.parent as WebDAVDirectory).subDirs.remove(this);
-    }
-    super.deleteIt();
   }
 }

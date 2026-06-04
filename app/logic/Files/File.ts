@@ -14,10 +14,12 @@ export class File extends FileOrDirectory {
   nameWithoutExt: string;
   /** substring of `name`, just the part after the last dot */
   ext: string;
+  @notifyChangedProperty
   mimetype: string;
   /** in bytes */
   @notifyChangedProperty
   size: number;
+  @notifyChangedProperty
   url: URLString;
   /** null/undefined = not loaded. Does not mean that the file is empty. */
   @notifyChangedProperty
@@ -100,6 +102,8 @@ export class File extends FileOrDirectory {
   }
 
   async deleteIt(): Promise<void> {
+    this.clearURL();
+    this.parent?.files.remove(this);
     await this.account.storage?.deleteFile(this);
   }
 

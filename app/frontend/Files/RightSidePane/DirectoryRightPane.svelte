@@ -15,10 +15,6 @@
 
   export let dir: Directory;
 
-  async function onDelete() {
-    await dir.deleteIt();
-  }
-
   let fileSelector: FileSelector;
   async function addFile() {
     let fileBlob = await fileSelector.selectFile();

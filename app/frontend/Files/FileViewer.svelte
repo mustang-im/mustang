@@ -1,4 +1,4 @@
-<WebView url={file.filepathLocal} title={file.nameWithoutExt} />
+<WebView url={$file.filepathLocal} title={$file.nameWithoutExt} />
 
 <script lang="ts">
   import type { File } from "../../logic/Files/File";

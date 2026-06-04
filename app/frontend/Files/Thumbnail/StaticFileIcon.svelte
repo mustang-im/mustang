@@ -1,20 +1,24 @@
-{#if ext == "doc" || ext == "docx" || ext == "odt" || ext == "pdf"}
-  <DocIcon {size} />
-{:else if ext == "html" || ext == "htm" || ext == "shtml"}
+{#if ["html", "htm", "shtml"].includes(ext)}
   <HTMLIcon {size} />
-{:else if ext == "xls" || ext == "xlsx" || ext == "ods"}
+{:else if ["xls", "xlsx", "ods"].includes(ext)}
   <SpreadsheetIcon {size} />
-{:else if ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav"}
-  <MusicIcon {size} />
-{:else if ext == "mpg" || ext == "mpeg" || ext == "mp4v" || ext == "mp4" || ext == "mp2" || ext == "m2v" || ext == "mpg4" || ext == "m1v" || ext == "mpe"}
-  <VideoIcon {size} />
-{:else if ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe"}
+{:else if ["doc", "docx", "odt", "pdf"].includes(ext) || fileExtensions[ext]?.startsWith("text/")}
+  <DocIcon {size} />
+{:else if kImageExt.includes(ext) || fileExtensions[ext]?.startsWith("image/")}
   <ImageIcon {size} />
+{:else if kVideoExt.includes(ext) || fileExtensions[ext]?.startsWith("video/")}
+  <VideoIcon {size} />
+{:else if kAudioExt.includes(ext) || fileExtensions[ext]?.startsWith("audio/")}
+  <MusicIcon {size} />
 {:else}
   <FileIcon {size} />
 {/if}
 
 <script lang="ts">
+  import { fileExtensions } from "../../../logic/Files/MIMETypes";
+  import { kSupportedExt as kImageExt } from "./ImageThumbnail.svelte";
+  import { kSupportedExt as kVideoExt } from "./VideoThumbnail.svelte";
+  import { kSupportedExt as kAudioExt } from "./AudioThumbnail.svelte";
   import FileIcon from "lucide-svelte/icons/file";
   import DocIcon from "lucide-svelte/icons/file-text";
   import HTMLIcon from "lucide-svelte/icons/code-xml";
@@ -26,25 +30,4 @@
   /** TODO use mimetype */
   export let ext: string;
   export let size = 16;
-
-  /*
-  <svelte:component this={getIcon(file)} {size} />
-  function getIcon(file: File) {
-    if (ext == "doc" || ext == "docx" || ext == "odt" || ext == "pdf") {
-      return DocIcon;
-    } else if (ext == "html" || ext == "htm" || ext == "shtml") {
-      return HTMLIcon;
-    } else if (ext == "xls" || ext == "xlsx" || ext == "ods") {
-      return SpreadsheetIcon;
-    } else if (ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav") {
-      return MusicIcon;
-    } else if (ext == "mpg" || ext == "mpeg" || ext == "mp4v" || ext == "mp4" || ext == "mp2" || ext == "m2v" || ext == "mpg4" || ext == "m1v" || ext == "mpe") {
-      return VideoIcon;
-    } else if (ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe") {
-      return ImageIcon;
-    } else {
-      return FileIcon;
-    }
-  }
-  */
 </script>

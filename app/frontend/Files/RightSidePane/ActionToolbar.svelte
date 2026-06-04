@@ -25,6 +25,8 @@
 
 <script lang="ts">
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
+  import { Directory } from "../../../logic/Files/Directory";
+  import { selectedFile, selectedFolder } from "../selected";
   import Toolbar from "../../Shared/Toolbar/Toolbar.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import LinkIcon from "lucide-svelte/icons/link";
@@ -43,6 +45,13 @@
   }
   async function onDelete() {
     await file.deleteIt();
+
+    if ($selectedFile == file) {
+      $selectedFile = null;
+    }
+    if ($selectedFolder == file && file instanceof Directory) {
+      $selectedFolder = file.parent;
+    }
   }
 </script>
 

@@ -25,12 +25,12 @@
   </hbox>
 
   <hbox class="name">
-    {dir.name}
+    {$dir.name}
   </hbox>
 
   <hbox flex />
   <hbox class="count font-small">
-    {$t`${dir.subDirs.length + dir.files.length} files`}
+    {$t`${$subDirs.length + $files.length} files`}
   </hbox>
   <hbox class="buttons">
     <RoundButton
@@ -75,6 +75,9 @@
   import { t } from "../../../l10n/l10n";
 
   export let dir: Directory;
+
+  let subDirs = dir.subDirs;
+  let files = dir.files;
 
   let parentDirs: Directory[] = [];
   $: dir, getParentDirs()

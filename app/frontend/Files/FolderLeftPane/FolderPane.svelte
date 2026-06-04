@@ -1,10 +1,10 @@
 {#if accounts?.hasItems}
   {#if activeTab == FilesView.CloudStorage}
-  <AccountList {accounts} bind:selectedAccount />
+    <AccountList {accounts} bind:selectedAccount />
   {/if}
   <FolderList folders={rootDirs} bind:selectedFolder bind:selectedFolders />
   {#if selectedFolder}
-  <TagsList folder={selectedFolder} bind:searchFiles />
+    <TagsList folder={selectedFolder} bind:searchFiles />
   {/if}
 {:else}
   <NoAccounts />

@@ -1,23 +1,23 @@
-{#if !file.isDownloaded}
-  <FileIcon {ext} localFilePath={file.path} {size} />
-{:else if ext == "html" || ext == "htm" || ext == "shtml" || ext == "txt" || ext == "pdf"}
-  <HTMLThumbnail {file} {size} />
-{:else if ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav"}
-  <AudioThumbnail {file} {size} />
-{:else if ext == "mpg" || ext == "mpeg" || ext == "mp4v" || ext == "mp4" || ext == "mp2" || ext == "m2v" || ext == "mpg4" || ext == "m1v" || ext == "mpe"}
-  <VideoThumbnail {file} {size} />
-{:else if ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe"}
-  <ImageThumbnail {file} {size} />
+{#if !$file.isDownloaded}
+  <FileIcon {ext} localFilePath={$file.path} {size} />
+{:else if $file.url && kHTMLExt.includes(ext)}
+  <HTMLThumbnail {file} />
+{:else if $file.url && kAudioExt.includes(ext)}
+  <AudioThumbnail {file} />
+{:else if $file.url && kVideoExt.includes(ext)}
+  <VideoThumbnail {file} />
+{:else if $file.url && kImageExt.includes(ext)}
+  <ImageThumbnail {file} />
 {:else}
-  <FileIcon {ext} localFilePath={file.path} {size} />
+  <FileIcon {ext} localFilePath={$file.path} {size} />
 {/if}
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import ImageThumbnail from "./ImageThumbnail.svelte";
-  import VideoThumbnail from "./VideoThumbnail.svelte";
-  import AudioThumbnail from "./AudioThumbnail.svelte";
-  import HTMLThumbnail from "./HTMLThumbnail.svelte";
+  import ImageThumbnail, { kSupportedExt as kImageExt} from "./ImageThumbnail.svelte";
+  import VideoThumbnail, { kSupportedExt as kVideoExt} from "./VideoThumbnail.svelte";
+  import AudioThumbnail, { kSupportedExt as kAudioExt} from "./AudioThumbnail.svelte";
+  import HTMLThumbnail, { kSupportedExt as kHTMLExt} from "./HTMLThumbnail.svelte";
   import FileIcon from "./FileIcon.svelte";
 
   /** TODO use mimetype */

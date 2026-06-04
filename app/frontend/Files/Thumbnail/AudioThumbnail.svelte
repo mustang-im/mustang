@@ -1,12 +1,15 @@
 <audio
-  src={file.url}
+  src={$file.url}
   controls
-  title={file.name}
+  title={$file.name}
   />
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
 
   export let file: File;
-  export let size = 16;
+</script>
+
+<script lang="ts" context="module">
+  export const kSupportedExt = ["mp3", "mp2", "mp2a", "m2a", "m3a", "mpga", "wav"];
 </script>

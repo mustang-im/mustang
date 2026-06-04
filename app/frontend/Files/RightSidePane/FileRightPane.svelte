@@ -1,6 +1,7 @@
 <vbox class="right-side-bar" flex>
   {#if canPreview}
     <vbox class="preview">
+      <Thumbnail {file} size={200} />
       <hbox class="open-preview buttons">
         <RoundButton
           onClick={onOpenPreview}
@@ -64,12 +65,19 @@
   import { assert, NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { fileSize } from "../fileSize";
+  import { fileSize } from "../file";
   import { getDateTimeString } from "../../Util/date";
+  import Thumbnail from "../Thumbnail/Thumbnail.svelte";
+  import { onMount } from "svelte";
 
   export let file: File;
 
   let error: ErrorMessageInline;
+
+  onMount(() => catchErrors(onLoad, error.showError));
+  async function onLoad() {
+    await file.getURL();
+  }
 
   let editors: Collection<WebAppListed>;
   $: error && catchErrors(async () => editors = await file.availableOnlineEditors(), error.showError);
@@ -104,7 +112,7 @@
     height: 200px;
     width: 100%;
     position: relative;
-    background-image: url("../../asset/header-background.jpeg");
+    /*background-image: url("../../asset/header-background.jpeg");*/
   }
   .open-preview {
     position: absolute;

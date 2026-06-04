@@ -74,13 +74,9 @@ export class WebDAVFile extends File {
   }
 
   async deleteIt() {
+    await super.deleteIt();
     await this.account.login(false);
-    if (this.parent) {
-      this.parent.files.remove(this);
-    }
-    this.clearURL();
     await this.account.client.deleteFile(this.path);
-    await this.account?.storage?.deleteFile(this);
   }
 
   /** Convert a full WebDAV server-relative path

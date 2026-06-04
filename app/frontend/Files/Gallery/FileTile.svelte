@@ -1,15 +1,15 @@
-<Clickable onClick={openFile}>
+<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file)}>
   <vbox class="file box"
     class:selected={file == $selectedFile}>
     <vbox class="tile">
       <button class="icon">
-        <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
+        <FileIcon ext={$file.ext} localFilePath={$file.path} size={48} />
         <!--
         {#if $file.isDownloaded}
           <Thumbnail {file} size={48} />
         {:else}
-          {#await $file.download()}
-            <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
+          {#await file.download()}
+            <FileIcon ext={$file.ext} localFilePath={$file.path} size={48} />
           {:catch ex}
             {ex?.message + ex + ""}
           {/await}
@@ -19,12 +19,12 @@
     </vbox>
     <vbox class="info">
       <hbox class="name">
-        {file?.name}
+        {$file?.name}
       </hbox>
       <hbox class="second">
         <hbox flex />
         <hbox class="time font-smallest">
-          {file?.lastMod ? getDateTimeString(file.lastMod) : ""}
+          {$file?.lastMod ? getDateTimeString($file.lastMod) : ""}
         </hbox>
       </hbox>
     </vbox>
@@ -33,27 +33,17 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { startWebApp } from "../../WebApps/Runner/open";
+  import { openFileInDefaultApp } from "../file";
   import { selectedFile } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
-  import { assert } from "../../../logic/util/util";
 
   export let file: File;
 
-  async function openFile() {
-    assert(file instanceof File, "Need file");
-    // Open web app from cloud provider
-    let editors = await file.availableOnlineEditors();
-    if (editors.hasItems) {
-      let webApp = editors.first.instantiate(file.parent?.account);
-      startWebApp(webApp);
-      return;
-    }
-    // Open native desktop app
-    await file.openOSApp();
+  function onSelect() {
+    $selectedFile = file;
   }
 </script>
 

@@ -9,12 +9,15 @@ export class FileOrDirectory extends Observable implements TaggableObject {
   dbID: number | null = null;
   /** Full file path and name.
    * For directories, this must end with `/`. */
+  @notifyChangedProperty
   path: string;
   /** Full path to the local file on user's disk. May be null */
+  @notifyChangedProperty
   filepathLocal: string | null = null;
   /** Excluding directory path. For files, including file ext. */
   @notifyChangedProperty
   name: string;
+  @notifyChangedProperty
   parent: Directory;
   @notifyChangedProperty
   lastMod = new Date();
