@@ -28,7 +28,7 @@
       {#if $selectedFile instanceof File}
         {#if $isRightSidebarExpanded}
           <FileRightPane file={$selectedFile} />
-        {:else}
+        {:else if $viewFile}
           <FileThinRightPane file={$viewFile} />
         {/if}
       {:else if $selectedFile instanceof Directory}
