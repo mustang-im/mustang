@@ -52,6 +52,7 @@ export const ItalicSlash = Italic.extend({
 const doubleTildeInputRegex = /(?:^|\s)((?:~~)((?:\S(?:(?:(?!~~).)*\S)?))(?:~~))$/
 const doubleTildePasteRegex = /(?:^|\s)((?:~~)((?:\S(?:(?:(?!~~).)*\S)?))(?:~~))/g
 
+/** Makes `~~abc~~` ~~strike~~ */
 export const StrikeDoubleTidle = Strike.extend({
   addInputRules() {
     return [
