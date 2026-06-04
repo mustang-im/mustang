@@ -1,7 +1,10 @@
 import { File } from '../../logic/Files/File';
 import { viewFile, fileViewer } from './selected';
 import type { WebAppListed } from '../../logic/WebApps/WebAppListed';
+import { kSupportedExt as kHTMLExt } from './Thumbnail/HTMLThumbnail.svelte';
 import { kSupportedExt as kImageExt } from './Thumbnail/ImageThumbnail.svelte';
+import { kSupportedExt as kVideoExt } from './Thumbnail/VideoThumbnail.svelte';
+import { kSupportedExt as kAudioExt } from './Thumbnail/AudioThumbnail.svelte';
 import { getUILocale } from '../../l10n/l10n';
 import { assert } from '../../logic/util/util';
 import prettyBytes from 'pretty-bytes';
@@ -42,4 +45,13 @@ export async function openFileInDefaultApp(file: File) {
   }
   // Open native desktop app
   await file.openOSApp();
+}
+
+export const kPreviewExt = [...kHTMLExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
+
+export function canShowPreview(file: File) {
+  if (!file) {
+    return false;
+  }
+  return kPreviewExt.includes(file.ext);
 }

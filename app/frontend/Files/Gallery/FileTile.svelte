@@ -3,18 +3,7 @@
     class:selected={file == $selectedFile}>
     <vbox class="tile">
       <button class="icon">
-        <FileIcon ext={$file.ext} localFilePath={$file.path} size={48} />
-        <!--
-        {#if $file.isDownloaded}
-          <Thumbnail {file} size={48} />
-        {:else}
-          {#await file.download()}
-            <FileIcon ext={$file.ext} localFilePath={$file.path} size={48} />
-          {:catch ex}
-            {ex?.message + ex + ""}
-          {/await}
-        {/if}
-        -->
+        <Thumbnail {file} size={48} />
       </button>
     </vbox>
     <vbox class="info">
@@ -33,14 +22,16 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { openFileInDefaultApp } from "../file";
+  import { canShowPreview, openFileInDefaultApp } from "../file";
   import { selectedFile } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
-  import FileIcon from "../Thumbnail/FileIcon.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
+  import { catchErrors } from "../../Util/error";
 
   export let file: File;
+
+  $: catchErrors(async () => canShowPreview(file) && file.getURL(), console.error);
 
   function onSelect() {
     $selectedFile = file;
@@ -62,8 +53,7 @@
     align-self: center;
     border: none;
     background-color: transparent;
-    padding-inline-start: 16px;
-    padding-inline-end: 0px;
+    padding-inline: 0px;
     margin-block-start: 2px;
   }
   .icon :global(svg) {

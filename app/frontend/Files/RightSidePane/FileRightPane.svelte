@@ -66,13 +66,9 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
-  import { fileSize, openFileInCloudApp, openPreview } from "../file";
+  import { canShowPreview, fileSize, openFileInCloudApp, openPreview } from "../file";
   import { isRightSidebarExpanded, viewFile, fileViewer } from "../selected";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { kSupportedExt as kHTMLExt } from "../Thumbnail/HTMLThumbnail.svelte";
-  import { kSupportedExt as kImageExt } from "../Thumbnail/ImageThumbnail.svelte";
-  import { kSupportedExt as kVideoExt } from "../Thumbnail/VideoThumbnail.svelte";
-  import { kSupportedExt as kAudioExt } from "../Thumbnail/AudioThumbnail.svelte";
   import Rename from "./Rename.svelte";
   import ActionToolbar from "./ActionToolbar.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
@@ -93,12 +89,10 @@
 
   let error: ErrorMessageInline;
 
+  $: canPreview = canShowPreview(file);
   let editors: Collection<WebAppListed>;
   $: error && file && catchErrors(async () => editors = await file.availableOnlineEditors(), error.showError);
-  $: error && file && catchErrors(async () => await file.getURL(), error.showError);
-
-  const kPreviewExt = [...kHTMLExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
-  $: canPreview = kPreviewExt.includes($file.ext);
+  $: error && canPreview && catchErrors(async () => canPreview && await file.getURL(), error.showError);
 
   function onClosePreview() {
     $viewFile = null;
