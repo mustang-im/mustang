@@ -131,6 +131,12 @@ export class File extends FileOrDirectory {
     return new ArrayColl();
   }
 
+  async preferredOnlineEditor(): Promise<WebAppListed | null> {
+    let editors = await this.availableOnlineEditors();
+    // TODO read preference (and set it in <FileRightPane>)
+    return editors.first; // may be null
+  }
+
   protected async getLocalFilePath(): Promise<string> {
     filesDir ??= await getFilesDir();
     let dir = sanitize.dirname(this.parent.path, false, "");

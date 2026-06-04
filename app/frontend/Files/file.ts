@@ -1,6 +1,6 @@
 import { File } from '../../logic/Files/File';
 import { startWebApp } from '../WebApps/Runner/open';
-import { getUILocale } from '../../l10n/l10n';
+import { getUILocale, gt } from '../../l10n/l10n';
 import { assert } from '../../logic/util/util';
 import prettyBytes from 'pretty-bytes';
 
@@ -12,12 +12,22 @@ export function fileSize(sizeInBytes: number) {
   }).replace("i", "");
 }
 
+/** Open preferred web app from cloud provider */
+export async function openFileInCloudApp(file: File) {
+  assert(file instanceof File, "Need file");
+  let editor = await file.preferredOnlineEditor();
+  assert(file instanceof File, gt`No cloud editor available on ${file.account.name}`);
+  let webApp = editor.instantiate(file.parent?.account);
+  startWebApp(webApp);
+}
+
+/** Open preferred app for file type, either local or cloud */
 export async function openFileInDefaultApp(file: File) {
   assert(file instanceof File, "Need file");
   // Open web app from cloud provider
-  let editors = await file.availableOnlineEditors();
-  if (editors.hasItems) {
-    let webApp = editors.first.instantiate(file.parent?.account);
+  let editor = await file.preferredOnlineEditor();
+  if (editor) {
+    let webApp = editor.instantiate(file.parent?.account);
     startWebApp(webApp);
     return;
   }

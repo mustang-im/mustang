@@ -68,9 +68,8 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
-  import { fileSize } from "../file";
+  import { fileSize, openFileInCloudApp } from "../file";
   import { isRightSidebarExpanded, viewFile } from "../selected";
-  import { startWebApp } from "../../WebApps/Runner/open";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { kSupportedExt as kHTMLExt } from "../Thumbnail/HTMLThumbnail.svelte";
   import { kSupportedExt as kImageExt } from "../Thumbnail/ImageThumbnail.svelte";
@@ -88,7 +87,6 @@
   import XIcon from "lucide-svelte/icons/x";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
@@ -109,9 +107,7 @@
   }
   /** Open web app from cloud provider */
   async function onOpenCloud() {
-    assert(editors.hasItems, $t`No online app available for this file type`);
-    let webApp = editors.first.instantiate(file.parent?.account);
-    startWebApp(webApp);
+    await openFileInCloudApp(file);
   }
   function onOpenPreview() {
     $viewFile = file;
