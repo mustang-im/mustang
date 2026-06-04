@@ -15,7 +15,7 @@ export class SQLFile {
     let lastMod = Math.floor(file.lastMod.getTime() / 1000);
     let serverURL = (file as File & WithServerURL).serverURL ?? null;
     filesDir ??= await getFilesDir();
-    let pathLocal = file.filepathLocal?.replace(`${filesDir}/files/cloud/`, "");
+    let pathLocal = file.filepathLocal?.replace(`${filesDir}/files/cloud/${file.account.id}/`, "");
 
     if (!file.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -72,7 +72,7 @@ export class SQLFile {
   static readRow(row: any, file: File) {
     file.setFileName(sanitize.filename(row.name));
     file.path = sanitize.nonemptystring(row.path);
-    file.filepathLocal = `${filesDir}/files/cloud/${sanitize.dirname(row.pathLocal)}`;
+    file.filepathLocal = row.pathLocal ? `${filesDir}/files/cloud/${file.account.id}/${sanitize.dirname(row.pathLocal)}` : null;
     file.size = sanitize.integerRange(row.size, 0, Number.MAX_SAFE_INTEGER, 0);
     file.mimetype = sanitize.string(row.mimetype, "");
     let lastModSeconds = sanitize.integer(row.lastMod, null);

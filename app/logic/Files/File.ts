@@ -154,10 +154,11 @@ export class File extends FileOrDirectory {
 
   protected async getLocalFilePath(): Promise<string> {
     filesDir ??= await getFilesDir();
+    let fullDir = `${filesDir}/files/cloud/${this.account.id}`;
     let dir = sanitize.dirname(this.parent.path, false, "");
-    let fullDir = dir
-      ? `${filesDir}/files/cloud/${dir}`
-      : `${filesDir}/files/cloud`;
+    if (dir) {
+      fullDir += "/" + dir;
+    }
     await appGlobal.remoteApp.fs.mkdir(fullDir, { recursive: true, mode: 0o700 });
     return `${fullDir}/${sanitize.filename(this.name)}`;
   }
