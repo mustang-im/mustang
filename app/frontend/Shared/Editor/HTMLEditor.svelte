@@ -10,7 +10,7 @@
   import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
-  import { BoldStar, ItalicSlash } from './StdConventions';
+  import { BoldStar, ItalicSlash, StrikeDoubleTidle } from './StdConventions';
   import { ParagraphNewLine } from './ParagraphNewLine';
   import { TabIndent } from './TabIndent';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
@@ -44,6 +44,7 @@
         StarterKit.configure({
           bold: false,
           italic: false,
+          strike: false,
         }),
         LinkFeature,
         CodeWordFeature,
@@ -58,6 +59,7 @@
         }),
         BoldStar,
         ItalicSlash,
+        StrikeDoubleTidle,
         ParagraphNewLine,
         TabIndent,
         // CodeBlockLowlightFeature.configure({
