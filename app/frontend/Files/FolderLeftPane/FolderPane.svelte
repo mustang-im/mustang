@@ -44,14 +44,14 @@
 
   $: selectedFolder, catchErrors(changeDir)
   async function changeDir() {
-    listDirs = null;
-    listFiles = null;
     if (!selectedFolder) {
+      listDirs = null;
+      listFiles = null;
       return;
     }
-    await selectedFolder.listContents();
     listDirs = selectedFolder.subDirs;
     listFiles = selectedFolder.files;
+    await selectedFolder.listContents();
   }
 
   $: $selectedFile instanceof Directory && changeToDir($selectedFile)
