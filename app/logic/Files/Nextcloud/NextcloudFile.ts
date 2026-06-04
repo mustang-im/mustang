@@ -6,12 +6,39 @@ import { ArrayColl, type Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../../l10n/l10n";
+import type { FileStat, ResponseDataDetailed } from "webdav";
+
 
 export class NextcloudFile extends WebDAVFile {
   declare parent: NextcloudDirectory;
+  /** Nextcloud `oc:fileid`. Lazy-fetched by `getFileID()`. */
+  protected fileID: number | null = null;
 
   get account(): NextcloudAccount {
     return this.parent?.account as NextcloudAccount;
+  }
+
+  protected async getFileID(): Promise<number> {
+    if (this.fileID) {
+      return this.fileID;
+    }
+    await this.account.login(false);
+    /** Ask the Nextcloud DAV FilesPlugin for `oc:fileid`.
+     * Not returned by allprop, so we have to request it explicitly. */
+    const kFileIDPropfindBody =
+      `<?xml version="1.0" encoding="utf-8"?>` +
+      `<d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns">` +
+        `<d:prop><oc:fileid/></d:prop>` +
+      `</d:propfind>`;
+    let result = await this.account.client.stat(this.path, {
+      details: true,
+      data: kFileIDPropfindBody,
+      headers: { "Content-Type": "application/xml; charset=utf-8" },
+    }) as ResponseDataDetailed<FileStat>;
+    let id = sanitize.integer(result?.data?.props?.fileid as any, null);
+    assert(id, `Could not get the Nextcloud file ID for ${this.path}`);
+    this.fileID = id;
+    return id;
   }
 
   /**
@@ -32,13 +59,13 @@ export class NextcloudFile extends WebDAVFile {
       }
       let startURL: string | null;
       if (editor.id == "richdocuments") {
-        // richdocuments isn't a directEditing provider, so /open doesn't
-        // accept editorId=richdocuments. The app's own /apps/richdocuments/
-        // index URL accepts a path parameter and resolves it server-side.
-        let urlObj = new URL(this.account.url);
-        urlObj.pathname = "/apps/richdocuments/index";
-        urlObj.search = "?path=" + encodeURIComponent(this.userRelativePath(this.path));
-        startURL = sanitize.url(urlObj.href, null);
+        // OCS createDirect creates a one-time token.
+        // The resulting /apps/richdocuments/direct/{token} URL loads with no cookie/session.
+        let fileID = await this.getFileID();
+        let json = await this.account.ocsCall("POST",
+          "/ocs/v2.php/apps/richdocuments/api/v1/document",
+          { fileId: String(fileID) });
+        startURL = sanitize.url(json?.ocs?.data?.url, null);
       } else {
         let json = await this.account.ocsCall("POST",
           "/ocs/v2.php/apps/files/api/v1/directEditing/open",
