@@ -17,3 +17,4 @@ export let selectedLeftTab: Writable<FilesView> = writable(get(isDemo) ? FilesVi
  * Only for some supported file types.
  * Will override the other UI. Normally null. */
 export let viewFile: Writable<File> = writable(null);
+export let isRightSidebarExpanded: Writable<boolean> = writable(true);

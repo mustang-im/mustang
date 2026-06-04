@@ -4,10 +4,18 @@
   </vbox>
   <Splitter name="right-pane"
     initialRightRatio={0.25} rightMinWidth={300}
+    hasRight={$isRightSidebarExpanded}
     slot="right">
     <vbox class="main-pane" slot="left">
       {#if $viewFile}
-        <FileViewer file={$viewFile} />
+        <hbox flex>
+          <hbox flex>
+            <FileViewer file={$viewFile} />
+          </hbox>
+          {#if !$isRightSidebarExpanded}
+            <FileThinRightPane file={$viewFile} />
+          {/if}
+        </hbox>
       {:else if listFiles}
         {#if $selectedFolder}
           <FilesHeader dir={$selectedFolder} />
@@ -33,17 +41,18 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { selectedFile, selectedFolder, selectedLeftTab, viewFile } from "./selected";
+  import { isRightSidebarExpanded, selectedFile, selectedFolder, selectedLeftTab, viewFile } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
   import FilesHeader from "./MainPane/FilesHeader.svelte";
   import FileViewer from "./FileViewer.svelte";
+  import FileThinRightPane from "./RightSidePane/FileThinRightPane.svelte";
+  import FileRightPane from "./RightSidePane/FileRightPane.svelte";
+  import DirectoryRightPane from "./RightSidePane/DirectoryRightPane.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
   import { catchErrors } from "../Util/error";
-  import FileRightPane from "./RightSidePane/FileRightPane.svelte";
-  import DirectoryRightPane from "./RightSidePane/DirectoryRightPane.svelte";
 
   /** The list of files to show on the right pane */
   let listFiles: Collection<File>;
@@ -59,6 +68,10 @@
     await Promise.allSettled(listDirs.contents.map(dir =>
       dir.listContents()));
   }
+
+
+  $: $isRightSidebarExpanded = !$viewFile;
+  $: console.log("isRightSidebarExpanded", $isRightSidebarExpanded, "view file", $viewFile);
 
   // Close FileViewer when selecting another dir or file
   $: $selectedFile, closeViewer();

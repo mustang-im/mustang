@@ -1,6 +1,25 @@
 <vbox class="right-side-bar" flex>
-  {#if canPreview}
-    <vbox class="preview">
+  <vbox class="preview">
+    {#if $viewFile}
+      <vbox class="thin-right-side-bar" flex>
+        <RoundButton
+          onClick={onClosePreview}
+          label={$t`Close file`}
+          icon={XIcon}
+          iconSize="18px"
+          padding="4px"
+          classes="plain"
+          />
+        <RoundButton
+          onClick={() => $isRightSidebarExpanded = false}
+          label={$t`Collapse sidebar`}
+          icon={CollapseIcon}
+          iconSize="18px"
+          padding="4px"
+          classes="plain"
+          />
+      </vbox>
+    {:else if canPreview}
       <Thumbnail {file} size={200} />
       <hbox class="open-preview buttons">
         <RoundButton
@@ -8,10 +27,8 @@
           icon={OpenPreviewIcon}
           />
       </hbox>
-    </vbox>
-  {:else}
-    <vbox class="preview" />
-  {/if}
+    {/if}
+  </vbox>
   <vbox class="content" flex>
     <hbox class="open buttons">
       <Button
@@ -20,7 +37,7 @@
         label-should={$t`Open with ${"PhotoShop"}`}
         tooltip={$t`Open with a local application on your computer`}
         >
-        <FileIcon ext={file.ext} localFilePath={file.path} size={20} slot="icon" />
+        <FileIcon ext={$file.ext} localFilePath={$file.path} size={20} slot="icon" />
       </Button>
       <!--
       <RoundButton
@@ -40,9 +57,9 @@
     <Rename {file} />
 
     <hbox class="file-properties font-small">
-      <hbox class="lastMod">{getDateTimeString(file.lastMod)}</hbox>
+      <hbox class="lastMod">{getDateTimeString($file.lastMod)}</hbox>
       <hbox flex />
-      <hbox class="size">{fileSize(file.size)}</hbox>
+      <hbox class="size">{fileSize($file.size)}</hbox>
     </hbox>
 
     <ActionToolbar {file} />
@@ -52,9 +69,13 @@
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
   import { fileSize } from "../file";
-  import { viewFile } from "../selected";
+  import { isRightSidebarExpanded, viewFile } from "../selected";
   import { startWebApp } from "../../WebApps/Runner/open";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
+  import { kSupportedExt as kHTMLExt } from "../Thumbnail/HTMLThumbnail.svelte";
+  import { kSupportedExt as kImageExt } from "../Thumbnail/ImageThumbnail.svelte";
+  import { kSupportedExt as kVideoExt } from "../Thumbnail/VideoThumbnail.svelte";
+  import { kSupportedExt as kAudioExt } from "../Thumbnail/AudioThumbnail.svelte";
   import Rename from "./Rename.svelte";
   import ActionToolbar from "./ActionToolbar.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
@@ -63,26 +84,24 @@
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OpenPreviewIcon from "lucide-svelte/icons/expand";
+  import CollapseIcon from "lucide-svelte/icons/chevrons-right";
+  import XIcon from "lucide-svelte/icons/x";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { onMount } from "svelte";
 
   export let file: File;
 
   let error: ErrorMessageInline;
 
-  onMount(() => catchErrors(onLoad, error.showError));
-  async function onLoad() {
-    await file.getURL();
-  }
-
   let editors: Collection<WebAppListed>;
-  $: error && catchErrors(async () => editors = await file.availableOnlineEditors(), error.showError);
+  $: error && file && catchErrors(async () => editors = await file.availableOnlineEditors(), error.showError);
+  $: error && file && catchErrors(async () => await file.getURL(), error.showError);
 
-  let canPreview = true;
+  const kPreviewExt = [...kHTMLExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
+  $: canPreview = kPreviewExt.includes($file.ext);
 
   /** Open native desktop app */
   async function onOpenLocal() {
@@ -97,11 +116,19 @@
   function onOpenPreview() {
     $viewFile = file;
   }
+  function onClosePreview() {
+    $viewFile = null;
+  }
 </script>
 
 <style>
   .right-side-bar {
     box-shadow: -2px 0px 3px 1px #e3e3e3;
+  }
+  .thin-right-side-bar {
+    align-items: end;
+    padding: 8px 4px;
+    gap: 8px;
   }
   .content {
     align-items: stretch;
@@ -116,8 +143,8 @@
   }
   .open-preview {
     position: absolute;
-    bottom: 4px;
-    right: 4px;
+    top: 0px;
+    right: 0px;
   }
   .file-properties {
     opacity: 60%;
