@@ -39,7 +39,12 @@
     editor = new Editor({
       element: rootEl,
       extensions: [
-        StarterKit,
+        // Disable some extensions because you cannot override the default
+        // input/mark rules
+        StarterKit.configure({
+          bold: false,
+          italic: false,
+        }),
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
