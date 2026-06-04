@@ -48,7 +48,7 @@ export class WebDAVDirectory extends Directory {
             existing.fromStat(stat);
             curDirs.add(existing);
           } else {
-            let dir = new WebDAVDirectory();
+            let dir = this.newDirectory("");
             dir.account = this.account;
             dir.parent = this;
             dir.fromStat(stat);
@@ -61,7 +61,7 @@ export class WebDAVDirectory extends Directory {
             existing.fromStat(stat);
             curFiles.add(existing);
           } else {
-            let file = new WebDAVFile();
+            let file = this.newFile("");
             file.parent = this;
             file.fromStat(stat);
             this.files.add(file);
