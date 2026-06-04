@@ -1,13 +1,13 @@
 <Splitter name="files-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <LeftPane bind:listFiles bind:listDirs bind:viewFile bind:activeTab={$selectedLeftTab} />
+    <LeftPane bind:listFiles bind:listDirs bind:activeTab={$selectedLeftTab} />
   </vbox>
   <Splitter name="right-pane"
     initialRightRatio={0.25} rightMinWidth={300}
     slot="right">
     <vbox class="main-pane" slot="left">
-      {#if viewFile}
-        <FileViewer file={viewFile} />
+      {#if $viewFile}
+        <FileViewer file={$viewFile} />
       {:else if listFiles}
         {#if $selectedFolder}
           <FilesHeader dir={$selectedFolder} />
@@ -33,7 +33,7 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { selectedFile, selectedFolder, selectedLeftTab } from "./selected";
+  import { selectedFile, selectedFolder, selectedLeftTab, viewFile } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
@@ -50,9 +50,6 @@
   /** The list of folders to show on the right pane.
    * Must be in the same logical list (e.g. container) as `listFiles`. */
   let listDirs: Collection<Directory>;
-  /** If set, this file will be display on the right pane, full page
-   * For viewing images and PDFs. Most other file types are not supported. */
-  export let viewFile: File | null = null;
 
   let viewSetting = getLocalStorage("files.view", "table");
   $: view = $viewSetting.value;
@@ -61,6 +58,13 @@
   async function ls() {
     await Promise.allSettled(listDirs.contents.map(dir =>
       dir.listContents()));
+  }
+
+  // Close FileViewer when selecting another dir or file
+  $: $selectedFile, closeViewer();
+  $: $selectedFolder, closeViewer();
+  function closeViewer() {
+    $viewFile = null;
   }
 </script>
 

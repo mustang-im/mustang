@@ -51,23 +51,23 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
+  import { fileSize } from "../file";
+  import { viewFile } from "../selected";
   import { startWebApp } from "../../WebApps/Runner/open";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import Rename from "./Rename.svelte";
   import ActionToolbar from "./ActionToolbar.svelte";
+  import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import OpenLocalIcon from "lucide-svelte/icons/square-arrow-out-up-right";
   import OpenPreviewIcon from "lucide-svelte/icons/expand";
+  import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { assert, NotImplemented } from "../../../logic/util/util";
+  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
-  import { fileSize } from "../file";
-  import { getDateTimeString } from "../../Util/date";
-  import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { onMount } from "svelte";
 
   export let file: File;
@@ -95,7 +95,7 @@
     startWebApp(webApp);
   }
   function onOpenPreview() {
-    throw new NotImplemented();
+    $viewFile = file;
   }
 </script>
 
