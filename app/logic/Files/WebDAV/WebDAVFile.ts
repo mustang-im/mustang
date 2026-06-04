@@ -45,9 +45,9 @@ export class WebDAVFile extends File {
         return;
       }
       await this.account.login(false);
-      let buf = await this.account.client.getFileContents(this.path, { format: "binary" }) as ArrayBuffer;
-      this.contents = new Blob([buf], this.mimetype ? { type: this.mimetype } : undefined);
-      await this.saveAsLocalFile();
+      let buffer = await this.account.client.getFileContents(this.path, { format: "binary" }) as ArrayBuffer;
+      let blob = new Blob([buffer], this.mimetype ? { type: this.mimetype } : undefined);
+      this.saveContentsLocally(blob);
     });
   }
 
@@ -125,8 +125,7 @@ export class WebDAVFile extends File {
     }
   }
 
-  async deleteIt() {
-    await super.deleteIt();
+  async deleteOnServer() {
     await this.account.login(false);
     await this.account.client.deleteFile(this.path);
   }

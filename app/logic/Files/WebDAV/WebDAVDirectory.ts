@@ -76,18 +76,18 @@ export class WebDAVDirectory extends Directory {
       this.subDirs.removeAll(removedDirs);
       for (let file of removedFiles) {
         file.clearURL();
-        await file.deleteIt();
+        await file.deleteLocally();
       }
       for (let dir of removedDirs) {
-        await dir.deleteIt();
+        await dir.deleteLocally();
       }
 
-      await this.save();
+      await this.saveLocally();
       for (let dir of curDirs) {
-        await dir.save();
+        await dir.saveLocally();
       }
       for (let file of curFiles) {
-        await file.save();
+        await file.saveLocally();
       }
     } finally {
       lock.release();
@@ -146,8 +146,7 @@ export class WebDAVDirectory extends Directory {
     return this.subDirs.find(dir => dir.path == subDir.path) ?? subDir;
   }
 
-  async deleteIt() {
-    await super.deleteIt();
+  async deleteOnServer() {
     await this.account.login(false);
     await this.account.client.deleteFile(this.path);
   }

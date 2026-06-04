@@ -68,7 +68,7 @@ export class WebDAVAccount extends FileSharingAccount {
       let root = this.newDirectory(gt`Files`);
       root.path = "/";
       this.rootDirs.add(root);
-      await root.save();
+      await root.saveLocally();
     }
     await this.rootDirs.first.listContents();
   }

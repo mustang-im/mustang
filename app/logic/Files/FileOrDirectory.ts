@@ -36,13 +36,20 @@ export class FileOrDirectory extends Observable implements TaggableObject {
     await this.saveOnServer();
   }
   async saveLocally() {
+    throw new AbstractFunction();
   }
   async saveOnServer() {
   }
 
   canDelete: boolean;
   async deleteIt() {
+    await this.deleteLocally();
+    await this.deleteOnServer();
+  }
+  async deleteLocally() {
     throw new AbstractFunction();
+  }
+  async deleteOnServer() {
   }
 
   async addTag(tag: Tag) {
