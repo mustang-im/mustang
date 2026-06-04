@@ -2,6 +2,7 @@ import { File } from '../../logic/Files/File';
 import { viewFile, fileViewer } from './selected';
 import type { WebAppListed } from '../../logic/WebApps/WebAppListed';
 import { kSupportedExt as kHTMLExt } from './Thumbnail/HTMLThumbnail.svelte';
+import { kSupportedExt as kOfficeExt } from './Thumbnail/OfficeThumbnail.svelte';
 import { kSupportedExt as kImageExt } from './Thumbnail/ImageThumbnail.svelte';
 import { kSupportedExt as kVideoExt } from './Thumbnail/VideoThumbnail.svelte';
 import { kSupportedExt as kAudioExt } from './Thumbnail/AudioThumbnail.svelte';
@@ -47,7 +48,7 @@ export async function openFileInDefaultApp(file: File) {
   await file.openOSApp();
 }
 
-export const kPreviewExt = [...kHTMLExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
+export const kPreviewExt = [...kHTMLExt, ...kOfficeExt, ...kImageExt, ...kVideoExt, ...kAudioExt];
 
 export function canShowPreview(file: File) {
   if (!file) {
