@@ -2,8 +2,8 @@ import { markInputRule, markPasteRule } from '@tiptap/core';
 import { Bold } from '@tiptap/extension-bold';
 import { Italic } from '@tiptap/extension-italic';
 
-export const starInputRegex = /(?:^|\s)((?:\*(?:\S+(?:\s+\S+)*)\*))$/
-export const starPasteRegex = /(?:^|\s)((?:\*(?:\S+(?:\s+\S+)*)\*))/g
+export const starInputRegex = /(?:^|\s)((?:\*)((?:\S(?:[^*]*\S)?))(?:\*))$/
+export const starPasteRegex = /(?:^|\s)((?:\*)((?:\S(?:[^*]*\S)?))(?:\*))/g
 
 /** Makes `*abc*` **bold** instead of _italic_ */
 export const BoldStar = Bold.extend({
@@ -25,8 +25,8 @@ export const BoldStar = Bold.extend({
   },
 });
 
-export const slashInputRegex = /(?:^|\s)((?:\/(?:\S+(?:\s+\S+)*)\/))$/
-export const slashPasteRegex = /(?:^|\s)((?:\/(?:\S+(?:\s+\S+)*)\/))/g
+export const slashInputRegex = /(?:^|\s)((?:\/)((?:\S(?:[^*]*\S)?))(?:\/))$/
+export const slashPasteRegex = /(?:^|\s)((?:\/)((?:\S(?:[^*]*\S)?))(?:\/))/g
 
 /** Makes `/abc/` _italic_ */
 export const ItalicSlash = Italic.extend({
