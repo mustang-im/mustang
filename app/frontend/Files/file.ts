@@ -1,6 +1,7 @@
 import { File } from '../../logic/Files/File';
 import { viewFile, fileViewer } from './selected';
 import type { WebAppListed } from '../../logic/WebApps/WebAppListed';
+import { kSupportedExt as kImageExt } from './Thumbnail/ImageThumbnail.svelte';
 import { getUILocale } from '../../l10n/l10n';
 import { assert } from '../../logic/util/util';
 import prettyBytes from 'pretty-bytes';
@@ -29,6 +30,10 @@ export async function openFileInCloudApp(file: File, viewer: WebAppListed | null
 /** Open file in preferred app for file type, either local or cloud */
 export async function openFileInDefaultApp(file: File) {
   assert(file instanceof File, "Need file");
+  if (["text/html", "application/pdf", "text/plain"].includes(file.mimetype) || kImageExt.includes(file.ext)) {
+    openPreview(file);
+    return;
+  }
   // Open web app from cloud provider
   let editor = await file.preferredOnlineEditor();
   if (editor) {
