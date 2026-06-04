@@ -3,8 +3,8 @@ import { Bold } from '@tiptap/extension-bold';
 import { Italic } from '@tiptap/extension-italic';
 import { Strike } from '@tiptap/extension-strike';
 
-export const starInputRegex = /(?:^|\s)((?:\*)((?:\S(?:[^*]*\S)?))(?:\*))$/
-export const starPasteRegex = /(?:^|\s)((?:\*)((?:\S(?:[^*]*\S)?))(?:\*))/g
+export const starInputRegex = /(?:^|\s)((?:\*)((?:\p{Letter}(?:[^*]*\p{Letter})?))(?:\*))$/u
+export const starPasteRegex = /(?:^|\s)((?:\*)((?:\p{Letter}(?:[^*]*\p{Letter})?))(?:\*))/gu
 
 /** Makes `*abc*` **bold** instead of _italic_ */
 export const BoldStar = Bold.extend({
@@ -26,8 +26,8 @@ export const BoldStar = Bold.extend({
   },
 });
 
-export const slashInputRegex = /(?:^|\s)((?:\/)((?:\S(?:[^\/]*\S)?))(?:\/))$/
-export const slashPasteRegex = /(?:^|\s)((?:\/)((?:\S(?:[^\/]*\S)?))(?:\/))/g
+export const slashInputRegex = /(?:^|\s)((?:\/)((?:\p{Letter}(?:[^\/]*\p{Letter})?))(?:\/))$/u
+export const slashPasteRegex = /(?:^|\s)((?:\/)((?:\p{Letter}(?:[^\/]*\p{Letter})?))(?:\/))/gu
 
 /** Makes `/abc/` _italic_ */
 export const ItalicSlash = Italic.extend({
@@ -49,8 +49,8 @@ export const ItalicSlash = Italic.extend({
   },
 });
 
-const doubleTildeInputRegex = /(?:^|\s)((?:~~)((?:\S(?:(?:(?!~~).)*\S)?))(?:~~))$/
-const doubleTildePasteRegex = /(?:^|\s)((?:~~)((?:\S(?:(?:(?!~~).)*\S)?))(?:~~))/g
+const doubleTildeInputRegex = /(?:^|\s)((?:~~)((?:\p{Letter}(?:(?:(?!~~).)*\p{Letter})?))(?:~~))$/u
+const doubleTildePasteRegex = /(?:^|\s)((?:~~)((?:\p{Letter}(?:(?:(?!~~).)*\p{Letter})?))(?:~~))/gu
 
 /** Makes `~~abc~~` ~~strike~~ */
 export const StrikeDoubleTidle = Strike.extend({
