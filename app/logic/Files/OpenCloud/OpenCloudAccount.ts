@@ -41,7 +41,7 @@ export class OpenCloudAccount extends WebDAVAccount {
       return this.editorsCache;
     }
     let appsByID = new Map<string, EditorWebApp>();
-    let json = await this.appCall("GET", "/app/list");
+    let json = await this.graphCall("GET", "/app/list");
     let entries = sanitize.array(json?.["mime-types"], []) as any[];
     // openCloud's response is grouped by MIME type, with each entry carrying
     // a list of app_providers. Flatten into a per-provider list.
@@ -81,8 +81,13 @@ export class OpenCloudAccount extends WebDAVAccount {
     return this.editorsCache = Array.from(appsByID.values());
   }
 
-  /** Generic openCloud app-provider HTTPS request, with Authorization header. */
-  async appCall(method: "GET" | "POST", path: string): Promise<any> {
+  /**
+   * Libre-Graph HTTPS request with JSON body.
+   * openCloud uses this for drives, items, permissions, and link shares.
+   * @param path server-absolute
+   *  e.g. `/graph/v1beta1/drives/.../createLink` or `/app/list`
+   */
+  async graphCall(method: "GET" | "POST", path: string, jsonBody?: any): Promise<any> {
     let url = new URL(path, this.url).href;
     let headers: Record<string, string> = {
       "Accept": "application/json",
@@ -99,7 +104,9 @@ export class OpenCloudAccount extends WebDAVAccount {
     if (method == "GET") {
       return await ky.get(url, {});
     } else if (method == "POST") {
-      return await ky.post(url, {});
+      return await ky.post(url, {
+        json: jsonBody ?? {},
+      });
     } else {
       throw new NotReached();
     }
