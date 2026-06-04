@@ -11,7 +11,7 @@
 </vbox>
 
 <script lang="ts">
-  import { genericFileTypes, FileType } from '../../logic/Files/MIMETypes';
+  import { genericFileTypes, FileType } from '../../logic/Files/FileType/MIMETypes';
   import FastList from '../Shared/FastList.svelte';
   import { avoidLoop } from '../Util/svelte';
   import { assert } from '../../logic/util/util';

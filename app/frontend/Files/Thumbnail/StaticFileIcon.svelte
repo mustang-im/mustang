@@ -15,7 +15,7 @@
 {/if}
 
 <script lang="ts">
-  import { fileExtensions } from "../../../logic/Files/MIMETypes";
+  import { fileExtensions } from "../../../logic/Files/FileType/MIMETypes";
   import { kSupportedExt as kImageExt } from "./ImageThumbnail.svelte";
   import { kSupportedExt as kVideoExt } from "./VideoThumbnail.svelte";
   import { kSupportedExt as kAudioExt } from "./AudioThumbnail.svelte";
