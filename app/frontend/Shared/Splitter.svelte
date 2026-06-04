@@ -10,7 +10,11 @@
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
-    <hbox class="right" style="flex: {rightRatio} 0 0;">
+    <hbox class="right" style={
+      rightFixedWidth
+      ? `width: ${rightFixedWidth};`
+      : `flex: ${rightRatio} 0 0;`
+      }>
       <ErrorBoundary>
         <slot name="right" />
       </ErrorBoundary>
@@ -50,6 +54,10 @@
   export let hasLeft = true;
   /** If false, will hide the right part and remove the splitter */
   export let hasRight = true;
+  /** Override right width
+   * Make the right bar exactly this width, not changable
+   * null = normal mode */
+  export let rightFixedWidth: number | null = null;
   /** If set, will save the ratio in localStorage as preference and restore it */
   export let name: string = null;
 
@@ -86,6 +94,9 @@
   }
 
   function onMouseDown(event: PointerEvent){
+    if (rightFixedWidth) {
+      return;
+    }
     previousLeftWidth = currentLeftWidth;
     previousMousePosX = event.clientX;
     isMouseDown = true;

@@ -3,23 +3,16 @@
     <LeftPane bind:listFiles bind:listDirs bind:activeTab={$selectedLeftTab} />
   </vbox>
   <Splitter name="right-pane"
-    initialRightRatio={0.25} rightMinWidth={300}
-    hasRight={$isRightSidebarExpanded}
+    initialRightRatio={0.25} rightMinWidth={200}
+    rightFixedWidth={$isRightSidebarExpanded ? null : 40}
     slot="right">
     <vbox class="main-pane" slot="left">
       {#if $viewFile}
-        <hbox flex>
-          <hbox flex>
-            {#if $fileViewer}
-              <WebAppRunner app={$fileViewer} />
-            {:else}
-              <FileViewer file={$viewFile} />
-            {/if}
-          </hbox>
-          {#if !$isRightSidebarExpanded}
-            <FileThinRightPane file={$viewFile} />
-          {/if}
-        </hbox>
+        {#if $fileViewer}
+          <WebAppRunner app={$fileViewer} />
+        {:else}
+          <FileViewer file={$viewFile} />
+        {/if}
       {:else if listFiles}
         {#if $selectedFolder}
           <FilesHeader dir={$selectedFolder} />
@@ -33,7 +26,11 @@
     </vbox>
     <vbox class="right-side-pane" slot="right">
       {#if $selectedFile instanceof File}
-        <FileRightPane file={$selectedFile} />
+        {#if $isRightSidebarExpanded}
+          <FileRightPane file={$selectedFile} />
+        {:else}
+          <FileThinRightPane file={$viewFile} />
+        {/if}
       {:else if $selectedFile instanceof Directory}
         <DirectoryRightPane dir={$selectedFile} />
       {/if}
