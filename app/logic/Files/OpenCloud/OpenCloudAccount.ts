@@ -12,9 +12,133 @@ export class OpenCloudAccount extends WebDAVAccount {
   readonly protocol: string = "webdav-opencloud";
   declare readonly rootDirs: ArrayColl<OpenCloudDirectory>;
   protected editorsCache: EditorWebApp[] | null = null;
+  protected pushAbort: AbortController | null = null;
+  protected pushClosed = false;
+  protected pushReconnectDelayMS = 1000;
+  protected pushReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   newDirectory(name: string, dir = new OpenCloudDirectory()): OpenCloudDirectory {
     return super.newDirectory(name, dir) as OpenCloudDirectory;
+  }
+
+  async startup() {
+    await super.startup();
+    this.pushClosed = false;
+    this.openSSE().catch(ex =>
+      console.warn(`${this.name}: SSE subscription failed:`, ex?.message ?? ex));
+  }
+
+  async disconnect() {
+    this.pushClosed = true;
+    if (this.pushReconnectTimer) {
+      clearTimeout(this.pushReconnectTimer);
+      this.pushReconnectTimer = null;
+    }
+    try { this.pushAbort?.abort(); } catch {}
+    this.pushAbort = null;
+    await super.disconnect();
+  }
+
+  /** Open the oCIS/openCloud Server-Sent Events stream and parse text/event-stream
+   * inline. ownCloud 10 has no SSE endpoint and 404s — we treat that as a
+   * permanent failure and don't reconnect. */
+  protected async openSSE() {
+    if (this.pushClosed || this.pushAbort) {
+      return;
+    }
+    let urlObj = new URL(this.url);
+    urlObj.pathname = "/ocs/v2.php/apps/notifications/api/v1/notifications/sse";
+    urlObj.search = "";
+    let headers: Record<string, string> = {
+      "OCS-APIRequest": "true",
+      "Accept": "text/event-stream",
+      "Cache-Control": "no-cache",
+    };
+    if (this.authMethod == AuthMethod.OAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        await this.oAuth2.login(false);
+      }
+      headers["Authorization"] = "Bearer " + this.oAuth2.accessToken;
+    } else if (this.authMethod == AuthMethod.Password) {
+      headers["Authorization"] = "Basic " + btoa(`${this.username}:${this.password}`);
+    } else {
+      return;
+    }
+    let controller = new AbortController();
+    this.pushAbort = controller;
+    let isPermanentFailure = false;
+    try {
+      let resp = await fetch(urlObj.href, {
+        method: "GET",
+        headers,
+        signal: controller.signal,
+      });
+      if (!resp.ok || !resp.body) {
+        isPermanentFailure = resp.status >= 400 && resp.status < 500;
+        console.warn(`${this.name}: SSE HTTP ${resp.status}`);
+        return;
+      }
+      this.pushReconnectDelayMS = 1000;
+      let reader = resp.body.getReader();
+      let decoder = new TextDecoder();
+      let buf = "";
+      let cur = { type: "message", data: "" };
+      while (true) {
+        let { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        buf += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buf.indexOf("\n")) != -1) {
+          let line = buf.slice(0, nl).replace(/\r$/, "");
+          buf = buf.slice(nl + 1);
+          if (line == "") {
+            if (cur.data) {
+              this.onPushEvent(cur);
+            }
+            cur = { type: "message", data: "" };
+            continue;
+          }
+          if (line.startsWith(":")) {
+            continue; // keepalive comment
+          }
+          let colon = line.indexOf(":");
+          let field = colon == -1 ? line : line.slice(0, colon);
+          let val = colon == -1 ? "" : line.slice(colon + 1).replace(/^ /, "");
+          if (field == "event") {
+            cur.type = val;
+          } else if (field == "data") {
+            cur.data += (cur.data ? "\n" : "") + val;
+          }
+        }
+      }
+    } catch (ex: any) {
+      if (ex?.name != "AbortError") {
+        console.warn(`${this.name}: SSE error:`, ex?.message ?? ex);
+      }
+    } finally {
+      this.pushAbort = null;
+      if (!this.pushClosed && !isPermanentFailure) {
+        this.pushReconnectTimer = setTimeout(() => {
+          this.pushReconnectTimer = null;
+          this.openSSE().catch(ex =>
+            console.warn(`${this.name}: SSE reconnect failed:`, ex?.message ?? ex));
+        }, this.pushReconnectDelayMS);
+        this.pushReconnectDelayMS = Math.min(this.pushReconnectDelayMS * 2, 60_000);
+      }
+    }
+  }
+
+  /** oCIS userlog/SSE event names vary by server version. Skip pure UI
+   * notifications; refresh the root on anything else as a conservative
+   * default until the taxonomy is pinned down. */
+  protected onPushEvent(ev: { type: string, data: string }) {
+    if (ev.type == "userlog-notification" || ev.type == "notification") {
+      return;
+    }
+    this.rootDirs.first?.listContents()
+      .catch(ex => console.warn(`${this.name}: push-triggered refresh failed:`, ex?.message ?? ex));
   }
 
   /** For setup. Verify that the URL is a WebDAV endpoint and the credentials work. */

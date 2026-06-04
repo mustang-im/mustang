@@ -12,9 +12,110 @@ export class NextcloudAccount extends WebDAVAccount {
   readonly protocol: string = "webdav-nextcloud";
   declare readonly rootDirs: ArrayColl<NextcloudDirectory>;
   protected editorsCache: EditorWebApp[] | null = null;
+  protected pushWebSocket: WebSocket | null = null;
+  protected pushClosed = false;
+  protected pushReconnectDelayMS = 1000;
+  protected pushReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   newDirectory(name: string, dir = new NextcloudDirectory()): NextcloudDirectory {
     return super.newDirectory(name, dir) as NextcloudDirectory;
+  }
+
+  async startup() {
+    await super.startup();
+    this.pushClosed = false;
+    this.openNotifyPush().catch(ex =>
+      console.warn(`${this.name}: notify_push subscription failed:`, ex?.message ?? ex));
+  }
+
+  async disconnect() {
+    this.pushClosed = true;
+    if (this.pushReconnectTimer) {
+      clearTimeout(this.pushReconnectTimer);
+      this.pushReconnectTimer = null;
+    }
+    try { this.pushWebSocket?.close(); } catch {}
+    this.pushWebSocket = null;
+    await super.disconnect();
+  }
+
+  /** Open the notify_push WebSocket. No-op if the server doesn't advertise
+   * the endpoint (the `notify_push` app isn't installed) or we don't have a
+   * credential to send. */
+  protected async openNotifyPush() {
+    if (this.pushClosed || this.pushWebSocket) {
+      return;
+    }
+    let wsURL = await this.discoverNotifyPushURL();
+    if (!wsURL) {
+      return;
+    }
+    let { user, secret } = this.notifyPushCredentials();
+    if (secret == null) {
+      return;
+    }
+    let ws = new WebSocket(wsURL);
+    this.pushWebSocket = ws;
+    ws.addEventListener("open", () => {
+      // notify_push handshake: two text frames, username then secret.
+      ws.send(user);
+      ws.send(secret);
+    });
+    ws.addEventListener("message", ev => {
+      let msg = typeof ev.data == "string" ? ev.data : "";
+      if (msg == "authenticated") {
+        this.pushReconnectDelayMS = 1000;
+        return;
+      }
+      if (msg.startsWith("err:")) {
+        console.warn(`${this.name}: notify_push auth rejected:`, msg);
+        return;
+      }
+      this.onPushEvent(msg);
+    });
+    ws.addEventListener("close", () => {
+      this.pushWebSocket = null;
+      if (this.pushClosed) {
+        return;
+      }
+      this.pushReconnectTimer = setTimeout(() => {
+        this.pushReconnectTimer = null;
+        this.openNotifyPush().catch(ex =>
+          console.warn(`${this.name}: notify_push reconnect failed:`, ex?.message ?? ex));
+      }, this.pushReconnectDelayMS);
+      this.pushReconnectDelayMS = Math.min(this.pushReconnectDelayMS * 2, 60_000);
+    });
+    ws.addEventListener("error", () => {
+      // Browsers don't expose details; the subsequent "close" drives reconnect.
+    });
+  }
+
+  /** Read `notify_push.endpoints.websocket` from the OCS capabilities API. */
+  protected async discoverNotifyPushURL(): Promise<string | null> {
+    let caps = await this.ocsCall("GET", "/ocs/v2.php/cloud/capabilities");
+    return sanitize.url(caps?.ocs?.data?.capabilities?.notify_push?.endpoints?.websocket, null);
+  }
+
+  /** For password auth, send username + password. For OAuth2, notify_push
+   * accepts an empty username and the access token as the second frame. */
+  protected notifyPushCredentials(): { user: string, secret: string | null } {
+    if (this.authMethod == AuthMethod.Password) {
+      return { user: this.username, secret: this.password };
+    }
+    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2?.accessToken) {
+      return { user: "", secret: this.oAuth2.accessToken };
+    }
+    return { user: "", secret: null };
+  }
+
+  /** notify_push event names are coarse: `notify_file`, `notify_file_id <id>`,
+   * `notify_activity`, `notify_notification`. We treat any file-related event
+   * as a hint to re-list the root; deeper open directories refresh on nav. */
+  protected onPushEvent(event: string) {
+    if (event == "notify_file" || event.startsWith("notify_file_id ")) {
+      this.rootDirs.first?.listContents()
+        .catch(ex => console.warn(`${this.name}: push-triggered refresh failed:`, ex?.message ?? ex));
+    }
   }
 
   /** For setup. Verify that the URL is a WebDAV endpoint and the credentials work. */
