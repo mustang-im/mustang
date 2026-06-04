@@ -20,7 +20,9 @@
           />
       </vbox>
     {:else if canPreview}
-      <Thumbnail {file} size={200} />
+      <Clickable onDoubleClick={() => openPreview(file)}>
+        <Thumbnail {file} size={200} preview />
+      </Clickable>
       <hbox class="open-preview buttons">
         <RoundButton
           onClick={() => openPreview(file)}
@@ -84,6 +86,7 @@
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   export let file: File;
 

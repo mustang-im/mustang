@@ -5,6 +5,7 @@
   bind:this={videoE}
   muted
   title={$file.name}
+  class:preview
   on:mouseenter={() => catchErrors(startPlaying)}
   on:mouseleave={() => catchErrors(stopPlaying)}
   />
@@ -15,6 +16,7 @@
   import { catchErrors } from "../../Util/error";
 
   export let file: File;
+  export let preview: boolean;
 
   let videoE: HTMLVideoElement;
   async function startPlaying() {
@@ -34,5 +36,9 @@
   video {
     width: 100%;
     height: 100%;
+    object-fit: contain;
+  }
+  video.preview {
+    object-fit: cover;
   }
 </style>

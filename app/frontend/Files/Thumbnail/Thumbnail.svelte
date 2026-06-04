@@ -1,13 +1,13 @@
 {#if !$file.isDownloaded}
   <FileIcon {ext} localFilePath={$file.path} {size} />
 {:else if $file.url && kHTMLExt.includes(ext)}
-  <HTMLThumbnail {file} />
+  <HTMLThumbnail {file} {preview} />
 {:else if $file.url && kAudioExt.includes(ext)}
-  <AudioThumbnail {file} />
+  <AudioThumbnail {file} {preview} />
 {:else if $file.url && kVideoExt.includes(ext)}
-  <VideoThumbnail {file} />
+  <VideoThumbnail {file} {preview} />
 {:else if $file.url && kImageExt.includes(ext)}
-  <ImageThumbnail {file} />
+  <ImageThumbnail {file} {preview} />
 {:else}
   <FileIcon {ext} localFilePath={$file.path} {size} />
 {/if}
@@ -23,6 +23,7 @@
   /** TODO use mimetype */
   export let file: File;
   export let size = 16;
+  export let preview: boolean;
 
   $: ext = file.ext;
 </script>

@@ -1,13 +1,14 @@
 <img
   src={$file.url}
   title={$file.nameWithoutExt} alt=""
+  class:preview
   />
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
 
   export let file: File;
-  export let size = 16;
+  export let preview: boolean;
 </script>
 
 <script lang="ts" context="module">
@@ -18,5 +19,9 @@
   img {
     width: 100%;
     height: 100%;
+    object-fit: contain;
+  }
+  img.preview {
+    object-fit: cover;
   }
 </style>

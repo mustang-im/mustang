@@ -1,4 +1,4 @@
-<Thumbnail {file} />
+<Thumbnail {file} preview={false} />
 
 <script lang="ts">
   import type { File } from "../../logic/Files/File";

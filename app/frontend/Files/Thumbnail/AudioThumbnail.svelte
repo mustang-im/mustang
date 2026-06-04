@@ -8,6 +8,7 @@
   import { File } from "../../../logic/Files/File";
 
   export let file: File;
+  export let preview: boolean;
 </script>
 
 <script lang="ts" context="module">

@@ -3,7 +3,7 @@
     class:selected={file == $selectedFile}>
     <vbox class="tile">
       <button class="icon">
-        <Thumbnail {file} size={48} />
+        <Thumbnail {file} size={48} preview />
       </button>
     </vbox>
     <vbox class="info">
