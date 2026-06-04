@@ -25,6 +25,7 @@ export class File extends FileOrDirectory {
   @notifyChangedProperty
   contents: Blob;
   protected readonly downloadRunOnce = new RunOnce<void>();
+  protected readonly readFileRunOnce = new RunOnce<void>();
   protected readonly getURLRunOnce = new RunOnce<URLString | null>();
 
   /** If a File is GCed, the registered blob: URL is revoked automatically.
@@ -61,11 +62,25 @@ export class File extends FileOrDirectory {
     throw new NotImplemented(`Download of ${this.account.protocol} file not yet implemented`);
   }
 
+  protected async readLocalFile() {
+    if (!this.filepathLocal) {
+      return;
+    }
+    return await this.readFileRunOnce.runOnce(async () => {
+      let array = await appGlobal.remoteApp.readFile(this.filepathLocal);
+      if (!array.length) {
+        return;
+      }
+      this.contents = new globalThis.File([array], this.name, { type: this.mimetype });
+    });
+  }
+
   protected async saveAsLocalFile() {
     assert(this.contents, "Need contents");
     this.filepathLocal ??= await this.getLocalFilePath();
     let contents = new Uint8Array(await this.contents.arrayBuffer());
     await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
+    await this.saveLocally(); // file path as marker that we have the file on disk
     // TODO Watch local file for changes, in case user edited, and then trigger upload
   }
 

@@ -44,6 +44,8 @@ export const filesDatabaseSchema = sql`
     "name" TEXT not null,
     -- root-relative path
     "path" TEXT not null,
+    -- local file path, part after /files/cloud/
+    "pathLocal" TEXT default null,
     "size" INTEGER not null default 0,
     "mimetype" TEXT default null,
     -- Last modification. Unix seconds since epoch.

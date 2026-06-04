@@ -40,6 +40,10 @@ export class WebDAVFile extends File {
     if (this.contents) {
       return;
     }
+    await this.readLocalFile();
+    if (this.contents) {
+      return;
+    }
     await this.downloadRunOnce.runOnce(async () => {
       if (this.contents) {
         return;

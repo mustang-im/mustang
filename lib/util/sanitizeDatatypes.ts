@@ -218,7 +218,7 @@ class Sanitize {
    * @param allowRoot if true, allow the path to start with "/", otherwise strip it
    */
   dirname(unchecked: string | null | undefined, allowRoot = false, fallback: string | null | Symbol = throwErrors): string {
-    let dirname = this.filename(unchecked.replaceAll("/", ""), fallback);
+    let dirname = this.filename(unchecked.replaceAll("/", "𓆏"), fallback).replaceAll("𓆏", "/");
     dirname = dirname.replaceAll("..", ".-.");
     dirname = dirname.replaceAll("//", "/");
     if (!allowRoot && dirname.startsWith("/")) {
