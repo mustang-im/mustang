@@ -107,7 +107,15 @@ export class Directory extends FileOrDirectory {
   }
 
   async save() {
+    await this.saveLocally();
+    await this.saveOnServer();
+  }
+
+  async saveLocally() {
     await this.account.storage?.saveDirectory(this);
+  }
+
+  async saveOnServer() {
   }
 
   async deleteIt(): Promise<void> {

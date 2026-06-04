@@ -10,6 +10,9 @@ export class WebDAVFile extends File {
   /** URL of the file on the WebDAV server.
    * Can HTTP GET, but only with auth headers, not loadable from the frontend. */
   serverURL: URLString | null = null;
+  /** lastMod as the server last reported it. Lets save() detect local edits
+   * without spamming PROPPATCH on every sync-from-server. */
+  protected lastModOnServer: Date | null = null;
 
   get account() {
     return this.parent?.account;
@@ -29,6 +32,7 @@ export class WebDAVFile extends File {
     this.mimetype = sanitize.nonemptystring(stat.mime, this.mimetype ?? "");
     this.etag = sanitize.nonemptystring(stat.etag, null);
     this.lastMod = sanitize.date(stat.lastmod, new Date());
+    this.lastModOnServer = new Date(this.lastMod);
     this.serverURL = sanitize.url(new URL(this.path, this.account.url).href, null);
   }
 
@@ -48,6 +52,17 @@ export class WebDAVFile extends File {
   }
 
   async saveContents(contents: Blob) {
+    await this.saveContentsLocally(contents);
+    await this.saveContentsOnServer(contents);
+  }
+
+  async saveContentsLocally(contents: Blob) {
+    this.clearURL();
+    this.contents = contents;
+    await this.saveAsLocalFile();
+  }
+
+  async saveContentsOnServer(contents: Blob) {
     await this.account.login(false);
     let bytes = Buffer.from(await contents.arrayBuffer()); // Buffer needed for JPC
     let headers: Record<string, string> = {};
@@ -58,11 +73,7 @@ export class WebDAVFile extends File {
       overwrite: true,
       headers,
     });
-    this.clearURL();
-    this.contents = contents;
     await this.stat();
-    await this.save();
-    await this.saveAsLocalFile();
   }
 
   /** Refresh metadata for this file from the server.
@@ -71,6 +82,47 @@ export class WebDAVFile extends File {
     await this.account.login(false);
     let stat = await this.account.client.stat(this.path) as FileStat;
     this.fromStat(stat);
+  }
+
+  /** Save renames and lastMod changes to the server.
+   * Size and mimetype are server-computed, so we don't send them. */
+  async saveOnServer() {
+    let renamedPath = this.parent.childPath(this.name);
+    let nameChanged = renamedPath != this.path;
+    let lastModChanged = this.lastModOnServer &&
+      this.lastMod.getTime() != this.lastModOnServer.getTime();
+    if (!nameChanged && !lastModChanged) {
+      return;
+    }
+    await this.account.login(false);
+    if (nameChanged) {
+      await this.account.client.moveFile(this.path, renamedPath);
+      this.path = renamedPath;
+      this.serverURL = sanitize.url(new URL(this.path, this.account.url).href, null);
+      await this.parent.listContents();
+    }
+    if (lastModChanged) {
+      try {
+        // PROPPATCH on D:getlastmodified. Honored by SabreDAV, Nextcloud,
+        // ownCloud, openCloud. Plain WebDAV treats it as protected and 403s.
+        let body = `<?xml version="1.0" encoding="utf-8"?>\n` +
+          `<D:propertyupdate xmlns:D="DAV:"><D:set><D:prop>` +
+          `<D:getlastmodified>${this.lastMod.toUTCString()}</D:getlastmodified>` +
+          `</D:prop></D:set></D:propertyupdate>`;
+        await this.account.client.customRequest(this.path, {
+          method: "PROPPATCH",
+          headers: { "Content-Type": "application/xml; charset=utf-8" },
+          data: body,
+        });
+      } catch (ex) {
+        if (ex.message?.includes("403")) { // TODO test
+          console.log(ex);
+        } else {
+          throw ex;
+        }
+      }
+      this.lastModOnServer = this.lastMod;
+    }
   }
 
   async deleteIt() {

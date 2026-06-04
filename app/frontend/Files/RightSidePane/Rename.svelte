@@ -1,6 +1,9 @@
 <hbox class="name-container">
   {#if isRenaming}
-    <input type="text" bind:value={name} autofocus />
+    <input type="text" bind:value={name}
+      autofocus
+      on:keydown={event => catchErrors(() => onKeyEnter(event, onRenameSave))}
+      />
   {:else}
     <Clickable onDoubleClick={onRenameStart}>
       <hbox class="name">
@@ -24,10 +27,12 @@
 <script lang="ts">
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { File } from "../../../logic/Files/File";
+  import { onKeyEnter } from "../../Util/util";
+  import Clickable from "../../Shared/Clickable.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";
-  import Clickable from "../../Shared/Clickable.svelte";
+  import { catchErrors } from "../../Util/error";
 
   export let file: FileOrDirectory;
 
@@ -41,7 +46,7 @@
     }
     isRenaming = true;
   }
-  function onRenameSave() {
+  async function onRenameSave() {
     if (file instanceof File) {
       file.name = name + (file.ext ? "." + file.ext : "");
       file.nameWithoutExt = name;
@@ -49,6 +54,7 @@
       file.name = name;
     }
     isRenaming = false;
+    await file.save();
   }
 </script>
 
