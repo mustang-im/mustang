@@ -9,11 +9,13 @@
       onClick={onShare}
       icon={ShareIcon}
       classes=""
+      disabled={$t`Not yet implemented`}
       />
     <RoundButton
       onClick={onOpenMoveMenu}
       icon={MoveIcon}
       classes=""
+      disabled={$t`Not yet implemented`}
       />
     <RoundButton
       onClick={onDelete}
@@ -22,6 +24,12 @@
       />
   </Toolbar>
 </hbox>
+{#if toast}
+  <hbox class="toast">
+    <CheckIcon />
+    {toast}
+  </hbox>
+{/if}
 
 <script lang="ts">
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
@@ -34,10 +42,17 @@
   import ShareMacIcon from "lucide-svelte/icons/share";
   import MoveIcon from "lucide-svelte/icons/folder-dot";
   import TrashIcon from "lucide-svelte/icons/trash-2";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import { t } from "../../../l10n/l10n";
 
   export let file: FileOrDirectory;
 
+  let toast: string | null = null;
   async function onCopyLink() {
+    let url = await file.shareLink();
+    navigator.clipboard.writeText(url);
+    toast = $t`Link copied to clipboard`;
+    setTimeout(() => toast = null, 2000);
   }
   function onShare() {
   }
@@ -59,5 +74,8 @@
   .buttons {
     justify-content: end;
     gap: 8px;
+  }
+  .toast {
+    color: green;
   }
 </style>

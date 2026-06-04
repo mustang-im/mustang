@@ -18,6 +18,17 @@ export class NextcloudFile extends WebDAVFile {
     return this.parent?.account as NextcloudAccount;
   }
 
+  async shareLink(): Promise<string> {
+    let json = await this.account.ocsCall("POST",
+      "/ocs/v2.php/apps/files_sharing/api/v1/shares",
+      {
+        path: this.path,
+        shareType: "3", // link
+        permissions: "1", // read
+      });
+    return sanitize.url(json?.ocs?.data?.url, null);
+  }
+
   protected async getFileID(): Promise<number> {
     if (this.fileID) {
       return this.fileID;

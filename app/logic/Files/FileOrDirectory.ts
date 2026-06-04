@@ -1,7 +1,7 @@
 import type { Directory } from "./Directory";
 import type { Tag, TaggableObject } from "../Abstract/Tag";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, NotImplemented, assert } from "../util/util";
 import { SetColl } from "svelte-collections";
 
 export class FileOrDirectory extends Observable implements TaggableObject {
@@ -56,5 +56,10 @@ export class FileOrDirectory extends Observable implements TaggableObject {
   }
 
   async removeTag(tag: Tag) {
+  }
+
+  /** Creates a read-only URL that allows anybody to read the document */
+  async shareLink(): Promise<string> {
+    throw new NotImplemented();
   }
 }
