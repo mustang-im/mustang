@@ -1103,5 +1103,15 @@
   "tmHWtF": "{0}-szerkesztő nem található",
   "lqcQmj": "URL szükséges",
   "pxJEx2": "Úgy tűnik, hogy ez az URL nem WebDAV-végpont. A Nextcloud esetében az URL formája a következő: https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} ehhez a fájltípushoz nem kínál felhőalkalmazást",
+  "XI3bvS": "Fájl bezárása",
+  "mkMLq4": "Az oldalsáv bezárása",
+  "tugdy6": "Oldalsáv kibontása",
+  "pQjjYo": "A link a vágólapra lett másolva",
+  "tX5yOZ": "Új mappa",
+  "noLjKT": "Megnyitás az alkalmazásban",
+  "A4FO5t": "{0}-val nyitni",
+  "bROjZ9": "Nyissa meg egy felhőalkalmazással az interneten",
+  "pZqzhF": "Nyissa meg a számítógépén található helyi alkalmazással"
 }

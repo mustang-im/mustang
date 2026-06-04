@@ -1103,5 +1103,15 @@
   "tmHWtF": "편집자 {0}를 찾을 수 없습니다",
   "lqcQmj": "URL이 필요합니다",
   "pxJEx2": "이 URL은 WebDAV 엔드포인트로 보이지 않습니다. Nextcloud의 경우 URL 형식은 https://<host>/remote.php/dav/files/<username>/</username></host> 입니다<host>.</host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} 이 파일 형식에 대한 클라우드 앱을 제공하지 않습니다",
+  "XI3bvS": "파일 닫기",
+  "mkMLq4": "사이드바 접기",
+  "tugdy6": "사이드바 펼치기",
+  "pQjjYo": "링크가 클립보드에 복사되었습니다",
+  "tX5yOZ": "새 폴더",
+  "noLjKT": "앱에서 열기",
+  "A4FO5t": "{0}로 열기",
+  "bROjZ9": "웹에서 클라우드 앱으로 열기",
+  "pZqzhF": "컴퓨터에 설치된 로컬 애플리케이션으로 열기"
 }

@@ -1103,5 +1103,15 @@
   "tmHWtF": "Toimittaja {0} ei löytynyt",
   "lqcQmj": "Tarvitaan URL-osoite",
   "pxJEx2": "Tämä URL-osoite ei näytä olevan WebDAV-päätelaite. Nextcloudissa URL-osoitteen muoto on https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} ei tarjoa pilvisovellusta tälle tiedostotyypille",
+  "XI3bvS": "Sulje tiedosto",
+  "mkMLq4": "Piilota sivupalkki",
+  "tugdy6": "Laajenna sivupalkki",
+  "pQjjYo": "Linkki kopioitu leikepöydälle",
+  "tX5yOZ": "Uusi kansio",
+  "noLjKT": "Avaa sovelluksessa",
+  "A4FO5t": "Avaa tiedostona{0}",
+  "bROjZ9": "Avaa pilvisovelluksella verkossa",
+  "pZqzhF": "Avaa tietokoneellasi olevalla paikallisella sovelluksella"
 }

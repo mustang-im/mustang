@@ -1103,5 +1103,15 @@
   "tmHWtF": "Não foi encontrado o editor {0}",
   "lqcQmj": "Preciso do URL",
   "pxJEx2": "Este URL não parece ser um ponto de extremidade WebDAV. No caso do Nextcloud, o URL tem o formato https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} não disponibiliza uma aplicação na nuvem para este tipo de ficheiro",
+  "XI3bvS": "Fechar ficheiro",
+  "mkMLq4": "Ocultar a barra lateral",
+  "tugdy6": "Expandir a barra lateral",
+  "pQjjYo": "Link copiado para a área de transferência",
+  "tX5yOZ": "Nova pasta",
+  "noLjKT": "Abrir na aplicação",
+  "A4FO5t": "Abrir com o {0}",
+  "bROjZ9": "Abrir com uma aplicação na nuvem na Web",
+  "pZqzhF": "Abrir com uma aplicação local no seu computador"
 }

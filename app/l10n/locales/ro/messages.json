@@ -1103,5 +1103,15 @@
   "tmHWtF": "Editorul {0} nu a fost găsit",
   "lqcQmj": "Este necesară adresa URL",
   "pxJEx2": "Această adresă URL nu pare să fie un punct final WebDAV. În cazul Nextcloud, adresa URL are forma https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} nu oferă o aplicație cloud pentru acest tip de fișier",
+  "XI3bvS": "Închide fișierul",
+  "mkMLq4": "Așează bara laterală",
+  "tugdy6": "Extinde bara laterală",
+  "pQjjYo": "Linkul a fost copiat în clipboard",
+  "tX5yOZ": "Dosar nou",
+  "noLjKT": "Deschide în aplicație",
+  "A4FO5t": "Deschide cu {0}",
+  "bROjZ9": "Deschideți cu o aplicație cloud pe web",
+  "pZqzhF": "Deschideți cu o aplicație locală de pe computerul dumneavoastră"
 }

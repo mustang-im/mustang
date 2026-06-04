@@ -1103,5 +1103,15 @@
   "tmHWtF": "找不到編輯器 {0}",
   "lqcQmj": "需要網址",
   "pxJEx2": "此網址似乎不是 WebDAV 端點。對於 Nextcloud，網址的格式應為 https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} 目前尚未提供此檔案類型的雲端應用程式",
+  "XI3bvS": "關閉檔案",
+  "mkMLq4": "收起側邊欄",
+  "tugdy6": "展開側邊欄",
+  "pQjjYo": "連結已複製到剪貼簿",
+  "tX5yOZ": "新資料夾",
+  "noLjKT": "在應用程式中開啟",
+  "A4FO5t": "使用 {0} 開啟",
+  "bROjZ9": "在網頁上透過雲端應用程式開啟",
+  "pZqzhF": "在您的電腦上使用本地應用程式開啟"
 }

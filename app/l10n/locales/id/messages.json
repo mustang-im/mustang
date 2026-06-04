@@ -1103,5 +1103,15 @@
   "tmHWtF": "Editor {0} tidak ditemukan",
   "lqcQmj": "Butuh URL",
   "pxJEx2": "URL ini tampaknya bukan titik akhir WebDAV. Untuk Nextcloud, URL-nya berbentuk https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} tidak menyediakan aplikasi cloud untuk jenis file ini",
+  "XI3bvS": "Tutup berkas",
+  "mkMLq4": "Sembunyikan bilah samping",
+  "tugdy6": "Perluas bilah samping",
+  "pQjjYo": "Tautan telah disalin ke papan klip",
+  "tX5yOZ": "Folder Baru",
+  "noLjKT": "Buka di aplikasi",
+  "A4FO5t": "Buka dengan {0}",
+  "bROjZ9": "Buka dengan aplikasi cloud di web",
+  "pZqzhF": "Buka menggunakan aplikasi lokal di komputer Anda"
 }

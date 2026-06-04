@@ -1103,5 +1103,15 @@
   "tmHWtF": "Redaktör {0} hittades inte",
   "lqcQmj": "Behöver en URL",
   "pxJEx2": "Den här webbadressen verkar inte vara en WebDAV-slutpunkt. För Nextcloud har webbadressen formatet https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} erbjuder ingen molnapp för den här filtypen",
+  "XI3bvS": "Stäng filen",
+  "mkMLq4": "Dölj sidofältet",
+  "tugdy6": "Visa sidomenyn",
+  "pQjjYo": "Länken har kopierats till urklipp",
+  "tX5yOZ": "Ny mapp",
+  "noLjKT": "Öppna i appen",
+  "A4FO5t": "Öppna med {0}",
+  "bROjZ9": "Öppna med en molnapp på webben",
+  "pZqzhF": "Öppna med ett program på din dator"
 }

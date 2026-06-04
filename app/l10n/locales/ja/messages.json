@@ -1103,5 +1103,15 @@
   "tmHWtF": "「{0}」が見つかりません",
   "lqcQmj": "URLが必要です",
   "pxJEx2": "このURLはWebDAVエンドポイントではないようです。Nextcloudの場合、URLは https://<host>/remote.php/dav/files/<username>/</username></host> という形式になります<host>。</host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} このファイル形式に対応したクラウドアプリは提供されていません",
+  "XI3bvS": "ファイルを閉じる",
+  "mkMLq4": "サイドバーを折りたたむ",
+  "tugdy6": "サイドバーを展開する",
+  "pQjjYo": "リンクがクリップボードにコピーされました",
+  "tX5yOZ": "新しいフォルダ",
+  "noLjKT": "アプリで開く",
+  "A4FO5t": "{0} で開く",
+  "bROjZ9": "Web上のクラウドアプリで開く",
+  "pZqzhF": "お使いのコンピューター上のローカルアプリケーションで開く"
 }

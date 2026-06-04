@@ -1103,5 +1103,15 @@
   "tmHWtF": "Redaktør {0} ble ikke funnet",
   "lqcQmj": "Trenger URL",
   "pxJEx2": "Denne URL-adressen ser ikke ut til å være et WebDAV-endepunkt. For Nextcloud har URL-adressen formatet https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} tilbyr ikke en skyapp for denne filtypen",
+  "XI3bvS": "Lukk fil",
+  "mkMLq4": "Skjul sidefeltet",
+  "tugdy6": "Vis sidemenyen",
+  "pQjjYo": "Koblingen er kopiert til utklippstavlen",
+  "tX5yOZ": "Ny mappe",
+  "noLjKT": "Åpne i appen",
+  "A4FO5t": "Åpne med {0}",
+  "bROjZ9": "Åpne med en skyapp på nettet",
+  "pZqzhF": "Åpne med et program på datamaskinen din"
 }

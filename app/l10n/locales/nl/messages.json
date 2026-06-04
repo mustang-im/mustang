@@ -1103,5 +1103,15 @@
   "tmHWtF": "De editor {0} is niet gevonden",
   "lqcQmj": "URL nodig",
   "pxJEx2": "Deze URL lijkt geen WebDAV-eindpunt te zijn. Voor Nextcloud heeft de URL de vorm https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} biedt geen cloudapp voor dit bestandstype",
+  "XI3bvS": "Bestand sluiten",
+  "mkMLq4": "Zijbalk samenvouwen",
+  "tugdy6": "Zijbalk uitvouwen",
+  "pQjjYo": "Link naar klembord gekopieerd",
+  "tX5yOZ": "Nieuwe map",
+  "noLjKT": "Openen in de app",
+  "A4FO5t": "Openen met {0}",
+  "bROjZ9": "Openen via een cloudapp op het web",
+  "pZqzhF": "Open met een programma op je computer"
 }

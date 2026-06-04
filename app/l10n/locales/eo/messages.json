@@ -1103,5 +1103,15 @@
   "tmHWtF": "Redaktoro {0} ne trovita",
   "lqcQmj": "URL bezonata",
   "pxJEx2": "Ĉi tiu URL ŝajnas ne esti WebDAV-finpunkto. Por Nextcloud, la URL havas la formon https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} Ne ofertas nuban aplikaĵon por ĉi tiu dosiertipo.",
+  "XI3bvS": "Fermu dosieron",
+  "mkMLq4": "Faldi la flankobreton",
+  "tugdy6": "Etendi la flankobreton",
+  "pQjjYo": "Ligo kopiita al la tondujo.",
+  "tX5yOZ": "Nova dosierujo",
+  "noLjKT": "Malfermu en la aplikaĵo",
+  "A4FO5t": "Malfermu per {0}",
+  "bROjZ9": "Malfermi per nuba aplikaĵo en la reto",
+  "pZqzhF": "Malfermu per loka aplikaĵo sur via komputilo"
 }

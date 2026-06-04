@@ -1103,5 +1103,15 @@
   "tmHWtF": "Redaktor {0} nebol nájdený",
   "lqcQmj": "Potrebujete URL",
   "pxJEx2": "Táto adresa URL nevyzerá ako koncový bod WebDAV. V prípade Nextcloud má adresa URL tvar https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} neponúka cloudovú aplikáciu pre tento typ súboru",
+  "XI3bvS": "Zatvoriť súbor",
+  "mkMLq4": "Zatvoriť bočný panel",
+  "tugdy6": "Rozbaliť bočný panel",
+  "pQjjYo": "Odkaz bol skopírovaný do schránky",
+  "tX5yOZ": "Nový priečinok",
+  "noLjKT": "Otvoriť v aplikácii",
+  "A4FO5t": "Otvoriť pomocou programu {0}",
+  "bROjZ9": "Otvorte pomocou webovej aplikácie v cloude",
+  "pZqzhF": "Otvorte pomocou lokálnej aplikácie vo vašom počítači"
 }

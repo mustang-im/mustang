@@ -1103,5 +1103,15 @@
   "tmHWtF": "Editor {0} not found",
   "lqcQmj": "Need URL",
   "pxJEx2": "This URL does not appear to be a WebDAV endpoint. For Nextcloud, the URL has the form https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} does not offer a cloud app for this file type",
+  "XI3bvS": "Close file",
+  "mkMLq4": "Collapse sidebar",
+  "tugdy6": "Expand sidebar",
+  "pQjjYo": "Link copied to clipboard",
+  "tX5yOZ": "New Folder",
+  "noLjKT": "Open in app",
+  "A4FO5t": "Open with {0}",
+  "bROjZ9": "Open with a cloud app on the web",
+  "pZqzhF": "Open with a local application on your computer"
 }

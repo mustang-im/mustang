@@ -1103,5 +1103,15 @@
   "tmHWtF": "Toimetaja {0} ei leitud",
   "lqcQmj": "Vaja on URL-i",
   "pxJEx2": "See URL ei tundu olevat WebDAV-lõpppunkt. Nextcloudi puhul on URL-i vorm https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} ei paku selle failitüübi jaoks pilverakendust",
+  "XI3bvS": "Sulge fail",
+  "mkMLq4": "Külgriba kokku klappida",
+  "tugdy6": "Ava külgriba",
+  "pQjjYo": "Link on kopeeritud lõikelauale",
+  "tX5yOZ": "Uus kaust",
+  "noLjKT": "Ava rakenduses",
+  "A4FO5t": "Ava failiga „{0}“",
+  "bROjZ9": "Ava veebipõhise pilverakendusega",
+  "pZqzhF": "Ava arvutis kohaliku rakendusega"
 }

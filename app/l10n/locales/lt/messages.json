@@ -1103,5 +1103,15 @@
   "tmHWtF": "Raskite redaktorių „{0}“",
   "lqcQmj": "Reikia URL",
   "pxJEx2": "Atrodo, kad šis URL nėra WebDAV galinis taškas. „Nextcloud“ atveju URL turi tokį formatą: https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} nėra šio tipo failams skirtos debesų programėlės",
+  "XI3bvS": "Uždaryti failą",
+  "mkMLq4": "Sutraukti šoninę juostą",
+  "tugdy6": "Išskleisti šoninę juostą",
+  "pQjjYo": "Nuoroda nukopijuota į iškarpinę",
+  "tX5yOZ": "Naujas aplankas",
+  "noLjKT": "Atidaryti programoje",
+  "A4FO5t": "Atidaryti naudojant „{0}“",
+  "bROjZ9": "Atidaryti naudojant debesų programą internete",
+  "pZqzhF": "Atidaryti naudojant kompiuteryje įdiegtą programą"
 }

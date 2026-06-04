@@ -1103,5 +1103,15 @@
   "tmHWtF": "Redaktor {0} tapılmadı",
   "lqcQmj": "URL lazımdır",
   "pxJEx2": "Bu URL WebDAV son nöqtəsi kimi görünmür. Nextcloud üçün URL bu formadadır: https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} Bu fayl növü üçün bulud tətbiqi təklif etmir.",
+  "XI3bvS": "Faylı bağla",
+  "mkMLq4": "Yan menyunu bağla",
+  "tugdy6": "Yan menyunu genişləndirin",
+  "pQjjYo": "Link kopyalandı",
+  "tX5yOZ": "Yeni qovluq",
+  "noLjKT": "Tətbiqdə açın",
+  "A4FO5t": "{0} ilə açın",
+  "bROjZ9": "Vebdə bulud tətbiqi ilə açın",
+  "pZqzhF": "Kompüterinizdə yerli tətbiqlə açın"
 }

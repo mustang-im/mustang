@@ -1103,5 +1103,15 @@
   "tmHWtF": "Urednik {0} ni bil najden",
   "lqcQmj": "Potrebujem URL",
   "pxJEx2": "Ta URL-naslov očitno ni končna točka WebDAV. Pri Nextcloudu ima URL-naslov obliko https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} za ta tip datoteke ne ponuja aplikacije v oblaku",
+  "XI3bvS": "Zapri datoteko",
+  "mkMLq4": "Zloži stranski stolpec",
+  "tugdy6": "Razširi stranski stolpec",
+  "pQjjYo": "Povezava je bila kopirana v odložišče",
+  "tX5yOZ": "Nova mapa",
+  "noLjKT": "Odpri v aplikaciji",
+  "A4FO5t": "Odpri v programu {0}",
+  "bROjZ9": "Odpri v spletni aplikaciji v oblaku",
+  "pZqzhF": "Odpri z lokalno aplikacijo na svojem računalniku"
 }

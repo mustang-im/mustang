@@ -1103,5 +1103,15 @@
   "tmHWtF": "Níor aimsíodh Eagarthóir {0}",
   "lqcQmj": "Teastaíonn URL",
   "pxJEx2": "Ní cosúil gur críochphointe WebDAV é an URL seo. I gcás Nextcloud, bíonn an fhoirm <host>seo a leanas</host> ar an URL<host>:</host> https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "Fíordheimhniú ilfhachtóra"
+  "phNO5X": "Fíordheimhniú ilfhachtóra",
+  "nFYGLj": "{0} Ní thairgeann sé aip néil don chineál comhaid seo",
+  "XI3bvS": "Dún an comhad",
+  "mkMLq4": "Dún an taobh-bharra",
+  "tugdy6": "Leathnaigh an taobh-bharra",
+  "pQjjYo": "An nasc cóipeáilte chuig an gclipbhoird.",
+  "tX5yOZ": "Fólder Nua",
+  "noLjKT": "Oscail san aip",
+  "A4FO5t": "Oscail le {0}",
+  "bROjZ9": "Oscail le feidhmchlár néil ar an ngréasán",
+  "pZqzhF": "Oscail le feidhmchlár áitiúil ar do ríomhaire"
 }

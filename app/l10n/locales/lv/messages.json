@@ -1103,5 +1103,15 @@
   "tmHWtF": "Nav atrasts redaktors „{0}“",
   "lqcQmj": "Nepieciešama URL adrese",
   "pxJEx2": "Šī URL, šķiet, nav WebDAV galapunkts. Nextcloud gadījumā URL ir šādā formā: https://<host>/remote.php/dav/files/<username>/</username></host>",
-  "phNO5X": "MFA"
+  "phNO5X": "MFA",
+  "nFYGLj": "{0} ne piedāvā mākoņlietotni šim failu tipam",
+  "XI3bvS": "Aizvērt failu",
+  "mkMLq4": "Aizvērt sānu joslu",
+  "tugdy6": "Paplašināt sānu joslu",
+  "pQjjYo": "Saite ir kopēta uz starpliktuvi",
+  "tX5yOZ": "Jauna mape",
+  "noLjKT": "Atvērt lietotnē",
+  "A4FO5t": "Atvērt ar „{0}“",
+  "bROjZ9": "Atveriet ar mākoņaplikāciju tīmeklī",
+  "pZqzhF": "Atveriet ar vietējo lietojumprogrammu savā datorā"
 }
