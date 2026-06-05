@@ -1,6 +1,5 @@
 <select
-  on:change={event => adaptAllDays(event.target.value)}
-  bind:value={durationInSeconds}><!-- `on:change` must be before `bind:value` in the code, to get the value before the `Event.duration` setter adapts it -->
+  bind:value={getDurationInSeconds, adaptAllDays}><!-- `on:change` must be before `bind:value` in the code, to get the value before the `Event.duration` setter adapts it -->
   {#if allDay}
     <option value={1 * k1HourS}>{$plural(1, { one: 'hour', other: 'hours' })}</option>
     {#each kDayOptions as day}
@@ -30,14 +29,18 @@
   /** in only */
   export let allDay = false;
 
+  function getDurationInSeconds() {
+    return durationInSeconds;
+  }
+
   function adaptAllDays(newValue: number) {
     console.log("adapt", newValue, durationInSeconds);
     if (newValue < k1DayS) {
       dispatchEvent("setAllDay", false);
     } else if (kDayOptions.includes(newValue / k1DayS)) {
       dispatchEvent("setAllDay", true);
-      durationInSeconds = newValue;
     }
+    durationInSeconds = newValue;
   }
 </script>
 
