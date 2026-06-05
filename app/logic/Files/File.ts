@@ -62,12 +62,20 @@ export class File extends FileOrDirectory {
     throw new NotImplemented(`Download of ${this.account.protocol} file not yet implemented`);
   }
 
-  protected async readLocalFile() {
+  /** Reads the local cached file from disk into `this.contents`.
+   * If fail, will return without touching `this.contents`, e.g. leaving it empty. */
+  protected async readLocalFile(): Promise<void> {
     if (!this.filepathLocal) {
       return;
     }
     return await this.readFileRunOnce.runOnce(async () => {
-      let array = await appGlobal.remoteApp.readFile(this.filepathLocal);
+      let array: Uint8Array;
+      try {
+        array = await appGlobal.remoteApp.readFile(this.filepathLocal);
+      } catch (ex) {
+        console.error(ex); // e.g. file was deleted
+        return;
+      }
       if (!array.length) {
         return;
       }
