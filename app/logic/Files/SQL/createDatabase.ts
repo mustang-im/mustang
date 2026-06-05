@@ -50,6 +50,9 @@ export const filesDatabaseSchema = sql`
     "mimetype" TEXT default null,
     -- Last modification. Unix seconds since epoch.
     "lastMod" INTEGER not null default (unixepoch()),
+    -- lastMod as the server last reported it. Unix seconds since epoch.
+    -- Lets us detect local edits.
+    "lastModOnServer" INTEGER not null default (unixepoch()),
     -- Protocol-specific. WebDAV: etag, JMAP: state. Can be string or integer.
     "syncState" ANY default null,
     -- Server URL to GET the file contents, but needs auth

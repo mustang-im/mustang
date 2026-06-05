@@ -19,6 +19,9 @@ export class File extends FileOrDirectory {
   /** in bytes */
   @notifyChangedProperty
   size: number;
+  /** lastMod as the server last reported it. Lets save() detect local edits.
+   * Note: `lastMod` is in parent class */
+  lastModOnServer: Date | null = null;
   @notifyChangedProperty
   url: URLString;
   /** null/undefined = not loaded. Does not mean that the file is empty. */
@@ -124,8 +127,15 @@ export class File extends FileOrDirectory {
     await this.account.storage?.saveFile(this);
   }
 
-  async deleteLocally() {
+  async deleteLocalCache() {
     this.clearURL();
+    if (this.filepathLocal) {
+      await appGlobal.remoteApp.deleteFile(this.filepathLocal);
+    }
+  }
+
+  async deleteLocally() {
+    await this.deleteLocalCache();
     this.parent?.files.remove(this);
     await this.account.storage?.deleteFile(this);
   }

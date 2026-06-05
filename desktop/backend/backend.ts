@@ -91,6 +91,7 @@ async function createSharedAppObject() {
     newHTTPServer,
     readFile,
     writeFile,
+    deleteFile,
     getIconForLocalFile,
     getIconForFileType,
     getThumbnailForLocalFile,
@@ -119,6 +120,9 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
   let fileHandle = await fsPromises.open(path, "w", permissions);
   await fileHandle.write(contents);
   await fileHandle.close();
+}
+async function deleteFile(path: string): Promise<void> {
+  await fsPromises.unlink(path);
 }
 /**
  * E.g. ```

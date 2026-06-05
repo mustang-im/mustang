@@ -1,5 +1,6 @@
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { filesDatabaseSchema } from "./createDatabase";
+import { addLastModOnServer } from "./SQLFileMigrate";
 import { getSQLiteDatabase } from "../../util/backend-wrapper";
 
 let filesDatabase: Database;
@@ -9,7 +10,7 @@ export async function getDatabase(): Promise<Database> {
     return filesDatabase;
   }
   filesDatabase = await getSQLiteDatabase("files.db");
-  await filesDatabase.migrate(filesDatabaseSchema);
+  await filesDatabase.migrate(filesDatabaseSchema, addLastModOnServer);
   await filesDatabase.pragma('foreign_keys = true');
   await filesDatabase.pragma('journal_mode = WAL');
   return filesDatabase;
@@ -18,7 +19,7 @@ export async function getDatabase(): Promise<Database> {
 export async function makeTestDatabase(): Promise<Database> {
   filesDatabase = await getSQLiteDatabase("test-files.db");
   await deleteDatabase();
-  await filesDatabase.migrate(filesDatabaseSchema);
+  await filesDatabase.migrate(filesDatabaseSchema, addLastModOnServer);
   await filesDatabase.pragma('foreign_keys = true');
   return filesDatabase;
 }

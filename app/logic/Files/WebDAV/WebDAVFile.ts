@@ -10,9 +10,6 @@ export class WebDAVFile extends File {
   /** URL of the file on the WebDAV server.
    * Can HTTP GET, but only with auth headers, not loadable from the frontend. */
   serverURL: URLString | null = null;
-  /** lastMod as the server last reported it. Lets save() detect local edits
-   * without spamming PROPPATCH on every sync-from-server. */
-  protected lastModOnServer: Date | null = null;
 
   get account() {
     return this.parent?.account;
@@ -28,11 +25,19 @@ export class WebDAVFile extends File {
   fromStat(stat: FileStat) {
     this.path = sanitize.nonemptystring(stat.filename);
     this.setFileName(sanitize.filename(stat.basename));
-    this.size = sanitize.integer(stat.size, 0);
     this.mimetype = sanitize.nonemptystring(stat.mime, this.mimetype ?? "");
-    this.etag = sanitize.nonemptystring(stat.etag, null);
-    this.lastMod = sanitize.date(stat.lastmod, new Date());
-    this.lastModOnServer = new Date(this.lastMod);
+    let size = sanitize.integer(stat.size, 0)
+    let etag = sanitize.nonemptystring(stat.etag, null);
+    let lastMod = sanitize.date(stat.lastmod, new Date());
+    if (this.size != size || this.etag != etag ||
+        this.lastModOnServer.getTime() != lastMod.getTime()) {
+      this.deleteLocalCache()
+        .catch(this.account.errorCallback);
+    }
+    this.size = size;
+    this.etag = etag;
+    this.lastMod = lastMod;
+    this.lastModOnServer = new Date(this.lastMod); // Make copy, not same object
     this.serverURL = sanitize.url(new URL(this.path, this.account.url).href, null);
   }
 

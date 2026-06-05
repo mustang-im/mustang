@@ -13,6 +13,7 @@ export class SQLFile {
     let directory = file.parent;
     assert(directory?.dbID, "Need parent directory dbID to save file");
     let lastMod = Math.floor(file.lastMod.getTime() / 1000);
+    let lastModOnserver = Math.floor(file.lastModOnServer.getTime() / 1000);
     let serverURL = (file as File & WithServerURL).serverURL ?? null;
     filesDir ??= await getFilesDir();
     let pathLocal = file.filepathLocal?.replace(`${filesDir}/files/cloud/${file.account.id}/`, "");
@@ -30,10 +31,10 @@ export class SQLFile {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO file (
           directoryID, name, path, pathLocal, size,
-          mimetype, lastMod, syncState, serverURL
+          mimetype, lastMod, lastModOnServer, syncState, serverURL
         ) VALUES (
           ${directory.dbID}, ${file.name}, ${file.path}, ${pathLocal}, ${file.size},
-          ${file.mimetype}, ${lastMod}, ${file.syncState}, ${serverURL}
+          ${file.mimetype}, ${lastMod}, ${lastModOnserver}, ${file.syncState}, ${serverURL}
         )`);
       file.dbID = insert.lastInsertRowid;
     } else {
@@ -41,7 +42,8 @@ export class SQLFile {
         UPDATE file SET
           name = ${file.name}, path = ${file.path}, pathLocal = ${pathLocal},
           size = ${file.size}, mimetype = ${file.mimetype},
-          lastMod = ${lastMod}, syncState = ${file.syncState}, serverURL = ${serverURL}
+          lastMod = ${lastMod}, lastModOnServer = ${lastModOnserver},
+          syncState = ${file.syncState}, serverURL = ${serverURL}
         WHERE id = ${file.dbID}
         `);
     }
@@ -60,7 +62,8 @@ export class SQLFile {
 
   static async read(dbID: number, file: File): Promise<File> {
     let row = await (await getDatabase()).get(sql`
-      SELECT name, path, pathLocal, size, mimetype, lastMod, syncState, serverURL
+      SELECT name, path, pathLocal, size, mimetype, lastMod, lastModOnServer,
+        syncState, serverURL
       FROM file WHERE id = ${dbID}
       `) as any;
     assert(row, `File ${dbID} not found in DB`);
@@ -75,8 +78,8 @@ export class SQLFile {
     file.filepathLocal = row.pathLocal ? `${filesDir}/files/cloud/${file.account.id}/${sanitize.dirname(row.pathLocal)}` : null;
     file.size = sanitize.integerRange(row.size, 0, Number.MAX_SAFE_INTEGER, 0);
     file.mimetype = sanitize.string(row.mimetype, "");
-    let lastModSeconds = sanitize.integer(row.lastMod, null);
-    file.lastMod = lastModSeconds == null ? new Date() : new Date(lastModSeconds * 1000);
+    file.lastMod = sanitize.date(sanitize.integer(row.lastMod, null) * 1000, new Date());
+    file.lastModOnServer = sanitize.date(sanitize.integer(row.lastModOnServer, null) * 1000, new Date());
     file.syncState = typeof(row.syncState) == "number"
       ? sanitize.integer(row.syncState, null)
       : sanitize.string(row.syncState, null);
@@ -88,7 +91,8 @@ export class SQLFile {
     assert(directory.dbID, "Need directory dbID to read files");
     filesDir ??= await getFilesDir();
     let rows = await (await getDatabase()).all(sql`
-      SELECT id, name, path, pathLocal, size, mimetype, lastMod, syncState, serverURL
+      SELECT id, name, path, pathLocal, size, mimetype, lastMod, lastModOnServer,
+        syncState, serverURL
       FROM file WHERE directoryID = ${directory.dbID}
       `) as any[];
     for (let row of rows) {
