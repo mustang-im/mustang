@@ -102,6 +102,7 @@
   }
   async function refresh() {
     await dir.listContents();
+    await dir.uploadChangedFiles();
   }
 
   let fileSelector: FileSelector;

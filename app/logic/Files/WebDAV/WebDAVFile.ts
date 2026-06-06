@@ -22,22 +22,27 @@ export class WebDAVFile extends File {
     this.syncState = val;
   }
 
-  fromStat(stat: FileStat) {
+  fromDAV(stat: FileStat) {
     this.path = sanitize.nonemptystring(stat.filename);
     this.setFileName(sanitize.filename(stat.basename));
     this.mimetype = sanitize.nonemptystring(stat.mime, this.mimetype ?? "");
     let size = sanitize.integer(stat.size, 0)
     let etag = sanitize.nonemptystring(stat.etag, null);
     let lastMod = sanitize.date(stat.lastmod, new Date());
-    if (this.size != size || this.etag != etag ||
-        this.lastModOnServer.getTime() != lastMod.getTime()) {
+    if (this.lastModOnServer.getTime() == this.lastMod.getTime() &&
+        (this.size != size || this.etag != etag ||
+         this.lastModOnServer.getTime() != lastMod.getTime())) {
       this.deleteLocalCache()
         .catch(this.account.errorCallback);
     }
     this.size = size;
     this.etag = etag;
-    this.lastMod = lastMod;
-    this.lastModOnServer = new Date(this.lastMod); // Make copy, not same object
+    if (this.lastMod.getTime() != lastMod.getTime()) {
+      this.lastMod = lastMod;
+    }
+    if (this.lastModOnServer.getTime() != this.lastMod.getTime()) {
+      this.lastModOnServer = new Date(this.lastMod); // Make copy, not same object
+    }
     this.serverURL = sanitize.url(new URL(this.path, this.account.url).href, null);
   }
 
@@ -58,6 +63,11 @@ export class WebDAVFile extends File {
       let blob = new Blob([buffer], this.mimetype ? { type: this.mimetype } : undefined);
       this.saveContentsLocally(blob);
     });
+  }
+
+  async upload(): Promise<void> {
+    await this.readLocalFile();
+    await this.saveContentsOnServer(this.contents);
   }
 
   async saveContents(contents: Blob) {
@@ -90,7 +100,7 @@ export class WebDAVFile extends File {
   async stat() {
     await this.account.login(false);
     let stat = await this.account.client.stat(this.path) as FileStat;
-    this.fromStat(stat);
+    this.fromDAV(stat);
   }
 
   /** Save renames and lastMod changes to the server.
@@ -114,14 +124,14 @@ export class WebDAVFile extends File {
       try {
         // PROPPATCH on D:getlastmodified. Honored by SabreDAV, Nextcloud,
         // ownCloud, openCloud. Plain WebDAV treats it as protected and 403s.
-        let body = `<?xml version="1.0" encoding="utf-8"?>\n` +
+        let xml = `<?xml version="1.0" encoding="utf-8"?>\n` +
           `<D:propertyupdate xmlns:D="DAV:"><D:set><D:prop>` +
           `<D:getlastmodified>${this.lastMod.toUTCString()}</D:getlastmodified>` +
           `</D:prop></D:set></D:propertyupdate>`;
         await this.account.client.customRequest(this.path, {
           method: "PROPPATCH",
           headers: { "Content-Type": "application/xml; charset=utf-8" },
-          data: body,
+          data: xml,
         });
       } catch (ex) {
         if (ex.message?.includes("403")) { // TODO test

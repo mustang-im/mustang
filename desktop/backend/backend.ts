@@ -92,6 +92,7 @@ async function createSharedAppObject() {
     readFile,
     writeFile,
     deleteFile,
+    statFile,
     getIconForLocalFile,
     getIconForFileType,
     getThumbnailForLocalFile,
@@ -123,6 +124,14 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
 }
 async function deleteFile(path: string): Promise<void> {
   await fsPromises.unlink(path);
+}
+/** @returns (only) `size` and `lastMod` of the given file */
+async function statFile(path: string): Promise<FileStat> {
+  let s = await fsPromises.stat(path);
+  let stat = {} as FileStat;
+  stat.size = s.size;
+  stat.lastMod = s.mtime;
+  return stat;
 }
 /**
  * E.g. ```

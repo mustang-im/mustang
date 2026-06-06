@@ -13,6 +13,7 @@ import { ArrayColl, type Collection } from 'svelte-collections';
 export function newFileSharingAccountForProtocol(protocol: string): FileSharingAccount {
   let account = _newFileSharingAccountForProtocol(protocol);
   setStorage(account);
+  account.errorCallback = console.error;
   return account;
 }
 

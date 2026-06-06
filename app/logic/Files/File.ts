@@ -65,6 +65,37 @@ export class File extends FileOrDirectory {
     throw new NotImplemented(`Download of ${this.account.protocol} file not yet implemented`);
   }
 
+  async upload() {
+    throw new NotImplemented(`Upload of ${this.account.protocol} file not yet implemented`);
+  }
+
+  /** If the local file is newer than the server file,
+   * upload it to the server.
+   * @return We did an upload */
+  async uploadIfChanged(): Promise<boolean> {
+    if (await this.isLocalFileChanged()) {
+      await this.upload();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * stat()s the locally cached file, whether it has been changed.
+   * If so, writes the `lastMod` to that of the local file.
+   * @returns Has changed: Local file is newer than the server file.
+   */
+  async isLocalFileChanged(): Promise<boolean> {
+    let stat = await appGlobal.remoteApp.statFile(this.filepathLocal);
+    this.size = stat.size;
+    if (this.lastMod.getTime() != stat.lastMod.getTime()) {
+      this.lastMod = stat.lastMod;
+    }
+    return this.lastModOnServer &&
+      this.lastMod.getTime() > this.lastModOnServer.getTime();
+  }
+
   /** Reads the local cached file from disk into `this.contents`.
    * If fail, will return without touching `this.contents`, e.g. leaving it empty. */
   protected async readLocalFile(): Promise<void> {

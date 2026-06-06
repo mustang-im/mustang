@@ -45,25 +45,25 @@ export class WebDAVDirectory extends Directory {
           let dirPath = path.endsWith("/") ? path : path + "/";
           let existing = this.subDirs.find(d => d.path == dirPath);
           if (existing) {
-            existing.fromStat(stat);
+            existing.fromDAV(stat);
             curDirs.add(existing);
           } else {
             let dir = this.newDirectory("");
             dir.account = this.account;
             dir.parent = this;
-            dir.fromStat(stat);
+            dir.fromDAV(stat);
             this.subDirs.add(dir);
             curDirs.add(dir);
           }
         } else {
           let existing = this.files.find(f => f.path == path);
           if (existing) {
-            existing.fromStat(stat);
+            existing.fromDAV(stat);
             curFiles.add(existing);
           } else {
             let file = this.newFile("");
             file.parent = this;
-            file.fromStat(stat);
+            file.fromDAV(stat);
             this.files.add(file);
             curFiles.add(file);
           }
@@ -94,7 +94,7 @@ export class WebDAVDirectory extends Directory {
     }
   }
 
-  fromStat(stat: FileStat) {
+  fromDAV(stat: FileStat) {
     let path = sanitize.nonemptystring(stat.filename);
     this.path = path.endsWith("/") ? path : path + "/";
     this.name = sanitize.filename(stat.basename);

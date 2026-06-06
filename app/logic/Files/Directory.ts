@@ -33,6 +33,17 @@ export class Directory extends FileOrDirectory {
   async listContents() {
   }
 
+  async uploadChangedFiles() {
+    for (let file of this.files) {
+      try {
+        await file.uploadIfChanged();
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
+    this.list
+  }
+
   async moveFileHere(file: File) {
     await this.moveFilesHere(new ArrayColl([file]));
   }
