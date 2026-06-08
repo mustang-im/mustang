@@ -42,6 +42,7 @@ export class VideoConfMeeting extends Observable {
    * `listenStreamChanges()` after.
    * Usually `LocalMediaDeviceStreams` or a protocol-specific impl. */
   mediaDeviceStreams: MediaDeviceStreams;
+  hasVideo = true;
 
   /** Subclass constructor must set `this.mediaDeviceStreams` and then call this function. */
   protected listenStreamChanges() {

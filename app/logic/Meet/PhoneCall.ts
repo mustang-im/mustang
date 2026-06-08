@@ -10,6 +10,7 @@ export class PhoneCall extends VideoConfMeeting {
   /** The other party of the phone call.
    * In international number format, normalized by `getInternationalPhoneNumber()` */
   remotePhoneNumber: string;
+  hasVideo = false;
 
   /** Send numbers to other end */
   async sendDTMF(digit: string) {

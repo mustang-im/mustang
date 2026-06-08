@@ -49,14 +49,14 @@
         </vbox>
         <hbox class="actions">
           {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-            <RoundButton classes="cancel"
+            <RoundButton classes="cancel action"
               label={$t`Cancel`}
               icon={XIcon}
               iconSize="24px"
               onClick={cancel}
               />
           {:else}
-            <RoundButton classes="hangup"
+            <RoundButton classes="hangup action"
               label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
               icon={HangUpIcon}
               onClick={hangup}
@@ -64,8 +64,12 @@
               border={false} />
           {/if}
           <hbox flex />
+          <hbox class="mic-setup">
+            <DeviceSetup withVideo={false} />
+          </hbox>
+          <hbox flex />
           {#if $meeting.state != MeetingState.OutgoingCall}
-            <RoundButton classes="accept"
+            <RoundButton classes="accept action"
               label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
               icon={CallIcon}
               iconSize="24px"
@@ -74,33 +78,34 @@
           {/if}
         </hbox>
       </vbox>
-    <hbox class="gap" />
+      <hbox class="gap" />
     {/if}
-    <vbox class="device-setup">
-      <DeviceSetup>
-        <hbox class="actions left" flex slot="buttons-left">
-          {#if $meeting.state == MeetingState.Init}
-            <RoundButton classes="cancel"
-              label={$t`Cancel`}
-              icon={XIcon}
-              iconSize="24px"
-              onClick={cancel}
-              />
-          {/if}
-        </hbox>
-        <hbox class="actions right" flex slot="buttons-right">
-          {#if $meeting.state == MeetingState.Init}
-            <RoundButton classes="accept"
-              label={$t`Start conference`}
-              icon={OpenIcon}
-              iconSize="24px"
-              onClick={accept}
-              border={false} />
-          {/if}
-        </hbox>
-
-      </DeviceSetup>
-    </vbox>
+    {#if meeting.hasVideo}
+      <vbox class="device-setup">
+        <DeviceSetup>
+          <hbox class="actions left" flex slot="buttons-left">
+            {#if $meeting.state == MeetingState.Init}
+              <RoundButton classes="cancel"
+                label={$t`Cancel`}
+                icon={XIcon}
+                iconSize="24px"
+                onClick={cancel}
+                />
+            {/if}
+          </hbox>
+          <hbox class="actions right" flex slot="buttons-right">
+            {#if $meeting.state == MeetingState.Init}
+              <RoundButton classes="accept"
+                label={$t`Start conference`}
+                icon={OpenIcon}
+                iconSize="24px"
+                onClick={accept}
+                border={false} />
+            {/if}
+          </hbox>
+        </DeviceSetup>
+      </vbox>
+    {/if}
     <hbox flex />
   </hbox>
   <hbox class="bottom-bar" flex>
@@ -233,7 +238,7 @@
   .actions {
     margin-block-start: 12px;
   }
-  .actions :global(button) {
+  .actions :global(button.action) {
     padding: 16px;
   }
   .actions :global(button.accept svg),
@@ -249,6 +254,9 @@
   .actions :global(button.hangup) {
     transform: rotate(135deg);
     background-color: #F34949 !important;
+  }
+  .mic-setup :global(.buttons) {
+    margin-block-start: 14px;
   }
   .device-setup .actions {
     justify-content: center;

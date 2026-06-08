@@ -1,8 +1,10 @@
-<vbox flex class="device-setup">
+<vbox flex class="device-setup" class:withVideo>
   <ErrorMessageInline {ex} />
-  <vbox class="self-video" flex>
-    <Video stream={$deviceStream?.cameraMicStream} muted={true} />
-  </vbox>
+  {#if withVideo}
+    <vbox class="self-video" flex>
+      <Video stream={$deviceStream?.cameraMicStream} muted={true} />
+    </vbox>
+  {/if}
   <hbox class="buttons">
     <slot name="buttons-left" />
     <DeviceButton video={false} {devices}
@@ -12,12 +14,14 @@
       on:changeOn={event => micOnSetting.value = event.detail}
       on:changeDevice={event => selectedMicSetting.value = event.detail}
       />
-    <DeviceButton video={true} {devices}
-      on={$cameraOnSetting.value}
-      selectedID={$selectedCameraSetting.value}
-      on:changeOn={event => cameraOnSetting.value = event.detail}
-      on:changeDevice={event => selectedCameraSetting.value = event.detail}
-      />
+    {#if withVideo}
+      <DeviceButton video={true} {devices}
+        on={$cameraOnSetting.value}
+        selectedID={$selectedCameraSetting.value}
+        on:changeOn={event => cameraOnSetting.value = event.detail}
+        on:changeDevice={event => selectedCameraSetting.value = event.detail}
+        />
+    {/if}
     <slot name="buttons-right" />
   </hbox>
 </vbox>
@@ -31,6 +35,8 @@
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
   import { gt } from "../../../l10n/l10n";
+
+  export let withVideo = true;
 
   let devices: MediaDeviceInfo[];
 
@@ -82,7 +88,7 @@
     align-items: center;
     justify-content: center;
   }
-  .buttons {
+  .withVideo .buttons {
     margin-block-start: -22px;
     justify-content: center;
     z-index: 1;

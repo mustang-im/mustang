@@ -1,7 +1,7 @@
 <hbox class="device-button">
   <RoundButton
     label={video ? (on ? $t`Turn camera off` : $t`Turn camera on`) : (on ? $t`Mute` : $t`Unmute`)}
-    classes="toggle"
+    classes="toggle device-on-off"
     onClick={onToggleDevice}
     selected={on}
     padding={stream && on ? "0px" : "8px"}
