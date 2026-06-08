@@ -31,6 +31,15 @@
         <DialPad on:digit={ev => catchErrors(() => onDigitPressed(ev.detail), showError)} />
         <hbox class="dial buttons">
           <RoundButton
+            label={$t`Remove last digit`}
+            icon={BackspaceIcon}
+            iconSize="22px"
+            padding="12px"
+            onClick={() => phoneNumber = phoneNumber.substring(0, phoneNumber.length -1)}
+            errorCallback={showError}
+            classes="backspace" />
+          <hbox flex />
+          <RoundButton
             label={$t`Call`}
             icon={CallIcon}
             iconSize="22px"
@@ -52,7 +61,7 @@
       <hbox flex />
       <vbox>
         {#if $selectedPerson?.phoneNumbers.hasItems}
-          <Button label={$t`Call ${$selectedPerson.name}`} onClick={() => callPerson($selectedPerson)} errorCallback={showError} classes="call-person secondary">
+          <Button label={$t`Call ${$selectedPerson.name}`} onClick={() => callPerson($selectedPerson)} errorCallback={showError} classes="call-person">
             <PersonPicture slot="icon" person={$selectedPerson} size={24} />
           </Button>
         {/if}
@@ -129,6 +138,7 @@
   import Clickable from "../../../Shared/Clickable.svelte";
   import CallIcon from "lucide-svelte/icons/phone";
   import VideoConfIcon from "lucide-svelte/icons/video";
+  import BackspaceIcon from "lucide-svelte/icons/delete";
   import { onKeyEnter } from "../../../Util/util";
   import { getTimeString } from "../../../Util/date";
   import { catchErrors, logError } from "../../../Util/error";
@@ -188,7 +198,6 @@
   }
   .buttons {
     column-gap: 12px;
-    margin-inline-start: 8px;
     margin-block-start: 4px;
   }
   .actions-container {
@@ -216,14 +225,23 @@
   }
   .dialpad {
     align-items: center;
+    align-self: center;
   }
   .dial.buttons {
-    justify-content: end;
-    width: 64%;
     margin-block-start: 16px;
+    align-self: stretch;
+  }
+  .dial.buttons :global(button.backspace .icon) {
+    opacity: 60%;
+  }
+  .dial.buttons :global(button.backspace svg) {
+    stroke-width: 1.5px;
   }
   .contact-search {
     margin-block-start: 48px;
+  }
+  .contact-search :global(button) {
+    border: none !important;
   }
   .meetings {
     justify-content: center;
