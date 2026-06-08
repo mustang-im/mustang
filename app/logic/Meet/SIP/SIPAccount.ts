@@ -11,19 +11,10 @@ export class SIPAccount extends MeetAccount {
   hostname: string; /** during setup only. Part of `this.url` */
   port: number; /** ditto */
   mySIPID: string; /** e.g. "sip:fred@tele.com". Constructed from username + domain. */
+  dtmfMethod: "rfc4733" | "info" = "rfc4733";
   userAgent: UserAgent;
   registerer: Registerer;
-  /** Country phone prefix, e.g. 1 for USA+Kanada, 49 for Germany, 33 for France etc.
-   * Used to complete phone numbers in national notation.
-   * User setting.
-   * TODO add UI for the user setting */
-  countryCode = 49;
-
   canVideo = true;
-  canAudio = true;
-  canScreenShare = false;
-  canMultipleParticipants = false;
-  canCreateURL = false;
 
   async login(interactive: boolean, relogin = false): Promise<void> {
     const { UserAgent, Registerer } = await import("sip.js");

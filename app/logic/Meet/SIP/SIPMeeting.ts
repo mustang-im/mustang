@@ -1,5 +1,6 @@
 import type { SIPAccount } from "./SIPAccount";
-import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
+import { PhoneCall } from "../PhoneCall";
+import { MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import { VideoStream } from "../VideoStream";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
@@ -10,7 +11,7 @@ import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 import { assert, sleep, type URLString } from "../../util/util";
 import type { Session, Inviter, Invitation } from "sip.js";
 
-export class SIPMeeting extends VideoConfMeeting {
+export class SIPMeeting extends PhoneCall {
   /* Authentication */
   account: SIPAccount;
   inviter: Inviter; /** For outgoing calls */
@@ -100,6 +101,10 @@ export class SIPMeeting extends VideoConfMeeting {
     this.attachRemoteDevices();
   }
 
+  protected get peerConnection(): RTCPeerConnection {
+    return (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
+  }
+
   protected attachRemoteDevices() {
     let p = new MeetingParticipant();
     p.name = this.remotePhoneNumber;
@@ -109,7 +114,6 @@ export class SIPMeeting extends VideoConfMeeting {
     let v = new VideoStream(mediaStream, p);
     this.videos.add(v);
 
-    let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
     let addTrack = (track: MediaStreamTrack) => {
       // Avoid adding local tracks
       for (let localTrack of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
@@ -121,6 +125,7 @@ export class SIPMeeting extends VideoConfMeeting {
       console.log("Add remote track", track);
       mediaStream.addTrack(track);
     };
+    let peerConnection = this.peerConnection;
     for (let receiver of peerConnection.getReceivers()) {
       addTrack(receiver.track);
     }
@@ -128,8 +133,6 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   protected async attachLocalDevices() {
-    let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
-
     // HACK Ensure that mic has time to open, esp. for incoming calls TODO Not working correctly, either
     const maxWaitMS = 2000;
     let start = Date.now();
@@ -141,6 +144,7 @@ export class SIPMeeting extends VideoConfMeeting {
     }
     assert(this.mediaDeviceStreams.cameraMicStream, "Local microphone is not ready");
 
+    let peerConnection = this.peerConnection;
     for (let track of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
       console.log("Add local track", track);
       peerConnection.addTrack(track);
@@ -194,6 +198,34 @@ export class SIPMeeting extends VideoConfMeeting {
     }
     console.log("Remote end has hung up");
     await super.hangup();
+  }
+
+  /** Send numbers to other end.
+   * @see SIPAccount.dtmfMthod */
+  async sendDTMF(digit: number | string) {
+    assert(this.session?.state == SessionState.Established, "Call not established");
+    let tone = String(digit);
+    assert(/^[0-9A-D#*,]$/.test(tone), `Invalid DTMF tone: ${tone}`);
+
+    if (this.account.dtmfMethod == "info") {
+      await this.session.info({
+        requestOptions: {
+          body: {
+            contentDisposition: "render",
+            contentType: "application/dtmf-relay",
+            content: `Signal=${tone}\r\nDuration=200`,
+          },
+        },
+      });
+      await sleep(0.2);
+      return;
+    }
+
+    let peerConnection = this.peerConnection;
+    let audioSender = peerConnection.getSenders().find(sender => sender.track?.kind == "audio" && sender.dtmf);
+    assert(audioSender?.dtmf, "No DTMF capability on audio track");
+    // RFC 4733
+    audioSender.dtmf.insertDTMF(tone, 200, 70); // tone, duration ms, gap ms
   }
 
   waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
