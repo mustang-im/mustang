@@ -1,128 +1,138 @@
-<vbox flex class="calling" state={$meeting.state}>
-  <!-- svelte-ignore element_invalid_self_closing_tag -->
-  <hbox flex />
-  <hbox class="boxes" flex>
-    <hbox flex />
-    {#if $meeting.state != MeetingState.Init}
-      <vbox class="box">
-        <vbox class="text">
-          <hbox class="what">
-            {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-              {$t`Do you want to call?`}
-            {:else if $meeting.state == MeetingState.OutgoingCall}
-              {$t`You're calling...`}
-            {:else if $meeting.state == MeetingState.IncomingCall} <!---->
-            {/if}
-          </hbox>
-          <hbox class="who">
-            {#if $participants.length == 1}
-              {participants.first.name}
-            {:else if $participants.length > 1}
-              {meeting.event?.title}
-            {/if}
-          </hbox>
-          {#if $participants.length == 1}
-            <hbox class="who-id">
-              <!-- Phone number -->
-              {participants.first.emailAddress}
+<vbox class="calling" flex bind:clientWidth={width}>
+  <SplitterBidirectional name="calling-contact-history"
+    hasFirst={showContactHistory}
+    initialSecondRatio={0.4}
+    horizontal={width < 1000}>
+    <vbox flex state={$meeting.state} slot="first">
+      <!-- svelte-ignore element_invalid_self_closing_tag -->
+      <hbox flex />
+      <hbox class="boxes" flex>
+        <hbox flex />
+        {#if $meeting.state != MeetingState.Init}
+          <vbox class="box">
+            <vbox class="text">
+              <hbox class="what">
+                {#if $meeting.state == MeetingState.OutgoingCallConfirm}
+                  {$t`Do you want to call?`}
+                {:else if $meeting.state == MeetingState.OutgoingCall}
+                  {$t`You're calling...`}
+                {:else if $meeting.state == MeetingState.IncomingCall} <!---->
+                {/if}
+              </hbox>
+              <hbox class="who">
+                {#if $participants.length == 1}
+                  {participants.first.name}
+                {:else if $participants.length > 1}
+                  {meeting.event?.title}
+                {/if}
+              </hbox>
+              {#if $participants.length == 1}
+                <hbox class="who-id">
+                  <!-- Phone number -->
+                  {participants.first.emailAddress}
+                </hbox>
+              {/if}
+              <hbox class="who-count">
+                {#if $participants.length > 1}
+                  ({participants.length} participants)
+                {/if}
+              </hbox>
+              <hbox class="what">
+                {#if $meeting.state == MeetingState.OutgoingCallConfirm} <!---->
+                {:else if $meeting.state == MeetingState.OutgoingCall} <!---->
+                {:else if $meeting.state == MeetingState.IncomingCall}
+                  {$t`is calling you...`}
+                {/if}
+              </hbox>
+            </vbox>
+            <vbox class="participants" flex>
+              {#if $participants.length == 1}
+                <PersonPicture person={participants.first.findPerson()} size={196} />
+              {:else if $participants.length > 1}
+                <GroupPicture persons={participants.map(uid => uid.findPerson()).filterOnce(Boolean)} size={196} />
+              {/if}
+            </vbox>
+            <hbox class="actions">
+              {#if $meeting.state == MeetingState.OutgoingCallConfirm}
+                <RoundButton classes="cancel action"
+                  label={$t`Cancel`}
+                  icon={XIcon}
+                  iconSize="24px"
+                  onClick={cancel}
+                  />
+              {:else}
+                <RoundButton classes="hangup action"
+                  label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
+                  icon={HangUpIcon}
+                  onClick={hangup}
+                  iconSize="24px"
+                  border={false} />
+              {/if}
+              <hbox flex />
+              <hbox class="mic-setup">
+                <DeviceSetup withVideo={false} />
+              </hbox>
+              <hbox flex />
+              {#if $meeting.state != MeetingState.OutgoingCall}
+                <RoundButton classes="accept action"
+                  label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
+                  icon={CallIcon}
+                  iconSize="24px"
+                  onClick={accept}
+                  border={false} />
+              {/if}
             </hbox>
+          </vbox>
+          <hbox class="gap" />
+        {/if}
+        {#if meeting.hasVideo}
+          <vbox class="device-setup">
+            <DeviceSetup>
+              <hbox class="actions left" flex slot="buttons-left">
+                {#if $meeting.state == MeetingState.Init}
+                  <RoundButton classes="cancel"
+                    label={$t`Cancel`}
+                    icon={XIcon}
+                    iconSize="24px"
+                    onClick={cancel}
+                    />
+                {/if}
+              </hbox>
+              <hbox class="actions right" flex slot="buttons-right">
+                {#if $meeting.state == MeetingState.Init}
+                  <RoundButton classes="accept"
+                    label={$t`Start conference`}
+                    icon={OpenIcon}
+                    iconSize="24px"
+                    onClick={accept}
+                    border={false} />
+                {/if}
+              </hbox>
+            </DeviceSetup>
+          </vbox>
+        {/if}
+        <hbox flex />
+      </hbox>
+      <hbox class="bottom-bar" flex>
+        <vbox class="info" flex>
+          {#if upcomingMeeting}
+            <vbox class="upcoming-meeting">
+              <hbox class="when">
+                <HourglassIcon size="16px" />
+                {$t`You have a meeting in ${upcomingMeetingInMin} minutes:`}
+              </hbox>
+              <hbox class="title">
+                {upcomingMeeting.title}
+              </hbox>
+            </vbox>
           {/if}
-          <hbox class="who-count">
-            {#if $participants.length > 1}
-              ({participants.length} participants)
-            {/if}
-          </hbox>
-          <hbox class="what">
-            {#if $meeting.state == MeetingState.OutgoingCallConfirm} <!---->
-            {:else if $meeting.state == MeetingState.OutgoingCall} <!---->
-            {:else if $meeting.state == MeetingState.IncomingCall}
-              {$t`is calling you...`}
-            {/if}
-          </hbox>
         </vbox>
-        <vbox class="participants" flex>
-          {#if $participants.length == 1}
-            <PersonPicture person={participants.first.findPerson()} size={196} />
-          {:else if $participants.length > 1}
-            <GroupPicture persons={participants.map(uid => uid.findPerson()).filterOnce(Boolean)} size={196} />
-          {/if}
-        </vbox>
-        <hbox class="actions">
-          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-            <RoundButton classes="cancel action"
-              label={$t`Cancel`}
-              icon={XIcon}
-              iconSize="24px"
-              onClick={cancel}
-              />
-          {:else}
-            <RoundButton classes="hangup action"
-              label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
-              icon={HangUpIcon}
-              onClick={hangup}
-              iconSize="24px"
-              border={false} />
-          {/if}
-          <hbox flex />
-          <hbox class="mic-setup">
-            <DeviceSetup withVideo={false} />
-          </hbox>
-          <hbox flex />
-          {#if $meeting.state != MeetingState.OutgoingCall}
-            <RoundButton classes="accept action"
-              label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
-              icon={CallIcon}
-              iconSize="24px"
-              onClick={accept}
-              border={false} />
-          {/if}
-        </hbox>
-      </vbox>
-      <hbox class="gap" />
-    {/if}
-    {#if meeting.hasVideo}
-      <vbox class="device-setup">
-        <DeviceSetup>
-          <hbox class="actions left" flex slot="buttons-left">
-            {#if $meeting.state == MeetingState.Init}
-              <RoundButton classes="cancel"
-                label={$t`Cancel`}
-                icon={XIcon}
-                iconSize="24px"
-                onClick={cancel}
-                />
-            {/if}
-          </hbox>
-          <hbox class="actions right" flex slot="buttons-right">
-            {#if $meeting.state == MeetingState.Init}
-              <RoundButton classes="accept"
-                label={$t`Start conference`}
-                icon={OpenIcon}
-                iconSize="24px"
-                onClick={accept}
-                border={false} />
-            {/if}
-          </hbox>
-        </DeviceSetup>
-      </vbox>
-    {/if}
-    <hbox flex />
-  </hbox>
-  <hbox class="bottom-bar" flex>
-    <vbox class="info" flex>
-      {#if upcomingMeeting}
-        <vbox class="upcoming-meeting">
-          <hbox class="when">
-            <HourglassIcon size="16px" />
-            {$t`You have a meeting in ${upcomingMeetingInMin} minutes:`}
-          </hbox>
-          <hbox class="title">
-            {upcomingMeeting.title}
-          </hbox>
-        </vbox>
-      {/if}
+      </hbox>
     </vbox>
-  </hbox>
+    <hbox class="contact-history" slot="second">
+      <ContactHistory {person} />
+    </hbox>
+  </SplitterBidirectional>
 </vbox>
 
 <svelte:window on:keydown={ev => catchErrors(() => onKeyEnter(ev, accept))} />
@@ -153,6 +163,8 @@
   import DeviceSetup from "../Setup/DeviceSetup.svelte";
   import StartBarM from "./StartBarM.svelte";
   import InMeetingToolbar from "../InMeetingToolbar.svelte";
+  import ContactHistory from "../../Contacts/History/ContactHistory.svelte";
+  import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";
   import CallIcon from "lucide-svelte/icons/phone-call";
   import HangUpIcon from "lucide-svelte/icons/phone";
   import XIcon from "lucide-svelte/icons/x";
@@ -165,6 +177,9 @@
   export let meeting: VideoConfMeeting;
 
   $: participants = meeting.participants;
+  $: person = $participants.first?.findPerson();
+  $: showContactHistory = person && !$meeting.hasVideo && !appGlobal.isMobile;
+  let width: number;
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 15 min
@@ -197,6 +212,7 @@
 <style>
   .calling {
     background-color: #494558;
+    color: white;
   }
   @media (max-width: 800px) {
     .boxes {
@@ -279,6 +295,11 @@
   }
   .device-setup :global(.self-video video) {
     width: 350px;
+  }
+  .contact-history :global(.group > .content)
+  {
+    background-color: inherit;
+    color: inherit;
   }
 
   .bottom-bar {
