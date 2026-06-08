@@ -12,11 +12,9 @@ import { assert, sleep, type URLString } from "../../util/util";
 import type { Session, Inviter, Invitation } from "sip.js";
 
 export class SIPMeeting extends PhoneCall {
-  /* Authentication */
-  account: SIPAccount;
+  declare account: SIPAccount;
   inviter: Inviter; /** For outgoing calls */
   invitation: Invitation; /** For incoming calls */
-  remotePhoneNumber: string;
 
   get session(): Session | null {
     return this.inviter ?? this.invitation ?? null;
@@ -52,11 +50,12 @@ export class SIPMeeting extends PhoneCall {
     let urlParsed = new URL(url);
     assert(urlParsed.protocol == "tel:", gt`Only tel: URLs are supported`);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
-    this.remotePhoneNumber = getInternationalPhoneNumber(
+    this.remotePhoneNumber = PhoneCall.getInternationalPhoneNumber(
       sanitize.string(urlParsed.pathname), this.account.countryCode);
 
     let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
-    this.title = `Call ${this.remotePhoneNumber} at ${time}`;
+    this.title = gt`Call ${this.remotePhoneNumber} at ${time} *=> Phone call person at time`;
+    this.setRemoteParticipant();
     this.state = MeetingState.OutgoingCallConfirm;
   }
 
@@ -154,8 +153,10 @@ export class SIPMeeting extends PhoneCall {
   onIncomingCall(invitation: Invitation) {
     this.invitation = invitation;
     let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
-    this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
+    this.title = gt`Called by ${invitation.remoteIdentity.displayName} at ${time} *=> Called by phone by person at time`;
     this.state = MeetingState.IncomingCall;
+    this.remotePhoneNumber = PhoneCall.getInternationalPhoneNumber(invitation.remoteIdentity.uri.user, this.account.countryCode);
+    this.setRemoteParticipant();
     this.waitForState(SessionState.Terminated, () => this.callEnded());
   }
 
@@ -250,31 +251,4 @@ enum SessionState {
   Established = "Established",
   Terminating = "Terminating",
   Terminated = "Terminated"
-}
-
-/** Throws when number cannot be parsed.
- * @returns e.g. "+49-123-000000" */
-export function getInternationalPhoneNumber(phoneNumber: string, myCountryCode: number): string {
-  phoneNumber = phoneNumber.replaceAll(/[^0-9\+]/g, ""); // Leave only numbers and leading +
-  assert(phoneNumber, gt`Need phone number`);
-  if (phoneNumber.startsWith("+")) {
-    // OK
-  } else if (phoneNumber.startsWith("00")) {
-    phoneNumber = "+" + phoneNumber.substring(2);
-  } else if (phoneNumber.startsWith("0")) {
-    phoneNumber = "+" + myCountryCode + phoneNumber.substring(1);
-  } else if (myCountryCode == 1 && phoneNumber.startsWith("011")) {
-    phoneNumber = "+" + phoneNumber.substring(3);
-  } else if (myCountryCode == 1 && phoneNumber.length == 10) {
-    phoneNumber = "+1" + phoneNumber;
-  } else {
-    let format = `0611-000000 = +${myCountryCode}-611-000000 = 00${myCountryCode}-611-000000`;
-    if (myCountryCode == 1) {
-      let local = `650-555-0000 = +1-650-555-0000`;
-      let intl = `+49-555-000000 = 0049-555-000000 = 011-49-555-000000`;
-      format = gt`${local} or international ${intl} *=> US or international phone number format`;
-    }
-    throw new Error(gt`Phone number not recognized. Supported formats: ${format}`);
-  }
-  return phoneNumber;
 }

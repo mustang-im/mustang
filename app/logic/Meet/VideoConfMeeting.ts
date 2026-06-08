@@ -22,6 +22,8 @@ export class VideoConfMeeting extends Observable {
   ended: Date;
   @notifyChangedProperty
   title: string;
+  /** People how are in the meeting.
+   * TODO Includes `myParticipant` or not? I think not. */
   readonly participants = new SetColl<Participant>();
   readonly videos = new SetColl<VideoStream>();
   /** People who were asked to join, but are not yet connected */

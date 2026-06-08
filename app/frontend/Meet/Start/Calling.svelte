@@ -21,6 +21,12 @@
               {meeting.event?.title}
             {/if}
           </hbox>
+          {#if $participants.length == 1}
+            <hbox class="who-id">
+              <!-- Phone number -->
+              {participants.first.emailAddress}
+            </hbox>
+          {/if}
           <hbox class="who-count">
             {#if $participants.length > 1}
               ({participants.length} participants)
@@ -36,9 +42,9 @@
         </vbox>
         <vbox class="participants" flex>
           {#if $participants.length == 1}
-            <PersonPicture person={participants.first} size={196} />
+            <PersonPicture person={participants.first.findPerson()} size={196} />
           {:else if $participants.length > 1}
-            <GroupPicture persons={participants} size={196} />
+            <GroupPicture persons={participants.map(uid => uid.findPerson()).filterOnce(Boolean)} size={196} />
           {/if}
         </vbox>
         <hbox class="actions">
