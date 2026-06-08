@@ -67,7 +67,7 @@
           on:input={() => errorMsg = null}
           on:paste={() => catchErrors(joinURLPasted, showError)}
           on:keydown={event => onKeyEnter(event, () => catchErrors(() => joinByURL(conferenceURL), showError))} />
-        <Button label={$t`Call`} classes="secondary"
+        <Button label={$t`Join`} classes="secondary"
           disabled={!conferenceURL}
           onClick={() => joinByURL(conferenceURL)}
           errorCallback={showError} />
