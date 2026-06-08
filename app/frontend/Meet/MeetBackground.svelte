@@ -4,8 +4,9 @@
 
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
-  import { openApp, selectedApp } from "../AppsBar/selectedApp";
+  import { openApp, selectedApp, mustangApps } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
+  import { PhoneAccount } from "../../logic/Meet/PhoneAccount";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
 
@@ -17,7 +18,6 @@
   $: meeting = $meetings.first;
   $: meeting && openMeet();
   function openMeet() {
-    console.log("Meeting state", meeting.state)
     if (meeting.state == MeetingState.OutgoingCallConfirm ||
         meeting.state == MeetingState.OutgoingCall ||
         meeting.state == MeetingState.IncomingCall) {
@@ -28,6 +28,12 @@
   /** Open sidebar, if meeting is ongoing.
    * Note: Has to be after `openMeet()`, so that sets the correct state first */
   $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
+
+  // HACK to use Phone until we have Meet officially enabled
+  $: meetAccounts = appGlobal.meetAccounts;
+  $: if ($meetAccounts.find(acc => acc instanceof PhoneAccount) && !$mustangApps.contains(meetMustangApp)) {
+    mustangApps.splice(2, 0, meetMustangApp);
+  }
 
   async function onMeetingURL(event: Event, url: string) {
     let urlParsed = new URL(url);
