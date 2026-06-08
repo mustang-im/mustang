@@ -21,7 +21,7 @@
       />
     <SelectScreenShare bind:this={selectScreenShare} />
   {/if}
-  {#if meeting.account.canVideo}
+  {#if meeting.account.canVideo && $meeting.hasVideo}
     <DeviceButton video={true} {devices}
       on={$me?.cameraOn}
       selectedID={$selectedCameraSetting.value}
