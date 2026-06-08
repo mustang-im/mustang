@@ -265,10 +265,16 @@ export function getInternationalPhoneNumber(phoneNumber: string, myCountryCode: 
     phoneNumber = "+" + myCountryCode + phoneNumber.substring(1);
   } else if (myCountryCode == 1 && phoneNumber.startsWith("011")) {
     phoneNumber = "+" + phoneNumber.substring(3);
-  } else if (myCountryCode == 1 && !isNaN(phoneNumber[0] as any)) {
+  } else if (myCountryCode == 1 && phoneNumber.length == 10) {
     phoneNumber = "+1" + phoneNumber;
   } else {
-    throw new Error(gt`Phone number not recognized. Supported formats: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000`);
+    let format = `0611-000000 = +${myCountryCode}-611-000000 = 00${myCountryCode}-611-000000`;
+    if (myCountryCode == 1) {
+      let local = `650-555-0000 = +1-650-555-0000`;
+      let intl = `+49-555-000000 = 0049-555-000000 = 011-49-555-000000`;
+      format = gt`${local} or international ${intl} *=> US or international phone number format`;
+    }
+    throw new Error(gt`Phone number not recognized. Supported formats: ${format}`);
   }
   return phoneNumber;
 }
