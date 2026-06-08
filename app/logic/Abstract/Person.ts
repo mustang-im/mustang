@@ -62,6 +62,9 @@ export class Person extends ContactBase {
    * Saves the contact locally to the database.
     */
   async saveLocally() {
+    if (!this.addressbook.persons.contains(this)) {
+      this.addressbook.persons.add(this);
+    }
     await this.addressbook.storage.savePerson(this);
   }
 
