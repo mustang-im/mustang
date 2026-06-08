@@ -105,9 +105,13 @@ export class SIPMeeting extends PhoneCall {
   }
 
   protected attachRemoteDevices() {
-    let p = new MeetingParticipant();
-    p.name = this.remotePhoneNumber;
-    this.participants.add(p);
+    let p = this.participants.first;
+    if (!p) {
+      let p = new MeetingParticipant();
+      p.name = this.remotePhoneNumber;
+      this.participants.add(p);
+    }
+    p.micOn = true;
 
     let mediaStream = new MediaStream();
     let v = new VideoStream(mediaStream, p);
