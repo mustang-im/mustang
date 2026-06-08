@@ -39,6 +39,17 @@
       stream={$stream.cameraMicStream}
       />
   {/if}
+  {#if meeting instanceof PhoneCall}
+    <RoundButton
+      label={$t`Dial pad`}
+      classes="dialpad large"
+      onClick={() => $showDialPad = !$showDialPad}
+      selected={$showDialPad}
+      icon={DialPadIcon}
+      iconSize="24px"
+      border={false}
+      />
+  {/if}
   {#if !isSidebar}
     <hbox class="participants" flex>
       <Scroll>
@@ -121,6 +132,7 @@
   import { PhoneCall } from "../../logic/Meet/PhoneCall";
   import { meetMustangApp } from "./MeetMustangApp";
   import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
+  import { showDialPad } from "./uiState";
   import { openApp } from "../AppsBar/selectedApp";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
@@ -142,6 +154,7 @@
   import ViewSpeakerOnlyIcon from "lucide-svelte/icons/square-user-round";
   import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/minus";
+  import DialPadIcon from "lucide-svelte/icons/grip";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
@@ -262,6 +275,8 @@
   function onShowViewSelector(event: Event) {
     showViewSelector = !showViewSelector;
   }
+
+  $showDialPad = false; // Default off for a new call
 </script>
 
 <style>

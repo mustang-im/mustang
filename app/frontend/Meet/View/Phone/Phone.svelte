@@ -4,7 +4,7 @@
     initialRightRatio={0.4}
     name="phone-contact-history-during-call">
     <hbox class="left" slot="left" flex>
-      {#if showDialPad}
+      {#if $showDialPad}
         <DialPad on:digit={ev => catchErrors(() => onSendSTMF(ev.detail))} />
       {/if}
     </hbox>
@@ -20,6 +20,7 @@
   import type { MeetingParticipant } from "../../../../logic/Meet/Participant";
   import type { VideoConfMeeting } from "../../../../logic/Meet/VideoConfMeeting";
   import { PhoneCall } from "../../../../logic/Meet/PhoneCall";
+  import { showDialPad } from "../../uiState";
   import ContactHistory from "../../../Contacts/History/ContactHistory.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
@@ -31,7 +32,6 @@
   export let meeting: VideoConfMeeting;
 
   let width: number;
-  let showDialPad = true;
   $: participants = $meeting.participants;
   $: remote = showParticipant ?? $participants.first
   $: person = remote?.findPerson();
