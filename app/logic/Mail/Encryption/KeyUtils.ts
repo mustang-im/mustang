@@ -4,6 +4,8 @@ import type { Person } from "../../Abstract/Person";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
+import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
+import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
 import { readAutoCryptKeys } from "./PGP/AutoCrypt";
 import type { EMail } from "../EMail";
 import { findAllIdentities, type MailIdentity } from "../MailIdentity";
@@ -71,7 +73,9 @@ export async function importPrivateKey(fileContent: string, passphrase: string):
   assert(!fileContent.includes("PUBLIC KEY"), gt`This is a public key. If this is your key, you should also have the secret key in another file.`);
   if (fileContent.includes("-----BEGIN PGP PRIVATE KEY BLOCK-----")) {
     return await PGPPrivateKey.importPrivateKey(fileContent, passphrase);
-  } else if (fileContent.includes("-----BEGIN PRIVATE KEY BLOCK-----")) {
+  } else if (fileContent.includes("-----BEGIN PRIVATE KEY-----") ||
+    fileContent.includes("-----BEGIN ENCRYPTED PRIVATE KEY-----")) {
+    return await SMIMEPrivateKey.importPrivateKey(fileContent, passphrase);
   }
   throw new UserError(gt`Could not find a key in this file`);
 }
@@ -81,7 +85,9 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
   assert(!fileContent.includes("PRIVATE KEY"), gt`This is a secret key. If this is your key, go to Settings | Mail | Identity | Encryption and import it there.`);
   if (fileContent.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
     return await PGPPublicKey.importPublicKey(fileContent);
-  } else if (fileContent.includes("-----BEGIN PUBLIC KEY BLOCK-----")) {
+  } else if (fileContent.includes("-----BEGIN CERTIFICATE-----") ||
+    fileContent.includes("-----BEGIN TRUSTED CERTIFICATE-----")) {
+    return await SMIMEPublicKey.importPublicKey(fileContent);
   }
   throw new UserError(gt`Could not find a key in this file`);
 }
