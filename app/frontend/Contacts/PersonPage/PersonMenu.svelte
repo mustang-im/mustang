@@ -26,7 +26,11 @@
       let next = getNext(person.addressbook?.persons, person);
       $selectedPerson = next === toDelete ? null : next;
       if (appGlobal.isMobile) {
-        goTo(URLPart`/contacts/person/${person.id}/edit`, { person });
+        if ($selectedPerson) {
+          goTo(URLPart`/contacts/person/${$selectedPerson.id}/edit`, { person: $selectedPerson });
+        } else {
+          goTo(URLPart`/contacts`, {});
+        }
       }
     }
 
