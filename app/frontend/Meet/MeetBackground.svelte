@@ -12,21 +12,22 @@
   // HACK: Why are some ended meetings not removed? See `VideoConfMeeting.hangup()`
   $: meetings = appGlobal.meetings.filterObservable(m => m.state != MeetingState.Ended);
 
-  /** Open sidebar, if meeting is ongoing */
-  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
-  $: console.log("meet sidebar", $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet"), "because", "have meetings", $meetings.hasItems, "selected not meet app", $selectedApp != meetMustangApp, "window not meet", !window.location.pathname.startsWith("/meet"), "location", window.location.pathname)
-
   /** When a call comes in or is placed, open the meet app,
    * which will then open the Calling screen. */
   $: meeting = $meetings.first;
   $: meeting && openMeet();
   function openMeet() {
+    console.log("Meeting state", meeting.state)
     if (meeting.state == MeetingState.OutgoingCallConfirm ||
         meeting.state == MeetingState.OutgoingCall ||
         meeting.state == MeetingState.IncomingCall) {
       openApp(meetMustangApp, { meeting });
     }
   }
+
+  /** Open sidebar, if meeting is ongoing.
+   * Note: Has to be after `openMeet()`, so that sets the correct state first */
+  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
 
   async function onMeetingURL(event: Event, url: string) {
     let urlParsed = new URL(url);
