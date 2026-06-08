@@ -202,10 +202,9 @@ export class SIPMeeting extends PhoneCall {
 
   /** Send numbers to other end.
    * @see SIPAccount.dtmfMthod */
-  async sendDTMF(digit: number | string) {
+  async sendDTMF(digit: string) {
     assert(this.session?.state == SessionState.Established, "Call not established");
-    let tone = String(digit);
-    assert(/^[0-9A-D#*,]$/.test(tone), `Invalid DTMF tone: ${tone}`);
+    assert(/^[0-9#*,]$/.test(digit), `Invalid DTMF tone: ${digit}`);
 
     if (this.account.dtmfMethod == "info") {
       await this.session.info({
@@ -213,7 +212,7 @@ export class SIPMeeting extends PhoneCall {
           body: {
             contentDisposition: "render",
             contentType: "application/dtmf-relay",
-            content: `Signal=${tone}\r\nDuration=200`,
+            content: `Signal=${digit}\r\nDuration=200`,
           },
         },
       });
@@ -225,7 +224,7 @@ export class SIPMeeting extends PhoneCall {
     let audioSender = peerConnection.getSenders().find(sender => sender.track?.kind == "audio" && sender.dtmf);
     assert(audioSender?.dtmf, "No DTMF capability on audio track");
     // RFC 4733
-    audioSender.dtmf.insertDTMF(tone, 200, 70); // tone, duration ms, gap ms
+    audioSender.dtmf.insertDTMF(digit, 200, 70); // tone, duration ms, gap ms
   }
 
   waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {

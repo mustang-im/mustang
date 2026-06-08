@@ -14,6 +14,7 @@
 
   /** Open sidebar, if meeting is ongoing */
   $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
+  $: console.log("meet sidebar", $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet"), "because", "have meetings", $meetings.hasItems, "selected not meet app", $selectedApp != meetMustangApp, "window not meet", !window.location.pathname.startsWith("/meet"), "location", window.location.pathname)
 
   /** When a call comes in or is placed, open the meet app,
    * which will then open the Calling screen. */

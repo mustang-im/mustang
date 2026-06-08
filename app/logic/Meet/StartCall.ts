@@ -1,6 +1,7 @@
 import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { MeetingParticipant } from "./Participant";
-import type { Person, ContactEntry } from "../Abstract/Person";
+import type { MeetAccount } from "./MeetAccount";
+import type { Person } from "../Abstract/Person";
 import type { Group } from "../Abstract/Group";
 /*
 import { Person, ContactEntry } from "../Abstract/Person";
@@ -131,7 +132,7 @@ export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeti
  *   `meeting.join()` was already called. You still need to `meeting.start()`.
  * @throws if the URL is not supported
  */
-export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
+export async function joinConferenceByURL(url: URLString, account?: MeetAccount): Promise<VideoConfMeeting> {
   assert(url, "Need URL");
   let urlParsed: URL;
   try {
@@ -139,7 +140,7 @@ export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeet
   } catch (ex) {
     throw new UserError(gt`This is not a meeting URL`);
   }
-  let account = appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
+  account ??= appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
   if (!account) {
     // TODO Open `url` in embedded browser window, as fallback
     throw new UserError(gt`This meeting URL is not supported`);

@@ -68,24 +68,16 @@ export async function testIncoming(person: Person) {
 }
 
 export async function callSelected(person: Person): Promise<VideoConfMeeting> {
-  const { faker } = await import("@faker-js/faker");
   let callee = new MeetingParticipant();
   callee.name = person.name;
   callee.picture = person.picture;
 
   let event = new Event();
-  event.startTime = faker.date.past({ years: 0.001 });
-  event.endTime = faker.date.future({ years: 0.001 });
-  event.title = gt`Final Approval UX Meet`;
-  event.descriptionHTML = gt`<p>
-    Objectives of the meeting are:
-    <ol>
-      <li>Review of the UX specs for Meet app</li>
-      <li>Discussion of feedback</li>
-      <li>Decision whether to proceed</li>
-      <li>Next steps</li>
-    </ol>
-  </p>`;
+  event.startTime = new Date();
+  let endTime = new Date();
+  endTime.setHours(endTime.getHours() + 2)
+  event.endTime = endTime;
+  event.title = gt`Called ${callee.name} *=> Called person by phone or video conference`;
 
   // TODO Figure out the best account to call this person
   let meeting = getMeetAccount().newMeeting();
@@ -102,8 +94,8 @@ export async function callSelected(person: Person): Promise<VideoConfMeeting> {
   return meeting;
 }
 
-export async function joinByURL(url: URLString) {
-  let meeting = await joinConferenceByURL(url);
+export async function joinByURL(url: URLString, account?: MeetAccount) {
+  let meeting = await joinConferenceByURL(url, account);
   appGlobal.meetings.add(meeting);
 }
 

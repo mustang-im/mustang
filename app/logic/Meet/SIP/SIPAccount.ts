@@ -1,11 +1,11 @@
 import { SIPMeeting } from "./SIPMeeting";
-import { MeetAccount } from "../MeetAccount";
+import { PhoneAccount } from "../PhoneAccount";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { UserAgent, Registerer, Invitation } from "sip.js";
 
-export class SIPAccount extends MeetAccount {
+export class SIPAccount extends PhoneAccount {
   readonly protocol: string = "sip";
   domain: string;
   hostname: string; /** during setup only. Part of `this.url` */

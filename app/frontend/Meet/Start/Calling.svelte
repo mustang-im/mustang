@@ -1,4 +1,5 @@
 <vbox flex class="calling" state={$meeting.state}>
+  <!-- svelte-ignore element_invalid_self_closing_tag -->
   <hbox flex />
   <hbox class="boxes" flex>
     <hbox flex />
@@ -112,9 +113,13 @@
     </vbox>
   </hbox>
 </vbox>
+
+<svelte:window on:keydown={ev => catchErrors(() => onKeyEnter(ev, accept))} />
+
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
   <audio src="/sound/ringtone1.mp3" loop autoplay />
 {/if}
+
 {#if ($meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall) &&
     $meeting.account.protocol == "sip" }
   <!-- Workaround: sip.js needs the mic to be open when the other party picks up our outgoing call,
@@ -123,6 +128,7 @@
     <InMeetingToolbar {meeting} isSidebar={true} showSidebar={false} />
   </vbox>
 {/if}
+
 {#if $appGlobal.isMobile}
   <StartBarM selectedAccount={appGlobal.meetAccounts.first} />
 {/if}
@@ -142,6 +148,8 @@
   import OpenIcon from "lucide-svelte/icons/door-open";
   import HourglassIcon from "lucide-svelte/icons/hourglass";
   import { t } from "../../../l10n/l10n";
+  import { onKeyEnter } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
 
   export let meeting: VideoConfMeeting;
 

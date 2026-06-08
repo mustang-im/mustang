@@ -3,12 +3,12 @@ import { PersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { promiseErrors } from "../util/flow/promiseUtil";
 import { logError } from "../../frontend/Util/error";
-import { ArrayColl, type Collection } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 /** Search all address books and server-based query-only address books for
  * a person whose name or email address matches the search string.
  * @throws in case of error */
-export async function searchContacts(searchStr: string, skip: Collection<PersonUID>): Promise<PersonUID[]> {
+export async function searchContacts(searchStr: string, skip: (person: PersonUID) => boolean): Promise<PersonUID[]> {
   if (!searchStr || searchStr.length < 2) {
     return [];
   }
@@ -31,7 +31,7 @@ export async function searchContacts(searchStr: string, skip: Collection<PersonU
       let n = new PersonUID(c.value, person.name);
       n.person = person;
       if (emailAddresses.find(e => e.emailAddress == n.emailAddress && e.name == n.name) ||
-        skip.find(e => e.emailAddress == n.emailAddress)) {
+          skip(n)) {
         continue;
       }
       emailAddresses.push(n);

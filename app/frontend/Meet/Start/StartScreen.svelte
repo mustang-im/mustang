@@ -16,6 +16,16 @@
       iconSize="24px"
       border={false}
       classes="plain primary" />
+    {#if havePhoneAccount}
+      <RoundButton
+        label={isPhoneDial ? $t`Video conference` : $t`Make a phone call`}
+        onClick={() => isPhoneDial = !isPhoneDial}
+        errorCallback={showError}
+        icon={isPhoneDial ? VideoConfIcon : PhoneCallIcon}
+        iconSize="24px"
+        border={false}
+        classes="plain primary" />
+    {/if}
   </hbox>
   <hbox flex />
   <vbox class="payment-bar-container">
@@ -26,7 +36,7 @@
   </vbox>
   <hbox flex />
   <AccountDropDown
-    accounts={appGlobal.meetAccounts}
+    accounts={appGlobal.meetAccounts.filterObservable(acc => !(acc instanceof PhoneAccount))}
     bind:selectedAccount
     filterByWorkspace={true} />
 </hbox>
@@ -57,7 +67,7 @@
           on:input={() => errorMsg = null}
           on:paste={() => catchErrors(joinURLPasted, showError)}
           on:keydown={event => onKeyEnter(event, () => catchErrors(() => joinByURL(conferenceURL), showError))} />
-        <Button label={$t`Join`} classes="secondary"
+        <Button label={$t`Call`} classes="secondary"
           disabled={!conferenceURL}
           onClick={() => joinByURL(conferenceURL)}
           errorCallback={showError} />
@@ -106,6 +116,7 @@
 
 <script lang="ts">
   import { startAdHocMeeting, callSelected, joinByURL, startFakeMeeting, testIncoming, createMustangMeetAccountIfPossible } from "./start";
+  import { PhoneAccount } from "../../../logic/Meet/PhoneAccount";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { meetMustangApp } from "../MeetMustangApp";
   import { selectedApp } from "../../AppsBar/selectedApp";
@@ -126,11 +137,15 @@
   import VideoIcon from 'lucide-svelte/icons/video';
   import PlusIcon from 'lucide-svelte/icons/plus';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import { t } from "../../../l10n/l10n";
+  import PhoneCallIcon from "lucide-svelte/icons/phone";
+  import VideoConfIcon from "lucide-svelte/icons/video";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
   import { assert, sleep } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
   import { onMount } from "svelte";
+
+  export let isPhoneDial = false;
 
   const now = new Date();
   const maxUpcoming = new Date();
@@ -171,6 +186,8 @@
   }
 
   $selectedApp = meetMustangApp;
+  let meetAccounts = appGlobal.meetAccounts;
+  $: havePhoneAccount = $meetAccounts.some(acc => acc instanceof PhoneAccount);
 
   onMount(() => catchErrors(createMustangMeetAccountIfPossible));
 </script>

@@ -43,6 +43,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
+  export let skipPersonFunc = (person: PersonUID) => !!skipPersons.find(e => e.emailAddress == person.emailAddress);
   export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
@@ -51,7 +52,7 @@
 
   async function search(inputStr: string) {
     try {
-      return await searchContacts(inputStr, skipPersons);
+      return await searchContacts(inputStr, skipPersonFunc);
     } catch (ex) {
       showError(ex);
       return [];
@@ -141,5 +142,8 @@
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {
   border: 1px solid red;
   background-color: green;
+}
+.person-autocomplete :global(.hidden) {
+  display: none;
 }
 </style>

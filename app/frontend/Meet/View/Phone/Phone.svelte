@@ -32,7 +32,7 @@
   $: person = otherParticipant?.findPerson();
   $: console.log("phone caller", otherParticipant);
 
-  async function onSendSTMF(digit: number | string) {
+  async function onSendSTMF(digit: string) {
     assert(meeting instanceof PhoneCall, "Not a phone call");
     await meeting.sendDTMF(digit);
   }
