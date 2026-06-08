@@ -122,6 +122,7 @@
 <script lang="ts">
   import { joinByURL } from "../start";
   import { PhoneAccount } from "../../../../logic/Meet/PhoneAccount";
+  import { PhoneCall } from "../../../../logic/Meet/PhoneCall";
   import type { Person } from "../../../../logic/Abstract/Person";
   import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
@@ -158,9 +159,10 @@
   const previousCalls = new ArrayColl<PersonUID>(); // appGlobal.calendarEvents.filterObservable(event => event.startTime < now && event.startTime > maxPrevious).reverse();
 
   let phoneNumber = "";
-  let selectedAccount = appGlobal.meetAccounts.first;
+  let selectedAccount = appGlobal.meetAccounts.filterOnce(acc => acc instanceof PhoneAccount).first as PhoneAccount;
 
-  $: isPhoneNumberValid = phoneNumber.replace(/[^0-9+]/g, "").length >= 8;
+  const minLength = 8;
+  $: isPhoneNumberValid = phoneNumber.replace(/[^0-9+]/g, "").length >= minLength;
 
   async function callPhoneNumber(number: string) {
     await joinByURL("tel:" + number);
@@ -189,6 +191,20 @@
   function showError(ex: Error) {
     errorMsg = ex.message ?? ex + "";
     logError(ex);
+  }
+
+  function findMatchingContact(phoneNumber: string): Person | null {
+    if (phoneNumber?.length <= minLength) {
+      return null;
+    }
+    let country = selectedAccount.countryCode;
+    let entered = PhoneCall.getInternationalPhoneNumber(phoneNumber, country);
+    return appGlobal.persons.find(person => !!person.phoneNumbers.find(ce =>
+      PhoneCall.matchPhoneNumber(ce.value, entered, country)));
+  }
+  $: personMatching = findMatchingContact(phoneNumber);
+  $: if (personMatching) {
+    $selectedPerson = personMatching;
   }
 </script>
 
