@@ -100,7 +100,7 @@ export class PublicKey extends Observable {
     json.name = this.name;
     json.id = this.id;
     json.fingerprint = this.fingerprint;
-    json.created = this.created.toISOString();
+    json.created = this.created?.toISOString();
     json.expires = this.expires?.toISOString();
     json.cipher = this.cipher;
     json.keyLengthInBits = this.keyLengthInBits;
@@ -117,8 +117,8 @@ export class PublicKey extends Observable {
     this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
     this.id = sanitize.alphanumdash(json.id);
     this.name = sanitize.label(json.name, this.id.substring(0, 4));
-    this.fingerprint = sanitize.alphanumdash(json.fingerprint);
-    this.created = sanitize.date(json.created);
+    this.fingerprint = sanitize.alphanumdash(json.fingerprint, "");
+    this.created = sanitize.date(json.created, null);
     this.expires = sanitize.date(json.expires, null);
     this.cipher = sanitize.nonemptylabel(json.cipher, null);
     this.keyLengthInBits = sanitize.integer(json.keyLengthInBits, null);
