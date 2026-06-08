@@ -1,14 +1,17 @@
 <vbox bind:clientWidth={width} flex>
-  <Splitter hasRight={width > 600}>
+  <Splitter
+    hasRight={person && width > 600}
+    initialRightRatio={0.4}
+    name="phone-contact-history-during-call">
     <hbox class="left" slot="left" flex>
       {#if showDialPad}
         <DialPad on:digit={ev => catchErrors(() => onSendSTMF(ev.detail))} />
       {/if}
     </hbox>
     <Scroll slot="right">
-      {#if person}
-        <ContactHistory {person} />
-      {/if}
+      <vbox class="contact-history" flex>
+        <ContactHistory {person} colorInherit={true} />
+      </vbox>
     </Scroll>
   </Splitter>
 </vbox>
@@ -24,13 +27,14 @@
   import { catchErrors } from "../../../Util/error";
   import { assert } from "../../../../logic/util/util";
 
-  export let otherParticipant: MeetingParticipant;
+  export let showParticipant: MeetingParticipant;
   export let meeting: VideoConfMeeting;
 
   let width: number;
   let showDialPad = true;
-  $: person = otherParticipant?.findPerson();
-  $: console.log("phone caller", otherParticipant);
+  $: participants = $meeting.participants;
+  $: remote = showParticipant ?? $participants.first
+  $: person = remote?.findPerson();
 
   async function onSendSTMF(digit: string) {
     assert(meeting instanceof PhoneCall, "Not a phone call");

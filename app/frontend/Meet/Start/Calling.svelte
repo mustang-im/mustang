@@ -130,7 +130,7 @@
       </hbox>
     </vbox>
     <hbox class="contact-history" slot="second">
-      <ContactHistory {person} />
+      <ContactHistory {person} colorInherit={true} />
     </hbox>
   </SplitterBidirectional>
 </vbox>
@@ -295,11 +295,6 @@
   }
   .device-setup :global(.self-video video) {
     width: 350px;
-  }
-  .contact-history :global(.group > .content)
-  {
-    background-color: inherit;
-    color: inherit;
   }
 
   .bottom-bar {

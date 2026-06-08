@@ -1,5 +1,5 @@
 {#if selectedView == MeetVideoView.Phone}
-  <Phone otherParticipant={showParticipant} {meeting} />
+  <Phone {showParticipant} {meeting} />
 {:else if meetGalleryViews.includes(selectedView) || isSidebar}
   <Gallery {videos} view={selectedView} {showSelf} />
 {:else if selectedView == MeetVideoView.Thumbnails}
