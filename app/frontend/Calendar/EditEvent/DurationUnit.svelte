@@ -1,5 +1,4 @@
-<select id="duration-unit" bind:value={unitInSeconds} {disabled}
-  on:change={unitChanged}>
+<select id="duration-unit" bind:value={getUnitInSeconds, unitChanged} {disabled}>
   {#if !allDay}
     <option value={k1MinuteS}>{$plural(durationInUnit, { one: 'minute', other: 'minutes' })}</option>
   {/if}
@@ -28,7 +27,12 @@
     durationInSeconds = durationInUnit * unitInSeconds;
   }
 
-  function unitChanged() {
+  function getUnitInSeconds() {
+    return unitInSeconds;
+  }
+
+  function unitChanged(value: number) {
+    unitInSeconds = value;
     adaptAllDays();
     durationInSeconds = durationInUnit * unitInSeconds;
   }
