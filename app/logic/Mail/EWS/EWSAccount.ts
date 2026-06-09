@@ -715,8 +715,6 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
                 FieldURI: "folder:FolderClass",
               }, {
                 FieldURI: "folder:ParentFolderId",
-              }, {
-                FieldURI: "folder:DistinguishedFolderId",
               }],
               t$ExtendedFieldURI: {
                 PropertyTag: HiddenPidTag,
@@ -735,7 +733,11 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
         },
       };
       let response = await this.callEWS(request);
+      // Set this here as some servers don't set DistinguishedFolderId
+      response.Folders.Folder.DistinguishedFolderId = "inbox";
       folders.unshift(response.Folders.Folder);
+    } else {
+      await this.ensureDistinguishedFolderIds(result, ["inbox", "drafts", "sentitems", "junkemail", "deleteditems", "contacts", "calendar"]);
     }
     for (let folder of folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
@@ -779,6 +781,40 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
       let calendar = this.createCalendarAccount(folder);
       await calendar.save();
       appGlobal.calendars.add(calendar);
+    }
+  }
+
+  async ensureDistinguishedFolderIds(result: any, folderIds: string[]): Promise<void> {
+    if (ensureArray(result.RootFolder.Folders.Folder).some(folder => folder.DistinguishedFolderId)) {
+      return;
+    }
+    let request = {
+      m$GetFolder: {
+        m$FolderShape: {
+          t$BaseShape: "IdOnly",
+        },
+        m$FolderIds: {
+          t$DistinguishedFolderId: folderIds.map(folderId => this.sharedFolderRoot
+          ? {
+            Id: folderId,
+            t$Mailbox: {
+              t$EmailAddress: this.username,
+            },
+          }
+          : {
+            Id: folderId,
+          }),
+        },
+      },
+    };
+    let response = await this.callEWS(request);
+    for (let i = 0; i < folderIds.length; i++) {
+      for (let folderClass in response[i].Folders) {
+        let folder = ensureArray(result.RootFolder.Folders[folderClass]).find(folder => folder.FolderId.Id == response[i].Folders[folderClass].FolderId.Id);
+        if (folder) {
+          folder.DistinguishedFolderId = folderIds[i];
+        }
+      }
     }
   }
 
@@ -853,6 +889,7 @@ export class EWSAccount extends MailAccount implements EWSSubscribable {
       },
     };
     let result = await this.callEWS(query);
+    await this.ensureDistinguishedFolderIds(result, ["contacts", "calendar"]);
     let addressbooks = ensureArray(result.RootFolder.Folders.ContactsFolder)
       .filter(folder => folder.ExtendedProperty?.Value != "true");
     let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
