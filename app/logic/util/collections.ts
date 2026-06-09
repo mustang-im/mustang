@@ -34,9 +34,7 @@ export function getNext<T>(list: ArrayColl<T>, curObject: T): T | null {
     return null;
   }
   let position = list.indexOf(curObject);
-  let next = [list.getIndex(position + 1), list.last, list.first]
-    .find(item => !!item && item !== curObject);
-  return next ?? null;
+  return list.getIndex(position + 1) ?? list.getIndex(position - 1);
 }
 
 /** Creates an `ArrayColl` for a JS array, populates it with the contents,
