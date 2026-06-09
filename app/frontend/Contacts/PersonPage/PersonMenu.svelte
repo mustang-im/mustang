@@ -21,13 +21,18 @@
   export let person: Person;
 
   async function deleteIt() {
-    if (person == $selectedPerson) {
-      $selectedPerson = getNext(person.addressbook?.persons, person);
+    let toDelete = person;
+    if (toDelete == $selectedPerson) {
+      $selectedPerson = getNext(toDelete.addressbook?.persons, toDelete);
       if (appGlobal.isMobile) {
-        goTo(URLPart`/contacts/person/${person.id}/edit`, { person });
+        if ($selectedPerson) {
+          goTo(URLPart`/contacts/person/${$selectedPerson.id}/edit`, { person: $selectedPerson });
+        } else {
+          goTo(URLPart`/contacts`, {});
+        }
       }
     }
 
-    await person.deleteIt();
+    await toDelete.deleteIt();
   }
 </script>
