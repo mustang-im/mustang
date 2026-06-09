@@ -22,9 +22,8 @@
 
   async function deleteIt() {
     let toDelete = person;
-    if (person == $selectedPerson) {
-      let next = getNext(person.addressbook?.persons, person);
-      $selectedPerson = next === toDelete ? null : next;
+    if (toDelete == $selectedPerson) {
+      $selectedPerson = getNext(toDelete.addressbook?.persons, toDelete);
       if (appGlobal.isMobile) {
         if ($selectedPerson) {
           goTo(URLPart`/contacts/person/${$selectedPerson.id}/edit`, { person: $selectedPerson });
