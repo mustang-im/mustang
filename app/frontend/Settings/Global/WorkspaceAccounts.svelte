@@ -34,11 +34,9 @@
   import { Workspace } from "../../../logic/Abstract/Workspace";
   import { Account } from "../../../logic/Abstract/Account";
   import { settingsCategories } from "../SettingsCategory";
-  import { selectedCategory } from "../Window/selected";
-  import { openSettingsCategory, openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
+  import { openSettingsCategory, openSettingsCategoryByID, openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { openApp } from "../../AppsBar/selectedApp";
-  import { settingsMustangApp } from "../Window/SettingsMustangApp";
   import { changedWorkspace } from "../../MainWindow/Selected";
   import WorkspaceAccountMenu from "./WorkspaceAccountMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -70,11 +68,7 @@
   }
 
   function onReOpenThis() {
-    let workspacesSettings = settingsCategories
-      .find(cat => cat.id == "global")
-      .subCategories
-      .find(cat => cat.id == "global-workspaces");
-    openSettingsCategory(workspacesSettings);
+    openSettingsCategoryByID("global-workspaces");
   }
 </script>
 
