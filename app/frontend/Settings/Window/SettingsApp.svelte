@@ -23,6 +23,7 @@
   import { settingsCategories } from "../SettingsCategory";
   import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
+  import { openSettingsCategory } from "./CategoriesUtils";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SettingsCategoriesPane from "./CategoriesPane.svelte";
   import MainContent from "./MainContent.svelte";
@@ -38,12 +39,12 @@
   function onSearch(searchTerm: string) {
     for (let cat of categories) {
       if (cat.searchMatchesDirect(searchTerm)) {
-        $selectedCategory = cat;
+        openSettingsCategory(cat);
         return;
       }
       for (let subCat of cat.subCategories) {
         if (subCat.searchMatchesDirect(searchTerm)) {
-          $selectedCategory = subCat;
+          openSettingsCategory(subCat);
           return;
         }
       }

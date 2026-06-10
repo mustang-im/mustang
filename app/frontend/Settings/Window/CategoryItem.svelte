@@ -13,6 +13,7 @@
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
+  import { openSettingsCategory } from "./CategoriesUtils";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
@@ -28,11 +29,8 @@
     if (appGlobal.isMobile && (category.subCategories.hasItems || category.accounts.hasItems)) {
       isSectionOpen = !isSectionOpen;
     } else {
-      $selectedCategory = category;
+      openSettingsCategory(category);
     }
-    /*if (!category.parent.accounts.contains($selectedAccount)) {
-      $selectedAccount = null;
-    }*/
   }
 </script>
 
