@@ -33,8 +33,9 @@
 <script lang="ts">
   import { Workspace } from "../../../logic/Abstract/Workspace";
   import { Account } from "../../../logic/Abstract/Account";
-  import { settingsCategories, accountSettings } from "../SettingsCategory";
-  import { selectedCategory, selectedAccount } from "../Window/selected";
+  import { settingsCategories } from "../SettingsCategory";
+  import { selectedCategory } from "../Window/selected";
+  import { openSettingsCategory, openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { openApp } from "../../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
@@ -56,8 +57,7 @@
   $: accounts = $changedWorkspace && allAccounts.filter(acc => acc.workspace == workspace);
 
   function onOpenAccount(account: Account) {
-    $selectedAccount = account;
-    $selectedCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+    openSettingsCategoryForAccount(account);
   }
 
   function onNewAccount() {
@@ -74,8 +74,7 @@
       .find(cat => cat.id == "global")
       .subCategories
       .find(cat => cat.id == "global-workspaces");
-    $selectedCategory = workspacesSettings;
-    openApp(settingsMustangApp, {});
+    openSettingsCategory(workspacesSettings);
   }
 </script>
 

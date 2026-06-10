@@ -31,6 +31,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
+  import { openSettingsCategory } from "./CategoriesUtils";
 
   let categories = settingsCategories;
 
@@ -38,12 +39,12 @@
   function onSearch(searchTerm: string) {
     for (let cat of categories) {
       if (cat.searchMatchesDirect(searchTerm)) {
-        $selectedCategory = cat;
+        openSettingsCategory(cat);
         return;
       }
       for (let subCat of cat.subCategories) {
         if (subCat.searchMatchesDirect(searchTerm)) {
-          $selectedCategory = subCat;
+          openSettingsCategory(subCat);
           return;
         }
       }
