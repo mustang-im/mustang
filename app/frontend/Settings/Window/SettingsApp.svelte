@@ -23,6 +23,7 @@
   import { settingsCategories } from "../SettingsCategory";
   import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
+  import { openSettingsCategory } from "./CategoriesUtils";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SettingsCategoriesPane from "./CategoriesPane.svelte";
   import MainContent from "./MainContent.svelte";
@@ -31,7 +32,6 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
-  import { openSettingsCategory } from "./CategoriesUtils";
 
   let categories = settingsCategories;
 
