@@ -17,7 +17,6 @@
   </Route>
 {:else}
   <Route path="/">
-    {params?.category ? $selectedCategory = params.category : null, "" }
     <SettingsApp />
   </Route>
 {/if}
@@ -34,4 +33,5 @@
 
   $: location = useLocation();
   $: params = getParams($location.state);
+  $: if (params?.category) $selectedCategory = params.category;
 </script>
