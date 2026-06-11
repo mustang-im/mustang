@@ -73,8 +73,8 @@ export class XMPPAccount extends ChatAccount {
       // If no URL is configured, find it using
       // `/.well-known/host-meta.json` of the JID domain, per XEP-0156.
       transports: {
-        websocket: this.url?.startsWith("wss:") ? this.url : !this.url,
-        bosh: this.url?.startsWith("https:") ? this.url : !this.url,
+        websocket: this.url ? allowedURL(this.url, "wss", "ws") : true,
+        bosh: this.url ? allowedURL(this.url, "https", "http") : true,
       },
     });
     this.addListeners();
@@ -309,6 +309,23 @@ export class XMPPAccount extends ChatAccount {
 /** @returns the JID without the resource, e.g. "fred@example.com" */
 export function getBareJID(jid: string): string {
   return sanitize.nonemptystring(jid, null)?.split("/")[0].toLowerCase();
+}
+
+/** TLS or local
+ * @returns URL or null */
+function allowedURL(url: string, secure: "wss" | "https", plain: "ws" | "http"): string | null {
+  if (url.startsWith(secure + ":")) {
+    return url;
+  }
+  try {
+    let parsed = new URL(url);
+    if (parsed.protocol == plain + ":" &&
+        ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname)) {
+      return url;
+    }
+  } catch (ex) {
+  }
+  return null;
 }
 
 const kNetworkTimeoutInMS = 5 * 1000; // 5 seconds
