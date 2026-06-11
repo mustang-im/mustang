@@ -2,6 +2,7 @@
  * and an XEdDSA signing key; the chain is distributed to members over their
  * pairwise sessions via a SenderKeyDistributionMessage. */
 import { KeyPair } from "../KeyPair";
+import { djbEncode } from "../curve";
 import { hkdfSHA256, hmacSHA256, aesCBCEncrypt, aesCBCDecrypt, randomBytes } from "../primitives";
 import { padPlaintext, unpadPlaintext } from "./SessionCipher";
 import {
@@ -42,7 +43,10 @@ export function createSenderKey(keyID: number): SenderKeyState {
   state.chainKey = randomBytes(32);
   state.chainIndex = 0;
   state.signingKeyPair = KeyPair.generate();
-  state.signingPublicKey = state.signingKeyPair.publicKey;
+  // The signing key travels in the SenderKeyDistributionMessage in 33-byte djb
+  // form (0x05 || key), like every Signal public key on the wire; a real peer
+  // stores it verbatim and verifies our SenderKeyMessage signatures against it.
+  state.signingPublicKey = djbEncode(state.signingKeyPair.publicKey);
   return state;
 }
 

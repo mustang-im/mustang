@@ -20,7 +20,7 @@ import {
   encodeHandshakeMessage, decodeHandshakeMessage, encodeClientPayload, decodeCertChain,
   kWaCertPublicKey, type ClientPayload,
 } from "./Proto/handshakeSchema";
-import { protobufField } from "./Proto/ProtobufLite";
+import { readProto, getBytes, getInt } from "./Proto/ProtobufLite";
 import { appGlobal } from "../../app";
 
 export class WhatsAppConnection {
@@ -37,17 +37,24 @@ export class WhatsAppConnection {
   /** Called for every incoming stanza that is not an IQ response. */
   onStanza: (node: WANode) => void = () => undefined;
 
+  /** WhatsApp's pinned Noise root certificate key. A field (not the bare const)
+   * only so tests can drive the handshake with their own root; production never
+   * changes it. */
+  rootCertKey: Uint8Array = kWaCertPublicKey;
+
   constructor(keys: ConnectionKeys) {
     this.keys = keys;
   }
 
   /** Performs the Noise handshake and sends the ClientPayload. `buildPayload`
-   * returns the ClientPayload protobuf object (login or registration form). */
-  async connect(buildPayload: () => ClientPayload): Promise<void> {
-    if (!kWhatsAppLiveEnabled) {
+   * returns the ClientPayload protobuf object (login or registration form).
+   * `transport` is injectable for tests; production passes none and the live
+   * gate applies. */
+  async connect(buildPayload: () => ClientPayload, transport?: WhatsAppTransport): Promise<void> {
+    if (!transport && !kWhatsAppLiveEnabled) {
       throw new Error("WhatsApp live connection is disabled");
     }
-    this.transport = await createWhatsAppTransport();
+    this.transport = transport ?? await createWhatsAppTransport();
     this.transport.onData(data => this.onTransportData(data));
     this.transport.onClose(() => this.onStanza(new WANode("stream:error")));
     await this.transport.connect();
@@ -83,16 +90,31 @@ export class WhatsAppConnection {
     // by the read loop via onStanza.
   }
 
-  /** Verifies the server's static key against WhatsApp's pinned root certificate. */
+  /** Verifies the server's static key against WhatsApp's pinned root certificate.
+   * Walks the full chain the same way the real client does: the pinned root
+   * signs the intermediate, the intermediate signs the leaf, the serials chain,
+   * and the leaf's pinned key (Details field 3) is the server's static key.
+   * (Details fields: serial=1, issuerSerial=2, key=3.) */
   protected verifyServerCertificate(certPayload: Uint8Array, serverStatic: Uint8Array) {
     let chain = decodeCertChain(certPayload);
     let intermediate = chain.intermediate!;
     let leaf = chain.leaf!;
-    if (!xeddsaVerify(kWaCertPublicKey, intermediate.details!, intermediate.signature!)) {
+    if (!xeddsaVerify(this.rootCertKey, intermediate.details!, intermediate.signature!)) {
       throw new Error("WhatsApp intermediate certificate signature invalid");
     }
-    // The leaf cert's pinned key (Details field 3) must equal the server static key.
-    let leafKey = protobufField(leaf.details!, 3);
+    let intermediateFields = readProto(intermediate.details!);
+    if ((getInt(intermediateFields, 2) ?? 0) != 0) {
+      throw new Error("WhatsApp intermediate certificate is not root-issued");
+    }
+    let intermediateKey = getBytes(intermediateFields, 3);
+    if (!intermediateKey || !xeddsaVerify(intermediateKey, leaf.details!, leaf.signature!)) {
+      throw new Error("WhatsApp leaf certificate signature invalid");
+    }
+    let leafFields = readProto(leaf.details!);
+    if ((getInt(leafFields, 2) ?? 0) != (getInt(intermediateFields, 1) ?? 0)) {
+      throw new Error("WhatsApp leaf certificate does not chain to the intermediate");
+    }
+    let leafKey = getBytes(leafFields, 3);
     if (!leafKey || !bytesEqual(leafKey, serverStatic)) {
       throw new Error("WhatsApp server key does not match its certificate");
     }
@@ -198,8 +220,9 @@ export class WhatsAppConnection {
 /** Master switch for the live network path. Off until validated end-to-end. */
 export const kWhatsAppLiveEnabled = false;
 
-// Android connection header: "WA" + protocol version 5,2.
-const kConnectionHeader = new Uint8Array([0x57, 0x41, 5, 2]);
+// Android connection header: "WA" + magic byte 6 + WABinary dictionary version 3.
+// The dictionary version must match the token tables in Binary/tokens.ts.
+export const kConnectionHeader = new Uint8Array([0x57, 0x41, 6, 3]);
 
 export interface ConnectionKeys {
   /** Persistent Noise static key (Curve25519). */

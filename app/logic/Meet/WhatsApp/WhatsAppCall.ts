@@ -1,16 +1,18 @@
-/** A WhatsApp 1:1 voice/video call, using the WEB calling profile.
+/** A WhatsApp 1:1 voice/video call.
  *
- * web.whatsapp.com places calls with the browser's own WebRTC stack
- * (RTCPeerConnection, DTLS-SRTP, ICE), so we reuse exactly the same WebRTC
- * machinery as the SIP/LiveKit calls: offer/answer SDP, ICE candidates, and
- * local/remote VideoStreams. End-to-end privacy for SFU group calls is an extra
- * per-frame encryption layer keyed off the Signal-shared call key (see
- * WhatsAppCallE2E).
+ * This reuses the app's standard WebRTC machinery (RTCPeerConnection, offer/
+ * answer SDP, ICE, local/remote VideoStreams) like the SIP/LiveKit calls, with
+ * an extra per-frame encryption layer for SFU group calls keyed off the
+ * Signal-shared call key (see WhatsAppCallE2E).
  *
- * GATED: the live network path is off, and the exact byte format of the web
- * `<call>` signaling (how the SDP/ICE are packed) needs a live capture of
- * web.whatsapp.com — see WhatsAppCallSignaling. The WebRTC media plane itself is
- * standard and reuses the app's existing code. */
+ * GATED, and NOT yet interoperable: WhatsApp's real call media plane is
+ * proprietary (SDES-keyed SRTP over WhatsApp relays, with the SRTP secret
+ * Signal-encrypted in the offer), NOT browser WebRTC — this holds for
+ * web.whatsapp.com too (its in-browser client drives a WASM media engine, not
+ * the standard SDP/DTLS/ICE path). So the RTCPeerConnection wiring here is a
+ * structurally-faithful stand-in that exercises the signaling envelope and the
+ * UI, but a real WhatsApp peer cannot answer it; the proprietary media plane is
+ * the remaining work. See the MEDIA-PLANE NOTE in WhatsAppMeetAccount. */
 import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import { VideoStream } from "../VideoStream";

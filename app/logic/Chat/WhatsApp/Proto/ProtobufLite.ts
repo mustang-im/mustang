@@ -1,7 +1,8 @@
-/** A minimal protobuf writer/reader for the cases where exact byte control
- * matters and pulling in protobufjs would be overkill: the small Signal wire
- * messages (version bytes, MAC coverage) and the crypt15 backup header.
- * The larger WhatsApp message schemas use protobufjs instead (see schema.ts). */
+/** A minimal protobuf writer/reader. Used directly where exact byte control
+ * matters (the small Signal wire messages — version bytes, MAC coverage — and
+ * the crypt15 backup header), and as the engine under the readable codec DSL
+ * (codec.ts) that the larger WhatsApp message schemas (schema.ts) are built on.
+ * No external protobuf library is used anywhere in app code. */
 
 export class ProtoWriter {
   protected buffer: number[] = [];

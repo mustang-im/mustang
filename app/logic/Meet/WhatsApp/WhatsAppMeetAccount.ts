@@ -41,7 +41,10 @@ export class WhatsAppMeetAccount extends MeetAccount {
   /** Our user's own JID, learned from the paired chat account. */
   get ownJID(): JID {
     let jid = this.chatAccount?.username;
-    return jid ? JID.parse(jid) : new JID(appGlobal.me?.name ?? "me", "s.whatsapp.net");
+    if (!jid) {
+      throw new Error("WhatsApp account is not paired yet"); // never fabricate a JID from a display name
+    }
+    return JID.parse(jid);
   }
 
   /** Routes an incoming `<call>` stanza to the right call, or starts a new one. */
@@ -65,13 +68,16 @@ export class WhatsAppMeetAccount extends MeetAccount {
 
   /** Sends a call stanza over the WhatsApp connection.
    *
-   * IDENTITY NOTE: chat poses as the Android client; calls use the Web profile
-   * (browser WebRTC). A single companion connection advertises ONE platform to
-   * the server, so a clean "Android for chat, Web for calls" split is achieved
-   * by running calls over a SEPARATE Web-profile companion session (a second
-   * linked device), not by switching identity mid-connection. For now this
-   * reuses the chat connection as a gated placeholder; the production design
-   * gives the Meet account its own Web companion connection. */
+   * MEDIA-PLANE NOTE: WhatsApp calls — on Android AND on web.whatsapp.com — do
+   * not use a browser's standard WebRTC (SDP / DTLS-SRTP / ICE). The media plane
+   * is proprietary: an SRTP master secret is Signal-encrypted to each device in
+   * the call offer (SDES-style keying) and carried over WhatsApp's own relays;
+   * the WABinary token dictionary has no sdp/ice/dtls vocabulary at all. So the
+   * RTCPeerConnection path in WhatsAppCall is a stand-in, not a compatible
+   * implementation, and reusing a separate Web-profile companion would not change
+   * that. The `<call>` signaling envelope below (call-id/call-creator/offer/
+   * accept/terminate) is correct; the media descriptors it carries are the gap.
+   * This rides the chat connection as a gated placeholder. */
   async sendCallStanza(node: WANode): Promise<void> {
     let connection = this.chatAccount?.connection;
     if (!connection) {

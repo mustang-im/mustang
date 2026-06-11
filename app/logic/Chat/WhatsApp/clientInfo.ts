@@ -14,15 +14,15 @@
 import { type ClientPayload, Platform, Product } from "./Proto/handshakeSchema";
 
 export const kWaAndroidClient = {
-  appVersion: "2.24.20.85",
-  osVersion: "13",
-  manufacturer: "Samsung",
-  device: "SM-G991B", // Galaxy S21
-  osBuildNumber: "TP1A.220624.014",
+  appVersion: "2.26.23.7",
+  osVersion: "15",
+  manufacturer: "samsung",
+  device: "SM-A266B", // Galaxy A26 5G global
+  osBuildNumber: "AP3A.240905.015.A266BXXU9CZEA", // AOSP build id + `.` + Samsung firmware
   localeLanguage: "en",
-  localeCountry: "US",
-  mcc: "000",
-  mnc: "000",
+  localeCountry: "DE",
+  mcc: "262", // Germany
+  mnc: "07", // O2
 };
 
 /** App version as the protobuf AppVersion fields (primary.secondary.tertiary). */

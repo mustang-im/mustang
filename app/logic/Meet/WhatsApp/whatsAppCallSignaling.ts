@@ -1,20 +1,19 @@
-/** Builds and parses WhatsApp `<call>` signaling stanzas for the WEB calling
- * profile (the way web.whatsapp.com places calls).
+/** Builds and parses WhatsApp `<call>` signaling stanzas.
  *
- * Unlike the native Android/iOS clients (proprietary SDES-SRTP), the web client
- * runs in a browser and therefore uses standard WebRTC: DTLS-SRTP transport and
- * ICE. So the offer/answer carry a WebRTC **SDP** (which embeds the DTLS
- * fingerprint, ICE ufrag/pwd, and codecs) and ICE candidates trickle via a
- * `<transport>` action. An end-to-end frame-encryption key (for SFU group calls)
- * is carried in an `<enc>` node, Signal-encrypted (see WhatsAppCallE2E).
+ * ACCURATE — the envelope: the `<call>` wrapper and its offer/accept/reject/
+ * terminate/transport children, with call-id, call-creator, and a terminate
+ * reason, match the real protocol (cross-checked against whatsmeow) and the
+ * `<enc>` node carries a Signal-encrypted key.
  *
- * WHAT IS ACCURATE vs. A GAP: the envelope (call/offer/accept/transport/
- * terminate, call-id, call-creator, the video flag, the enc key, and carrying
- * the WebRTC SDP+ICE) matches how a browser must work. The exact BYTE encoding
- * web.whatsapp.com uses to pack the SDP/fingerprint/ICE into the binary stanza
- * is new (2025) and undocumented; we carry the SDP in an `<sdp>` node, which
- * keeps the browser WebRTC code reusable. Matching the precise field layout
- * needs a live capture of web.whatsapp.com call traffic. */
+ * GAP — the media description: WhatsApp does NOT use WebRTC SDP/ICE/DTLS, not
+ * even on web.whatsapp.com. The real offer carries proprietary `<audio>`/
+ * `<video>`/`<enc>` descriptors plus an SRTP master secret (SDES-style keying),
+ * not an SDP blob — the WABinary token dictionary contains no sdp/ice/dtls
+ * tokens, so the `<sdp>`/`<candidate>` nodes below would serialize as opaque
+ * BINARY_8 the server does not understand. They exist only to keep the
+ * RTCPeerConnection stand-in self-consistent; making calls actually interoperate
+ * requires building the proprietary media plane (and a live capture of the
+ * descriptor byte layout). See the MEDIA-PLANE NOTE in WhatsAppMeetAccount. */
 import { WANode } from "../../Chat/WhatsApp/Binary/WANode";
 import { JID } from "../../Chat/WhatsApp/Binary/JID";
 
