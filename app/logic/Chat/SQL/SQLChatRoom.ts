@@ -37,12 +37,16 @@ export class SQLChatRoom extends ChatRoom {
         chat.dbID = existing.id;
       }
     }
+    // contactID alone is ambiguous, because Person and Group have separate ID spaces
+    let jsonStr = JSON.stringify({
+      contactType: chat.contact instanceof Group ? "group" : "person",
+    });
     if (!chat.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO chat (
-          accountID, idStr, name, contactID, syncState
+          accountID, idStr, name, contactID, syncState, json
         ) VALUES(
-          ${chat.account.dbID}, ${chat.id}, ${chat.name}, ${chat.contact.dbID}, ${chat.syncState}
+          ${chat.account.dbID}, ${chat.id}, ${chat.name}, ${chat.contact.dbID}, ${chat.syncState}, ${jsonStr}
         )`);
       chat.dbID = insert.lastInsertRowid;
     } else {
@@ -51,7 +55,8 @@ export class SQLChatRoom extends ChatRoom {
           idStr = ${chat.id},
           name = ${chat.name},
           contactID = ${chat.contact.dbID},
-          syncState = ${chat.syncState}
+          syncState = ${chat.syncState},
+          json = ${jsonStr}
         WHERE id = ${chat.dbID}
         `);
     }
@@ -71,7 +76,7 @@ export class SQLChatRoom extends ChatRoom {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
-          accountID, idStr, name, contactID, syncState
+          accountID, idStr, name, contactID, syncState, json
         FROM chat
         WHERE id = ${dbID}
         `) as any;
@@ -79,9 +84,13 @@ export class SQLChatRoom extends ChatRoom {
     chat.dbID = sanitize.integer(dbID);
     chat.id = sanitize.string(row.idStr);
     chat.syncState = sanitize.string(row.syncState, null);
+    let json = sanitize.json(row.json, {}) as any;
     let contactID = sanitize.integer(row.contactID);
-    chat.contact = appGlobal.persons.find(p => p.dbID == contactID);
-    // TODO Group
+    if (json.contactType == "group") {
+      chat.contact = findGroup(contactID);
+    } else {
+      chat.contact = appGlobal.persons.find(p => p.dbID == contactID) ?? findGroup(contactID);
+    }
     assert(chat.contact, "Contact not found");
     chat.name = sanitize.label(row.name, chat.contact.name);
     let accountID = sanitize.integer(row.accountID);
@@ -94,7 +103,7 @@ export class SQLChatRoom extends ChatRoom {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id,
-        accountID, idStr, name, contactID, syncState
+        accountID, idStr, name, contactID, syncState, json
       FROM chat
       WHERE accountID = ${account.dbID}
       `) as any;
@@ -115,4 +124,14 @@ export class SQLChatRoom extends ChatRoom {
     }
     account.rooms.addAll(newChats);
   }
+}
+
+function findGroup(dbID: number): Group | null {
+  for (let ab of appGlobal.addressbooks) {
+    let group = ab.groups.find(g => g.dbID == dbID);
+    if (group) {
+      return group;
+    }
+  }
+  return null;
 }

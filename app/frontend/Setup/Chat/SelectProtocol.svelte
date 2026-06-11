@@ -20,6 +20,7 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
+  import WhatsAppSetupMethod from "./WhatsApp/SetupMethod.svelte";
   import { t } from "../../../l10n/l10n";
 
   /** out */
@@ -37,6 +38,7 @@
   const protocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
     { label: "Matrix", protocolID: "matrix" },
+    { label: "WhatsApp", protocolID: "whatsapp" },
   ];
 
   function onContinue() {
@@ -45,6 +47,8 @@
       showPage = XMPPLogin;
     } else if (selectedProtocol == "matrix") {
       showPage = MatrixLogin;
+    } else if (selectedProtocol == "whatsapp") {
+      showPage = WhatsAppSetupMethod;
     }
   }
 </script>

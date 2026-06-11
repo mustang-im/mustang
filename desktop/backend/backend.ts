@@ -405,7 +405,10 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
-function getSQLiteDatabase(filename: string, options: any): Database {
+function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array): Database {
+  if (buffer) {
+    return new Database(Buffer.from(buffer), options);
+  }
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
   }

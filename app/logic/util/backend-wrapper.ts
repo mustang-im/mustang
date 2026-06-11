@@ -56,11 +56,15 @@ export async function getFilesDir(): Promise<string> {
   return filesDir;
 }
 
-export async function getSQLiteDatabase(filename: string, options?: any): Promise<Database> {
+/** @param filename Database file path, relative to the config dir.
+ *   null, if `buffer` is given.
+ * @param buffer The database file contents,
+ *   which will be opened as an in-memory database. */
+export async function getSQLiteDatabase(filename: string | null, options?: any, buffer?: Uint8Array): Promise<Database> {
   // #if [MOBILE]
-  if (!filename.startsWith("/")) {
+  if (filename && !filename.startsWith("/")) {
     filename = await appGlobal.remoteApp.path.join(await getConfigDir(), filename);
   }
   // #endif
-  return await appGlobal.remoteApp.getSQLiteDatabase(filename, options);
+  return await appGlobal.remoteApp.getSQLiteDatabase(filename, options, buffer);
 }
