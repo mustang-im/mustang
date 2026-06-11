@@ -149,6 +149,40 @@ test.skipIf(!Database)("Login, roster, message history, send, live message, then
   await account2.logout();
 });
 
+// 450 messages = 3 batches of 200 (kBatchSize in XMPP1to1Chat)
+test.skipIf(!Database)("First sync gets the whole archive, in batches", { timeout: 30000 }, async () => {
+  const kCharlie = "charlie@localhost";
+  const kTotal = 450;
+  for (let i = 1; i <= kTotal; i++) {
+    server.addToArchive(kCharlie, {
+      archiveID: `c${i}`,
+      from: i % 3 ? kCharlie : kMe,
+      to: i % 3 ? kMe : kCharlie,
+      body: `Message ${i}`,
+      time: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
+    });
+  }
+  let account = newAccount();
+  appGlobal.chatAccounts.add(account);
+  await account.login(false);
+  // Charlie is not in the roster, so only we sync this chat, not login()
+  let chat = await account.getNewChat(kCharlie) as XMPP1to1Chat;
+  await chat.listMessages();
+
+  expect(chat.messages.length).toBe(kTotal);
+  expect(chat.messages.first.text).toBe("Message 1"); // oldest first
+  expect(chat.lastMessage?.text).toBe(`Message ${kTotal}`);
+  expect(chat.syncState).toBe(`c${kTotal}`);
+  let charlieQueries = server.queries.filter(q => q.withJID == kCharlie);
+  expect(charlieQueries.length).toBe(3); // 200 + 200 + 50
+  expect(charlieQueries.filter(q => !q.after).length).toBe(1); // fetched the archive only once
+  let row = await (await getDatabase()).get(sql`SELECT COUNT(*) AS count FROM message WHERE chatID = ${chat.dbID}`) as any;
+  expect(row.count).toBe(kTotal);
+
+  await account.logout();
+  appGlobal.chatAccounts.remove(account);
+});
+
 // The same flow without the local DB, as when the SQLite native module
 // doesn't load (see setup.ts): everything stays in memory.
 // Keep this test last: it stubs out reading rooms from the DB.

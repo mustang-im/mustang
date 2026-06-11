@@ -28,6 +28,8 @@ export class MockXMPPServer {
   /** How many MAM queries used an RSM `after` (= incremental sync) */
   countQueriesAfter = 0;
   countQueriesTotal = 0;
+  /** All MAM queries that clients made */
+  queries: { withJID: string, after?: string, before?: boolean, max: number }[] = [];
 
   protected wss: WebSocketServer;
   protected sockets = new Set<WebSocket>();
@@ -172,6 +174,7 @@ class Session {
     let max = parseInt(rsm?.getChild("max")?.getText() ?? "50");
     let before = rsm?.getChild("before");
     let after = rsm?.getChild("after")?.getText();
+    this.server.queries.push({ withJID, after, before: !!before, max });
 
     let all = this.server.archives.get(withJID) ?? [];
     let page: ArchivedMessage[];

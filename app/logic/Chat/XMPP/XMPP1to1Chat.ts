@@ -7,7 +7,7 @@ import { Lock } from "../../util/flow/Lock";
 import { ArrayColl } from "svelte-collections";
 import type { MAMResult } from "stanza/protocol";
 
-const kPageSize = 50;
+const kBatchSize = 200;
 
 export class XMPP1to1Chat extends XMPPChat {
   protected readonly syncLock = new Lock();
@@ -33,7 +33,7 @@ export class XMPP1to1Chat extends XMPPChat {
       if (this.syncState) {
         await this.listNewMessages();
       } else {
-        await this.listLastMessages();
+        await this.listAllMessages();
       }
     } finally {
       lock.release();
@@ -49,30 +49,31 @@ export class XMPP1to1Chat extends XMPPChat {
       .reduce((last, msg) => !last || msg.sent > last.sent ? msg : last, null);
   }
 
-  /** First sync: Gets the newest page of the server archive.
-   * TODO Page further back, to get the older history. */
-  protected async listLastMessages(): Promise<void> {
-    let result = await this.searchArchive({ max: kPageSize, before: "" });
-    if (!result) {
-      return;
-    }
-    let newMessages = this.parseMessages(result.results);
-    await this.saveNewMessages(newMessages.contents);
-    if (result.paging?.last) {
-      this.syncState = result.paging.last;
-      await this.save();
-    }
+  /** First sync: Gets all messages of this chat from the server archive,
+   * oldest first, in batches. */
+  protected async listAllMessages(): Promise<void> {
+    await this.listMessagesAfter(null);
   }
 
-  /** Gets the messages that are newer than the newest one in our DB.
+  /** Gets only the messages that are newer than the newest one in our DB.
    * The server skips everything older, so this is fast and cheap. */
   protected async listNewMessages(): Promise<void> {
-    let after = this.syncState;
+    await this.listMessagesAfter(this.syncState);
+  }
+
+  /** Pages forward through the server archive, in batches:
+   * after the given archive ID, or from the start of the archive.
+   * Saves each batch, and updates `syncState` at the end. */
+  protected async listMessagesAfter(after: string | null): Promise<void> {
     while (true) {
-      let result = await this.searchArchive({ max: kPageSize, after });
-      if (!result) { // syncState too old: server forgot that message
+      let result = await this.searchArchive({ max: kBatchSize, after: after || undefined });
+      if (!result) { // `after` is too old: the server forgot that message
+        if (!after) {
+          break;
+        }
         this.syncState = null;
-        return await this.listLastMessages();
+        after = null; // restart from the beginning; dedup skips what we have
+        continue;
       }
       let newMessages = this.parseMessages(result.results);
       await this.saveNewMessages(newMessages.contents);
@@ -81,7 +82,7 @@ export class XMPP1to1Chat extends XMPPChat {
         break;
       }
     }
-    if (after != this.syncState) {
+    if (after && after != this.syncState) {
       this.syncState = after;
       await this.save();
     }
