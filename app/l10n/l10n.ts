@@ -77,7 +77,8 @@ let cachedUILocale: string;
 /** @returns ISO code for the locale that we are using */
 export function getUILocale(): string {
   if (!cachedUILocale) {
-    if ("localStorage" in global) {
+    // Node defines the `localStorage` global, but it's undefined without --localstorage-file
+    if ("localStorage" in global && localStorage) {
       cachedUILocale = sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
     } else {
       cachedUILocale = "en-US";

@@ -1,0 +1,69 @@
+// app first, to resolve the import cycle around Abstract/Account.ts
+import { appGlobal } from "../../../../logic/app";
+import type { ChatAccountStorage } from "../../../../logic/Chat/ChatAccount";
+import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
+import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
+import { SQLChatRoom } from "../../../../logic/Chat/SQL/SQLChatRoom";
+import { makeTestDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
+import { SQLAccount } from "../../../../logic/Mail/SQL/Account/SQLAccount";
+import { SQLPerson } from "../../../../logic/Contacts/SQL/SQLPerson";
+import { SQLGroup } from "../../../../logic/Contacts/SQL/SQLGroup";
+import { Addressbook } from "../../../../logic/Contacts/Addressbook";
+import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
+import type { Person } from "../../../../logic/Abstract/Person";
+import type { Group } from "../../../../logic/Abstract/Group";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+/** The backend's SQLite, in-process instead of via JPC. Its native module
+ * loads only when the system Node ABI matches the one it was built for
+ * (the Electron backend build), so it may be unavailable. */
+export let Database: any = null;
+try {
+  // @ts-ignore No types for the .mjs build
+  ({ Database } = await import("../../../../../desktop/backend/node_modules/@radically-straightforward/sqlite/build/index.mjs"));
+  new Database(":memory:").close(); // the native module loads lazily, on first use
+} catch (ex) {
+  Database = null;
+  console.warn("SQLite native module does not load under this Node version.\n" +
+    "Chat will not be persisted in this test. " + ex.message);
+}
+
+/** Sets up DB, address book, and stubs for things not under test.
+ * @returns true, if messages are persisted in a real DB */
+export async function setupChatTestEnv(): Promise<boolean> {
+  if (Database) {
+    let tempDir = mkdtempSync(path.join(tmpdir(), "xmpp-test-"));
+    appGlobal.remoteApp = {
+      getSQLiteDatabase(filename: string, options?: any, buffer?: Uint8Array) {
+        if (buffer) {
+          return new Database(Buffer.from(buffer), options);
+        }
+        return new Database(path.join(tempDir, filename), options);
+      },
+    };
+    await makeTestDatabase();
+  } else {
+    SQLChatRoom.readAll = async () => {}; // would need the DB
+  }
+
+  // Contacts and the accounts DB are not part of these tests
+  let personDbID = 0;
+  let groupDbID = 0;
+  SQLPerson.save = async (person: Person) => { person.dbID ??= ++personDbID; };
+  SQLGroup.save = async (group: Group) => { group.dbID ??= ++groupDbID; };
+  SQLAccount.save = async () => {};
+
+  let addressbook = new Addressbook();
+  addressbook.name = "Test addressbook";
+  addressbook.storage = new DummyAddressbookStorage();
+  addressbook.dbID = 1;
+  appGlobal.addressbooks.add(addressbook);
+  appGlobal.personalAddressbook = addressbook;
+  return !!Database;
+}
+
+export function newChatStorage(): ChatAccountStorage {
+  return Database ? new SQLChatStorage() : new DummyChatStorage();
+}
