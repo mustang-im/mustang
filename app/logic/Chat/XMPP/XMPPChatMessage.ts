@@ -1,6 +1,7 @@
 import { UserChatMessage } from "../Message";
 import { getBareJID } from "./XMPPAccount";
 import type { XMPPChat } from "./XMPPChat";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
 import type { JSONElement } from "stanza/jxt";
@@ -15,16 +16,15 @@ export class XMPPChatMessage extends UserChatMessage {
   /**
    * Take a raw message from the server, interpret it, and set the values of this object.
    *
-   * TODO sanitize server input values (everywhere)
-   *
    * If from the archive:
    * @param wrapper The MAM/carbon envelope
    * @param archiveID The MAM archive ID
    */
   fromStanzaJS(json: Message, wrapper?: Forward, archiveID?: string): void {
     assert(json, "Need message");
-    this.id = json.id ?? archiveID ?? crypto.randomUUID();
-    this.sent = wrapper?.delay?.timestamp ?? json.delay?.timestamp ?? new Date();
+    this.id = sanitize.nonemptystring(json.id, null) ??
+      sanitize.nonemptystring(archiveID, null) ?? crypto.randomUUID();
+    this.sent = sanitize.date(wrapper?.delay?.timestamp ?? json.delay?.timestamp, new Date());
     this.received = new Date(this.sent); // copy: callers may mutate dates in place
     let me = this.chatRoom.account.jid;
     let from = getBareJID(json.from);
@@ -34,13 +34,14 @@ export class XMPPChatMessage extends UserChatMessage {
     if (!this.outgoing && from && from != this.chatRoom.id) {
       this.contact = this.chatRoom.account.getExistingPerson(from) ?? this.contact;
     }
-    if (json.hasSubject && json.subject) {
-      this.subject = json.subject;
+    let subject = sanitize.nonemptylabel(json.subject, null);
+    if (json.hasSubject && subject) {
+      this.subject = subject;
     }
-    this.text = json.body ?? "";
+    this.text = sanitize.string(json.body, "");
     let html = json.html?.body ? jsonElementToXML(json.html.body as JSONElement) : null;
     if (html) {
-      this.html = html;
+      this.html = html; // .html getter sanitizes
     }
   }
 }

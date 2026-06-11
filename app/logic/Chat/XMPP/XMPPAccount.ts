@@ -4,10 +4,12 @@ import type { XMPPChat } from './XMPPChat';
 import { XMPP1to1Chat } from './XMPP1to1Chat';
 import { XMPPGroupChat } from './XMPPGroupChat';
 import type { Group } from '../../Abstract/Group';
-import { ContactEntry, Person } from '../../Abstract/Person';
+import { Person } from '../../Abstract/Person';
 import { ChatPerson, nameFromChatID } from '../ChatPerson';
 import { ConnectError, LoginError } from '../../Abstract/Account';
+import { kImageMimeTypes } from '../../Files/FileType/MIMETypes';
 import { appGlobal } from '../../app';
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { assert, blobToDataURL } from '../../util/util';
 import { gt } from '../../../l10n/l10n';
 import { MapColl } from 'svelte-collections';
@@ -102,7 +104,8 @@ export class XMPPAccount extends ChatAccount {
       };
       let onStreamError = (streamError: XMPP.Stanzas.StreamError, error?: Error) => {
         cleanup();
-        reject(new ConnectError(error, streamError?.text ?? gt`Failed to connect to chat account ${this.name}`));
+        let text = sanitize.nonemptylabel(streamError?.text, null);
+        reject(new ConnectError(error, text ?? gt`Failed to connect to chat account ${this.name}`));
       };
       let onDisconnected = () => {
         cleanup();
@@ -180,12 +183,14 @@ export class XMPPAccount extends ChatAccount {
         continue; // contact has no vCard
       }
       try {
-        if (vcard.fullName && person.name == nameFromChatID(jid)) {
-          person.name = vcard.fullName;
+        let fullName = sanitize.nonemptylabel(vcard.fullName, null);
+        if (fullName && person.name == nameFromChatID(jid)) {
+          person.name = fullName;
         }
         let photo = vcard.records?.find(r => r.type == "photo") as XMPP.Stanzas.VCardTempPhoto;
         if (photo?.data) {
-          let blob = new Blob([new Uint8Array(photo.data)], { type: photo.mediaType ?? "image/jpeg" });
+          let mimetype = sanitize.enum(photo.mediaType, kImageMimeTypes);
+          let blob = new Blob([new Uint8Array(photo.data)], { type: mimetype });
           person.picture = await blobToDataURL(blob);
         }
         await person.save();
@@ -241,6 +246,7 @@ export class XMPPAccount extends ChatAccount {
    * email address). Creates the contact, if not found. */
   async getPerson(jid: string, name?: string): Promise<Person> {
     jid = getBareJID(jid);
+    name = sanitize.nonemptylabel(name, null);
     let existing = this.roster.get(jid);
     if (existing) {
       return existing;
@@ -274,7 +280,9 @@ export class XMPPAccount extends ChatAccount {
       }
     });
     this.client.on("message:error", msg => {
-      this.errorCallback(new Error(gt`Chat message failed` + ": " + (msg.error?.text ?? msg.error?.condition ?? "")));
+      let reason = sanitize.nonemptylabel(msg.error?.text, null) ??
+        sanitize.alphanumdash(msg.error?.condition, "");
+      this.errorCallback(new Error(gt`Chat message failed` + ": " + reason));
     });
   }
 
@@ -300,7 +308,7 @@ export class XMPPAccount extends ChatAccount {
 
 /** @returns the JID without the resource, e.g. "fred@example.com" */
 export function getBareJID(jid: string): string {
-  return jid?.split("/")[0].toLowerCase();
+  return sanitize.nonemptystring(jid, null)?.split("/")[0].toLowerCase();
 }
 
 const kNetworkTimeoutInMS = 5 * 1000; // 5 seconds

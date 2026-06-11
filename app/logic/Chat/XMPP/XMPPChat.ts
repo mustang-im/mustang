@@ -2,6 +2,7 @@ import { ChatRoom } from "../ChatRoom";
 import type { XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { UserChatMessage, DeliveryStatus } from "../Message";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
 
@@ -17,7 +18,7 @@ export class XMPPChat extends ChatRoom {
       // TODO process system messages like typing notification, read receipt etc.
       return null;
     }
-    let id = json.id ?? archiveID;
+    let id = sanitize.nonemptystring(json.id, null) ?? sanitize.nonemptystring(archiveID, null);
     if (id && this.messages.some(msg => msg.id == id)) {
       return null;
     }

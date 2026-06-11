@@ -4,6 +4,7 @@ import { ChatPerson } from "../ChatPerson";
 import { Person } from "../../Abstract/Person";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import { Lock } from "../../util/flow/Lock";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import type { MAMResult } from "stanza/protocol";
@@ -78,8 +79,8 @@ export class XMPP1to1Chat extends XMPPChat {
       }
       let newMessages = this.parseMessages(result.results);
       await this.saveNewMessages(newMessages.contents);
-      after = result.paging?.last ?? after;
-      if (result.complete || !result.results?.length) {
+      after = sanitize.nonemptystring(result.paging?.last, null) ?? after;
+      if (sanitize.boolean(result.complete, false) || !result.results?.length) {
         break;
       }
     }
@@ -97,7 +98,7 @@ export class XMPP1to1Chat extends XMPPChat {
         paging: paging,
       });
     } catch (errIQ) {
-      let condition = errIQ?.error?.condition ?? "";
+      let condition = sanitize.alphanumdash(errIQ?.error?.condition, "");
       if (condition == "item-not-found") {
         return null;
       }

@@ -4,6 +4,16 @@ export class FileType {
   mimeTypes: string[];
 }
 
+export const kImageMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/svg+xml",
+  "image/avif",
+  "image/webp",
+  "image/tiff",
+];
+
 export const genericFileTypes = [
   {
     id: "text",
@@ -23,11 +33,7 @@ export const genericFileTypes = [
     id: "picture",
     name: "Picture",
     mimeTypes: [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/svg",
-      "image/bmp",
+      ...kImageMimeTypes,
       "image/",
     ],
   },
@@ -80,8 +86,11 @@ export const fileExtensions = {
   "jpg": "image/jpeg",
   "png": "image/png",
   "gif": "image/gif",
-  "svg": "image/svg",
+  "svg": "image/svg+xml",
+  "avif": "image/avif",
+  "webp": "image/webp",
   "bmp": "image/bmp",
+  "tiff": "image/tiff",
   "mp3": "audio/mpeg",
   "m4a": "audio/mpeg",
   "aac": "audio/aac",
