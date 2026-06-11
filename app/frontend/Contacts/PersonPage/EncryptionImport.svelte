@@ -31,9 +31,10 @@
 <FileSelector {acceptFileTypes} bind:this={fileSelector} />
 
 <script lang="ts">
-  import { PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
   import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+  import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { queryPGPKeyServersForPerson } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import type { Person } from "../../../logic/Abstract/Person";

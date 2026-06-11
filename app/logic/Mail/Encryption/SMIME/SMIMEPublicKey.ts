@@ -1,4 +1,5 @@
-import { PublicKey, EncryptionSystem } from "../PublicKey";
+import { PublicKey } from "../PublicKey";
+import { EncryptionSystem } from "../enums";
 
 export class SMIMEPublicKey extends PublicKey {
   system = EncryptionSystem.SMIME;

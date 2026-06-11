@@ -1,4 +1,5 @@
-import { PublicKey, EncryptionSystem, TrustLevel } from "../PublicKey";
+import { PublicKey } from "../PublicKey";
+import { EncryptionSystem, TrustLevel } from "../enums";
 import { assert } from "../../../util/util";
 import type OpenPGP from "openpgp";
 

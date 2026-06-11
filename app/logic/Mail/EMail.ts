@@ -13,7 +13,7 @@ import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import type { EncryptionSystem } from "./Encryption/PublicKey";
+import type { EncryptionSystem } from "./Encryption/enums";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";

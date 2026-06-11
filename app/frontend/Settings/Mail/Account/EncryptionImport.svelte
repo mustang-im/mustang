@@ -75,9 +75,10 @@
 </Menu>
 
 <script lang="ts">
-  import { PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
   import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
   import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+  import { TrustLevel } from "../../../../logic/Mail/Encryption/enums";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import { importPrivateKey } from "../../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";

@@ -1,6 +1,6 @@
 import { PGPPublicKey } from "./PGPPublicKey";
 import type { PGPPrivateKey } from "./PGPPrivateKey";
-import { TrustLevel } from "../PublicKey";
+import { TrustLevel } from "../enums";
 import type { EMail } from "../../EMail";
 import type { MailIdentity } from "../../MailIdentity";
 import { addArmorHeader, extractBase64FromArmorned } from "../KeyUtils";

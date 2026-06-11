@@ -13,7 +13,8 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { type PublicKey, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
+  import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SignedIcon from "lucide-svelte/icons/signature";

@@ -166,7 +166,8 @@
 </vbox>
 
 <script lang="ts">
-  import { PublicKey, trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/PublicKey";
+  import { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
+  import { trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
