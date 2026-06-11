@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { selectedEvent } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import { getDurationString } from "../../Util/date";
@@ -37,7 +37,7 @@
 
   function onOpen() {
     $selectedEvent = event;
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 

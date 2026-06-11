@@ -81,7 +81,7 @@
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { openComposer } from "../../Mail/open";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -132,7 +132,7 @@
     } else {
       throw new NotReached();
     }
-    openEventFromOtherApp(calEvent);
+    openEvent(calEvent);
   }
 
   async function onForward() {

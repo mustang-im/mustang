@@ -15,7 +15,7 @@
 <script lang="ts">
   import { setNewEventTime } from "../../../Calendar/event";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
-  import { openEventFromOtherApp } from "../../../Calendar/open";
+  import { openEvent } from "../../../Calendar/open";
   import { selectedCalendar } from "../../../Calendar/selected";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
@@ -35,7 +35,7 @@
     assert(calendar, "Create a calendar first");
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEventFromOtherApp(event);
+    openEvent(event);
   }
 
   function goToTODOs() {

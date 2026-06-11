@@ -21,7 +21,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedEvent } from "../selected";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
@@ -38,7 +38,7 @@
   }
 
   function onOpen() {
-    openEventFromOtherApp(event);
+    openEvent(event);
   }
 </script>
 

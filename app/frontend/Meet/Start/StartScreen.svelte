@@ -92,7 +92,7 @@
       <vbox flex class="previous">
         <hbox class="title font-small">{$t`Previous meetings`}</hbox>
         <MeetingList meetings={previousMeetings}
-          onClick={openEventFromOtherApp}>
+          onClick={openEvent}>
           <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings`}</div>
         </MeetingList>
       </vbox>
@@ -122,7 +122,7 @@
   import { selectedApp } from "../../AppsBar/selectedApp";
   import { Event } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
-  import { openEventFromOtherApp } from "../../Calendar/open";
+  import { openEvent } from "../../Calendar/open";
   import { setNewEventTime } from "../../Calendar/event";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
@@ -175,7 +175,7 @@
     assert(calendar, $t`Please set up a calendar first`);
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEventFromOtherApp(event);
+    openEvent(event);
   }
 
   let errorMsg: string | null = null;
