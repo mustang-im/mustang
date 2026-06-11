@@ -38,7 +38,6 @@
   }
 
   function onOpen(ev: MouseEvent) {
-    $selectedEvent = event;
     openEvent(event, true);
   }
 </script>

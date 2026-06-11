@@ -36,7 +36,6 @@
   }
 
   function onOpen() {
-    $selectedEvent = event;
     openEvent(event, true);
   }
 </script>
