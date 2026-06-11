@@ -39,6 +39,7 @@ export class XMPPAccount extends ChatAccount {
       return;
     }
     await super.login(interactive);
+    await Promise.all(appGlobal.addressbooks.contents.map(ab => ab.readContactsFromDB())); // ChatRooms need Persons
     await this.listRooms(); // saves account, loads known chats from DB
     await this.connect();
     await this.getRoster();
