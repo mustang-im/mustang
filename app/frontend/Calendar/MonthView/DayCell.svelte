@@ -22,7 +22,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar, selectedDate } from "../selected";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import EventContainer from "./EventContainer.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
@@ -57,7 +57,7 @@
     let event = $selectedCalendar.newEvent();
     let startTime = new Date(start.getTime() + 10 * k1HourMS);
     setNewEventTime(event, true, startTime);
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 

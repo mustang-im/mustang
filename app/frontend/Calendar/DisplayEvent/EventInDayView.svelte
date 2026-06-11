@@ -8,7 +8,7 @@
       <RoundButton
         label={$t`Open calendar`}
         icon={CalendarIcon}
-        onClick={() => openEventFromOtherApp(event, false)}
+        onClick={() => openEvent(event, false)}
         border={false}
         />
     </hbox>
@@ -32,7 +32,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import DayViewGrid from "../DayView/DayViewGrid.svelte";
   import EventProposal from "../SML/Shared/EventProposal.svelte";

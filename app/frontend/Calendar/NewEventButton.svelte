@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import { setNewEventTime } from "./event";
-  import { openEventFromOtherApp } from "./open";
+  import { openEvent } from "./open";
   import { selectedCalendar, selectedDate } from "./selected";
   import { appGlobal } from "../../logic/app";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -24,7 +24,7 @@
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, false, $selectedDate);
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 

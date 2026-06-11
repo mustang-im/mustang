@@ -47,7 +47,7 @@
 <script lang="ts">
   import { selectedCalendar } from "../selected";
   import { setNewEventTime } from "../event";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
@@ -70,6 +70,6 @@
   function newEvent() {
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>

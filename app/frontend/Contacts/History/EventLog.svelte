@@ -8,13 +8,13 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openEventFromOtherApp } from "../../Calendar/open";
+  import { openEvent } from "../../Calendar/open";
   import Clickable from "../../Shared/Clickable.svelte";
 
   export let event: Event;
 
   function onOpen() {
-    openEventFromOtherApp(event);
+    openEvent(event);
   }
 </script>
 

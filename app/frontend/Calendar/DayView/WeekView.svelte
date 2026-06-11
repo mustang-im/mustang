@@ -18,7 +18,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar } from "../selected";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
   import { getToday } from "../../Util/date";
@@ -47,7 +47,7 @@
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, true, start);
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 
