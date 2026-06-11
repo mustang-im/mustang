@@ -109,7 +109,7 @@ export async function showReminder() {
         console.log("notification", notification);
         notification.show();
 
-        notification.on("click", event => openEvent(event));
+        notification.on("click", event => openEventInApp(event));
       } catch (ex) {
         backgroundError(ex);
       }
@@ -132,7 +132,7 @@ export async function showReminder() {
   }
 }
 
-async function openEvent(event: Event) {
+async function openEventInApp(event: Event) {
   try {
     openEvent(event);
     bringAppToFront();
