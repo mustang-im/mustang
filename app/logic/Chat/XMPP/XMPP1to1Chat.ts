@@ -4,6 +4,7 @@ import { ChatPerson } from "../ChatPerson";
 import { Person } from "../../Abstract/Person";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import { Lock } from "../../util/flow/Lock";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import type { MAMResult } from "stanza/protocol";
 
@@ -95,17 +96,18 @@ export class XMPP1to1Chat extends XMPPChat {
         with: this.id,
         paging: paging,
       });
-    } catch (ex) {
-      // stanza rejects with the error IQ stanza, not an `Error`
-      let condition = ex?.error?.condition ?? "";
+    } catch (errIQ) {
+      let condition = errIQ?.error?.condition ?? "";
       if (condition == "item-not-found") {
         return null;
       }
       if (condition == "service-unavailable" || condition == "feature-not-implemented") {
         this.account.hasMAM = false;
       }
-      throw ex instanceof Error ? ex
-        : new Error(`Failed to get the chat history of ${this.name}: ${condition || JSON.stringify(ex)}`);
+      if (errIQ instanceof Error) {
+        throw errIQ;
+      }
+      throw new Error(gt`Failed to get the chat history of ${this.name}: ${condition || JSON.stringify(errIQ)}`);
     }
   }
 

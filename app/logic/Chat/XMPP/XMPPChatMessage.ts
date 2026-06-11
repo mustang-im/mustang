@@ -12,8 +12,15 @@ export class XMPPChatMessage extends UserChatMessage {
   get chatRoom(): XMPPChat {
     return this.to as XMPPChat;
   }
-  /** @param wrapper The MAM/carbon envelope, if from the archive
-   * @param archiveID The MAM archive ID, if from the archive */
+  /**
+   * Take a raw message from the server, interpret it, and set the values of this object.
+   *
+   * TODO sanitize server input values (everywhere)
+   *
+   * If from the archive:
+   * @param wrapper The MAM/carbon envelope
+   * @param archiveID The MAM archive ID
+   */
   fromStanzaJS(json: Message, wrapper?: Forward, archiveID?: string): void {
     assert(json, "Need message");
     this.id = json.id ?? archiveID ?? crypto.randomUUID();
@@ -39,7 +46,9 @@ export class XMPPChatMessage extends UserChatMessage {
 }
 
 /** Serializes a XEP-0071 XHTML body back to an HTML string.
- * stanza gives us parsed `JSONElement`s, not XML text. */
+ * stanza gives us parsed `JSONElement`s, not XML text.
+ *
+ * TODO Find Stanza API to get the raw HTML in the msg. */
 function jsonElementToXML(el: JSONElement | string): string {
   if (typeof el == "string") {
     return escapeXMLText(el);

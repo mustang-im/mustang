@@ -40,14 +40,14 @@ export class XMPPAccount extends ChatAccount {
     await this.listRooms(); // saves account, loads known chats from DB
     await this.connect();
     await this.getRoster();
-    await this.createChats();
+    await this.createChatsFromRoster();
     this.client.sendPresence();
     this.client.enableKeepAlive();
     this.client.enableCarbons()
       .catch(ex => console.log("XMPP carbons not enabled", ex?.error?.condition ?? ex));
-    this.listMessagesOfAllChats()
+    this.listMessagesOfAllChatRooms()
       .catch(this.errorCallback);
-    this.getPersonDetails()
+    this.getAllPersonDetails()
       .catch(this.errorCallback);
   }
 
@@ -71,8 +71,8 @@ export class XMPPAccount extends ChatAccount {
       // If no URL is configured, find it using
       // `/.well-known/host-meta.json` of the JID domain, per XEP-0156.
       transports: {
-        websocket: this.url?.startsWith("ws") ? this.url : !this.url,
-        bosh: this.url?.startsWith("http") ? this.url : !this.url,
+        websocket: this.url?.startsWith("wss:") ? this.url : !this.url,
+        bosh: this.url?.startsWith("https:") ? this.url : !this.url,
       },
     });
     this.addListeners();
@@ -98,7 +98,7 @@ export class XMPPAccount extends ChatAccount {
       };
       let onAuthFailed = () => {
         cleanup();
-        reject(new LoginError(null, gt`Please check your Jabber ID and password`));
+        reject(new LoginError(null, gt`Login failed`));
       };
       let onStreamError = (streamError: XMPP.Stanzas.StreamError, error?: Error) => {
         cleanup();
@@ -108,7 +108,7 @@ export class XMPPAccount extends ChatAccount {
         cleanup();
         reject(new ConnectError(null, gt`Failed to connect to chat account ${this.name}`));
       };
-      let timeout = setTimeout(onDisconnected, 30 * 1000);
+      let timeout = setTimeout(onDisconnected, kNetworkTimeoutInMS);
       client.on("session:started", onSuccess);
       client.on("auth:failed", onAuthFailed);
       client.on("stream:error", onStreamError);
@@ -141,7 +141,7 @@ export class XMPPAccount extends ChatAccount {
   }
 
   /** Makes sure that each roster entry has a 1:1 chat */
-  protected async createChats(): Promise<void> {
+  protected async createChatsFromRoster(): Promise<void> {
     for (let jid of this.roster.keys()) {
       try {
         if (this.getExistingChat(jid)) {
@@ -156,7 +156,7 @@ export class XMPPAccount extends ChatAccount {
 
   /** Gets new messages of all chats from the server archive,
    * skipping messages that are already in our DB */
-  protected async listMessagesOfAllChats(): Promise<void> {
+  protected async listMessagesOfAllChatRooms(): Promise<void> {
     for (let chatRoom of this.rooms.contents) {
       try {
         await chatRoom.listMessages();
@@ -167,7 +167,7 @@ export class XMPPAccount extends ChatAccount {
   }
 
   /** Gets profile photos etc. for the roster contacts, where missing */
-  protected async getPersonDetails(): Promise<void> {
+  protected async getAllPersonDetails(): Promise<void> {
     for (let jid of this.roster.keys()) {
       let person = this.roster.get(jid);
       if (person.picture) {
@@ -247,14 +247,8 @@ export class XMPPAccount extends ChatAccount {
     }
     assert(appGlobal.personalAddressbook, "Need address book for chat contacts");
     let chatPerson = new ChatPerson("xmpp", jid, name);
-    let person = chatPerson.findPerson() ??
-      appGlobal.persons.find(p => p.emailAddresses.some(e => e.value?.toLowerCase() == jid));
-    if (person) {
-      if (!person.chatAccounts.some(e => e.protocol == "xmpp" && e.value?.toLowerCase() == jid)) {
-        person.chatAccounts.add(new ContactEntry(jid, "Jabber", "xmpp"));
-        await person.save();
-      }
-    } else {
+    let person = chatPerson.findPerson();
+    if (!person) {
       person = chatPerson.createPerson(appGlobal.personalAddressbook);
       await person.save();
     }
@@ -273,8 +267,8 @@ export class XMPPAccount extends ChatAccount {
       this.onIncomingMessage(msg)
         .catch(this.errorCallback);
     });
-    this.client.on("message:sent", (msg, viaCarbon) => {
-      if (viaCarbon) { // sent by our user from another client
+    this.client.on("message:sent", (msg, sentCopy) => {
+      if (sentCopy) { // sent by our user from another client
         this.onIncomingMessage(msg)
           .catch(this.errorCallback);
       }
@@ -284,8 +278,7 @@ export class XMPPAccount extends ChatAccount {
     });
   }
 
-  /** A message arrived over the open connection, either live from the
-   * chat partner, or our user sent it from another client (carbon copy). */
+  /** A message arrived over the open connection */
   protected async onIncomingMessage(xmppMsg: XMPP.Stanzas.Message): Promise<void> {
     if (!xmppMsg.body) {
       return; // typing notification, read receipt etc.
@@ -309,3 +302,5 @@ export class XMPPAccount extends ChatAccount {
 export function getBareJID(jid: string): string {
   return jid?.split("/")[0].toLowerCase();
 }
+
+const kNetworkTimeoutInMS = 5 * 1000; // 5 seconds

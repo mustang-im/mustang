@@ -14,7 +14,8 @@ export class XMPPChat extends ChatRoom {
    * @param archiveID The MAM archive ID, if from the archive */
   addMessage(json: Message, wrapper?: Forward, archiveID?: string): XMPPChatMessage | null {
     if (!json?.body && !json?.html?.body) {
-      return null; // typing notification, read receipt etc.
+      // TODO process system messages like typing notification, read receipt etc.
+      return null;
     }
     let id = json.id ?? archiveID;
     if (id && this.messages.some(msg => msg.id == id)) {
@@ -37,7 +38,7 @@ export class XMPPChat extends ChatRoom {
       type: "chat",
       body: message.text,
       // stanza accepts a string here, wraps it in <body xmlns="http://www.w3.org/1999/xhtml">, and sanitizes it
-      html: message.hasHTML ? { body: message.rawHTMLDangerous as any } : undefined,
+      html: message.hasHTML ? { body: message.html as any } : undefined,
     });
     message.sent = new Date();
     message.received = new Date();
