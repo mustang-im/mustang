@@ -1,7 +1,7 @@
 import type { WhatsAppAccount } from "../WhatsAppAccount";
 import type { ChatRoom } from "../../ChatRoom";
-import { ChatMessage, UserChatMessage } from "../../Message";
-import { ChatRoomEvent } from "../../RoomEvent";
+import { ChatMessage } from "../../Message";
+import { WhatsAppMessage, WhatsAppSystemMessage } from "../WhatsAppMessage";
 import { SQLChatMessage } from "../../SQL/SQLChatMessage";
 import { getDatabase } from "../../SQL/SQLDatabase";
 import { ContactEntry, Person } from "../../../Abstract/Person";
@@ -351,7 +351,7 @@ export class WhatsAppBackupImport {
 
   protected async convertMessage(room: ChatRoom, row: any, isGroup: boolean): Promise<ChatMessage | null> {
     let revoked = row.type == kMessageType.Revoked;
-    let msg = revoked ? new ChatRoomEvent(room) : new UserChatMessage(room);
+    let msg = revoked ? new WhatsAppSystemMessage(room) : new WhatsAppMessage(room);
     msg.outgoing = !!row.fromMe;
     if (!row.fromMe && isGroup && row.senderJidRowID) {
       let senderJID = this.jidByRowID.get(row.senderJidRowID);

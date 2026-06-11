@@ -1,0 +1,37 @@
+import { deriveCallMediaKey, encryptFrame, decryptFrame } from "../../../../logic/Meet/WhatsApp/whatsAppCallE2E";
+import { randomBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { expect, test } from "vitest";
+
+test("call media key derivation is deterministic and key-dependent", () => {
+  let callKey = randomBytes(32);
+  let k1 = deriveCallMediaKey(callKey);
+  let k2 = deriveCallMediaKey(callKey);
+  expect(k1.length).toBe(32);
+  expect(bytesEqual(k1, k2)).toBe(true);
+  expect(bytesEqual(deriveCallMediaKey(randomBytes(32)), k1)).toBe(false);
+});
+
+test("media frame encrypt/decrypt round-trips", async () => {
+  let key = deriveCallMediaKey(randomBytes(32));
+  let frame = randomBytes(1200); // a typical media frame payload
+  let encrypted = await encryptFrame(frame, key, 0);
+  expect(bytesEqual(encrypted, frame)).toBe(false); // actually encrypted
+  expect(bytesEqual(await decryptFrame(encrypted, key), frame)).toBe(true);
+});
+
+test("each frame counter yields distinct ciphertext (unique IV)", async () => {
+  let key = deriveCallMediaKey(randomBytes(32));
+  let frame = randomBytes(300);
+  let a = await encryptFrame(frame, key, 1);
+  let b = await encryptFrame(frame, key, 2);
+  expect(bytesEqual(a, b)).toBe(false);
+  // both still decrypt correctly
+  expect(bytesEqual(await decryptFrame(a, key), frame)).toBe(true);
+  expect(bytesEqual(await decryptFrame(b, key), frame)).toBe(true);
+});
+
+test("a wrong key fails to decrypt (frame is authenticated)", async () => {
+  let frame = randomBytes(300);
+  let encrypted = await encryptFrame(frame, deriveCallMediaKey(randomBytes(32)), 0);
+  await expect(decryptFrame(encrypted, deriveCallMediaKey(randomBytes(32)))).rejects.toThrow();
+});

@@ -2,6 +2,7 @@ import { MeetAccount } from '../MeetAccount';
 import { LiveKitAccount } from '../LiveKit/LiveKitAccount';
 import { M3Account } from '../M3/M3Account';
 import { SIPAccount } from '../SIP/SIPAccount';
+import { WhatsAppMeetAccount } from '../WhatsApp/WhatsAppMeetAccount';
 // #if [!WEBMAIL]
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 // #else
@@ -29,6 +30,8 @@ function _newMeetAccountForProtocol(protocol: string): MeetAccount {
     return new M3Account();
   } else if (protocol == "sip") {
     return new SIPAccount();
+  } else if (protocol == "whatsapp-meet") {
+    return new WhatsAppMeetAccount();
   }
   throw new NotReached(`Unknown meet account type ${protocol}`);
 }
