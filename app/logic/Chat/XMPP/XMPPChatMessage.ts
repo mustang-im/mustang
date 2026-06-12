@@ -1,5 +1,4 @@
 import { ChatMessage } from "../Message";
-import { getBareJID } from "./XMPPAccount";
 import type { XMPPChat } from "./XMPPChat";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -27,14 +26,7 @@ export class XMPPChatMessage extends ChatMessage {
       sanitize.nonemptystring(archiveID, null) ?? crypto.randomUUID();
     this.sent = sanitize.date(wrapper?.delay?.timestamp ?? json.delay?.timestamp, new Date());
     this.received = new Date(this.sent); // copy: callers may mutate dates in place
-    let me = this.chatRoom.account.jid;
-    let from = getBareJID(json.from);
-    this.outgoing = !!from && from == me;
-    // 1:1 chat: `contact` is the chat partner, set by the ctor.
-    // For group chats, find the sender:
-    if (!this.outgoing && from && from != this.chatRoom.id) {
-      this.contact = this.chatRoom.account.getExistingPerson(from) ?? this.contact;
-    }
+    this.chatRoom.fillSender(this, json.from);
     let subject = sanitize.nonemptylabel(json.subject, null);
     if (json.hasSubject && subject) {
       this.subject = subject;

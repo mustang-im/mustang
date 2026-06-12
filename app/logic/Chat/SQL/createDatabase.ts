@@ -1,4 +1,4 @@
-import sql from "../../../../lib/rs-sqlite/index";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 
 export const chatDatabaseSchema = sql`
   CREATE TABLE "message" (
@@ -15,7 +15,8 @@ export const chatDatabaseSchema = sql`
     -- true = our user sent this; false = incoming = our user received it
     "outgoing" BOOLEAN default false,
     -- If outgoing: First To: ; if incoming: (First) From:
-    "fromPersonID" INTEGER not null,
+    -- if null, the json must contain "senderID" and "senderName" properties
+    "fromPersonID" INTEGER null,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
@@ -63,6 +64,10 @@ export const chatDatabaseSchema = sql`
     -- Person or Group that this chat room is talking with
     -- Person ID or Group ID
     "contactID" INTEGER not null,
+    -- Group chat members, as JSON array of { name, userID },
+    -- where userID is e.g. the JID. The members are deliberately
+    -- not in the contacts DB. @see SQLChatRoom
+    "members" TEXT default null,
     -- Last update from server we for this folder.
     "syncState" TEXT default null,
     -- Additional data
@@ -80,3 +85,17 @@ export const chatDatabaseSchema = sql`
     "protocol" TEXT not null
   );
 `;
+
+/** Updates databases that were created before
+ * the `members` column was added to the schema. */
+export async function migrateChatDatabase(database: Database): Promise<void> {
+  try {
+    await database.get(sql`SELECT members FROM chat LIMIT 1`);
+  } catch (ex) {
+    if (ex?.message?.startsWith("no such column")) {
+      await database.execute(sql`ALTER TABLE "chat" ADD COLUMN "members" TEXT default null;`);
+    } else {
+      throw ex;
+    }
+  }
+}

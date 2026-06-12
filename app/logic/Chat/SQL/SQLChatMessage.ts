@@ -1,7 +1,7 @@
 import type { RoomMessage } from "../Message";
 import { ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import type { ChatRoom } from "../ChatRoom";
-import type { Person } from "../../Abstract/Person";
+import { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
@@ -18,9 +18,13 @@ export class SQLChatMessage {
    * Save only fully downloaded emails
    */
   static async save(msg: RoomMessage) {
-    if (!msg.contact.dbID) {
-      await SQLPerson.save(msg.contact as Person);
+    let contact = msg.contact as Person;
+    if (!contact.dbID && contact.addressbook?.dbID) {
+      await SQLPerson.save(contact);
     }
+    // 0 = sender is not in the DB: Group chat room members are
+    // deliberately not saved, only their name. @see read()
+    let fromPersonID = contact.dbID ?? null;
     if (!msg.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
@@ -34,11 +38,17 @@ export class SQLChatMessage {
         msg.dbID = existing.id;
       }
     }
-    let reactionsJSON = await SQLChatMessage.saveReactions(msg);
     // A `ChatRoomEvent` is marked by its `kind` in the json column.
-    let jsonStr = msg instanceof ChatRoomEvent
-      ? JSON.stringify(msg.toExtraJSON(), null, 2)
-      : null;
+    let jsonStr: string | null = null;
+    if (msg instanceof ChatRoomEvent) {
+      jsonStr = JSON.stringify(msg.toExtraJSON(), null, 2);
+    } else if (!fromPersonID) {
+      jsonStr = JSON.stringify({
+        senderName: contact.name,
+        senderID: contact.chatAccounts.first.value,
+      }, null, 2);
+    }
+    let reactionsJSON = await SQLChatMessage.saveReactions(msg);
     if (!msg.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO message (
@@ -47,7 +57,7 @@ export class SQLChatMessage {
           plaintext, html, reactionsJSON,
           chatID, idStr, json
         ) VALUES (
-          ${msg.outgoing ? 1 : 0}, ${msg.contact.dbID}, ${msg.inReplyTo},
+          ${msg.outgoing ? 1 : 0}, ${fromPersonID}, ${msg.inReplyTo},
           ${msg.sent.getTime() / 1000}, ${msg.received.getTime() / 1000},
           ${msg.text}, ${msg.rawHTMLDangerous}, ${reactionsJSON},
           ${msg.to.dbID}, ${msg.id}, ${jsonStr}
@@ -56,7 +66,7 @@ export class SQLChatMessage {
     } else {
       await (await getDatabase()).run(sql`
         UPDATE message SET
-          fromPersonID = ${msg.contact.dbID},
+          fromPersonID = ${fromPersonID},
           inReplyToIDStr = ${msg.inReplyTo},
           dateSent = ${msg.sent.getTime() / 1000},
           dateReceived = ${msg.received.getTime() / 1000},
@@ -71,6 +81,27 @@ export class SQLChatMessage {
         `);
     }
     await SQLChatMessage.saveAttachments(msg);
+  }
+
+  /**
+   * Finds the sender in the group members, which were restored
+   * from the chat rooms's `members` column.
+   * Because Group chat room members are not in our DB,
+   * we save their ID and name in the JSON column. @see save()
+   */
+  protected static getGroupSender(group: Group, jsonStr: string | null): Person | null {
+    let json = sanitize.json(jsonStr, null) as any;
+    let senderName = sanitize.nonemptylabel(json?.senderName, null);
+    if (!senderName) {
+      return null;
+    }
+    let member = group.participants.find(p => p.name == senderName);
+    if (member) {
+      return member;
+    }
+    let person = new Person();
+    person.name = senderName;
+    return person;
   }
 
   /** Creates the message or room event for this DB row,
@@ -120,7 +151,7 @@ export class SQLChatMessage {
           outgoing, fromPersonID, inReplyToIDStr,
           dateSent, dateReceived,
           plaintext, html, reactionsJSON,
-          chatID, idStr
+          chatID, idStr, json
         FROM message
         WHERE id = ${dbID}
         `) as any;
@@ -143,7 +174,9 @@ export class SQLChatMessage {
       assert(msg.to.dbID == chatID, "Wrong chat");
       if (!msg.outgoing && msg.to.contact instanceof Group) {
         // In a group chat, the sender is one of the members
-        msg.contact = appGlobal.persons.find(p => p.dbID == fromPersonID) ?? msg.to.contact;
+        msg.contact = (fromPersonID ? appGlobal.persons.find(p => p.dbID == fromPersonID) : null) ??
+          SQLChatMessage.getGroupSender(msg.to.contact, sanitize.string(row.json, null)) ??
+          msg.to.contact;
       } else {
         msg.contact = msg.to.contact;
       }

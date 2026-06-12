@@ -61,6 +61,7 @@ export async function setupChatTestEnv(): Promise<boolean> {
   addressbook.dbID = 1;
   appGlobal.addressbooks.add(addressbook);
   appGlobal.personalAddressbook = addressbook;
+  appGlobal.collectedAddressbook = addressbook;
   return !!Database;
 }
 

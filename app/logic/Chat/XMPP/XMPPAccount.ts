@@ -9,6 +9,7 @@ import { ChatPerson, nameFromChatID } from '../ChatPerson';
 import { ConnectError, LoginError } from '../../Abstract/Account';
 import { kImageMimeTypes } from '../../Files/FileType/MIMETypes';
 import { appGlobal } from '../../app';
+import { convertTextToHTML } from '../../util/convertHTML';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { assert, blobToDataURL } from '../../util/util';
 import { gt } from '../../../l10n/l10n';
@@ -44,6 +45,7 @@ export class XMPPAccount extends ChatAccount {
     await this.connect();
     await this.getRoster();
     await this.createChatsFromRoster();
+    await this.getGroupChats();
     this.client.sendPresence();
     this.client.enableKeepAlive();
     this.client.enableCarbons()
@@ -137,7 +139,7 @@ export class XMPPAccount extends ChatAccount {
     let roster = await this.client.getRoster();
     for (let item of roster.items ?? []) {
       try {
-        await this.getPerson(item.jid, item.name);
+        await this.getRosterPerson(item.jid, item.name);
       } catch (ex) {
         this.errorCallback(ex);
       }
@@ -201,13 +203,13 @@ export class XMPPAccount extends ChatAccount {
     }
   }
 
-  newRoom(): ChatRoom {
-    return new XMPP1to1Chat(this);
+  newRoom(isGroup = false): ChatRoom {
+    return isGroup ? new XMPPGroupChat(this) : new XMPP1to1Chat(this);
   }
 
   async getNewChat(jid: string): Promise<XMPPChat> {
     jid = getBareJID(jid);
-    let person = await this.getPerson(jid);
+    let person = await this.getRosterPerson(jid);
     let existing = this.getExistingChat(jid); // two messages of a new peer may race here
     if (existing) {
       return existing;
@@ -220,16 +222,50 @@ export class XMPPAccount extends ChatAccount {
     return chatRoom;
   }
 
-  async getNewGroupRoom(jid: string): Promise<XMPPChat | null> {
-    jid = getBareJID(jid);
-    if (this.getExistingChat(jid)) {
-      return null;
+  /** Gets the group chat rooms that our user is in, from the
+   * bookmarks on the server, and enters them */
+  protected async getGroupChats(): Promise<void> {
+    let bookmarks: XMPP.Stanzas.MUCBookmark[] = [];
+    try {
+      bookmarks = await this.client.getBookmarks();
+    } catch (errIQ) {
+      console.log("XMPP bookmarks not available", errIQ?.error?.condition ?? errIQ);
     }
+    for (let bookmark of bookmarks) {
+      try {
+        let chatRoom = this.getExistingChat(bookmark.jid) ?? await this.getNewGroupChat(bookmark);
+        if (chatRoom instanceof XMPPGroupChat) {
+          chatRoom.nick ??= sanitize.nonemptystring(bookmark.nick, null);
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+    for (let chatRoom of this.rooms.contents) {
+      if (!(chatRoom instanceof XMPPGroupChat)) {
+        continue;
+      }
+      try {
+        await chatRoom.join();
+      } catch (exOrPresence) {
+        this.errorCallback(exOrPresence instanceof Error ? exOrPresence
+          : new Error(gt`Failed to enter the chat room ${chatRoom.name}`));
+      }
+    }
+  }
+
+  async getNewGroupChat(bookmark: XMPP.Stanzas.MUCBookmark): Promise<XMPPGroupChat> {
+    let jid = getBareJID(bookmark.jid);
+    // Group chat rooms and their members are deliberately
+    // not in the user's address books
+    let group = this.addressbook.newGroup();
+    group.name = sanitize.label(bookmark.name, null) ?? jid.split("@")[0];
     let chatRoom = new XMPPGroupChat(this);
     chatRoom.id = jid;
-    await chatRoom.init();
-    await chatRoom.listMembers();
-    this.rooms.set(chatRoom.contact, chatRoom);
+    chatRoom.contact = group;
+    chatRoom.nick = sanitize.nonemptystring(bookmark.nick, null);
+    this.rooms.set(group, chatRoom);
+    await chatRoom.save();
     return chatRoom;
   }
 
@@ -245,7 +281,7 @@ export class XMPPAccount extends ChatAccount {
   /** Finds the contact for this JID, first in the roster, then in the
    * address books by chat ID or email address (JIDs often double as
    * email address). Creates the contact, if not found. */
-  async getPerson(jid: string, name?: string): Promise<Person> {
+  async getRosterPerson(jid: string, name?: string): Promise<Person> {
     jid = getBareJID(jid);
     name = sanitize.nonemptylabel(name, null);
     let existing = this.roster.get(jid);
@@ -280,6 +316,28 @@ export class XMPPAccount extends ChatAccount {
           .catch(this.errorCallback);
       }
     });
+    this.client.on("groupchat", msg => {
+      this.onGroupMessage(msg)
+        .catch(this.errorCallback);
+    });
+    this.client.on("muc:available", pres => {
+      let chatRoom = this.getExistingChat(pres.from);
+      if (chatRoom instanceof XMPPGroupChat) {
+        chatRoom.onOccupantPresence(pres);
+      }
+    });
+    this.client.on("muc:unavailable", pres => {
+      let chatRoom = this.getExistingChat(pres.from);
+      if (chatRoom instanceof XMPPGroupChat) {
+        chatRoom.onOccupantPresence(pres);
+      }
+    });
+    this.client.on("muc:topic", ev => {
+      let chatRoom = this.getExistingChat(ev.room);
+      if (chatRoom && ev.topic) {
+        chatRoom.descriptionHTML = convertTextToHTML(sanitize.label(ev.topic, ""));
+      }
+    });
     this.client.on("message:error", msg => {
       let reason = sanitize.nonemptylabel(msg.error?.text, null) ??
         sanitize.alphanumdash(msg.error?.condition, "");
@@ -301,6 +359,23 @@ export class XMPPAccount extends ChatAccount {
     let msg = chatRoom.addMessage(xmppMsg);
     if (!msg) {
       return;
+    }
+    chatRoom.lastMessage = msg;
+    await chatRoom.saveNewMessages([msg]);
+  }
+
+  /** A message arrived in a group chat room that we are in */
+  protected async onGroupMessage(xmppMsg: XMPP.Stanzas.Message): Promise<void> {
+    if (!xmppMsg.body) {
+      return; // subject, typing notification etc.
+    }
+    let chatRoom = this.getExistingChat(xmppMsg.from);
+    if (!chatRoom) {
+      return; // room that we are not in
+    }
+    let msg = chatRoom.addMessage(xmppMsg);
+    if (!msg) {
+      return; // e.g. the room reflecting our own message back
     }
     chatRoom.lastMessage = msg;
     await chatRoom.saveNewMessages([msg]);
