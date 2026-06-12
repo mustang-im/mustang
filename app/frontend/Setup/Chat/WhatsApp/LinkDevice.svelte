@@ -5,14 +5,22 @@
 
 <hbox class="qr-row">
   <vbox class="qr-area">
-    <vbox class="qr-placeholder">
-      {#if qrData}
-        <!-- A real QR of qrData would render here once live pairing is enabled -->
-        <hbox class="qr-label">{$t`Scan with your phone`}</hbox>
-      {:else}
-        <hbox class="qr-label">{$t`Preparing code…`}</hbox>
-      {/if}
-    </vbox>
+    {#if paired}
+      <vbox class="qr-placeholder success">
+        <StatusMessage status="success" message={$t`Device linked`} />
+      </vbox>
+    {:else if error}
+      <vbox class="qr-placeholder error">
+        <ErrorMessageInline ex={error} />
+        <Button label={$t`Try again`} classes="secondary" onClick={startLinking} />
+      </vbox>
+    {:else if qrData}
+      <QRCode data={qrData} size={264} />
+    {:else}
+      <vbox class="qr-placeholder">
+        <hbox class="qr-label">{liveEnabled ? $t`Preparing code…` : $t`Disabled in this build`}</hbox>
+      </vbox>
+    {/if}
   </vbox>
   <vbox class="instructions">
     <ol>
@@ -34,17 +42,23 @@
   <Button label={$t`Import chat history from a backup`} classes="secondary" onClick={onImportBackup} />
 </vbox>
 
-<ButtonsBottom canContinue={false} showContinue={false} canCancel={true} onCancel={onCancel} />
+<ButtonsBottom canContinue={false} showContinue={false} canCancel={true} onCancel={onCancelLink} />
 
 <script lang="ts">
   import type { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
   import { WhatsAppSetup } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
+  import { WhatsAppPairing } from "../../../../logic/Chat/WhatsApp/WhatsAppPairing";
   import { kWhatsAppLiveEnabled } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
+  import { appGlobal } from "../../../../logic/app";
   import Header from "../../Shared/Header.svelte";
+  import StatusMessage from "../../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../../Shared/ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import QRCode from "../../../Shared/QRCode.svelte";
+  import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import ExportInstructions from "./ExportInstructions.svelte";
   import { t } from "../../../../l10n/l10n";
+  import { onMount, onDestroy } from "svelte";
 
   /** in/out */
   export let config: WhatsAppAccount;
@@ -52,13 +66,52 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
-  let liveEnabled = kWhatsAppLiveEnabled;
-  // The QR payload (ref,noiseKey,identityKey,advSecret,platform) is produced by
-  // the pairing flow once the live connection is enabled; gated for now.
-  let qrData: string | null = liveEnabled ? "" : null;
+  const liveEnabled = kWhatsAppLiveEnabled;
+
+  /** The QR payload (ref,noiseKey,identityKey,advSecret) the phone scans. It
+   * rotates as each server ref expires, until the user links or it fails. */
+  let qrData: string | null = null;
+  let error: Error | null = null;
+  let paired = false;
+  let closing = false;
 
   config.name = "WhatsApp";
   config.setup ??= new WhatsAppSetup();
+
+  onMount(() => {
+    if (liveEnabled) {
+      startLinking();
+    }
+  });
+
+  onDestroy(() => {
+    closing = true;
+    config.cancelPairing();
+  });
+
+  async function startLinking() {
+    error = null;
+    qrData = null;
+    try {
+      await config.startPairing(qr => qrData = qr);
+      qrData = null;
+      paired = true;
+      if (!appGlobal.chatAccounts.includes(config)) {
+        appGlobal.chatAccounts.add(config);
+      }
+      await config.save();
+      showPage = null; // finish the wizard
+    } catch (ex) {
+      if (!closing && !WhatsAppPairing.isCancelled(ex)) {
+        error = ex as Error;
+      }
+    }
+  }
+
+  function onCancelLink(event: Event) {
+    config.cancelPairing();
+    onCancel(event);
+  }
 
   function onImportBackup() {
     showPage = ExportInstructions;
@@ -72,6 +125,8 @@
   }
   .qr-area {
     justify-content: center;
+    align-items: center;
+    min-width: 264px;
   }
   .qr-placeholder {
     width: 200px;
@@ -80,6 +135,15 @@
     border-radius: 8px;
     align-items: center;
     justify-content: center;
+    gap: 12px;
+    padding: 8px;
+  }
+  .qr-placeholder.error {
+    border-color: var(--error-fg, #CC0000);
+  }
+  .qr-placeholder.success {
+    border-style: solid;
+    border-color: var(--success-fg, #33A852);
   }
   .qr-label {
     opacity: 50%;

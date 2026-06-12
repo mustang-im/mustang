@@ -4,11 +4,18 @@
  * AES uses WebCrypto, which is available both in the Electron renderer and
  * under Node (vitest). Everything here is independent of WhatsApp specifics. */
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from "@noble/hashes/sha2.js";
+import { md5 as nobleMd5 } from "@noble/hashes/legacy.js";
 import { hmac as nobleHmac } from "@noble/hashes/hmac.js";
 import { hkdf as nobleHkdf } from "@noble/hashes/hkdf.js";
 
 export function sha256(data: Uint8Array): Uint8Array {
   return nobleSha256(data);
+}
+
+/** MD5 — used only for the registration build-hash the server expects, never
+ * for anything security-relevant. */
+export function md5(data: Uint8Array): Uint8Array {
+  return nobleMd5(data);
 }
 
 export function sha512(data: Uint8Array): Uint8Array {
@@ -71,6 +78,25 @@ export function concatBytes(...arrays: Uint8Array[]): Uint8Array {
     offset += a.length;
   }
   return result;
+}
+
+/** Standard base64 (RFC 4648, with `+/` and `=` padding), as WhatsApp uses in
+ * the QR pairing payload. */
+export function base64Encode(bytes: Uint8Array): string {
+  let binary = "";
+  for (let b of bytes) {
+    binary += String.fromCharCode(b);
+  }
+  return btoa(binary);
+}
+
+export function base64Decode(text: string): Uint8Array {
+  let binary = atob(text);
+  let bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {

@@ -17,6 +17,22 @@ export enum Product {
   Interop = 2,
 }
 
+/** ClientPayload.connectType values (only the one we use). */
+export enum ConnectType {
+  CellularUnknown = 0,
+  WifiUnknown = 1,
+}
+
+/** ClientPayload.connectReason values. */
+export enum ConnectReason {
+  Push = 0,
+  UserActivated = 1,
+  Scheduled = 2,
+  ErrorReconnect = 3,
+  NetworkSwitch = 4,
+  PingReconnect = 5,
+}
+
 // --- Noise handshake ---
 
 export const ClientHello = message({
@@ -77,6 +93,7 @@ export const DevicePairingRegistrationData = message({
   buildHash: bytes(7),
   deviceProps: bytes(8),
 });
+export type DevicePairingRegistrationData = TypeOf<typeof DevicePairingRegistrationData>;
 
 export const ClientPayload = message({
   username: int(1),
@@ -90,6 +107,61 @@ export const ClientPayload = message({
   pull: bool(33),
 });
 export type ClientPayload = TypeOf<typeof ClientPayload>;
+
+// --- companion device pairing (ADV) ---
+
+/** DeviceProps.platformType: how this companion shows up in "Linked devices" on
+ * the phone. Cosmetic; does not affect the protocol. */
+export enum DevicePlatformType {
+  Unknown = 0,
+  Chrome = 1,
+  Firefox = 2,
+  IE = 3,
+  Opera = 4,
+  Safari = 5,
+  Edge = 6,
+  Desktop = 7,
+  IPad = 8,
+  AndroidTablet = 9,
+}
+
+export const DeviceProps = message({
+  os: string(1),
+  version: sub(2, () => AppVersion),
+  platformType: int(3),
+  requireFullSync: bool(4),
+});
+export type DeviceProps = TypeOf<typeof DeviceProps>;
+
+/** The `<device-identity>` content of a `<pair-success>`: the signed identity
+ * wrapped in an advSecret-keyed HMAC so we can prove the payload is the one we
+ * keyed via the QR code. */
+export const ADVSignedDeviceIdentityHMAC = message({
+  details: bytes(1),
+  hmac: bytes(2),
+});
+export type ADVSignedDeviceIdentityHMAC = TypeOf<typeof ADVSignedDeviceIdentityHMAC>;
+
+/** The device identity the user's primary account signs to authorize us, and
+ * which we counter-sign and send back. `accountSignatureKey` is the primary
+ * account's identity public key; it is omitted when we re-encode for the reply. */
+export const ADVSignedDeviceIdentity = message({
+  details: bytes(1),
+  accountSignatureKey: bytes(2),
+  accountSignature: bytes(3),
+  deviceSignature: bytes(4),
+});
+export type ADVSignedDeviceIdentity = TypeOf<typeof ADVSignedDeviceIdentity>;
+
+/** The signed `details`: our device's place in the account's key index. */
+export const ADVDeviceIdentity = message({
+  rawID: int(1),
+  timestamp: int(2),
+  keyIndex: int(3),
+  accountType: int(4),
+  deviceType: int(5),
+});
+export type ADVDeviceIdentity = TypeOf<typeof ADVDeviceIdentity>;
 
 // --- server certificate chain ---
 

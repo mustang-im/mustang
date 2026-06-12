@@ -11,7 +11,13 @@
  * those go over WebRTC, not HTTP, so this Android HTTP identity still holds for
  * all chat-side HTTP.) Keep the version current or the server rejects the client
  * as outdated. */
-import { type ClientPayload, Platform, Product } from "./Proto/handshakeSchema";
+import {
+  type ClientPayload, type DevicePairingRegistrationData,
+  Platform, Product, ConnectType, ConnectReason, DevicePlatformType, DeviceProps,
+} from "./Proto/handshakeSchema";
+import { encode } from "./Proto/codec";
+import { md5 } from "./Crypto/primitives";
+import { appName } from "../../build";
 
 export const kWaAndroidClient = {
   appVersion: "2.26.23.7",
@@ -39,24 +45,60 @@ export const kWaHttpUserAgent =
 
 /** The login ClientPayload, advertising us as the WhatsApp Android client.
  * Its UserAgent describes an Android device, never the host OS. */
-export function buildLoginPayload(username: number, device: number): ClientPayload {
+/** The UserAgent describing us as the WhatsApp Android client. Shared by the
+ * login and the companion-registration payloads. */
+function userAgent() {
+  return {
+    platform: Platform.Android,
+    appVersion: kWaAppVersion,
+    osVersion: kWaAndroidClient.osVersion,
+    manufacturer: kWaAndroidClient.manufacturer,
+    device: kWaAndroidClient.device,
+    osBuildNumber: kWaAndroidClient.osBuildNumber,
+    mcc: kWaAndroidClient.mcc,
+    mnc: kWaAndroidClient.mnc,
+    localeLanguageIso6391: kWaAndroidClient.localeLanguage,
+    localeCountryIso31661Alpha2: kWaAndroidClient.localeCountry,
+  };
+}
+
+export function getLoginPayload(username: number, device: number): ClientPayload {
   return {
     username,
     device,
     passive: true,
     pull: true,
+    connectType: ConnectType.WifiUnknown,
+    connectReason: ConnectReason.UserActivated,
     product: Product.WhatsApp,
-    userAgent: {
-      platform: Platform.Android,
-      appVersion: kWaAppVersion,
-      osVersion: kWaAndroidClient.osVersion,
-      manufacturer: kWaAndroidClient.manufacturer,
-      device: kWaAndroidClient.device,
-      osBuildNumber: kWaAndroidClient.osBuildNumber,
-      mcc: kWaAndroidClient.mcc,
-      mnc: kWaAndroidClient.mnc,
-      localeLanguageIso6391: kWaAndroidClient.localeLanguage,
-      localeCountryIso31661Alpha2: kWaAndroidClient.localeCountry,
-    },
+    userAgent: userAgent(),
+  };
+}
+
+/** The server-expected build hash for our advertised app version: MD5 of the
+ * dotted version string. */
+export const kWaBuildHash = md5(new TextEncoder().encode(kWaAndroidClient.appVersion));
+
+/** How this companion presents itself in the phone's "Linked devices" list. */
+export function getDeviceProps(): Uint8Array {
+  return encode(DeviceProps, {
+    os: appName,
+    platformType: DevicePlatformType.Desktop,
+    requireFullSync: false,
+  });
+}
+
+/** The companion-registration ClientPayload. Unlike login it is not `passive`
+ * and carries no username/device yet; instead it offers our Signal key bundle
+ * in `devicePairingData`, which the server uses to drive QR pairing. */
+export function getRegistrationPayload(registrationData: DevicePairingRegistrationData): ClientPayload {
+  return {
+    passive: false,
+    pull: false,
+    connectType: ConnectType.WifiUnknown,
+    connectReason: ConnectReason.UserActivated,
+    product: Product.WhatsApp,
+    userAgent: userAgent(),
+    devicePairingData: registrationData,
   };
 }

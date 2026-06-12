@@ -15,6 +15,7 @@ import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
 import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
+import net from "node:net";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -89,6 +90,7 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newTCPSocket,
     readFile,
     writeFile,
     deleteFile,
@@ -241,6 +243,14 @@ export class HTTPFetchError extends Error {
 
 function newHTTPServer() {
   return new HTTPServer();
+}
+
+/** A raw TCP socket (not yet connected), for the WhatsApp transport. The app
+ * drives it over JPC: it attaches listeners, then calls `.connect(port, host)`.
+ * Returned unconnected on purpose, so the app can attach `connect`/`error`/`data`
+ * listeners before connecting — events fired before a listener exists are lost. */
+function newTCPSocket(): net.Socket {
+  return new net.Socket();
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */

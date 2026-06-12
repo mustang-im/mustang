@@ -22,6 +22,7 @@ import {
 } from "./Proto/handshakeSchema";
 import { readProto, getBytes, getInt } from "./Proto/ProtobufLite";
 import { appGlobal } from "../../app";
+import { assert } from "../../util/util";
 
 export class WhatsAppConnection {
   protected transport: WhatsAppTransport;
@@ -244,16 +245,65 @@ export interface WhatsAppTransport {
 const kWhatsAppServerHost = "g.whatsapp.net";
 const kWhatsAppServerPort = 443;
 
-/** Opens the raw socket via the desktop backend's TCP factory. That factory is
- * intentionally not wired yet (the live connection is gated). When enabling: add
- * `createTCPConnection(host, port)` to the desktop backend (a thin net.Socket
- * wrapper exposing connect/write/on('data')/end) and return an adapter here. */
+/** Opens the raw socket to the WhatsApp server. The desktop backend exposes only
+ * a bare `net.Socket` (`newTCPSocket()`); all the adapting to our transport
+ * interface happens here, on the renderer side, over JPC. */
 async function createWhatsAppTransport(host = kWhatsAppServerHost, port = kWhatsAppServerPort): Promise<WhatsAppTransport> {
-  let create = (appGlobal.remoteApp as any)?.createTCPConnection;
-  if (!create) {
-    throw new Error("WhatsApp live connection is not enabled in this build");
+  assert(kWhatsAppLiveEnabled, "WhatsApp live connection is not enabled in this build");
+  let socket = await appGlobal.remoteApp.newTCPSocket();
+  return new RemoteSocketTransport(socket, host, port);
+}
+
+/** Adapts a backend `net.Socket` (reached over JPC) to our transport interface.
+ * `socket` is the JPC proxy; every method call and every `on(...)` callback
+ * crosses the JPC boundary. We attach the listeners before calling `connect()`
+ * so no event is missed (EventEmitters drop events fired before a listener
+ * exists, and the JPC round-trips are not instant). */
+export class RemoteSocketTransport implements WhatsAppTransport {
+  /** True once we close it ourselves, so the resulting `close` is not reported
+   * to the app as an unexpected disconnect. */
+  protected closedByUs = false;
+
+  constructor(protected socket: any, protected host: string, protected port: number) {
   }
-  return await create(host, port);
+
+  connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      this.socket.on("connect", () => {
+        settled = true;
+        resolve();
+      });
+      this.socket.on("error", (ex: any) => {
+        if (!settled) { // a post-connect error is followed by `close`, which notifies the app
+          settled = true;
+          reject(new Error(ex?.message ?? `Cannot connect to ${this.host}:${this.port}`));
+        }
+      });
+      this.socket.connect(this.port, this.host);
+    });
+  }
+
+  async send(data: Uint8Array): Promise<void> {
+    await this.socket.write(data);
+  }
+
+  onData(callback: (data: Uint8Array) => void): void {
+    this.socket.on("data", callback);
+  }
+
+  onClose(callback: () => void): void {
+    this.socket.on("close", () => {
+      if (!this.closedByUs) {
+        callback();
+      }
+    });
+  }
+
+  async close(): Promise<void> {
+    this.closedByUs = true;
+    await this.socket.destroy();
+  }
 }
 
 async function inflate(data: Uint8Array): Promise<Uint8Array> {
