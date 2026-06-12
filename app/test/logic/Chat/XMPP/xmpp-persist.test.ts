@@ -8,6 +8,7 @@ import { appGlobal } from "../../../../logic/app";
 import { Database } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
+import { ChatMessage } from "../../../../logic/Chat/Message";
 import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
 import { makeTestDatabase as makeChatTestDatabase, getDatabase as getChatDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
 import { makeTestDatabase as makeContactsTestDatabase, getDatabase as getContactsDatabase } from "../../../../logic/Contacts/SQL/SQLDatabase";
@@ -145,6 +146,8 @@ test.skipIf(!Database)("Messages and contacts survive a restart", { timeout: 600
   expect(alice2.messages.length).toBe(3);
   expect(bob2.messages.length).toBe(2);
   expect(alice2.lastMessage?.text).toBe("How are you?");
+  // The UI shows only `ChatMessage`s
+  expect(alice2.messages.contents.every(msg => msg instanceof ChatMessage)).toBe(true);
   expect(server.queries.filter(q => q.withJID == kAlice && !q.after).length).toBe(0); // no full re-fetch
   expect(await countMessages()).toBe(5); // no duplicates
   expect(await countPersons()).toBe(2); // no duplicate contacts

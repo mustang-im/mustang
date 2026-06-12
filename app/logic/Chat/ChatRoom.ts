@@ -1,4 +1,4 @@
-import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
 import type { ChatAccount } from "./ChatAccount";
 import type { ChatPerson } from "./ChatPerson";
 import { Group } from "../Abstract/Group";
@@ -41,9 +41,11 @@ export class ChatRoom extends Observable {
   readonly members = new ArrayColl<ChatPerson>();
   /** The messages in this chat room.
    * This is also used for the MailChat view, so this may also contain EMails */
-  readonly messages = new ArrayColl<ChatMessage>();
+  readonly messages = new ArrayColl<RoomMessage>();
+  /** The newest human message, for the room list preview.
+   * Calculating this would be very slow. */
   @notifyChangedProperty
-  lastMessage: ChatMessage = null; // Calculating this would be very slow
+  lastMessage: ChatMessage = null;
   /** Message that our user is currently composing, to this chat room */
   @notifyChangedProperty
   draftMessage: string;
@@ -78,7 +80,7 @@ export class ChatRoom extends Observable {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.push(message);
     throw new Error("not implemented for this protocol");

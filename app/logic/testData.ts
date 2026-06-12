@@ -3,7 +3,7 @@ import { MailAccount } from './Mail/MailAccount';
 import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import type { MeetAccount } from './Meet/MeetAccount';
-import { DeliveryStatus, UserChatMessage } from './Chat/Message';
+import { ChatMessage, DeliveryStatus } from './Chat/Message';
 import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
@@ -411,19 +411,19 @@ class FakeChat extends ChatRoom {
       this.messages.add(msg);
       lastTime = msg.sent;
     }
-    this.lastMessage = this.messages.sortBy(msg => msg.sent).last;
+    this.lastMessage = this.messages.sortBy(msg => msg.sent).last as ChatMessage;
   }
   newMessage(): FakeChatMessage {
     return new FakeChatMessage(this);
   }
 
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.push(message);
   }
 }
 
-class FakeChatMessage extends UserChatMessage {
+class FakeChatMessage extends ChatMessage {
   constructor(chat: FakeChat) {
     super(chat);
     this.id = faker.string.uuid();

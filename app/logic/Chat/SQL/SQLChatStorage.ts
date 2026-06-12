@@ -2,7 +2,7 @@ import { SQLChatAccount } from "./SQLChatAccount";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import type { ChatRoom } from "../ChatRoom";
 import { SQLChatRoom } from "./SQLChatRoom";
-import type { ChatMessage } from "../Message";
+import type { RoomMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
 import type { Collection } from "svelte-collections";
 
@@ -13,7 +13,7 @@ export class SQLChatStorage implements ChatAccountStorage {
   async saveAccount(account: ChatAccount): Promise<void> {
     await SQLChatAccount.save(account);
   }
-  async saveMessage(message: ChatMessage): Promise<void> {
+  async saveMessage(message: RoomMessage): Promise<void> {
     await SQLChatMessage.save(message);
   }
   async saveRoom(room: ChatRoom): Promise<void> {

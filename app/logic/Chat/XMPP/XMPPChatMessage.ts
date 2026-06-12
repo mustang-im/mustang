@@ -1,4 +1,4 @@
-import { UserChatMessage } from "../Message";
+import { ChatMessage } from "../Message";
 import { getBareJID } from "./XMPPAccount";
 import type { XMPPChat } from "./XMPPChat";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -6,7 +6,7 @@ import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
 import type { JSONElement } from "stanza/jxt";
 
-export class XMPPChatMessage extends UserChatMessage {
+export class XMPPChatMessage extends ChatMessage {
   constructor(chatRoom: XMPPChat) {
     super(chatRoom);
   }

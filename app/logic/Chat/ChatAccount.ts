@@ -2,7 +2,7 @@ import { TCPAccount } from "../Abstract/TCPAccount";
 import type { ChatPerson } from "./ChatPerson";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
-import type { ChatMessage } from "./Message";
+import type { RoomMessage } from "./Message";
 import { SQLChatRoom } from "./SQL/SQLChatRoom";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
@@ -52,7 +52,7 @@ export class ChatAccount extends TCPAccount {
 }
 
 export interface ChatAccountStorage {
-  saveMessage(message: ChatMessage): Promise<void>;
+  saveMessage(message: RoomMessage): Promise<void>;
   saveRoom(room: ChatRoom): Promise<void>;
   saveAccount(account: ChatAccount): Promise<void>;
   deleteAccount(account: ChatAccount): Promise<void>;

@@ -3,7 +3,7 @@ import { appGlobal } from "../../../../logic/app";
 import { setupChatTestEnv, newChatStorage, Database } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
-import { UserChatMessage } from "../../../../logic/Chat/Message";
+import { ChatMessage } from "../../../../logic/Chat/Message";
 import { getDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
 import { SQLChatRoom } from "../../../../logic/Chat/SQL/SQLChatRoom";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
@@ -98,7 +98,7 @@ test.skipIf(!Database)("Login, roster, message history, send, live message, then
   expect(await countMessagesInDB()).toBe(5);
 
   // Send a message
-  let sendMsg = new UserChatMessage(aliceChat);
+  let sendMsg = new ChatMessage(aliceChat);
   sendMsg.text = "Sent from the test";
   await aliceChat.sendMessage(sendMsg);
   await new Promise(resolve => setTimeout(resolve, 500)); // until the mock server got it

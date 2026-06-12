@@ -1,5 +1,6 @@
 import { XMPPChat } from "./XMPPChat";
 import type { XMPPChatMessage } from "./XMPPChatMessage";
+import { ChatMessage } from "../Message";
 import { ChatPerson } from "../ChatPerson";
 import { Person } from "../../Abstract/Person";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
@@ -48,6 +49,7 @@ export class XMPP1to1Chat extends XMPPChat {
     }
     await SQLChatMessage.readAll(this);
     this.lastMessage = this.messages.contents
+      .filter((msg): msg is ChatMessage => msg instanceof ChatMessage)
       .reduce((last, msg) => !last || msg.sent > last.sent ? msg : last, null);
   }
 

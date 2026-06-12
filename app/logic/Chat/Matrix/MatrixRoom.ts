@@ -1,7 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
 import { MatrixPerson } from "./MatrixPerson";
-import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
 import { Group } from "../../Abstract/Group";
 import { ChatRoomEvent, Invite, JoinLeave } from "../RoomEvent";
 import { assert } from "../../util/util";
@@ -22,7 +22,7 @@ export class MatrixRoom extends ChatRoom {
     let init = await this.account.client.roomInitialSync(this.id, 3000);
   }
 
-  async getEvent(event): Promise<ChatMessage | null> {
+  async getEvent(event): Promise<RoomMessage | null> {
     let type = event.getType();
     if (type == "m.room.message") {
       return this.getUserMessage(event);
@@ -62,7 +62,7 @@ export class MatrixRoom extends ChatRoom {
       return this.getShowRawEvent(event);
     }
   }
-  fillMessage(event, msg: ChatMessage): void {
+  fillMessage(event, msg: RoomMessage): void {
     msg.id = event.event?.event_id;
     msg.sent = msg.received = new Date(event.getTs());
     let senderUserID = event.getSender();
@@ -88,7 +88,7 @@ export class MatrixRoom extends ChatRoom {
     if (replacedBy) {
       event = replacedBy;
     }
-    let msg = new UserChatMessage(this);
+    let msg = new ChatMessage(this);
     this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
@@ -137,11 +137,11 @@ export class MatrixRoom extends ChatRoom {
       // might be reacting to an older message which is not in our history
       return;
     }
-    assert(reactTo instanceof UserChatMessage, "Reacting to something that is not a message");
+    assert(reactTo instanceof ChatMessage, "Reacting to something that is not a message");
     reactTo.reactions.set(person, emoji);
   }
 
-  getJoinLeaveInviteEvent(event): ChatMessage {
+  getJoinLeaveInviteEvent(event): ChatRoomEvent {
     let data = event.event.content;
     let senderUserID = event.getSender();
     let person = this.account.getExistingPerson(senderUserID);
@@ -186,7 +186,7 @@ export class MatrixRoom extends ChatRoom {
     }
   }
 
-  getShowRawEvent(event): ChatMessage {
+  getShowRawEvent(event): ChatRoomEvent {
     let msg = new ChatRoomEvent(this);
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);
@@ -201,7 +201,7 @@ export class MatrixRoom extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
     //console.log("Sending", message.text, "to", this.name);

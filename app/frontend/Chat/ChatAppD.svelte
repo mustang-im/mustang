@@ -9,7 +9,7 @@
       <vbox flex class="messages background-pattern">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
-            {#if message instanceof UserChatMessage }
+            {#if message instanceof ChatMessage }
               <Message {message} {previousMessage} hideHeaderFollowup={true} />
             {:else if message instanceof ChatRoomEvent}
               <ChatRoomEventUI {message} />
@@ -26,7 +26,7 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { UserChatMessage } from "../../logic/Chat/Message";
+  import { ChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedAccount, selectedRoom } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";

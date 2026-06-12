@@ -3,7 +3,7 @@ import { GraphChatMessage } from "./GraphChatMessage";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
-import { DeliveryStatus, UserChatMessage } from "../Message";
+import { ChatMessage, DeliveryStatus } from "../Message";
 import { assert } from "../../util/util";
 import { ContactEntry } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
@@ -77,7 +77,7 @@ export class GraphChatRoom extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
   }

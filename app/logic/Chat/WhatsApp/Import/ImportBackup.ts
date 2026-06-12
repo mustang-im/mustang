@@ -1,6 +1,6 @@
 import type { WhatsAppAccount } from "../WhatsAppAccount";
 import type { ChatRoom } from "../../ChatRoom";
-import { ChatMessage, UserChatMessage } from "../../Message";
+import { ChatMessage, type RoomMessage } from "../../Message";
 import { ChatRoomEvent } from "../../RoomEvent";
 import { SQLChatMessage } from "../../SQL/SQLChatMessage";
 import { getDatabase } from "../../SQL/SQLDatabase";
@@ -33,7 +33,7 @@ export class WhatsAppBackupImport {
   protected nameByJID = new Map<string, string>();
   protected personByJID = new Map<string, Person>();
   /** msgstore message._id -> imported message, for attaching reactions */
-  protected messageByRowID = new Map<number, ChatMessage>();
+  protected messageByRowID = new Map<number, RoomMessage>();
 
   constructor(account: WhatsAppAccount, onProgress?: (progress: ImportProgress) => void) {
     this.account = account;
@@ -304,7 +304,7 @@ export class WhatsAppBackupImport {
       ORDER BY message._id
       `) as any[];
 
-    let newMessages: ChatMessage[] = [];
+    let newMessages: RoomMessage[] = [];
     for (let row of rows) {
       try {
         if (row.status == 6 || row.type == kMessageType.System || !row.keyID) {
@@ -335,6 +335,7 @@ export class WhatsAppBackupImport {
     }
     room.messages.addAll(newMessages);
     let last = room.messages.contents
+      .filter((msg): msg is ChatMessage => msg instanceof ChatMessage)
       .reduce((last, msg) => !last || msg.sent > last.sent ? msg : last, null);
     if (last) {
       room.lastMessage = last;
@@ -349,9 +350,9 @@ export class WhatsAppBackupImport {
     return `${keyID} ${fromMe ? 1 : 0}${sender ? " " + sender : ""}`;
   }
 
-  protected async convertMessage(room: ChatRoom, row: any, isGroup: boolean): Promise<ChatMessage | null> {
+  protected async convertMessage(room: ChatRoom, row: any, isGroup: boolean): Promise<RoomMessage | null> {
     let revoked = row.type == kMessageType.Revoked;
-    let msg = revoked ? new ChatRoomEvent(room) : new UserChatMessage(room);
+    let msg = revoked ? new ChatRoomEvent(room) : new ChatMessage(room);
     msg.outgoing = !!row.fromMe;
     if (!row.fromMe && isGroup && row.senderJidRowID) {
       let senderJID = this.jidByRowID.get(row.senderJidRowID);
@@ -410,7 +411,7 @@ export class WhatsAppBackupImport {
         INNER JOIN message_add_on_reaction
           ON message_add_on_reaction.message_add_on_row_id = message_add_on._id
       `) as any[];
-    let changed = new Set<ChatMessage>();
+    let changed = new Set<RoomMessage>();
     for (let row of rows) {
       try {
         let msg = this.messageByRowID.get(row.parentRowID);

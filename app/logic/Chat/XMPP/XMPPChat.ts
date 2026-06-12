@@ -1,13 +1,17 @@
 import { ChatRoom } from "../ChatRoom";
 import type { XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
-import { UserChatMessage, DeliveryStatus } from "../Message";
+import { ChatMessage, DeliveryStatus } from "../Message";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends ChatRoom {
   declare account: XMPPAccount;
+
+  newMessage(): ChatMessage {
+    return new XMPPChatMessage(this);
+  }
 
   /** Adds the message to this chat, unless it's already known
    * (e.g. from our DB) or it's not a user message.
@@ -30,7 +34,7 @@ export class XMPPChat extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage): Promise<void> {
+  async sendMessage(message: ChatMessage): Promise<void> {
     assert(this.account.isLoggedIn, "Chat account is not logged in");
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
@@ -49,7 +53,7 @@ export class XMPPChat extends ChatRoom {
   }
 
   /** Saves new messages to our DB */
-  async saveNewMessages(messages: UserChatMessage[]): Promise<void> {
+  async saveNewMessages(messages: ChatMessage[]): Promise<void> {
     if (!this.account.storage) {
       return;
     }

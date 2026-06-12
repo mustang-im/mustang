@@ -1,11 +1,11 @@
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Attachment } from "../../Abstract/Attachment";
 import { NotReached } from "../../util/util";
-import { UserChatMessage } from "../Message";
+import { ChatMessage } from "../Message";
 import type { GraphChatRoom } from "./GraphChatRoom";
 import type { TGraphChatMessage } from "./TGraphChat";
 
-export class GraphChatMessage extends UserChatMessage {
+export class GraphChatMessage extends ChatMessage {
   to: GraphChatRoom;
   info: TGraphChatMessage;
   constructor(chat: GraphChatRoom) {

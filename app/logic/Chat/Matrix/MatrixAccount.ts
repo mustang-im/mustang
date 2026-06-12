@@ -1,7 +1,7 @@
 import { ChatAccount } from '../ChatAccount';
 import { MatrixRoom } from './MatrixRoom';
 import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
-import { UserChatMessage } from '../Message';
+import { ChatMessage } from '../Message';
 import { IncomingCall } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
 import { MatrixPerson } from './MatrixPerson';
@@ -135,14 +135,16 @@ export class MatrixAccount extends ChatAccount {
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
         let msg = await chatRoom.getEvent(event); // process system events
-        if (msg && true || msg instanceof UserChatMessage) { // when joining, we add only user messages
+        if (msg && true || msg instanceof ChatMessage) { // when joining, we add only user messages
           chatRoom.messages.add(msg);
         }
       } catch (ex) {
         this.errorCallback(ex);
       }
     }
-    chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
+    chatRoom.lastMessage = chatRoom.messages.contents
+      .filter((msg): msg is ChatMessage => msg instanceof ChatMessage)
+      .pop() ?? null;
     return chatRoom;
   }
   getExistingRoom(roomID: string): MatrixRoom {
@@ -179,7 +181,9 @@ export class MatrixAccount extends ChatAccount {
           return;
         }
         chatRoom.messages.add(message);
-        chatRoom.lastMessage = message;
+        if (message instanceof ChatMessage) {
+          chatRoom.lastMessage = message;
+        }
       } catch (ex) {
         this.errorCallback(ex);
       }

@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../Message";
+import type { RoomMessage } from "../Message";
 import type { ChatRoom } from "../ChatRoom";
 import type { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
@@ -16,7 +16,7 @@ export class SQLChatMessage {
   /**
    * Save only fully downloaded emails
    */
-  static async save(msg: ChatMessage) {
+  static async save(msg: RoomMessage) {
     if (!msg.contact.dbID) {
       await SQLPerson.save(msg.contact as Person);
     }
@@ -67,7 +67,7 @@ export class SQLChatMessage {
     await SQLChatMessage.saveAttachments(msg);
   }
 
-  protected static async saveAttachments(msg: ChatMessage) {
+  protected static async saveAttachments(msg: RoomMessage) {
     for (let a of msg.attachments) {
       let existing = await (await getDatabase()).get(sql`
         SELECT id FROM chatAttachment
@@ -93,7 +93,7 @@ export class SQLChatMessage {
     }
   }
 
-  static async read(dbID: number, msg: ChatMessage, row?: any): Promise<void> {
+  static async read(dbID: number, msg: RoomMessage, row?: any): Promise<void> {
     let readAttachments = !row;
     if (!row) {
       row = await (await getDatabase()).get(sql`
@@ -152,7 +152,7 @@ export class SQLChatMessage {
     return a;
   }
 
-  protected static readReactions(msg: ChatMessage, reactionsJSONStr: string | null) {
+  protected static readReactions(msg: RoomMessage, reactionsJSONStr: string | null) {
     if (!reactionsJSONStr) {
       return;
     }
@@ -169,7 +169,7 @@ export class SQLChatMessage {
     }
   }
 
-  protected static async saveReactions(msg: ChatMessage): Promise<string> {
+  protected static async saveReactions(msg: RoomMessage): Promise<string> {
     let reactions: ReactionJSON[] = [];
     msg.reactions.forEach(async (emoji: string, person: Person) => {
       if (!person.dbID) {
@@ -183,7 +183,7 @@ export class SQLChatMessage {
     return JSON.stringify(reactions);
   }
 
-  static async deleteIt(msg: ChatMessage) {
+  static async deleteIt(msg: RoomMessage) {
     assert(msg.dbID, "Need chat message DB ID to delete");
     await (await getDatabase()).run(sql`
       DELETE FROM message
@@ -220,15 +220,15 @@ export class SQLChatMessage {
         chat.account.errorCallback(ex);
       }
     }
-    let newMsgs = new ArrayColl<ChatMessage>();
+    let newMsgs = new ArrayColl<RoomMessage>();
     for (let row of rows) {
       try {
         let msg = chat.messages.find(msg => msg.dbID == row.id);
         if (msg) {
-          await SQLChatMessage.read(row.id, msg as any as ChatMessage); // TODO needed?
+          await SQLChatMessage.read(row.id, msg as any as RoomMessage); // TODO needed?
         } else {
           msg = chat.newMessage();
-          await SQLChatMessage.read(row.id, msg as any as ChatMessage, row);
+          await SQLChatMessage.read(row.id, msg as any as RoomMessage, row);
           let atts = attsByMessage.get(row.id);
           if (atts) {
             msg.attachments.replaceAll(atts);

@@ -1,6 +1,6 @@
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import type { ChatRoom } from "../ChatRoom";
-import type { ChatMessage } from "../Message";
+import type { RoomMessage } from "../Message";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export class DummyChatStorage implements ChatAccountStorage {
@@ -8,7 +8,7 @@ export class DummyChatStorage implements ChatAccountStorage {
   }
   async saveAccount(account: ChatAccount): Promise<void> {
   }
-  async saveMessage(message: ChatMessage): Promise<void> {
+  async saveMessage(message: RoomMessage): Promise<void> {
   }
   async saveRoom(chat: ChatRoom): Promise<void> {
   }

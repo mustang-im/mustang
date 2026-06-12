@@ -1,6 +1,7 @@
+import { Message } from "../Abstract/Message";
+import type { ChatRoom } from "./ChatRoom";
 import type { VideoConfMeeting } from "../Meet/VideoConfMeeting";
 import { notifyChangedProperty } from "../util/Observable";
-import { ChatMessage } from "./Message";
 
 /**
  * Information about what happens in the chat room,
@@ -8,7 +9,22 @@ import { ChatMessage } from "./Message";
  * but e.g. a person joining or leaving, the room title changing,
  * and similar events.
  */
-export class ChatRoomEvent extends ChatMessage {
+export class ChatRoomEvent extends Message {
+  @notifyChangedProperty
+  to: ChatRoom;
+
+  constructor(room: ChatRoom) {
+    super();
+    this.to = room;
+    this.contact = room?.contact;
+  }
+
+  get room(): ChatRoom {
+    return this.to;
+  }
+  set room(val: ChatRoom) {
+    this.to = val;
+  }
 }
 
 export class JoinLeave extends ChatRoomEvent {

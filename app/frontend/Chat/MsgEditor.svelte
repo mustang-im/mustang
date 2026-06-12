@@ -31,7 +31,7 @@
 
 <script lang="ts">
   import type { ChatRoom } from "../../logic/Chat/ChatRoom";
-  import { UserChatMessage } from "../../logic/Chat/Message";
+  import { ChatMessage } from "../../logic/Chat/Message";
   import { Attachment } from "../../logic/Abstract/Attachment";
   import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
@@ -55,7 +55,7 @@
     if (!to.draftMessage) {
       return;
     }
-    let msg = new UserChatMessage(to);
+    let msg = new ChatMessage(to);
     msg.outgoing = true;
     msg.html = to.draftMessage;
     msg.text; // Generate to keep in sync
