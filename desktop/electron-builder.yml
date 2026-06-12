@@ -45,6 +45,7 @@ linux:
     - deb
     - pacman
     - rpm
+    - flatpak
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Network
