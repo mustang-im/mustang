@@ -1,5 +1,7 @@
 import { ChatAccount } from "../ChatAccount";
 import { WhatsAppChatRoom } from "./WhatsAppChatRoom";
+import { WhatsAppMessage } from "./WhatsAppMessage";
+import { WhatsAppHistorySync } from "./WhatsAppHistorySync";
 import { KeyPair } from "./Crypto/KeyPair";
 import { SignalStore } from "./Crypto/Signal/Store";
 import { decryptPreKeyMessage, decryptSignalMessage } from "./Crypto/Signal/SessionCipher";
@@ -11,9 +13,13 @@ import { deferred, type Deferred, stanzaErrorText } from "./util";
 import { getLoginPayload } from "./clientInfo";
 import { decodeWAMessage } from "./Proto/schema";
 import { WANode } from "./Binary/WANode";
-import { JID } from "./Binary/JID";
+import { JID, kServerUser } from "./Binary/JID";
+import { phoneNumbersMatch } from "./Import/ImportBackup";
 import { WhatsAppMeetAccount } from "../../Meet/WhatsApp/WhatsAppMeetAccount";
+import { ContactEntry, Person } from "../../Abstract/Person";
+import { Group } from "../../Abstract/Group";
 import { appGlobal } from "../../app";
+import { gt } from "../../../l10n/l10n";
 
 /**
  * A WhatsApp account, paired as a companion device of the user's own phone.
@@ -46,6 +52,8 @@ export class WhatsAppAccount extends ChatAccount {
   connection: WhatsAppConnection | null = null;
   /** Voice/video calls run through this dependent Meet account. */
   meetAccount: WhatsAppMeetAccount | null = null;
+  /** Fetches the chat list and old messages the phone sends after linking. */
+  readonly historySync = new WhatsAppHistorySync(this);
   /** The in-progress QR pairing, while {@link startPairing} runs (for cancel). */
   protected pairing: WhatsAppPairing | null = null;
   /** Resolves/rejects the in-flight login once `<success>`/`<failure>` arrives. */
@@ -139,7 +147,8 @@ export class WhatsAppAccount extends ChatAccount {
       this.loginResult?.reject(new Error(`WhatsApp login failed${stanzaErrorText(node)}`));
       this.loginResult = null;
     } else if (node.tag == "message") {
-      this.receiveMessageStanza(node).catch(ex => this.errorCallback(ex));
+      this.receiveMessageStanza(node)
+        .catch(ex => this.errorCallback(ex));
     } else if (node.tag == "call") {
       this.meetAccount?.handleCallStanza(node);
     }
@@ -158,12 +167,33 @@ export class WhatsAppAccount extends ChatAccount {
     if (!payloadBytes) {
       return;
     }
-    let room = this.roomForChat(from);
-    if (!room) {
-      return; // creating rooms from a live roster is part of the unwired path
+    let rawPayload = decodeWAMessage(payloadBytes);
+    let historyNotification = WhatsAppMessage.unwrap(rawPayload).protocolMessage?.historySyncNotification;
+    if (historyNotification) {
+      await this.historySync.handleNotification(historyNotification);
+      await this.sendDeliveryReceipt(node);
+      return;
     }
-    await room.receiveMessage(node, decodeWAMessage(payloadBytes), sender);
-    // A delivery <receipt> would be sent here in the live dialogue.
+    // In a group, `notify` is the sender's name, not the group subject.
+    let room = await this.getOrCreateRoom(from, from.isGroup ? undefined : node.attrs.notify);
+    await room.receiveMessage(node, rawPayload, sender);
+    await this.sendDeliveryReceipt(node);
+  }
+
+  /** Acknowledges a delivered message, so the server marks it delivered and
+   * stops resending it. */
+  protected async sendDeliveryReceipt(node: WANode): Promise<void> {
+    let from = node.attrs.from;
+    let id = node.attrs.id;
+    if (!from || !id || !this.connection) {
+      return;
+    }
+    let attrs: Record<string, string> = { to: from, id };
+    let participant = node.attrs.participant;
+    if (participant) {
+      attrs.participant = participant;
+    }
+    await this.connection.sendNode(new WANode("receipt", attrs));
   }
 
   /** Decrypts the first usable `<enc>` of a message stanza via the matching
@@ -195,6 +225,75 @@ export class WhatsAppAccount extends ChatAccount {
   protected roomForChat(jid: JID): WhatsAppChatRoom | undefined {
     let id = jid.toNonDevice().toString();
     return this.rooms.contents.find(room => room.id == id) as WhatsAppChatRoom | undefined;
+  }
+
+  /** Returns the room for this chat, creating it (and its contact) on first
+   * sight of a message from it. This is how the chat list fills in live, until
+   * a full roster / history sync is wired. */
+  async getOrCreateRoom(chat: JID, nameHint?: string): Promise<WhatsAppChatRoom> {
+    let room = this.roomForChat(chat);
+    if (room) {
+      return room;
+    }
+    let contact = chat.isGroup
+      ? await this.getOrCreateGroup(chat, nameHint)
+      : await this.getOrCreatePerson(chat, nameHint);
+    room = this.roomForChat(chat); // re-check: a concurrent message may have created it
+    if (room) {
+      return room;
+    }
+    room = this.newRoom();
+    room.id = chat.toNonDevice().toString();
+    room.contact = contact as any;
+    if (chat.isGroup) {
+      room.name = contact.name;
+    }
+    this.rooms.set(contact as any, room);
+    await room.save();
+    return room;
+  }
+
+  /** Finds the contact for a WhatsApp JID, or creates one in the personal
+   * address book. Matches the importer's keys (WhatsApp ID, then phone number)
+   * so live and imported chats share the same contacts.
+   * @param pushName the sender's display name from the stanza, if known */
+  protected async getOrCreatePerson(jid: JID, pushName?: string): Promise<Person> {
+    let address = jid.toNonDevice().toString();
+    let phone = jid.server == kServerUser ? "+" + jid.user : null;
+    let person = appGlobal.persons.find(p =>
+      p.chatAccounts.some(e => e.protocol == "whatsapp" && jidUser(e.value) == jid.user));
+    if (!person && phone) {
+      person = appGlobal.persons.find(p => p.phoneNumbers.some(e => phoneNumbersMatch(e.value, phone)));
+    }
+    let changed = false;
+    if (!person) {
+      person = appGlobal.personalAddressbook.newPerson();
+      person.name = pushName || phone || jid.user;
+      appGlobal.personalAddressbook.persons.add(person);
+      changed = true;
+    }
+    if (!person.chatAccounts.some(e => e.protocol == "whatsapp" && jidUser(e.value) == jid.user)) {
+      person.chatAccounts.add(new ContactEntry(address, "WhatsApp", "whatsapp"));
+      changed = true;
+    }
+    if (phone && !person.phoneNumbers.some(e => phoneNumbersMatch(e.value, phone))) {
+      person.phoneNumbers.add(new ContactEntry(phone, "mobile", "tel"));
+      changed = true;
+    }
+    if (changed) {
+      await person.save();
+    }
+    return person;
+  }
+
+  /** Creates a placeholder group for a live group chat. The real name and
+   * members come from group metadata / history sync (not wired yet). */
+  protected async getOrCreateGroup(jid: JID, subject?: string): Promise<Group> {
+    let group = appGlobal.personalAddressbook.newGroup();
+    group.name = subject || gt`WhatsApp group`;
+    appGlobal.personalAddressbook.groups.add(group);
+    await group.save();
+    return group;
   }
 
   /** Creates (or reuses) the dependent Meet account that handles WhatsApp calls. */
@@ -235,6 +334,12 @@ export class WhatsAppAccount extends ChatAccount {
     }
     return json;
   }
+}
+
+/** The user part (phone number digits) of a contact's stored WhatsApp value,
+ * which may be a full JID or just a number. */
+function jidUser(value: string): string {
+  return JID.parse(value).user || value;
 }
 
 export class WhatsAppSetup {

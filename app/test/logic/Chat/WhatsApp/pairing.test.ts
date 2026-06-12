@@ -19,7 +19,7 @@ import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
-import { buildLoginPayload } from "../../../../logic/Chat/WhatsApp/clientInfo";
+import { getLoginPayload } from "../../../../logic/Chat/WhatsApp/clientInfo";
 import { expect, test } from "vitest";
 
 const kAccountSignaturePrefix = new Uint8Array([6, 0]);
@@ -302,7 +302,7 @@ test("rejects a pair-success whose HMAC does not match the advSecret", async () 
 
 test("the login payload carries the paired phone number and device id", () => {
   let jid = JID.parse(kPairedJID);
-  let payload = decode(ClientPayload, encode(ClientPayload, buildLoginPayload(Number(jid.user), jid.device)));
+  let payload = decode(ClientPayload, encode(ClientPayload, getLoginPayload(Number(jid.user), jid.device)));
   expect(payload.username).toBe(15551234567);
   expect(payload.device).toBe(3);
   expect(payload.passive).toBe(true);

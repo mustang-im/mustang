@@ -8,7 +8,7 @@ import { WhatsAppMessage } from "./WhatsAppMessage";
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
 import { JID } from "./Binary/JID";
-import { ProtocolMessageType, type WAMessage, type ReactionMessage } from "./Proto/schema";
+import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "./Proto/schema";
 import { appGlobal } from "../../app";
 import { gt } from "../../../l10n/l10n";
 
@@ -65,6 +65,43 @@ export class WhatsAppChatRoom extends ChatRoom {
     this.messages.add(message);
     this.lastMessage = message;
     await this.account.storage.saveMessage(message);
+  }
+
+  /** Adds a stored message from history sync (a WebMessageInfo) to this room.
+   * Mirrors addMessage(), but the id/time/sender come from the stored key
+   * instead of a live stanza. @returns whether a displayable message was added. */
+  async addHistoryMessage(info: WebMessageInfo): Promise<boolean> {
+    let id = info.key?.id;
+    if (!id || !info.message || this.messages.some(msg => msg.id == id)) {
+      return false;
+    }
+    let message = this.newMessage();
+    message.id = id;
+    message.outgoing = !!info.key.fromMe;
+    message.sent = new Date(Number(info.messageTimestamp ?? 0) * 1000);
+    message.received = message.sent;
+    message.isRead = true;
+    message.contact = this.historySender(info.key);
+    if (!message.readContent(WhatsAppMessage.unwrap(info.message))) {
+      return false; // a type we cannot display (call, poll, system event, …)
+    }
+    this.messages.add(message);
+    if (!this.lastMessage || message.sent > this.lastMessage.sent) {
+      this.lastMessage = message;
+    }
+    await this.account.storage.saveMessage(message);
+    return true;
+  }
+
+  /** The sender of a stored message: us, the chat partner (1:1), or the group member. */
+  protected historySender(key: MessageKey): PersonUID | Person | Group {
+    if (key.fromMe) {
+      return appGlobal.me;
+    }
+    if (this.contact instanceof Group && key.participant) {
+      return this.contactForSender(JID.parse(key.participant));
+    }
+    return this.contact as any as Person;
   }
 
   protected async reactToMessage(reaction: ReactionMessage, sender: JID): Promise<void> {

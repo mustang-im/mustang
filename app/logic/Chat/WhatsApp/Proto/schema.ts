@@ -163,10 +163,60 @@ export type ReactionMessage = TypeOf<typeof ReactionMessage>;
 export const ProtocolMessage = message({
   key: sub(1, () => MessageKey),
   type: int(2),
+  historySyncNotification: sub(6, () => HistorySyncNotification),
   editedMessage: sub<WAMessage>(14, () => Message),
   timestampMS: int(15),
 });
 export type ProtocolMessage = TypeOf<typeof ProtocolMessage>;
+
+// --- history sync (the chat list + recent messages a companion gets at link time) ---
+
+/** Points at an encrypted, gzipped HistorySync blob on the media servers. */
+export const HistorySyncNotification = message({
+  fileSHA256: bytes(1),
+  fileLength: int(2),
+  mediaKey: bytes(3),
+  fileEncSHA256: bytes(4),
+  directPath: string(5),
+  syncType: int(6),
+  chunkOrder: int(7),
+  originalMessageID: string(8),
+});
+export type HistorySyncNotification = TypeOf<typeof HistorySyncNotification>;
+
+/** One stored message, as it appears inside a history-sync conversation. */
+export const WebMessageInfo = message({
+  key: sub(1, () => MessageKey),
+  message: sub<WAMessage>(2, () => Message),
+  messageTimestamp: int(3),
+  pushName: string(16),
+});
+export type WebMessageInfo = TypeOf<typeof WebMessageInfo>;
+
+export const HistorySyncMsg = message({
+  message: sub(1, () => WebMessageInfo),
+  msgOrderID: int(2),
+});
+
+/** A chat (1:1 or group) with its recent messages. `id` is the chat JID. */
+export const Conversation = message({
+  id: string(1),
+  messages: repeated(sub(2, () => HistorySyncMsg)),
+  unreadCount: int(6),
+  name: string(13),
+});
+export type Conversation = TypeOf<typeof Conversation>;
+
+export const HistorySync = message({
+  syncType: int(1),
+  conversations: repeated(sub(2, () => Conversation)),
+  progress: int(6),
+});
+export type HistorySync = TypeOf<typeof HistorySync>;
+
+export function decodeHistorySync(data: Uint8Array): HistorySync {
+  return decode(HistorySync, data);
+}
 
 export const SenderKeyDistributionMessage = message({
   groupID: string(1),

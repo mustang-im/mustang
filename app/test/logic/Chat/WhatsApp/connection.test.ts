@@ -3,7 +3,7 @@ import "../../../../logic/app";
 import {
   WhatsAppConnection, kConnectionHeader, type WhatsAppTransport,
 } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
-import { buildLoginPayload } from "../../../../logic/Chat/WhatsApp/clientInfo";
+import { getLoginPayload } from "../../../../logic/Chat/WhatsApp/clientInfo";
 import { NoiseHandshake, NoiseTransport } from "../../../../logic/Chat/WhatsApp/Crypto/Noise";
 import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
 import { xeddsaSign } from "../../../../logic/Chat/WhatsApp/Crypto/curve";
@@ -194,7 +194,7 @@ test("completes the Noise handshake against a mock server and round-trips an IQ"
   connection.rootCertKey = root.publicKey; // trust our test root instead of the pinned one
   let serverConnected = new Promise<void>(resolve => server.onConnected = resolve);
 
-  await connection.connect(() => buildLoginPayload(491700000000, 0), clientChannel);
+  await connection.connect(() => getLoginPayload(491700000000, 0), clientChannel);
   await serverConnected;
 
   // The server decrypted our ClientPayload, proving the whole handshake matched.
@@ -216,7 +216,7 @@ test("rejects a server certificate not signed by the pinned root", async () => {
 
   let connection = new WhatsAppConnection({ noiseKey: KeyPair.generate() });
   // rootCertKey left at the real pinned key, which did not sign this chain.
-  await expect(connection.connect(() => buildLoginPayload(1, 0), clientChannel))
+  await expect(connection.connect(() => getLoginPayload(1, 0), clientChannel))
     .rejects.toThrow(/intermediate certificate signature invalid/);
 });
 
@@ -228,7 +228,7 @@ test("rejects a leaf certificate not signed by the intermediate", async () => {
 
   let connection = new WhatsAppConnection({ noiseKey: KeyPair.generate() });
   connection.rootCertKey = root.publicKey;
-  await expect(connection.connect(() => buildLoginPayload(1, 0), clientChannel))
+  await expect(connection.connect(() => getLoginPayload(1, 0), clientChannel))
     .rejects.toThrow(/leaf certificate signature invalid/);
 });
 
@@ -240,6 +240,6 @@ test("rejects when the leaf certificate key is not the server's static key", asy
 
   let connection = new WhatsAppConnection({ noiseKey: KeyPair.generate() });
   connection.rootCertKey = root.publicKey;
-  await expect(connection.connect(() => buildLoginPayload(1, 0), clientChannel))
+  await expect(connection.connect(() => getLoginPayload(1, 0), clientChannel))
     .rejects.toThrow(/server key does not match its certificate/);
 });
