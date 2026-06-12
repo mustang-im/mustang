@@ -72,6 +72,10 @@ pacman:
     - snappy
     - libnotify
     - libappindicator-gtk3
+flatpak:
+  runtime: org.freedesktop.Platform
+  sdk: org.freedesktop.Sdk
+  runtimeVersion: "24.08"
 protocols:
   name: Send mail
   schemes:
