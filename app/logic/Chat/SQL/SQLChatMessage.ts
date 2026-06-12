@@ -1,4 +1,5 @@
 import type { RoomMessage } from "../Message";
+import { ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import type { ChatRoom } from "../ChatRoom";
 import type { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
@@ -34,18 +35,22 @@ export class SQLChatMessage {
       }
     }
     let reactionsJSON = await SQLChatMessage.saveReactions(msg);
+    // A `ChatRoomEvent` is marked by its `kind` in the json column.
+    let jsonStr = msg instanceof ChatRoomEvent
+      ? JSON.stringify(msg.toExtraJSON(), null, 2)
+      : null;
     if (!msg.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO message (
           outgoing, fromPersonID, inReplyToIDStr,
           dateSent, dateReceived,
           plaintext, html, reactionsJSON,
-          chatID, idStr
+          chatID, idStr, json
         ) VALUES (
           ${msg.outgoing ? 1 : 0}, ${msg.contact.dbID}, ${msg.inReplyTo},
           ${msg.sent.getTime() / 1000}, ${msg.received.getTime() / 1000},
           ${msg.text}, ${msg.rawHTMLDangerous}, ${reactionsJSON},
-          ${msg.to.dbID}, ${msg.id}
+          ${msg.to.dbID}, ${msg.id}, ${jsonStr}
         )`);
       msg.dbID = insert.lastInsertRowid;
     } else {
@@ -60,11 +65,25 @@ export class SQLChatMessage {
           html = ${msg.rawHTMLDangerous},
           reactionsJSON = ${reactionsJSON},
           chatID = ${msg.to.dbID},
-          idStr = ${msg.id}
+          idStr = ${msg.id},
+          json = ${jsonStr}
         WHERE id = ${msg.dbID}
         `);
     }
     await SQLChatMessage.saveAttachments(msg);
+  }
+
+  /** Creates the message or room event for this DB row,
+   * based on the `kind` saved in the json column. */
+  protected static newRoomMessage(chat: ChatRoom, jsonStr: string | null): RoomMessage {
+    let json = sanitize.json(jsonStr, null) as any;
+    let kind = sanitize.enum(json?.kind, Object.values(RoomEventKind), null);
+    if (!kind) {
+      return chat.newMessage();
+    }
+    let event = chat.newRoomEvent(kind);
+    event.fromExtraJSON(json);
+    return event;
   }
 
   protected static async saveAttachments(msg: RoomMessage) {
@@ -198,7 +217,7 @@ export class SQLChatMessage {
         outgoing, fromPersonID, inReplyToIDStr,
         dateSent, dateReceived,
         plaintext, html, reactionsJSON,
-        chatID, idStr
+        chatID, idStr, json
       FROM message
       WHERE chatID = ${chat.dbID}
       `) as any;
@@ -227,7 +246,7 @@ export class SQLChatMessage {
         if (msg) {
           await SQLChatMessage.read(row.id, msg as any as RoomMessage); // TODO needed?
         } else {
-          msg = chat.newMessage();
+          msg = SQLChatMessage.newRoomMessage(chat, sanitize.string(row.json, null));
           await SQLChatMessage.read(row.id, msg as any as RoomMessage, row);
           let atts = attsByMessage.get(row.id);
           if (atts) {

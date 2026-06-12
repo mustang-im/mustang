@@ -2,7 +2,7 @@ import { ChatAccount } from '../ChatAccount';
 import { MatrixRoom } from './MatrixRoom';
 import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage } from '../Message';
-import { IncomingCall } from '../RoomEvent';
+import { IncomingCall, RoomEventKind } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
 import { MatrixPerson } from './MatrixPerson';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
@@ -201,7 +201,7 @@ export class MatrixAccount extends ChatAccount {
       // Once the user accepts, call `conf.answer()`
 
       let room = this.getExistingRoom(conf._call.roomId);
-      let msg = new IncomingCall(room);
+      let msg = room.newRoomEvent(RoomEventKind.IncomingCall) as IncomingCall;
       msg.contact = room.contact;
       msg.text = msg.html = `${msg.contact.name} is calling`;
       msg.outgoing = false;

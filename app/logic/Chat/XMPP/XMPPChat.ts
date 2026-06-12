@@ -2,7 +2,8 @@ import { ChatRoom } from "../ChatRoom";
 import type { XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { XMPPRoomEvent } from "./XMPPRoomEvent";
-import { ChatMessage, DeliveryStatus } from "../Message";
+import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
+import { ChatMessage, DeliveryStatus, type RoomMessage } from "../Message";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { Message, Forward } from "stanza/protocol";
@@ -50,7 +51,7 @@ export class XMPPChat extends ChatRoom {
   }
 
   /** Saves new messages to our DB */
-  async saveNewMessages(messages: ChatMessage[]): Promise<void> {
+  async saveNewMessages(messages: RoomMessage[]): Promise<void> {
     if (!this.account.storage) {
       return;
     }
@@ -70,7 +71,10 @@ export class XMPPChat extends ChatRoom {
     return new XMPPChatMessage(this);
   }
 
-  newRoomEvent(): XMPPRoomEvent {
+  newRoomEvent(kind?: RoomEventKind): ChatRoomEvent {
+    if (kind && kind != RoomEventKind.Generic) {
+      return super.newRoomEvent(kind);
+    }
     return new XMPPRoomEvent(this);
   }
 }

@@ -1,6 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import { GraphChatMessage } from "./GraphChatMessage";
 import { GraphRoomEvent } from "./GraphRoomEvent";
+import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
@@ -87,7 +88,10 @@ export class GraphChatRoom extends ChatRoom {
     return new GraphChatMessage(this);
   }
 
-  newRoomEvent(): GraphRoomEvent {
+  newRoomEvent(kind?: RoomEventKind): ChatRoomEvent {
+    if (kind && kind != RoomEventKind.Generic) {
+      return super.newRoomEvent(kind);
+    }
     return new GraphRoomEvent(this);
   }
 }

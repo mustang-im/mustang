@@ -5,7 +5,7 @@ import { MatrixRoomEvent } from "./MatrixRoomEvent";
 import { MatrixPerson } from "./MatrixPerson";
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
 import { Group } from "../../Abstract/Group";
-import { ChatRoomEvent, Invite, JoinLeave } from "../RoomEvent";
+import { ChatRoomEvent, JoinLeave, RoomEventKind } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
@@ -153,7 +153,7 @@ export class MatrixRoom extends ChatRoom {
     }
 
     if (data.membership == "join" || data.membership == "leave") {
-      let msg = new JoinLeave(this);
+      let msg = this.newRoomEvent(RoomEventKind.JoinLeave) as JoinLeave;
       msg.join = data.membership == "join";
       let group = this.contact;
       if (group instanceof Group) {
@@ -174,7 +174,7 @@ export class MatrixRoom extends ChatRoom {
         `</span>`;
       return msg;
     } else if (data.membership == "invite") {
-      let msg = new Invite(this);
+      let msg = this.newRoomEvent(RoomEventKind.Invite);
       this.fillMessage(event, msg);
       msg.text = "%person% is invited to this room"
         .replace("%person%", person.name);
@@ -218,7 +218,10 @@ export class MatrixRoom extends ChatRoom {
     return new MatrixChatMessage(this);
   }
 
-  newRoomEvent(): MatrixRoomEvent {
+  newRoomEvent(kind?: RoomEventKind): ChatRoomEvent {
+    if (kind && kind != RoomEventKind.Generic) {
+      return super.newRoomEvent(kind);
+    }
     return new MatrixRoomEvent(this);
   }
 }

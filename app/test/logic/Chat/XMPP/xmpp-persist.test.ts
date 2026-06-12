@@ -8,7 +8,9 @@ import { appGlobal } from "../../../../logic/app";
 import { Database } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
+import { XMPPRoomEvent } from "../../../../logic/Chat/XMPP/XMPPRoomEvent";
 import { ChatMessage } from "../../../../logic/Chat/Message";
+import { JoinLeave, RoomEventKind } from "../../../../logic/Chat/RoomEvent";
 import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
 import { makeTestDatabase as makeChatTestDatabase, getDatabase as getChatDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
 import { makeTestDatabase as makeContactsTestDatabase, getDatabase as getContactsDatabase } from "../../../../logic/Contacts/SQL/SQLDatabase";
@@ -105,10 +107,25 @@ test.skipIf(!Database)("Messages and contacts survive a restart", { timeout: 600
   await alice1.listMessages();
   await bob1.listMessages();
   expect(alice1.messages.length).toBe(3);
+
+  // Room events: a specific kind, and a generic protocol event
+  let join = alice1.newRoomEvent(RoomEventKind.JoinLeave) as JoinLeave;
+  join.id = "evt-1";
+  join.join = true;
+  join.text = "Alice joined";
+  join.sent = new Date("2026-06-02T09:00:00Z"); // after the newest human message
+  join.received = new Date(join.sent);
+  alice1.messages.add(join);
+  let raw = alice1.newRoomEvent();
+  raw.id = "evt-2";
+  raw.text = "Server maintenance notice";
+  raw.sent = raw.received = new Date("2026-06-02T09:01:00Z");
+  alice1.messages.add(raw);
+  await alice1.saveNewMessages([join, raw]);
   await account1.logout();
 
   // Everything was saved
-  expect(await countMessages()).toBe(5);
+  expect(await countMessages()).toBe(7); // 5 messages + 2 events
   expect(await countChats()).toBe(2);
   expect(await countPersons()).toBe(2);
 
@@ -143,13 +160,23 @@ test.skipIf(!Database)("Messages and contacts survive a restart", { timeout: 600
   await bob2.listMessages();
 
   // The messages come from our DB, and the server is asked only for newer ones
-  expect(alice2.messages.length).toBe(3);
+  expect(alice2.messages.length).toBe(5); // 3 messages + 2 events
   expect(bob2.messages.length).toBe(2);
+  expect(alice2.messages.contents.filter(msg => msg instanceof ChatMessage).length).toBe(3);
+  // `lastMessage` is the newest *human* message, not the newer events
   expect(alice2.lastMessage?.text).toBe("How are you?");
-  // The UI shows only `ChatMessage`s
-  expect(alice2.messages.contents.every(msg => msg instanceof ChatMessage)).toBe(true);
+
+  // The room events were restored with their kind and protocol class
+  let join2 = alice2.messages.find(msg => msg.id == "evt-1");
+  expect(join2 instanceof JoinLeave).toBe(true);
+  expect((join2 as JoinLeave).join).toBe(true);
+  expect(join2.text).toBe("Alice joined");
+  let raw2 = alice2.messages.find(msg => msg.id == "evt-2");
+  expect(raw2 instanceof XMPPRoomEvent).toBe(true);
+  expect((raw2 as XMPPRoomEvent).kind).toBe(RoomEventKind.Generic);
+
   expect(server.queries.filter(q => q.withJID == kAlice && !q.after).length).toBe(0); // no full re-fetch
-  expect(await countMessages()).toBe(5); // no duplicates
+  expect(await countMessages()).toBe(7); // no duplicates
   expect(await countPersons()).toBe(2); // no duplicate contacts
 
   await account2.logout();

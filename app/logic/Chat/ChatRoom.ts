@@ -1,5 +1,5 @@
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
-import { ChatRoomEvent } from "./RoomEvent";
+import { ChatRoomEvent, IncomingCall, Invite, JoinLeave, RoomEventKind, RoomNameChange } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
 import type { ChatPerson } from "./ChatPerson";
 import { Group } from "../Abstract/Group";
@@ -91,8 +91,21 @@ export class ChatRoom extends Observable {
     return new ChatMessage(this);
   }
 
-  newRoomEvent(): ChatRoomEvent {
-    return new ChatRoomEvent(this);
+  /** @param kind For `Generic`, protocols return their own subclass.
+   * For all other kinds, this returns the kind's class. */
+  newRoomEvent(kind: RoomEventKind = RoomEventKind.Generic): ChatRoomEvent {
+    switch (kind) {
+      case RoomEventKind.JoinLeave:
+        return new JoinLeave(this);
+      case RoomEventKind.Invite:
+        return new Invite(this);
+      case RoomEventKind.RoomNameChange:
+        return new RoomNameChange(this);
+      case RoomEventKind.IncomingCall:
+        return new IncomingCall(this);
+      default:
+        return new ChatRoomEvent(this);
+    }
   }
 
   async save(): Promise<void> {

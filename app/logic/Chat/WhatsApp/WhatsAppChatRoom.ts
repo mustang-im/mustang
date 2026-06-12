@@ -1,6 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import { WhatsAppChatMessage } from "./WhatsAppChatMessage";
 import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
+import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import { ChatPerson } from "../ChatPerson";
 import type { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
@@ -28,7 +29,10 @@ export class WhatsAppChatRoom extends ChatRoom {
     return new WhatsAppChatMessage(this);
   }
 
-  newRoomEvent(): WhatsAppRoomEvent {
+  newRoomEvent(kind?: RoomEventKind): ChatRoomEvent {
+    if (kind && kind != RoomEventKind.Generic) {
+      return super.newRoomEvent(kind);
+    }
     return new WhatsAppRoomEvent(this);
   }
 }
