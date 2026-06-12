@@ -1,5 +1,6 @@
 import { ChatRoom } from "../ChatRoom";
 import { GraphChatMessage } from "./GraphChatMessage";
+import { GraphRoomEvent } from "./GraphRoomEvent";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
@@ -84,5 +85,9 @@ export class GraphChatRoom extends ChatRoom {
 
   newMessage(): GraphChatMessage {
     return new GraphChatMessage(this);
+  }
+
+  newRoomEvent(): GraphRoomEvent {
+    return new GraphRoomEvent(this);
   }
 }

@@ -13,6 +13,7 @@ export class XMPPChatMessage extends ChatMessage {
   get chatRoom(): XMPPChat {
     return this.to as XMPPChat;
   }
+
   /**
    * Take a raw message from the server, interpret it, and set the values of this object.
    *

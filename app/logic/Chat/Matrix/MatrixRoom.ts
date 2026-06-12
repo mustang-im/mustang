@@ -1,5 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
+import { MatrixChatMessage } from "./MatrixChatMessage";
+import { MatrixRoomEvent } from "./MatrixRoomEvent";
 import { MatrixPerson } from "./MatrixPerson";
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
 import { Group } from "../../Abstract/Group";
@@ -88,7 +90,7 @@ export class MatrixRoom extends ChatRoom {
     if (replacedBy) {
       event = replacedBy;
     }
-    let msg = new ChatMessage(this);
+    let msg = this.newMessage();
     this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
@@ -187,7 +189,7 @@ export class MatrixRoom extends ChatRoom {
   }
 
   getShowRawEvent(event): ChatRoomEvent {
-    let msg = new ChatRoomEvent(this);
+    let msg = this.newRoomEvent();
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);
     msg.text = json.substring(2, json.length - 2);
@@ -210,5 +212,13 @@ export class MatrixRoom extends ChatRoom {
     message.id = response.event_id;
     // By the time send() returns async, the server already sent us the message to the room
     this.messages.remove(message);
+  }
+
+  newMessage(): MatrixChatMessage {
+    return new MatrixChatMessage(this);
+  }
+
+  newRoomEvent(): MatrixRoomEvent {
+    return new MatrixRoomEvent(this);
   }
 }

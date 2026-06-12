@@ -1,5 +1,6 @@
 import { ChatRoom } from "../ChatRoom";
-import { ChatMessage } from "../Message";
+import { WhatsAppChatMessage } from "./WhatsAppChatMessage";
+import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
 import { ChatPerson } from "../ChatPerson";
 import type { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
@@ -19,8 +20,16 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     await SQLChatMessage.readAll(this);
     this.lastMessage = this.messages.contents
-      .filter((msg): msg is ChatMessage => msg instanceof ChatMessage)
+      .filter((msg): msg is WhatsAppChatMessage => msg instanceof WhatsAppChatMessage)
       .reduce((last, msg) => !last || msg.sent > last.sent ? msg : last, null);
+  }
+
+  newMessage(): WhatsAppChatMessage {
+    return new WhatsAppChatMessage(this);
+  }
+
+  newRoomEvent(): WhatsAppRoomEvent {
+    return new WhatsAppRoomEvent(this);
   }
 }
 

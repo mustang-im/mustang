@@ -1,6 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import type { XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
+import { XMPPRoomEvent } from "./XMPPRoomEvent";
 import { ChatMessage, DeliveryStatus } from "../Message";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -8,10 +9,6 @@ import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends ChatRoom {
   declare account: XMPPAccount;
-
-  newMessage(): ChatMessage {
-    return new XMPPChatMessage(this);
-  }
 
   /** Adds the message to this chat, unless it's already known
    * (e.g. from our DB) or it's not a user message.
@@ -26,7 +23,7 @@ export class XMPPChat extends ChatRoom {
     if (id && this.messages.some(msg => msg.id == id)) {
       return null;
     }
-    let msg = new XMPPChatMessage(this);
+    let msg = this.newMessage();
     msg.fromStanzaJS(json, wrapper, archiveID);
     this.messages.add(msg);
     return msg;
@@ -67,5 +64,13 @@ export class XMPPChat extends ChatRoom {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  newMessage(): XMPPChatMessage {
+    return new XMPPChatMessage(this);
+  }
+
+  newRoomEvent(): XMPPRoomEvent {
+    return new XMPPRoomEvent(this);
   }
 }

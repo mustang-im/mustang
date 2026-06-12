@@ -1,4 +1,5 @@
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
+import { ChatRoomEvent } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
 import type { ChatPerson } from "./ChatPerson";
 import { Group } from "../Abstract/Group";
@@ -88,6 +89,10 @@ export class ChatRoom extends Observable {
 
   newMessage(): ChatMessage {
     return new ChatMessage(this);
+  }
+
+  newRoomEvent(): ChatRoomEvent {
+    return new ChatRoomEvent(this);
   }
 
   async save(): Promise<void> {
