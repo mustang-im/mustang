@@ -29,9 +29,9 @@ export class WebDAVFile extends File {
     let size = sanitize.integer(stat.size, 0)
     let etag = sanitize.nonemptystring(stat.etag, null);
     let lastMod = sanitize.date(stat.lastmod, new Date());
-    if (this.lastModOnServer.getTime() == this.lastMod.getTime() &&
+    if (this.lastModOnServer?.getTime() == this.lastMod.getTime() &&
         (this.size != size || this.etag != etag ||
-         this.lastModOnServer.getTime() != lastMod.getTime())) {
+         this.lastModOnServer?.getTime() != lastMod.getTime())) {
       this.deleteLocalCache()
         .catch(this.account.errorCallback);
     }
@@ -40,7 +40,7 @@ export class WebDAVFile extends File {
     if (this.lastMod.getTime() != lastMod.getTime()) {
       this.lastMod = lastMod;
     }
-    if (this.lastModOnServer.getTime() != this.lastMod.getTime()) {
+    if (this.lastModOnServer?.getTime() != this.lastMod.getTime()) {
       this.lastModOnServer = new Date(this.lastMod); // Make copy, not same object
     }
     this.serverURL = sanitize.url(new URL(this.path, this.account.url).href, null);
