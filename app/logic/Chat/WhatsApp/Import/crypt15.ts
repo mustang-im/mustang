@@ -1,4 +1,4 @@
-import { protobufField } from "../Proto/ProtobufLite";
+import { protobufField } from "../../Signal/Proto/ProtobufLite";
 import { UserError, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 

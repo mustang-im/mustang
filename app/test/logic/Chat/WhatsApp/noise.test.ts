@@ -1,6 +1,6 @@
 import { NoiseHandshake, NoiseTransport } from "../../../../logic/Chat/WhatsApp/Crypto/Noise";
-import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
-import { randomBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
+import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";
 
 /** Drives both sides of the Noise_XX handshake against each other, to validate

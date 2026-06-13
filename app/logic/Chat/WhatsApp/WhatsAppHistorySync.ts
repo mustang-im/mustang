@@ -13,13 +13,13 @@
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import { JID, kServerUser, kServerLid } from "./Binary/JID";
 import { decryptMedia, MediaType } from "./Crypto/mediaCrypto";
-import { concatBytes } from "./Crypto/primitives";
+import { concatBytes } from "../Signal/Crypto/primitives";
 import { mediaURL, httpGet } from "./WhatsAppMedia";
 import { waLog } from "./util";
 import {
   decodeHistorySync, HistorySyncType, ProtocolMessageType, PeerDataOperationRequestType,
   type HistorySync, type HistorySyncNotification, type Conversation, type WAMessage,
-} from "./Proto/schema";
+} from "../Signal/Proto/schema";
 import type { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import { appGlobal } from "../../app";
 

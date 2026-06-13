@@ -11,7 +11,7 @@ import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
 import { JID } from "./Binary/JID";
-import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "./Proto/schema";
+import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "../Signal/Proto/schema";
 import { appGlobal } from "../../app";
 import { gt } from "../../../l10n/l10n";
 

@@ -18,20 +18,20 @@
  * The crypto lives in Crypto/adv.ts; the wire transport in WhatsAppConnection.
  * This class is only the choreography. */
 import { WhatsAppConnection, type WhatsAppTransport } from "./WhatsAppConnection";
-import { KeyPair } from "./Crypto/KeyPair";
-import { SignalStore } from "./Crypto/Signal/Store";
-import { kDjbType } from "./Crypto/curve";
+import { KeyPair } from "../Signal/Crypto/KeyPair";
+import { SignalStore } from "../Signal/Crypto/Store";
+import { kDjbType } from "../Signal/Crypto/curve";
 import { verifyDeviceIdentityHMAC, verifyAccountSignature, generateDeviceSignature } from "./Crypto/adv";
-import { base64Encode, randomBytes } from "./Crypto/primitives";
+import { base64Encode, randomBytes } from "../Signal/Crypto/primitives";
 import { WANode } from "./Binary/WANode";
 import { JID, kServerUser } from "./Binary/JID";
 import { deferred, type Deferred, stanzaErrorText } from "./util";
 import { getRegistrationPayload, getDeviceProps, kWaBuildHash } from "./clientInfo";
-import { encode, decode } from "./Proto/codec";
+import { encode, decode } from "../Signal/Proto/codec";
 import {
   ADVSignedDeviceIdentityHMAC, ADVSignedDeviceIdentity, ADVDeviceIdentity,
   type DevicePairingRegistrationData,
-} from "./Proto/handshakeSchema";
+} from "../Signal/Proto/handshakeSchema";
 
 /** The long-lived keys a paired companion keeps. Created fresh per pairing and,
  * once paired, persisted with the account so we can log in again without

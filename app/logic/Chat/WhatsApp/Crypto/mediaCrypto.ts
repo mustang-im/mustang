@@ -1,7 +1,7 @@
 /** WhatsApp media encryption/decryption (AES-256-CBC + HMAC, keyed by an
  * HKDF expansion of the 32-byte mediaKey). Media bytes travel separately from
  * the message and are end-to-end encrypted with these keys. */
-import { hkdfSHA256, aesCBCEncrypt, aesCBCDecrypt, hmacSHA256, sha256, concatBytes, bytesEqual } from "./primitives";
+import { hkdfSHA256, aesCBCEncrypt, aesCBCDecrypt, hmacSHA256, sha256, concatBytes, bytesEqual } from "../../Signal/Crypto/primitives";
 
 export enum MediaType {
   Image = "image",

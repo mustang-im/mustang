@@ -14,7 +14,7 @@
  * AEAD here is sound, but the exact parameters WhatsApp uses (HKDF info string,
  * which header bytes stay in the clear, the frame counter wire layout) are
  * undocumented and need a live capture. */
-import { hkdfSHA256, aesGCMEncrypt, aesGCMDecrypt, concatBytes, randomBytes } from "../../Chat/WhatsApp/Crypto/primitives";
+import { hkdfSHA256, aesGCMEncrypt, aesGCMDecrypt, concatBytes, randomBytes } from "../../Chat/Signal/Crypto/primitives";
 
 const kIvLength = 12;
 const enc = (s: string) => new TextEncoder().encode(s);

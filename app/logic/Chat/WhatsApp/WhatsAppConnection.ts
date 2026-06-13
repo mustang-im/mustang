@@ -9,17 +9,17 @@
  * handshake against the real server still needs live iteration (current
  * app-version string, edge-routing, prekey upload, success/failure handling). */
 import { NoiseHandshake, NoiseTransport } from "./Crypto/Noise";
-import { KeyPair } from "./Crypto/KeyPair";
-import { xeddsaVerify } from "./Crypto/curve";
-import { bytesEqual } from "./Crypto/primitives";
+import { KeyPair } from "../Signal/Crypto/KeyPair";
+import { xeddsaVerify } from "../Signal/Crypto/curve";
+import { bytesEqual } from "../Signal/Crypto/primitives";
 import { WANode } from "./Binary/WANode";
 import { encodeNode } from "./Binary/encoder";
 import { decodeNode } from "./Binary/decoder";
 import {
   encodeHandshakeMessage, decodeHandshakeMessage, encodeClientPayload, decodeCertChain,
   kWaCertPublicKey, type ClientPayload,
-} from "./Proto/handshakeSchema";
-import { readProto, getBytes, getInt } from "./Proto/ProtobufLite";
+} from "../Signal/Proto/handshakeSchema";
+import { readProto, getBytes, getInt } from "../Signal/Proto/ProtobufLite";
 import { waLog, nodePreview } from "./util";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";

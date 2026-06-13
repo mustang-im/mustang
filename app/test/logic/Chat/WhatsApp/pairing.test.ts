@@ -4,17 +4,17 @@ import { WhatsAppPairing } from "../../../../logic/Chat/WhatsApp/WhatsAppPairing
 import { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
 import { WhatsAppConnection, kConnectionHeader, type WhatsAppTransport } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
 import { NoiseHandshake, NoiseTransport } from "../../../../logic/Chat/WhatsApp/Crypto/Noise";
-import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
-import { xeddsaSign, xeddsaVerify } from "../../../../logic/Chat/WhatsApp/Crypto/curve";
-import { hmacSHA256, concatBytes, base64Decode } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
-import { encode, decode } from "../../../../logic/Chat/WhatsApp/Proto/codec";
+import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
+import { xeddsaSign, xeddsaVerify } from "../../../../logic/Chat/Signal/Crypto/curve";
+import { hmacSHA256, concatBytes, base64Decode } from "../../../../logic/Chat/Signal/Crypto/primitives";
+import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
 import {
   encodeHandshakeMessage, decodeHandshakeMessage,
   CertChain, ClientPayload, type DevicePairingRegistrationData,
   ADVSignedDeviceIdentityHMAC, ADVSignedDeviceIdentity, ADVDeviceIdentity,
-} from "../../../../logic/Chat/WhatsApp/Proto/handshakeSchema";
-import { ProtoWriter } from "../../../../logic/Chat/WhatsApp/Proto/ProtobufLite";
-import { SignalStore } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Store";
+} from "../../../../logic/Chat/Signal/Proto/handshakeSchema";
+import { ProtoWriter } from "../../../../logic/Chat/Signal/Proto/ProtobufLite";
+import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";

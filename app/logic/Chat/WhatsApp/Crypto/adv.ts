@@ -4,8 +4,8 @@
  * signature and add our own device signature.
  *
  * Byte prefixes (E2EE account): account signature over {6,0}, device over {6,1}. */
-import { xeddsaSign, xeddsaVerify } from "./curve";
-import { hmacSHA256, concatBytes, bytesEqual } from "./primitives";
+import { xeddsaSign, xeddsaVerify } from "../../Signal/Crypto/curve";
+import { hmacSHA256, concatBytes, bytesEqual } from "../../Signal/Crypto/primitives";
 
 const kAccountSignaturePrefix = new Uint8Array([6, 0]);
 const kDeviceSignaturePrefix = new Uint8Array([6, 1]);

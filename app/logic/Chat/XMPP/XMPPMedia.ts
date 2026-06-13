@@ -7,7 +7,7 @@
  * carries the key — the URL itself travels inside the OMEMO-encrypted body, so
  * only the recipients can read the key and fetch the file. */
 import type { XMPPAccount } from "./XMPPAccount";
-import { aesGCMEncrypt, aesGCMDecrypt, randomBytes } from "../WhatsApp/Crypto/primitives";
+import { aesGCMEncrypt, aesGCMDecrypt, randomBytes } from "../Signal/Crypto/primitives";
 import { bytesToHex, hexToBytes } from "@noble/curves/utils.js";
 import { gt } from "../../../l10n/l10n";
 

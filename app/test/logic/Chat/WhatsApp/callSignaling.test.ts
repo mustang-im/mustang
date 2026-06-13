@@ -5,7 +5,7 @@ import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";
-import { randomBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";
 
 let me = JID.parse("412300000000@s.whatsapp.net");

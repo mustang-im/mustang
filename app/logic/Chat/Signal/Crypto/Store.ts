@@ -1,12 +1,12 @@
 /** In-memory Signal protocol store: our keys plus per-peer sessions and
  * per-group sender keys. A SQL-backed implementation can replace this later
  * by implementing the same shape; persistence is not wired yet. */
-import { KeyPair } from "../KeyPair";
+import { KeyPair } from "./KeyPair";
 import { SignedPreKey, PreKey } from "./Identity";
 import { SessionState } from "./SessionCipher";
 import { SenderKeyState } from "./GroupCipher";
 import { generateRegistrationID, generateSignedPreKey, generatePreKeys } from "./Identity";
-import { base64Encode, base64Decode } from "../primitives";
+import { base64Encode, base64Decode } from "./primitives";
 
 export class SignalStore {
   identityKeyPair: KeyPair;

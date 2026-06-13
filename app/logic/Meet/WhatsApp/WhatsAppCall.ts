@@ -23,7 +23,7 @@ import {
 } from "./whatsAppCallSignaling";
 import { setupEncodedTransforms } from "./whatsAppCallE2E";
 import { JID } from "../../Chat/WhatsApp/Binary/JID";
-import { randomBytes } from "../../Chat/WhatsApp/Crypto/primitives";
+import { randomBytes } from "../../Chat/Signal/Crypto/primitives";
 import { bytesToHex } from "@noble/curves/utils.js";
 import { appGlobal } from "../../app";
 import { assert, sleep } from "../../util/util";

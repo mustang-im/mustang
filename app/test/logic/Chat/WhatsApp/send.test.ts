@@ -4,12 +4,12 @@ import { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount
 import { WhatsAppSender } from "../../../../logic/Chat/WhatsApp/WhatsAppSend";
 import { JID, kServerUser } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
-import { SignalStore } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Store";
-import { PreKeyBundle } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Identity";
+import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
+import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import {
   initiateSession, encrypt, decryptPreKeyMessage, decryptSignalMessage, type EncryptedSignalMessage,
-} from "../../../../logic/Chat/WhatsApp/Crypto/Signal/SessionCipher";
-import { decodeWAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
+} from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
+import { decodeWAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { bigEndian } from "../../../../logic/Chat/WhatsApp/util";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";

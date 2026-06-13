@@ -1,11 +1,11 @@
 import {
   sha256, hmacSHA256, hkdfSHA256, aesGCMEncrypt, aesGCMDecrypt,
   aesCBCEncrypt, aesCBCDecrypt, randomBytes, concatBytes, bytesEqual,
-} from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
-import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
+} from "../../../../logic/Chat/Signal/Crypto/primitives";
+import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
 import {
   sharedSecret, djbEncode, djbDecode, xeddsaSign, xeddsaVerify,
-} from "../../../../logic/Chat/WhatsApp/Crypto/curve";
+} from "../../../../logic/Chat/Signal/Crypto/curve";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { bytesToNumberLE, numberToBytesLE } from "@noble/curves/utils.js";
 import { expect, test } from "vitest";

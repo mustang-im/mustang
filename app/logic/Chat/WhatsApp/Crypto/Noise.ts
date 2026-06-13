@@ -10,8 +10,8 @@
  *  - the 32-byte pattern label is used directly as the initial hash;
  *  - the GCM nonce is 8 zero bytes followed by a 4-byte big-endian counter;
  *  - the handshake AEAD uses the running hash as AAD; the transport uses none. */
-import { sha256, hkdfSHA256, aesGCMEncrypt, aesGCMDecrypt } from "./primitives";
-import { sharedSecret } from "./curve";
+import { sha256, hkdfSHA256, aesGCMEncrypt, aesGCMDecrypt } from "../../Signal/Crypto/primitives";
+import { sharedSecret } from "../../Signal/Crypto/curve";
 
 export class NoiseHandshake {
   protected hash: Uint8Array;

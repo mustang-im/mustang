@@ -5,7 +5,7 @@
 import { kTokenIndex } from "../../../../logic/Chat/WhatsApp/Binary/tokens";
 import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
-import { kDjbType } from "../../../../logic/Chat/WhatsApp/Crypto/curve";
+import { kDjbType } from "../../../../logic/Chat/Signal/Crypto/curve";
 import { expect, test } from "vitest";
 
 test("single-byte tokens match the spec's documented indices", () => {

@@ -5,13 +5,13 @@ import {
 } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
 import { getLoginPayload } from "../../../../logic/Chat/WhatsApp/clientInfo";
 import { NoiseHandshake, NoiseTransport } from "../../../../logic/Chat/WhatsApp/Crypto/Noise";
-import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
-import { xeddsaSign } from "../../../../logic/Chat/WhatsApp/Crypto/curve";
+import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
+import { xeddsaSign } from "../../../../logic/Chat/Signal/Crypto/curve";
 import {
   encodeHandshakeMessage, decodeHandshakeMessage, CertChain, ClientPayload,
-} from "../../../../logic/Chat/WhatsApp/Proto/handshakeSchema";
-import { encode, decode } from "../../../../logic/Chat/WhatsApp/Proto/codec";
-import { ProtoWriter } from "../../../../logic/Chat/WhatsApp/Proto/ProtobufLite";
+} from "../../../../logic/Chat/Signal/Proto/handshakeSchema";
+import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
+import { ProtoWriter } from "../../../../logic/Chat/Signal/Proto/ProtobufLite";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";

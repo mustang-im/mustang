@@ -14,9 +14,9 @@
 import {
   type ClientPayload, type DevicePairingRegistrationData,
   Platform, Product, ConnectType, ConnectReason, DevicePlatformType, DeviceProps,
-} from "./Proto/handshakeSchema";
-import { encode } from "./Proto/codec";
-import { md5 } from "./Crypto/primitives";
+} from "../Signal/Proto/handshakeSchema";
+import { encode } from "../Signal/Proto/codec";
+import { md5 } from "../Signal/Crypto/primitives";
 import { appName } from "../../build";
 
 export const kWaAndroidClient = {

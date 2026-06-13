@@ -1,5 +1,5 @@
 import { deriveCallMediaKey, encryptFrame, decryptFrame } from "../../../../logic/Meet/WhatsApp/whatsAppCallE2E";
-import { randomBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";
 
 test("call media key derivation is deterministic and key-dependent", () => {

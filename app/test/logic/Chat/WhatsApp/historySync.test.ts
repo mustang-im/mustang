@@ -6,11 +6,11 @@ import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { Person } from "../../../../logic/Abstract/Person";
-import { encode, decode } from "../../../../logic/Chat/WhatsApp/Proto/codec";
+import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
 import {
   HistorySync, HistorySyncType, ProtocolMessageType, PeerDataOperationRequestType,
   PeerDataOperationRequestMessage, Message, decodeHistorySync, decodeWAMessage,
-} from "../../../../logic/Chat/WhatsApp/Proto/schema";
+} from "../../../../logic/Chat/Signal/Proto/schema";
 import { expect, test } from "vitest";
 
 const kAliceJID = "491761111111@s.whatsapp.net";

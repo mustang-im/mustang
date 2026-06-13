@@ -7,11 +7,11 @@ import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
 import { Group } from "../../../../logic/Abstract/Group";
-import { encode } from "../../../../logic/Chat/WhatsApp/Proto/codec";
-import { HistorySync, decodeHistorySync } from "../../../../logic/Chat/WhatsApp/Proto/schema";
+import { encode } from "../../../../logic/Chat/Signal/Proto/codec";
+import { HistorySync, decodeHistorySync } from "../../../../logic/Chat/Signal/Proto/schema";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
-import { SignalStore } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Store";
-import { createSenderKey, createDistributionMessage } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/GroupCipher";
+import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
+import { createSenderKey, createDistributionMessage } from "../../../../logic/Chat/Signal/Crypto/GroupCipher";
 import { expect, test } from "vitest";
 
 const kAliceJID = "491761111111@s.whatsapp.net";

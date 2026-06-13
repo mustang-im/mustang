@@ -1,8 +1,8 @@
 /** Signal pairwise session: X3DH key agreement + the Double Ratchet.
  * Implemented from the Signal specifications; constants per WhatsApp (v3). */
-import { KeyPair } from "../KeyPair";
-import { sharedSecret, djbEncode, djbDecode } from "../curve";
-import { hkdfSHA256, hmacSHA256, aesCBCEncrypt, aesCBCDecrypt, randomBytes, concatBytes, bytesEqual, base64Encode, base64Decode } from "../primitives";
+import { KeyPair } from "./KeyPair";
+import { sharedSecret, djbEncode, djbDecode } from "./curve";
+import { hkdfSHA256, hmacSHA256, aesCBCEncrypt, aesCBCDecrypt, randomBytes, concatBytes, bytesEqual, base64Encode, base64Decode } from "./primitives";
 import { bytesToHex } from "@noble/curves/utils.js";
 import type { SignalStore } from "./Store";
 import { PreKeyBundle, verifyPreKeyBundle } from "./Identity";

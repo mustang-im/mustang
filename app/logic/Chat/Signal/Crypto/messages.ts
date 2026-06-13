@@ -1,8 +1,8 @@
 /** Serialization of the Signal wire messages (version 3, as WhatsApp uses).
  * Each is `versionByte || protobuf [|| trailer]`. */
-import { ProtoWriter, readProto, getBytes, getInt } from "../../Proto/ProtobufLite";
-import { hmacSHA256, concatBytes, bytesEqual } from "../primitives";
-import { xeddsaSign, xeddsaVerify } from "../curve";
+import { ProtoWriter, readProto, getBytes, getInt } from "../Proto/ProtobufLite";
+import { hmacSHA256, concatBytes, bytesEqual } from "./primitives";
+import { xeddsaSign, xeddsaVerify } from "./curve";
 
 export const kSignalVersion = 0x33; // (3 << 4) | 3
 const kMacLength = 8;

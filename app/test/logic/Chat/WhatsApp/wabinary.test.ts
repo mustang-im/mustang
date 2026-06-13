@@ -3,7 +3,7 @@ import { encodeNode } from "../../../../logic/Chat/WhatsApp/Binary/encoder";
 import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { kSingleByteTokens, kDoubleByteTokens } from "../../../../logic/Chat/WhatsApp/Binary/tokens";
-import { bytesEqual, randomBytes } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { bytesEqual, randomBytes } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";
 
 function roundtrip(node: WANode): WANode {

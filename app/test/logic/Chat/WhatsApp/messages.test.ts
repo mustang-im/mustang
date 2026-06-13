@@ -1,16 +1,16 @@
 import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
 import { WhatsAppChatRoom } from "../../../../logic/Chat/WhatsApp/WhatsAppChatRoom";
-import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
+import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
   from "../../../../logic/Chat/WhatsApp/Crypto/adv";
 import { ChatPerson } from "../../../../logic/Chat/ChatPerson";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
-import { KeyPair } from "../../../../logic/Chat/WhatsApp/Crypto/KeyPair";
-import { xeddsaSign, xeddsaVerify } from "../../../../logic/Chat/WhatsApp/Crypto/curve";
-import { randomBytes, hmacSHA256, concatBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
+import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
+import { xeddsaSign, xeddsaVerify } from "../../../../logic/Chat/Signal/Crypto/curve";
+import { randomBytes, hmacSHA256, concatBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";
 
 let peer = JID.parse("412300000000@s.whatsapp.net");

@@ -1,7 +1,7 @@
 /** Signal identity, registration id, and prekeys. */
-import { KeyPair } from "../KeyPair";
-import { djbEncode, xeddsaSign, xeddsaVerify } from "../curve";
-import { randomBytes } from "../primitives";
+import { KeyPair } from "./KeyPair";
+import { djbEncode, xeddsaSign, xeddsaVerify } from "./curve";
+import { randomBytes } from "./primitives";
 
 export class SignedPreKey {
   keyID: number;

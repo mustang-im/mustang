@@ -1,28 +1,26 @@
 /** XEP-0384 OMEMO end-to-end encryption for an XMPP account.
  *
- * OMEMO is the Signal protocol (X3DH + Double Ratchet) carried over XMPP: each
- * message is encrypted once per recipient *device*. We reuse our Signal stack
- * (shared with WhatsApp, under Chat/WhatsApp/Crypto) unchanged except for an
- * opt-out of WhatsApp's extra padding — OMEMO uses plain libsignal framing.
+ * OMEMO is the Signal protocol (X3DH + Double Ratchet) carried over XMPP:
+ * each message is encrypted once per recipient *device*.
+ *
+ * We reuse our Signal/Crypto/ stack (shared with WhatsApp/) unchanged except for an
+ * opt-out of WhatsApp's extra padding, because OMEMO uses plain libsignal framing.
  *
  * We speak the legacy `eu.siacs.conversations.axolotl` ("OMEMO 0.3") format,
  * which is what Conversations and the other popular clients interoperate on, and
  * which the `stanza` library serializes for us (so this class only does the
  * crypto and PEP, not the XML). Wire details and intentional deviations from the
- * XEP are in XMPP-deviations.md.
- *
- * Whether to encrypt a given message is the chat room's decision; this class
- * only does the crypto. */
+ * XEP are in XMPP-deviations.md. */
 import type { XMPPAccount } from "../XMPPAccount";
 import { OMEMODevice } from "./OMEMODevice";
-import { SignalStore } from "../../WhatsApp/Crypto/Signal/Store";
-import { PreKeyBundle } from "../../WhatsApp/Crypto/Signal/Identity";
-import { initiateSession, encrypt as signalEncrypt, decryptSignalMessage, decryptPreKeyMessage } from "../../WhatsApp/Crypto/Signal/SessionCipher";
-import { djbEncode, djbDecode } from "../../WhatsApp/Crypto/curve";
-import { aesGCMEncrypt, aesGCMDecrypt, randomBytes, concatBytes } from "../../WhatsApp/Crypto/primitives";
+import { SignalStore } from "../../Signal/Crypto/Store";
+import { PreKeyBundle } from "../../Signal/Crypto//Identity";
+import { initiateSession, encrypt as signalEncrypt, decryptSignalMessage, decryptPreKeyMessage } from "../../Signal/Crypto/SessionCipher";
+import { djbEncode, djbDecode } from "../../Signal/Crypto/curve";
+import { aesGCMEncrypt, aesGCMDecrypt, randomBytes, concatBytes } from "../../Signal/Crypto/primitives";
 import { NS_OMEMO_AXOLOTL_DEVICELIST, NS_OMEMO_AXOLOTL_BUNDLES, NS_OMEMO_AXOLOTL_BUNDLE } from "stanza/Namespaces";
-import { Buffer } from "stanza/platform";
 import type { OMEMO as OMEMOEncrypted, OMEMODevice as OMEMOBundle, OMEMODeviceList } from "stanza/protocol";
+import { Buffer } from "stanza/platform";
 
 export class OMEMO {
   readonly account: XMPPAccount;

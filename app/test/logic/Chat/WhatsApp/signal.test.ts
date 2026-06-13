@@ -1,10 +1,10 @@
-import { SignalStore } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Store";
-import { PreKeyBundle } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Identity";
+import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
+import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import { initiateSession, encrypt, decryptPreKeyMessage, decryptSignalMessage }
-  from "../../../../logic/Chat/WhatsApp/Crypto/Signal/SessionCipher";
+  from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
 import {
   createSenderKey, createDistributionMessage, processDistributionMessage, groupEncrypt, groupDecrypt,
-} from "../../../../logic/Chat/WhatsApp/Crypto/Signal/GroupCipher";
+} from "../../../../logic/Chat/Signal/Crypto/GroupCipher";
 import { expect, test } from "vitest";
 
 const utf8 = (s: string) => new TextEncoder().encode(s);

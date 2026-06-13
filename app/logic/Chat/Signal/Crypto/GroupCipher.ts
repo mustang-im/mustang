@@ -1,9 +1,9 @@
 /** Signal Sender Keys for group messaging. Each sender has a per-group chain
  * and an XEdDSA signing key; the chain is distributed to members over their
  * pairwise sessions via a SenderKeyDistributionMessage. */
-import { KeyPair } from "../KeyPair";
-import { djbEncode } from "../curve";
-import { hkdfSHA256, hmacSHA256, aesCBCEncrypt, aesCBCDecrypt, randomBytes, base64Encode, base64Decode } from "../primitives";
+import { KeyPair } from "./KeyPair";
+import { djbEncode } from "./curve";
+import { hkdfSHA256, hmacSHA256, aesCBCEncrypt, aesCBCDecrypt, randomBytes, base64Encode, base64Decode } from "./primitives";
 import { padPlaintext, unpadPlaintext } from "./SessionCipher";
 import {
   serializeSenderKeyMessage, parseSenderKeyMessage,

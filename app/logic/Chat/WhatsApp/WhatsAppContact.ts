@@ -18,7 +18,7 @@ import type { WhatsAppConnection } from "./WhatsAppConnection";
 import { JID, kServerUser } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
 import { kWaHttpUserAgent } from "./clientInfo";
-import { randomBytes } from "./Crypto/primitives";
+import { randomBytes } from "../Signal/Crypto/primitives";
 import { appGlobal } from "../../app";
 import { blobToDataURL } from "../../util/util";
 

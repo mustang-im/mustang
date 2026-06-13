@@ -14,9 +14,9 @@ import type { WhatsAppConnection } from "./WhatsAppConnection";
 import { kServerUser } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
 import { decryptMedia, MediaType } from "./Crypto/mediaCrypto";
-import { bytesEqual, sha256 } from "./Crypto/primitives";
+import { bytesEqual, sha256 } from "../Signal/Crypto/primitives";
 import { kWaHttpUserAgent } from "./clientInfo";
-import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage } from "./Proto/schema";
+import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage } from "../Signal/Proto/schema";
 import { appGlobal } from "../../app";
 
 /** Everything needed to fetch and decrypt one media file, distilled from the

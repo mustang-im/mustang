@@ -24,9 +24,9 @@
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import { JID, kServerUser, kServerLid } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
-import { PreKeyBundle } from "./Crypto/Signal/Identity";
-import { initiateSession, encrypt, type EncryptedSignalMessage } from "./Crypto/Signal/SessionCipher";
-import { encodeWAMessage, type WAMessage } from "./Proto/schema";
+import { PreKeyBundle } from "../Signal/Crypto/Identity";
+import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal/Crypto/SessionCipher";
+import { encodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
 import { waLog } from "./util";
 import { assert } from "../../util/util";
 
