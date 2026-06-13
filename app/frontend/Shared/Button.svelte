@@ -132,7 +132,7 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  button.selected:not(.disabled) {
+  button.button.selected:not(.disabled) {
     background-color: var(--selected-bg);
     color: var(--selected-fg);
     border: none;

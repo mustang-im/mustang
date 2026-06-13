@@ -3,8 +3,17 @@
   on:inline-files={onAddInline}
   allowInline={true}>
   <hbox flex class="msg-editor">
-    <vbox flex class="editor-wrapper">
-      <HTMLEditorToolbar {editor} />
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <vbox flex class="editor-wrapper" on:keydown|capture={ev => isEnterSend && onKeyEnter(ev, () => catchErrors(send))}>
+      <HTMLEditorToolbar {editor}>
+        <Button classes="enter-toggle"
+          onClick={() => isEnterSend = !isEnterSend}
+          icon={EnterKeyIcon}
+          iconSize="16px"
+          selected={!isEnterSend}
+          slot="last"
+          />
+      </HTMLEditorToolbar>
       <vbox flex class="editor-scroll-wrapper">
         <Scroll>
           <vbox flex class="editor">
@@ -37,16 +46,21 @@
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
   import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
-  import RoundButton from "../Shared/RoundButton.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import SendIcon from "lucide-svelte/icons/send";
-  import type { Editor } from '@tiptap/core';
+  import EnterKeyIcon from "lucide-svelte/icons/corner-down-left";
+  import { onKeyEnter } from "../Util/util";
+  import { catchErrors } from "../Util/error";
   import { ArrayColl } from "svelte-collections";
+  import type { Editor } from '@tiptap/core';
 
   export let to: ChatRoom;
 
   let editor: Editor;
 
+  let isEnterSend = true;
   let attachments = new ArrayColl<Attachment>();
   $: to && attachments.clear(); // TODO save as draft
 
