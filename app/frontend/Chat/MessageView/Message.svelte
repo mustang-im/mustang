@@ -6,17 +6,17 @@
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
   >
   {#if !$message.outgoing}
-    <vbox class="avatar"  from={$message.contact?.name}>
-      {#if $message.contact?.picture && !followup}
-        <PersonPicture person={$message.contact} size={32} />
+    <vbox class="avatar"  from={author?.name}>
+      {#if author?.picture && !followup}
+        <PersonPicture person={author} size={32} />
       {/if}
     </vbox>
   {/if}
   <vbox class="right">
     {#if !(fastFollowup && hideHeaderFollowup)}
-      <hbox class="meta font-smallest" class:singlechat={$message instanceof ChatMessage && $message.contact == $message.to?.contact}>
+      <hbox class="meta font-smallest" class:singlechat={!isGroupChat}>
         {#if !$message.outgoing && !followup}
-          <hbox class="from value">{$message.contact?.name}</hbox>
+          <hbox class="from value">{author?.name}</hbox>
         {/if}
         <hbox flex>
           <slot name="above-center" />
@@ -53,21 +53,23 @@
 <script lang="ts">
   import type { Message } from "../../../logic/Abstract/Message";
   import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
-  import { Person } from "../../../logic/Abstract/Person";
+  import { Group } from "../../../logic/Abstract/Group";
   import cssContent from "../../Mail/Message/content.css?inline";
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import { getDateTimeString } from "../../Util/date";
-  import { t } from "../../../l10n/l10n";
 
   export let message: Message;
   export let previousMessage: Message = null;
   export let hideHeaderFollowup = false;
   export let openMenuOnMessageHover = false;
 
-  $: followup = $message.contact == previousMessage?.contact && // same author
+  $: isGroupChat = ($message as ChatMessage).to?.contact instanceof Group;
+  $: author = ($message instanceof ChatMessage && $message.from) || $message.contact;
+  $: previousAuthor = (previousMessage instanceof ChatMessage && previousMessage.from) || previousMessage?.contact;
+  $: followup = author == previousAuthor && // same author
     $message.outgoing == previousMessage?.outgoing;
   $: fastFollowup = followup &&
     $message.sent.getTime() - previousMessage.sent.getTime() < 5 * 60 * 1000; // < 5 mins apart

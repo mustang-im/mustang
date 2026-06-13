@@ -1,12 +1,23 @@
 import { ChatMessage } from "../Message";
-import { getBareJID } from "./XMPPAccount";
 import type { XMPPChat } from "./XMPPChat";
+import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
+import { fileExtensions } from "../../Files/FileType/MIMETypes";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { Message, Forward } from "stanza/protocol";
 import type { JSONElement } from "stanza/jxt";
 
 export class XMPPChatMessage extends ChatMessage {
+  /** Server/room-assigned ID (XEP-0359), referenced by reactions etc. in MUCs */
+  stanzaID: string | null = null;
+  /** This message arrived OMEMO-encrypted (XEP-0384) */
+  encrypted = false;
+  /** The sender deleted this message again (XEP-0424) */
+  retracted = false;
+  /** The sender edited this message after sending (XEP-0308) */
+  edited = false;
+
   constructor(chatRoom: XMPPChat) {
     super(chatRoom);
   }
@@ -25,32 +36,55 @@ export class XMPPChatMessage extends ChatMessage {
     assert(json, "Need message");
     this.id = sanitize.nonemptystring(json.id, null) ??
       sanitize.nonemptystring(archiveID, null) ?? crypto.randomUUID();
+    this.stanzaID = json.stanzaIds?.find(stanzaID => stanzaID.id)?.id ?? null;
     this.sent = sanitize.date(wrapper?.delay?.timestamp ?? json.delay?.timestamp, new Date());
     this.received = new Date(this.sent); // copy: callers may mutate dates in place
-    let me = this.chatRoom.account.jid;
-    let from = getBareJID(json.from);
-    this.outgoing = !!from && from == me;
-    // 1:1 chat: `contact` is the chat partner, set by the ctor.
-    // For group chats, find the sender:
-    if (!this.outgoing && from && from != this.chatRoom.id) {
-      this.contact = this.chatRoom.account.getExistingPerson(from) ?? this.contact;
-    }
+    // The chat resolves the sender (the chat partner for 1:1, the occupant for MUC)
+    this.chatRoom.fillSender(this, json.from);
     let subject = sanitize.nonemptylabel(json.subject, null);
     if (json.hasSubject && subject) {
       this.subject = subject;
     }
     this.text = sanitize.string(json.body, "");
-    let html = json.html?.body ? jsonElementToXML(json.html.body as JSONElement) : null;
+    if (json.html?.body) {
+      this.fromHTML(json.html.body as JSONElement);
+    }
+    if (json.reply?.id) {
+      this.inReplyTo = json.reply.id; // XEP-0461
+    }
+  }
+
+  /** Creates an attachment for a shared-file URL (XEP-0363 / OMEMO media) and
+   * downloads it — decrypting an aesgcm:// URL — in the background. */
+  addMediaFromURL(url: string): void {
+    let filename = decodeURIComponent(url.split("#")[0].split("?")[0].split("/").pop() || gt`File`);
+    let extension = filename.split(".").pop()?.toLowerCase() ?? "";
+    let attachment = new Attachment();
+    attachment.filename = filename;
+    attachment.mimeType = (fileExtensions as Record<string, string>)[extension] ?? "application/octet-stream";
+    attachment.disposition = attachment.mimeType.startsWith("image/")
+      ? ContentDisposition.inline
+      : ContentDisposition.attachment;
+    this.attachments.add(attachment);
+    this.chatRoom.account.media.download(url)
+      .then(data => {
+        attachment.content = new File([new Uint8Array(data)], filename, { type: attachment.mimeType });
+        attachment.size = data.length;
+      })
+      .catch(ex => this.chatRoom.account.errorCallback(ex));
+  }
+
+  /** Sets our HTML from a XEP-0071 XHTML body. stanza gives us a parsed
+   * `JSONElement`, not XML text, so we serialize it back ourselves. */
+  fromHTML(htmlBody: JSONElement | string): void {
+    let html = jsonElementToXML(htmlBody);
     if (html) {
-      this.html = html; // .html getter sanitizes
+      this.html = html; // the .html getter sanitizes
     }
   }
 }
 
-/** Serializes a XEP-0071 XHTML body back to an HTML string.
- * stanza gives us parsed `JSONElement`s, not XML text.
- *
- * TODO Find Stanza API to get the raw HTML in the msg. */
+/** Serializes a XEP-0071 XHTML body back to an HTML string. */
 function jsonElementToXML(el: JSONElement | string): string {
   if (typeof el == "string") {
     return escapeXMLText(el);

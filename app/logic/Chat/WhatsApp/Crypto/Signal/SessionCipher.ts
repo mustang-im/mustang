@@ -214,7 +214,7 @@ function createSessionFromPreKey(store: SignalStore, address: string, data: Uint
 
 // --- encrypt / decrypt ---
 
-export async function encrypt(store: SignalStore, address: string, plaintext: Uint8Array): Promise<EncryptedSignalMessage> {
+export async function encrypt(store: SignalStore, address: string, plaintext: Uint8Array, pad = true): Promise<EncryptedSignalMessage> {
   let state = store.sessions.get(address);
   if (!state) {
     throw new Error(`No session for ${address}`);
@@ -224,7 +224,9 @@ export async function encrypt(store: SignalStore, address: string, plaintext: Ui
   state.senderChainKey = nextChainKey;
   state.senderChainIndex++;
   let keys = deriveMessageKeys(messageKey);
-  let ciphertext = await aesCBCEncrypt(keys.cipherKey, keys.iv, padPlaintext(plaintext));
+  // WhatsApp adds its own 1..15-byte padding; OMEMO (`pad` false) relies solely
+  // on the AES-CBC PKCS#7 padding, matching upstream libsignal.
+  let ciphertext = await aesCBCEncrypt(keys.cipherKey, keys.iv, pad ? padPlaintext(plaintext) : plaintext);
   let signal = serializeSignalMessage({
     ratchetKey: djbEncode(state.senderRatchetKeyPair.publicKey),
     counter, previousCounter: state.previousCounter, ciphertext,
@@ -258,7 +260,7 @@ export async function encrypt(store: SignalStore, address: string, plaintext: Ui
  *
  * If a rebuilt session fails to decrypt, it's rolled back (and the one-time
  * prekey left intact) so a later message or peer retry can establish cleanly. */
-export async function decryptPreKeyMessage(store: SignalStore, address: string, data: Uint8Array): Promise<Uint8Array> {
+export async function decryptPreKeyMessage(store: SignalStore, address: string, data: Uint8Array, pad = true): Promise<Uint8Array> {
   let pkmsg = parsePreKeySignalMessage(data);
   let previous = store.sessions.get(address);
   let sameSession = !!previous?.establishingBaseKey && bytesEqual(previous.establishingBaseKey, pkmsg.baseKey);
@@ -266,7 +268,7 @@ export async function decryptPreKeyMessage(store: SignalStore, address: string, 
     createSessionFromPreKey(store, address, data); // overwrites any unrelated session at this address
   }
   try {
-    let plaintext = await decryptSignalMessage(store, address, pkmsg.message);
+    let plaintext = await decryptSignalMessage(store, address, pkmsg.message, pad);
     if (!sameSession && pkmsg.preKeyID != null) {
       store.preKeys.delete(pkmsg.preKeyID); // confirmed: consume the one-time prekey
     }
@@ -286,7 +288,7 @@ export async function decryptPreKeyMessage(store: SignalStore, address: string, 
 }
 
 /** Decrypts a `msg` (SignalMessage) on an existing session. */
-export async function decryptSignalMessage(store: SignalStore, address: string, data: Uint8Array): Promise<Uint8Array> {
+export async function decryptSignalMessage(store: SignalStore, address: string, data: Uint8Array, pad = true): Promise<Uint8Array> {
   let state = store.sessions.get(address);
   if (!state) {
     throw new Error(`No session for ${address}`);
@@ -304,7 +306,8 @@ export async function decryptSignalMessage(store: SignalStore, address: string, 
   if (!verifySignalMessageMAC(parsed, keys.macKey, state.remoteIdentityKey, state.localIdentityKey)) {
     throw new Error("Bad MAC on SignalMessage");
   }
-  let plaintext = unpadPlaintext(await aesCBCDecrypt(keys.cipherKey, keys.iv, parsed.ciphertext));
+  let decrypted = await aesCBCDecrypt(keys.cipherKey, keys.iv, parsed.ciphertext);
+  let plaintext = pad ? unpadPlaintext(decrypted) : decrypted;
   state.pendingPreKey = undefined; // the session is now confirmed by the peer
   return plaintext;
 }

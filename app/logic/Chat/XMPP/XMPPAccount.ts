@@ -1,8 +1,12 @@
 import { ChatAccount } from '../ChatAccount';
 import type { ChatRoom } from '../ChatRoom';
-import type { XMPPChat } from './XMPPChat';
+import { XMPPChat, Encryption } from './XMPPChat';
 import { XMPP1to1Chat } from './XMPP1to1Chat';
 import { XMPPGroupChat } from './XMPPGroupChat';
+import { ChatMessage } from '../Message';
+import { OMEMO } from './OMEMO/OMEMO';
+import { XMPPMedia } from './XMPPMedia';
+import { registerXMPPExtensions } from './XMPPStanzaExtensions';
 import type { Group } from '../../Abstract/Group';
 import { Person } from '../../Abstract/Person';
 import { ChatPerson, nameFromChatID } from '../ChatPerson';
@@ -12,6 +16,10 @@ import { appGlobal } from '../../app';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { assert, blobToDataURL } from '../../util/util';
 import { gt } from '../../../l10n/l10n';
+import { NS_OMEMO_AXOLOTL_DEVICELIST } from 'stanza/Namespaces';
+import { Buffer } from 'stanza/platform';
+import { sha1 } from '@noble/hashes/legacy.js';
+import { bytesToHex } from '@noble/curves/utils.js';
 import { MapColl } from 'svelte-collections';
 import type * as XMPP from 'stanza';
 
@@ -26,6 +34,13 @@ export class XMPPAccount extends ChatAccount {
   jid: string;
   /** Whether the server supports message archives (XEP-0313) */
   hasMAM = true;
+  /** OMEMO end-to-end encryption engine (XEP-0384) */
+  readonly omemo = new OMEMO(this);
+  /** File upload/download (XEP-0363 + OMEMO media sharing) */
+  readonly media = new XMPPMedia(this);
+  /** Our own user as a chat identity, keyed by our JID (not the global app user).
+   * Used as the sender (`from`) of messages and reactions that we send. */
+  ownContact: Person;
 
   get isLoggedIn(): boolean {
     return !!this.client?.sessionStarted;
@@ -44,14 +59,32 @@ export class XMPPAccount extends ChatAccount {
     await this.connect();
     await this.getRoster();
     await this.createChatsFromRoster();
+    await this.getGroupChats();
     this.client.sendPresence();
     this.client.enableKeepAlive();
     this.client.enableCarbons()
       .catch(ex => console.log("XMPP carbons not enabled", ex?.error?.condition ?? ex));
+    this.setupOMEMO()
+      .catch(this.errorCallback);
     this.listMessagesOfAllChatRooms()
       .catch(this.errorCallback);
     this.getAllPersonDetails()
       .catch(this.errorCallback);
+  }
+
+  /** Publishes our OMEMO keys so others can encrypt to us, then turns on
+   * encryption for contacts who already use OMEMO. */
+  protected async setupOMEMO(): Promise<void> {
+    await this.omemo.publishOwnKeys();
+    for (let room of this.rooms.contents) {
+      if (!(room instanceof XMPP1to1Chat) || room.encryption == Encryption.OMEMO) {
+        continue;
+      }
+      let devices = await this.omemo.knownDevices(room.id);
+      if (devices.length) {
+        room.encryption = Encryption.OMEMO;
+      }
+    }
   }
 
   /** For setup only. Test that the login works. */
@@ -78,6 +111,7 @@ export class XMPPAccount extends ChatAccount {
         bosh: this.url ? allowedURL(this.url, "https", "http") : true,
       },
     });
+    registerXMPPExtensions(this.client);
     this.addListeners();
     await this.connectAndWaitForSession();
     this.client.updateConfig({ autoReconnect: true });
@@ -137,7 +171,7 @@ export class XMPPAccount extends ChatAccount {
     let roster = await this.client.getRoster();
     for (let item of roster.items ?? []) {
       try {
-        await this.getPerson(item.jid, item.name);
+        await this.getRosterPerson(item.jid, item.name);
       } catch (ex) {
         this.errorCallback(ex);
       }
@@ -177,37 +211,70 @@ export class XMPPAccount extends ChatAccount {
       if (person.picture) {
         continue;
       }
-      let vcard: XMPP.Stanzas.VCardTemp;
       try {
-        vcard = await this.client.getVCard(jid);
+        await this.fetchVCardPhoto(person, jid);
       } catch (ex) {
-        continue; // contact has no vCard
-      }
-      try {
-        let fullName = sanitize.nonemptylabel(vcard.fullName, null);
-        if (fullName && person.name == nameFromChatID(jid)) {
-          person.name = fullName;
-        }
-        let photo = vcard.records?.find(r => r.type == "photo") as XMPP.Stanzas.VCardTempPhoto;
-        if (photo?.data) {
-          let mimetype = sanitize.enum(photo.mediaType, kImageMimeTypes);
-          let blob = new Blob([new Uint8Array(photo.data)], { type: mimetype });
-          person.picture = await blobToDataURL(blob);
-        }
-        await person.save();
-      } catch (ex) {
-        this.errorCallback(ex);
+        // contact has no vCard
       }
     }
   }
 
-  newRoom(): ChatRoom {
-    return new XMPP1to1Chat(this);
+  /** Sets a contact's name and picture from their vCard (vcard-temp, XEP-0054).
+   * @throws if the contact has no vCard */
+  protected async fetchVCardPhoto(person: Person, jid: string): Promise<void> {
+    let vcard = await this.client.getVCard(jid);
+    let fullName = sanitize.nonemptylabel(vcard.fullName, null);
+    if (fullName && person.name == nameFromChatID(jid)) {
+      person.name = fullName;
+    }
+    let photo = vcard.records?.find(r => r.type == "photo") as XMPP.Stanzas.VCardTempPhoto;
+    if (photo?.data) {
+      let mimetype = sanitize.enum(photo.mediaType, kImageMimeTypes);
+      let blob = new Blob([new Uint8Array(photo.data)], { type: mimetype });
+      person.picture = await blobToDataURL(blob);
+    }
+    await person.save();
+  }
+
+  /** A contact published or changed their avatar — over PEP (XEP-0084) or vCard.
+   * stanza fires this when it sees the metadata; we fetch the image and set it. */
+  protected async onAvatar(event: { jid: string, avatars: XMPP.Stanzas.AvatarVersion[], source: "pubsub" | "vcard" }): Promise<void> {
+    let person = this.getExistingPerson(event.jid);
+    if (!person) {
+      return; // an avatar for someone not in our roster
+    }
+    if (event.source == "vcard") {
+      await this.fetchVCardPhoto(person, event.jid);
+      return;
+    }
+    let version = event.avatars?.find(avatar => avatar.id);
+    if (!version) {
+      return;
+    }
+    let item = await this.client.getAvatar(event.jid, version.id);
+    let data = item.content?.data;
+    if (data) {
+      let blob = new Blob([new Uint8Array(data)], { type: version.mediaType ?? "image/png" });
+      person.picture = await blobToDataURL(blob);
+      await person.save();
+    }
+  }
+
+  /** Publishes our user's avatar (XEP-0084), so contacts can show it. */
+  async publishOwnAvatar(image: Blob): Promise<void> {
+    let bytes = new Uint8Array(await image.arrayBuffer());
+    let id = bytesToHex(sha1(bytes)); // XEP-0084: the item id is the SHA-1 of the image
+    await this.client.publishAvatar(id, Buffer.from(bytes));
+    await this.client.useAvatars([{ id, bytes: bytes.length, mediaType: image.type }]);
+  }
+
+  newRoom(isGroup = false): ChatRoom {
+    return isGroup ? new XMPPGroupChat(this) : new XMPP1to1Chat(this);
   }
 
   async getNewChat(jid: string): Promise<XMPPChat> {
     jid = getBareJID(jid);
-    let person = await this.getPerson(jid);
+    let person = await this.getRosterPerson(jid);
     let existing = this.getExistingChat(jid); // two messages of a new peer may race here
     if (existing) {
       return existing;
@@ -220,16 +287,52 @@ export class XMPPAccount extends ChatAccount {
     return chatRoom;
   }
 
-  async getNewGroupRoom(jid: string): Promise<XMPPChat | null> {
-    jid = getBareJID(jid);
-    if (this.getExistingChat(jid)) {
-      return null;
+  /** Gets the group chat rooms that our user is in, from the
+   * bookmarks on the server (XEP-0048/0402), and enters them. */
+  protected async getGroupChats(): Promise<void> {
+    let bookmarks: XMPP.Stanzas.MUCBookmark[] = [];
+    try {
+      bookmarks = await this.client.getBookmarks();
+    } catch (errIQ) {
+      console.log("XMPP bookmarks not available", errIQ?.error?.condition ?? errIQ);
     }
+    for (let bookmark of bookmarks) {
+      try {
+        let chatRoom = this.getExistingChat(bookmark.jid) ?? await this.getNewGroupChat(bookmark);
+        if (chatRoom instanceof XMPPGroupChat) {
+          chatRoom.nick ??= sanitize.nonemptystring(bookmark.nick, null);
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+    for (let chatRoom of this.rooms.contents) {
+      if (!(chatRoom instanceof XMPPGroupChat)) {
+        continue;
+      }
+      try {
+        await chatRoom.join();
+        chatRoom.listMessages() // MUC archive history (XEP-0313)
+          .catch(this.errorCallback);
+      } catch (exOrPresence) {
+        this.errorCallback(exOrPresence instanceof Error ? exOrPresence
+          : new Error(gt`Failed to enter the chat room ${chatRoom.name}`));
+      }
+    }
+  }
+
+  async getNewGroupChat(bookmark: XMPP.Stanzas.MUCBookmark): Promise<XMPPGroupChat> {
+    let jid = getBareJID(bookmark.jid);
+    // Group chat rooms and their members are deliberately
+    // not in the user's address books, but in the chat account's own one.
+    let group = this.addressbook.newGroup();
+    group.name = sanitize.label(bookmark.name, null) ?? jid.split("@")[0];
     let chatRoom = new XMPPGroupChat(this);
     chatRoom.id = jid;
-    await chatRoom.init();
-    await chatRoom.listMembers();
-    this.rooms.set(chatRoom.contact, chatRoom);
+    chatRoom.contact = group;
+    chatRoom.nick = sanitize.nonemptystring(bookmark.nick, null);
+    this.rooms.set(group, chatRoom);
+    await chatRoom.save();
     return chatRoom;
   }
 
@@ -242,10 +345,23 @@ export class XMPPAccount extends ChatAccount {
     return this.roster.get(getBareJID(jid));
   }
 
+  /** @returns the JID without the resource, e.g. "fred@example.com" */
+  bareJID(jid: string): string {
+    return getBareJID(jid);
+  }
+
+  /** Our own user as a chat identity, identified by our JID (not the global app
+   * user). Lives in the chat account's own address book, so it has a chat
+   * account (our JID) for persistence but isn't shown as a contact. Used as the
+   * sender of messages and reactions that we send. */
+  getOwnContact(): Person {
+    return this.ownContact ??= this.getPerson(this.jid, this.realname);
+  }
+
   /** Finds the contact for this JID, first in the roster, then in the
    * address books by chat ID or email address (JIDs often double as
    * email address). Creates the contact, if not found. */
-  async getPerson(jid: string, name?: string): Promise<Person> {
+  async getRosterPerson(jid: string, name?: string): Promise<Person> {
     jid = getBareJID(jid);
     name = sanitize.nonemptylabel(name, null);
     let existing = this.roster.get(jid);
@@ -263,6 +379,16 @@ export class XMPPAccount extends ChatAccount {
     return person;
   }
 
+  fromConfigJSON(json: any): void {
+    super.fromConfigJSON(json);
+    this.omemo.fromJSON(json?.omemo);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.omemo = this.omemo.toJSON();
+    return json;
+  }
+
   protected addListeners(): void {
     this.client.on("session:started", () => {
       this.isOnline = true;
@@ -270,14 +396,26 @@ export class XMPPAccount extends ChatAccount {
     this.client.on("disconnected", () => {
       this.isOnline = false;
     });
-    this.client.on("chat", msg => {
-      this.onIncomingMessage(msg)
+    this.client.on("message", msg => {
+      this.onMessage(msg)
         .catch(this.errorCallback);
     });
-    this.client.on("message:sent", (msg, sentCopy) => {
-      if (sentCopy) { // sent by our user from another client
-        this.onIncomingMessage(msg)
-          .catch(this.errorCallback);
+    this.client.on("muc:available", pres => {
+      let chatRoom = this.getExistingChat(pres.from);
+      if (chatRoom instanceof XMPPGroupChat) {
+        chatRoom.onOccupantPresence(pres);
+      }
+    });
+    this.client.on("muc:unavailable", pres => {
+      let chatRoom = this.getExistingChat(pres.from);
+      if (chatRoom instanceof XMPPGroupChat) {
+        chatRoom.onOccupantPresence(pres);
+      }
+    });
+    this.client.on("muc:topic", ev => {
+      let chatRoom = this.getExistingChat(ev.room);
+      if (chatRoom instanceof XMPPGroupChat) {
+        chatRoom.onSubject(ev.topic);
       }
     });
     this.client.on("message:error", msg => {
@@ -285,25 +423,56 @@ export class XMPPAccount extends ChatAccount {
         sanitize.alphanumdash(msg.error?.condition, "");
       this.errorCallback(new Error(gt`Chat message failed` + ": " + reason));
     });
+    this.client.on("pubsub:published", (event: any) => {
+      this.onDeviceListUpdate(event);
+    });
+    this.client.on("avatar", event => {
+      this.onAvatar(event)
+        .catch(this.errorCallback);
+    });
   }
 
-  /** A message arrived over the open connection */
-  protected async onIncomingMessage(xmppMsg: XMPP.Stanzas.Message): Promise<void> {
-    if (!xmppMsg.body) {
-      return; // typing notification, read receipt etc.
-    }
+  /** A message arrived over the open connection. Unwraps message carbons
+   * (XEP-0280) — so messages our user sent or received on another device also
+   * show here — then routes it to the chat room it belongs to. */
+  protected async onMessage(xmppMsg: XMPP.Stanzas.Message): Promise<void> {
+    let carbon = (xmppMsg as any).carbon?.forwarded?.message;
+    await this.routeMessage(carbon ?? xmppMsg);
+  }
+
+  /** Lets the right chat room interpret the message (a new message, or a
+   * reaction/receipt/edit/… for an existing one). */
+  protected async routeMessage(xmppMsg: XMPP.Stanzas.Message): Promise<void> {
     let from = getBareJID(xmppMsg.from);
-    let peer = from == this.jid ? getBareJID(xmppMsg.to) : from;
-    if (!peer) {
+    let to = getBareJID(xmppMsg.to);
+    let chatRoom: XMPPChat | null;
+    if (xmppMsg.type == "groupchat") {
+      chatRoom = this.getExistingChat(from); // only rooms we have joined
+    } else {
+      let peer = from == this.jid ? to : from;
+      chatRoom = peer ? this.getExistingChat(peer) ?? await this.getNewChat(peer) : null;
+    }
+    if (!chatRoom) {
       return;
     }
-    let chatRoom = this.getExistingChat(peer) ?? await this.getNewChat(peer);
-    let msg = chatRoom.addMessage(xmppMsg);
+    let msg = await chatRoom.addMessage(xmppMsg);
     if (!msg) {
-      return;
+      return; // a side-effect (reaction, receipt, …), not a new message
     }
     chatRoom.lastMessage = msg;
     await chatRoom.saveNewMessages([msg]);
+  }
+
+  /** A contact (or our own account) published a new OMEMO device list (PEP). */
+  protected onDeviceListUpdate(event: any): void {
+    if (event?.node != NS_OMEMO_AXOLOTL_DEVICELIST) {
+      return;
+    }
+    let jid = getBareJID(event.from ?? event.jid ?? this.jid);
+    let devices = event.published?.[0]?.content?.devices ?? event.items?.published?.[0]?.content?.devices;
+    if (jid && Array.isArray(devices)) {
+      this.omemo.onDeviceListChanged(jid, devices);
+    }
   }
 }
 

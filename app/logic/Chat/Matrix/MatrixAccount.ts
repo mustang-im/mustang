@@ -124,7 +124,7 @@ export class MatrixAccount extends ChatAccount {
     let group = new Group();
     group.name = room.name;
     for (let member of room.getJoinedMembers()) {
-      group.participants.add(this.getPerson(member));
+      group.participants.add(this.getMemberPerson(member));
     }
     let others = group.participants.filterOnce(person => person.id != this.globalUserID);
     chatRoom.contact = others.length > 1
@@ -153,7 +153,7 @@ export class MatrixAccount extends ChatAccount {
   getExistingPerson(userId: string) {
     return MatrixAccount.personsCache.get(userId);
   }
-  getPerson(member: RoomMember): MatrixPerson {
+  getMemberPerson(member: RoomMember): MatrixPerson {
     let existing = this.getExistingPerson(member.userId);
     if (existing) {
       return existing;

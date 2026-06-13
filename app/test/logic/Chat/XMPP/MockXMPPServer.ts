@@ -10,6 +10,8 @@ import { WebSocketServer, WebSocket } from "ws";
 export interface ArchivedMessage {
   /** MAM archive ID */
   archiveID: string;
+  /** The message's own ID. Servers preserve it in the archive. */
+  id?: string;
   from: string;
   to: string;
   body: string;
@@ -17,12 +19,25 @@ export interface ArchivedMessage {
   time: string;
 }
 
+export interface MockGroup {
+  /** e.g. room@conference.localhost */
+  jid: string;
+  name: string;
+  /** Our user's nickname, in the bookmark */
+  nick?: string;
+  /** The other people in the room. jid = real JID, for non-anonymous rooms */
+  occupants: { nick: string, jid?: string }[];
+}
+
 export class MockXMPPServer {
   domain = "localhost";
   users = new Map<string, string>(); // user -> password
   roster: { jid: string, name: string }[] = [];
-  /** bare peer JID -> archived messages with that peer, in chronological order */
+  /** Group chat rooms, exposed to clients as bookmarks */
+  groups: MockGroup[] = [];
+  /** bare peer JID (or room JID) -> archived messages, in chronological order */
   archives = new Map<string, ArchivedMessage[]>();
+  protected archiveCounter = 1000;
   /** Messages that clients sent to the server */
   received: { to: string, body: string }[] = [];
   /** How many MAM queries used an RSM `after` (= incremental sync) */
@@ -73,13 +88,32 @@ export class MockXMPPServer {
       ws.send(`<message xmlns="jabber:client" from="${from}/mock" to="${to}" type="chat" id="live-${Date.now()}"><body>${body}</body></message>`);
     }
   }
+
+  /** Delivers a live group chat message from a room member */
+  pushGroupMessage(roomJID: string, nick: string, body: string): void {
+    let id = `live-${Date.now()}`;
+    this.addToArchive(roomJID, { archiveID: `r${++this.archiveCounter}`, id, from: `${roomJID}/${nick}`, to: roomJID, body, time: new Date().toISOString() });
+    for (let ws of this.sockets) {
+      ws.send(`<message xmlns="jabber:client" from="${roomJID}/${nick}" type="groupchat" id="${id}"><body>${body}</body></message>`);
+    }
+  }
+
+  /** Archives a message that a client sent to a room, and reflects it back,
+   * like a MUC service does */
+  reflectGroupMessage(session: Session, roomJID: string, id: string, body: string): void {
+    let nick = session.joinedRooms.get(roomJID) ?? "unknown";
+    this.addToArchive(roomJID, { archiveID: `r${++this.archiveCounter}`, id, from: `${roomJID}/${nick}`, to: roomJID, body, time: new Date().toISOString() });
+    session.send(`<message xmlns="jabber:client" from="${roomJID}/${nick}" type="groupchat" id="${id}"><body>${body}</body></message>`);
+  }
 }
 
-class Session {
+export class Session {
   server: MockXMPPServer;
   ws: WebSocket;
   authenticated = false;
   jid: string;
+  /** room JID -> nick that this session joined with */
+  joinedRooms = new Map<string, string>();
 
   constructor(server: MockXMPPServer, ws: WebSocket) {
     this.server = server;
@@ -112,13 +146,43 @@ class Session {
       this.onIQ(stanza);
     } else if (name == "message") {
       let body = stanza.getChild("body")?.getText();
+      let to = stanza.getAttribute("to");
       if (body) {
-        this.server.received.push({ to: stanza.getAttribute("to"), body });
+        this.server.received.push({ to, body });
       }
+      if (body && stanza.getAttribute("type") == "groupchat") {
+        this.server.reflectGroupMessage(this, to?.split("/")[0], stanza.getAttribute("id"), body);
+      }
+    } else if (name == "presence") {
+      this.onPresence(stanza);
     } else if (name == "close") {
       this.send(`<close xmlns="urn:ietf:params:xml:ns:xmpp-framing"/>`);
     }
-    // ignore presence etc.
+  }
+
+  /** Directed presence to a room = joining or leaving it (XEP-0045) */
+  onPresence(stanza: XMLElement): void {
+    let to = stanza.getAttribute("to");
+    if (!to?.includes("/")) {
+      return; // normal presence broadcast
+    }
+    let roomJID = to.split("/")[0];
+    let nick = to.substring(to.indexOf("/") + 1);
+    let room = this.server.groups.find(g => g.jid == roomJID);
+    if (!room) {
+      return;
+    }
+    if (stanza.getAttribute("type") == "unavailable") {
+      this.joinedRooms.delete(roomJID);
+      this.send(`<presence xmlns="jabber:client" from="${roomJID}/${nick}" to="${this.jid}/mockresource" type="unavailable"><x xmlns="http://jabber.org/protocol/muc#user"><item affiliation="member" role="none"/><status code="110"/></x></presence>`);
+      return;
+    }
+    this.joinedRooms.set(roomJID, nick);
+    // The other occupants first, then ourselves with status 110
+    for (let occupant of room.occupants) {
+      this.send(`<presence xmlns="jabber:client" from="${roomJID}/${occupant.nick}" to="${this.jid}/mockresource"><x xmlns="http://jabber.org/protocol/muc#user"><item affiliation="member" role="participant"${occupant.jid ? ` jid="${occupant.jid}/mock"` : ""}/></x></presence>`);
+    }
+    this.send(`<presence xmlns="jabber:client" from="${roomJID}/${nick}" to="${this.jid}/mockresource"><x xmlns="http://jabber.org/protocol/muc#user"><item affiliation="member" role="participant"/><status code="110"/></x></presence>`);
   }
 
   onAuth(stanza: XMLElement): void {
@@ -140,7 +204,15 @@ class Session {
     let rosterQuery = stanza.getChild("query", "jabber:iq:roster");
     let mamQuery = stanza.getChild("query", "urn:xmpp:mam:2") ?? stanza.getChild("query", "urn:xmpp:mam:1");
     let vcard = stanza.getChild("vCard", "vcard-temp");
-    if (bind && type == "set") {
+    let privateStorage = stanza.getChild("query", "jabber:iq:private");
+    if (privateStorage && type == "get") {
+      let bookmarks = privateStorage.getChild("storage", "storage:bookmarks")
+        ? this.server.groups
+          .map(g => `<conference jid="${g.jid}" name="${g.name}" autojoin="true">${g.nick ? `<nick>${g.nick}</nick>` : ""}</conference>`)
+          .join("")
+        : "";
+      this.send(`<iq xmlns="jabber:client" type="result" id="${id}" to="${this.jid}/mockresource"><query xmlns="jabber:iq:private"><storage xmlns="storage:bookmarks">${bookmarks}</storage></query></iq>`);
+    } else if (bind && type == "set") {
       this.send(`<iq xmlns="jabber:client" type="result" id="${id}"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><jid>${this.jid}/mockresource</jid></bind></iq>`);
     } else if (rosterQuery && type == "get") {
       let items = this.server.roster
@@ -174,9 +246,11 @@ class Session {
     let max = parseInt(rsm?.getChild("max")?.getText() ?? "50");
     let before = rsm?.getChild("before");
     let after = rsm?.getChild("after")?.getText();
-    this.server.queries.push({ withJID, after, before: !!before, max });
+    // A query addressed to a room asks the room's own archive (MUC MAM)
+    let archiveJID = withJID ?? iq.getAttribute("to")?.split("/")[0];
+    this.server.queries.push({ withJID: archiveJID, after, before: !!before, max });
 
-    let all = this.server.archives.get(withJID) ?? [];
+    let all = this.server.archives.get(archiveJID) ?? [];
     let page: ArchivedMessage[];
     if (after) {
       this.server.countQueriesAfter++;
@@ -196,7 +270,7 @@ class Session {
         `<result xmlns="${ns}" queryid="${queryID}" id="${msg.archiveID}">` +
         `<forwarded xmlns="urn:xmpp:forward:0">` +
         `<delay xmlns="urn:xmpp:delay" stamp="${msg.time}"/>` +
-        `<message xmlns="jabber:client" from="${msg.from}" to="${msg.to}" type="chat" id="msg-${msg.archiveID}"><body>${msg.body}</body></message>` +
+        `<message xmlns="jabber:client" from="${msg.from}" to="${msg.to}" type="chat" id="${msg.id ?? `msg-${msg.archiveID}`}"><body>${msg.body}</body></message>` +
         `</forwarded></result></message>`);
     }
     let complete = !page.length || page[page.length - 1] == all[all.length - 1];
