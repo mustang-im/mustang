@@ -2,13 +2,12 @@
  * encrypted frame transport, and reading/writing binary XMPP stanzas.
  *
  * This ties together the tested lower layers (Noise, WABinary, protobuf). The
- * live network path is GATED behind kWhatsAppLiveEnabled because it cannot be
- * validated against WhatsApp's servers from the build/test environment — the
- * cryptographic and encoding pieces it depends on are unit-tested, but the full
- * end-to-end handshake against the real server still needs live iteration
- * (current app-version string, edge-routing, prekey upload, success/failure
- * handling). Enabling it also requires the backend TCP factory that
- * createWhatsAppTransport() expects. */
+ * live network path runs only when the desktop backend's TCP socket factory is
+ * available (see isWhatsAppLiveAvailable()); unit tests and web builds have no
+ * such socket, so they inject a transport instead. The cryptographic and
+ * encoding pieces it depends on are unit-tested, but the full end-to-end
+ * handshake against the real server still needs live iteration (current
+ * app-version string, edge-routing, prekey upload, success/failure handling). */
 import { NoiseHandshake, NoiseTransport } from "./Crypto/Noise";
 import { KeyPair } from "./Crypto/KeyPair";
 import { xeddsaVerify } from "./Crypto/curve";
@@ -21,6 +20,7 @@ import {
   kWaCertPublicKey, type ClientPayload,
 } from "./Proto/handshakeSchema";
 import { readProto, getBytes, getInt } from "./Proto/ProtobufLite";
+import { waDebug, nodePreview } from "./debug";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 
@@ -50,15 +50,17 @@ export class WhatsAppConnection {
   /** Performs the Noise handshake and sends the ClientPayload. `buildPayload`
    * returns the ClientPayload protobuf object (login or registration form).
    * `transport` is injectable for tests; production passes none and the live
-   * gate applies. */
+   * socket factory must be available (see createWhatsAppTransport()). */
   async connect(buildPayload: () => ClientPayload, transport?: WhatsAppTransport): Promise<void> {
-    if (!transport && !kWhatsAppLiveEnabled) {
-      throw new Error("WhatsApp live connection is disabled");
-    }
+    waDebug("connection.connect(): opening transport", transport ? "(injected)" : "(live socket)");
     this.transport = transport ?? await createWhatsAppTransport();
     this.transport.onData(data => this.onTransportData(data));
-    this.transport.onClose(() => this.onStanza(new WANode("stream:error")));
+    this.transport.onClose(() => {
+      waDebug("transport closed by peer");
+      this.onStanza(new WANode("stream:error"));
+    });
     await this.transport.connect();
+    waDebug("transport connected; starting Noise handshake");
 
     let clientEphemeral = KeyPair.generate();
     this.noise.start(kConnectionHeader);
@@ -66,9 +68,11 @@ export class WhatsAppConnection {
 
     let clientHello = encodeHandshakeMessage({ clientHello: { ephemeral: clientEphemeral.publicKey } });
     await this.sendFrame(clientHello, true);
+    waDebug("Noise: sent clientHello, awaiting serverHello");
 
     let serverHelloFrame = await this.readHandshakeFrame();
     let serverHello = decodeHandshakeMessage(serverHelloFrame).serverHello!;
+    waDebug("Noise: got serverHello");
 
     this.noise.mixHash(serverHello.ephemeral);
     await this.noise.mixKeyDH(clientEphemeral.privateKey, serverHello.ephemeral);
@@ -76,6 +80,7 @@ export class WhatsAppConnection {
     await this.noise.mixKeyDH(clientEphemeral.privateKey, serverStatic);
     let certPayload = await this.noise.decryptAndHash(serverHello.payload!);
     this.verifyServerCertificate(certPayload, serverStatic);
+    waDebug("Noise: server certificate verified");
 
     let encStatic = await this.noise.encryptAndHash(this.keys.noiseKey.publicKey);
     await this.noise.mixKeyDH(this.keys.noiseKey.privateKey, serverHello.ephemeral!);
@@ -87,6 +92,7 @@ export class WhatsAppConnection {
 
     let split = this.noise.split();
     this.cipher = new NoiseTransport(split.write, split.read);
+    waDebug("Noise: handshake complete, sent ClientPayload; awaiting <success>/<failure>");
     // The first encrypted frame is the <success> or <failure> stanza, handled
     // by the read loop via onStanza.
   }
@@ -126,6 +132,7 @@ export class WhatsAppConnection {
     if (!this.cipher) {
       throw new Error("Not connected");
     }
+    waDebug(">> send", nodePreview(node));
     let body = new Uint8Array(1 + encodeNode(node).length);
     body[0] = 0; // flag byte: not compressed
     body.set(encodeNode(node), 1);
@@ -169,6 +176,7 @@ export class WhatsAppConnection {
   }
 
   protected onTransportData(data: Uint8Array) {
+    waDebug("socket: received", data?.length, "bytes");
     let combined = new Uint8Array(this.inbound.length + data.length);
     combined.set(this.inbound);
     combined.set(data, this.inbound.length);
@@ -204,10 +212,12 @@ export class WhatsAppConnection {
     let node = decodeNode(nodeBytes);
     let id = node.attrs.id;
     if (id && this.pendingIQs.has(id)) {
+      waDebug("<< recv (IQ response)", nodePreview(node));
       let resolve = this.pendingIQs.get(id)!;
       this.pendingIQs.delete(id);
       resolve(node);
     } else {
+      waDebug("<< recv", nodePreview(node));
       this.onStanza(node);
     }
   }
@@ -217,9 +227,6 @@ export class WhatsAppConnection {
     this.cipher = null;
   }
 }
-
-/** Master switch for the live network path. Off until validated end-to-end. */
-export const kWhatsAppLiveEnabled = false;
 
 // Android connection header: "WA" + magic byte 6 + WABinary dictionary version 3.
 // The dictionary version must match the token tables in Binary/tokens.ts.
@@ -249,9 +256,17 @@ const kWhatsAppServerPort = 443;
  * a bare `net.Socket` (`newTCPSocket()`); all the adapting to our transport
  * interface happens here, on the renderer side, over JPC. */
 async function createWhatsAppTransport(host = kWhatsAppServerHost, port = kWhatsAppServerPort): Promise<WhatsAppTransport> {
-  assert(kWhatsAppLiveEnabled, "WhatsApp live connection is not enabled in this build");
+  waDebug("createWhatsAppTransport: live available =", isWhatsAppLiveAvailable(), "->", host + ":" + port);
+  assert(isWhatsAppLiveAvailable(), "WhatsApp live connection is not available in this build");
   let socket = await appGlobal.remoteApp.newTCPSocket();
   return new RemoteSocketTransport(socket, host, port);
+}
+
+/** Whether the live server connection can run: it needs the desktop backend's
+ * raw TCP socket factory, which the renderer reaches over JPC. Unit tests and
+ * web builds have no such factory, so the live path is unavailable there. */
+export function isWhatsAppLiveAvailable(): boolean {
+  return !!(appGlobal.remoteApp as any)?.newTCPSocket;
 }
 
 /** Adapts a backend `net.Socket` (reached over JPC) to our transport interface.
@@ -271,10 +286,12 @@ export class RemoteSocketTransport implements WhatsAppTransport {
     return new Promise((resolve, reject) => {
       let settled = false;
       this.socket.on("connect", () => {
+        waDebug("socket: TCP connected to", this.host + ":" + this.port);
         settled = true;
         resolve();
       });
       this.socket.on("error", (ex: any) => {
+        waDebug("socket: error", ex?.message ?? ex);
         if (!settled) { // a post-connect error is followed by `close`, which notifies the app
           settled = true;
           reject(new Error(ex?.message ?? `Cannot connect to ${this.host}:${this.port}`));
@@ -294,6 +311,7 @@ export class RemoteSocketTransport implements WhatsAppTransport {
 
   onClose(callback: () => void): void {
     this.socket.on("close", () => {
+      waDebug("socket: TCP closed", this.closedByUs ? "(by us)" : "(by peer)");
       if (!this.closedByUs) {
         callback();
       }

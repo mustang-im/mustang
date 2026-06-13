@@ -53,6 +53,9 @@ export class WhatsAppPairing {
    * ref expires and we rotate to the next. */
   onQR: (qr: string) => void = () => undefined;
 
+  /** Called once the QR has been scanned and the server confirmed it — pairing is now finishing. */
+  onPairing: () => void = () => undefined;
+
   /** How long a QR ref stays valid before we rotate. The phone is given longest
    * on the first code; later refs rotate faster, matching the real client. */
   protected qrTimeoutMs = 60_000;
@@ -170,6 +173,7 @@ export class WhatsAppPairing {
   /** The phone authorized us: verify the signed device identity, counter-sign
    * it, and send it back. */
   protected async onPairSuccess(iq: WANode, pairSuccess: WANode): Promise<void> {
+    this.onPairing(); // the scan succeeded; tell the UI before the (slower) crypto below
     let identityBytes = pairSuccess.child("device-identity")?.contentBytes;
     let jid = pairSuccess.child("device")?.jidAttr("jid");
     if (!identityBytes || !jid) {

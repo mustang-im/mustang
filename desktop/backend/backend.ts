@@ -16,6 +16,7 @@ import { DAVClient } from "tsdav";
 import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import net from "node:net";
+import zlib from "node:zlib";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -91,6 +92,7 @@ async function createSharedAppObject() {
     newAdmZIP,
     newHTTPServer,
     newTCPSocket,
+    gunzip,
     readFile,
     writeFile,
     deleteFile,
@@ -251,6 +253,12 @@ function newHTTPServer() {
  * listeners before connecting — events fired before a listener exists are lost. */
 function newTCPSocket(): net.Socket {
   return new net.Socket();
+}
+
+/** Decompresses a gzip (or zlib) buffer — used for the WhatsApp history-sync
+ * blob, which the renderer's DecompressionStream handles unreliably. */
+function gunzip(data: Uint8Array): Uint8Array {
+  return zlib.unzipSync(Buffer.from(data));
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */

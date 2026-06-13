@@ -14,6 +14,10 @@
         <ErrorMessageInline ex={error} />
         <Button label={$t`Try again`} classes="secondary" onClick={startLinking} />
       </vbox>
+    {:else if linking}
+      <vbox class="qr-placeholder">
+        <StatusMessage status="processing" message={$t`Linking your account…`} />
+      </vbox>
     {:else if qrData}
       <QRCode data={qrData} size={264} />
     {:else}
@@ -48,7 +52,7 @@
   import type { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
   import { WhatsAppSetup } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
   import { WhatsAppPairing } from "../../../../logic/Chat/WhatsApp/WhatsAppPairing";
-  import { kWhatsAppLiveEnabled } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
+  import { isWhatsAppLiveAvailable } from "../../../../logic/Chat/WhatsApp/WhatsAppConnection";
   import { appGlobal } from "../../../../logic/app";
   import Header from "../../Shared/Header.svelte";
   import StatusMessage from "../../Shared/StatusMessage.svelte";
@@ -66,12 +70,14 @@
   export let showPage: ConstructorOfATypedSvelteComponent;
   export let onCancel = (event: Event) => undefined;
 
-  const liveEnabled = kWhatsAppLiveEnabled;
+  const liveEnabled = isWhatsAppLiveAvailable();
 
   /** The QR payload (ref,noiseKey,identityKey,advSecret) the phone scans. It
    * rotates as each server ref expires, until the user links or it fails. */
   let qrData: string | null = null;
   let error: Error | null = null;
+  /** True once the phone scanned the QR and pairing is finishing, until done. */
+  let linking = false;
   let paired = false;
   let closing = false;
 
@@ -92,8 +98,12 @@
   async function startLinking() {
     error = null;
     qrData = null;
+    linking = false;
     try {
-      await config.startPairing(qr => qrData = qr);
+      await config.startPairing(qr => qrData = qr, () => {
+        linking = true;
+        qrData = null; // hide the QR the instant the scan is confirmed
+      });
       qrData = null;
       paired = true;
       if (!appGlobal.chatAccounts.includes(config)) {

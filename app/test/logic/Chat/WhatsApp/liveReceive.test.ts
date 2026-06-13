@@ -9,6 +9,9 @@ import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
 import { Group } from "../../../../logic/Abstract/Group";
 import { encode } from "../../../../logic/Chat/WhatsApp/Proto/codec";
 import { HistorySync, decodeHistorySync } from "../../../../logic/Chat/WhatsApp/Proto/schema";
+import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
+import { SignalStore } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/Store";
+import { createSenderKey, createDistributionMessage } from "../../../../logic/Chat/WhatsApp/Crypto/Signal/GroupCipher";
 import { expect, test } from "vitest";
 
 const kAliceJID = "491761111111@s.whatsapp.net";
@@ -98,13 +101,23 @@ test("history sync builds the chat list and back-fills old messages", async () =
           { message: { key: { remoteJID: kGroupJID, fromMe: false, id: "G1", participant: kBobJID }, message: { conversation: "Group hi" }, messageTimestamp: 1700000200, pushName: "Bob" } },
         ],
       },
+      {
+        // A LID-keyed 1:1 (modern privacy accounts) — must still import.
+        id: "111222333444@lid",
+        messages: [
+          { message: { key: { remoteJID: "111222333444@lid", fromMe: false, id: "L1" }, message: { conversation: "Hi over lid" }, messageTimestamp: 1700000300, pushName: "Lid Contact" } },
+        ],
+      },
     ],
   });
 
   let result = await account.historySync.importHistory(decodeHistorySync(blob));
-  expect(result.chats).toBe(2);
-  expect(result.messages).toBe(3);
-  expect(account.rooms.length).toBe(2);
+  expect(result.chats).toBe(3);
+  expect(result.messages).toBe(4);
+  expect(account.rooms.length).toBe(3);
+  let lidRoom = account.rooms.contents.find(room => room.id == "111222333444@lid");
+  expect(lidRoom).toBeDefined();
+  expect(lidRoom.messages.contents.find(msg => msg.text == "Hi over lid")).toBeDefined();
 
   let aliceRoom = account.rooms.contents.find(room => room.id == kAliceJID);
   expect(aliceRoom).toBeDefined();
@@ -120,4 +133,57 @@ test("history sync builds the chat list and back-fills old messages", async () =
   expect(groupRoom.contact).toBeInstanceOf(Group);
   expect(groupRoom.name).toBe("Weekend Trip");
   expect(groupRoom.messages.contents.find(msg => msg.text == "Group hi")).toBeDefined();
+});
+
+test("after login it uploads prekeys and switches the connection to active", async () => {
+  let account = setup();
+  account.signalStore = SignalStore.createNew();
+  let sentIQs: WANode[] = [];
+  account.connection = {
+    async sendIQ(node: WANode) {
+      sentIQs.push(node);
+      return new WANode("iq", { type: "result" });
+    },
+    async sendNode() {},
+  } as any;
+
+  await (account as any).afterLogin();
+  (account as any).stopKeepAlive(); // don't leak the interval into other tests
+
+  // The encrypt IQ publishes our identity, signed prekey and one-time prekeys —
+  // without this the phone can't establish a session to send us history/messages.
+  let upload = sentIQs.find(node => node.attrs.xmlns == "encrypt");
+  expect(upload).toBeDefined();
+  expect(upload.attrs.type).toBe("set");
+  expect(upload.child("registration").contentBytes.length).toBe(4);
+  expect([...upload.child("identity").contentBytes]).toEqual([...account.signalStore.identityKeyPair.publicKey]);
+  expect(upload.child("list").children("key").length).toBe(account.signalStore.preKeys.size);
+  let skey = upload.child("skey");
+  expect([...skey.child("value").contentBytes]).toEqual([...account.signalStore.signedPreKeys.get(1).keyPair.publicKey]);
+  expect(skey.child("signature").contentBytes.length).toBe(64);
+  expect(skey.child("id").contentBytes.length).toBe(3);
+
+  // The <active> IQ is what actually starts the inbound stream (offline + history).
+  let active = sentIQs.find(node => node.attrs.xmlns == "passive");
+  expect(active).toBeDefined();
+  expect(active.attrs.type).toBe("set");
+  expect(active.child("active")).toBeDefined();
+});
+
+test("stores a group sender key from an incoming SenderKeyDistributionMessage", async () => {
+  let account = setup();
+  account.signalStore = SignalStore.createNew();
+
+  // A real distribution message, as a group member would send it to us.
+  let distribution = createDistributionMessage(createSenderKey(7));
+  let payload = {
+    senderKeyDistributionMessage: { groupID: kGroupJID, axolotlSenderKeyDistributionMessage: distribution },
+  };
+  let sender = JID.parse(kBobJID);
+
+  (account as any).processSenderKeyDistribution(payload, sender);
+
+  let stored = account.signalStore.senderKeys.get(`${kGroupJID}|${sender.user}.${sender.device}`);
+  expect(stored).toBeDefined();
+  expect(stored.keyID).toBe(7);
 });

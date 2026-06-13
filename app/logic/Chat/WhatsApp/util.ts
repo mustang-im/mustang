@@ -26,3 +26,13 @@ export function stanzaErrorText(node: WANode): string {
   let text = error.attrs.text ?? error.attrs.reason ?? error.attrs.code;
   return text ? `: ${text}` : "";
 }
+
+/** Big-endian fixed-width encoding, as the WhatsApp key ids on the wire use. */
+export function bigEndian(value: number, byteCount: number): Uint8Array {
+  let out = new Uint8Array(byteCount);
+  for (let i = byteCount - 1; i >= 0; i--) {
+    out[i] = value & 0xFF;
+    value = Math.floor(value / 256);
+  }
+  return out;
+}

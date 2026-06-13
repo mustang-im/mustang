@@ -255,10 +255,13 @@ test("registers as a companion device end to end (QR → pair-success → device
 
   let qrCodes: string[] = [];
   pairing.onQR = qr => qrCodes.push(qr);
+  let pairingStarted = 0;
+  pairing.onPairing = () => pairingStarted++;
 
   let jid = await pairing.register(clientChannel);
 
   expect(jid.toString()).toBe(kPairedJID);
+  expect(pairingStarted).toBe(1); // fired once, when <pair-success> arrived
 
   // The QR string is exactly ref,noisePub,identityPub,advSecret.
   expect(qrCodes.length).toBe(1);
