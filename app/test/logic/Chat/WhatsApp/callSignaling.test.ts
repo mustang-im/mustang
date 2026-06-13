@@ -8,8 +8,8 @@ import { decodeNode } from "../../../../logic/Chat/WhatsApp/Binary/decoder";
 import { randomBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
 import { expect, test } from "vitest";
 
-let me = JID.parse("491700000000@s.whatsapp.net");
-let peer = JID.parse("491711111111@s.whatsapp.net");
+let me = JID.parse("412300000000@s.whatsapp.net");
+let peer = JID.parse("312300000000@s.whatsapp.net");
 
 /** Sends a stanza through the real binary codec, like the wire, then parses it. */
 function roundtrip(node: WANode) {

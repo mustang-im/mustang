@@ -20,11 +20,11 @@ export class WhatsAppMessage extends UserChatMessage {
    * payload, mirroring JMAPEMail.fromJMAP() / IMAPEMail.fromFlow().
    * @param from the resolved sender (the room knows its members)
    * @returns false if the payload has nothing we can display. */
-  fromWAMessage(stanza: WANode, payload: WAMessage, from: PersonUID | Person | Group): boolean {
+  fromWAMessage(stanza: WANode, payload: WAMessage, from: PersonUID | Person | Group, outgoing = false): boolean {
     this.id = stanza.attrs.id;
     this.sent = new Date(Number(stanza.attrs.t ?? Date.now() / 1000) * 1000);
     this.received = new Date();
-    this.outgoing = false;
+    this.outgoing = outgoing;
     this.contact = from;
     return this.readContent(payload);
   }

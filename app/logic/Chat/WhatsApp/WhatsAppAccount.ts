@@ -53,6 +53,12 @@ export class WhatsAppAccount extends ChatAccount {
   advSecret: Uint8Array | null = null;
   /** Our device address, e.g. `491701234567:32@s.whatsapp.net`. */
   deviceJID: JID | null = null;
+  /** Our own "LID" identity (e.g. `29850727395377@lid`), from the `<success>`
+   * stanza. Modern accounts address us and our contacts by LID, so messages we
+   * sent from the phone arrive `from` this — used to recognise them as outgoing. */
+  ownLID: JID | null = null;
+  /** Cached address book person for the account owner ({@link getOwnContact}). */
+  protected ownContact: Person | null = null;
   connection: WhatsAppConnection | null = null;
   /** Voice/video calls run through this dependent Meet account. */
   meetAccount: WhatsAppMeetAccount | null = null;
@@ -162,6 +168,9 @@ export class WhatsAppAccount extends ChatAccount {
   protected onStanza(node: WANode) {
     if (node.tag == "success") {
       waDebug("=> <success>: logged in; running post-login (prekey upload + presence)");
+      if (node.attrs.lid) {
+        this.ownLID = JID.parse(node.attrs.lid);
+      }
       this.loginResult?.resolve();
       this.loginResult = null;
       this.afterLogin().catch(ex => { waDebug("afterLogin ERROR:", ex?.message ?? ex); this.errorCallback(ex); });
@@ -331,6 +340,12 @@ export class WhatsAppAccount extends ChatAccount {
     waDebug("stored group sender key for", skdm.groupID, "from", address);
   }
 
+  /** Whether a JID is one of our own identities (our phone number or our LID) — a
+   * message `from` it was sent by us, from the phone or another linked device. */
+  protected isOwnJID(jid: JID): boolean {
+    return jid.user == this.deviceJID?.user || jid.user == this.ownLID?.user;
+  }
+
   protected async receiveMessageStanza(node: WANode): Promise<void> {
     let from = node.jidAttr("from");
     let id = node.attrs.id;
@@ -364,10 +379,21 @@ export class WhatsAppAccount extends ChatAccount {
       await this.sendDeliveryReceipt(node);
       return;
     }
+    // A message we sent from another device (e.g. the phone) is fanned out to us:
+    // it arrives `from` one of our own identities (number or LID) with the chat in
+    // `recipient`, or wrapped in a deviceSentMessage carrying `destinationJID`. It
+    // belongs in the *recipient's* room and is outgoing — not from the partner.
+    let deviceSent = rawPayload.deviceSentMessage;
+    let outgoing = !!deviceSent || this.isOwnJID(from);
+    let chat = from;
+    if (outgoing) {
+      let dest = deviceSent?.destinationJID ?? node.attrs.recipient;
+      chat = dest ? JID.parse(dest) : from;
+    }
     // In a group, `notify` is the sender's name, not the group subject.
-    let room = await this.getOrCreateRoom(from, from.isGroup ? undefined : node.attrs.notify);
-    await room.receiveMessage(node, rawPayload, sender);
-    waDebug("  -> content message into room", room.id, "— now", room.messages.length, "messages");
+    let room = await this.getOrCreateRoom(chat, chat.isGroup ? undefined : node.attrs.notify);
+    await room.receiveMessage(node, rawPayload, sender, outgoing);
+    waDebug("  ->", outgoing ? "OUTGOING" : "incoming", "message into room", room.id, "— now", room.messages.length, "messages");
     await this.sendDeliveryReceipt(node);
   }
 
@@ -481,6 +507,19 @@ export class WhatsAppAccount extends ChatAccount {
       await person.save();
     }
     return person;
+  }
+
+  /** A persistable contact for the account owner — keyed by our own JID — used to
+   * attribute the messages we sent (from the phone or another device). Unlike
+   * `appGlobal.me`, this is a real address book person and so can be saved as a
+   * message's sender. */
+  async getOwnContact(): Promise<Person> {
+    let jid = this.deviceJID ?? this.ownLID;
+    if (!jid) {
+      return appGlobal.me as any as Person; // unpaired (tests only); storage is a no-op there
+    }
+    this.ownContact ??= await this.getOrCreatePerson(jid.toNonDevice(), appGlobal.me?.name);
+    return this.ownContact;
   }
 
   /** Creates a placeholder group for a live group chat. The real name and

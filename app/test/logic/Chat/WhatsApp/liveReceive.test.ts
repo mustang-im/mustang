@@ -30,6 +30,7 @@ function setup(): WhatsAppAccount {
   appGlobal.personalAddressbook = addressbook;
   let account = new WhatsAppAccount();
   account.storage = new DummyChatStorage();
+  account.deviceJID = JID.parse("412300000000:1@s.whatsapp.net");
   appGlobal.chatAccounts.add(account);
   appGlobal.me = new Person();
   appGlobal.me.name = "Me";
@@ -125,7 +126,13 @@ test("history sync builds the chat list and back-fills old messages", async () =
   expect(aliceRoom.messages.length).toBe(2);
   let hello = aliceRoom.messages.contents.find(msg => msg.text == "Hello from Alice");
   expect(hello.outgoing).toBe(false);
-  expect(aliceRoom.messages.contents.find(msg => msg.text == "Hi back").outgoing).toBe(true);
+  expect(hello.contact.name).toBe("Alice History"); // attributed to the partner
+  // Our own message is outgoing and attributed to the account-owner contact (a
+  // real address book person keyed by our JID), not appGlobal.me — so it persists.
+  let hiBack = aliceRoom.messages.contents.find(msg => msg.text == "Hi back");
+  expect(hiBack.outgoing).toBe(true);
+  expect(hiBack.contact).not.toBe(appGlobal.me);
+  expect((hiBack.contact as any).chatAccounts.some(e => e.protocol == "whatsapp" && e.value == "412300000000@s.whatsapp.net")).toBe(true);
   expect(aliceRoom.lastMessage.text).toBe("Hi back"); // the newest
 
   let groupRoom = account.rooms.contents.find(room => room.id == kGroupJID);
@@ -133,6 +140,21 @@ test("history sync builds the chat list and back-fills old messages", async () =
   expect(groupRoom.contact).toBeInstanceOf(Group);
   expect(groupRoom.name).toBe("Weekend Trip");
   expect(groupRoom.messages.contents.find(msg => msg.text == "Group hi")).toBeDefined();
+});
+
+test("a live message we sent from another device is outgoing, attributed to us", async () => {
+  let account = setup();
+  let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice");
+
+  // As delivered by receiveMessageStanza for an outgoing (deviceSent / own-JID) message.
+  let stanza = new WANode("message", { id: "OUT1", t: "1700000500" });
+  await room.receiveMessage(stanza, { conversation: "Sent from my phone" } as any, JID.parse(kAliceJID), true);
+
+  let msg = room.messages.contents.find(m => m.text == "Sent from my phone");
+  expect(msg).toBeDefined();
+  expect(msg.outgoing).toBe(true);
+  expect(msg.contact).not.toBe(appGlobal.me); // a saveable owner contact, not appGlobal.me
+  expect((msg.contact as any).chatAccounts.some(e => e.value == "412300000000@s.whatsapp.net")).toBe(true);
 });
 
 test("after login it uploads prekeys and switches the connection to active", async () => {

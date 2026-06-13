@@ -194,13 +194,13 @@ test("completes the Noise handshake against a mock server and round-trips an IQ"
   connection.rootCertKey = root.publicKey; // trust our test root instead of the pinned one
   let serverConnected = new Promise<void>(resolve => server.onConnected = resolve);
 
-  await connection.connect(() => getLoginPayload(491700000000, 0), clientChannel);
+  await connection.connect(() => getLoginPayload(412300000000, 0), clientChannel);
   await serverConnected;
 
   // The server decrypted our ClientPayload, proving the whole handshake matched.
   expect(server.receivedClientPayload).not.toBeNull();
   let payload = decode(ClientPayload, server.receivedClientPayload!);
-  expect(payload.username).toBe(491700000000);
+  expect(payload.username).toBe(412300000000);
 
   // A full stanza round-trip over the encrypted transport (encode → frame →
   // decrypt → decode on the server, and the reverse for its reply).

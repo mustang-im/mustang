@@ -13,7 +13,7 @@ import { xeddsaSign, xeddsaVerify } from "../../../../logic/Chat/WhatsApp/Crypto
 import { randomBytes, hmacSHA256, concatBytes, bytesEqual } from "../../../../logic/Chat/WhatsApp/Crypto/primitives";
 import { expect, test } from "vitest";
 
-let peer = JID.parse("491700000000@s.whatsapp.net");
+let peer = JID.parse("412300000000@s.whatsapp.net");
 
 /** Parses a payload into a WhatsAppMessage, exercising the protobuf schema
  * (encode→decode, like the wire) and the message's own interpretation. */

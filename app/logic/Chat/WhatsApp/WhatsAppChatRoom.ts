@@ -39,7 +39,7 @@ export class WhatsAppChatRoom extends ChatRoom {
 
   /** Integrates an incoming decrypted message into this room: stores new content,
    * or applies a reaction / edit / deletion to the message it targets. */
-  async receiveMessage(stanza: WANode, rawPayload: WAMessage, sender: JID): Promise<void> {
+  async receiveMessage(stanza: WANode, rawPayload: WAMessage, sender: JID, outgoing = false): Promise<void> {
     let payload = WhatsAppMessage.unwrap(rawPayload);
     if (payload.reactionMessage) {
       await this.reactToMessage(payload.reactionMessage, sender);
@@ -48,18 +48,21 @@ export class WhatsAppChatRoom extends ChatRoom {
     } else if (payload.protocolMessage?.type == ProtocolMessageType.MessageEdit && payload.protocolMessage.editedMessage) {
       await this.editMessage(payload.protocolMessage.key?.id, payload.protocolMessage.editedMessage);
     } else if (!payload.protocolMessage) {
-      await this.addMessage(stanza, payload, sender);
+      await this.addMessage(stanza, payload, sender, outgoing);
     }
   }
 
-  /** Adds a newly received content message to this room (mirrors XMPPChat.addMessage). */
-  protected async addMessage(stanza: WANode, payload: WAMessage, sender: JID): Promise<void> {
+  /** Adds a newly received content message to this room (mirrors XMPPChat.addMessage).
+   * `outgoing` messages (sent by us from another device) are attributed to the
+   * account owner; incoming ones to the sender. */
+  protected async addMessage(stanza: WANode, payload: WAMessage, sender: JID, outgoing: boolean): Promise<void> {
     let id = stanza.attrs.id;
     if (!id || this.messages.some(msg => msg.id == id)) {
       return; // missing id or already have it
     }
     let message = this.newMessage();
-    if (!message.fromWAMessage(stanza, payload, this.contactForSender(sender))) {
+    let contact = outgoing ? await this.account.getOwnContact() : this.contactForSender(sender);
+    if (!message.fromWAMessage(stanza, payload, contact as any, outgoing)) {
       return; // a type we cannot display (call, poll, …)
     }
     this.messages.add(message);
@@ -81,7 +84,9 @@ export class WhatsAppChatRoom extends ChatRoom {
     message.sent = new Date(Number(info.messageTimestamp ?? 0) * 1000);
     message.received = message.sent;
     message.isRead = true;
-    message.contact = this.historySender(info.key);
+    message.contact = info.key.fromMe
+      ? await this.account.getOwnContact()
+      : this.historySender(info.key);
     if (!message.readContent(WhatsAppMessage.unwrap(info.message))) {
       return false; // a type we cannot display (call, poll, system event, …)
     }
@@ -93,11 +98,10 @@ export class WhatsAppChatRoom extends ChatRoom {
     return true;
   }
 
-  /** The sender of a stored message: us, the chat partner (1:1), or the group member. */
+  /** The person an incoming stored message is from: the group member who sent it,
+   * else the room contact (the 1:1 partner). Our own messages are attributed via
+   * {@link WhatsAppAccount.getOwnContact} instead. */
   protected historySender(key: MessageKey): PersonUID | Person | Group {
-    if (key.fromMe) {
-      return appGlobal.me;
-    }
     if (this.contact instanceof Group && key.participant) {
       return this.contactForSender(JID.parse(key.participant));
     }
