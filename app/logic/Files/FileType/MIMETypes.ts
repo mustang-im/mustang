@@ -1,3 +1,5 @@
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+
 export class FileType {
   id: string;
   name: string;
@@ -113,3 +115,19 @@ export const fileExtensions = {
   "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "ods": "application/vnd.oasis.opendocument.spreadsheet",
 };
+
+export function fileExtensionForMIMEType(mimetype: string | undefined): string | null {
+  sanitize.alphanumdash(mimetype.replace(/[\/+]/, ""));
+  for (let ext in fileExtensions) {
+    if (fileExtensions[ext] == mimetype) {
+      return ext;
+    }
+  }
+
+  let type = mimetype.split("/")[1]; // Hack
+  if (type && type != "octet-stream") {
+    return type;
+  }
+
+  return ".ext";
+}

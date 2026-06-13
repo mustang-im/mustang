@@ -17,6 +17,7 @@ import type { Person } from "../../Abstract/Person";
 import type { WhatsAppConnection } from "./WhatsAppConnection";
 import { JID, kServerUser } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
+import { checkMediaURL } from "./WhatsAppMedia";
 import { kWaHttpUserAgent } from "./clientInfo";
 import { randomBytes } from "../Signal/Crypto/primitives";
 import { appGlobal } from "../../app";
@@ -124,8 +125,11 @@ export class WhatsAppContact extends ChatPerson {
     }
   }
 
-  /** Downloads a profile-picture URL (a plain CDN link; no media decryption). */
+  /** Downloads a profile-picture URL (a plain CDN link; no media decryption).
+   * The URL is server-supplied, so validate it against the media host allowlist
+   * before the backend fetch, to avoid being used as an SSRF proxy. */
   protected async download(url: string): Promise<string> {
+    checkMediaURL(url);
     let ky = await appGlobal.remoteApp.kyCreate({ headers: { "User-Agent": kWaHttpUserAgent } });
     let bytes = new Uint8Array(await ky.get(url, { result: "arrayBuffer" }));
     return await blobToDataURL(new Blob([bytes as BlobPart], { type: "image/jpeg" }));

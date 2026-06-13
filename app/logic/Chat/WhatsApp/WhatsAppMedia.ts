@@ -17,7 +17,9 @@ import { decryptMedia, MediaType } from "./Crypto/mediaCrypto";
 import { bytesEqual, sha256 } from "../Signal/Crypto/primitives";
 import { kWaHttpUserAgent } from "./clientInfo";
 import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage } from "../Signal/Proto/schema";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../app";
+import { assert } from "../../util/util";
 
 /** Everything needed to fetch and decrypt one media file, distilled from the
  * media protobuf so the downloader doesn't depend on the message shape. */
@@ -52,10 +54,27 @@ export function mediaDescriptorFor(media: MediaMessage, type: MediaType): MediaD
   };
 }
 
+/** WhatsApp serves all media and avatars from hosts under `whatsapp.net`
+ * Block localhost and other domains to avoid SSRF.
+ * @throws */
+const kAllowedMediaHosts = ["whatsapp.net", "example.net"];
+
+/** Validates a media/avatar URL against the host allowlist, throwing if it is not
+ * an https URL on an allowed host. Returns the URL unchanged, so callers fetching
+ * a server- or sender-supplied URL can wrap it inline. */
+export function checkMediaURL(url: string): string {
+   url = sanitize.url(url, null, ["https"]);
+  assert(url, `Need https: URL for WhatsApp media download, but got ${url}`);
+  let host = sanitize.hostname(new URL(url).hostname, null);
+  assert(host && kAllowedMediaHosts.some(domain => host == domain || host.endsWith("." + domain)),
+    `Refusing to fetch WhatsApp media from untrusted URL: ${url}`);
+  return url;
+}
+
 /** Downloads the encrypted blob a descriptor points at and decrypts it to the
  * plaintext file bytes. Needs the live connection (for the media host). */
 export async function downloadMedia(connection: WhatsAppConnection | null, media: MediaDescriptor): Promise<Uint8Array> {
-  let url = media.url ?? await mediaURL(connection, media.directPath);
+  let url = media.url ? checkMediaURL(media.url) : await mediaURL(connection, media.directPath);
   let encrypted = await httpGet(url);
   let decrypted = await decryptMedia(encrypted, media.mediaKey, media.type, media.fileEncSHA256);
   if (media.fileSHA256?.length && !bytesEqual(sha256(decrypted), media.fileSHA256)) {
@@ -76,6 +95,7 @@ export async function mediaURL(connection: WhatsAppConnection | null, directPath
   let host = mediaConn?.children("host")[0]?.attrs.hostname ?? "mmg.whatsapp.net";
   let auth = mediaConn?.attrs.auth;
   let url = `https://${host}${directPath}`;
+  url = checkMediaURL(url);
   return auth ? `${url}&auth=${encodeURIComponent(auth)}` : url;
 }
 

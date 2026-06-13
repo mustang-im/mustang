@@ -3,11 +3,13 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import type { Person } from "../../Abstract/Person";
 import type { Group } from "../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
+import { fileExtensionForMIMEType } from "../../Files/FileType/MIMETypes";
 import { MediaType } from "./Crypto/mediaCrypto";
 import { mediaDescriptorFor, downloadMedia, type MediaDescriptor } from "./WhatsAppMedia";
 import type { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import type { WANode } from "./Binary/WANode";
 import type { WAMessage } from "../Signal/Proto/schema";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 /**
  * A message in a WhatsApp chat, written by a human.
@@ -79,7 +81,7 @@ export class WhatsAppMessage extends ChatMessage {
 
   protected addMedia(media: any, type: MediaType, caption?: string, inline = false): boolean {
     let attachment = new Attachment();
-    attachment.filename = media.fileName || `${type}.${extensionFor(media.mimetype)}`;
+    attachment.filename = sanitize.filename(media.fileName, `${type}.${fileExtensionForMIMEType(media.mimetype)}`);
     attachment.mimeType = media.mimetype ?? "application/octet-stream";
     attachment.size = toNumber(media.fileLength);
     attachment.disposition = inline ? ContentDisposition.inline : ContentDisposition.attachment;
@@ -135,8 +137,4 @@ function toNumber(value: any): number {
     return 0;
   }
   return typeof value == "object" && typeof value.toNumber == "function" ? value.toNumber() : Number(value);
-}
-
-function extensionFor(mimetype: string | undefined): string {
-  return (mimetype ?? "").split("/")[1]?.split(";")[0] || "bin";
 }

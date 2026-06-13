@@ -57,7 +57,16 @@ export class XMPPChatMessage extends ChatMessage {
   /** Creates an attachment for a shared-file URL (XEP-0363 / OMEMO media) and
    * downloads it — decrypting an aesgcm:// URL — in the background. */
   addMediaFromURL(url: string): void {
-    let filename = decodeURIComponent(url.split("#")[0].split("?")[0].split("/").pop() || gt`File`);
+    // The filename is derived from a peer-supplied URL, so decode it (it may be
+    // percent-encoded) and sanitize away path separators and the like.
+    let path = url.split("#")[0].split("?")[0].split("/").pop() || "";
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(path);
+    } catch (ex) {
+      decoded = path; // malformed %-escape: keep the raw form for sanitizing
+    }
+    let filename = sanitize.filename(decoded, gt`File`);
     let extension = filename.split(".").pop()?.toLowerCase() ?? "";
     let attachment = new Attachment();
     attachment.filename = filename;

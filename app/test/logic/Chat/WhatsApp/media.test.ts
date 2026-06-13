@@ -3,7 +3,7 @@ import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
 import { encodeWAMessage, decodeWAMessage, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
-import { mediaDescriptorFor, downloadMedia } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
+import { mediaDescriptorFor, downloadMedia, checkMediaURL } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
 import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { ChatPerson } from "../../../../logic/Chat/ChatPerson";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
@@ -90,6 +90,36 @@ test("downloadMedia resolves the CDN host, fetches and decrypts", async () => {
   });
   expect(requested).toBe("https://mmg.example.net/v/doc&auth=TOKEN");
   expect(new TextDecoder().decode(bytes)).toBe("hello media");
+});
+
+test("checkMediaURL allows only https WhatsApp hosts (SSRF guard)", () => {
+  expect(checkMediaURL("https://mmg.whatsapp.net/v/x")).toBe("https://mmg.whatsapp.net/v/x");
+  expect(checkMediaURL("https://media-fra.cdn.whatsapp.net/x")).toBe("https://media-fra.cdn.whatsapp.net/x");
+  expect(checkMediaURL("https://pps.example.net/a.jpg")).toBe("https://pps.example.net/a.jpg"); // reserved example domain, for tests
+  expect(() => checkMediaURL("https://localhost:8080/x")).toThrow();
+  expect(() => checkMediaURL("https://192.168.1.1/x")).toThrow();
+  expect(() => checkMediaURL("https://evil.example.org/x")).toThrow(); // example.org is not allowlisted
+  expect(() => checkMediaURL("https://mmg.whatsapp.net.evil.com/x")).toThrow(); // suffix trick
+  expect(() => checkMediaURL("https://mmg.whatsapp.net@evil.com/x")).toThrow(); // userinfo trick
+  expect(() => checkMediaURL("http://mmg.whatsapp.net/x")).toThrow(); // https only
+  expect(() => checkMediaURL("file:///etc/passwd")).toThrow();
+});
+
+test("downloadMedia refuses a media host the server points us at off-allowlist", async () => {
+  let connection = {
+    sendIQ: async () => new WANode("iq", {}, [
+      new WANode("media_conn", { auth: "T" }, [new WANode("host", { hostname: "internal.corp.local" })]),
+    ]),
+  } as any;
+  await expect(downloadMedia(connection, {
+    type: MediaType.Document, directPath: "/v/doc", mediaKey: randomBytes(32),
+  })).rejects.toThrow(/untrusted/i);
+});
+
+test("downloadMedia refuses a sender-supplied url to an arbitrary host", async () => {
+  await expect(downloadMedia(null, {
+    type: MediaType.Image, directPath: "", url: "https://attacker.test/payload", mediaKey: randomBytes(32),
+  })).rejects.toThrow(/untrusted/i);
 });
 
 test("addMedia downloads and attaches the bytes in the background", async () => {

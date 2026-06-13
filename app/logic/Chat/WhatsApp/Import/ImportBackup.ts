@@ -6,6 +6,7 @@ import { getDatabase } from "../../SQL/SQLDatabase";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { Group } from "../../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../../Abstract/Attachment";
+import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { getSQLiteDatabase } from "../../../util/backend-wrapper";
 import { appGlobal } from "../../../app";
 import { UserError, assert } from "../../../util/util";
@@ -378,8 +379,8 @@ export class WhatsAppBackupImport {
       // The media files themselves are not part of the backup,
       // so we import only the metadata.
       let attachment = new Attachment();
-      attachment.filename = row.mediaName || row.filePath?.split("/").pop() ||
-        "attachment-" + row.rowID;
+      attachment.filename = sanitize.filename(
+        row.mediaName || row.filePath?.split("/").pop(), "attachment-" + row.rowID);
       attachment.mimeType = row.mimeType || "application/octet-stream";
       attachment.size = row.fileSize ?? null;
       attachment.disposition = ContentDisposition.attachment;

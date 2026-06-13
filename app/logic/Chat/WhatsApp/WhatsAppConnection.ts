@@ -203,13 +203,13 @@ export class WhatsAppConnection {
       let payload = this.inbound.subarray(3, 3 + length);
       this.inbound = this.inbound.subarray(3 + length).slice();
       try {
-      if (this.handshakeResolver) {
-        let resolve = this.handshakeResolver;
-        this.handshakeResolver = null;
-        resolve(payload.slice());
-      } else if (this.cipher) {
-        await this.handleEncryptedFrame(payload.slice());
-      }
+        if (this.handshakeResolver) {
+          let resolve = this.handshakeResolver;
+          this.handshakeResolver = null;
+          resolve(payload.slice());
+        } else if (this.cipher) {
+          await this.handleEncryptedFrame(payload.slice());
+        }
       } catch (ex) {
         // One malformed frame (bad decrypt, oversized/corrupt stanza) must not
         // kill the read loop or surface as an unhandled rejection. Frames are
