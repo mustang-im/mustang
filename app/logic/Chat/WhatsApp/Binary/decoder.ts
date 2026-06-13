@@ -10,6 +10,12 @@ const kTag = {
   BINARY_8: 252, BINARY_20: 253, BINARY_32: 254, NIBBLE_8: 255,
 };
 
+/** Hard cap on nested-node depth. The lengths and child counts in a stanza are
+ * server-controlled, so a hostile (or corrupt) stanza could otherwise drive
+ * unbounded recursion and exhaust the stack. Real stanzas nest only a handful
+ * of levels deep. */
+const kMaxNodeDepth = 64;
+
 class Decoder {
   protected data: Uint8Array;
   protected pos = 0;
@@ -19,10 +25,19 @@ class Decoder {
   }
 
   protected readByte(): number {
+    if (this.pos >= this.data.length) {
+      throw new Error("WABinary: unexpected end of data");
+    }
     return this.data[this.pos++];
   }
 
   protected readBytes(n: number): Uint8Array {
+    // n is decoded from server-controlled length bytes (and a 32-bit length can
+    // even come out negative): refuse anything that would read past the buffer,
+    // so a bogus length cannot drive a huge allocation or read out of bounds.
+    if (n < 0 || this.pos + n > this.data.length) {
+      throw new Error(`WABinary: byte length ${n} exceeds the data`);
+    }
     let bytes = this.data.subarray(this.pos, this.pos + n);
     this.pos += n;
     return bytes;
@@ -41,7 +56,10 @@ class Decoder {
     throw new Error(`Invalid list size tag ${tag}`);
   }
 
-  decodeNode(): WANode {
+  decodeNode(depth = 0): WANode {
+    if (depth > kMaxNodeDepth) {
+      throw new Error("WABinary: node nesting too deep");
+    }
     let size = this.readListSize(this.readByte());
     let tag = this.readString();
     let attrs: Record<string, string> = {};
@@ -52,7 +70,7 @@ class Decoder {
     }
     let content: WANode[] | Uint8Array | string | null = null;
     if (size % 2 == 0) {
-      content = this.readContent();
+      content = this.readContent(depth);
     }
     return new WANode(tag, attrs, content);
   }
@@ -97,14 +115,14 @@ class Decoder {
     throw new Error(`Unknown WABinary token ${tag} at offset ${this.pos}`);
   }
 
-  protected readContent(): WANode[] | Uint8Array | string {
+  protected readContent(depth: number): WANode[] | Uint8Array | string {
     let tag = this.data[this.pos];
     if (tag == kTag.LIST_EMPTY || tag == kTag.LIST_8 || tag == kTag.LIST_16) {
       this.pos++;
       let size = this.readListSize(tag);
       let nodes: WANode[] = [];
       for (let i = 0; i < size; i++) {
-        nodes.push(this.decodeNode());
+        nodes.push(this.decodeNode(depth + 1));
       }
       return nodes;
     }

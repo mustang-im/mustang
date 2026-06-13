@@ -89,3 +89,19 @@ test("non-tokenized free-text attribute round-trips", () => {
   let node = new WANode("x", { custom: "this is not a token and not a number!" });
   expect(roundtrip(node).attrs.custom).toBe("this is not a token and not a number!");
 });
+
+test("rejects deeply nested nodes instead of recursing without bound (DoS guard)", () => {
+  // Each wrap is a node (LIST_8, size 2 = tag + content) whose content is a
+  // one-child list (LIST_8, size 1); the innermost is a tag-only leaf.
+  let bytes: number[] = [0xf8, 0x01, 0x01];
+  for (let i = 0; i < 100; i++) {
+    bytes = [0xf8, 0x02, 0x01, 0xf8, 0x01, ...bytes];
+  }
+  expect(() => decodeNode(new Uint8Array(bytes))).toThrow(/too deep/i);
+});
+
+test("rejects a binary length that overruns the frame (DoS guard)", () => {
+  // A node whose content is a BINARY_32 (254) claiming ~2 GB, with nothing behind it.
+  let bytes = new Uint8Array([0xf8, 0x02, 0x01, 254, 0x7F, 0xFF, 0xFF, 0xFF]);
+  expect(() => decodeNode(bytes)).toThrow(/exceeds the data/i);
+});

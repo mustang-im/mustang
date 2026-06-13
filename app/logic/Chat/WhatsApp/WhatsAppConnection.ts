@@ -189,17 +189,32 @@ export class WhatsAppConnection {
   protected async drainFrames() {
     while (this.inbound.length >= 3) {
       let length = (this.inbound[0] << 16) | (this.inbound[1] << 8) | this.inbound[2];
+      if (length > kMaxStanzaSize) {
+        // A frame larger than the cap can only be hostile or corrupt; we cannot
+        // trust the rest of the stream, so drop it and report a disconnect.
+        console.error(`WhatsApp: frame of ${length} bytes exceeds the ${kMaxStanzaSize}-byte limit; closing the connection`);
+        this.inbound = new Uint8Array(0);
+        this.onStanza(new WANode("stream:error"));
+        return;
+      }
       if (this.inbound.length < 3 + length) {
         break;
       }
       let payload = this.inbound.subarray(3, 3 + length);
       this.inbound = this.inbound.subarray(3 + length).slice();
+      try {
       if (this.handshakeResolver) {
         let resolve = this.handshakeResolver;
         this.handshakeResolver = null;
         resolve(payload.slice());
       } else if (this.cipher) {
         await this.handleEncryptedFrame(payload.slice());
+      }
+      } catch (ex) {
+        // One malformed frame (bad decrypt, oversized/corrupt stanza) must not
+        // kill the read loop or surface as an unhandled rejection. Frames are
+        // length-prefixed and independent, so the next one still decodes.
+        console.error("WhatsApp: failed to process incoming frame:", ex);
       }
     }
   }
@@ -233,6 +248,13 @@ export class WhatsAppConnection {
 // Android connection header: "WA" + magic byte 6 + WABinary dictionary version 3.
 // The dictionary version must match the token tables in Binary/tokens.ts.
 export const kConnectionHeader = new Uint8Array([0x57, 0x41, 6, 3]);
+
+/** Global ceiling on a single stanza, enforced both on the on-wire frame length
+ * and on the inflated size of a compressed frame. Stanzas carry only control
+ * data and message text — media and history blobs travel over HTTP — so even
+ * large ones stay well below this. The cap stops a hostile server from forcing
+ * a huge allocation or a decompression bomb. */
+const kMaxStanzaSize = 8 * 1024 * 1024; // 8 MiB
 
 export interface ConnectionKeys {
   /** Persistent Noise static key (Curve25519). */
@@ -327,4 +349,30 @@ export class RemoteSocketTransport implements WhatsAppTransport {
 async function inflate(data: Uint8Array): Promise<Uint8Array> {
   let stream = new Blob([data as BlobPart]).stream().pipeThrough(new DecompressionStream("deflate"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
+  /*
+  // Read incrementally and abort once past the cap, so a small compressed frame
+  // can't expand into a multi-gigabyte allocation (a decompression bomb).
+  let reader = stream.getReader();
+  let chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    let { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    total += value.length;
+    if (total > kMaxStanzaSize) {
+      await reader.cancel();
+      throw new Error(`WhatsApp: decompressed stanza exceeds the ${kMaxStanzaSize}-byte limit`);
+    }
+    chunks.push(value);
+  }
+  let out = new Uint8Array(total);
+  let offset = 0;
+  for (let chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return out;
+  */
 }
