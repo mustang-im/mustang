@@ -1,52 +1,53 @@
 <Header
-  title={$t`Link WhatsApp`}
-  subtitle={$t`Link this app to your phone, the same way as WhatsApp Web`}
+  title={$t`Connect WhatsApp`}
+  subtitle={$t`WhatsApp on your phone can grant access to your account`}
 />
 
-<hbox class="qr-row">
-  <vbox class="qr-area">
+<hbox class="splitscreen">
+  <vbox>
     {#if paired}
-      <vbox class="qr-placeholder success">
+      <vbox class="status success">
         <StatusMessage status="success" message={$t`Device linked`} />
       </vbox>
     {:else if error}
-      <vbox class="qr-placeholder error">
+      <vbox class="status error">
         <ErrorMessageInline ex={error} />
         <Button label={$t`Try again`} classes="secondary" onClick={startLinking} />
       </vbox>
     {:else if linking}
-      <vbox class="qr-placeholder">
+      <hbox class="status inprogress">
         <StatusMessage status="processing" message={$t`Linking your account…`} />
-      </vbox>
-    {:else if qrData}
-      <QRCode data={qrData} size={264} />
-    {:else}
-      <vbox class="qr-placeholder">
-        <hbox class="qr-label">{liveEnabled ? $t`Preparing code…` : $t`Disabled in this build`}</hbox>
-      </vbox>
-    {/if}
-  </vbox>
-  <vbox class="instructions">
-    <ol>
-      <li>{$t`Open WhatsApp on your phone.`}</li>
-      <li>{$t`Tap Settings, then Linked devices.`}</li>
-      <li>{$t`Tap Link a device.`}</li>
-      <li>{$t`Point your phone at this screen to scan the code.`}</li>
-    </ol>
-    {#if !liveEnabled}
-      <hbox class="note">
-        {$t`Live linking is not enabled in this build yet. You can still import your existing chat history from a backup below.`}
       </hbox>
+    {:else if qrData}
+      <vbox class="qr-area">
+        <QRCode data={qrData} size={264} />
+      </vbox>
+    {:else}
+      <vbox class="status">
+        <hbox class="label">{liveEnabled ? $t`Preparing code…` : $t`Disabled in this build`}</hbox>
+        {#if !liveEnabled}
+          <hbox class="note">
+            {$t`Live linking is not enabled in this build yet. You can still import your existing chat history from a backup below.`}
+          </hbox>
+        {/if}
+      </vbox>
     {/if}
   </vbox>
+  {#if !paired}
+    <vbox class="instructions">
+      <ol>
+        <li>{$t`Open WhatsApp on your phone`}</li>
+        <li>{@html $t`Tap menu <span class="mock-button">⋮</span>, then <span class="mock-button">Settings</span>, then <span class="mock-button">Linked devices</span>`}</li>
+        <li>{@html $t`Tap <span class="mock-button">Link a device</span>`}</li>
+        <li>{$t`Scan this code with your phone camera`}</li>
+      </ol>
+    </vbox>
+  {/if}
 </hbox>
 
-<vbox class="alternatives">
-  <hbox class="or">{$t`or`}</hbox>
-  <Button label={$t`Import chat history from a backup`} classes="secondary" onClick={onImportBackup} />
-</vbox>
-
-<ButtonsBottom canContinue={false} showContinue={false} canCancel={true} onCancel={onCancelLink} />
+<ButtonsBottom canContinue={false} showContinue={false} canCancel={true} onCancel={onCancelLink}>
+  <Button label={$t`Import messages from backup`} classes="secondary" onClick={onImportBackup} />
+</ButtonsBottom>
 
 <script lang="ts">
   import type { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
@@ -129,33 +130,31 @@
 </script>
 
 <style>
-  .qr-row {
+  .splitscreen {
     margin-block-start: 8px;
     gap: 24px;
+    flex-wradp: wrap;
+  }
+  .qr-area,
+  .status {
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    height: 250px;
+    padding: 8px;
+    gap: 12px;
   }
   .qr-area {
-    justify-content: center;
-    align-items: center;
-    min-width: 264px;
-  }
-  .qr-placeholder {
-    width: 200px;
-    height: 200px;
     border: 2px dashed var(--border, #BBBBBB);
     border-radius: 8px;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 8px;
   }
-  .qr-placeholder.error {
+  .status.error {
     border-color: var(--error-fg, #CC0000);
   }
-  .qr-placeholder.success {
-    border-style: solid;
-    border-color: var(--success-fg, #33A852);
+  .status.success > :global(.status) {
+    max-width: 70%;
   }
-  .qr-label {
+  .label {
     opacity: 50%;
     text-align: center;
     padding: 8px;
@@ -181,5 +180,11 @@
     justify-content: center;
     opacity: 55%;
     margin-block-end: 4px;
+  }
+  .instructions :global(.mock-button) {
+    display: inline-block;
+    border: 1px solid var(--border);
+    padding: 0px 4px;
+    margin: 2px 0px;
   }
 </style>
