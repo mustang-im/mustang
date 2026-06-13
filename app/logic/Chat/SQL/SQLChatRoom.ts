@@ -87,9 +87,11 @@ export class SQLChatRoom extends ChatRoom {
     let json = sanitize.json(row.json, {}) as any;
     let contactID = sanitize.integer(row.contactID);
     if (json.contactType == "group") {
-      chat.contact = findGroup(contactID);
+      chat.contact = findGroup(contactID)
+        ?? await loadGroup(contactID);
     } else {
-      chat.contact = appGlobal.persons.find(p => p.dbID == contactID) ?? findGroup(contactID);
+      chat.contact = appGlobal.persons.find(p => p.dbID == contactID)
+        ?? await loadPerson(contactID);
     }
     assert(chat.contact, "Contact not found");
     chat.name = sanitize.label(row.name, chat.contact.name);
@@ -134,4 +136,41 @@ function findGroup(dbID: number): Group | null {
     }
   }
   return null;
+}
+
+/** Loads a single person from the DB by its dbID, and registers it in its
+ * addressbook so it shows up in `appGlobal.persons` (and the later bulk load
+ * dedups against it). Returns null if there is no such person. */
+async function loadPerson(dbID: number): Promise<Person | null> {
+  if (!dbID) {
+    return null;
+  }
+  try {
+    let person = new Person();
+    await SQLPerson.read(dbID, person);
+    let addressbook = person.addressbook;
+    if (addressbook && !addressbook.persons.some(p => p.dbID == dbID)) {
+      addressbook.persons.add(person);
+    }
+    return person;
+  } catch (ex) {
+    return null;
+  }
+}
+
+async function loadGroup(dbID: number): Promise<Group | null> {
+  if (!dbID) {
+    return null;
+  }
+  try {
+    let group = new Group();
+    await SQLGroup.read(dbID, group);
+    let addressbook = group.addressbook;
+    if (addressbook && !addressbook.groups.some(g => g.dbID == dbID)) {
+      addressbook.groups.add(group);
+    }
+    return group;
+  } catch (ex) {
+    return null;
+  }
 }

@@ -20,7 +20,7 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
-  import WhatsAppSetupMethod from "./WhatsApp/SetupMethod.svelte";
+  import WhatsAppLinkDevice from "./WhatsApp/LinkDevice.svelte";
   import { t } from "../../../l10n/l10n";
 
   /** out */
@@ -48,7 +48,7 @@
     } else if (selectedProtocol == "matrix") {
       showPage = MatrixLogin;
     } else if (selectedProtocol == "whatsapp") {
-      showPage = WhatsAppSetupMethod;
+      showPage = WhatsAppLinkDevice;
     }
   }
 </script>

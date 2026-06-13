@@ -15,6 +15,8 @@ import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
 import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
+import net from "node:net";
+import zlib from "node:zlib";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -89,6 +91,8 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newTCPSocket,
+    gunzip,
     readFile,
     writeFile,
     deleteFile,
@@ -241,6 +245,18 @@ export class HTTPFetchError extends Error {
 
 function newHTTPServer() {
   return new HTTPServer();
+}
+
+/** A new raw TCP socket, from the node net module.
+ * You can attach `connect`/`error`/`data` listeners and `connect()` */
+function newTCPSocket(): net.Socket {
+  return new net.Socket();
+}
+
+/** Decompresses a gzip (or zlib) buffer — used for the WhatsApp history-sync
+ * blob, which the renderer's DecompressionStream handles unreliably. */
+function gunzip(data: Uint8Array): Uint8Array {
+  return zlib.unzipSync(Buffer.from(data));
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */
