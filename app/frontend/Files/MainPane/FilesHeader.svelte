@@ -76,8 +76,8 @@
 
   export let dir: Directory;
 
-  let subDirs = dir.subDirs;
-  let files = dir.files;
+  $: subDirs = dir.subDirs;
+  $: files = dir.files;
 
   let parentDirs: Directory[] = [];
   $: dir, getParentDirs()
