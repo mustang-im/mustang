@@ -1,12 +1,9 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
-import type { ChatPersonUID } from "./ChatPersonUID";
-import { ContactEntry, type Person } from "../Abstract/Person";
+import { ChatPersonUID } from "./ChatPersonUID";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
 import type { RoomMessage } from "./Message";
 import { SQLChatRoom } from "./SQL/SQLChatRoom";
-import { Addressbook } from "../Contacts/Addressbook";
-import { DummyAddressbookStorage } from "../Contacts/SQL/DummyAddressbookStorage";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
@@ -16,14 +13,26 @@ export class ChatAccount extends TCPAccount {
   @notifyChangedProperty
   storage: ChatAccountStorage;
 
-  readonly persons = new ArrayColl<ChatPersonUID>();
+  /** A list of all chat rooms that the user has open.
+   * This includes both 1:1 chats with persons (key is ChatPersonUID),
+   * as well as chat rooms with multiple people (key is Group).
+   *
+   * This list is persisted across restarts. */
   readonly rooms = new MapColl<ChatPersonUID | Group, ChatRoom>;
-  /** Contacts of this chat account which should *not* appear in the
-   * user's address books, e.g. group chat rooms and their members.
-   * Deliberately not in `appGlobal.addressbooks`, and not saved.
-   * In contrast, roster contacts (1:1 chats) go into the
-   * personal address book. */
-  readonly addressbook = newChatAddressbook();
+  /** A list of persons that the user has a 1:1 chat with.
+   * This list is persisted across restarts. */
+  readonly roster = new ArrayColl<ChatPersonUID>;
+
+  /** A cache of all chat contacts that the user currently sees in any
+   * room. This allows to re-use ChatPersonUID objects when
+   * the same contact appears in multiple rooms at the same time.
+   * Accessed via `getPersonUID()`
+   *
+   * This list is not persisted.
+   * key = userID, e.g. jid for XMPP
+   * value = WeakRef of ChatPersonUID, or null when no longer in use.
+   */
+  protected readonly allPersonsCached = new MapColl<string, WeakRef<ChatPersonUID>>();
 
   @notifyChangedProperty
   isOnline = false;
@@ -43,25 +52,27 @@ export class ChatAccount extends TCPAccount {
     return new ChatRoom(this);
   }
 
-  /** Gets the contact for this user ID in this account's own
-   * address book, e.g. a group chat room member.
-   * The same person is reused across rooms, so that one can see
-   * which rooms a person is in.
+  /** Protocols override this
+   * Accessed via `getPersonUID()`
+   * @returns Protocol-specific `ChatPersonUID` subclass, e.g. `MatrixPerson` or `WhatsAppContact`. */
+  protected newPersonUID(userID: string, name?: string): ChatPersonUID {
+    return new ChatPersonUID(this.protocol, userID, name);
+  }
+
+  /** The chat contact for this user ID, reused across all rooms of this account
+   * (cached in `allPersonsCached`), so one can see which rooms a contact is in.
    * @param userID e.g. the JID
-   * @param name Used only when the person is not known yet */
-  getPerson(userID: string, name?: string): Person {
-    let person =
-      appGlobal.persons.find(p =>
-        p.chatAccounts.some(e => e.value == userID)) ??
-      this.addressbook.persons.find(p =>
-        p.chatAccounts.some(e => e.value == userID));
-    if (person) {
-      return person;
+   * @param name Used only when the contact is not known yet */
+  getPersonUID(userID: string, name?: string): ChatPersonUID {
+    let cached = this.allPersonsCached.get(userID)?.deref();
+    if (cached) {
+      if (!cached.name && name) {
+        cached.name = name;
+      }
+      return cached;
     }
-    person = this.addressbook.newPerson();
-    person.name = name ?? userID;
-    person.chatAccounts.add(new ContactEntry(userID, null, this.protocol));
-    this.addressbook.persons.add(person);
+    let person = this.newPersonUID(userID, name);
+    this.allPersonsCached.set(userID, new WeakRef(person));
     return person;
   }
 
@@ -82,13 +93,6 @@ export class ChatAccount extends TCPAccount {
       appGlobal.me.name = this.realname;
     }
   }
-}
-
-function newChatAddressbook(): Addressbook {
-  let addressbook = new Addressbook();
-  addressbook.name = "Chat contacts";
-  addressbook.storage = new DummyAddressbookStorage();
-  return addressbook;
 }
 
 export interface ChatAccountStorage {

@@ -70,7 +70,7 @@ test.skipIf(!Database)("Login, roster, message history, send, live message, then
   expect(account.dbID).toBeTruthy();
 
   // Roster
-  expect(account.roster.size).toBe(2);
+  expect(account.roster.length).toBe(2);
   let alicePerson = account.getExistingPerson(kAlice);
   expect(alicePerson?.name).toBe("Alice Test");
   expect(appGlobal.personalAddressbook.persons.find(p => p.name == "Alice Test")).toBeTruthy();
@@ -192,10 +192,10 @@ test("Login and sync without local DB", { timeout: 30000 }, async () => {
   appGlobal.chatAccounts.add(account);
   await account.login(true);
   expect(account.isLoggedIn).toBe(true);
-  expect(account.roster.size).toBe(2);
+  expect(account.roster.length).toBe(2);
   let aliceChat = account.getExistingChat(kAlice) as XMPP1to1Chat;
   await aliceChat.listMessages();
-  expect(aliceChat.messages.length).toBe(server.archives.get(kAlice).length);
+  expect(aliceChat.messages.length).toBe(server.archives.get(kAlice)!.length);
   expect(aliceChat.syncState).toBeTruthy();
   expect(aliceChat.lastMessage).toBeTruthy();
   await account.logout();

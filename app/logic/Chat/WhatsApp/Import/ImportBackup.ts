@@ -4,6 +4,7 @@ import { ChatMessage, type RoomMessage } from "../../Message";
 import { SQLChatMessage } from "../../SQL/SQLChatMessage";
 import { getDatabase } from "../../SQL/SQLDatabase";
 import { ContactEntry, Person } from "../../../Abstract/Person";
+import { WhatsAppContact } from "../WhatsAppContact";
 import { Group } from "../../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../../Abstract/Attachment";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -175,12 +176,17 @@ export class WhatsAppBackupImport {
         this.account.rooms.set(group, room);
       }
       room.name = group.name;
+      room.members.replaceAll(group.participants.contents.map(person => this.contactForPerson(person)));
     } else if (!room) {
-      let person = await this.getOrCreatePerson(jid);
+      let contact = await this.getOrCreateContact(jid);
       room = this.account.newRoom();
       room.id = jid;
-      room.contact = person as any;
-      this.account.rooms.set(person as any, room);
+      room.contact = contact;
+      room.members.replaceAll([contact]);
+      if (!this.account.roster.includes(contact)) {
+        this.account.roster.add(contact);
+      }
+      this.account.rooms.set(contact, room);
     }
     await room.save();
     await this.importMessages(room, chat.rowID, isGroup);
@@ -260,6 +266,25 @@ export class WhatsAppBackupImport {
     }
     this.personByJID.set(jid, person);
     return person;
+  }
+
+  /** The chat contact (`WhatsAppContact`) for a JID
+   * Linked to the addressbook `Person` that the import creates or reuses. */
+  protected async getOrCreateContact(jid: string): Promise<WhatsAppContact> {
+    let person = await this.getOrCreatePerson(jid);
+    return this.contactForPerson(person, jid);
+  }
+
+  /** @returns an addressbook `Person` as a `WhatsAppContact` */
+  protected contactForPerson(person: Person, jid?: string): WhatsAppContact {
+    jid ??= person.chatAccounts.find(e => e.protocol == "whatsapp")?.value;
+    if (!jid) {
+      return null;
+    }
+    let contact = this.account.getPersonUID(jid, person.name);
+    contact.person = person;
+    contact.picture ??= person.picture;
+    return contact;
   }
 
   protected displayName(jid: string): string {
@@ -357,7 +382,7 @@ export class WhatsAppBackupImport {
     if (!row.fromMe && isGroup && row.senderJidRowID) {
       let senderJID = this.jidByRowID.get(row.senderJidRowID);
       if (senderJID) {
-        msg.contact = await this.getOrCreatePerson(senderJID);
+        msg.contact = await this.getOrCreateContact(senderJID);
       }
     }
     msg.sent = new Date(row.sentTime || row.receivedTime || Date.now());
@@ -418,21 +443,18 @@ export class WhatsAppBackupImport {
         if (!msg || !row.reaction) {
           continue;
         }
-        let person: Person;
+        let person: WhatsAppContact;
         let jid = this.jidByRowID.get(row.senderJidRowID);
         if (row.fromMe) {
-          if (!appGlobal.me?.dbID) {
-            continue;
-          }
-          person = appGlobal.me;
+          person = await this.account.getOwnContact();
         } else if (jid) {
-          person = await this.getOrCreatePerson(jid);
-        } else if (msg.to.contact instanceof Person) {
+          person = await this.getOrCreateContact(jid);
+        } else if (msg.to.contact instanceof WhatsAppContact) {
           person = msg.to.contact; // 1:1 chats omit the sender
         } else {
           continue;
         }
-        msg.reactions.set(person as any, row.reaction);
+        msg.reactions.set(person, row.reaction);
         changed.add(msg);
       } catch (ex) {
         this.account.errorCallback(ex);

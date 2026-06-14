@@ -1,10 +1,7 @@
 import { ChatRoom } from "../ChatRoom";
 import type { ChatAccount } from "../ChatAccount";
-import type { Account } from "../../Abstract/Account";
-import { Person } from "../../Abstract/Person";
-import { ContactBase } from "../../Abstract/Contact";
+import { ChatPersonUID } from "../ChatPersonUID";
 import { Group } from "../../Abstract/Group";
-import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
 import { SQLGroup } from "../../Contacts/SQL/SQLGroup";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
@@ -17,25 +14,24 @@ export class SQLChatRoom extends ChatRoom {
   static async save(chat: ChatRoom) {
     assert(chat.account, "Need chat account to save chat");
     assert(chat.account?.dbID, "Need chat account DB ID to save chat");
-    let contactID: number | null = null;
-    if (chat.contact instanceof ContactBase) {
-      let contact = chat.contact;
-      // Don't save room members in the contacts DB, we save authors in each message
-      if (!contact.dbID && contact.addressbook?.dbID) {
-        if (contact instanceof Person) {
-          await SQLPerson.save(contact);
-        } else if (contact instanceof Group) {
-          await SQLGroup.save(contact);
-        }
+    // For a group, the saved `Group` in the contacts DB (rare).
+    // For a 1:1, the address-book `Person` the contact resolved to, if any.
+    let personID: number | null = null;
+    if (chat.contact instanceof Group) {
+      let group = chat.contact;
+      if (!group.dbID && group.addressbook?.dbID) {
+        await SQLGroup.save(group);
       }
-      contactID = contact.dbID ?? null; // null = not in the contacts DB
+      personID = group.dbID ?? null;
+    } else if (chat.contact instanceof ChatPersonUID) {
+      personID = chat.contact.person?.dbID ?? null;
     }
 
     if (!chat.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
           id
-        FROM chat
+        FROM chatRoom
         WHERE
           idStr = ${chat.id} AND
           accountID = ${chat.account.dbID}
@@ -44,72 +40,111 @@ export class SQLChatRoom extends ChatRoom {
         chat.dbID = existing.id;
       }
     }
-    // contactID alone is ambiguous, because Person and Group have separate ID spaces
+    // personID alone is ambiguous, because Person and Group have separate ID spaces
     let jsonStr = JSON.stringify({
       contactType: chat.contact instanceof Group ? "group" : "person",
     });
-    let membersJSON = SQLChatRoom.saveMembers(chat);
     if (!chat.dbID) {
       let insert = await (await getDatabase()).run(sql`
-        INSERT INTO chat (
-          accountID, idStr, name, contactID, syncState, json, members
+        INSERT INTO chatRoom (
+          accountID, idStr, name, personID, syncState, json
         ) VALUES(
-          ${chat.account.dbID}, ${chat.id}, ${chat.name}, ${contactID}, ${chat.syncState}, ${jsonStr}, ${membersJSON}
+          ${chat.account.dbID}, ${chat.id}, ${chat.name}, ${personID}, ${chat.syncState}, ${jsonStr}
         )`);
       chat.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
-        UPDATE chat SET
+        UPDATE chatRoom SET
           idStr = ${chat.id},
           name = ${chat.name},
-          contactID = ${contactID},
+          personID = ${personID},
           syncState = ${chat.syncState},
-          json = ${jsonStr},
-          members = ${membersJSON}
+          json = ${jsonStr}
         WHERE id = ${chat.dbID}
         `);
     }
+    // A 1:1 room's contact must also be a member, so it persists in chatContact
+    // and `read()` can reconstruct the room (which needs `members.first`). The
+    // protocols set `members` via `listMembers()`, but room creation
+    // (getNewChat / getOrCreateRoom) saves before that runs.
+    if (chat.contact instanceof ChatPersonUID && !chat.members.includes(chat.contact)) {
+      chat.members.add(chat.contact);
+    }
+    await SQLChatRoom.saveMembers(chat);
   }
 
-  /** The group members, with the user ID (e.g. JID) from
-   * the contact entry for the chat protocol */
-  protected static saveMembers(chat: ChatRoom): string | null {
-    if (!(chat.contact instanceof Group)) {
-      return null;
+  /** Room members are deliberately not in the contacts DB, to not pollute the user's addressbook */
+  protected static async saveMembers(chat: ChatRoom): Promise<void> {
+    let db = await getDatabase();
+    let existingRows = await db.all(sql`
+      SELECT id, idStr, name, personID, avatarURL FROM chatContact WHERE chatRoomID = ${chat.dbID}
+      `) as any[];
+    let existingByID = new Map<string, any>(existingRows.map(row => [row.idStr, row]));
+    for (let member of chat.members) {
+      let idStr = member.chatID;
+      if (!idStr) {
+        continue;
+      }
+      let name = member.name ?? idStr;
+      let personID = member.person?.dbID ?? null;
+      let avatarURL = member.picture ?? null;
+      let existing = existingByID.get(idStr);
+      if (existing) {
+        existingByID.delete(idStr);
+        if (existing.name != name || existing.personID != personID || existing.avatarURL != avatarURL) {
+          await db.run(sql`
+            UPDATE chatContact SET
+              name = ${name}, personID = ${personID}, avatarURL = ${avatarURL}
+            WHERE id = ${existing.id}
+            `);
+        }
+      } else {
+        await db.run(sql`
+          INSERT INTO chatContact (
+            chatRoomID, idStr, name, personID, avatarURL
+          ) VALUES (
+            ${chat.dbID}, ${idStr}, ${name}, ${personID}, ${avatarURL}
+          )`);
+      }
     }
-    let members = chat.contact.participants.contents.map(person => ({
-      name: person.name,
-      userID: person.chatAccounts.find(e => e.protocol == chat.account.protocol)?.value ??
-        person.chatAccounts.first?.value ?? null,
-    })).filter(p => p.userID);
-    return JSON.stringify(members, null, 2);
+    let goneIDs = [...existingByID.values()].map(row => row.id); // members that left
+    if (goneIDs.length) { // `IN ()` would be a SQLite syntax error
+      await db.run(sql`DELETE FROM chatContact WHERE id IN ${goneIDs}`);
+    }
   }
 
-  /** Re-creates the group members in the chat account's own address book.
-   * The same person is reused across rooms. */
-  protected static readMembers(chat: ChatRoom, membersJSON: string | null): void {
-    if (!(chat.contact instanceof Group) || chat.contact.participants.hasItems) {
-      return;
-    }
+  protected static async readMembers(chat: ChatRoom): Promise<void> {
     let account = chat.account as ChatAccount;
-    let members = sanitize.array(sanitize.json(membersJSON, []), []) as any[];
-    for (let member of members) {
+    let rows = await (await getDatabase()).all(sql`
+      SELECT idStr, name, personID, avatarURL FROM chatContact WHERE chatRoomID = ${chat.dbID}
+      `) as any[];
+    let members = new ArrayColl<ChatPersonUID>();
+    for (let row of rows) {
       try {
-        let userID = sanitize.nonemptystring(member.userID);
-        let name = sanitize.label(member.name, null);
-        let person = account.getPerson(userID, name);
-        chat.contact.participants.add(person);
+        let userID = sanitize.nonemptystring(row.idStr);
+        let name = sanitize.label(row.name, null);
+        let member = account.getPersonUID(userID, name);
+        let avatarURL = sanitize.string(row.avatarURL, null);
+        if (avatarURL) {
+          member.picture ??= avatarURL;
+        }
+        let personID = sanitize.integer(row.personID, null);
+        if (personID) {
+          member.person ??= appGlobal.persons.find(p => p.dbID == personID);
+        }
+        members.add(member);
       } catch (ex) {
         chat.account.errorCallback(ex);
       }
     }
+    chat.members.replaceAll(members);
   }
 
   /** Also deletes all messages in this chat */
   static async deleteIt(chat: ChatRoom) {
     assert(chat.dbID, "Need chat DB ID to delete");
     await (await getDatabase()).run(sql`
-      DELETE FROM chat
+      DELETE FROM chatRoom
       WHERE id = ${chat.dbID}
       `);
   }
@@ -119,8 +154,8 @@ export class SQLChatRoom extends ChatRoom {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
-          accountID, idStr, name, contactID, syncState, json, members
-        FROM chat
+          accountID, idStr, name, personID, syncState, json
+        FROM chatRoom
         WHERE id = ${dbID}
         `) as any;
     }
@@ -128,27 +163,35 @@ export class SQLChatRoom extends ChatRoom {
     chat.id = sanitize.string(row.idStr);
     chat.syncState = sanitize.string(row.syncState, null);
     let accountID = sanitize.integer(row.accountID);
-    chat.account = appGlobal.chatAccounts.find(acc => acc.dbID == accountID) as any as Account;
-    assert(chat.account, `Account ${accountID} not yet loaded`);
+    let account = appGlobal.chatAccounts.find(acc => acc.dbID == accountID);
+    assert(account, `Account ${accountID} not yet loaded`);
+    chat.account = account;
     let json = sanitize.json(row.json, {}) as any;
-    let contactID = sanitize.integer(row.contactID, null);
+    let personID = sanitize.integer(row.personID, null);
+    await SQLChatRoom.readMembers(chat);
     if (json.contactType == "group") {
-      // A saved group (contactID set) is loaded from the contacts DB.
-      // A group chat room kept only in the chat account's own address book
-      // (contactID null) is re-created and its members restored.
-      // TODO Fix data model
-      chat.contact = (contactID ? findGroup(contactID) ?? await loadGroup(contactID) : null);
+      // An addressbook group (personID set) is loaded from the contacts DB.
+      // Most ChatRooms with multiple participants get a transient `Group` with name/avatar
+      // Its members live in `chat.members`, not `group.participants`.
+      chat.contact = (personID ? findGroup(personID) ?? await loadGroup(personID) : null);
       if (!chat.contact) {
-        let group = chat.account.addressbook.newGroup();
+        let group = new Group();
         group.name = sanitize.label(row.name, null) ?? chat.id;
         chat.contact = group;
       }
-      SQLChatRoom.readMembers(chat, sanitize.string(row.members, null));
     } else {
-      chat.contact = appGlobal.persons.find(p => p.dbID == contactID)
-        ?? await loadPerson(contactID);
+      // 1:1: the single member is the chat partner, and a roster contact. Rooms
+      // saved before the member was persisted fall back to a contact keyed by the
+      // room ID (the partner's protocol ID for a 1:1 chat), instead of being lost.
+      let member = chat.members.first ?? account.getPersonUID(chat.id);
+      if (chat.members.isEmpty) {
+        chat.members.add(member);
+      }
+      chat.contact = member;
+      if (!account.roster.includes(member)) {
+        account.roster.add(member);
+      }
     }
-    assert(chat.contact, "Contact not found");
     chat.name = sanitize.label(row.name, chat.contact.name);
     return chat;
   }
@@ -157,11 +200,10 @@ export class SQLChatRoom extends ChatRoom {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id,
-        accountID, idStr, name, contactID, syncState, json, members
-      FROM chat
+        accountID, idStr, name, personID, syncState, json
+      FROM chatRoom
       WHERE accountID = ${account.dbID}
       `) as any;
-    let newChats = new ArrayColl<ChatRoom>();
     for (let row of rows) {
       try {
         let chat = account.rooms.find(chat => chat.dbID == row.id);
@@ -171,13 +213,12 @@ export class SQLChatRoom extends ChatRoom {
           let json = sanitize.json(row.json, {}) as any;
           chat = account.newRoom(json.contactType == "group");
           await SQLChatRoom.read(row.id, chat, row);
-          newChats.add(chat);
+          account.rooms.set(chat.contact, chat);
         }
       } catch (ex) {
         account.errorCallback(ex);
       }
     }
-    account.rooms.addAll(newChats);
   }
 }
 
@@ -189,26 +230,6 @@ function findGroup(dbID: number): Group | null {
     }
   }
   return null;
-}
-
-/** Loads a single person from the DB by its dbID, and registers it in its
- * addressbook so it shows up in `appGlobal.persons` (and the later bulk load
- * dedups against it). Returns null if there is no such person. */
-async function loadPerson(dbID: number): Promise<Person | null> {
-  if (!dbID) {
-    return null;
-  }
-  try {
-    let person = new Person();
-    await SQLPerson.read(dbID, person);
-    let addressbook = person.addressbook;
-    if (addressbook && !addressbook.persons.some(p => p.dbID == dbID)) {
-      addressbook.persons.add(person);
-    }
-    return person;
-  } catch (ex) {
-    return null;
-  }
 }
 
 async function loadGroup(dbID: number): Promise<Group | null> {

@@ -49,15 +49,15 @@ test.skipIf(!kServer)("Real server: connection works, wrong password fails clean
 test.skipIf(!kJID || !kPassword)("Real server: login, roster and message history", { timeout: 120000 }, async () => {
   let account = new XMPPAccount();
   account.storage = newChatStorage();
-  account.name = account.username = kJID;
-  account.password = kPassword;
-  account.url = kURL;
+  account.name = account.username = kJID!;
+  account.password = kPassword!;
+  account.url = kURL!;
   appGlobal.chatAccounts.add(account);
   await account.login(true);
   expect(account.isLoggedIn).toBe(true);
-  console.log(`Roster of ${kJID}: ${account.roster.size} contacts`);
-  for (let jid of account.roster.keys()) {
-    console.log(` - ${jid}: ${account.roster.get(jid).name}`);
+  console.log(`Roster of ${kJID}: ${account.roster.length} contacts`);
+  for (let person of account.roster) {
+    console.log(` - ${person.chatID}: ${person.name}`);
   }
   for (let chatRoom of account.rooms.contents) {
     await chatRoom.listMessages();

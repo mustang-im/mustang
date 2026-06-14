@@ -365,13 +365,14 @@ class FakeMailIdentity extends MailIdentity {
 export class FakeChatAccount extends ChatAccount {
   me: Person;
   msgCount: number;
+  readonly persons: Collection<Person>;
   constructor(persons: Collection<Person>, me: Person, msgCount = 20) {
     super();
     this.name = "Test chat 1";
     this.realname = me.name;
     this.msgCount = msgCount;
     this.me = me;
-    this.persons.addAll(persons);
+    this.persons = persons;
     this.storage = new DummyChatStorage();
   }
   async login(interactive: boolean): Promise<void> {
@@ -384,8 +385,12 @@ export class FakeChatAccount extends ChatAccount {
     for (let person of this.persons) {
       let room = this.newRoom() as FakeChat;
       room.id = person.id + "-" + faker.string.uuid();
-      room.contact = person;
-      this.rooms.set(person, room);
+      let contact = this.getPersonUID(person.id, person.name);
+      contact.person = person;
+      room.contact = contact;
+      room.members.replaceAll([contact]);
+      this.roster.add(contact);
+      this.rooms.set(contact, room);
     }
   }
   newRoom(): FakeChat {

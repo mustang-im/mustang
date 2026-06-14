@@ -7,12 +7,15 @@ import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
 import { ChatMessage, DeliveryStatus } from "../Message";
 import { assert } from "../../util/util";
-import { ContactEntry } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ArrayColl } from "svelte-collections";
 
 export class GraphChatRoom extends ChatRoom {
   declare account: GraphChatAccount;
+  declare readonly members: ArrayColl<GraphChatPerson>;
+  declare contact: GraphChatPerson | Group;
+
   info: TGraphChat;
   lastReadTime: Date;
   constructor(account: GraphChatAccount) {
@@ -34,22 +37,26 @@ export class GraphChatRoom extends ChatRoom {
   async listMembers(): Promise<void> {
     assert(this.info, "call fromGraph() first");
     let membersJSON = await this.account.account.graphGetAll<TGraphChatMember>(this.path + "/members");
-    this.members.clear();
+    let members = new ArrayColl<GraphChatPerson>();
     for (let memberJSON of membersJSON) {
-      let person = new GraphChatPerson();
-      person.id = sanitize.nonemptystring(memberJSON.id);
-      person.name = sanitize.label(memberJSON.displayName, null);
+      let id = sanitize.nonemptystring(memberJSON.id);
+      let name = sanitize.label(memberJSON.displayName, null);
+      let person = this.account.getPersonUID(id, name);
       if (memberJSON.email) {
-        person.emailAddresses.add(new ContactEntry(sanitize.emailAddress(memberJSON.email), "main"));
+        person.emailAddress = sanitize.emailAddress(memberJSON.email);
       }
-      this.members.add(person);
+      members.add(person);
     }
-    if (this.info.chatType == "oneOnOne") {
+    this.members.replaceAll(members.contents);
+    if (this.info.chatType == "oneOnOne" && this.members.hasItems) {
       this.contact = this.members.first;
+      if (this.contact instanceof GraphChatPerson && !this.account.roster.includes(this.contact)) {
+        this.account.roster.add(this.contact);
+      }
     } else {
       let group = new Group();
-      group.participants.addAll(this.members);
-      group.name = sanitize.label(this.info.topic, null) ?? group.participants.contents.map(p => p.name?.split(" ")[0] ?? "*").join(", ").substring(0, 30);
+      // fall back to list of first names
+      group.name = sanitize.label(this.info.topic, null) ?? members.contents.map(p => p.name?.split(" ")[0] ?? "*").join(", ").substring(0, 30);
       this.contact = group;
     }
   }

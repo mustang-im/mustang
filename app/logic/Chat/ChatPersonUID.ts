@@ -17,7 +17,10 @@ export class ChatPersonUID extends PersonUID {
     super();
     this.protocol = protocol;
     this.chatID = chatID;
-    this.name = name;
+    // Derive a display name from the chat ID (e.g. "Alice" from
+    // "alice@example.com") when none is given, so the UI never shows a bare JID.
+    // A real name from the server (roster, vCard, push name) overrides it later.
+    this.name = name || nameFromChatID(chatID);
   }
 
   findPerson() {

@@ -33,7 +33,7 @@ test("connects, sends bytes, receives bytes, and reports a server close", async 
   let peer: net.Socket | null = null;
   let server = await listen(socket => {
     peer = socket;
-    socket.on("data", data => {
+    socket.on("data", (data: Buffer) => {
       received.push(...data);
       socket.write(Uint8Array.from([0xAA, 0xBB, 0xCC]));
     });

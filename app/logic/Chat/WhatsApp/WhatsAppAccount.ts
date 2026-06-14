@@ -16,13 +16,13 @@ import { getLoginPayload } from "./clientInfo";
 import { decodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
 import { WANode } from "./Binary/WANode";
 import { JID, kServerUser } from "./Binary/JID";
-import { phoneNumbersMatch } from "./Import/ImportBackup";
 import { WhatsAppContact } from "./WhatsAppContact";
 import { WhatsAppMeetAccount } from "../../Meet/WhatsApp/WhatsAppMeetAccount";
-import { ContactEntry, Person } from "../../Abstract/Person";
+import { ChatPersonUID } from "../ChatPersonUID";
 import { Group } from "../../Abstract/Group";
 import { appGlobal } from "../../app";
 import { gt } from "../../../l10n/l10n";
+import type { ArrayColl, MapColl } from "svelte-collections";
 
 /**
  * A WhatsApp account, paired as a companion device of the user's own phone.
@@ -40,6 +40,10 @@ import { gt } from "../../../l10n/l10n";
  */
 export class WhatsAppAccount extends ChatAccount {
   readonly protocol: string = "whatsapp";
+  declare readonly rooms: MapColl<WhatsAppContact | Group, WhatsAppChatRoom>;
+  declare readonly roster: ArrayColl<WhatsAppContact>;
+  declare protected readonly allPersonsCached: MapColl<string, WeakRef<WhatsAppContact>>;
+  declare getPersonUID: (userID: string, name?: string) => WhatsAppContact;
 
   /** Set `WhatsAppAccount.enableDebug = true` to trace the stanzas we send and
    * receive to the console (off by default; errors are always logged). */
@@ -71,8 +75,8 @@ export class WhatsAppAccount extends ChatAccount {
    * stanza. Modern accounts address us and our contacts by LID, so messages we
    * sent from the phone arrive `from` this — used to recognise them as outgoing. */
   ownLID: JID | null = null;
-  /** Cached address book person for the account owner ({@link getOwnContact}). */
-  protected ownContact: Person | null = null;
+  /** Cached user ID for the account owner {@link getOwnContact} */
+  protected ownContact: WhatsAppContact | null = null;
   connection: WhatsAppConnection | null = null;
   /** Voice/video calls run through this dependent Meet account. */
   meetAccount: WhatsAppMeetAccount | null = null;
@@ -544,18 +548,20 @@ export class WhatsAppAccount extends ChatAccount {
     }
     let contact = chat.isGroup
       ? await this.getOrCreateGroup(chat, nameHint)
-      : await this.getOrCreatePerson(chat, nameHint);
+      : this.getContact(chat, nameHint);
     room = this.roomForChat(chat); // re-check: a concurrent message may have created it
     if (room) {
       return room;
     }
     room = this.newRoom();
     room.id = chat.toNonDevice().toString();
-    room.contact = contact as any;
+    room.contact = contact;
     if (chat.isGroup) {
       room.name = contact.name;
+    } else if (contact instanceof ChatPersonUID && !this.roster.includes(contact)) {
+      this.roster.add(contact);
     }
-    this.rooms.set(contact as any, room);
+    this.rooms.set(contact, room);
     await room.save();
     return room;
   }
@@ -564,57 +570,28 @@ export class WhatsAppAccount extends ChatAccount {
    * address book. Matches the importer's keys (WhatsApp ID, then phone number)
    * so live and imported chats share the same contacts.
    * @param pushName the sender's display name from the stanza, if known */
-  protected async getOrCreatePerson(jid: JID, pushName?: string): Promise<Person> {
-    let address = jid.toNonDevice().toString();
-    let phone = jid.server == kServerUser ? "+" + jid.user : null;
-    let person = appGlobal.persons.find(p =>
-      p.chatAccounts.some(e => e.protocol == "whatsapp" && jidUser(e.value) == jid.user));
-    if (!person && phone) {
-      person = appGlobal.persons.find(p => p.phoneNumbers.some(e => phoneNumbersMatch(e.value, phone)));
-    }
-    let changed = false;
-    let linkedWhatsApp = false;
-    if (!person) {
-      person = appGlobal.personalAddressbook.newPerson();
-      person.name = pushName || phone || jid.user;
-      appGlobal.personalAddressbook.persons.add(person);
-      changed = true;
-    }
-    if (!person.chatAccounts.some(e => e.protocol == "whatsapp" && jidUser(e.value) == jid.user)) {
-      person.chatAccounts.add(new ContactEntry(address, "WhatsApp", "whatsapp"));
-      changed = true;
-      linkedWhatsApp = true;
-    }
-    if (phone && !person.phoneNumbers.some(e => phoneNumbersMatch(e.value, phone))) {
-      person.phoneNumbers.add(new ContactEntry(phone, "mobile", "tel"));
-      changed = true;
-    }
-    if (changed) {
-      await person.save();
-    }
-    if (linkedWhatsApp) {
-      // First time we know this person on WhatsApp — the bulk of these happen at
-      // pairing's first history sync, later it's the occasional brand-new contact.
-      // After this we only refetch on a `picture` notification, never on every
-      // restart (a user can have thousands of contacts; that would be a flood).
-      this.fetchContactProfile(person, jid).catch(ex => console.error("WhatsApp: contact profile fetch failed:", ex));
-    }
-    return person;
+  protected newPersonUID(userID: string, name?: string): WhatsAppContact {
+    return new WhatsAppContact(JID.parse(userID), name);
   }
 
-  /** Fetches a contact's profile picture, status and verified name and applies
-   * what's new, then saves. Async — the caller decides whether to await it or
-   * fire-and-forget with `.catch()`. No-ops offline or for groups (their metadata
-   * has its own, not-yet-wired path). */
-  async fetchContactProfile(person: Person, jid: JID): Promise<void> {
-    if (!this.connection || jid.isGroup) {
-      return;
+  /** The ChatPersonUID for a WhatsApp JID
+   * Fetches the profile (avatar, status, verified name) in the background.
+   * @param name the sender's display name from the stanza, if known */
+  getContact(jid: JID, name?: string): WhatsAppContact {
+    let address = jid.toNonDevice().toString();
+    let isNew = !this.allPersonsCached.get(address)?.deref();
+    let contact = this.getPersonUID(address, name) as WhatsAppContact;
+    if (name && !contact.verifiedName && contact.name != name) {
+      contact.name = name;
     }
-    let contact = new WhatsAppContact(jid);
-    await contact.fetch(this.connection);
-    if (contact.applyTo(person)) {
-      await person.save();
+    if (isNew && this.connection && !jid.isGroup) {
+      // Fetch avatar, status, verified name.
+      // Only on first sight of this contact, not on restart, otherwise we'd floor on startup.
+      // We only refetch the avatar on a `picture` notification.
+      contact.fetch(this.connection)
+        .catch(ex => console.error(ex));
     }
+    return contact;
   }
 
   /** Re-fetches one contact's avatar after a `picture` notification — they
@@ -623,34 +600,18 @@ export class WhatsAppAccount extends ChatAccount {
     if (!jid || !this.connection || jid.isGroup) {
       return;
     }
-    let person = this.findContact(jid);
-    if (!person) {
-      return; // a picture change for someone not in our address book
+    let contact = this.allPersonsCached.get(jid.toNonDevice().toString())?.deref() as WhatsAppContact | undefined;
+    if (!contact) {
+      return; // a picture change for someone we have no chat with
     }
-    let picture = await new WhatsAppContact(jid).fetchPicture(this.connection);
-    if (picture != person.picture) {
-      person.picture = picture;
-      await person.save();
-    }
+    await contact.fetchPicture(this.connection);
   }
 
-  /** The address book person we have for a WhatsApp JID, if any. */
-  protected findContact(jid: JID): Person | null {
-    return appGlobal.persons.find(p =>
-      p.chatAccounts.some(e => e.protocol == "whatsapp" && jidUser(e.value) == jid.user)) ?? null;
-  }
-
-  /** A persistable contact for the account owner — keyed by our own JID — used to
-   * attribute the messages we sent (from the phone or another device). Unlike
-   * `appGlobal.me`, this is a real address book person and so can be saved as a
-   * message's sender. */
-  async getOwnContact(): Promise<Person> {
+  /** The chat identity for the account owner — keyed by our own JID — used to
+   * attribute the messages we sent (from the phone or another device). */
+  async getOwnContact(): Promise<WhatsAppContact> {
     let jid = this.deviceJID ?? this.ownLID;
-    if (!jid) {
-      return appGlobal.me as any as Person; // unpaired (tests only); storage is a no-op there
-    }
-    this.ownContact ??= await this.getOrCreatePerson(jid.toNonDevice(), appGlobal.me?.name);
-    return this.ownContact;
+    return this.ownContact ??= this.getContact(jid.toNonDevice(), appGlobal.me?.name);
   }
 
   /** Creates a placeholder group for a live group chat. The real name and
@@ -715,12 +676,6 @@ const kSessionSaveMs = 5 * 1000;
 
 /** How many recently-sent payloads to keep for re-sending on a retry receipt. */
 const kRecentSendsMax = 200;
-
-/** The user part (phone number digits) of a contact's stored WhatsApp value,
- * which may be a full JID or just a number. */
-function jidUser(value: string): string {
-  return JID.parse(value).user || value;
-}
 
 export class WhatsAppSetup {
   /** The 64-digit hexadecimal backup encryption key */

@@ -169,7 +169,7 @@ function setupAccount(): WhatsAppAccount {
   return account;
 }
 
-test("getOrCreatePerson fetches the profile on first link, applies it, and doesn't refetch", async () => {
+test("getContact fetches the profile on first link, onto the contact, and doesn't refetch", async () => {
   let account = setupAccount();
   let picture = new WANode("iq", { type: "result" },
     [new WANode("picture", { type: "preview", url: "https://pps.whatsapp.net/a.jpg" })]);
@@ -182,52 +182,52 @@ test("getOrCreatePerson fetches the profile on first link, applies it, and doesn
   } as any;
   stubHttp(new Uint8Array([7, 7, 7]));
 
-  // First message creates and links the contact, firing the (background) fetch.
+  // First message creates and caches the contact, firing the (background) fetch.
   let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice Push");
-  let person = room.contact as any as Person;
-  expect(person.name).toBe("Alice Push"); // push name initially
+  let contact = room.contact as WhatsAppContact;
+  expect(contact.name).toBe("Alice Push"); // push name initially
   await flush();
-  expect(person.notes).toBe("Busy"); // status applied
-  expect(person.picture).toMatch(/^data:image\/jpeg;base64,/); // avatar applied
+  expect(contact.status).toBe("Busy"); // status fetched onto the contact
+  expect(contact.picture).toMatch(/^data:image\/jpeg;base64,/); // avatar fetched
   let first = iqCount;
   expect(first).toBeGreaterThan(0);
 
-  // A later message from the same (already-linked) contact must not refetch.
+  // A later message from the same (already-cached) contact must not refetch.
   await account.getOrCreateRoom(JID.parse("491761111111:9@s.whatsapp.net"), "Alice Push");
   await flush();
   expect(iqCount).toBe(first);
 });
 
-test("getOrCreatePerson does not fetch when offline (no connection)", async () => {
+test("getContact does not fetch when offline (no connection)", async () => {
   let account = setupAccount(); // account.connection stays null
   let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice Push");
   await flush();
-  let person = room.contact as any as Person;
-  expect(person.notes).toBeFalsy();
-  expect(person.picture).toBeFalsy();
+  let contact = room.contact as WhatsAppContact;
+  expect(contact.status).toBeFalsy();
+  expect(contact.picture).toBeFalsy();
 });
 
 test("a 'picture' notification refetches only that contact's avatar", async () => {
   let account = setupAccount();
-  // A contact we already know, with an old avatar (as if loaded from disk).
-  let person = appGlobal.personalAddressbook.newPerson();
-  person.name = "Alice";
-  person.picture = "data:image/jpeg;base64,OLD";
-  person.chatAccounts.add(new ContactEntry(kAliceJID, "WhatsApp", "whatsapp"));
-  appGlobal.personalAddressbook.persons.add(person);
-
   let newPic = new WANode("iq", { type: "result" },
     [new WANode("picture", { type: "preview", url: "https://pps.whatsapp.net/new.jpg" })]);
   let iqCount = 0;
   account.connection = { async sendIQ() { iqCount++; return newPic; }, async sendNode() {} } as any;
   stubHttp(new Uint8Array([5, 5, 5]));
 
+  // A contact we already have a chat with, with an old avatar.
+  let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice");
+  await flush();
+  let contact = room.contact as WhatsAppContact;
+  contact.picture = "data:image/jpeg;base64,OLD";
+  iqCount = 0; // ignore the initial getContact fetch
+
   await (account as any).onNotification(
     new WANode("notification", { type: "picture", from: "491761111111:7@s.whatsapp.net", id: "n1" }));
   await flush();
   expect(iqCount).toBe(1); // one picture IQ, just for this contact
-  expect(person.picture).toMatch(/^data:image\/jpeg;base64,/);
-  expect(person.picture).not.toBe("data:image/jpeg;base64,OLD"); // replaced with the new avatar
+  expect(contact.picture).toMatch(/^data:image\/jpeg;base64,/);
+  expect(contact.picture).not.toBe("data:image/jpeg;base64,OLD"); // replaced with the new avatar
 });
 
 /** Lets the fire-and-forget contact fetch settle before we assert on its

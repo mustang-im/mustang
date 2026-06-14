@@ -4,24 +4,28 @@ import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage } from '../Message';
 import { IncomingCall, RoomEventKind } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
+import { ChatPersonUID } from '../ChatPersonUID';
 import { MatrixPerson } from './MatrixPerson';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
 import { assert } from '../../util/util';
-import { MapColl } from 'svelte-collections';
+import { ArrayColl, MapColl } from 'svelte-collections';
 import type { MatrixClient } from 'matrix-js-sdk';
 import type { MatrixCall, MatrixEvent, Room, RoomMember, UIAuthCallback } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
-  readonly rooms = new MapColl<MatrixPerson | Group, MatrixRoom>;
+  declare readonly rooms: MapColl<MatrixPerson | Group, MatrixRoom>;
+  declare readonly roster: ArrayColl<MatrixPerson>;
+  declare protected readonly allPersonsCached: MapColl<string, WeakRef<MatrixPerson>>;
+  declare getPersonUID: (userID: string, name?: string) => MatrixPerson;
+
   client: MatrixClient;
   baseURL = "https://matrix.org";
   username: string;
   password: string;
   deviceID: string;
   globalUserID: string;
-  static personsCache = new MapColl<string, MatrixPerson>();
 
   async loginOnly(interactive: boolean) {
     await super.login(interactive);
@@ -121,16 +125,29 @@ export class MatrixAccount extends ChatAccount {
     if (!this.globalUserID) {
       this.globalUserID = room.myUserId;
     }
-    let group = new Group();
-    group.name = room.name;
+    let members = new ArrayColl<MatrixPerson>();
     for (let member of room.getJoinedMembers()) {
-      group.participants.add(this.getMemberPerson(member));
+      members.add(this.getMemberPerson(member));
     }
-    let others = group.participants.filterOnce(person => person.id != this.globalUserID);
-    chatRoom.contact = others.length > 1
-      ? group
-      : others.first ?? group.participants.first;
-    this.rooms.set(chatRoom.contact, chatRoom);
+    // `members` excludes our own user.
+    let others = members.filterOnce(person => person.chatID != this.globalUserID);
+    chatRoom.members.replaceAll(others.contents);
+    if (others.length > 1) {
+      let group = new Group();
+      group.name = room.name;
+      chatRoom.contact = group;
+    } else if (others.first) { // 1:1 chat
+      let contact = others.first;
+      chatRoom.contact = contact;
+      if (contact && !this.roster.includes(contact)) {
+        this.roster.add(contact);
+      }
+    } else { // no other members (a room with only us, or an empty room)
+      let group = new Group();
+      group.name = room.name;
+      chatRoom.contact = group;
+    }
+    this.rooms.set(chatRoom.contact as MatrixPerson | Group, chatRoom);
 
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
@@ -150,18 +167,16 @@ export class MatrixAccount extends ChatAccount {
   getExistingRoom(roomID: string): MatrixRoom {
     return this.rooms.find(chat => chat.id == roomID);
   }
-  getExistingPerson(userId: string) {
-    return MatrixAccount.personsCache.get(userId);
-  }
   getMemberPerson(member: RoomMember): MatrixPerson {
-    let existing = this.getExistingPerson(member.userId);
-    if (existing) {
-      return existing;
+    let person = this.getPersonUID(member.userId, member.name) as MatrixPerson;
+    if (!person.picture) {
+      person.setAvatar(member, this);
     }
-    let person = new MatrixPerson(member.userId, member.name);
-    person.setAvatar(member, this);
-    MatrixAccount.personsCache.set(person.chatID, person);
     return person;
+  }
+
+  protected newPersonUID(userID: string, name?: string): MatrixPerson {
+    return new MatrixPerson(userID, name);
   }
   async createRoom(name: string) {
     // TODO create room on server

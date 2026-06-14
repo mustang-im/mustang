@@ -36,7 +36,7 @@ function setup(): WhatsAppAccount {
 
 /** Builds one conversation with `count` plain-text messages, ids `${prefix}N`. */
 function conversationWith(id: string, prefix: string, count: number) {
-  let messages = [];
+  let messages: any[] = [];
   for (let i = 0; i < count; i++) {
     messages.push({
       message: {
@@ -55,7 +55,7 @@ test("a FULL history dump imports all conversations and messages", async () => {
 
   // A large FULL blob: many conversations, many messages each — the shape a
   // phone pushes at link time when requireFullSync asked for the whole history.
-  let conversations = [];
+  let conversations: any[] = [];
   for (let c = 0; c < 30; c++) {
     conversations.push(conversationWith(`49176${1000000 + c}@s.whatsapp.net`, `c${c}-`, 20));
   }
@@ -87,7 +87,7 @@ test("one unparseable message does not abort the rest of its conversation", asyn
   let result = await account.historySync.importHistory(decodeHistorySync(blob), HistorySyncType.Full);
   expect(result.chats).toBe(1);
   expect(result.messages).toBe(2); // both good ones
-  let room = account.rooms.contents.find(r => r.id == kAliceJID);
+  let room = account.rooms.contents.find(r => r.id == kAliceJID)!;
   expect(room.messages.contents.find(m => m.text == "before")).toBeDefined();
   expect(room.messages.contents.find(m => m.text == "after")).toBeDefined();
 });
@@ -139,7 +139,7 @@ test("on-demand request: PeerDataOperationRequestMessage round-trips on the wire
   // The standalone sub-message also round-trips (field numbers isolated).
   let bare = decode(PeerDataOperationRequestMessage,
     encode(PeerDataOperationRequestMessage, original.protocolMessage.peerDataOperationRequestMessage));
-  expect(bare.historySyncOnDemandRequest.onDemandMsgCount).toBe(50);
+  expect(bare.historySyncOnDemandRequest!.onDemandMsgCount).toBe(50);
 });
 
 test("on-demand paging is gated off by default: pageOlderMessages does nothing", async () => {

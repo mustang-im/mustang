@@ -115,34 +115,29 @@ test.skipIf(!Database)("Group chat: join, members, history, send, live, restart"
   expect(room1.name).toBe("Fan Club");
   expect(room1.nick).toBe("testnick");
 
-  // Members, from the room presences, in the Group of the room
-  let group1 = room1.contact as Group;
-  expect(group1.participants.length).toBe(2);
+  // Members, from the room presences, tracked in the room
   expect(room1.memberByNick.size).toBe(2);
-  let alice = room1.memberByNick.get("alice");
+  let alice = room1.memberByNick.get("alice")!;
   expect(alice).toBe(account1.getExistingPerson(kAlice)); // real address disclosed: same contact as in the roster
-  expect(alice).toBe(account1.getPerson(kAlice)); // reused across rooms
-  expect(group1.participants.contains(alice)).toBe(true);
-  let anon = room1.memberByNick.get("anon");
-  expect(anon?.name).toBe("anon");
-  expect(group1.participants.contains(anon)).toBe(true);
+  expect(alice).toBe(account1.getPersonUID(kAlice)); // reused across rooms
+  let anon = room1.memberByNick.get("anon")!;
+  expect(anon.name).toBe("anon");
   await room1.listMembers();
   expect(room1.members.length).toBe(2);
-  // Unknown room members are in the chat account's own address book,
-  // and must not appear in the user's address books
-  expect(anon.addressbook).toBe(account1.addressbook);
-  expect(account1.addressbook.persons.contains(anon)).toBe(true);
-  expect(appGlobal.personalAddressbook.persons.contains(anon)).toBe(false);
-  expect(appGlobal.persons.contains(anon)).toBe(false);
+  expect(room1.members.contains(alice)).toBe(true);
+  expect(room1.members.contains(anon)).toBe(true);
+  // Unknown room members are chat-only contacts (ChatPersonUID), not linked to an
+  // address-book Person, so they never appear in the user's address books.
+  expect(anon.person).toBeUndefined();
 
   // History from the room archive
   await room1.listMessages();
   expect(room1.messages.length).toBe(3);
   let fromAlice = room1.messages.find(msg => msg.id == "msg-g1") as ChatMessage;
   expect(fromAlice.from).toBe(alice); // the sender; `contact` is the room's Group
-  expect(fromAlice.contact).toBe(group1);
+  expect(fromAlice.contact).toBe(room1.contact);
   expect(fromAlice.outgoing).toBe(false);
-  let fromMe = room1.messages.find(msg => msg.id == "msg-g3");
+  let fromMe = room1.messages.find(msg => msg.id == "msg-g3")!;
   expect(fromMe.outgoing).toBe(true);
   expect(room1.lastMessage?.text).toBe("Hi all");
   expect(room1.syncState).toBe("g3");
@@ -198,14 +193,13 @@ test.skipIf(!Database)("Group chat: join, members, history, send, live, restart"
   expect(room2.name).toBe("Fan Club");
   expect(room2.syncState).toBe(room1.syncState);
   // The members restored from the DB are merged with the room presences
-  let group2 = room2.contact as Group;
   expect(room2.memberByNick.size).toBe(2);
-  expect(group2.participants.length).toBe(2);
-  let alice2 = group2.participants.find(p => p.chatAccounts.some(e => e.value == kAlice));
-  expect(alice2?.name).toBe("Alice Test"); // the roster contact, restored from the contacts DB
+  expect(room2.members.length).toBe(2);
+  let alice2 = room2.members.find(m => m.chatID == kAlice)!;
+  expect(alice2.name).toBe("Alice Test"); // the roster contact, restored from the contacts DB
   expect(room2.memberByNick.get("alice")).toBe(alice2); // no duplicate member
-  expect(alice2).toBe(account2.getPerson(kAlice)); // reused across rooms
-  expect(appGlobal.persons.contains(room2.memberByNick.get("anon"))).toBe(false);
+  expect(alice2).toBe(account2.getPersonUID(kAlice)); // reused across rooms
+  expect(room2.memberByNick.get("anon")!.person).toBeUndefined();
 
   // Messages come from our DB, only newer ones from the room archive
   await room2.listMessages();

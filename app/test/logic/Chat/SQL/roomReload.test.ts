@@ -9,6 +9,7 @@ import { SQLGroup } from "../../../../logic/Contacts/SQL/SQLGroup";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
+import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { Group } from "../../../../logic/Abstract/Group";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -72,9 +73,12 @@ test("rooms whose contacts aren't in memory yet are loaded from the DB, not drop
   account.dbID = accRow.lastInsertRowid;
   appGlobal.chatAccounts.add(account);
 
+  let aliceContact = account.getPersonUID(kAliceJID, alice.name);
+  aliceContact.person = alice;
   let dm = account.newRoom();
   dm.id = kAliceJID;
-  dm.contact = alice;
+  dm.contact = aliceContact;
+  dm.members.add(aliceContact);
   await SQLChatRoom.save(dm);
 
   let groupRoom = account.newRoom();
@@ -92,17 +96,17 @@ test("rooms whose contacts aren't in memory yet are loaded from the DB, not drop
 
   // Both rooms came back, with their contacts loaded from the DB.
   expect(account.rooms.length).toBe(2);
-  let dmLoaded = account.rooms.contents.find(room => room.id == kAliceJID);
+  let dmLoaded = account.rooms.contents.find(room => room.id == kAliceJID)!;
   expect(dmLoaded).toBeDefined();
-  expect(dmLoaded.contact).toBeInstanceOf(Person);
+  expect(dmLoaded.contact).toBeInstanceOf(ChatPersonUID); // a 1:1's contact is its member
   expect(dmLoaded.contact.name).toBe("Alice Example");
-  let groupLoaded = account.rooms.contents.find(room => room.id == kGroupJID);
+  let groupLoaded = account.rooms.contents.find(room => room.id == kGroupJID)!;
   expect(groupLoaded).toBeDefined();
   expect(groupLoaded.contact).toBeInstanceOf(Group);
   expect(groupLoaded.name).toBe("Project Group");
 
-  // The loaded contacts were registered back into the addressbook (so they
-  // appear in appGlobal.persons and a later bulk load dedups against them).
-  expect(addressbook.persons.some(person => person.dbID == alice.dbID)).toBe(true);
+  // The loaded group was registered back into the addressbook (so a later bulk
+  // load dedups against it). A 1:1 contact is a chat-only ChatPersonUID, not an
+  // address-book Person, so it is not re-added there.
   expect(addressbook.groups.some(g => g.dbID == group.dbID)).toBe(true);
 });

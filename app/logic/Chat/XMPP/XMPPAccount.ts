@@ -3,12 +3,11 @@ import type { ChatRoom } from '../ChatRoom';
 import { XMPPChat, Encryption } from './XMPPChat';
 import { XMPP1to1Chat } from './XMPP1to1Chat';
 import { XMPPGroupChat } from './XMPPGroupChat';
-import { ChatMessage } from '../Message';
+import { XMPPPerson } from './XMPPPerson';
 import { OMEMO } from './OMEMO/OMEMO';
 import { XMPPMedia } from './XMPPMedia';
 import { registerXMPPExtensions } from './XMPPStanzaExtensions';
-import type { Group } from '../../Abstract/Group';
-import { Person } from '../../Abstract/Person';
+import { Group } from '../../Abstract/Group';
 import { ChatPersonUID, nameFromChatID } from '../ChatPersonUID';
 import { ConnectError, LoginError } from '../../Abstract/Account';
 import { kImageMimeTypes } from '../../Files/FileType/MIMETypes';
@@ -20,14 +19,16 @@ import { NS_OMEMO_AXOLOTL_DEVICELIST } from 'stanza/Namespaces';
 import { Buffer } from 'stanza/platform';
 import { sha1 } from '@noble/hashes/legacy.js';
 import { bytesToHex } from '@noble/curves/utils.js';
-import { MapColl } from 'svelte-collections';
+import { ArrayColl, MapColl } from 'svelte-collections';
 import type * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
-  readonly rooms = new MapColl<ChatPersonUID | Group, XMPPChat>;
-  /** Bare JID -> contact, for the people on our server-side contact list */
-  readonly roster = new MapColl<string, Person>();
+  declare readonly rooms: MapColl<XMPPPerson | Group, XMPPChat>;
+  declare readonly roster: ArrayColl<XMPPPerson>;
+  declare protected readonly allPersonsCached: MapColl<string, WeakRef<XMPPPerson>>;
+  declare getPersonUID: (userID: string, name?: string) => XMPPPerson;
+
   client: XMPP.Agent;
   deviceID: string;
   /** Bare JID of our own user */
@@ -40,7 +41,7 @@ export class XMPPAccount extends ChatAccount {
   readonly media = new XMPPMedia(this);
   /** Our own user as a chat identity, keyed by our JID (not the global app user).
    * Used as the sender (`from`) of messages and reactions that we send. */
-  ownContact: Person;
+  ownContact: XMPPPerson;
 
   get isLoggedIn(): boolean {
     return !!this.client?.sessionStarted;
@@ -180,8 +181,9 @@ export class XMPPAccount extends ChatAccount {
 
   /** Makes sure that each roster entry has a 1:1 chat */
   protected async createChatsFromRoster(): Promise<void> {
-    for (let jid of this.roster.keys()) {
+    for (let person of this.roster) {
       try {
+        let jid = person.chatID;
         if (this.getExistingChat(jid)) {
           continue;
         }
@@ -206,13 +208,12 @@ export class XMPPAccount extends ChatAccount {
 
   /** Gets profile photos etc. for the roster contacts, where missing */
   protected async getAllPersonDetails(): Promise<void> {
-    for (let jid of this.roster.keys()) {
-      let person = this.roster.get(jid);
+    for (let person of this.roster) {
       if (person.picture) {
         continue;
       }
       try {
-        await this.fetchVCardPhoto(person, jid);
+        await this.fetchVCardPhoto(person, person.chatID);
       } catch (ex) {
         // contact has no vCard
       }
@@ -221,7 +222,7 @@ export class XMPPAccount extends ChatAccount {
 
   /** Sets a contact's name and picture from their vCard (vcard-temp, XEP-0054).
    * @throws if the contact has no vCard */
-  protected async fetchVCardPhoto(person: Person, jid: string): Promise<void> {
+  protected async fetchVCardPhoto(person: ChatPersonUID, jid: string): Promise<void> {
     let vcard = await this.client.getVCard(jid);
     let fullName = sanitize.nonemptylabel(vcard.fullName, null);
     if (fullName && person.name == nameFromChatID(jid)) {
@@ -233,7 +234,6 @@ export class XMPPAccount extends ChatAccount {
       let blob = new Blob([new Uint8Array(photo.data)], { type: mimetype });
       person.picture = await blobToDataURL(blob);
     }
-    await person.save();
   }
 
   /** A contact published or changed their avatar — over PEP (XEP-0084) or vCard.
@@ -256,7 +256,6 @@ export class XMPPAccount extends ChatAccount {
     if (data) {
       let blob = new Blob([new Uint8Array(data)], { type: version.mediaType ?? "image/png" });
       person.picture = await blobToDataURL(blob);
-      await person.save();
     }
   }
 
@@ -281,8 +280,8 @@ export class XMPPAccount extends ChatAccount {
     }
     let chatRoom = new XMPP1to1Chat(this);
     chatRoom.id = jid;
-    chatRoom.contact = person as any;
-    this.rooms.set(person as any, chatRoom);
+    chatRoom.contact = person;
+    this.rooms.set(person, chatRoom);
     await chatRoom.save();
     return chatRoom;
   }
@@ -323,9 +322,8 @@ export class XMPPAccount extends ChatAccount {
 
   async getNewGroupChat(bookmark: XMPP.Stanzas.MUCBookmark): Promise<XMPPGroupChat> {
     let jid = getBareJID(bookmark.jid);
-    // Group chat rooms and their members are deliberately
-    // not in the user's address books, but in the chat account's own one.
-    let group = this.addressbook.newGroup();
+    // The group is only the room's name/avatar. Its members live in `room.members`.
+    let group = new Group();
     group.name = sanitize.label(bookmark.name, null) ?? jid.split("@")[0];
     let chatRoom = new XMPPGroupChat(this);
     chatRoom.id = jid;
@@ -341,8 +339,8 @@ export class XMPPAccount extends ChatAccount {
     return this.rooms.find(room => room.id == jid);
   }
 
-  getExistingPerson(jid: string): Person | null {
-    return this.roster.get(getBareJID(jid));
+  getExistingPerson(jid: string): ChatPersonUID | null {
+    return this.allPersonsCached.get(getBareJID(jid))?.deref() ?? null;
   }
 
   /** @returns the JID without the resource, e.g. "fred@example.com" */
@@ -354,28 +352,21 @@ export class XMPPAccount extends ChatAccount {
    * user). Lives in the chat account's own address book, so it has a chat
    * account (our JID) for persistence but isn't shown as a contact. Used as the
    * sender of messages and reactions that we send. */
-  getOwnContact(): Person {
-    return this.ownContact ??= this.getPerson(this.jid, this.realname);
+  getOwnContact(): XMPPPerson {
+    return this.ownContact ??= this.getPersonUID(this.jid, this.realname) as XMPPPerson;
   }
 
-  /** Finds the contact for this JID, first in the roster, then in the
-   * address books by chat ID or email address (JIDs often double as
-   * email address). Creates the contact, if not found. */
-  async getRosterPerson(jid: string, name?: string): Promise<Person> {
+  /** The 1:1 chat contact for this JID, as in the `roster` */
+  async getRosterPerson(jid: string, name?: string): Promise<ChatPersonUID> {
     jid = getBareJID(jid);
     name = sanitize.nonemptylabel(name, null);
-    let existing = this.roster.get(jid);
-    if (existing) {
-      return existing;
+    let person = this.getPersonUID(jid, name);
+    if (name && person.name != name) {
+      person.name = name;
     }
-    assert(appGlobal.personalAddressbook, "Need address book for chat contacts");
-    let chatPerson = new ChatPersonUID("xmpp", jid, name);
-    let person = chatPerson.findPerson();
-    if (!person) {
-      person = chatPerson.createPerson(appGlobal.personalAddressbook);
-      await person.save();
+    if (!this.roster.includes(person)) {
+      this.roster.add(person);
     }
-    this.roster.set(jid, person);
     return person;
   }
 

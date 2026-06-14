@@ -1,10 +1,11 @@
 import { ChatMessage, type RoomMessage } from "../Message";
 import { ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import type { ChatRoom } from "../ChatRoom";
-import { ContactEntry, Person } from "../../Abstract/Person";
+import type { ChatAccount } from "../ChatAccount";
+import { ChatPersonUID } from "../ChatPersonUID";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { Group } from "../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
-import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -18,12 +19,10 @@ export class SQLChatMessage {
    * Save only fully downloaded emails
    */
   static async save(msg: RoomMessage) {
-    // Room members are deliberately not in the contacts DB
-    let from = ((msg instanceof ChatMessage ? msg.from : null) ?? msg.contact) as Person;
-    if (!from.dbID && from.addressbook?.dbID) {
-      await SQLPerson.save(from);
-    }
-    let fromPersonID = from.dbID ?? null; // null == sender is in JSON
+    // Room members are deliberately not in the contacts DB.
+    // Old messages might be from a former member that is no longer in the room.
+    let from = (msg instanceof ChatMessage ? msg.from : null) ?? msg.contact;
+    let fromPersonID = from instanceof ChatPersonUID ? from.person?.dbID ?? null : null;
     if (!msg.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
@@ -37,14 +36,15 @@ export class SQLChatMessage {
         msg.dbID = existing.id;
       }
     }
-    // A `ChatRoomEvent` is marked by its `kind` in the json column.
+    // `ChatRoomEvent` is marked by its `kind` in the json column.
+    // `ChatMessage` stores its sender's chat ID, to rebuild `ChatPersonID` on read.
     let jsonStr: string | null = null;
     if (msg instanceof ChatRoomEvent) {
       jsonStr = JSON.stringify(msg.toExtraJSON(), null, 2);
-    } else if (!fromPersonID) {
+    } else if (from instanceof ChatPersonUID) {
       jsonStr = JSON.stringify({
         fromName: from.name,
-        fromID: from.chatAccounts?.first?.value ?? null,
+        fromID: from.chatID,
       }, null, 2);
     }
     let reactionsJSON = await SQLChatMessage.saveReactions(msg);
@@ -82,25 +82,16 @@ export class SQLChatMessage {
     await SQLChatMessage.saveAttachments(msg);
   }
 
-  /**
-   * Finds the sender in the group members, which were restored
-   * from the chat rooms's `members` column.
-   * Because Group chat room members are not in our DB,
-   * we save their ID and name in the JSON column. @see save()
-   */
-  protected static getFromForGroupMessage(group: Group, json: any): Person | null {
-    let fromID = sanitize.nonemptylabel(json?.fromID, null);
-    if (!fromID) {
-      return null;
+  /** Rebuild the sender as `ChatPersonUID` from the chat ID in `json.fromID` */
+  protected static readSender(chat: ChatRoom, json: any, fromPersonID: number | null): ChatPersonUID | undefined {
+    let fromID = sanitize.nonemptystring(json?.fromID, null);
+    let from = fromID
+      ? chat.account.getPersonUID(fromID, sanitize.nonemptylabel(json?.fromName, null))
+      : chat.contact instanceof ChatPersonUID ? chat.contact : undefined;
+    if (from && fromPersonID) {
+      from.person ??= appGlobal.persons.find(p => p.dbID == fromPersonID);
     }
-    let member = group.participants.find(p => p.chatAccounts.some(ce => ce.value == fromID));
-    if (member) {
-      return member;
-    }
-    let person = new Person();
-    person.name = sanitize.nonemptylabel(json?.fromName, null);
-    person.chatAccounts.add(new ContactEntry(fromID, null, null)); // TODO protocol
-    return person;
+    return from;
   }
 
   /** Creates the message or room event for this DB row,
@@ -167,24 +158,18 @@ export class SQLChatMessage {
       msg.html = html;
     }
     SQLChatMessage.readReactions(msg, sanitize.string(row.reactionsJSON, null));
-    let fromPersonID = sanitize.integer(row.fromPersonID, null); // null for group members
+    let fromPersonID = sanitize.integer(row.fromPersonID, null);
     let chatID = sanitize.integer(row.chatID);
     if (msg.to) {
       assert(msg.to.dbID == chatID, "Wrong chat");
-      // The sender: a known contact by ID; else, in a group, the member by the
-      // name saved in the json; else fall back to the conversation.
-      // TODO Fix Data model
-      let from = (fromPersonID ? appGlobal.persons.find(p => p.dbID == fromPersonID) : null) ??
-        (msg.to.contact instanceof Group
-          ? SQLChatMessage.getFromForGroupMessage(msg.to.contact, sanitize.json(row.json, null))
-          : null) ??
-        msg.to.contact;
-      if (msg instanceof ChatMessage) {
+      let from = SQLChatMessage.readSender(msg.to, sanitize.json(row.json, null), fromPersonID);
+      if (msg instanceof ChatMessage && from) {
         msg.from = from;
       }
-      // In a group chat the incoming sender is also `contact` (for protocols that
-      // don't set `from`); a 1:1 keeps the chat partner.
-      msg.contact = !msg.outgoing && msg.to.contact instanceof Group ? from : msg.to.contact;
+      // In a group chat the incoming sender is also `contact`; a 1:1 keeps the partner.
+      msg.contact = from && !msg.outgoing && msg.to.contact instanceof Group
+        ? from
+        : msg.to.contact;
     } else {
       // TODO msg.to = chat
     }
@@ -213,13 +198,18 @@ export class SQLChatMessage {
     if (!reactionsJSONStr) {
       return;
     }
+    let account = msg.to?.account as ChatAccount;
     let reactions = JSON.parse(reactionsJSONStr) as ReactionJSON[];
     for (let reaction of reactions) {
       try {
-        let personID = sanitize.integer(reaction.personID);
-        let person = appGlobal.persons.find(p => p.dbID == personID);
         let emoji = sanitize.string(reaction.emoji);
-        msg.reactions.set(person, emoji);
+        let fromID = sanitize.nonemptystring(reaction.fromID, null);
+        let personUID = account.getPersonUID(fromID);
+        let personID = sanitize.integer(reaction.personID, null);
+        if (personID) {
+          personUID.person ??= appGlobal.persons.find(p => p.dbID == personID);
+        }
+        msg.reactions.set(personUID, emoji);
       } catch (ex) {
         backgroundError(ex);
       }
@@ -228,13 +218,11 @@ export class SQLChatMessage {
 
   protected static async saveReactions(msg: RoomMessage): Promise<string> {
     let reactions: ReactionJSON[] = [];
-    msg.reactions.forEach(async (emoji: string, person: Person) => {
-      if (!person.dbID) {
-        await SQLPerson.save(person);
-      }
+    msg.reactions.forEach((emoji: string, person: ChatPersonUID) => {
       reactions.push({
-        personID: person.dbID,
         emoji: emoji,
+        fromID: person.chatID,
+        personID: person.person?.dbID ?? null,
       } as ReactionJSON);
     });
     return JSON.stringify(reactions);
@@ -301,6 +289,9 @@ export class SQLChatMessage {
 }
 
 class ReactionJSON {
-  personID: number;
   emoji: string;
+  /** Reacter's protocol-specific user ID (e.g. JID) */
+  fromID: string | null;
+  /** Addressbook Person, if the reacter is linked to one */
+  personID: number | null;
 }

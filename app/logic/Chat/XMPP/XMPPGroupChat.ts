@@ -1,10 +1,8 @@
 import { XMPPChat } from "./XMPPChat";
 import { getBareJID } from "./XMPPAccount";
 import type { XMPPChatMessage } from "./XMPPChatMessage";
-import { ChatPersonUID } from "../ChatPersonUID";
-import { Person } from "../../Abstract/Person";
+import { XMPPPerson } from "./XMPPPerson";
 import { Group } from "../../Abstract/Group";
-import { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { Message, MAMFin, Paging, ReceivedMUCPresence } from "stanza/protocol";
 
@@ -18,11 +16,11 @@ export class XMPPGroupChat extends XMPPChat {
   /** Our user's nickname in this room */
   nick: string;
   /** Nickname -> contact, for the people currently in the room.
-   * They are also in `contact.participants`. */
-  readonly memberByNick = new Map<string, Person>();
+   * They are also in `members`. */
+  readonly memberByNick = new Map<string, XMPPPerson>();
   /** Nickname -> contact, for everybody we ever saw in this room,
    * including past senders in old messages */
-  protected readonly personByNick = new Map<string, Person>();
+  protected readonly personByNick = new Map<string, XMPPPerson>();
   /** Processes the room presences one by one, so that `join()`
    * can wait for the initial member list */
   protected occupantQueue: Promise<void> = Promise.resolve();
@@ -60,16 +58,9 @@ export class XMPPGroupChat extends XMPPChat {
       .catch(this.account.errorCallback);
   }
 
-  /** The members are in `contact.participants`, tracked live,
-   * see `onOccupantJoined()` */
+  /** The members are already tracked live, see `onOccupantJoined()` */
   async listMembers(): Promise<void> {
-    let chatPersons = [...this.memberByNick.entries()].map(([nick, person]) => {
-      let chatPerson = new ChatPersonUID("xmpp", `${this.id}/${nick}`, person.name);
-      chatPerson.person = person;
-      chatPerson.picture = person.picture;
-      return chatPerson;
-    });
-    this.members.replaceAll(chatPersons);
+    this.members.replaceAll([...this.memberByNick.values()]);
   }
 
   /** An occupant is in the room: Sent when we join the room,
@@ -83,7 +74,6 @@ export class XMPPGroupChat extends XMPPChat {
     let realJID = getBareJID(pres.muc?.jid);
     let person = this.getMemberPerson(nick, realJID);
     this.memberByNick.set(nick, person);
-    this.group?.participants.add(person);
     await this.listMembers();
     if (this.joinDone) {
       await this.save(); // persist the changed members
@@ -98,7 +88,6 @@ export class XMPPGroupChat extends XMPPChat {
     let person = this.memberByNick.get(nick);
     this.memberByNick.delete(nick);
     if (person) {
-      this.group?.participants.remove(person);
       await this.listMembers();
       if (this.joinDone) {
         await this.save();
@@ -106,17 +95,14 @@ export class XMPPGroupChat extends XMPPChat {
     }
   }
 
-  /** The members live in the chat account's own address book,
-   * deliberately *not* in the user's address books.
-   * The same person is reused across rooms.
-   * @param realJID The real address of the member, if the room discloses it */
-  protected getMemberPerson(nick: string, realJID?: string): Person {
+  /** @param realJID The real address of the member, if the room discloses it */
+  protected getMemberPerson(nick: string, realJID?: string): XMPPPerson {
     let person = this.personByNick.get(nick);
     if (person) {
       return person;
     }
     let userID = realJID ?? `${this.id}/${nick}`;
-    person = this.account.getPerson(userID, nick);
+    person = this.account.getPersonUID(userID, nick);
     this.personByNick.set(nick, person);
     return person;
   }
@@ -127,9 +113,13 @@ export class XMPPGroupChat extends XMPPChat {
   fillSender(msg: XMPPChatMessage, from: string): void {
     let nick = nickOfOccupant(from);
     msg.outgoing = !!nick && nick == this.nick;
-    msg.from = msg.outgoing
-      ? this.account.getOwnContact()
-      : (nick ? this.getMemberPerson(nick) : this.contact);
+    if (msg.outgoing) {
+      msg.from = this.account.getOwnContact();
+    } else if (nick) {
+      msg.from = this.getMemberPerson(nick);
+    }
+    // else: a message from the room itself (no occupant) — leave `from` unset;
+    // `contact` (the Group) shows it.
   }
 
   /** The room subject (XEP-0045 §8.1) — its topic, shown as the description. */
@@ -139,10 +129,9 @@ export class XMPPGroupChat extends XMPPChat {
 
   // --- subclass hooks for OMEMO and message references ---
 
-  protected messageSender(json: Message): PersonUID {
+  protected messageSender(json: Message): XMPPPerson {
     let nick = nickOfOccupant(json.from);
-    let sender = !nick || nick == this.nick ? this.account.getOwnContact() : this.getMemberPerson(nick);
-    return sender as unknown as PersonUID;
+    return (!nick || nick == this.nick ? this.account.getOwnContact() : this.getMemberPerson(nick)) as XMPPPerson;
   }
 
   /** OMEMO encrypts to each member's real JID — only known in a non-anonymous,
@@ -191,7 +180,7 @@ function nickOfOccupant(occupantJID: string): string | null {
 }
 
 /** A member's real bare JID, if known (not an anonymous `room/nick` placeholder) */
-function realJIDOf(person: Person): string | null {
-  let userID = person.chatAccounts.find(e => e.protocol == "xmpp")?.value;
+function realJIDOf(person: XMPPPerson): string | null {
+  let userID = person.chatID;
   return userID && userID.includes("@") && !userID.includes("/") ? getBareJID(userID) : null;
 }

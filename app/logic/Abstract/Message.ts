@@ -6,6 +6,7 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExterna
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
+import type { ChatPersonUID } from "../Chat/ChatPersonUID";
 
 export class Message extends Observable {
   /** protocol-specific ID for this message.
@@ -19,6 +20,9 @@ export class Message extends Observable {
    */
   @notifyChangedProperty
   contact: PersonUID | Person | Group;
+  /** Who sent this message. If outgoing = true, this is always our user. */
+  @notifyChangedProperty
+  from: PersonUID;
   /** When the message was sent */
   @notifyChangedProperty
   sent: Date;
@@ -38,6 +42,8 @@ export class Message extends Observable {
   /** Msg ID of another message that this one is a reply of */
   inReplyTo: string | null = null;
   readonly attachments = new ArrayColl<Attachment>();
+
+  readonly reactions = new MapColl<ChatPersonUID, string>();
 
   @notifyChangedProperty
   subject: string = "";
@@ -133,8 +139,6 @@ export class Message extends Observable {
     this._sanitizedHTML = null; // forces re-rendering
     this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
-
-  readonly reactions = new MapColl<PersonUID, string>();
 
   async markRead(read = true) {
     this.isRead = read;

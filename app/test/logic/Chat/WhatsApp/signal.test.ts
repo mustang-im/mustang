@@ -73,7 +73,7 @@ test("Out-of-order delivery uses skipped message keys", async () => {
   await decryptSignalMessage(alice, "bob", reply.body);
 
   // Alice sends 4 messages; Bob receives them out of order: 3, 1, 0, 2
-  let msgs = [];
+  let msgs: any[] = [];
   for (let i = 0; i < 4; i++) {
     msgs.push((await encrypt(alice, "bob", utf8(`msg${i}`))).body);
   }

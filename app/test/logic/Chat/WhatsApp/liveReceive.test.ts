@@ -6,6 +6,8 @@ import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
+import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
+import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
 import { Group } from "../../../../logic/Abstract/Group";
 import { encode } from "../../../../logic/Chat/Signal/Proto/codec";
 import { HistorySync, decodeHistorySync } from "../../../../logic/Chat/Signal/Proto/schema";
@@ -43,18 +45,20 @@ test("auto-creates a 1:1 room and contact on the first message, reusing them aft
   let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice Liveexample");
   expect(account.rooms.length).toBe(1);
   expect(room.id).toBe(kAliceJID);
-  expect(room.contact).toBeInstanceOf(Person);
+  expect(room.contact).toBeInstanceOf(ChatPersonUID);
   expect(room.contact.name).toBe("Alice Liveexample"); // taken from the stanza's push name
-  let person = room.contact as any as Person;
-  expect(person.phoneNumbers.some(e => e.value == "+491761111111")).toBe(true);
-  expect(person.chatAccounts.some(e => e.protocol == "whatsapp" && e.value == kAliceJID)).toBe(true);
-  expect(appGlobal.personalAddressbook.persons.length).toBe(1);
+  let contact = room.contact as WhatsAppContact;
+  expect(contact.chatID).toBe(kAliceJID);
+  expect(contact.protocol).toBe("whatsapp");
+  expect(account.roster.includes(contact)).toBe(true);
+  // The chat contact is not auto-added to the address book; linking is UI-driven.
+  expect(appGlobal.personalAddressbook.persons.length).toBe(0);
 
   // A later message — even from a specific device JID — reuses the same room.
   let again = await account.getOrCreateRoom(JID.parse("491761111111:7@s.whatsapp.net"), "Alice Liveexample");
   expect(again).toBe(room);
   expect(account.rooms.length).toBe(1);
-  expect(appGlobal.personalAddressbook.persons.length).toBe(1);
+  expect(appGlobal.personalAddressbook.persons.length).toBe(0);
 });
 
 test("auto-creates a group room on the first group message", async () => {
@@ -66,18 +70,19 @@ test("auto-creates a group room on the first group message", async () => {
   expect(room.contact).toBeInstanceOf(Group);
 });
 
-test("reuses an existing contact matched by phone number, instead of duplicating it", async () => {
+test("links to an existing contact matched by WhatsApp ID, without duplicating it", async () => {
   let account = setup();
   let existing = appGlobal.personalAddressbook.newPerson();
   existing.name = "Alice Imported";
-  existing.phoneNumbers.add(new ContactEntry("0176 1111111", "mobile", "tel")); // national format
+  existing.chatAccounts.add(new ContactEntry(kAliceJID, "WhatsApp", "whatsapp"));
   appGlobal.personalAddressbook.persons.add(existing);
 
   let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice Push");
 
-  expect(room.contact).toBe(existing as any); // matched, not duplicated
-  expect(appGlobal.personalAddressbook.persons.length).toBe(1);
-  expect(existing.chatAccounts.some(e => e.protocol == "whatsapp" && e.value == kAliceJID)).toBe(true); // linked
+  let contact = room.contact as ChatPersonUID;
+  expect(contact).toBeInstanceOf(ChatPersonUID);
+  expect(contact.findPerson()).toBe(existing); // linked to the existing contact
+  expect(appGlobal.personalAddressbook.persons.length).toBe(1); // not duplicated
 });
 
 test("history sync builds the chat list and back-fills old messages", async () => {
@@ -116,26 +121,26 @@ test("history sync builds the chat list and back-fills old messages", async () =
   expect(result.chats).toBe(3);
   expect(result.messages).toBe(4);
   expect(account.rooms.length).toBe(3);
-  let lidRoom = account.rooms.contents.find(room => room.id == "111222333444@lid");
+  let lidRoom = account.rooms.contents.find(room => room.id == "111222333444@lid")!;
   expect(lidRoom).toBeDefined();
   expect(lidRoom.messages.contents.find(msg => msg.text == "Hi over lid")).toBeDefined();
 
-  let aliceRoom = account.rooms.contents.find(room => room.id == kAliceJID);
+  let aliceRoom = account.rooms.contents.find(room => room.id == kAliceJID)!;
   expect(aliceRoom).toBeDefined();
   expect(aliceRoom.contact.name).toBe("Alice History"); // from the message push name
   expect(aliceRoom.messages.length).toBe(2);
-  let hello = aliceRoom.messages.contents.find(msg => msg.text == "Hello from Alice");
+  let hello = aliceRoom.messages.contents.find(msg => msg.text == "Hello from Alice")!;
   expect(hello.outgoing).toBe(false);
   expect(hello.contact.name).toBe("Alice History"); // attributed to the partner
-  // Our own message is outgoing and attributed to the account-owner contact (a
-  // real address book person keyed by our JID), not appGlobal.me — so it persists.
-  let hiBack = aliceRoom.messages.contents.find(msg => msg.text == "Hi back");
+  // Our own message is outgoing and attributed to the account-owner chat contact
+  // keyed by our JID, not appGlobal.me — so it persists.
+  let hiBack = aliceRoom.messages.contents.find(msg => msg.text == "Hi back")!;
   expect(hiBack.outgoing).toBe(true);
   expect(hiBack.contact).not.toBe(appGlobal.me);
-  expect((hiBack.contact as any).chatAccounts.some(e => e.protocol == "whatsapp" && e.value == "412300000000@s.whatsapp.net")).toBe(true);
+  expect((hiBack.contact as ChatPersonUID).chatID).toBe("412300000000@s.whatsapp.net");
   expect(aliceRoom.lastMessage.text).toBe("Hi back"); // the newest
 
-  let groupRoom = account.rooms.contents.find(room => room.id == kGroupJID);
+  let groupRoom = account.rooms.contents.find(room => room.id == kGroupJID)!;
   expect(groupRoom).toBeDefined();
   expect(groupRoom.contact).toBeInstanceOf(Group);
   expect(groupRoom.name).toBe("Weekend Trip");
@@ -150,11 +155,11 @@ test("a live message we sent from another device is outgoing, attributed to us",
   let stanza = new WANode("message", { id: "OUT1", t: "1700000500" });
   await room.receiveMessage(stanza, { conversation: "Sent from my phone" } as any, JID.parse(kAliceJID), true);
 
-  let msg = room.messages.contents.find(m => m.text == "Sent from my phone");
+  let msg = room.messages.contents.find(m => m.text == "Sent from my phone")!;
   expect(msg).toBeDefined();
   expect(msg.outgoing).toBe(true);
-  expect(msg.contact).not.toBe(appGlobal.me); // a saveable owner contact, not appGlobal.me
-  expect((msg.contact as any).chatAccounts.some(e => e.value == "412300000000@s.whatsapp.net")).toBe(true);
+  expect(msg.contact).not.toBe(appGlobal.me); // the owner chat contact, not appGlobal.me
+  expect((msg.contact as ChatPersonUID).chatID).toBe("412300000000@s.whatsapp.net");
 });
 
 test("after login it uploads prekeys and switches the connection to active", async () => {
@@ -174,19 +179,19 @@ test("after login it uploads prekeys and switches the connection to active", asy
 
   // The encrypt IQ publishes our identity, signed prekey and one-time prekeys —
   // without this the phone can't establish a session to send us history/messages.
-  let upload = sentIQs.find(node => node.attrs.xmlns == "encrypt");
+  let upload = sentIQs.find(node => node.attrs.xmlns == "encrypt")!;
   expect(upload).toBeDefined();
   expect(upload.attrs.type).toBe("set");
-  expect(upload.child("registration").contentBytes.length).toBe(4);
-  expect([...upload.child("identity").contentBytes]).toEqual([...account.signalStore.identityKeyPair.publicKey]);
-  expect(upload.child("list").children("key").length).toBe(account.signalStore.preKeys.size);
-  let skey = upload.child("skey");
-  expect([...skey.child("value").contentBytes]).toEqual([...account.signalStore.signedPreKeys.get(1).keyPair.publicKey]);
-  expect(skey.child("signature").contentBytes.length).toBe(64);
-  expect(skey.child("id").contentBytes.length).toBe(3);
+  expect(upload.child("registration")!.contentBytes!.length).toBe(4);
+  expect([...upload.child("identity")!.contentBytes!]).toEqual([...account.signalStore.identityKeyPair.publicKey]);
+  expect(upload.child("list")!.children("key").length).toBe(account.signalStore.preKeys.size);
+  let skey = upload.child("skey")!;
+  expect([...skey.child("value")!.contentBytes!]).toEqual([...account.signalStore.signedPreKeys.get(1)!.keyPair.publicKey]);
+  expect(skey.child("signature")!.contentBytes!.length).toBe(64);
+  expect(skey.child("id")!.contentBytes!.length).toBe(3);
 
   // The <active> IQ is what actually starts the inbound stream (offline + history).
-  let active = sentIQs.find(node => node.attrs.xmlns == "passive");
+  let active = sentIQs.find(node => node.attrs.xmlns == "passive")!;
   expect(active).toBeDefined();
   expect(active.attrs.type).toBe("set");
   expect(active.child("active")).toBeDefined();
@@ -205,7 +210,7 @@ test("stores a group sender key from an incoming SenderKeyDistributionMessage", 
 
   (account as any).processSenderKeyDistribution(payload, sender);
 
-  let stored = account.signalStore.senderKeys.get(`${kGroupJID}|${sender.user}.${sender.device}`);
+  let stored = account.signalStore.senderKeys.get(`${kGroupJID}|${sender.user}.${sender.device}`)!;
   expect(stored).toBeDefined();
   expect(stored.keyID).toBe(7);
 });

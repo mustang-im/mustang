@@ -29,10 +29,10 @@ beforeEach(async () => {
     sessionStarted: true,
     sendMessage: (stanza: any) => { sent.push(stanza); return stanza.id ?? "generated"; },
   } as any;
-  let alice = await account.getPerson(kAlice, "Alice");
+  let alice = account.getPersonUID(kAlice, "Alice");
   chat = new XMPP1to1Chat(account);
   chat.id = kAlice;
-  chat.contact = alice as any;
+  chat.contact = alice;
   account.rooms.set(chat.contact, chat);
 });
 
@@ -99,7 +99,7 @@ describe("XMPP message features — receiving", () => {
 
   test("a reply sets inReplyTo", async () => {
     let msg = await incoming({ id: "m5", body: "I agree", reply: { id: "m1", to: kMe } });
-    expect(msg.inReplyTo).toBe("m1");
+    expect(msg!.inReplyTo).toBe("m1");
   });
 });
 
@@ -146,7 +146,7 @@ describe("XMPP message features — sending", () => {
 
   test("a displayed marker is sent when our user reads an incoming message", async () => {
     let msg = await incoming({ id: "r1", body: "read me" });
-    await chat.sendDisplayedMarker(msg);
+    await chat.sendDisplayedMarker(msg!);
     expect(sent[0].marker).toEqual({ type: "displayed", id: "r1" });
   });
 });

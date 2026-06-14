@@ -2,30 +2,37 @@ import { ChatRoom } from "../ChatRoom";
 import { WhatsAppMessage } from "./WhatsAppMessage";
 import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
-import { ChatPersonUID } from "../ChatPersonUID";
+import { WhatsAppContact } from "./WhatsAppContact";
 import { DeliveryStatus } from "../Message";
-import type { PersonUID } from "../../Abstract/PersonUID";
-import { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
+import type { Person } from "../../Abstract/Person";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
 import { JID } from "./Binary/JID";
 import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "../Signal/Proto/schema";
-import { appGlobal } from "../../app";
 import { gt } from "../../../l10n/l10n";
+import type { ArrayColl } from "svelte-collections";
 
 /** A WhatsApp chat room — either a 1:1 conversation or a group. Both use the
  * same message machinery; group-vs-1:1 differences (member source, sender
  * attribution) branch on whether `contact` is a Group. */
 export class WhatsAppChatRoom extends ChatRoom {
   declare account: WhatsAppAccount;
+  declare readonly members: ArrayColl<WhatsAppContact>;
+  declare contact: WhatsAppContact | Group;
 
   async listMembers(): Promise<void> {
-    let persons = this.contact instanceof Group
-      ? this.contact.participants.contents
-      : [this.contact as any as Person];
-    this.members.replaceAll(persons.map(person => chatPersonFor(person)));
+    // 1:1: the sole member is the chat partner.
+    // Group from backup: participants
+    // Group live: Not wired yet, starts empty
+    if (this.contact instanceof WhatsAppContact) {
+      this.members.replaceAll([this.contact]);
+    } else if (this.contact instanceof Group) {
+      this.members.replaceAll(this.contact.participants.contents
+        .map(person => contactForPerson(this.account, person))
+        .filter(Boolean));
+    }
   }
 
   async listMessages(): Promise<void> {
@@ -100,11 +107,11 @@ export class WhatsAppChatRoom extends ChatRoom {
   /** The person an incoming stored message is from: the group member who sent it,
    * else the room contact (the 1:1 partner). Our own messages are attributed via
    * {@link WhatsAppAccount.getOwnContact} instead. */
-  protected historySender(key: MessageKey): PersonUID | Person | Group {
-    if (this.contact instanceof Group && key.participant) {
-      return this.contactForSender(JID.parse(key.participant));
+  protected historySender(key: MessageKey): WhatsAppContact | Group {
+    if (this.contact instanceof Group) {
+      return key.participant ? this.contactForSender(JID.parse(key.participant)) : this.contact;
     }
-    return this.contact as any as Person;
+    return this.contact;
   }
 
   protected async reactToMessage(reaction: ReactionMessage, sender: JID): Promise<void> {
@@ -114,9 +121,9 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     let person = this.contactForSender(sender);
     if (reaction.text) {
-      target.reactions.set(person as PersonUID, reaction.text);
+      target.reactions.set(person, reaction.text);
     } else {
-      target.reactions.delete(person as PersonUID); // empty emoji removes the reaction
+      target.reactions.delete(person); // empty emoji removes the reaction
     }
     await this.account.storage.saveMessage(target);
   }
@@ -142,13 +149,11 @@ export class WhatsAppChatRoom extends ChatRoom {
   }
 
   /** Who a message is from: in 1:1 it's the chat partner; in a group, the member. */
-  protected contactForSender(sender: JID): PersonUID | Person | Group {
-    if (!(this.contact instanceof Group)) {
+  protected contactForSender(sender: JID): WhatsAppContact {
+    if (this.contact instanceof WhatsAppContact) {
       return this.contact;
     }
-    let person = appGlobal.persons.find(p =>
-      p.chatAccounts.some(e => e.protocol == "whatsapp" && JID.parse(e.value).user == sender.user));
-    return person ?? new ChatPersonUID("whatsapp", sender.toString());
+    return this.account.getContact(sender);
   }
 
   protected updateLastMessage() {
@@ -195,10 +200,16 @@ export class WhatsAppChatRoom extends ChatRoom {
   }
 }
 
-function chatPersonFor(person: Person): ChatPersonUID {
-  let chatID = person.chatAccounts.find(e => e.protocol == "whatsapp")?.value;
-  let chatPerson = new ChatPersonUID("whatsapp", chatID, person.name);
-  chatPerson.person = person;
-  chatPerson.picture = person.picture;
-  return chatPerson;
+/** A group participant (an address-book `Person`) as a `WhatsAppContact`, reused
+ * from the account cache and linked back to the `Person`.
+ * @returns null if the person has no WhatsApp ID */
+function contactForPerson(account: WhatsAppAccount, person: Person): WhatsAppContact | null {
+  let jid = person.chatAccounts.find(e => e.protocol == "whatsapp")?.value;
+  if (!jid) {
+    return null;
+  }
+  let contact = account.getPersonUID(jid, person.name);
+  contact.person = person;
+  contact.picture ??= person.picture;
+  return contact;
 }

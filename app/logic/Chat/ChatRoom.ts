@@ -23,8 +23,8 @@ export class ChatRoom extends Observable {
   dbID: number;
   account: ChatAccount;
   /** If `contact` is a `Group`, then this is a chat room with multiple people.
-   * If `contact` is a `ChatPerson` or `Person`, this is a 1:1 conversation
-   * between our user and one other person/account. */
+   * If `contact` is a `ChatPersonUID`, this is a 1:1 conversation
+   * between our user and one other person. */
   @notifyChangedProperty
   contact: ChatContact;
   /** Chat room name/title. Only used for Groups.
@@ -58,9 +58,12 @@ export class ChatRoom extends Observable {
   }
 
   get name(): string {
-    return this.contact instanceof Group && this._name
-      ? this._name
-      : this.contact.name;
+    if (this.contact instanceof Group && this._name) {
+      return this._name;
+    }
+    // `contact` is always set; `|| this.id` only covers a contact/group whose own
+    // name is empty, so the (NOT NULL) room name is never blank.
+    return this.contact.name || this.id;
   }
   set name(val: string) {
     if (this.contact instanceof Group) {

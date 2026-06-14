@@ -16,7 +16,7 @@ export class GraphChatMessage extends ChatMessage {
     this.info = info;
     this.id = sanitize.nonemptystring(info.id);
     let userID = info.from?.user?.id;
-    this.contact = this.to.members.find(person => person.id == userID) ?? this.to.contact;
+    this.contact = this.to.members.find(person => person.chatID == userID) ?? this.to.contact;
     this.outgoing = userID != this.to.account.account.userID;
     if (info.body) {
       if (info.body.contentType == "html") {

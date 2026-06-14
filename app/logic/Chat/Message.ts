@@ -1,8 +1,6 @@
 import { Message } from "../Abstract/Message";
 import { notifyChangedProperty } from "../util/Observable";
-import type { PersonUID } from "../Abstract/PersonUID";
-import type { Person } from "../Abstract/Person";
-import type { Group } from "../Abstract/Group";
+import type { ChatPersonUID } from "./ChatPersonUID";
 import type { ChatRoom } from "./ChatRoom";
 import type { ChatRoomEvent } from "./RoomEvent";
 
@@ -19,10 +17,8 @@ export class ChatMessage extends Message {
   to: ChatRoom;
   @notifyChangedProperty
   deliveryStatus = DeliveryStatus.Unknown;
-  /** Who wrote this message.
-   * For outgoing messages, that's us, but `contact` shows the other person. */
   @notifyChangedProperty
-  from: PersonUID | Person | Group;
+  declare from: ChatPersonUID;
 
   constructor(room: ChatRoom) {
     super();

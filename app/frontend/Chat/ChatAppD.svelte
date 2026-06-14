@@ -26,6 +26,8 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
+  import { ChatRoom } from "../../logic/Chat/ChatRoom";
+  import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
   import { ChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedAccount, selectedRoom } from "./selected";
@@ -58,12 +60,24 @@
   }
 
   onMount(() => {
-    $selectedRoom = $selectedPerson && rooms.find(room => room.contact == $selectedPerson);
+    $selectedRoom = $selectedPerson && rooms.find(room => roomMatchesPerson(room, $selectedPerson));
   });
-  $: if ($selectedRoom?.contact instanceof Person) {
-    $selectedPerson = $selectedRoom.contact;
+  function roomMatchesPerson(room: ChatRoom, person: Person): boolean {
+    return room.contact instanceof ChatPersonUID && room.contact.matchesPerson(person);
   }
-  $: rooms, clearSelectedChat()
+
+  $: linkSelectedPerson($selectedRoom);
+  /** Link the open chat to an addressbook contact, so the other apps show the same person. */
+  function linkSelectedPerson(room: ChatRoom | null) {
+    let contact = room?.contact;
+    let person = contact instanceof ChatPersonUID ? contact.findPerson()
+      : contact instanceof Person ? contact : null;
+    if (person) {
+      $selectedPerson = person;
+    }
+  }
+
+  $: $rooms, clearSelectedChat()
   function clearSelectedChat() {
     if (!rooms.contains($selectedRoom)) {
       $selectedRoom = rooms.last;

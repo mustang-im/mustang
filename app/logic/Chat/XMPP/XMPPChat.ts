@@ -3,11 +3,12 @@ import { getBareJID, type XMPPAccount } from "./XMPPAccount";
 import { XMPPChatMessage } from "./XMPPChatMessage";
 import { XMPPRoomEvent } from "./XMPPRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
+import type { XMPPPerson } from "./XMPPPerson";
 import { ChatMessage, DeliveryStatus, type RoomMessage } from "../Message";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import { isFileURL } from "./XMPPMedia";
 import { Attachment } from "../../Abstract/Attachment";
-import { PersonUID } from "../../Abstract/PersonUID";
+import type { Group } from "../../Abstract/Group";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -30,6 +31,9 @@ export enum Encryption {
 
 export class XMPPChat extends ChatRoom {
   declare account: XMPPAccount;
+  declare readonly members: ArrayColl<XMPPPerson>;
+  declare contact: XMPPPerson | Group;
+
   /** XMPP wire type of the messages in this chat */
   protected messageType: "chat" | "groupchat" = "chat";
   @notifyChangedProperty
@@ -46,10 +50,12 @@ export class XMPPChat extends ChatRoom {
    * resolves the actual occupant). */
   fillSender(msg: XMPPChatMessage, from: string): void {
     let bare = getBareJID(from);
-    msg.outgoing = !!bare && bare == this.account.jid;
+    msg.outgoing = bare && bare == this.account.jid;
+    // 1:1: the sender is the chat partner, the same `XMPPPerson` as `this.contact`.
+    // XMPPGroupChat overrides this.
     msg.from = msg.outgoing
       ? this.account.getOwnContact()
-      : this.account.getExistingPerson(bare) ?? this.contact;
+      : this.account.getPersonUID(bare);
   }
 
   // --- Receiving ---
@@ -220,10 +226,11 @@ export class XMPPChat extends ChatRoom {
 
   /** The contact who sent `json`, as the key for the reaction map.
    * 1:1: our own user or the chat partner; XMPPGroupChat resolves the occupant. */
-  protected messageSender(json: Message): PersonUID {
+  protected messageSender(json: Message): XMPPPerson {
     let from = getBareJID(json.from);
-    let sender = from == this.account.jid ? this.account.getOwnContact() : this.contact;
-    return sender as unknown as PersonUID;
+    return from == this.account.jid
+      ? this.account.getOwnContact()
+      : this.account.getPersonUID(from);
   }
 
   // --- Sending ---
@@ -318,7 +325,7 @@ export class XMPPChat extends ChatRoom {
       reactions: { id: this.referenceID(target as XMPPChatMessage), emojis },
       processingHints: { store: true },
     });
-    let me = this.account.getOwnContact() as unknown as PersonUID;
+    let me = this.account.getOwnContact();
     if (emojis.length) {
       target.reactions.set(me, emojis.join(""));
     } else {

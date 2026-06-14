@@ -3,16 +3,20 @@ import type { MatrixAccount } from "./MatrixAccount";
 import { MatrixChatMessage } from "./MatrixChatMessage";
 import { MatrixRoomEvent } from "./MatrixRoomEvent";
 import { MatrixPerson } from "./MatrixPerson";
+import type { Group } from "../../Abstract/Group";
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
-import { Group } from "../../Abstract/Group";
 import { ChatRoomEvent, JoinLeave, RoomEventKind } from "../RoomEvent";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
+import type { ArrayColl } from "svelte-collections";
 import type { MatrixEvent } from "matrix-js-sdk";
 
 export class MatrixRoom extends ChatRoom {
   declare account: MatrixAccount;
+  declare readonly members: ArrayColl<MatrixPerson>;
+  declare contact: MatrixPerson | Group;
+
   constructor(account: MatrixAccount) {
     super(account);
   }
@@ -68,7 +72,7 @@ export class MatrixRoom extends ChatRoom {
     msg.id = event.event?.event_id;
     msg.sent = msg.received = new Date(event.getTs());
     let senderUserID = event.getSender();
-    msg.contact = this.account.getExistingPerson(senderUserID);
+    msg.contact = this.account.getPersonUID(senderUserID);
     msg.outgoing = senderUserID == this.account.globalUserID;
   }
 
@@ -129,7 +133,7 @@ export class MatrixRoom extends ChatRoom {
     let orgID = event.event.TODO;
     this.messages.find(m => m.id == orgID);
     let senderUserID = event.getSender();
-    let person = this.account.getExistingPerson(senderUserID);
+    let person = this.account.getPersonUID(senderUserID);
     assert(person, "Reaction: Sender not found: " + senderUserID);
     let data = event.event?.content["m.relates_to"];
     assert(data?.rel_type == "m.annotation", "Unknown reaction type " + data?.rel_type);
@@ -146,7 +150,7 @@ export class MatrixRoom extends ChatRoom {
   getJoinLeaveInviteEvent(event): ChatRoomEvent {
     let data = event.event.content;
     let senderUserID = event.getSender();
-    let person = this.account.getExistingPerson(senderUserID);
+    let person = this.account.getPersonUID(senderUserID);
     if (!person) {
       person = new MatrixPerson(senderUserID, event.displayname);
       person.picture = event.avatar_url; // may be null
@@ -155,15 +159,12 @@ export class MatrixRoom extends ChatRoom {
     if (data.membership == "join" || data.membership == "leave") {
       let msg = this.newRoomEvent(RoomEventKind.JoinLeave) as JoinLeave;
       msg.join = data.membership == "join";
-      let group = this.contact;
-      if (group instanceof Group) {
-        if (msg.join) {
-          group.participants.add(person);
-        } else {
-          group.participants.remove(person);
+      if (msg.join) {
+        if (!this.members.includes(person)) {
+          this.members.add(person);
         }
       } else {
-        // TODO change to group
+        this.members.remove(person);
       }
       this.fillMessage(event, msg);
       msg.text = (msg.join ? "%person% joined" : "%person% left the room")

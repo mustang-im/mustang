@@ -54,9 +54,11 @@
   import type { Message } from "../../../logic/Abstract/Message";
   import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
   import { Group } from "../../../logic/Abstract/Group";
+  import { Person } from "../../../logic/Abstract/Person";
   import cssContent from "../../Mail/Message/content.css?inline";
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
+  import { ChatPersonUID } from "../../../logic/Chat/ChatPersonUID";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import { getDateTimeString } from "../../Util/date";
@@ -67,7 +69,7 @@
   export let openMenuOnMessageHover = false;
 
   $: isGroupChat = ($message as ChatMessage).to?.contact instanceof Group;
-  $: author = ($message instanceof ChatMessage && $message.from) || $message.contact;
+  $: author = (($message instanceof ChatMessage && $message.from) || $message.contact) as ChatPersonUID | Person | Group;
   $: previousAuthor = (previousMessage instanceof ChatMessage && previousMessage.from) || previousMessage?.contact;
   $: followup = author == previousAuthor && // same author
     $message.outgoing == previousMessage?.outgoing;

@@ -30,7 +30,7 @@ export const chatDatabaseSchema = sql`
     -- Additional data
     "json" TEXT default null,
     FOREIGN KEY (chatID)
-      REFERENCES chat (ID)
+      REFERENCES chatRoom (id)
       ON DELETE CASCADE
   );
 
@@ -54,20 +54,38 @@ export const chatDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
+  -- A member/participant in a chat room
+  -- For 1:1 chat rooms, that's only one person. Not including our own user.
+  -- Deliberately not in the contacts DB to not pollute the user addressbooks.
+  CREATE TABLE "chatContact" (
+    "id" INTEGER PRIMARY KEY,
+    -- Protocol-specific user ID, e.g. the JID
+    "idStr" TEXT not null,
+    "chatRoomID" INTEGER not null,
+    -- User-visible name of person
+    "name" TEXT not null,
+    -- From addressbook, to link with the other apps. May be null.
+    "personID" INTEGER null,
+    -- Picture URL
+    "avatarURL" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
+    UNIQUE("chatRoomID", "idStr"),
+    FOREIGN KEY (chatRoomID)
+      REFERENCES chatRoom (id)
+      ON DELETE CASCADE
+  );
+
   -- A chat room, either 1:1 or with many participants
-  CREATE TABLE "chat" (
+  CREATE TABLE "chatRoom" (
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null,
     "accountID" INTEGER not null,
     -- User-visible name
     "name" TEXT not null,
     -- Person or Group that this chat room is talking with
-    -- Person ID or Group ID (may be null)
-    "contactID" INTEGER null,
-    -- Group chat members, as JSON array of { name, userID },
-    -- where userID is e.g. the JID. The members are deliberately
-    -- not in the contacts DB. @see SQLChatRoom
-    "members" TEXT default null,
+    -- Person ID or Group ID. May be null.
+    "personID" INTEGER null,
     -- Last update from server we for this folder.
     "syncState" TEXT default null,
     -- Additional data
@@ -85,17 +103,3 @@ export const chatDatabaseSchema = sql`
     "protocol" TEXT not null
   );
 `;
-
-/** Updates databases that were created before
- * the `members` column was added to the schema. */
-export async function migrateChatDatabase(database: Database): Promise<void> {
-  try {
-    await database.get(sql`SELECT members FROM chat LIMIT 1`);
-  } catch (ex) {
-    if (ex?.message?.startsWith("no such column")) {
-      await database.execute(sql`ALTER TABLE "chat" ADD COLUMN "members" TEXT default null;`);
-    } else {
-      throw ex;
-    }
-  }
-}

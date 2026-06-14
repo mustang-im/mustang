@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
 import { WhatsAppBackupImport, normalizePhoneNumber, phoneNumbersMatch } from "../../../../logic/Chat/WhatsApp/Import/ImportBackup";
+import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
 import { makeTestDatabase, getDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
 import { SQLPerson } from "../../../../logic/Contacts/SQL/SQLPerson";
@@ -9,6 +10,7 @@ import { SQLGroup } from "../../../../logic/Contacts/SQL/SQLGroup";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
+import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { Group } from "../../../../logic/Abstract/Group";
 import sql from "../../../../../lib/rs-sqlite";
 import { mkdtempSync } from "node:fs";
@@ -62,6 +64,7 @@ test("Import WhatsApp backup, then import again without duplicates", { timeout: 
   let account = new WhatsAppAccount();
   account.name = "WhatsApp";
   account.storage = new SQLChatStorage();
+  account.deviceJID = JID.parse("412300000000:1@s.whatsapp.net");
   appGlobal.chatAccounts.add(account);
 
   let msgstore = makeMsgstore();
@@ -76,34 +79,36 @@ test("Import WhatsApp backup, then import again without duplicates", { timeout: 
   expect(account.rooms.length).toBe(2); // status@broadcast and empty chat skipped
 
   // 1:1 chat
-  let aliceRoom = account.rooms.contents.find(r => r.id == kAliceJID);
+  let aliceRoom = account.rooms.contents.find(r => r.id == kAliceJID)!;
   expect(aliceRoom).toBeDefined();
-  let alice = aliceRoom.contact as any as Person;
+  let aliceContact = aliceRoom.contact as ChatPersonUID;
+  expect(aliceContact).toBeInstanceOf(ChatPersonUID);
+  let alice = aliceContact.person!; // the import links the chat contact to an address book Person
   expect(alice.name).toBe("Alice Test"); // from wa.db
   expect(alice.chatAccounts.some(e => e.protocol == "whatsapp" && e.value == kAliceJID)).toBe(true);
   expect(alice.phoneNumbers.some(e => e.value == "+491761111111")).toBe(true);
   expect(aliceRoom.messages.length).toBe(6);
-  let hello = aliceRoom.messages.contents.find(m => m.text == "Hello");
+  let hello = aliceRoom.messages.contents.find(m => m.text == "Hello")!;
   expect(hello).toBeDefined();
   expect(hello.outgoing).toBe(false);
-  expect(aliceRoom.messages.contents.find(m => m.text == "Hi back").outgoing).toBe(true);
+  expect(aliceRoom.messages.contents.find(m => m.text == "Hi back")!.outgoing).toBe(true);
   // Media message: caption + attachment metadata
-  let media = aliceRoom.messages.contents.find(m => m.text == "Look at this");
+  let media = aliceRoom.messages.contents.find(m => m.text == "Look at this")!;
   expect(media.attachments.first.filename).toBe("IMG-1.jpg");
   expect(media.attachments.first.mimeType).toBe("image/jpeg");
   expect(media.attachments.first.size).toBe(12345);
   // Revoked message becomes a placeholder
   expect(aliceRoom.messages.contents.some(m => m.text == "This message was deleted")).toBe(true);
   // Reply
-  let reply = aliceRoom.messages.contents.find(m => m.text == "Reply to hello");
+  let reply = aliceRoom.messages.contents.find(m => m.text == "Reply to hello")!;
   expect(reply.inReplyTo).toBe(hello.id);
   // Location
   expect(aliceRoom.messages.contents.some(m => m.text.includes("openstreetmap.org"))).toBe(true);
   // Reaction in a 1:1 chat comes from the chat partner
-  expect(hello.reactions.get(alice as any)).toBe("❤️");
+  expect(hello.reactions.get(aliceContact as any)).toBe("❤️");
 
   // Group chat
-  let groupRoom = account.rooms.contents.find(r => r.id == kGroupJID);
+  let groupRoom = account.rooms.contents.find(r => r.id == kGroupJID)!;
   expect(groupRoom.name).toBe("Test Group");
   expect(groupRoom.contact).toBeInstanceOf(Group);
   let group = groupRoom.contact as Group;
@@ -111,9 +116,9 @@ test("Import WhatsApp backup, then import again without duplicates", { timeout: 
   expect(group.participants.contents).toContain(bob); // matched by phone number
   expect(bob.chatAccounts.some(e => e.protocol == "whatsapp" && e.value == kBobJID)).toBe(true);
   // Sender was a @lid alias JID, resolved to Bob's phone number JID
-  let groupMsg = groupRoom.messages.contents.find(m => m.text == "Group hello");
-  expect(groupMsg.contact).toBe(bob);
-  expect(groupMsg.reactions.get(alice as any)).toBe("👍");
+  let groupMsg = groupRoom.messages.contents.find(m => m.text == "Group hello")!;
+  expect((groupMsg.contact as ChatPersonUID).person).toBe(bob);
+  expect(groupMsg.reactions.get(aliceContact as any)).toBe("👍");
 
   // No duplicate persons created, and no contact for the empty chat
   expect(addressbook.persons.contents.filter(p => p.name == "Bob Existing").length).toBe(1);
@@ -140,16 +145,16 @@ test("Import WhatsApp backup, then import again without duplicates", { timeout: 
   account.rooms.clear();
   await account.listRooms();
   expect(account.rooms.length).toBe(2);
-  let aliceRoom2 = account.rooms.contents.find(r => r.id == kAliceJID);
-  expect(aliceRoom2.contact as any).toBe(alice);
+  let aliceRoom2 = account.rooms.contents.find(r => r.id == kAliceJID)!;
+  expect((aliceRoom2.contact as ChatPersonUID).person).toBe(alice);
   await aliceRoom2.listMessages();
   expect(aliceRoom2.messages.length).toBe(7);
-  let media2 = aliceRoom2.messages.contents.find(m => m.text == "Look at this");
+  let media2 = aliceRoom2.messages.contents.find(m => m.text == "Look at this")!;
   expect(media2.attachments.first?.filename).toBe("IMG-1.jpg");
-  let groupRoom2 = account.rooms.contents.find(r => r.id == kGroupJID);
+  let groupRoom2 = account.rooms.contents.find(r => r.id == kGroupJID)!;
   expect(groupRoom2.contact).toBe(group);
   await groupRoom2.listMessages();
-  expect(groupRoom2.messages.contents.find(m => m.text == "Group hello").contact).toBe(bob);
+  expect(groupRoom2.messages.contents.find(m => m.text == "Group hello")!.contact).toBe(bob);
 });
 
 test("Phone number matching", () => {

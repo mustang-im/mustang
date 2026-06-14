@@ -37,9 +37,12 @@ export class WhatsAppContact extends ChatPersonUID {
     this.jid = bare;
   }
 
-  /** Fetches the avatar, status and verified name onto this. Resilient: each
-   * half is caught independently, so a contact who hides one field (or a
-   * transient error) never throws and never blocks message handling. */
+  /** Fetches the
+   * * avatar
+   * * status
+   * * verified name
+   * into this.
+   * Not throwing in case of server errors. */
   async fetch(connection: WhatsAppConnection): Promise<void> {
     try {
       await this.fetchInfo(connection);
