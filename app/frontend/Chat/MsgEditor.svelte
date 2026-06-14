@@ -2,40 +2,44 @@
   on:add-files={onAddAttachment}
   on:inline-files={onAddInline}
   allowInline={true}>
-  <hbox flex class="msg-editor">
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <vbox flex class="editor-wrapper" on:keydown|capture={ev => isEnterSend && onKeyEnter(ev, () => catchErrors(send))}>
-      <HTMLEditorToolbar {editor}>
-        <Button classes="enter-toggle"
-          onClick={() => isEnterSend = !isEnterSend}
-          icon={EnterKeyIcon}
-          iconSize="16px"
-          selected={!isEnterSend}
-          slot="last"
-          />
-      </HTMLEditorToolbar>
-      <vbox flex class="editor-scroll-wrapper">
-        <Scroll>
-          <vbox flex class="editor">
-            <HTMLEditor bind:html={to.draftMessage} bind:editor />
-          </vbox>
-        </Scroll>
-      </vbox>
-    </vbox>
+  <vbox flex class="msg-editor">
     {#if $attachments.hasItems}
-      <AttachmentsPane {attachments} />
+      <vbox class="attachments">
+        <AttachmentsPane {attachments} />
+      </vbox>
     {/if}
-    <vbox class="send-buttons">
-      <RoundButton classes="send-button"
-        onClick={send}
-        icon={SendIcon}
-        iconSize="24px"
-        padding="6px"
-        border={false}
-        disabled={!to.draftMessage}
-        />
-    </vbox>
-  </hbox>
+    <hbox flex>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <vbox flex class="editor-wrapper" on:keydown|capture={ev => isEnterSend && onKeyEnter(ev, () => catchErrors(send))}>
+        <HTMLEditorToolbar {editor}>
+          <Button classes="enter-toggle"
+            onClick={() => isEnterSend = !isEnterSend}
+            icon={EnterKeyIcon}
+            iconSize="16px"
+            selected={!isEnterSend}
+            slot="last"
+            />
+        </HTMLEditorToolbar>
+        <vbox flex class="editor-scroll-wrapper">
+          <Scroll>
+            <vbox flex class="editor">
+              <HTMLEditor bind:html={to.draftMessage} bind:editor />
+            </vbox>
+          </Scroll>
+        </vbox>
+      </vbox>
+      <vbox class="send-buttons">
+        <RoundButton classes="send-button"
+          onClick={send}
+          icon={SendIcon}
+          iconSize="24px"
+          padding="6px"
+          border={false}
+          disabled={!to.draftMessage && $attachments.isEmpty}
+          />
+      </vbox>
+    </hbox>
+  </vbox>
 </FileDropTarget>
 
 <script lang="ts">
@@ -65,7 +69,7 @@
   $: to && attachments.clear(); // TODO save as draft
 
   async function send() {
-    if (!to.draftMessage) {
+    if (!to.draftMessage && attachments.isEmpty) {
       return;
     }
     let msg = to.newMessage();
@@ -73,6 +77,7 @@
     msg.html = to.draftMessage;
     msg.text; // Generate to keep in sync
     msg.contact = to.contact;
+    msg.attachments.addAll(attachments);
     msg.sent = new Date();
     await to.sendMessage(msg);
     reset();
@@ -103,8 +108,23 @@
     color: var(--leftbar-fg);
     padding: 4px 4px 10px 10px;
   }
+  .attachments {
+    height: 112px;
+  }
+  .attachments :global(.attachments-pane .inside) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: start;
+  }
+  .attachments :global(.attachments-pane .attachment) {
+    min-width: 200px;
+  }
+  .attachments :global(.attachments-pane .buttons) {
+    margin-inline-start: 12px;
+  }
   .editor-wrapper {
     flex: 3 0 0;
+    height: 112px;
   }
   .editor-scroll-wrapper {
     background-color: var(--main-bg);

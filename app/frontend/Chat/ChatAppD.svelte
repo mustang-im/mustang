@@ -91,7 +91,4 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
   }
-  .editor {
-    height: 112px;
-  }
 </style>
