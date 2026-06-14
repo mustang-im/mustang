@@ -6,9 +6,10 @@ import { MatrixPerson } from "./MatrixPerson";
 import type { Group } from "../../Abstract/Group";
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
 import { ChatRoomEvent, JoinLeave, RoomEventKind } from "../RoomEvent";
-import { assert } from "../../util/util";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 import type { MatrixEvent } from "matrix-js-sdk";
 
@@ -206,11 +207,29 @@ export class MatrixRoom extends ChatRoom {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
+    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     this.messages.add(message);
-    //console.log("Sending", message.text, "to", this.name);
-    //this.account.client.encryptAndSendToDevices();
-    let response = await this.account.client.sendHtmlMessage(this.id, message.text, message.html);
-    message.id = response.event_id;
+    // Upload each attachment by its `content` blob (never by filename) to the
+    // media repo, then send it as its own message event (m.image/m.file/...).
+    for (let attachment of message.attachments) {
+      let upload = await this.account.client.uploadContent(attachment.content, {
+        name: attachment.filename,
+        type: attachment.mimeType,
+      });
+      await this.account.client.sendMessage(this.id, {
+        msgtype: mediaMsgType(attachment.mimeType),
+        body: attachment.filename,
+        url: upload.content_uri,
+        info: {
+          mimetype: attachment.mimeType,
+          size: attachment.size,
+        },
+      } as any); // any, because SDK content type is a strict XOR union, but our msgtype is dynamic
+    }
+    if (message.text) {
+      let response = await this.account.client.sendHtmlMessage(this.id, message.text, message.html);
+      message.id = response.event_id;
+    }
     // By the time send() returns async, the server already sent us the message to the room
     this.messages.remove(message);
   }
@@ -225,4 +244,16 @@ export class MatrixRoom extends ChatRoom {
     }
     return new MatrixRoomEvent(this);
   }
+}
+
+/** The `m.room.message` msgtype for a file, based on its MIME type. */
+function mediaMsgType(mimeType: string): string {
+  if (mimeType?.startsWith("image/")) {
+    return "m.image";
+  } else if (mimeType?.startsWith("video/")) {
+    return "m.video";
+  } else if (mimeType?.startsWith("audio/")) {
+    return "m.audio";
+  }
+  return "m.file";
 }

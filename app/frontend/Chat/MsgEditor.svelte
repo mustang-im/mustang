@@ -1,7 +1,7 @@
 <FileDropTarget
-  on:add-files={onAddAttachment}
-  on:inline-files={onAddInline}
-  allowInline={true}>
+  on:add-files={onAddAttachment}>
+  <!--on:inline-files={onAddInline}
+  allowInline={true}>-->
   <vbox flex class="msg-editor">
     {#if $attachments.hasItems}
       <vbox class="attachments">

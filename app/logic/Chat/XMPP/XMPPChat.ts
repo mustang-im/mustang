@@ -7,7 +7,6 @@ import type { XMPPPerson } from "./XMPPPerson";
 import { ChatMessage, DeliveryStatus, type RoomMessage } from "../Message";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import { isFileURL } from "./XMPPMedia";
-import { Attachment } from "../../Abstract/Attachment";
 import type { Group } from "../../Abstract/Group";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -239,30 +238,31 @@ export class XMPPChat extends ChatRoom {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: ChatMessage): Promise<void> {
     assert(this.account.isLoggedIn, "Chat account is not logged in");
+    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     message.deliveryStatus = DeliveryStatus.Sending;
     message.id ??= crypto.randomUUID();
     message.from ??= this.account.getOwnContact();
     if (!this.messages.contents.includes(message)) {
       this.messages.add(message);
     }
-    let stanza: Message = {
-      type: this.messageType,
-      to: this.id,
-      id: message.id,
-      body: message.text,
-      // stanza wraps a string body in XHTML-IM and sanitizes it
-      html: message.hasHTML ? { body: message.html as any } : undefined,
-    };
-    this.decorateOutgoing(stanza);
-    if (message.inReplyTo) {
-      stanza.reply = { id: message.inReplyTo };
+    // Upload each attachment `content` blob as a file message: HTTP File Upload (XEP-0363),
+    // or, when encrypted, via OMEMO media sharing (aesgcm://).
+    // XMPP carries one file per message (its URL + OOB).
+    for (let attachment of message.attachments) {
+      let data = new Uint8Array(await attachment.content.arrayBuffer());
+      let url = this.encryption == Encryption.OMEMO
+        ? await this.account.media.uploadEncrypted(attachment.filename, data, attachment.mimeType)
+        : await this.account.media.upload(attachment.filename, data, attachment.mimeType);
+      await this.sendStanza({ body: url, links: [ url ] }); // OOB (XEP-0066), so clients show the file
     }
-    if (this.encryption == Encryption.OMEMO) {
-      await this.encryptOutgoing(stanza, message.text);
-    } else if (message.attachments.hasItems && isFileURL(message.text)) {
-      stanza.links = [{ url: message.text }]; // OOB (XEP-0066), so clients show the file
+    if (message.text) {
+      await this.sendStanza({
+        id: message.id,
+        body: message.text,
+        html: message.hasHTML ? { body: message.html } : undefined,
+        reply: message.inReplyTo,
+      });
     }
-    this.account.client.sendMessage(stanza);
     message.sent = new Date();
     message.received = new Date();
     message.deliveryStatus = DeliveryStatus.Server;
@@ -270,17 +270,28 @@ export class XMPPChat extends ChatRoom {
     await this.saveNewMessages([message]);
   }
 
-  /** Uploads a file and sends it as a message: HTTP File Upload (XEP-0363), or
-   * OMEMO media sharing (aesgcm://) when the chat is encrypted. */
-  async sendFile(attachment: Attachment): Promise<void> {
-    let data = new Uint8Array(await attachment.content.arrayBuffer());
-    let url = this.encryption == Encryption.OMEMO
-      ? await this.account.media.uploadEncrypted(attachment.filename, data, attachment.mimeType)
-      : await this.account.media.upload(attachment.filename, data, attachment.mimeType);
-    let message = this.newMessage();
-    message.text = url;
-    message.attachments.add(attachment);
-    await this.sendMessage(message);
+  /** Builds and sends one outgoing message stanza, applying our delivery-receipt
+   * decorations and OMEMO encryption (or an OOB link for an unencrypted file). */
+  protected async sendStanza(parts: { id?: string, body: string, html?: any, reply?: string, links?: string[] }): Promise<void> {
+    let stanza: Message = {
+      type: this.messageType,
+      to: this.id,
+      id: parts.id ?? crypto.randomUUID(),
+      body: parts.body,
+      html: parts.html, // stanza lib wraps a string body in XHTML-IM and sanitizes it
+    };
+    this.decorateOutgoing(stanza);
+    if (parts.reply) {
+      stanza.reply = { id: parts.reply };
+    }
+    if (this.encryption == Encryption.OMEMO) {
+      await this.encryptOutgoing(stanza, parts.body);
+    } else if (parts.links) {
+      stanza.links = parts.links.map(link => ({
+        url: link,
+      }));
+    }
+    this.account.client.sendMessage(stanza);
   }
 
   /** Adds the 1:1-only delivery receipt + read-marker requests to an outgoing

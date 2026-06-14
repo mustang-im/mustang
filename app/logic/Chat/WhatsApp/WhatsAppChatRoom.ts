@@ -11,6 +11,7 @@ import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
 import { JID } from "./Binary/JID";
 import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "../Signal/Proto/schema";
+import { NotImplemented, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -167,8 +168,13 @@ export class WhatsAppChatRoom extends ChatRoom {
    * XMPPChat.sendMessage — recipient/text come from the message object. Groups are
    * not supported yet (they need sender-key distribution). */
   async sendMessage(message: WhatsAppMessage): Promise<void> {
+    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     if (this.contact instanceof Group) {
       throw new Error("Sending to WhatsApp groups is not supported yet");
+    }
+    if (message.attachments.hasItems) {
+      // Uploading needs the media key + WhatsApp CDN encryption, which isn't wired up yet.
+      throw new NotImplemented("Sending files on WhatsApp is not implemented yet");
     }
     let text = message.text;
     if (!text) {

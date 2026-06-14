@@ -6,9 +6,10 @@ import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
 import { ChatMessage, DeliveryStatus } from "../Message";
-import { assert } from "../../util/util";
 import { Group } from "../../Abstract/Group";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class GraphChatRoom extends ChatRoom {
@@ -88,6 +89,7 @@ export class GraphChatRoom extends ChatRoom {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
+    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     this.messages.add(message);
   }
 
