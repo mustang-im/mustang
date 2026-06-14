@@ -27,6 +27,8 @@ import { WANode } from "./Binary/WANode";
 import { PreKeyBundle } from "../Signal/Crypto/Identity";
 import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal/Crypto/SessionCipher";
 import { encodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
+import { uploadMedia, buildMediaMessage, mediaTypeForMIME } from "./WhatsAppMedia";
+import type { Attachment } from "../../Abstract/Attachment";
 import { waLog } from "./util";
 import { assert } from "../../util/util";
 
@@ -45,6 +47,25 @@ export class WhatsAppSender {
    * the caller stores on the local message so receipts can match it. */
   async sendText(chat: JID, text: string): Promise<string> {
     return await this.sendMessage(chat, { conversation: text });
+  }
+
+  /** Encrypts a file, uploads it to the media CDN, and sends it as a media message
+   * (image/video/audio/document, chosen by its MIME type). A `caption` rides on the
+   * media message, since WhatsApp has no combined text + media. Returns the message
+   * id, like {@link sendText}. */
+  async sendMedia(chat: JID, attachment: Attachment, caption?: string): Promise<string> {
+    let connection = this.account.connection;
+    if (!connection) {
+      throw new Error("WhatsApp: not connected");
+    }
+    assert(attachment.content, `WhatsApp: attachment "${attachment.filename}" has no content to send`);
+    let bytes = new Uint8Array(await attachment.content.arrayBuffer());
+    let type = mediaTypeForMIME(attachment.mimeType);
+    let upload = await uploadMedia(connection, bytes, type);
+    // No thumbnail/dimensions are produced yet — see MediaMeta; the wire fields and
+    // builder are in place for when a generator is added.
+    let payload = buildMediaMessage(type, attachment.mimeType, attachment.filename, upload, caption);
+    return await this.sendMessage(chat, payload);
   }
 
   /** Encrypts `payload` for every device of the chat partner (and our own other

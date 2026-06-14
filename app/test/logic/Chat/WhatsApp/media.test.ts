@@ -3,7 +3,7 @@ import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
 import { encodeWAMessage, decodeWAMessage, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
-import { mediaDescriptorFor, downloadMedia, checkMediaURL } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
+import { mediaDescriptorFor, downloadMedia, checkMediaURL, uploadMedia, buildMediaMessage, mediaTypeForMIME } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
 import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
@@ -90,6 +90,68 @@ test("downloadMedia resolves the CDN host, fetches and decrypts", async () => {
   });
   expect(requested).toBe("https://mmg.example.net/v/doc&auth=TOKEN");
   expect(new TextDecoder().decode(bytes)).toBe("hello media");
+});
+
+test("uploadMedia encrypts, posts to the CDN, and the bytes round-trip", async () => {
+  let plaintext = new TextEncoder().encode("upload me");
+  let posted: { url: string, body: any } | null = null;
+  appGlobal.remoteApp = {
+    kyCreate: async () => ({
+      post: async (url: string, options: any) => {
+        posted = { url, body: options.body };
+        return { url: "https://media.example.net/v/up", direct_path: "/v/up" };
+      },
+    }),
+  };
+  let connection = {
+    sendIQ: async () => new WANode("iq", {}, [
+      new WANode("media_conn", { auth: "AUTH=" }, [new WANode("host", { hostname: "media.example.net" })]),
+    ]),
+  } as any;
+
+  let upload = await uploadMedia(connection, plaintext, MediaType.Document);
+  expect(posted).not.toBeNull();
+  // URL shape: https://<host>/mms/<type>/<token>?auth=<urlencoded>&token=<token>
+  expect(posted!.url).toMatch(/^https:\/\/media\.example\.net\/mms\/document\/[A-Za-z0-9_-]+\?auth=AUTH%3D&token=[A-Za-z0-9_-]+$/);
+  expect(upload.directPath).toBe("/v/up");
+  expect(upload.url).toBe("https://media.example.net/v/up");
+  // The recipient downloads `body` and decrypts with the returned key — round-trip.
+  let decrypted = await decryptMedia(new Uint8Array(posted!.body), upload.mediaKey, MediaType.Document, upload.encrypted.fileEncSHA256);
+  expect(new TextDecoder().decode(decrypted)).toBe("upload me");
+});
+
+test("buildMediaMessage round-trips into a parseable download descriptor", () => {
+  let mediaKey = randomBytes(32);
+  let encrypted = { enc: new Uint8Array(), fileEncSHA256: randomBytes(32), fileSHA256: randomBytes(32), fileLength: 1234 };
+  let upload = { url: "", directPath: "/v/t62/abc", mediaKey, encrypted };
+  let payload = buildMediaMessage(MediaType.Image, "image/jpeg", "pic.jpg", upload, "look at this");
+  // Encode→decode like the wire, then parse it back the way a recipient would.
+  let decoded = decodeWAMessage(encodeWAMessage(payload));
+  expect(decoded.imageMessage!.caption).toBe("look at this");
+  let descriptor = mediaDescriptorFor(decoded.imageMessage!, MediaType.Image);
+  expect(descriptor).not.toBeNull();
+  expect(descriptor!.directPath).toBe("/v/t62/abc");
+  expect(descriptor!.fileLength).toBe(1234);
+  expect(bytesEqual(descriptor!.mediaKey, mediaKey)).toBe(true);
+  expect(bytesEqual(descriptor!.fileEncSHA256!, encrypted.fileEncSHA256)).toBe(true);
+});
+
+test("mediaTypeForMIME maps images, video, audio, and falls back to document", () => {
+  expect(mediaTypeForMIME("image/png")).toBe(MediaType.Image);
+  expect(mediaTypeForMIME("video/mp4")).toBe(MediaType.Video);
+  expect(mediaTypeForMIME("audio/ogg")).toBe(MediaType.Audio);
+  expect(mediaTypeForMIME("application/pdf")).toBe(MediaType.Document);
+  expect(mediaTypeForMIME("")).toBe(MediaType.Document);
+});
+
+test("uploadMedia refuses a media host off the allowlist (SSRF guard)", async () => {
+  appGlobal.remoteApp = { kyCreate: async () => ({ post: async () => ({}) }) };
+  let connection = {
+    sendIQ: async () => new WANode("iq", {}, [
+      new WANode("media_conn", { auth: "T" }, [new WANode("host", { hostname: "internal.corp.local" })]),
+    ]),
+  } as any;
+  await expect(uploadMedia(connection, new Uint8Array([1, 2, 3]), MediaType.Image)).rejects.toThrow(/untrusted/i);
 });
 
 test("checkMediaURL allows only https WhatsApp hosts (SSRF guard)", () => {

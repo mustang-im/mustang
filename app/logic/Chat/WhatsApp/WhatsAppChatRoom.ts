@@ -11,7 +11,7 @@ import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
 import { JID } from "./Binary/JID";
 import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "../Signal/Proto/schema";
-import { NotImplemented, assert } from "../../util/util";
+import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -168,24 +168,29 @@ export class WhatsAppChatRoom extends ChatRoom {
    * XMPPChat.sendMessage — recipient/text come from the message object. Groups are
    * not supported yet (they need sender-key distribution). */
   async sendMessage(message: WhatsAppMessage): Promise<void> {
-    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     if (this.contact instanceof Group) {
       throw new Error("Sending to WhatsApp groups is not supported yet");
     }
-    if (message.attachments.hasItems) {
-      // Uploading needs the media key + WhatsApp CDN encryption, which isn't wired up yet.
-      throw new NotImplemented("Sending files on WhatsApp is not implemented yet");
-    }
     let text = message.text;
-    if (!text) {
-      return;
-    }
+    assert(text || message.attachments.hasItems, `Message is empty`);
+    assert(message.attachments.every(att => att.content), gt`Attachment is empty`);
     message.outgoing = true;
     message.contact = await this.account.getOwnContact() as any;
     message.sent ??= new Date();
     message.received ??= message.sent; // outgoing: "received" = when we sent it (the DB column is non-null)
     message.deliveryStatus = DeliveryStatus.Sending;
-    message.id = await this.account.sender.sendText(JID.parse(this.id), text);
+    let chat = JID.parse(this.id);
+    if (message.attachments.hasItems) {
+      // Each file is its own WhatsApp media message; the text rides as the caption
+      // of the first one, since WhatsApp has no combined text + media message.
+      let first = true;
+      for (let attachment of message.attachments) {
+        message.id = await this.account.sender.sendMedia(chat, attachment, first ? text : undefined);
+        first = false;
+      }
+    } else {
+      message.id = await this.account.sender.sendText(chat, text);
+    }
     if (!this.messages.some(msg => msg.id == message.id)) {
       this.messages.add(message);
     }

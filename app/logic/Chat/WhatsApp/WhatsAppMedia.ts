@@ -13,10 +13,10 @@
 import type { WhatsAppConnection } from "./WhatsAppConnection";
 import { kServerUser } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
-import { decryptMedia, MediaType } from "./Crypto/mediaCrypto";
-import { bytesEqual, sha256 } from "../Signal/Crypto/primitives";
+import { decryptMedia, encryptMedia, MediaType, type EncryptedMedia } from "./Crypto/mediaCrypto";
+import { bytesEqual, sha256, randomBytes, base64Encode } from "../Signal/Crypto/primitives";
 import { kWaHttpUserAgent } from "./clientInfo";
-import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage } from "../Signal/Proto/schema";
+import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage, WAMessage } from "../Signal/Proto/schema";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
@@ -86,22 +86,161 @@ export async function downloadMedia(connection: WhatsAppConnection | null, media
 /** Resolves the media host via a `media_conn` IQ and builds the download URL.
  * The host list is per-session and short-lived; we take the first one. */
 export async function mediaURL(connection: WhatsAppConnection | null, directPath: string): Promise<string> {
+  let conn = await mediaConn(connection);
+  let url = checkMediaURL(`https://${conn.hosts[0]}${directPath}`);
+  return conn.auth ? `${url}&auth=${encodeURIComponent(conn.auth)}` : url;
+}
+
+/** The per-session CDN hosts + auth token for media transfer, from a `media_conn`
+ * IQ. Shared by download ({@link mediaURL}) and upload ({@link uploadMedia}). */
+interface MediaConn {
+  hosts: string[];
+  auth: string;
+}
+async function mediaConn(connection: WhatsAppConnection | null): Promise<MediaConn> {
   if (!connection) {
     throw new Error("Not connected");
   }
   let response = await connection.sendIQ(new WANode("iq",
     { to: kServerUser, type: "set", xmlns: "w:m" }, [new WANode("media_conn")]));
-  let mediaConn = response.child("media_conn");
-  let host = mediaConn?.children("host")[0]?.attrs.hostname ?? "mmg.whatsapp.net";
-  let auth = mediaConn?.attrs.auth;
-  let url = `https://${host}${directPath}`;
-  url = checkMediaURL(url);
-  return auth ? `${url}&auth=${encodeURIComponent(auth)}` : url;
+  let node = response.child("media_conn");
+  let hosts = (node?.children("host") ?? [])
+    .map(host => host.attrs.hostname)
+    .filter((hostname): hostname is string => !!hostname);
+  if (!hosts.length) {
+    hosts = ["mmg.whatsapp.net"];
+  }
+  return { hosts, auth: node?.attrs.auth ?? "" };
+}
+
+// --- Uploading (the symmetric counterpart of downloadMedia) ---
+
+/** Everything an outgoing media message must reference so the recipient can fetch
+ * and decrypt the file: where it now lives on the CDN, the per-file key, and the
+ * hashes/length. Produced by {@link uploadMedia}; inverse of {@link MediaDescriptor}. */
+export interface MediaUpload {
+  /** Full CDN URL the server returned. May be empty — then use `directPath`. */
+  url: string;
+  directPath: string;
+  mediaKey: Uint8Array;
+  encrypted: EncryptedMedia;
+}
+
+/** Encrypts a file with a fresh per-file key and uploads the encrypted blob to the
+ * WhatsApp media CDN — the symmetric counterpart of {@link downloadMedia}. Returns
+ * the CDN location plus the `mediaKey` and hashes to put in the message. Tries each
+ * media host until one accepts the upload. */
+export async function uploadMedia(connection: WhatsAppConnection | null, plaintext: Uint8Array, type: MediaType): Promise<MediaUpload> {
+  let mediaKey = randomBytes(32);
+  let encrypted = await encryptMedia(plaintext, mediaKey, type);
+  let conn = await mediaConn(connection);
+  let token = base64url(encrypted.fileEncSHA256);
+  let query = `?auth=${encodeURIComponent(conn.auth)}&token=${token}`;
+  let lastError: unknown;
+  for (let host of conn.hosts) {
+    try {
+      let url = checkMediaURL(`https://${host}/mms/${mmsTypeFor(type)}/${token}`) + query;
+      let response = await httpPost(url, encrypted.enc);
+      let directPath = sanitize.string(response?.direct_path, "");
+      let resultURL = response?.url ? checkMediaURL(sanitize.url(response.url, "", ["https"])) : "";
+      assert(directPath || resultURL, "WhatsApp media upload returned no location");
+      return { url: resultURL, directPath, mediaKey, encrypted };
+    } catch (ex) {
+      lastError = ex;
+    }
+  }
+  throw lastError ?? new Error("WhatsApp media upload failed");
+}
+
+/** Optional, sender-supplied preview metadata for an outgoing media message.
+ * TODO Implement reading media and thumbnail generation */
+export interface MediaMeta {
+  width?: number;
+  height?: number;
+  /** Duration in seconds, for audio/video. */
+  seconds?: number;
+  /** A small JPEG preview, shown before the full file downloads. */
+  jpegThumbnail?: Uint8Array;
+  /** Audio recorded as a voice note (push-to-talk). */
+  ptt?: boolean;
+}
+
+/** Builds the outgoing media message protobuf from an {@link uploadMedia} result —
+ * the inverse of {@link mediaDescriptorFor}. Picks the sub-message by `type` and
+ * fills the CDN pointer, per-file key and hashes the recipient needs. `caption`
+ * (image/video/document) and `meta` (dimensions/thumbnail) are optional. */
+export function buildMediaMessage(type: MediaType, mimeType: string, filename: string,
+    upload: MediaUpload, caption?: string, meta: MediaMeta = {}): WAMessage {
+  let common = {
+    URL: upload.url || undefined,
+    directPath: upload.directPath,
+    mediaKey: upload.mediaKey,
+    mimetype: mimeType,
+    fileSHA256: upload.encrypted.fileSHA256,
+    fileEncSHA256: upload.encrypted.fileEncSHA256,
+    fileLength: upload.encrypted.fileLength,
+    mediaKeyTimestamp: Math.floor(Date.now() / 1000),
+  };
+  switch (type) {
+    case MediaType.Video:
+      return { videoMessage: { ...common, caption, width: meta.width, height: meta.height, seconds: meta.seconds, jpegThumbnail: meta.jpegThumbnail } };
+    case MediaType.Audio:
+      return { audioMessage: { ...common, seconds: meta.seconds, PTT: meta.ptt } };
+    case MediaType.Document:
+      return { documentMessage: { ...common, fileName: filename, title: filename, caption, jpegThumbnail: meta.jpegThumbnail } };
+    case MediaType.Image:
+    default:
+      return { imageMessage: { ...common, caption, width: meta.width, height: meta.height, jpegThumbnail: meta.jpegThumbnail } };
+  }
+}
+
+/** Picks the WhatsApp media type for an outgoing file from its MIME type. Anything
+ * that isn't an image/video/audio is sent as a document. */
+export function mediaTypeForMIME(mimeType: string): MediaType {
+  if (mimeType?.startsWith("image/")) {
+    return MediaType.Image;
+  } else if (mimeType?.startsWith("video/")) {
+    return MediaType.Video;
+  } else if (mimeType?.startsWith("audio/")) {
+    return MediaType.Audio;
+  }
+  return MediaType.Document;
+}
+
+/** The CDN path segment per media type (`/mms/<segment>/<token>`). */
+function mmsTypeFor(type: MediaType): string {
+  switch (type) {
+    case MediaType.Image: return "image";
+    case MediaType.Sticker: return "image";
+    case MediaType.Video: return "video";
+    case MediaType.Audio: return "audio";
+    case MediaType.Document: return "document";
+    case MediaType.History: return "md-msg-hist";
+  }
+}
+
+/** Standard base64 → URL-safe and unpadded — the form WhatsApp uses for the media
+ * upload token (the file's encrypted-content hash). */
+function base64url(bytes: Uint8Array): string {
+  return base64Encode(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export async function httpGet(url: string): Promise<Uint8Array> {
   let ky = await appGlobal.remoteApp.kyCreate({ headers: { "User-Agent": kWaHttpUserAgent } });
   return new Uint8Array(await ky.get(url, { result: "arrayBuffer" }));
+}
+
+/** POSTs raw bytes (an encrypted media blob) to the media CDN and returns the JSON
+ * reply (`{ url, direct_path }`). The body must be a `Buffer` to survive JPC. */
+async function httpPost(url: string, bytes: Uint8Array): Promise<any> {
+  let ky = await appGlobal.remoteApp.kyCreate({
+    headers: {
+      "User-Agent": kWaHttpUserAgent,
+      "Content-Type": "application/octet-stream",
+    },
+    result: "json",
+  });
+  return await ky.post(url, { body: Buffer.from(bytes) });
 }
 
 function toNumber(value: any): number | undefined {

@@ -49,7 +49,8 @@ export interface EncryptedMedia {
   fileLength: number;
 }
 
-/** Encrypts media for upload. (Sending media is not wired into production yet.) */
+/** Encrypts media for upload: a fresh per-file `mediaKey`, AES-CBC + a 10-byte
+ * HMAC, plus the hashes the recipient verifies (see {@link uploadMedia}). */
 export async function encryptMedia(plaintext: Uint8Array, mediaKey: Uint8Array, type: MediaType): Promise<EncryptedMedia> {
   let keys = expandMediaKey(mediaKey, type);
   let ciphertext = await aesCBCEncrypt(keys.cipherKey, keys.iv, plaintext);

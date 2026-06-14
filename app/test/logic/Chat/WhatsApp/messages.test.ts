@@ -6,6 +6,7 @@ import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/Wh
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
   from "../../../../logic/Chat/WhatsApp/Crypto/adv";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
+import { Attachment } from "../../../../logic/Abstract/Attachment";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
@@ -102,6 +103,40 @@ test("room edits and deletes a message", async () => {
   await room.receiveMessage(stanza("D1"),
     { protocolMessage: { type: ProtocolMessageType.Revoke, key: { id: "M1" } } }, peer);
   expect(target.text).toBe("This message was deleted");
+});
+
+test("room sends files as media, with the text as the first file's caption", async () => {
+  let sentMedia: Array<{ caption: string | undefined, filename: string }> = [];
+  let account = {
+    getOwnContact: async () => new WhatsAppContact(peer, "Me"),
+    sender: {
+      sendMedia: async (_chat: JID, attachment: any, caption?: string) => {
+        sentMedia.push({ caption, filename: attachment.filename });
+        return "MID" + sentMedia.length;
+      },
+      sendText: async () => { throw new Error("must not send a text message when there are attachments"); },
+    },
+    storage: { saveMessage: async () => undefined },
+  } as any;
+  let room = new WhatsAppChatRoom(account);
+  room.id = peer.toString();
+  room.contact = new WhatsAppContact(peer, "Alice") as any;
+
+  let message = room.newMessage();
+  message.text = "here you go";
+  for (let name of ["a.pdf", "b.png"]) {
+    let attachment = new Attachment();
+    attachment.filename = name;
+    attachment.mimeType = name.endsWith(".png") ? "image/png" : "application/pdf";
+    attachment.content = new File([new Uint8Array([1, 2, 3])], name);
+    message.attachments.add(attachment);
+  }
+  await room.sendMessage(message);
+
+  expect(sentMedia.map(m => m.filename)).toEqual(["a.pdf", "b.png"]);
+  expect(sentMedia[0].caption).toBe("here you go"); // caption rides on the first file
+  expect(sentMedia[1].caption).toBeUndefined(); // and is not repeated on the rest
+  expect(message.id).toBe("MID2");
 });
 
 test("media encrypt/decrypt round-trips and detects tampering", async () => {
