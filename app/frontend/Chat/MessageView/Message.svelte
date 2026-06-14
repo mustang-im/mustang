@@ -24,22 +24,25 @@
         <hbox class="time value">{getDateTimeString($message.sent)}</hbox>
       </hbox>
     {/if}
-    <vbox class="bubble">
-      {#if $$slots.menu}
-        <hbox class="menu" class:openMenuOnMessageHover>
-          <slot name="menu" />
-        </hbox>
-      {/if}
-      <slot name="inner-top" />
-      <div class="text value font-normal">
-        {@html $message.html || ""}
-        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
-        <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
-        -->
-        <slot name="bubble" />
-      </div>
-      <slot name="inner-bottom" />
-    </vbox>
+    <Attachments message={$message} />
+    {#if $message.rawText || $message.hasHTML}
+      <vbox class="bubble">
+        {#if $$slots.menu}
+          <hbox class="menu" class:openMenuOnMessageHover>
+            <slot name="menu" />
+          </hbox>
+        {/if}
+        <slot name="inner-top" />
+          <div class="text value font-normal">
+            {@html $message.html || ""}
+            <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
+            <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
+            -->
+            <slot name="bubble" />
+          </div>
+        <slot name="inner-bottom" />
+      </vbox>
+    {/if}
     {#if $reactions.length > 0}
       <hbox class="reactions">
         {#each [...$reactions.entries()] as [sender, emoji]}
@@ -61,6 +64,7 @@
   import { ChatPersonUID } from "../../../logic/Chat/ChatPersonUID";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
+  import Attachments from "./Attachments.svelte";
   import { getDateTimeString } from "../../Util/date";
 
   export let message: Message;
