@@ -5,7 +5,7 @@ import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage }
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
   from "../../../../logic/Chat/WhatsApp/Crypto/adv";
-import { ChatPerson } from "../../../../logic/Chat/ChatPerson";
+import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
@@ -18,7 +18,7 @@ let peer = JID.parse("412300000000@s.whatsapp.net");
 /** Parses a payload into a WhatsAppMessage, exercising the protobuf schema
  * (encode→decode, like the wire) and the message's own interpretation. */
 function parse(fields: WAMessage): WhatsAppMessage {
-  let room = { contact: new ChatPerson("whatsapp", peer.toString(), "Alice") } as any;
+  let room = { contact: new ChatPersonUID("whatsapp", peer.toString(), "Alice") } as any;
   let message = new WhatsAppMessage(room);
   // The room unwraps before interpreting content; mirror that here.
   message.readContent(WhatsAppMessage.unwrap(decodeWAMessage(encodeWAMessage(fields))));
@@ -63,7 +63,7 @@ function makeRoom(): WhatsAppChatRoom {
   let saved: any[] = [];
   let account = { storage: { saveMessage: async (m: any) => saved.push(m) }, errorCallback: () => undefined } as any;
   let room = new WhatsAppChatRoom(account);
-  room.contact = new ChatPerson("whatsapp", peer.toString(), "Alice") as any;
+  room.contact = new ChatPersonUID("whatsapp", peer.toString(), "Alice") as any;
   return room;
 }
 

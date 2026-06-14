@@ -1,8 +1,8 @@
-import { ChatPerson } from "../ChatPerson";
+import { ChatPersonUID } from "../ChatPersonUID";
 import type { MatrixAccount } from "./MatrixAccount";
 import type { RoomMember } from "matrix-js-sdk";
 
-export class MatrixPerson extends ChatPerson {
+export class MatrixPerson extends ChatPersonUID {
   constructor(matrixID: string, name: string) {
     super("matrix", matrixID, name);
   }

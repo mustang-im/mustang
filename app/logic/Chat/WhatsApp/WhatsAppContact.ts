@@ -12,7 +12,7 @@
  *
  * The avatar HTTP download and the live usync response shapes can only be
  * validated against the real servers; the parsers are unit-tested. */
-import { ChatPerson } from "../ChatPerson";
+import { ChatPersonUID } from "../ChatPersonUID";
 import type { Person } from "../../Abstract/Person";
 import type { WhatsAppConnection } from "./WhatsAppConnection";
 import { JID, kServerUser } from "./Binary/JID";
@@ -23,7 +23,7 @@ import { randomBytes } from "../Signal/Crypto/primitives";
 import { appGlobal } from "../../app";
 import { blobToDataURL } from "../../util/util";
 
-export class WhatsAppContact extends ChatPerson {
+export class WhatsAppContact extends ChatPersonUID {
   /** The non-device JID this contact is keyed by. */
   readonly jid: JID;
   /** The "about"/status line the contact set, if any. */

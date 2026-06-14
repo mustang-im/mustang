@@ -18,12 +18,12 @@
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
-  import type { ChatPerson } from "../../../logic/Chat/ChatPerson";
+  import type { ChatPersonUID } from "../../../logic/Chat/ChatPersonUID";
   import contactsIcon from '../../asset/icon/appBar/contacts.svg?raw';
   import Icon from "../../Shared/Icon.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let person: PersonOrGroup | ChatPerson;
+  export let person: PersonOrGroup | ChatPersonUID;
   export let size = 48;
   export let placeholder: "none" | "empty" | "icon" | "slot" = "none";
 </script>

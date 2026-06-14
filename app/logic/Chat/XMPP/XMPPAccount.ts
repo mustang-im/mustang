@@ -9,7 +9,7 @@ import { XMPPMedia } from './XMPPMedia';
 import { registerXMPPExtensions } from './XMPPStanzaExtensions';
 import type { Group } from '../../Abstract/Group';
 import { Person } from '../../Abstract/Person';
-import { ChatPerson, nameFromChatID } from '../ChatPerson';
+import { ChatPersonUID, nameFromChatID } from '../ChatPersonUID';
 import { ConnectError, LoginError } from '../../Abstract/Account';
 import { kImageMimeTypes } from '../../Files/FileType/MIMETypes';
 import { appGlobal } from '../../app';
@@ -25,7 +25,7 @@ import type * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
-  readonly rooms = new MapColl<ChatPerson | Group, XMPPChat>;
+  readonly rooms = new MapColl<ChatPersonUID | Group, XMPPChat>;
   /** Bare JID -> contact, for the people on our server-side contact list */
   readonly roster = new MapColl<string, Person>();
   client: XMPP.Agent;
@@ -369,7 +369,7 @@ export class XMPPAccount extends ChatAccount {
       return existing;
     }
     assert(appGlobal.personalAddressbook, "Need address book for chat contacts");
-    let chatPerson = new ChatPerson("xmpp", jid, name);
+    let chatPerson = new ChatPersonUID("xmpp", jid, name);
     let person = chatPerson.findPerson();
     if (!person) {
       person = chatPerson.createPerson(appGlobal.personalAddressbook);

@@ -1,5 +1,5 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
-import type { ChatPerson } from "./ChatPerson";
+import type { ChatPersonUID } from "./ChatPersonUID";
 import { ContactEntry, type Person } from "../Abstract/Person";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
@@ -16,8 +16,8 @@ export class ChatAccount extends TCPAccount {
   @notifyChangedProperty
   storage: ChatAccountStorage;
 
-  readonly persons = new ArrayColl<ChatPerson>();
-  readonly rooms = new MapColl<ChatPerson | Group, ChatRoom>;
+  readonly persons = new ArrayColl<ChatPersonUID>();
+  readonly rooms = new MapColl<ChatPersonUID | Group, ChatRoom>;
   /** Contacts of this chat account which should *not* appear in the
    * user's address books, e.g. group chat rooms and their members.
    * Deliberately not in `appGlobal.addressbooks`, and not saved.

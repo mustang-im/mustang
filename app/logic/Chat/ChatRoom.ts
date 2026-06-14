@@ -1,7 +1,7 @@
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave, RoomEventKind, RoomNameChange } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
-import type { ChatPerson } from "./ChatPerson";
+import type { ChatPersonUID } from "./ChatPersonUID";
 import { Group } from "../Abstract/Group";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
@@ -39,7 +39,7 @@ export class ChatRoom extends Observable {
   /** The people in this chat room.
    * If this is a 1:1 chat, contains only 1.
    * Not including our own user. */
-  readonly members = new ArrayColl<ChatPerson>();
+  readonly members = new ArrayColl<ChatPersonUID>();
   /** The messages in this chat room.
    * This is also used for the MailChat view, so this may also contain EMails */
   readonly messages = new ArrayColl<RoomMessage>();
@@ -113,4 +113,4 @@ export class ChatRoom extends Observable {
   }
 }
 
-export type ChatContact = ChatPerson | Group;
+export type ChatContact = ChatPersonUID | Group;

@@ -2,7 +2,7 @@ import { ChatRoom } from "../ChatRoom";
 import { WhatsAppMessage } from "./WhatsAppMessage";
 import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
-import { ChatPerson } from "../ChatPerson";
+import { ChatPersonUID } from "../ChatPersonUID";
 import { DeliveryStatus } from "../Message";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Person } from "../../Abstract/Person";
@@ -148,7 +148,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     let person = appGlobal.persons.find(p =>
       p.chatAccounts.some(e => e.protocol == "whatsapp" && JID.parse(e.value).user == sender.user));
-    return person ?? new ChatPerson("whatsapp", sender.toString());
+    return person ?? new ChatPersonUID("whatsapp", sender.toString());
   }
 
   protected updateLastMessage() {
@@ -195,9 +195,9 @@ export class WhatsAppChatRoom extends ChatRoom {
   }
 }
 
-function chatPersonFor(person: Person): ChatPerson {
+function chatPersonFor(person: Person): ChatPersonUID {
   let chatID = person.chatAccounts.find(e => e.protocol == "whatsapp")?.value;
-  let chatPerson = new ChatPerson("whatsapp", chatID, person.name);
+  let chatPerson = new ChatPersonUID("whatsapp", chatID, person.name);
   chatPerson.person = person;
   chatPerson.picture = person.picture;
   return chatPerson;

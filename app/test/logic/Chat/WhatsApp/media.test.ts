@@ -5,7 +5,7 @@ import { encodeWAMessage, decodeWAMessage, type WAMessage } from "../../../../lo
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { mediaDescriptorFor, downloadMedia, checkMediaURL } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
 import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
-import { ChatPerson } from "../../../../logic/Chat/ChatPerson";
+import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { expect, test } from "vitest";
@@ -16,7 +16,7 @@ let peer = JID.parse("412300000000@s.whatsapp.net");
  * (encode→decode, like the wire) and the message's own interpretation. The room
  * carries the (stubbed) connection used for the background media download. */
 function parse(fields: WAMessage, account?: any): WhatsAppMessage {
-  let room = { contact: new ChatPerson("whatsapp", peer.toString(), "Alice"), account } as any;
+  let room = { contact: new ChatPersonUID("whatsapp", peer.toString(), "Alice"), account } as any;
   let message = new WhatsAppMessage(room);
   message.readContent(WhatsAppMessage.unwrap(decodeWAMessage(encodeWAMessage(fields))));
   return message;

@@ -3,12 +3,12 @@ import type { GraphAccount } from '../../Mail/Graph/GraphAccount';
 import { GraphChatRoom } from './GraphChatRoom';
 import type { TGraphChat } from './TGraphChat';
 import type { Group } from '../../Abstract/Group';
-import type { ChatPerson } from '../ChatPerson';
+import type { ChatPersonUID } from '../ChatPersonUID';
 import { MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {
   readonly protocol: string = "chat-graph";
-  readonly rooms = new MapColl<ChatPerson | Group, GraphChatRoom>;
+  readonly rooms = new MapColl<ChatPersonUID | Group, GraphChatRoom>;
 
   get account(): GraphAccount {
     return this.mainAccount as GraphAccount;

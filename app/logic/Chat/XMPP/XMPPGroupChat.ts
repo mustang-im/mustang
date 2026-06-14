@@ -1,7 +1,7 @@
 import { XMPPChat } from "./XMPPChat";
 import { getBareJID } from "./XMPPAccount";
 import type { XMPPChatMessage } from "./XMPPChatMessage";
-import { ChatPerson } from "../ChatPerson";
+import { ChatPersonUID } from "../ChatPersonUID";
 import { Person } from "../../Abstract/Person";
 import { Group } from "../../Abstract/Group";
 import { PersonUID } from "../../Abstract/PersonUID";
@@ -64,7 +64,7 @@ export class XMPPGroupChat extends XMPPChat {
    * see `onOccupantJoined()` */
   async listMembers(): Promise<void> {
     let chatPersons = [...this.memberByNick.entries()].map(([nick, person]) => {
-      let chatPerson = new ChatPerson("xmpp", `${this.id}/${nick}`, person.name);
+      let chatPerson = new ChatPersonUID("xmpp", `${this.id}/${nick}`, person.name);
       chatPerson.person = person;
       chatPerson.picture = person.picture;
       return chatPerson;

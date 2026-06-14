@@ -5,7 +5,7 @@ import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { capitalizeWords, type URLString } from "../util/util";
 
-export class ChatPerson extends PersonUID {
+export class ChatPersonUID extends PersonUID {
   @notifyChangedProperty
   chatID: string;
   @notifyChangedProperty
