@@ -5,7 +5,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { WhatsAppAccount } from "../../../../logic/Chat/WhatsApp/WhatsAppAccount";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
-import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
+import { JID, kServerUser } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
@@ -58,7 +58,8 @@ test("pictureIQ asks for the contact's preview avatar URL", () => {
   let iq = new WhatsAppContact(JID.parse("491761111111:5@s.whatsapp.net")).pictureIQ();
   expect(iq.attrs.type).toBe("get");
   expect(iq.attrs.xmlns).toBe("w:profile:picture");
-  expect(iq.attrs.to).toBe(kAliceJID); // device id stripped
+  expect(iq.attrs.to).toBe(kServerUser); // goes to the server...
+  expect(iq.attrs.target).toBe(kAliceJID); // ...with the contact (device id stripped) in `target`
   let picture = iq.child("picture")!;
   expect(picture.attrs.type).toBe("preview"); // the small thumbnail for a contact list
   expect(picture.attrs.query).toBe("url");

@@ -96,7 +96,7 @@ export class WhatsAppContact extends ChatPersonUID {
 
   /** The `w:profile:picture` IQ for this contact's avatar (the small thumbnail). */
   pictureIQ(): WANode {
-    return new WANode("iq", { to: this.jid.toString(), type: "get", xmlns: "w:profile:picture" }, [
+    return new WANode("iq", { to: kServerUser, type: "get", xmlns: "w:profile:picture", target: this.jid.toString() }, [
       new WANode("picture", { type: "preview", query: "url" }),
     ]);
   }
