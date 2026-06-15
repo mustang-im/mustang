@@ -23,16 +23,16 @@ export class RawFilesAttachment implements MailContentStorage {
   }
 
   async saveAttachment(attachment: Attachment) {
-    if (!attachment.content || attachment.filepathLocal) {
+    let message = attachment.message;
+    if (!attachment.content || attachment.filepathLocal || !message.dbID) {
       return;
     }
-    let message = attachment.message;
     let filepath = await this.getFilePath(attachment, message);
     let contents = new Uint8Array(await attachment.content.arrayBuffer());
     // Permissions: Only user can read the file, but not modify
     await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
     attachment.filepathLocal = filepath;
-    // save the local file path in the message DB
+    // Save the local file path in the message DB
     if (message instanceof EMail) {
       await SQLEMail.saveAttachmentFilename(message, attachment);
     } else if (message instanceof ChatMessage) {

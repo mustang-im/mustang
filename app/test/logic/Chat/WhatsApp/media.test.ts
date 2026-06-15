@@ -230,7 +230,7 @@ test("an attachment's bytes are written to disk and read back (RawFilesAttachmen
     fs: { mkdir: async () => undefined, chmod: async () => undefined },
   };
   // The DB metadata update isn't under test here (no SQLite in this environment).
-  let saveFile = vi.spyOn(SQLChatMessage, "saveAttachmentFile").mockResolvedValue(undefined);
+  let saveFile = vi.spyOn(SQLChatMessage, "saveAttachmentFilename").mockResolvedValue(undefined);
 
   let room = { contact: new WhatsAppContact(peer, "Alice"), account: { storage: storageStub } } as any;
   let message = new WhatsAppMessage(room);

@@ -37,7 +37,7 @@ export class MatrixRoom extends ChatRoom {
       this.redactMessage(event);
       return null;
     } else if (type == "m.reaction") {
-      this.getReaction(event);
+      await this.getReaction(event);
       return null;
     } else if (type == "m.room.encrypted") {
       return await this.getEncryptedUserMessage(event);
@@ -77,17 +77,17 @@ export class MatrixRoom extends ChatRoom {
     msg.outgoing = senderUserID == this.account.globalUserID;
   }
 
-  getUserMessage(event): ChatMessage | null {
+  async getUserMessage(event): Promise<ChatMessage | null> {
     let relation = event.getRelation();
     if (relation?.rel_type == "m.replace") {
       // <https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/2676-message-editing.md>
       let orgID = sanitize.nonemptystring(relation.event_id);
       let orgMessage = this.messages.find(m => m.id == orgID);
       if (orgMessage) { // In case we're live and received the original - TODO untested
-        console.log("replacement message", event.getContent());
         let content = event.getContent()["m.new_content"];
         orgMessage.text = content.body;
         orgMessage.rawHTMLDangerous = content.formatted_body;
+        await this.account.storage.saveMessage(orgMessage);
       }
       return null;
     }
@@ -102,8 +102,16 @@ export class MatrixRoom extends ChatRoom {
     if (replacedBy) {
       content = content["m.new_content"];
     }
-    msg.text = content.body;
-    msg.rawHTMLDangerous = content.formatted_body;
+    if (MatrixChatMessage.isMedia(content)) {
+      // `m.image`/`m.file`/… — `content.body` is the filename, not text for user,
+      // so turn it into an attachment, download and store it.
+      // This runs in the fetch loop, so download in the background.
+      msg.addMedia(content)
+        .catch(ex => this.account.errorCallback);
+    } else {
+      msg.text = content.body;
+      msg.rawHTMLDangerous = content.formatted_body;
+    }
     return msg;
   }
 
@@ -130,7 +138,7 @@ export class MatrixRoom extends ChatRoom {
     // TODO
   }
 
-  getReaction(event): void {
+  async getReaction(event): Promise<void> {
     let orgID = event.event.TODO;
     this.messages.find(m => m.id == orgID);
     let senderUserID = event.getSender();
@@ -146,6 +154,7 @@ export class MatrixRoom extends ChatRoom {
     }
     assert(reactTo instanceof ChatMessage, "Reacting to something that is not a message");
     reactTo.reactions.set(person, emoji);
+    await this.account.storage.saveMessage(reactTo);
   }
 
   getJoinLeaveInviteEvent(event): ChatRoomEvent {

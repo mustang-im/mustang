@@ -2,9 +2,9 @@ import { ChatAccount } from '../ChatAccount';
 import { MatrixRoom } from './MatrixRoom';
 import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage } from '../Message';
+import { SQLChatMessage } from '../SQL/SQLChatMessage';
 import { IncomingCall, RoomEventKind } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
-import { ChatPersonUID } from '../ChatPersonUID';
 import { MatrixPerson } from './MatrixPerson';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
@@ -113,6 +113,9 @@ export class MatrixAccount extends ChatAccount {
 
   async listRooms(): Promise<void> {
     // await super.listRooms(); TODO merge fresh list from server with old
+    if (!this.dbID) {
+      await this.save(); // needed to save rooms
+    }
     let allRooms = await this.client.getRooms();
     await Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
@@ -148,12 +151,19 @@ export class MatrixAccount extends ChatAccount {
       chatRoom.contact = group;
     }
     this.rooms.set(chatRoom.contact as MatrixPerson | Group, chatRoom);
+    await chatRoom.save();
+    await SQLChatMessage.readAll(chatRoom);
 
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
+        let id = event.getId();
+        if (id && chatRoom.messages.some(msg => msg.id == id)) {
+          continue; // already loaded from our DB in `readAll()` above
+        }
         let msg = await chatRoom.getEvent(event); // process system events
-        if (msg && true || msg instanceof ChatMessage) { // when joining, we add only user messages
+        if (msg) {
           chatRoom.messages.add(msg);
+          await this.storage.saveMessage(msg);
         }
       } catch (ex) {
         this.errorCallback(ex);
@@ -190,12 +200,13 @@ export class MatrixAccount extends ChatAccount {
         if (toStartOfTimeline) {
           return; // no paginated results
         }
-        let chatRoom = await this.getRoom(room.roomId);
+        let chatRoom = await this.getRoom(room); // the Room object, not its id
         let message = await chatRoom.getEvent(event);
         if (!message) {
           return;
         }
         chatRoom.messages.add(message);
+        await this.storage.saveMessage(message);
         if (message instanceof ChatMessage) {
           chatRoom.lastMessage = message;
         }

@@ -128,6 +128,7 @@ export class XMPPChat extends ChatRoom {
     }
     if (msg.text && isFileURL(msg.text)) {
       urls.add(msg.text.trim());
+      msg.text = ""; // the body is only the file URL; show the attachment, not the raw URL
     }
     for (let url of urls) {
       msg.addMediaFromURL(url);
