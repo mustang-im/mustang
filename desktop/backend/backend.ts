@@ -122,6 +122,7 @@ async function readFile(path: string): Promise<ArrayBufferLike> {
   return buffer;
 }
 async function writeFile(path: string, permissions: number, contents: Uint8Array): Promise<void> {
+  await fsPromises.rm(path, { force: true });
   let fileHandle = await fsPromises.open(path, "w", permissions);
   await fileHandle.write(contents);
   await fileHandle.close();

@@ -3,6 +3,7 @@ import type { Attachment } from "../../Abstract/Attachment";
 import type { Message } from "../../Abstract/Message";
 import { EMail } from "../EMail";
 import { ChatMessage } from "../../Chat/Message";
+import { ChatPersonUID } from "../../Chat/ChatPersonUID";
 import { SQLChatMessage } from "../../Chat/SQL/SQLChatMessage";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { getFilesDir } from "../../util/backend-wrapper";
@@ -104,7 +105,8 @@ export class RawFilesAttachment implements MailContentStorage {
     if (message instanceof EMail) {
       return `${filesDir}/files/email/${sanitize.filename(message.from?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson")}/${message.dbID}-${sanitize.filename(message.baseSubject.substring(0, 30), "unknownSubject")}`;
     } else if (message instanceof ChatMessage) {
-      return `${filesDir}/files/chat/${sanitize.filename(message.from?.chatID?.replace("@", "-").substring(0, 30), "unknownPerson")}/${message.dbID}`;
+      let chatID = (message.contact instanceof ChatPersonUID ? message.contact : message.from).chatID;
+      return `${filesDir}/files/chat/${sanitize.filename(chatID?.replace("@", "-").substring(0, 30), "unknownPerson")}/${message.dbID}`;
     } else {
       throw new NotReached();
     }
