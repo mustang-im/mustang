@@ -75,7 +75,7 @@ pacman:
 flatpak:
   runtime: org.freedesktop.Platform
   sdk: org.freedesktop.Sdk
-  runtimeVersion: "24.08"
+  runtimeVersion: "25.08"
 protocols:
   name: Send mail
   schemes:
