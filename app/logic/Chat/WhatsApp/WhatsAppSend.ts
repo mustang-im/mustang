@@ -25,6 +25,8 @@ import { JID, kServerUser, kServerLid } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
 import { PreKeyBundle } from "../Signal/Crypto/Identity";
 import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal/Crypto/SessionCipher";
+import { createSenderKey, createDistributionMessage, groupEncrypt } from "../Signal/Crypto/GroupCipher";
+import { sha256, base64Encode } from "../Signal/Crypto/primitives";
 import { encodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
 import { uploadMedia, buildMediaMessage, mediaTypeForMIME } from "./WhatsAppMedia";
 import type { Attachment } from "../../Abstract/Attachment";
@@ -77,7 +79,7 @@ export class WhatsAppSender {
       throw new Error("WhatsApp: not connected");
     }
     if (chat.isGroup) {
-      throw new Error("WhatsApp: sending to groups is not supported yet");
+      return await this.sendGroupMessage(chat, payload);
     }
     let messageID = WhatsAppSender.generateMessageID();
     let plaintext = encodeWAMessage(payload);
@@ -116,6 +118,104 @@ export class WhatsAppSender {
     this.account.rememberSent(messageID, payload); // so a retry receipt can re-send
     await connection.sendNode(this.messageStanza(messageID, chat.toNonDevice(), encNodes, anyPreKey));
     return messageID;
+  }
+
+  /** Sends `payload` to a group via Signal Sender Keys: one group-encrypted
+   * `skmsg` for everyone, plus a per-recipient-device SenderKeyDistributionMessage
+   * (SKDM) over each pairwise session so they can decrypt it. The group's
+   * addressing mode (lid/pn) — from its metadata, NOT the chat server — governs
+   * our own sender identity and the wire `addressing_mode`. Returns the message id. */
+  async sendGroupMessage(chat: JID, payload: WAMessage): Promise<string> {
+    let connection = this.account.connection;
+    let store = this.account.signalStore;
+    if (!connection || !store) {
+      throw new Error("WhatsApp: not connected");
+    }
+    let room = this.account.groupRoomFor(chat);
+    if (!room) {
+      throw new Error("WhatsApp: no group room to send to " + chat.toString());
+    }
+    await room.ensureMetadata();
+    let mode = room.addressingMode;
+    let ownIdentity = this.ownGroupIdentity(mode);
+    if (!ownIdentity) {
+      throw new Error("WhatsApp: no own identity for group send");
+    }
+    waLog("group send: chat", chat.toString(), "mode", mode, "own", ownIdentity.toString());
+
+    // Participants are already in the group's namespace (lid in lid mode). We're a
+    // member, so our own devices come back from usync — no separate self-add.
+    let participantBaseJIDs = room.participants.map(p => p.jid.toNonDevice());
+    // The phash the server validates is over EVERY participant device INCLUDING
+    // our own sending device (verified live); but we never encrypt to ourselves.
+    let hashDevices = (await this.fetchDeviceList(participantBaseJIDs)).filter(device => device.device != 99);
+    let devices = hashDevices.filter(device => !this.isThisDevice(device));
+    waLog("group send: devices", devices.map(device => device.toString()).join(", ") || "(none)");
+
+    // Our own sender-key state for the group. Keyed to match the decrypt-side
+    // lookup `${group}|${user}.${device}`, so our other devices (and we after a
+    // restart) can decrypt our own skmsg (spec 01 §g, 03 §4b).
+    let ownStoreKey = `${chat.toNonDevice().toString()}|${ownIdentity.user}.${this.account.deviceJID!.device}`;
+    let ourState = store.senderKeys.get(ownStoreKey);
+    if (!ourState) {
+      ourState = createSenderKey(generateSenderKeyID());
+      store.senderKeys.set(ownStoreKey, ourState);
+    }
+
+    // The SKDM rides inside a Message proto, encrypted per device over its 1:1 session.
+    let skdmPlaintext = encodeWAMessage({
+      senderKeyDistributionMessage: {
+        groupID: chat.toNonDevice().toString(),
+        axolotlSenderKeyDistributionMessage: createDistributionMessage(ourState),
+      },
+    });
+    await this.establishSessions(devices);
+    let encNodes: WANode[] = [];
+    let anyPreKey = false;
+    let preKeyDevices: string[] = [];
+    let msgDevices: string[] = [];
+    for (let device of devices) {
+      let address = this.addressFor(device);
+      if (!store.sessions.has(address)) {
+        waLog("group send:   SKIP", device.toString(), "— no session");
+        continue;
+      }
+      let encrypted = await encrypt(store, address, skdmPlaintext);
+      anyPreKey ||= encrypted.type == "pkmsg";
+      (encrypted.type == "pkmsg" ? preKeyDevices : msgDevices).push(device.toString());
+      encNodes.push(this.participantNode(device, encrypted));
+    }
+    waLog("group send: SKDM pkmsg ->", preKeyDevices.join(", ") || "(none)",
+      "| msg ->", msgDevices.join(", ") || "(none)");
+
+    let skmsg = await groupEncrypt(ourState, encodeWAMessage(payload));
+    this.account.scheduleSave(); // the group ratchet advanced
+    waLog("group send: skmsg", skmsg.length, "bytes");
+
+    let phash = participantListHashV2(hashDevices);
+    let stanza = this.groupMessageStanza(WhatsAppSender.generateMessageID(), chat.toNonDevice(),
+      messageType(payload), mode, phash, encNodes, anyPreKey, skmsg);
+    let messageID = stanza.attrs.id;
+    this.account.rememberSent(messageID, payload);
+    this.account.rememberGroupPhash(messageID, chat.toNonDevice().toString(), phash);
+    await connection.sendNode(stanza);
+    return messageID;
+  }
+
+  /** Our own identity in a group's addressing namespace: our LID in lid mode,
+   * else our phone number. (Unlike ownIdentityFor, which keys off the chat server
+   * — a group's server is always g.us, so the mode comes from its metadata.) */
+  protected ownGroupIdentity(mode: "lid" | "pn"): JID | null {
+    let pn = this.account.deviceJID;
+    let lid = this.account.ownLID;
+    return mode == "lid" ? (lid ?? pn) : (pn ?? lid);
+  }
+
+  /** Clears any per-group sender-key distribution memory after a membership change
+   * so the next send re-distributes. We re-distribute the sender key to every
+   * current device on each send, so there's no per-device memory to clear — a stub
+   * for the account's remove-handler to call. */
+  resetGroupSenderKey(_group: JID): void {
   }
 
   /** Sends an encrypted message to our OWN account (a device-to-device "peer"
@@ -415,6 +515,22 @@ export class WhatsAppSender {
     return stanza;
   }
 
+  /** The outgoing group `<message>`: the per-device SKDM `<enc>`s in
+   * `<participants>`, our `<device-identity>` when any SKDM was a pkmsg, then the
+   * group ciphertext as `<enc type="skmsg">`. Child order is participants →
+   * device-identity → skmsg. NO deviceSentMessage for groups. */
+  protected groupMessageStanza(messageID: string, chat: JID, type: string, mode: "lid" | "pn",
+    phash: string, encNodes: WANode[], withDeviceIdentity: boolean, skmsg: Uint8Array): WANode {
+    let stanza = new WANode("message",
+      { id: messageID, type, to: chat.toString(), addressing_mode: mode, phash },
+      [new WANode("participants", {}, encNodes)]);
+    if (withDeviceIdentity) {
+      this.attachDeviceIdentity(stanza);
+    }
+    (stanza.content as WANode[]).push(new WANode("enc", { v: "2", type: "skmsg" }, skmsg));
+    return stanza;
+  }
+
   /** One `<to jid=…><enc v=2 type=…>…</enc></to>` participant node. */
   protected participantNode(device: JID, encrypted: EncryptedSignalMessage): WANode {
     return new WANode("to", { jid: device.toString() }, [
@@ -445,6 +561,36 @@ export class WhatsAppSender {
   }
 }
 
+
+/** The `<message type>` attr from the payload: "media" for any media content,
+ * else "text" (the only two we send). */
+function messageType(payload: WAMessage): string {
+  if (payload.imageMessage || payload.videoMessage || payload.audioMessage
+    || payload.documentMessage || payload.stickerMessage) {
+    return "media";
+  }
+  return "text";
+}
+
+/** The participant-list hash the server validates a group send against:
+ * `"2:" + base64(sha256(sorted ADStrings joined "")[:6])`, standard alphabet, no
+ * padding. ADString = `${user}.0:${device}@${server}` (raw agent 0). The hashed
+ * set is EVERY participant device including our own sending device — verified
+ * byte-exact against the live server's returned phash for two sends. */
+function participantListHashV2(devices: JID[]): string {
+  let adStrings = devices.map(device => `${device.user}.0:${device.device}@${device.server}`).sort();
+  waLog("group send: phash over", adStrings.join(" | "));
+  let digest = sha256(new TextEncoder().encode(adStrings.join("")));
+  let base64 = base64Encode(digest.slice(0, 6)).replace(/=+$/, ""); // raw-std, no padding
+  return "2:" + base64;
+}
+
+/** A random sender-key id (a small non-negative int, like Signal's keyhelper). */
+function generateSenderKeyID(): number {
+  let bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) & 0x7FFFFFFF;
+}
 
 /** A random session id for a usync query, as the client tags each batch with. */
 function usyncSessionID(): string {

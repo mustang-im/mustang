@@ -1,6 +1,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
 import { WhatsAppChatRoom } from "../../../../logic/Chat/WhatsApp/WhatsAppChatRoom";
+import { WhatsApp1to1ChatRoom } from "../../../../logic/Chat/WhatsApp/WhatsApp1to1ChatRoom";
 import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
@@ -68,7 +69,7 @@ test("unwraps device-sent and ephemeral wrappers", () => {
 function makeRoom(): WhatsAppChatRoom {
   let saved: any[] = [];
   let account = { storage: { saveMessage: async (m: any) => saved.push(m) }, errorCallback: () => undefined } as any;
-  let room = new WhatsAppChatRoom(account);
+  let room = new WhatsApp1to1ChatRoom(account);
   room.contact = new WhatsAppContact(peer, "Alice") as any;
   return room;
 }
@@ -130,7 +131,7 @@ test("room sends files as media, with the text as the first file's caption", asy
     },
     storage: storageStub,
   } as any;
-  let room = new WhatsAppChatRoom(account);
+  let room = new WhatsApp1to1ChatRoom(account);
   room.id = peer.toString();
   room.contact = new WhatsAppContact(peer, "Alice") as any;
 

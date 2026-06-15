@@ -18,6 +18,8 @@ import { decodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
 import { WANode } from "./Binary/WANode";
 import { JID, kServerUser } from "./Binary/JID";
 import { WhatsAppContact } from "./WhatsAppContact";
+import { WhatsApp1to1ChatRoom } from "./WhatsApp1to1ChatRoom";
+import { WhatsAppGroupChatRoom } from "./WhatsAppGroupChatRoom";
 import { WhatsAppMeetAccount } from "../../Meet/WhatsApp/WhatsAppMeetAccount";
 import { ChatPersonUID } from "../ChatPersonUID";
 import { Group } from "../../Abstract/Group";
@@ -103,8 +105,8 @@ export class WhatsAppAccount extends ChatAccount {
   protected reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   protected reconnectAttempts = 0;
 
-  newRoom(): WhatsAppChatRoom {
-    return new WhatsAppChatRoom(this);
+  newRoom(isGroup = false): WhatsAppChatRoom {
+    return isGroup ? new WhatsAppGroupChatRoom(this) : new WhatsApp1to1ChatRoom(this);
   }
 
   get isLoggedIn(): boolean {
@@ -286,7 +288,7 @@ export class WhatsAppAccount extends ChatAccount {
     } else if (node.tag == "ib") {
       this.onInitialBootstrap(node).catch(ex => this.errorCallback(ex));
     } else if (node.tag == "ack") {
-      // Server confirmed receipt of something we sent (e.g. an outgoing message).
+      this.onAck(node);
     } else {
       waLog("unhandled stanza:", node.tag);
     }
@@ -394,6 +396,9 @@ export class WhatsAppAccount extends ChatAccount {
       // A contact changed their avatar — refetch just that one.
       await this.refetchPicture(node.jidAttr("from"))
         .catch(ex => console.error("WhatsApp: refetch picture failed:", ex));
+    } else if (node.attrs.type == "w:gp2") {
+      await this.onGroupNotification(node)
+        .catch(ex => console.error("WhatsApp: handling a group notification failed:", ex));
     }
     await this.sendAck(node);
   }
@@ -417,6 +422,37 @@ export class WhatsAppAccount extends ChatAccount {
         .catch(ex => console.error("WhatsApp: handling a retry receipt failed:", ex));
     }
     await this.sendAck(node);
+  }
+
+  /** The participant-list hash we sent with each group message, keyed by message
+   * id, so a server ack with a DIFFERENT phash reveals our device list is stale. */
+  protected sentGroupPhash = new Map<string, string>();
+
+  /** Records the phash we sent for a group message (see {@link onAck}). */
+  rememberGroupPhash(messageID: string, group: string, phash: string): void {
+    this.sentGroupPhash.set(messageID, `${group}|${phash}`);
+    if (this.sentGroupPhash.size > kRecentSendsMax) {
+      this.sentGroupPhash.delete(this.sentGroupPhash.keys().next().value!);
+    }
+  }
+
+  /** The server's ack for something we sent. For a group message it echoes the
+   * server's participant-list hash; if that differs from the one we sent, a member
+   * joined/left that we don't know about — drop the cached metadata so the next
+   * send re-fetches the device list. */
+  protected onAck(node: WANode): void {
+    let id = node.attrs.id;
+    let serverPhash = node.attrs.phash;
+    let from = node.jidAttr("from");
+    if (!id || !serverPhash || !from?.isGroup) {
+      return;
+    }
+    let key = from.toNonDevice().toString();
+    let sent = this.sentGroupPhash.get(id);
+    if (sent && sent != `${key}|${serverPhash}`) {
+      waLog("group: server phash differs on", from.toString(), "— device list stale, refreshing metadata");
+      this.groupRoomFor(from)?.invalidateMetadata();
+    }
   }
 
   /** Remembers a payload we just sent so a later retry receipt for it can
@@ -510,7 +546,8 @@ export class WhatsAppAccount extends ChatAccount {
     this.scheduleSave(); // decrypting advanced the ratchet (and maybe consumed a prekey) — persist it
     let rawPayload = decodeWAMessage(payloadBytes);
     let payload = WhatsAppMessage.unwrap(rawPayload);
-    this.processSenderKeyDistribution(payload, sender);
+    // Any group sender-key distribution was already stored while decrypting (a
+    // group message's pairwise enc carries it); decryptStanza handles that.
     let historyNotification = payload.protocolMessage?.historySyncNotification;
     if (historyNotification) {
       await this.historySync.handleNotification(historyNotification);
@@ -595,34 +632,52 @@ export class WhatsAppAccount extends ChatAccount {
     await this.connection.sendNode(new WANode("receipt", attrs, [retry, registration]));
   }
 
-  /** Decrypts the first usable `<enc>` of a message stanza via the matching
-   * Signal primitive (1:1 prekey/session, or the group sender key). */
+  /** Decrypts a message stanza's `<enc>` content. A group message can carry BOTH
+   * a pairwise `<enc>` (pkmsg/msg) distributing the sender's group key AND the
+   * `<enc type="skmsg">` with the actual content — so we decrypt the pairwise one
+   * FIRST (storing the sender key, see {@link processSenderKeyDistribution}), then
+   * the skmsg, whose plaintext is the real group message. A 1:1 message has only
+   * the pairwise enc, which is itself the content. Returns the content plaintext
+   * (the skmsg's for a group, else the pairwise one), or null if nothing decrypts. */
   protected async decryptStanza(node: WANode, chat: JID, sender: JID): Promise<Uint8Array | null> {
     let address = `${sender.user}.${sender.device}`;
+    let pairwiseContent: Uint8Array | null = null;
+    // Pass 1: pairwise encs — 1:1 content, or a group sender-key distribution that
+    // must be stored before the skmsg below can decrypt.
     for (let enc of node.children("enc")) {
       let bytes = enc.contentBytes;
-      if (!bytes) {
+      let type = enc.attrs.type;
+      if (!bytes || (type != "pkmsg" && type != "msg")) {
         continue;
       }
-      let type = enc.attrs.type;
       try {
-        if (type == "pkmsg") {
-          return await decryptPreKeyMessage(this.signalStore!, address, bytes);
-        }
-        if (type == "msg") {
-          return await decryptSignalMessage(this.signalStore!, address, bytes);
-        }
-        if (type == "skmsg") {
-          let senderKey = this.signalStore!.senderKeys.get(`${chat.toString()}|${address}`);
-          if (senderKey) {
-            return await groupDecrypt(senderKey, bytes);
-          }
-        }
+        let payload = type == "pkmsg"
+          ? await decryptPreKeyMessage(this.signalStore!, address, bytes)
+          : await decryptSignalMessage(this.signalStore!, address, bytes);
+        this.processSenderKeyDistribution(WhatsAppMessage.unwrap(decodeWAMessage(payload)), sender);
+        pairwiseContent ??= payload;
       } catch (ex) {
         waLog("decrypt", type, "failed:", (ex as any)?.message ?? ex);
       }
     }
-    return null;
+    // Pass 2: the group ciphertext — the actual group message content.
+    for (let enc of node.children("enc")) {
+      let bytes = enc.contentBytes;
+      if (!bytes || enc.attrs.type != "skmsg") {
+        continue;
+      }
+      let senderKey = this.signalStore!.senderKeys.get(`${chat.toString()}|${address}`);
+      if (!senderKey) {
+        waLog("decrypt skmsg: no sender key yet for", `${chat.toString()}|${address}`);
+        continue;
+      }
+      try {
+        return await groupDecrypt(senderKey, bytes);
+      } catch (ex) {
+        waLog("decrypt skmsg failed:", (ex as any)?.message ?? ex);
+      }
+    }
+    return pairwiseContent;
   }
 
   protected roomForChat(jid: JID): WhatsAppChatRoom | undefined {
@@ -645,7 +700,7 @@ export class WhatsAppAccount extends ChatAccount {
     if (room) {
       return room;
     }
-    room = this.newRoom();
+    room = this.newRoom(chat.isGroup);
     room.id = chat.toNonDevice().toString();
     room.contact = contact;
     if (chat.isGroup) {
@@ -655,6 +710,13 @@ export class WhatsAppAccount extends ChatAccount {
     }
     this.rooms.set(contact, room);
     await room.save();
+    if (room instanceof WhatsAppGroupChatRoom && this.connection) {
+      // Fetch the real subject/members in the background (like getContact does for
+      // a 1:1 profile), so a group first seen live shows its name, not a placeholder.
+      room.ensureMetadata()
+        .then(() => room.save())
+        .catch(ex => console.error("WhatsApp: fetching group metadata failed:", ex));
+    }
     return room;
   }
 
@@ -731,14 +793,37 @@ export class WhatsAppAccount extends ChatAccount {
     return this.ownContact ??= this.getContact(jid.toNonDevice(), appGlobal.me?.name);
   }
 
-  /** Creates a placeholder group for a live group chat. The real name and
-   * members come from group metadata / history sync (not wired yet). */
+  /** Creates the address-book Group for a live group chat, with a placeholder
+   * name. The real subject/description/members are fetched and applied by the
+   * {@link WhatsAppGroupChatRoom} (see getOrCreateRoom), so a group first seen
+   * live no longer shows the literal "WhatsApp group". */
   protected async getOrCreateGroup(jid: JID, subject?: string): Promise<Group> {
     let group = appGlobal.personalAddressbook.newGroup();
     group.name = subject || gt`WhatsApp group`;
     appGlobal.personalAddressbook.groups.add(group);
     await group.save();
     return group;
+  }
+
+  /** The group chat room for a group JID, if we have one — the holder of that
+   * group's metadata (addressing mode + participants), which {@link WhatsAppSender}
+   * needs to send. */
+  groupRoomFor(jid: JID): WhatsAppGroupChatRoom | undefined {
+    let room = this.roomForChat(jid);
+    return room instanceof WhatsAppGroupChatRoom ? room : undefined;
+  }
+
+  /** Routes a `w:gp2` group-change notification to its room, which patches its
+   * metadata and the Group in place. */
+  protected async onGroupNotification(node: WANode): Promise<void> {
+    let group = node.jidAttr("from");
+    if (!group) {
+      return;
+    }
+    let room = await this.getOrCreateRoom(group);
+    if (room instanceof WhatsAppGroupChatRoom) {
+      await room.handleNotification(node);
+    }
   }
 
   /** Creates (or reuses) the dependent Meet account that handles WhatsApp calls. */

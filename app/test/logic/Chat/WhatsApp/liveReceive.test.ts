@@ -10,11 +10,28 @@ import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
 import { Group } from "../../../../logic/Abstract/Group";
 import { encode } from "../../../../logic/Chat/Signal/Proto/codec";
-import { HistorySync, decodeHistorySync } from "../../../../logic/Chat/Signal/Proto/schema";
+import { HistorySync, decodeHistorySync, encodeWAMessage, decodeWAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
-import { createSenderKey, createDistributionMessage } from "../../../../logic/Chat/Signal/Crypto/GroupCipher";
+import { createSenderKey, createDistributionMessage, groupEncrypt } from "../../../../logic/Chat/Signal/Crypto/GroupCipher";
+import { initiateSession, encrypt } from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
+import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import { expect, test } from "vitest";
+
+/** A prekey bundle from a store, to establish a session to it (test helper). */
+function bundleFrom(store: SignalStore): PreKeyBundle {
+  let signed = store.signedPreKeys.get(1)!;
+  let oneTime = [...store.preKeys.values()][0];
+  let bundle = new PreKeyBundle();
+  bundle.registrationID = store.registrationID;
+  bundle.identityKey = store.identityKeyPair.publicKey;
+  bundle.signedPreKeyID = signed.keyID;
+  bundle.signedPreKeyPublic = signed.keyPair.publicKey;
+  bundle.signedPreKeySignature = signed.signature;
+  bundle.preKeyID = oneTime.keyID;
+  bundle.preKeyPublic = oneTime.keyPair.publicKey;
+  return bundle;
+}
 
 const kAliceJID = "491761111111@s.whatsapp.net";
 const kBobJID = "491762222222@s.whatsapp.net";
@@ -213,4 +230,39 @@ test("stores a group sender key from an incoming SenderKeyDistributionMessage", 
   let stored = account.signalStore.senderKeys.get(`${kGroupJID}|${sender.user}.${sender.device}`)!;
   expect(stored).toBeDefined();
   expect(stored.keyID).toBe(7);
+});
+
+test("decrypts a group message's skmsg content, not just the rides-along sender key", async () => {
+  let account = setup();
+  account.signalStore = SignalStore.createNew();
+  let group = JID.parse(kGroupJID);
+  let bob = JID.parse(kBobJID);
+
+  // Bob (a group member) opens a 1:1 session to us so he can ship the SKDM as a
+  // pairwise pkmsg; the actual message rides separately in the skmsg.
+  let bobStore = SignalStore.createNew();
+  initiateSession(bobStore, "us", bundleFrom(account.signalStore));
+  let bobSenderKey = createSenderKey(42);
+  let skdm = encodeWAMessage({
+    senderKeyDistributionMessage: {
+      groupID: kGroupJID,
+      axolotlSenderKeyDistributionMessage: createDistributionMessage(bobSenderKey),
+    },
+  });
+  let pairwise = await encrypt(bobStore, "us", skdm);
+  let skmsg = await groupEncrypt(bobSenderKey, encodeWAMessage({ conversation: "hello group" }));
+
+  // The server delivers the SKDM enc and the skmsg enc in one <message>.
+  let node = new WANode("message", { from: kGroupJID, participant: kBobJID, id: "ABC", type: "text" }, [
+    new WANode("enc", { v: "2", type: pairwise.type }, pairwise.body),
+    new WANode("enc", { v: "2", type: "skmsg" }, skmsg),
+  ]);
+
+  let content = await (account as any).decryptStanza(node, group, bob);
+  expect(content).not.toBeNull();
+  // The returned plaintext is the skmsg CONTENT — not the SKDM-only pairwise payload,
+  // which is the bug that made group rooms stay empty.
+  expect(decodeWAMessage(content!).conversation).toBe("hello group");
+  // ...and the rides-along sender key was stored on the way through.
+  expect(account.signalStore.senderKeys.has(`${kGroupJID}|${bob.user}.${bob.device}`)).toBe(true);
 });

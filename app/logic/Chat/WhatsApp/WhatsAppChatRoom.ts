@@ -4,8 +4,7 @@ import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import { WhatsAppContact } from "./WhatsAppContact";
 import { DeliveryStatus } from "../Message";
-import { Group } from "../../Abstract/Group";
-import type { Person } from "../../Abstract/Person";
+import type { Group } from "../../Abstract/Group";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import type { WhatsAppAccount } from "./WhatsAppAccount";
 import type { WANode } from "./Binary/WANode";
@@ -15,25 +14,16 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
-/** A WhatsApp chat room — either a 1:1 conversation or a group. Both use the
- * same message machinery; group-vs-1:1 differences (member source, sender
- * attribution) branch on whether `contact` is a Group. */
+/** A WhatsApp chat room. The shared message machinery (receive/store/react/edit/
+ * delete/send) lives here; the 1:1-vs-group differences — who a message is from,
+ * how members are listed — are the two `contactForSender`/`historySender`/
+ * `listMembers` hooks, overridden by {@link WhatsApp1to1ChatRoom} and
+ * {@link WhatsAppGroupChatRoom}. Rooms are created via `WhatsAppAccount.newRoom`,
+ * which picks the subclass from the chat type. */
 export class WhatsAppChatRoom extends ChatRoom {
   declare account: WhatsAppAccount;
   declare readonly members: ArrayColl<WhatsAppContact>;
   declare contact: WhatsAppContact | Group;
-
-  async listMembers(): Promise<void> {
-    if (this.contact instanceof Group) {
-      // TODO implement
-      // Group from backup: participants.
-      this.members.replaceAll(this.contact.participants.contents
-        .map(person => contactForPerson(this.account, person))
-        .filter(Boolean));
-    } else {
-      await super.listMembers1to1();
-    }
-  }
 
   /** A live message can arrive before we load the old msgs from DB */
   protected loadedFromDB = false;
@@ -62,9 +52,9 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
   }
 
-  /** Adds a newly received content message to this room (mirrors XMPPChat.addMessage).
-   * `outgoing` messages (sent by us from another device) are attributed to the
-   * account owner; incoming ones to the sender. */
+  /** Adds a newly received content message to this room. `outgoing` messages (sent
+   * by us from another device) are attributed to the account owner; incoming ones
+   * to the sender (see {@link contactForSender}). */
   protected async addMessage(stanza: WANode, payload: WAMessage, sender: JID, outgoing: boolean): Promise<void> {
     let id = stanza.attrs.id;
     if (!id || this.messages.some(msg => msg.id == id)) {
@@ -108,13 +98,10 @@ export class WhatsAppChatRoom extends ChatRoom {
     return true;
   }
 
-  /** The person an incoming stored message is from: the group member who sent it,
-   * else the room contact (the 1:1 partner). Our own messages are attributed via
-   * {@link WhatsAppAccount.getOwnContact} instead. */
+  /** The person an incoming stored message is from. In a 1:1 it's the chat
+   * partner; {@link WhatsAppGroupChatRoom} overrides for the group member. Our own
+   * messages are attributed via {@link WhatsAppAccount.getOwnContact} instead. */
   protected historySender(key: MessageKey): WhatsAppContact | Group {
-    if (this.contact instanceof Group) {
-      return key.participant ? this.contactForSender(JID.parse(key.participant)) : this.contact;
-    }
     return this.contact;
   }
 
@@ -152,12 +139,10 @@ export class WhatsAppChatRoom extends ChatRoom {
     await this.account.storage.saveMessage(target);
   }
 
-  /** Who a message is from: in 1:1 it's the chat partner; in a group, the member. */
+  /** Who an incoming message is from: in a 1:1 it's the chat partner;
+   * {@link WhatsAppGroupChatRoom} overrides for the group member. */
   protected contactForSender(sender: JID): WhatsAppContact {
-    if (this.contact instanceof WhatsAppContact) {
-      return this.contact;
-    }
-    return this.account.getContact(sender);
+    return this.contact as WhatsAppContact;
   }
 
   protected updateLastMessage() {
@@ -168,12 +153,9 @@ export class WhatsAppChatRoom extends ChatRoom {
 
   /** Sends our user's message to this chat: encrypts it per recipient device and
    * publishes it (see {@link WhatsAppSender}), then shows it as outgoing. Mirrors
-   * XMPPChat.sendMessage — recipient/text come from the message object. Groups are
-   * not supported yet (they need sender-key distribution). */
+   * XMPPChat.sendMessage — recipient/text come from the message object. A group
+   * `id` (g.us) routes the sender to its sender-key path; the rest is the same. */
   async sendMessage(message: WhatsAppMessage): Promise<void> {
-    if (this.contact instanceof Group) {
-      throw new Error("Sending to WhatsApp groups is not supported yet");
-    }
     let text = message.text;
     assert(text || message.attachments.hasItems, `Message is empty`);
     assert(message.attachments.every(att => att.content), gt`Attachment is empty`);
@@ -212,18 +194,4 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     return new WhatsAppRoomEvent(this);
   }
-}
-
-/** A group participant (an address-book `Person`) as a `WhatsAppContact`, reused
- * from the account cache and linked back to the `Person`.
- * @returns null if the person has no WhatsApp ID */
-function contactForPerson(account: WhatsAppAccount, person: Person): WhatsAppContact | null {
-  let jid = person.chatAccounts.find(e => e.protocol == "whatsapp")?.value;
-  if (!jid) {
-    return null;
-  }
-  let contact = account.getPersonUID(jid, person.name);
-  contact.person = person;
-  contact.picture ??= person.picture;
-  return contact;
 }
