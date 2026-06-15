@@ -73,6 +73,13 @@ function makeRoom(): WhatsAppChatRoom {
   return room;
 }
 
+test("a 1:1 room lists its partner as the sole member (ChatRoom.listMembers)", async () => {
+  let room = makeRoom();
+  await room.listMembers();
+  expect(room.members.length).toBe(1);
+  expect(room.members.first).toBe(room.contact);
+});
+
 function stanza(id: string): WANode {
   return new WANode("message", { id, from: peer.toString(), t: "1700000000" });
 }

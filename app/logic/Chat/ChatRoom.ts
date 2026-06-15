@@ -1,7 +1,7 @@
 import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave, RoomEventKind, RoomNameChange } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
-import type { ChatPersonUID } from "./ChatPersonUID";
+import { ChatPersonUID } from "./ChatPersonUID";
 import { Group } from "../Abstract/Group";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
@@ -73,9 +73,15 @@ export class ChatRoom extends Observable {
   get picture(): string {
     return this.contact.picture;
   }
-
   async listMembers(): Promise<void> {
     throw new AbstractFunction();
+  }
+
+  /** Helper implementation for subclasses for 1:1 chat */
+  protected async listMembers1to1(): Promise<void> {
+    if (this.contact instanceof ChatPersonUID) {
+      this.members.replaceAll([this.contact]);
+    }
   }
 
   async listMessages(): Promise<void> {

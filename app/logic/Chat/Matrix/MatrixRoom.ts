@@ -23,8 +23,8 @@ export class MatrixRoom extends ChatRoom {
   }
 
   async listMembers(): Promise<void> {
+    await this.listMembers1to1();
   }
-
   async listMessages(): Promise<void> {
     let init = await this.account.client.roomInitialSync(this.id, 3000);
   }

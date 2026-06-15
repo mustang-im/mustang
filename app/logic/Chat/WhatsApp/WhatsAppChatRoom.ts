@@ -24,15 +24,14 @@ export class WhatsAppChatRoom extends ChatRoom {
   declare contact: WhatsAppContact | Group;
 
   async listMembers(): Promise<void> {
-    // 1:1: the sole member is the chat partner.
-    // Group from backup: participants
-    // Group live: Not wired yet, starts empty
-    if (this.contact instanceof WhatsAppContact) {
-      this.members.replaceAll([this.contact]);
-    } else if (this.contact instanceof Group) {
+    if (this.contact instanceof Group) {
+      // TODO implement
+      // Group from backup: participants.
       this.members.replaceAll(this.contact.participants.contents
         .map(person => contactForPerson(this.account, person))
         .filter(Boolean));
+    } else {
+      await super.listMembers1to1();
     }
   }
 
