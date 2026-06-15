@@ -1,12 +1,13 @@
 import type { Group } from "./Group";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
+import type { ChatPersonUID } from "../Chat/ChatPersonUID";
 import type { Attachment } from "./Attachment";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
+import { AbstractFunction } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
-import type { ChatPersonUID } from "../Chat/ChatPersonUID";
 
 export class Message extends Observable {
   /** protocol-specific ID for this message.
@@ -43,7 +44,7 @@ export class Message extends Observable {
   inReplyTo: string | null = null;
   readonly attachments = new ArrayColl<Attachment>();
 
-  readonly reactions = new MapColl<ChatPersonUID, string>();
+  readonly reactions = new MapColl<PersonUID, string>();
 
   @notifyChangedProperty
   subject: string = "";
@@ -145,6 +146,10 @@ export class Message extends Observable {
   }
   async markStarred(starred = true) {
     this.isStarred = starred;
+  }
+
+  newAttachment(): Attachment {
+    throw new AbstractFunction();
   }
 
   async deleteMessage() {

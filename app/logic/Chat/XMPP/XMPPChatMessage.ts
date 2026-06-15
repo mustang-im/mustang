@@ -68,7 +68,7 @@ export class XMPPChatMessage extends ChatMessage {
     }
     let filename = sanitize.filename(decoded, gt`File`);
     let extension = filename.split(".").pop()?.toLowerCase() ?? "";
-    let attachment = new Attachment();
+    let attachment = this.newAttachment();
     attachment.filename = filename;
     attachment.mimeType = (fileExtensions as Record<string, string>)[extension] ?? "application/octet-stream";
     attachment.disposition = attachment.mimeType.startsWith("image/")
@@ -76,9 +76,10 @@ export class XMPPChatMessage extends ChatMessage {
       : ContentDisposition.attachment;
     this.attachments.add(attachment);
     this.chatRoom.account.media.download(url)
-      .then(data => {
+      .then(async data => {
         attachment.content = new File([new Uint8Array(data)], filename, { type: attachment.mimeType });
         attachment.size = data.length;
+        await attachment.save();
       })
       .catch(ex => this.chatRoom.account.errorCallback(ex));
   }

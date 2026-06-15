@@ -133,6 +133,16 @@ export class SQLChatMessage {
     }
   }
 
+  /** After an attachment's file was written to disk (see RawFilesAttachment),
+   * record its local path on the already-saved metadata row. */
+  static async saveAttachmentFilename(msg: RoomMessage, a: Attachment): Promise<void> {
+    await (await getDatabase()).run(sql`
+      UPDATE chatAttachment SET
+        filepathLocal = ${a.filepathLocal}
+      WHERE messageID = ${msg.dbID} AND filename = ${a.filename}
+      `);
+  }
+
   static async read(dbID: number, msg: RoomMessage, row?: any): Promise<void> {
     let readAttachments = !row;
     if (!row) {
@@ -179,12 +189,11 @@ export class SQLChatMessage {
         FROM chatAttachment
         WHERE messageID = ${msg.dbID}
         `) as any;
-      msg.attachments.replaceAll(attRows.map(attRow => SQLChatMessage.readAttachment(attRow)));
+      msg.attachments.replaceAll(attRows.map(attRow => SQLChatMessage.readAttachment(attRow, msg.newAttachment())));
     }
   }
 
-  protected static readAttachment(row: any): Attachment {
-    let a = new Attachment();
+  protected static readAttachment(row: any, a: Attachment): Attachment {
     a.filename = sanitize.nonemptystring(row.filename);
     a.filepathLocal = sanitize.string(row.filepathLocal, null);
     a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
@@ -253,14 +262,14 @@ export class SQLChatMessage {
       FROM chatAttachment
       WHERE messageID IN (SELECT id FROM message WHERE chatID = ${chat.dbID})
       `) as any;
-    let attsByMessage = new Map<number, Attachment[]>();
+    let attRowsByMessage = new Map<number, any[]>();
     for (let attRow of attRows) {
       try {
-        let atts = attsByMessage.get(attRow.messageID);
+        let atts = attRowsByMessage.get(attRow.messageID);
         if (!atts) {
-          attsByMessage.set(attRow.messageID, atts = []);
+          attRowsByMessage.set(attRow.messageID, atts = []);
         }
-        atts.push(SQLChatMessage.readAttachment(attRow));
+        atts.push(attRow);
       } catch (ex) {
         chat.account.errorCallback(ex);
       }
@@ -274,9 +283,13 @@ export class SQLChatMessage {
         } else {
           msg = SQLChatMessage.newRoomMessage(chat, sanitize.string(row.json, null));
           await SQLChatMessage.read(row.id, msg as any as RoomMessage, row);
-          let atts = attsByMessage.get(row.id);
-          if (atts) {
-            msg.attachments.replaceAll(atts);
+          if (msg instanceof ChatMessage) {
+            let attRows = attRowsByMessage.get(row.id);
+            if (attRows) {
+              for (let attRow of attRows) {
+                msg.attachments.add(SQLChatMessage.readAttachment(attRow, msg.newAttachment()));
+              }
+            }
           }
           newMsgs.add(msg);
         }

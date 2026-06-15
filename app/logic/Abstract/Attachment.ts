@@ -1,9 +1,12 @@
 import { File as FileEntry } from "../Files/File";
+import { Message } from "./Message";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { saveBlobAsFile, saveURLAsFile } from "../../frontend/Util/util";
+import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
+import type { Collection } from "svelte-collections";
+import { RunOnce } from "../util/flow/RunOnce";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -31,6 +34,9 @@ export class Attachment extends Observable {
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
+  message: Message;
+  storage: Collection<AttachmentStorage>;
+  storageRunOnce = new RunOnce<void>();
 
   protected static urlFinalizer = new FinalizationRegistry((url: URLString) => {
     URL.revokeObjectURL(url);
@@ -53,18 +59,16 @@ export class Attachment extends Observable {
     return this._blobURL;
   }
 
-  static fromFile(file: File): Attachment {
-    let attachment = new Attachment();
-    attachment.content = file;
-    attachment.filename = file.name;
-    attachment.mimeType = file.type;
-    attachment.size = file.size;
-    attachment.disposition = ContentDisposition.attachment;
-    return attachment;
+  fromFile(file: File) {
+    this.content = file;
+    this.filename = file.name;
+    this.mimeType = file.type;
+    this.size = file.size;
+    this.disposition = ContentDisposition.attachment;
   }
 
-  clone(): Attachment {
-    let clone = new Attachment();
+  cloneTo(to: Message): Attachment {
+    let clone = to.newAttachment();
     Object.assign(clone, this);
     if (this.content) {
       clone.content = new File([this.content], this.content.name);
@@ -102,6 +106,22 @@ export class Attachment extends Observable {
   async deleteFile() {
     throw new NotImplemented();
   }
+  async read() {
+    return this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        if (await storage.readAttachment(this)) {
+          break;
+        }
+      }
+    });
+  }
+  async save() {
+    return this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        await storage.saveAttachment(this);
+      }
+    });
+  }
 
   /** Should not show to end user. This is true for auto-processing attachments
    * like calendar invitations (ICS), vCards, encryption signatures etc. */
@@ -127,3 +147,16 @@ const kHiddenMIMETypes = [
   // "application/pkcs7-mime", // S/MIME encrypted
   // "application/pgp-encrypted", // PGP encrypted
 ];
+
+export interface AttachmentStorage {
+  /** Whether this class can save and read attachment content at all */
+  supportsAttachments: boolean;
+  /** @returns whether this storage was able to read this concrete attachment
+   * and has written the the content (and optionally metadata) to its variables. */
+  readAttachment(attachment: Attachment): Promise<boolean>;
+  /** May be a no-op, if this storage provider cannot save attachments individually,
+   * but only e.g. as part of an email */
+  saveAttachment(attachment: Attachment): Promise<void>;
+  /** @see save, same limitations */
+  deleteAttachment(attachment: Attachment): Promise<void>;
+}

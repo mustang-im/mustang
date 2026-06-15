@@ -8,15 +8,23 @@ import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/pr
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
-import { expect, test } from "vitest";
+import { RawFilesAttachment } from "../../../../logic/Mail/Store/RawFilesAttachment";
+import { Attachment } from "../../../../logic/Abstract/Attachment";
+import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
+import { SQLChatMessage } from "../../../../logic/Chat/SQL/SQLChatMessage";
+import { expect, test, vi } from "vitest";
 
 let peer = JID.parse("412300000000@s.whatsapp.net");
+
+/** A dummy account storage that supports attachments (so `newAttachment()` works)
+ * but persists nothing. */
+let storageStub = new DummyChatStorage();
 
 /** Parses a payload into a WhatsAppMessage, exercising the protobuf schema
  * (encode→decode, like the wire) and the message's own interpretation. The room
  * carries the (stubbed) connection used for the background media download. */
 function parse(fields: WAMessage, account?: any): WhatsAppMessage {
-  let room = { contact: new WhatsAppContact(peer, "Alice"), account } as any;
+  let room = { contact: new WhatsAppContact(peer, "Alice"), account: { storage: storageStub, ...account } } as any;
   let message = new WhatsAppMessage(room);
   message.readContent(WhatsAppMessage.unwrap(decodeWAMessage(encodeWAMessage(fields))));
   return message;
@@ -211,4 +219,41 @@ test("addMedia downloads and attaches the bytes in the background", async () => 
   expect(attachment.content).toBeInstanceOf(File);
   expect(attachment.size).toBe(plaintext.length);
   expect(await attachment.content.text()).toBe("a tiny document");
+});
+
+test("an attachment's bytes are written to disk and read back (RawFilesAttachment)", async () => {
+  let written = new Map<string, Uint8Array>(); // our mock disk
+  appGlobal.remoteApp = {
+    getFilesDir: async () => "/tmp/mustang",
+    writeFile: async (path: string, _mode: number, bytes: Uint8Array) => { written.set(path, new Uint8Array(bytes)); },
+    readFile: async (path: string) => written.get(path),
+    fs: { mkdir: async () => undefined, chmod: async () => undefined },
+  };
+  // The DB metadata update isn't under test here (no SQLite in this environment).
+  let saveFile = vi.spyOn(SQLChatMessage, "saveAttachmentFile").mockResolvedValue(undefined);
+
+  let room = { contact: new WhatsAppContact(peer, "Alice"), account: { storage: storageStub } } as any;
+  let message = new WhatsAppMessage(room);
+  message.dbID = 1;
+  message.from = new WhatsAppContact(peer, "Alice");
+  let attachment = new Attachment();
+  attachment.message = message;
+  attachment.filename = "photo.jpg";
+  attachment.mimeType = "image/jpeg";
+  attachment.content = new File([new Uint8Array([1, 2, 3, 4])], "photo.jpg");
+  message.attachments.add(attachment);
+
+  let store = new RawFilesAttachment();
+  await store.saveAttachment(attachment);
+  expect(attachment.filepathLocal).toContain("/tmp/mustang/files/chat/");
+  expect([...written.get(attachment.filepathLocal)!]).toEqual([1, 2, 3, 4]); // bytes really written
+  expect(saveFile).toHaveBeenCalledOnce(); // path recorded on the metadata row
+
+  // Simulate a restart: a fresh attachment that only knows its on-disk path.
+  let reloaded = new Attachment();
+  reloaded.filename = "photo.jpg";
+  reloaded.mimeType = "image/jpeg";
+  reloaded.filepathLocal = attachment.filepathLocal;
+  expect(await store.readAttachment(reloaded)).toBe(true);
+  expect(new Uint8Array(await reloaded.content.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3, 4])); // read back
 });

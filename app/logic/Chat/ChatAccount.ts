@@ -3,6 +3,7 @@ import { ChatPersonUID } from "./ChatPersonUID";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
 import type { RoomMessage } from "./Message";
+import type { AttachmentStorage } from "../Abstract/Attachment";
 import { SQLChatRoom } from "./SQL/SQLChatRoom";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
@@ -95,7 +96,7 @@ export class ChatAccount extends TCPAccount {
   }
 }
 
-export interface ChatAccountStorage {
+export interface ChatAccountStorage extends AttachmentStorage {
   saveMessage(message: RoomMessage): Promise<void>;
   saveRoom(room: ChatRoom): Promise<void>;
   saveAccount(account: ChatAccount): Promise<void>;

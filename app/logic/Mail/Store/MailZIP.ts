@@ -1,7 +1,9 @@
 import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { appGlobal } from "../../app";
 import type { Folder } from "../Folder";
+import type { Attachment } from "../../Abstract/Attachment";
+import { getFilesDir } from "../../util/backend-wrapper";
+import { appGlobal } from "../../app";
 import { Lock, type Locked } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
@@ -9,7 +11,6 @@ import { assert } from "../../util/util";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
 import { Buffer } from "buffer";
 import type Zip from "adm-zip";
-import { getFilesDir } from "../../util/backend-wrapper";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
@@ -102,6 +103,21 @@ export class MailZIP implements MailContentStorage {
       }
     }
     return emails;
+  }
+
+  supportsAttachments = true;
+  async readAttachment(attachment: Attachment): Promise<boolean> {
+    let email = attachment.message as EMail;
+    if (!email.mime) {
+      await this.read(email);
+    }
+    await email.parseMIME();
+    return true;
+  }
+  async saveAttachment(attachment: Attachment): Promise<void> {
+    await this.save(attachment.message as EMail);
+  }
+  async deleteAttachment(attachment: Attachment): Promise<void> {
   }
 
   async getFolderZIP(folder: Folder): Promise<Zip> {

@@ -148,7 +148,9 @@ export class OutgoingInvitation {
     // `mail.event` already sends the event, but it's not visible in the composer, so add it a third time
     let icalStr = new TextEncoder().encode(getICal(event));
     let file = new File([icalStr], "forwarded.ics", { type: "text/calendar" });
-    mail.attachments.add(Attachment.fromFile(file));
+    let attachment = mail.newAttachment();
+    attachment.fromFile(file);
+    mail.attachments.add(attachment);
     return mail;
   }
 }

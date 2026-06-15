@@ -7,6 +7,7 @@ import { ContactEntry } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
+import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -276,7 +277,7 @@ export interface MailAccountStorage {
   readAllMessagesMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void>;
 }
 
-export interface MailContentStorage {
+export interface MailContentStorage extends AttachmentStorage {
   save(email: EMail): Promise<void>;
   read(email: EMail): Promise<void>;
   deleteIt(email: EMail): Promise<void>;

@@ -142,7 +142,7 @@
       </vbox>
       {#if showAttachments}
         <vbox class="attachments">
-          <AttachmentsPane attachments={mail.attachments} />
+          <AttachmentsPane message={mail} />
         </vbox>
       {/if}
     </hbox>
@@ -308,18 +308,24 @@
     if (!file) {
       return;
     }
-    mail.attachments.add(Attachment.fromFile(file));
+    let attachment = mail.newAttachment();
+    attachment.fromFile(file);
+    mail.attachments.add(attachment);
   }
 
   function onFilesDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
-    mail.attachments.addAll(files.map(file => Attachment.fromFile(file)));
+    for (let file of files) {
+      let attachment = mail.newAttachment();
+      attachment.fromFile(file);
+      mail.attachments.add(attachment);
+    }
   }
 
   async function onFileInlineDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      await insertImage(editor, file, mail.attachments);
+      await insertImage(editor, file, mail);
     }
   }
 

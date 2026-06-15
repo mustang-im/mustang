@@ -49,7 +49,7 @@ export class ChatRoom extends Observable {
   lastMessage: ChatMessage = null;
   /** Message that our user is currently composing, to this chat room */
   @notifyChangedProperty
-  draftMessage: string;
+  draftMessage: ChatMessage | null = null;
   syncState: string | null = null;
 
   constructor(account: ChatAccount) {

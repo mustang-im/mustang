@@ -159,7 +159,7 @@ export class ComposeActions {
     </p>
     <p></p>
     ${ this.email.html }`;
-    forward.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    forward.attachments.addAll(this.email.attachments.map(a => a.cloneTo(forward)));
     return forward;
   }
 
@@ -168,7 +168,7 @@ export class ComposeActions {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
-    let a = new Attachment();
+    let a = forward.newAttachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
     a.filename = sanitize.filename(this.email.subject, "email") + ".eml";
@@ -184,7 +184,7 @@ export class ComposeActions {
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
     redirect.html = this.email.html;
-    redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    redirect.attachments.addAll(this.email.attachments.map(a => a.cloneTo(redirect)));
     return redirect;
   }
 
@@ -195,7 +195,7 @@ export class ComposeActions {
     clone.cc.addAll(this.email.cc);
     clone.subject = this.email.subject;
     clone.html = this.email.html;
-    clone.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    clone.attachments.addAll(this.email.attachments.map(a => a.cloneTo(clone)));
     return clone;
   }
 

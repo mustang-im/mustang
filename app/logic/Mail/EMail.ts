@@ -260,6 +260,13 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
+  newAttachment(): Attachment {
+    let att = new Attachment();
+    att.message = this;
+    att.storage = this.folder.account.contentStorage.filterOnce(storage => storage.supportsAttachments);
+    return att;
+  }
+
   /** Returns the identity which best matches the recipient/from
    * of this email, out of the identities of the account where this email is. */
   getIdentity(): MailIdentity {
@@ -343,7 +350,7 @@ export class EMail extends Message {
     let oldAttachments = new ArrayColl<Attachment>(this.attachments);
     this.attachments.replaceAll(mail.attachments.map(a => {
       try {
-        let attachment = new Attachment();
+        let attachment = this.newAttachment();
         attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
         attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
         attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));

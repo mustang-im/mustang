@@ -80,7 +80,7 @@ export class WhatsAppMessage extends ChatMessage {
   }
 
   protected addMedia(media: any, type: MediaType, caption?: string, inline = false): boolean {
-    let attachment = new Attachment();
+    let attachment = this.newAttachment();
     attachment.filename = sanitize.filename(media.fileName, `${type}.${fileExtensionForMIMEType(media.mimetype)}`);
     attachment.mimeType = media.mimetype ?? "application/octet-stream";
     attachment.size = toNumber(media.fileLength);
@@ -109,6 +109,7 @@ export class WhatsAppMessage extends ChatMessage {
     let bytes = await downloadMedia(connection, descriptor);
     attachment.content = new File([bytes as BufferSource], attachment.filename, { type: attachment.mimeType });
     attachment.size = bytes.length;
+    await attachment.save();
   }
 
   protected setReplyTo(stanzaID: string | undefined) {

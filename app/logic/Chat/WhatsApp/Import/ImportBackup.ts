@@ -403,7 +403,7 @@ export class WhatsAppBackupImport {
     if (row.filePath || row.mimeType) {
       // The media files themselves are not part of the backup,
       // so we import only the metadata.
-      let attachment = new Attachment();
+      let attachment = msg.newAttachment();
       attachment.filename = sanitize.filename(
         row.mediaName || row.filePath?.split("/").pop(), "attachment-" + row.rowID);
       attachment.mimeType = row.mimeType || "application/octet-stream";

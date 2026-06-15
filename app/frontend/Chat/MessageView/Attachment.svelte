@@ -4,7 +4,7 @@
   `Attachment` is observable, so this updates when `content`/`size` fill in. -->
 {#if isImage}
   <vbox class="image-wrap">
-    {#if $attachment.blobURL}
+    {#if $attachment.content}
       <Clickable onClick={onOpen}>
         <img class="image" src={$attachment.blobURL} alt={$attachment.filename} />
       </Clickable>
@@ -12,7 +12,16 @@
         <AttachmentMenu {attachment} />
       </hbox>
     {:else}
-      <hbox class="loading font-smallest">{$t`Loading image…`}</hbox>
+      <hbox class="loading font-smallest">
+        {#await attachment.read()}
+          {$t`Loading…`}
+        {:then}
+          <!-- Still no content, so file is not on disk. We assume the protocol downloads it in the background. -->
+          {$t`Downloading…`}
+        {:catch ex}
+          <ErrorMessageInline {ex} />
+        {/await}
+      </hbox>
     {/if}
   </vbox>
 {:else}
@@ -28,7 +37,7 @@
         </hbox>
         <hbox class="bottom-row font-smallest">
           <hbox class="size">
-            {#if $attachment.blobURL}
+            {#if $attachment.size}
               {fileSize($attachment.size)}
             {:else}
               {$t`Downloading…`}
@@ -49,6 +58,7 @@
   import AttachmentMenu from "../../Mail/Message/AttachmentMenu.svelte";
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
@@ -56,6 +66,9 @@
   $: isImage = $attachment.mimeType?.startsWith("image/");
 
   async function onOpen() {
+    if (!attachment.content) {
+      await attachment.read(); // restore the bytes from disk if we have them
+    }
     if (!attachment.content) {
       return; // not downloaded yet
     }

@@ -30,7 +30,7 @@ export class GraphChatMessage extends ChatMessage {
     this.inReplyTo = sanitize.nonemptystring(info.replyToId, null);
     this.sent = this.received = sanitize.date(info.createdDateTime, null);
     for (let attachmentJSON of info.attachments) {
-      let a = new Attachment();
+      let a = this.newAttachment();
       a.contentID = attachmentJSON.id; // TODO sanitize
       a.filename = attachmentJSON.name;
       a.mimeType = attachmentJSON.contentType;

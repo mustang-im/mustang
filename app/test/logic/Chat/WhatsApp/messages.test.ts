@@ -6,6 +6,7 @@ import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/Wh
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
   from "../../../../logic/Chat/WhatsApp/Crypto/adv";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
+import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Attachment } from "../../../../logic/Abstract/Attachment";
 import { JID } from "../../../../logic/Chat/WhatsApp/Binary/JID";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
@@ -16,10 +17,14 @@ import { expect, test } from "vitest";
 
 let peer = JID.parse("412300000000@s.whatsapp.net");
 
+/** A dummy account storage that supports attachments (so `newAttachment()` works)
+ * but persists nothing. */
+let storageStub = new DummyChatStorage();
+
 /** Parses a payload into a WhatsAppMessage, exercising the protobuf schema
  * (encode→decode, like the wire) and the message's own interpretation. */
 function parse(fields: WAMessage): WhatsAppMessage {
-  let room = { contact: new WhatsAppContact(peer, "Alice") } as any;
+  let room = { contact: new WhatsAppContact(peer, "Alice"), account: { storage: storageStub } } as any;
   let message = new WhatsAppMessage(room);
   // The room unwraps before interpreting content; mirror that here.
   message.readContent(WhatsAppMessage.unwrap(decodeWAMessage(encodeWAMessage(fields))));
@@ -116,7 +121,7 @@ test("room sends files as media, with the text as the first file's caption", asy
       },
       sendText: async () => { throw new Error("must not send a text message when there are attachments"); },
     },
-    storage: { saveMessage: async () => undefined },
+    storage: storageStub,
   } as any;
   let room = new WhatsAppChatRoom(account);
   room.id = peer.toString();
@@ -125,7 +130,7 @@ test("room sends files as media, with the text as the first file's caption", asy
   let message = room.newMessage();
   message.text = "here you go";
   for (let name of ["a.pdf", "b.png"]) {
-    let attachment = new Attachment();
+    let attachment = message.newAttachment();
     attachment.filename = name;
     attachment.mimeType = name.endsWith(".png") ? "image/png" : "application/pdf";
     attachment.content = new File([new Uint8Array([1, 2, 3])], name);

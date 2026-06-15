@@ -5,7 +5,7 @@
   <vbox flex class="msg-editor">
     {#if $attachments.hasItems}
       <vbox class="attachments">
-        <AttachmentsPane {attachments} />
+        <AttachmentsPane message={to.draftMessage} />
       </vbox>
     {/if}
     <hbox flex>
@@ -23,7 +23,7 @@
         <vbox flex class="editor-scroll-wrapper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={to.draftMessage} bind:editor />
+              <HTMLEditor bind:html={to.draftMessage.rawHTMLDangerous} bind:editor />
             </vbox>
           </Scroll>
         </vbox>
@@ -35,7 +35,7 @@
           iconSize="24px"
           padding="6px"
           border={false}
-          disabled={!to.draftMessage && $attachments.isEmpty}
+          disabled={!to.draftMessage.hasHTML && $attachments.isEmpty}
           />
       </vbox>
     </hbox>
@@ -44,7 +44,6 @@
 
 <script lang="ts">
   import type { ChatRoom } from "../../logic/Chat/ChatRoom";
-  import { Attachment } from "../../logic/Abstract/Attachment";
   import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
@@ -57,7 +56,7 @@
   import EnterKeyIcon from "lucide-svelte/icons/corner-down-left";
   import { onKeyEnter } from "../Util/util";
   import { catchErrors } from "../Util/error";
-  import { ArrayColl } from "svelte-collections";
+  import { assert } from "../../logic/util/util";
   import type { Editor } from '@tiptap/core';
 
   export let to: ChatRoom;
@@ -65,39 +64,38 @@
   let editor: Editor;
 
   let isEnterSend = true;
-  let attachments = new ArrayColl<Attachment>();
-  $: to && attachments.clear(); // TODO save as draft
+  $: to.draftMessage ??= to.newMessage();
+  $: attachments = $to.draftMessage.attachments;
 
   async function send() {
-    if (!to.draftMessage && attachments.isEmpty) {
-      return;
-    }
-    let msg = to.newMessage();
+    assert(to.draftMessage.hasHTML || to.draftMessage.attachments.hasItems, "Message is empty");
+    let msg = to.draftMessage;
     msg.outgoing = true;
-    msg.html = to.draftMessage;
     msg.text; // Generate to keep in sync
     msg.contact = to.contact;
-    msg.attachments.addAll(attachments);
     msg.sent = new Date();
     await to.sendMessage(msg);
     reset();
   }
 
   function reset() {
-    to.draftMessage = "";
+    to.draftMessage = null;
     editor.commands.setContent(""); // TODO fix HTMLEditor to listen to `html`
-    attachments.clear();
   }
 
   function onAddAttachment(event: CustomEvent) {
     let files = event.detail.files as File[];
-    attachments.addAll(files.map(file => Attachment.fromFile(file)));
+    for (let file of files) {
+      let att = to.draftMessage.newAttachment();
+      att.fromFile(file);
+      attachments.add(att);
+    }
   }
 
   function onAddInline(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      insertImage(editor, file, attachments);
+      insertImage(editor, file, to.draftMessage);
     }
   }
 </script>

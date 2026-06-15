@@ -200,7 +200,7 @@ export class SQLEMail {
 
   /** After downloading and saving the attachment file locally, or moving it on disk,
    * save its local disk location. */
-  static async saveAttachmentFile(email: EMail, a: Attachment) {
+  static async saveAttachmentFilename(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
     await (await getDatabase()).run(sql`
@@ -424,7 +424,7 @@ export class SQLEMail {
     email.attachments.clear();
     for (let row of attachmentRows) {
       try {
-        let a = new Attachment();
+        let a = email.newAttachment();
         a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
         a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
         a.filename = sanitize.nonemptystring(row.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));

@@ -1,8 +1,11 @@
 import { Message } from "../Abstract/Message";
+import { Attachment } from "../Abstract/Attachment";
 import { notifyChangedProperty } from "../util/Observable";
 import type { ChatPersonUID } from "./ChatPersonUID";
 import type { ChatRoom } from "./ChatRoom";
 import type { ChatRoomEvent } from "./RoomEvent";
+import { assert } from "../util/util";
+import { ArrayColl, type MapColl } from "svelte-collections";
 
 /**
  * A message between humans.
@@ -19,6 +22,7 @@ export class ChatMessage extends Message {
   deliveryStatus = DeliveryStatus.Unknown;
   @notifyChangedProperty
   declare from: ChatPersonUID;
+  declare readonly reactions: MapColl<ChatPersonUID, string>;
 
   constructor(room: ChatRoom) {
     super();
@@ -32,6 +36,15 @@ export class ChatMessage extends Message {
   set room(val: ChatRoom) {
     this.to = val;
   }
+
+  newAttachment(): Attachment {
+    let att = new Attachment();
+    att.message = this;
+    assert(this.room.account.storage.supportsAttachments, "Need ChatAccountStorage that supports attachments");
+    att.storage = new ArrayColl([this.room.account.storage]);
+    return att;
+  }
+
 }
 
 /** Everything that can appear in the timeline of a chat room */
