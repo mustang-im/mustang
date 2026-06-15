@@ -35,10 +35,14 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
   }
 
+  /** A live message can arrive before we load the old msgs from DB */
+  protected loadedFromDB = false;
+
   async listMessages(): Promise<void> {
-    if (this.messages.hasItems) {
+    if (this.loadedFromDB) {
       return;
     }
+    this.loadedFromDB = true;
     await SQLChatMessage.readAll(this);
     this.updateLastMessage();
   }
