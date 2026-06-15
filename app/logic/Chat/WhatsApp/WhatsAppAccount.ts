@@ -96,6 +96,12 @@ export class WhatsAppAccount extends ChatAccount {
   protected loginResult: Deferred<void> | null = null;
   /** Periodic ping that keeps the connection alive (the server drops idle ones). */
   protected keepAliveTimer: ReturnType<typeof setInterval> | null = null;
+  /** Whether a dropped connection should auto-reconnect: true while we want to be
+   * online, cleared by {@link disconnect} and by an auth failure. */
+  protected shouldReconnect = false;
+  /** Pending reconnect, and how many attempts so far (for exponential backoff). */
+  protected reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  protected reconnectAttempts = 0;
 
   newRoom(): WhatsAppChatRoom {
     return new WhatsAppChatRoom(this);
@@ -155,13 +161,31 @@ export class WhatsAppAccount extends ChatAccount {
     if (!transport && !isWhatsAppLiveAvailable()) {
       return; // no live backend (e.g. web build or unit test)
     }
-    this.connection = this.createConnection();
-    this.connection.onStanza = node => this.onStanza(node);
+    if (this.connection) {
+      return; // already connected (or connecting/reconnecting)
+    }
+    this.shouldReconnect = true; // we want to stay connected; drops trigger a reconnect
+    let connection = this.createConnection();
+    this.connection = connection;
+    connection.onStanza = node => this.onStanza(node);
     this.setupMeetAccount();
     this.loginResult = deferred<void>();
-    await this.connection.connect(() =>
-      getLoginPayload(Number(this.deviceJID!.user), this.deviceJID!.device), transport);
-    await this.loginResult.promise;
+    try {
+      await connection.connect(() =>
+        getLoginPayload(Number(this.deviceJID!.user), this.deviceJID!.device), transport);
+      await this.loginResult.promise;
+    } catch (ex) {
+      // The handshake/login failed (or the stream dropped mid-handshake). Drop
+      // this dead connection so a reconnect can replace it, and — unless this was
+      // an auth failure (onConnectionClosed clears shouldReconnect) — retry.
+      if (this.connection == connection) {
+        this.teardownConnection();
+      }
+      if (this.shouldReconnect) {
+        this.scheduleReconnect();
+      }
+      throw ex;
+    }
     this.isOnline = true;
   }
 
@@ -172,6 +196,11 @@ export class WhatsAppAccount extends ChatAccount {
   }
 
   async disconnect(): Promise<void> {
+    this.shouldReconnect = false; // intentional — don't auto-reconnect
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     this.isOnline = false;
     this.stopKeepAlive();
     this.loginResult?.reject(new Error("Disconnected"));
@@ -180,19 +209,70 @@ export class WhatsAppAccount extends ChatAccount {
     this.connection = null;
   }
 
+  /** Tears down a dead connection (after a drop or failed handshake): stops the
+   * keepalive and discards the socket so we stop writing into it. Does not clear
+   * {@link shouldReconnect}. A reconnect is scheduled separately. */
+  protected teardownConnection(): void {
+    this.isOnline = false;
+    this.stopKeepAlive();
+    let dead = this.connection;
+    this.connection = null;
+    dead?.disconnect().catch(() => undefined);
+  }
+
+  /**
+   * The server routinely ends the stream (e.g. `<stream:error code="503">`) and expects the
+   * client to reconnect.
+   * This schedules a reconnect after a drop, with exponential backoff.
+   * Reset by a successful `<success>`, and stopped by {@link disconnect}.
+   */
+  protected scheduleReconnect(): void {
+    if (this.reconnectTimer || !this.shouldReconnect) {
+      return;
+    }
+    let delay = Math.min(kReconnectBaseMs * 2 ** this.reconnectAttempts, kReconnectMaxMs);
+    this.reconnectAttempts++;
+    waLog(`WhatsApp: reconnecting in ${Math.round(delay / 1000)}s (attempt ${this.reconnectAttempts})`);
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect().catch(ex => console.error("WhatsApp: reconnect attempt failed:", (ex as any)?.message ?? ex));
+    }, delay);
+    (this.reconnectTimer as any)?.unref?.(); // don't keep the (Node/test) event loop alive
+  }
+
+  /** Handles the stream ending: an auth `<failure>` (don't loop — likely logged
+   * out) vs. a `<stream:error>` or dropped socket (the routine 503 reconnect
+   * signal). Rejects any in-flight login, tears the dead connection down, and
+   * (unless it was an auth failure) reconnects. */
+  protected onConnectionClosed(node: WANode): void {
+    let detail = stanzaErrorText(node);
+    let authFailure = node.tag == "failure";
+    if (authFailure) {
+      waLog("WhatsApp: login failed:", node.tag + detail);
+      this.shouldReconnect = false; // an auth/conflict failure — reconnecting would loop
+    } else {
+      waLog("WhatsApp: connection lost:", node.tag + detail);
+    }
+    this.loginResult?.reject(new Error(`WhatsApp connection ${authFailure ? "login failed" : "lost"}${detail}`));
+    this.loginResult = null;
+    this.teardownConnection();
+    if (this.shouldReconnect) {
+      this.scheduleReconnect();
+    }
+  }
+
   /** Routes a received stanza to the right handler. */
   protected onStanza(node: WANode) {
     if (node.tag == "success") {
       if (node.attrs.lid) {
         this.ownLID = JID.parse(node.attrs.lid);
       }
+      this.reconnectAttempts = 0; // a clean login resets the backoff
       this.loginResult?.resolve();
       this.loginResult = null;
       this.afterLogin().catch(ex => this.errorCallback(ex));
     } else if (node.tag == "failure" || node.tag == "stream:error") {
-      waLog("login/stream ended:", node.tag + stanzaErrorText(node));
-      this.loginResult?.reject(new Error(`WhatsApp login failed${stanzaErrorText(node)}`));
-      this.loginResult = null;
+      this.onConnectionClosed(node);
     } else if (node.tag == "message") {
       this.receiveMessageStanza(node).catch(ex => this.errorCallback(ex));
     } else if (node.tag == "notification") {
@@ -709,6 +789,10 @@ export class WhatsAppAccount extends ChatAccount {
 
 /** How often to ping the server to keep the connection alive. */
 const kKeepAliveMs = 25 * 1000;
+
+/** Reconnect backoff after a dropped connection: first retry delay, and the cap. */
+const kReconnectBaseMs = 1000;
+const kReconnectMaxMs = 30 * 1000;
 
 /** Debounce before persisting Signal ratchet state after a message changes it. */
 const kSessionSaveMs = 5 * 1000;
