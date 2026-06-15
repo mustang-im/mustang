@@ -69,10 +69,14 @@ export class WhatsAppHistorySync {
    * the on-demand paging loop continue when an ON_DEMAND blob arrives.
    * @returns how many chats and messages were added. */
   async importHistory(history: HistorySync, syncType = HistorySyncType.Full): Promise<{ chats: number, messages: number }> {
-    // Contact display names: the phone sends these in a dedicated `PushName` sync,
-    // so apply them before (and independently of) the conversations they name.
+    // Contact display names. These can come in a dedicated sync, so apply them before
+    // (and independently of) the conversations they name. Push names first; saved
+    // address-book names (inlineContacts) applied after, so the saved one wins.
     for (let pushname of history.pushnames ?? []) {
-      this.account.rememberPushName(pushname.id, pushname.pushname);
+      this.account.rememberContactName(pushname.id, pushname.pushname);
+    }
+    for (let contact of history.inlineContacts ?? []) {
+      this.account.rememberContactName(contact.pnJID || contact.lidJID, contact.fullName || contact.firstName);
     }
     let chats = 0;
     let messages = 0;
@@ -99,6 +103,9 @@ export class WhatsAppHistorySync {
     if (!chat || !importable) {
       return -1; // status@broadcast, newsletters, malformed, …
     }
+    if (chat.server == kServerUser && chat.user == "0") {
+      return -1; // the official "WhatsApp" account: company notices, not a chat (else shows as "0")
+    }
     let room = await this.account.getOrCreateRoom(chat, this.nameFor(conversation, chat));
     let added = 0;
     for (let stored of conversation.messages ?? []) {
@@ -114,14 +121,16 @@ export class WhatsAppHistorySync {
     return added;
   }
 
-  /** A display name for the chat: a group's subject, or a 1:1 partner's push
-   * name taken from one of their messages. */
+  /** A display name for the chat: a group's subject, or a 1:1 partner's name —
+   * the conversation's resolved `displayName`, else a saved/push name we know for
+   * the JID, else a push name off one of their messages. */
   protected nameFor(conversation: Conversation, chat: JID): string | undefined {
-    if (chat.isGroup) {
-      return conversation.name || undefined;
-    }
+    let mapName = this.account.contactNames.get(chat.toNonDevice().toString());
     let incoming = (conversation.messages ?? []).find(stored => stored.message && !stored.message.key?.fromMe);
-    return incoming?.message?.pushName || undefined;
+    let messagePushName = incoming?.message?.pushName;
+    return chat.isGroup
+      ? (conversation.name || conversation.displayName || undefined)
+      : (conversation.displayName || mapName || messagePushName || undefined);
   }
 
   // --- on-demand paging: messages OLDER than the FULL dump (secondary, opt-in) ---
@@ -133,7 +142,7 @@ export class WhatsAppHistorySync {
   // ON_DEMAND blob imports — stopping on NO_HISTORY or a short/empty page.
   //
   // Best-effort: the server may silently drop on-demand requests for companion
-  // devices (whatsmeow), so this never replaces requireFullSync; it is gated
+  // devices, so this never replaces requireFullSync; it is gated
   // behind {@link pageOnDemand} and verifiable only against a live phone.
 
   /** Requests the page of messages just before this room's oldest stored one.
@@ -172,7 +181,7 @@ export class WhatsAppHistorySync {
             oldestMsgID: oldest.id,
             oldestMsgFromMe: oldest.outgoing,
             onDemandMsgCount: kOnDemandPageSize,
-            // SECONDS despite the upstream *MS name (whatsmeow uses Timestamp.Unix()).
+            // SECONDS despite the upstream *MS name
             oldestMsgTimestampSec: Math.floor(oldest.sent.getTime() / 1000),
           },
         },

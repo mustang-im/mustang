@@ -18,8 +18,7 @@ export enum ProtocolMessageType {
 /** HistorySyncNotification.syncType — which slice of history a notification's
  * blob carries. FULL is the entire retained history (what `requireFullSync`
  * elicits at link time); ON_DEMAND answers our paging requests for messages
- * older than that; NO_HISTORY means there is nothing (more) to send.
- * Source: whatsmeow WAWebProtobufsE2E.proto HistorySyncNotification.HistorySyncType. */
+ * older than that; NO_HISTORY means there is nothing (more) to send. */
 export enum HistorySyncType {
   InitialBootstrap = 0,
   InitialStatusV3 = 1,
@@ -32,8 +31,7 @@ export enum HistorySyncType {
 }
 
 /** PeerDataOperationRequestMessage.peerDataOperationRequestType — the kind of
- * device-to-device data request. We only use HISTORY_SYNC_ON_DEMAND.
- * Source: whatsmeow WAWebProtobufsE2E.proto PeerDataOperationRequestType. */
+ * device-to-device data request. We only use HISTORY_SYNC_ON_DEMAND. */
 export enum PeerDataOperationRequestType {
   HistorySyncOnDemand = 3,
 }
@@ -188,11 +186,37 @@ export const ProtocolMessage = message({
   key: sub(1, () => MessageKey),
   type: int(2),
   historySyncNotification: sub(6, () => HistorySyncNotification),
+  appStateSyncKeyShare: sub(7, () => AppStateSyncKeyShare),
   editedMessage: sub<WAMessage>(14, () => Message),
   timestampMS: int(15),
   peerDataOperationRequestMessage: sub(16, () => PeerDataOperationRequestMessage),
 });
 export type ProtocolMessage = TypeOf<typeof ProtocolMessage>;
+
+// --- app-state sync keys: the primary device shares these (inside a ProtocolMessage)
+// so a companion can decrypt app-state patches (contacts, settings). ---
+
+export const AppStateSyncKeyId = message({
+  keyID: bytes(1),
+});
+export type AppStateSyncKeyId = TypeOf<typeof AppStateSyncKeyId>;
+
+export const AppStateSyncKeyData = message({
+  keyData: bytes(1),     // the 32-byte master key
+  timestamp: int(3),
+});
+export type AppStateSyncKeyData = TypeOf<typeof AppStateSyncKeyData>;
+
+export const AppStateSyncKey = message({
+  keyID: sub(1, () => AppStateSyncKeyId),
+  keyData: sub(2, () => AppStateSyncKeyData),
+});
+export type AppStateSyncKey = TypeOf<typeof AppStateSyncKey>;
+
+export const AppStateSyncKeyShare = message({
+  keys: repeated(sub(1, () => AppStateSyncKey)),
+});
+export type AppStateSyncKeyShare = TypeOf<typeof AppStateSyncKeyShare>;
 
 // --- history sync (the chat list + recent messages a companion gets at link time) ---
 
@@ -228,7 +252,9 @@ export const Conversation = message({
   id: string(1),
   messages: repeated(sub(2, () => HistorySyncMsg)),
   unreadCount: int(6),
-  name: string(13),
+  name: string(13),        // chat name — group subject, or legacy 1:1 contact name
+  displayName: string(38), // the contact's resolved display name (1:1, modern)
+  username: string(43),
 });
 export type Conversation = TypeOf<typeof Conversation>;
 
@@ -239,11 +265,23 @@ export const Pushname = message({
 });
 export type Pushname = TypeOf<typeof Pushname>;
 
+/** A contact from the user's address book, sent in history sync. `fullName`/
+ * `firstName` are the *saved* name — what the chat list shows for a saved contact. */
+export const InlineContact = message({
+  pnJID: string(1),    // phone-number JID
+  lidJID: string(2),   // LID JID
+  fullName: string(3),
+  firstName: string(4),
+  username: string(5),
+});
+export type InlineContact = TypeOf<typeof InlineContact>;
+
 export const HistorySync = message({
   syncType: int(1),
   conversations: repeated(sub(2, () => Conversation)),
   progress: int(6),
   pushnames: repeated(sub(7, () => Pushname)),
+  inlineContacts: repeated(sub(20, () => InlineContact)),
 });
 export type HistorySync = TypeOf<typeof HistorySync>;
 
@@ -256,7 +294,7 @@ export function decodeHistorySync(data: Uint8Array): HistorySync {
 /** Asks the phone for the `onDemandMsgCount` messages immediately before
  * `oldestMsgID` in `chatJID`. The phone answers with an ON_DEMAND history blob.
  * Despite the upstream field NAME, `oldestMsgTimestampSec` is in SECONDS (the
- * server expects `Timestamp.Unix()`; see whatsmeow BuildHistorySyncRequest). */
+ * server expects `Timestamp.Unix()`). */
 export const HistorySyncOnDemandRequest = message({
   chatJID: string(1),
   oldestMsgID: string(2),
@@ -316,3 +354,108 @@ export function encodeWAMessage(value: WAMessage): Uint8Array {
 export function decodeWAMessage(data: Uint8Array): WAMessage {
   return decode(Message, data);
 }
+
+// --- app-state sync: the encrypted records the server returns (waServerSync) and
+// the decrypted actions they carry (waSyncAction). Field numbers verified against
+// real `critical_unblock_low` bytes. Contact names live in ContactAction. ---
+
+export const KeyId = message({
+  id: bytes(1),
+});
+export type KeyId = TypeOf<typeof KeyId>;
+
+/** Points at an encrypted app-state snapshot/mutations blob on the media CDN. */
+export const ExternalBlobReference = message({
+  mediaKey: bytes(1),
+  directPath: string(2),
+  handle: string(3),
+  fileSizeBytes: int(4),
+  fileSHA256: bytes(5),
+  fileEncSHA256: bytes(6),
+});
+export type ExternalBlobReference = TypeOf<typeof ExternalBlobReference>;
+
+export const SyncdVersion = message({
+  version: int(1),
+});
+
+export const SyncdValue = message({
+  blob: bytes(1), // IV(16) | AES-256-CBC ciphertext | valueMAC(32)
+});
+
+export const SyncdIndex = message({
+  blob: bytes(1), // the 32-byte index MAC
+});
+
+export const SyncdRecord = message({
+  index: sub(1, () => SyncdIndex),
+  value: sub(2, () => SyncdValue),
+  keyID: sub(3, () => KeyId),
+});
+export type SyncdRecord = TypeOf<typeof SyncdRecord>;
+
+/** SyncdMutation.operation */
+export enum SyncdOperation {
+  Set = 0,
+  Remove = 1,
+}
+
+export const SyncdMutation = message({
+  operation: int(1), // SyncdOperation
+  record: sub(2, () => SyncdRecord),
+});
+export type SyncdMutation = TypeOf<typeof SyncdMutation>;
+
+/** The container an external-mutations blob decodes to. */
+export const SyncdMutations = message({
+  mutations: repeated(sub(1, () => SyncdMutation)),
+});
+export type SyncdMutations = TypeOf<typeof SyncdMutations>;
+
+export const SyncdSnapshot = message({
+  version: sub(1, () => SyncdVersion),
+  records: repeated(sub(2, () => SyncdRecord)),
+  mac: bytes(3),
+  keyID: sub(4, () => KeyId),
+});
+export type SyncdSnapshot = TypeOf<typeof SyncdSnapshot>;
+
+export const SyncdPatch = message({
+  version: sub(1, () => SyncdVersion),
+  mutations: repeated(sub(2, () => SyncdMutation)),
+  externalMutations: sub(3, () => ExternalBlobReference),
+  snapshotMAC: bytes(4),
+  patchMAC: bytes(5),
+  keyID: sub(6, () => KeyId),
+  deviceIndex: int(8),
+});
+export type SyncdPatch = TypeOf<typeof SyncdPatch>;
+
+/** A saved address-book contact. `fullName`/`firstName` are the names the chat
+ * list shows; `lidJid`/`pnJid` link the LID and phone-number identities. */
+export const ContactAction = message({
+  fullName: string(1),
+  firstName: string(2),
+  lidJid: string(3),
+  saveOnPrimaryAddressbook: bool(4),
+});
+export type ContactAction = TypeOf<typeof ContactAction>;
+
+/** The decrypted action carried by a mutation. We only consume contactAction
+ * (names) for now; other actions (mute/pin/star/…) share the same envelope. */
+export const SyncActionValue = message({
+  timestamp: int(1),
+  contactAction: sub(3, () => ContactAction),
+});
+export type SyncActionValue = TypeOf<typeof SyncActionValue>;
+
+/** The plaintext inside a mutation's value blob: the JSON index, the action, and
+ * a version. `index` is the UTF-8 bytes of a JSON string array, e.g.
+ * `["contact","<jid>"]`. */
+export const SyncActionData = message({
+  index: bytes(1),
+  value: sub(2, () => SyncActionValue),
+  padding: bytes(3),
+  version: int(4),
+});
+export type SyncActionData = TypeOf<typeof SyncActionData>;

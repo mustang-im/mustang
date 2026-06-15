@@ -2,8 +2,7 @@
  *
  * Sending is per *device*: a contact (and we) have several linked devices, each
  * with its own Signal session, so one message fans out to many `<enc>` blobs.
- * The steps, modelled on whatsmeow (send.go / prekeys.go / user.go) and Baileys
- * (messages-send.ts relayMessage, Utils/signal.ts), are:
+ * The steps are:
  *
  *  1. Resolve the recipient's device list (usync) plus our own other devices, so
  *     a message we send also shows up on our phone.
@@ -29,7 +28,7 @@ import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal
 import { encodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
 import { uploadMedia, buildMediaMessage, mediaTypeForMIME } from "./WhatsAppMedia";
 import type { Attachment } from "../../Abstract/Attachment";
-import { waLog } from "./util";
+import { waLog, nodeTree } from "./util";
 import { assert } from "../../util/util";
 
 /** Builds, encrypts and sends outgoing messages for one WhatsApp account. */
@@ -83,8 +82,7 @@ export class WhatsAppSender {
     let messageID = WhatsAppSender.generateMessageID();
     let plaintext = encodeWAMessage(payload);
     // Our own devices receive the message wrapped in a deviceSentMessage, so the
-    // phone files it under the right chat and shows it as sent by us (whatsmeow
-    // patchMessageForSend / Baileys deviceSentMessage).
+    // phone files it under the right chat and shows it as sent by us.
     let ownPlaintext = encodeWAMessage({
       deviceSentMessage: { destinationJID: chat.toNonDevice().toString(), message: payload },
     });
@@ -209,7 +207,7 @@ export class WhatsAppSender {
    * The whole message must use ONE addressing namespace: a `@lid` chat is queried
    * (and later addressed/encrypted) with our own LID, a phone-number chat with our
    * own number. Mixing the two in one message — e.g. our PN devices in a LID chat —
-   * is rejected by the server (`<ack error="400">`); whatsmeow likewise switches to
+   * is rejected by the server (`<ack error="400">`). We should switch to
    * the LID identity when the recipient is on the hidden-user (LID) server. */
   protected async recipientDevices(chat: JID): Promise<JID[]> {
     let own = this.ownIdentityFor(chat);
@@ -241,8 +239,7 @@ export class WhatsAppSender {
     return ownUser && device.device == self.device;
   }
 
-  /** Sends the usync device-list query and parses the result. Modelled on
-   * whatsmeow getUSyncDevices / Baileys getUSyncDevices: a `usync` IQ with a
+  /** Sends the usync device-list query and parses the result. A `usync` IQ with a
    * `<devices>` query. Falls back to the bare users (device 0) if the server
    * returns no device list. */
   protected async fetchDeviceList(jids: JID[]): Promise<JID[]> {
@@ -368,7 +365,7 @@ export class WhatsAppSender {
   }
 
   /** Reads the prekey bundle a peer attaches to a `<receipt type=retry>` when its
-   * session is broken (whatsmeow handleRetryReceipt): the same shape as a fetched
+   * session is broken: the same shape as a fetched
    * `<user>`, under `<keys>`. Null if the receipt carries no fresh keys. */
   parseRetryBundle(node: WANode): PreKeyBundle | null {
     let keys = node.child("keys");
@@ -442,26 +439,12 @@ export class WhatsAppSender {
     return `${device.user}.${device.device}`;
   }
 
-  /** A WhatsApp message id: `"3EB0"` + uppercase random hex (whatsmeow
-   * GenerateMessageID prefixes companion-sent ids with 3EB0). */
+  /** A WhatsApp message id: `"3EB0"` + uppercase random hex */
   static generateMessageID(): string {
     return "3EB0" + randomHex(8);
   }
 }
 
-/** A recursive readable dump of a stanza's structure — for digging into a
- * server response whose exact shape we're unsure of (debug only). */
-function nodeTree(node: WANode, indent = ""): string {
-  let attrs = Object.entries(node.attrs ?? {}).map(([key, value]) => ` ${key}="${value}"`).join("");
-  let head = `${indent}<${node.tag}${attrs}>`;
-  if (Array.isArray(node.content)) {
-    return [head, ...node.content.map(child => nodeTree(child, indent + "  "))].join("\n");
-  }
-  if (node.content instanceof Uint8Array) {
-    return `${head} [${node.content.length}B]`;
-  }
-  return typeof node.content == "string" ? `${head} "${node.content}"` : head;
-}
 
 /** A random session id for a usync query, as the client tags each batch with. */
 function usyncSessionID(): string {

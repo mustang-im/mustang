@@ -56,6 +56,20 @@ export function nodePreview(node: WANode): string {
   return `<${node.tag}${attrs ? " " + attrs : ""}>${inner}`;
 }
 
+/** A recursive readable dump of a stanza's structure — for digging into a
+ * server response whose exact shape we're unsure of (debug only). */
+export function nodeTree(node: WANode, indent = ""): string {
+  let attrs = Object.entries(node.attrs ?? {}).map(([key, value]) => ` ${key}="${value}"`).join("");
+  let head = `${indent}<${node.tag}${attrs}>`;
+  if (Array.isArray(node.content)) {
+    return [head, ...node.content.map(child => nodeTree(child, indent + "  "))].join("\n");
+  }
+  if (node.content instanceof Uint8Array) {
+    return `${head} [${node.content.length}B]`;
+  }
+  return typeof node.content == "string" ? `${head} "${node.content}"` : head;
+}
+
 /** Big-endian fixed-width encoding, as the WhatsApp key ids on the wire use. */
 export function bigEndian(value: number, byteCount: number): Uint8Array {
   let out = new Uint8Array(byteCount);

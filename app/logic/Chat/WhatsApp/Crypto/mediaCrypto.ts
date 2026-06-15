@@ -11,6 +11,8 @@ export enum MediaType {
   Sticker = "sticker",
   /** The encrypted history-sync blob (a gzipped HistorySync protobuf). */
   History = "history",
+  /** An app-state external blob (a SyncdSnapshot / SyncdMutations protobuf). */
+  AppState = "appstate",
 }
 
 /** The HKDF "application info" string per media type. Stickers reuse the image keys. */
@@ -22,6 +24,7 @@ function mediaInfo(type: MediaType): string {
     case MediaType.Audio: return "WhatsApp Audio Keys";
     case MediaType.Document: return "WhatsApp Document Keys";
     case MediaType.History: return "WhatsApp History Keys";
+    case MediaType.AppState: return "WhatsApp App State Keys";
   }
 }
 

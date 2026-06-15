@@ -2,8 +2,7 @@
  *
  * ACCURATE — the envelope: the `<call>` wrapper and its offer/accept/reject/
  * terminate/transport children, with call-id, call-creator, and a terminate
- * reason, match the real protocol (cross-checked against whatsmeow) and the
- * `<enc>` node carries a Signal-encrypted key.
+ * reason, match the real protocol and the `<enc>` node carries a Signal-encrypted key.
  *
  * GAP — the media description: WhatsApp does NOT use WebRTC SDP/ICE/DTLS, not
  * even on web.whatsapp.com. The real offer carries proprietary `<audio>`/

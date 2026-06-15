@@ -587,7 +587,7 @@ test("a parsed bundle with no one-time prekey initiates a session and the peer d
   expect(str(await decryptPreKeyMessage(bob, "self.0", m.body))).toBe("hi no-otk");
 });
 
-// --- live wire-format regressions (confirmed against whatsmeow source) ---
+// --- live wire-format regressions ---
 
 test("device-list query uses usync mode=query; prekey fetch sets reason=identity", () => {
   let sender = makeAccount(new FakeConnection()).sender;
@@ -597,5 +597,5 @@ test("device-list query uses usync mode=query; prekey fetch sets reason=identity
   expect(usync.child("query")!.child("devices")!.attrs.version).toBe("2");
 
   let user = sender.preKeyBundleIQ([JID.parse(kBobJID)]).child("key")!.children("user")[0];
-  expect(user.attrs.reason).toBe("identity"); // whatsmeow sends this on the prekey fetch
+  expect(user.attrs.reason).toBe("identity");
 });

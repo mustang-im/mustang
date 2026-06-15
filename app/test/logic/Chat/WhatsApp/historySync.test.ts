@@ -97,6 +97,28 @@ test("history sync push names become the contacts' display names", async () => {
   expect(account.getContact(JID.parse(kBobJID)).name).toBe("Bob Builder");
 });
 
+test("history sync names a 1:1 from displayName, and a saved contact from inlineContacts", async () => {
+  let account = setup();
+
+  let blob = encode(HistorySync, {
+    syncType: HistorySyncType.Full,
+    conversations: [{
+      id: kAliceJID,
+      displayName: "Alice Display", // Conversation.displayName (field 38), the modern 1:1 name
+      messages: [{ message: { key: { remoteJID: kAliceJID, fromMe: true, id: "m1" }, message: { conversation: "hi" }, messageTimestamp: 1700000000 } }],
+    }],
+    inlineContacts: [
+      { pnJID: kBobJID, fullName: "Bob Saved", firstName: "Bob" }, // address-book name, no conversation
+    ],
+  });
+
+  await account.historySync.importHistory(decodeHistorySync(blob), HistorySyncType.Full);
+
+  let room = account.rooms.contents.find(r => r.id == kAliceJID)!;
+  expect(room.contact.name).toBe("Alice Display"); // from Conversation.displayName (38)
+  expect(account.getContact(JID.parse(kBobJID)).name).toBe("Bob Saved"); // from InlineContact.fullName
+});
+
 test("one unparseable message does not abort the rest of its conversation", async () => {
   let account = setup();
 

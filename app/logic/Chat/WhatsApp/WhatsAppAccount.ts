@@ -3,6 +3,7 @@ import { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import { WhatsAppMessage } from "./WhatsAppMessage";
 import { WhatsAppSender } from "./WhatsAppSend";
 import { WhatsAppHistorySync } from "./WhatsAppHistorySync";
+import { WhatsAppAppState } from "./WhatsAppAppState";
 import { KeyPair } from "../Signal/Crypto/KeyPair";
 import { SignalStore } from "../Signal/Crypto/Store";
 import { decryptPreKeyMessage, decryptSignalMessage } from "../Signal/Crypto/SessionCipher";
@@ -83,6 +84,7 @@ export class WhatsAppAccount extends ChatAccount {
   meetAccount: WhatsAppMeetAccount | null = null;
   /** Fetches the chat list and old messages the phone sends after linking. */
   readonly historySync = new WhatsAppHistorySync(this);
+  readonly appState = new WhatsAppAppState(this);
   /** Builds, encrypts and sends our outgoing messages (per-device Signal). */
   readonly sender = new WhatsAppSender(this);
   /** Recently sent payloads, keyed by message id, so a `<receipt type="retry">`
@@ -218,6 +220,9 @@ export class WhatsAppAccount extends ChatAccount {
     this.startKeepAlive();
     await this.uploadPreKeys();
     await this.sendActive();
+    // Re-sync contact names from app-state using our persisted keys. On a fresh
+    // pairing the keys haven't arrived yet (no-op); the key-share then triggers it.
+    this.appState.sync().catch(ex => this.errorCallback(ex));
   }
 
   /** Pings the server periodically so it doesn't drop the connection as idle. */
@@ -432,6 +437,12 @@ export class WhatsAppAccount extends ChatAccount {
       await this.sendDeliveryReceipt(node);
       return;
     }
+    let keyShare = payload.protocolMessage?.appStateSyncKeyShare;
+    if (keyShare) {
+      this.appState.storeKeys(keyShare);
+      await this.sendDeliveryReceipt(node);
+      return;
+    }
     // `category="peer"` messages are device-to-device sync / protocol traffic
     // (app-state, key shares, the history-sync notifications above) that the
     // phone sends our own account — NOT a conversation. Don't make a chat room
@@ -575,24 +586,27 @@ export class WhatsAppAccount extends ChatAccount {
     return new WhatsAppContact(JID.parse(userID), name);
   }
 
-  /** Contacts' self-set display names ("push names") from history sync, keyed by
-   * non-device JID. Used to name a 1:1 contact when nothing better is known. */
-  readonly pushNames = new Map<string, string>();
+  /** Contact display names from history sync, keyed by non-device JID — saved
+   * address-book names (`inlineContacts`) and self-set push names (`pushnames`).
+   * Used to name a 1:1 contact when nothing better (a verified name) is known. */
+  readonly contactNames = new Map<string, string>();
 
-  /** Records a contact's push name (from history sync) and applies it right away
+  /** Records a contact's display name (from history sync) and applies it right away
    * to the contact if we already created one (from an earlier sync blob or a live
-   * message). A verified business name, when we have it, still outranks it. */
-  rememberPushName(jid: string | undefined, name: string | undefined): void {
+   * message). A verified business name, when we have it, still outranks it.
+   * Called for both saved (inlineContacts) and push (pushnames) names; the caller
+   * applies saved names after push names, so the saved one wins. */
+  rememberContactName(jid: string | undefined, name: string | undefined): void {
     let id = sanitize.nonemptystring(jid, null);
-    let pushName = sanitize.nonemptylabel(name, null);
-    if (!id || !pushName) {
+    let displayName = sanitize.nonemptylabel(name, null);
+    if (!id || !displayName) {
       return;
     }
     let address = JID.parse(id).toNonDevice().toString();
-    this.pushNames.set(address, pushName);
+    this.contactNames.set(address, displayName);
     let contact = this.allPersonsCached.get(address)?.deref() as WhatsAppContact | undefined;
     if (contact && !contact.verifiedName) {
-      contact.name = pushName;
+      contact.name = displayName;
     }
   }
 
@@ -601,7 +615,7 @@ export class WhatsAppAccount extends ChatAccount {
    * @param name the sender's display name from the stanza, if known */
   getContact(jid: JID, name?: string): WhatsAppContact {
     let address = jid.toNonDevice().toString();
-    name ??= this.pushNames.get(address); // the contact's own display name, from history sync
+    name ??= this.contactNames.get(address); // the contact's display name, from history sync
     let isNew = !this.allPersonsCached.get(address)?.deref();
     let contact = this.getPersonUID(address, name) as WhatsAppContact;
     if (name && !contact.verifiedName && contact.name != name) {
@@ -669,6 +683,7 @@ export class WhatsAppAccount extends ChatAccount {
       this.deviceIdentityBytes = wa.deviceIdentity ? base64Decode(wa.deviceIdentity) : null;
       this.deviceJID = JID.parse(wa.deviceJID);
       this.signalStore = SignalStore.fromJSON(wa.signalStore);
+      this.appState.fromJSON(wa.appState);
     }
   }
 
@@ -685,6 +700,7 @@ export class WhatsAppAccount extends ChatAccount {
         deviceIdentity: this.deviceIdentityBytes ? base64Encode(this.deviceIdentityBytes) : undefined,
         deviceJID: this.deviceJID.toString(),
         signalStore: this.signalStore.toJSON(),
+        appState: this.appState.toJSON(),
       };
     }
     return json;
