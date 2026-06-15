@@ -69,6 +69,11 @@ export class WhatsAppHistorySync {
    * the on-demand paging loop continue when an ON_DEMAND blob arrives.
    * @returns how many chats and messages were added. */
   async importHistory(history: HistorySync, syncType = HistorySyncType.Full): Promise<{ chats: number, messages: number }> {
+    // Contact display names: the phone sends these in a dedicated `PushName` sync,
+    // so apply them before (and independently of) the conversations they name.
+    for (let pushname of history.pushnames ?? []) {
+      this.account.rememberPushName(pushname.id, pushname.pushname);
+    }
     let chats = 0;
     let messages = 0;
     for (let conversation of history.conversations ?? []) {

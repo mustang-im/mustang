@@ -232,10 +232,18 @@ export const Conversation = message({
 });
 export type Conversation = TypeOf<typeof Conversation>;
 
+/** A contact's self-set display name ("push name"), as sent in history sync. */
+export const Pushname = message({
+  id: string(1),       // the contact's JID
+  pushname: string(2), // their display name
+});
+export type Pushname = TypeOf<typeof Pushname>;
+
 export const HistorySync = message({
   syncType: int(1),
   conversations: repeated(sub(2, () => Conversation)),
   progress: int(6),
+  pushnames: repeated(sub(7, () => Pushname)),
 });
 export type HistorySync = TypeOf<typeof HistorySync>;
 

@@ -22,6 +22,7 @@ import { ChatPersonUID } from "../ChatPersonUID";
 import { Group } from "../../Abstract/Group";
 import { appGlobal } from "../../app";
 import { gt } from "../../../l10n/l10n";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl, MapColl } from "svelte-collections";
 
 /**
@@ -574,11 +575,33 @@ export class WhatsAppAccount extends ChatAccount {
     return new WhatsAppContact(JID.parse(userID), name);
   }
 
+  /** Contacts' self-set display names ("push names") from history sync, keyed by
+   * non-device JID. Used to name a 1:1 contact when nothing better is known. */
+  readonly pushNames = new Map<string, string>();
+
+  /** Records a contact's push name (from history sync) and applies it right away
+   * to the contact if we already created one (from an earlier sync blob or a live
+   * message). A verified business name, when we have it, still outranks it. */
+  rememberPushName(jid: string | undefined, name: string | undefined): void {
+    let id = sanitize.nonemptystring(jid, null);
+    let pushName = sanitize.nonemptylabel(name, null);
+    if (!id || !pushName) {
+      return;
+    }
+    let address = JID.parse(id).toNonDevice().toString();
+    this.pushNames.set(address, pushName);
+    let contact = this.allPersonsCached.get(address)?.deref() as WhatsAppContact | undefined;
+    if (contact && !contact.verifiedName) {
+      contact.name = pushName;
+    }
+  }
+
   /** The ChatPersonUID for a WhatsApp JID
    * Fetches the profile (avatar, status, verified name) in the background.
    * @param name the sender's display name from the stanza, if known */
   getContact(jid: JID, name?: string): WhatsAppContact {
     let address = jid.toNonDevice().toString();
+    name ??= this.pushNames.get(address); // the contact's own display name, from history sync
     let isNew = !this.allPersonsCached.get(address)?.deref();
     let contact = this.getPersonUID(address, name) as WhatsAppContact;
     if (name && !contact.verifiedName && contact.name != name) {

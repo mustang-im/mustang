@@ -67,6 +67,36 @@ test("a FULL history dump imports all conversations and messages", async () => {
   expect(account.rooms.length).toBe(30);
 });
 
+test("history sync push names become the contacts' display names", async () => {
+  let account = setup();
+
+  // A conversation with only an OUTGOING message (so `nameFor` finds no push name),
+  // plus a separate `pushnames` list — the contact must still be named from it, not
+  // left as the bare JID. Bob has a push name but no conversation.
+  let blob = encode(HistorySync, {
+    syncType: HistorySyncType.Full,
+    conversations: [{
+      id: kAliceJID,
+      messages: [
+        { message: { key: { remoteJID: kAliceJID, fromMe: true, id: "m1" }, message: { conversation: "hi" }, messageTimestamp: 1700000000 } },
+      ],
+    }],
+    pushnames: [
+      { id: kAliceJID, pushname: "Alice Liddell" },
+      { id: kBobJID, pushname: "Bob Builder" },
+    ],
+  });
+
+  await account.historySync.importHistory(decodeHistorySync(blob), HistorySyncType.Full);
+
+  let room = account.rooms.contents.find(r => r.id == kAliceJID)!;
+  expect(room.contact.name).toBe("Alice Liddell"); // not the JID number
+  expect(room.name).toBe("Alice Liddell");
+
+  // A contact we create later (e.g. on Bob's first message) picks up the remembered name.
+  expect(account.getContact(JID.parse(kBobJID)).name).toBe("Bob Builder");
+});
+
 test("one unparseable message does not abort the rest of its conversation", async () => {
   let account = setup();
 
