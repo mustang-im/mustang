@@ -3,11 +3,17 @@
  * (by id); the server pushes inbound messages as REQUEST frames (`PUT
  * /api/v1/message`) that we ACK with a 200 RESPONSE. See Docs/01-transport.
  *
- * Auth is passed as `?login=&password=` query params so the same code works in a
- * browser (which can't set WebSocket headers) and on desktop. */
+ * Auth is an `Authorization: Basic base64("<username>:<password>")` request header
+ * on the WebSocket handshake — NOT `?login=&password=` query params. The server
+ * (`AccountAuthenticator` via `BasicAuthorizationHeader.fromString`) only reads the
+ * header; the Android client sets it via `Credentials.basic(username, password)`
+ * (Signal-Android OkHttpWebSocketConnection.java). The `ws` package forwards
+ * `options.headers` on the upgrade request. We keep `?login=&password=` on the URL
+ * too so a header-incapable browser bridge can still translate it. */
 import { encode, decode } from "../Proto/codec";
 import { WebSocketMessage, WebSocketMessageType, type WebSocketRequestMessage } from "../Proto/websocket";
 import { SignalHosts, type Credentials } from "./SignalApi";
+import { base64Encode } from "../Crypto/primitives";
 import { signalLog, redactURL } from "../util";
 
 export interface WebSocketLike {
@@ -20,10 +26,12 @@ export interface WebSocketLike {
   onerror: ((ev: any) => void) | null;
 }
 
-/** Opens a platform WebSocket (browser/Electron global, or `ws` on Node). */
-async function openSocket(url: string): Promise<WebSocketLike> {
+/** Opens a platform WebSocket (browser/Electron global, or `ws` on Node). The `ws`
+ * package accepts `options.headers` for the upgrade request (Authorization); the
+ * browser global ignores the third arg, so the URL also carries login/password. */
+async function openSocket(url: string, headers?: Record<string, string>): Promise<WebSocketLike> {
   let WS: any = (globalThis as any).WebSocket ?? (await import("ws")).WebSocket;
-  return new WS(url) as WebSocketLike;
+  return new WS(url, undefined, headers ? { headers } : undefined) as WebSocketLike;
 }
 
 interface Pending {
@@ -54,8 +62,14 @@ export class SignalWebSocket {
     let base = SignalHosts.chat.replace(/^https/, "wss");
     let auth = creds ? `?login=${encodeURIComponent(creds.username)}&password=${encodeURIComponent(creds.password)}` : "";
     let url = `${base}${this.path}${auth}`;
+    // The Signal chat server authenticates the socket from the Authorization header
+    // (AccountAuthenticator / BasicAuthorizationHeader), not the query string; the
+    // Android client sends Credentials.basic(username, password) (OkHttpWebSocketConnection.java).
+    let headers = creds
+      ? { Authorization: "Basic " + base64Encode(new TextEncoder().encode(`${creds.username}:${creds.password}`)) }
+      : undefined;
     signalLog(`ws connecting ${redactURL(url)}`);
-    let socket = await openSocket(url);
+    let socket = await openSocket(url, headers);
     socket.binaryType = "arraybuffer";
     this.socket = socket;
     // Attach onmessage BEFORE awaiting open: an authenticated connect triggers the

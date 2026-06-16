@@ -58,7 +58,12 @@ export async function decryptProfileName(profileKey: Uint8Array, data: Uint8Arra
 
 export async function encryptProfileAbout(profileKey: Uint8Array, about: string): Promise<Uint8Array> {
   let bytes = new TextEncoder().encode(about);
-  return encryptProfileField(profileKey, bytes, bucketFor(bytes.length, [kAboutPaddedLength1, kAboutPaddedLength2, kAboutPaddedLength3]));
+  // libsignal getTargetAboutLength: ≤128 → 128, <254 → 254, else 512. The 254 boundary
+  // is strict `<` (unlike the name buckets), so exactly 254 bytes pads to 512.
+  let bucket = bytes.length <= kAboutPaddedLength1 ? kAboutPaddedLength1
+    : bytes.length < kAboutPaddedLength2 ? kAboutPaddedLength2
+    : kAboutPaddedLength3;
+  return encryptProfileField(profileKey, bytes, bucket);
 }
 
 export async function encryptProfileEmoji(profileKey: Uint8Array, emoji: string): Promise<Uint8Array> {

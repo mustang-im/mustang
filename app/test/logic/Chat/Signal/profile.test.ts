@@ -1,7 +1,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import { appGlobal } from "../../../../logic/app";
 import { SignalAccount } from "../../../../logic/Chat/Signal/SignalAccount";
-import { SignalProfile, profileKeyVersion, decryptAvatar } from "../../../../logic/Chat/Signal/Profile/Profile";
+import { SignalProfile, profileKeyVersion, profileKeyCommitment, decryptAvatar } from "../../../../logic/Chat/Signal/Profile/Profile";
 import { SignalApi } from "../../../../logic/Chat/Signal/Connection/SignalApi";
 import { SignalContact } from "../../../../logic/Chat/Signal/SignalContact";
 import { ServiceId } from "../../../../logic/Chat/Signal/ServiceId";
@@ -124,7 +124,40 @@ test("setOwnProfile PUTs /v1/profile with version + encrypted name/about", async
   let nameCt = base64Decode(call.body.name);
   expect(nameCt.length).toBe(53 + 28); // "Bob" → 53-byte bucket + 28 overhead
   expect(base64Decode(call.body.about).length).toBe(128 + 28);
-  // The commitment is deferred (TODO), avatar unchanged.
   expect(call.body.avatar).toBe(false);
-  expect(call.body.commitment).toBeUndefined();
+  expect(call.body.sameAvatar).toBe(true);
+  // The server's CreateProfileRequest.commitment is @NotNull: a 97-byte
+  // ProfileKeyCommitment (ReservedByte ‖ J1 ‖ J2 ‖ J3) is always sent.
+  expect(base64Decode(call.body.commitment).length).toBe(97);
+  expect(base64Decode(call.body.commitment)[0]).toBe(0); // ReservedByte
+});
+
+test("profileKeyCommitment system generators match libsignal SYSTEM_HARDCODED", async () => {
+  // The three commitment generators G_j1/G_j2/G_j3 are derived from the empty-seeded
+  // "…ProfileKeyCommitment_SystemParams_Generate" SHO. Their concatenated 96-byte
+  // serialization must equal SystemParams::SYSTEM_HARDCODED
+  // (libsignal zkgroup/src/crypto/profile_key_commitment.rs). This is the byte-level
+  // anchor proving our derivation matches the official client.
+  let { Sho } = await import("../../../../logic/Chat/Signal/Encryption/ZKGroup/sho");
+  let sho = new Sho("Signal_ZKGroup_20200424_Constant_ProfileKeyCommitment_SystemParams_Generate");
+  sho.absorbAndRatchet(new Uint8Array(0));
+  let hex = (p: any) => [...p.toBytes()].map((b: number) => b.toString(16).padStart(2, "0")).join("");
+  let derived = hex(sho.getPoint()) + hex(sho.getPoint()) + hex(sho.getPoint());
+  let hardcoded =
+    "a8ca0bbd1148c466725860640ac53d2772b14eeae0170a38c62c7b3dd29c3e4a" +
+    "14b9462d948f059450799f4cc2a06e55dec807735670b94a5ce80f59f1950861" +
+    "b0c0f7b91f6ef9c7556093d8930a86bd36188cec740554657d92dcd86aad251c";
+  expect(derived).toBe(hardcoded);
+});
+
+test("profileKeyCommitment is a stable 97-byte commitment for a (profileKey, aci) pair", async () => {
+  let profileKey = randomBytes(32);
+  let aci = ServiceId.aci(randomBytes(16));
+  let c1 = await profileKeyCommitment(profileKey, aci);
+  let c2 = await profileKeyCommitment(profileKey, aci);
+  expect(c1.length).toBe(97); // ReservedByte(1) ‖ J1(32) ‖ J2(32) ‖ J3(32)
+  expect(c1[0]).toBe(0);
+  expect(base64Encode(c1)).toBe(base64Encode(c2)); // deterministic
+  // A different profile key → a different commitment.
+  expect(base64Encode(await profileKeyCommitment(randomBytes(32), aci))).not.toBe(base64Encode(c1));
 });

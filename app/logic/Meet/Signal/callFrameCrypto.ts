@@ -128,7 +128,13 @@ export async function decryptFrame(frame: Uint8Array, keys: FrameKeys): Promise<
 // --- AES-256-CTR via the WebCrypto-backed CBC primitive ---
 
 /** AES-256-CTR by generating a CBC keystream over zero blocks and XOR-ing.
- * (WebCrypto exposes CTR directly; this keeps to the app's existing primitives.) */
+ * (WebCrypto exposes CTR directly; this keeps to the app's existing primitives.)
+ *
+ * ringrtc uses `ctr::Ctr64BE<Aes256>` (crypto.rs:39): the *trailing* 64-bit word
+ * is the big-endian counter; the leading 8 bytes (the frame_counter nonce, IV
+ * bytes 0-7) stay fixed. We increment the whole 16-byte block from the end, but
+ * IV bytes 8-15 start at zero and a single frame is never 2^64 blocks, so the
+ * carry never reaches byte 7 — byte-identical to Ctr64BE in practice. */
 async function aesCTR(key: Uint8Array, iv16: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
   let blocks = Math.ceil(data.length / 16);
   let counterBlocks = new Uint8Array(blocks * 16);

@@ -14,7 +14,7 @@
  *
  * Field numbers are authoritative (proto2). The `id` (CallId) is a random
  * uint64 — decoded as `bigint` (`int64`) so it stays exact past 2^53. */
-import { message, string, bytes, int, int64, sub, repeated, encode, decode, type TypeOf } from "../../Chat/Signal/Proto/codec";
+import { message, string, bytes, int, int64, fixed64, sub, repeated, encode, decode, type TypeOf } from "../../Chat/Signal/Proto/codec";
 
 // ---------------------------------------------------------------------------
 // Enums (values are authoritative; the int() fields below carry them).
@@ -143,7 +143,9 @@ export type DeviceToDevice = TypeOf<typeof DeviceToDevice>;
 export const RingIntention = message({
   groupId: bytes(1),
   type: int(2),               // RingIntentionType
-  ringId: int64(3),           // sfixed64 on the wire, but carried as a bigint id here
+  // signaling.proto: `optional sfixed64 ring_id = 3` — fixed 8-byte LE (wire-type 1),
+  // NOT a varint. Carried as a bigint id (signaling.proto:86).
+  ringId: fixed64(3),
 });
 export type RingIntention = TypeOf<typeof RingIntention>;
 
@@ -151,7 +153,9 @@ export type RingIntention = TypeOf<typeof RingIntention>;
 export const RingResponse = message({
   groupId: bytes(1),
   type: int(2),               // RingResponseType
-  ringId: int64(3),
+  // signaling.proto: `optional sfixed64 ring_id = 3` — fixed 8-byte LE (wire-type 1),
+  // NOT a varint (signaling.proto:100).
+  ringId: fixed64(3),
 });
 export type RingResponse = TypeOf<typeof RingResponse>;
 

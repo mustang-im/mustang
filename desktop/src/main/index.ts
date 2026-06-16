@@ -237,9 +237,17 @@ function handleCommandline(args: string[]) {
 }
 
 function allowCrossDomainRequestsFromFrontend() {
+  // Electron keeps only the LAST onBeforeSendHeaders listener per session, so the
+  // generic CORS/Origin stripping and the Signal Authorization-header injection must
+  // live in ONE listener (a second registration silently replaces the first). wss/ws
+  // are included because the renderer's browser WebSocket can't set request headers;
+  // the Signal chat server (WebSocketAccountAuthenticator) authenticates the upgrade
+  // ONLY from the Authorization header and ignores query params, so we translate the
+  // `?login=&password=` we put on the URL into that header here.
+  const sendFilter = { urls: ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"] };
   const allHTTP = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    allHTTP,
+    sendFilter,
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
       for (let name in requestHeaders) {
@@ -260,6 +268,18 @@ function allowCrossDomainRequestsFromFrontend() {
           }
           break;
         }
+      }
+      // Signal chat-service auth: translate the `?login=&password=` on the URL into the
+      // Authorization header the server reads (works for both the wss handshake and REST).
+      if (details.url.includes("signal.org") && details.url.includes("login=")) {
+        try {
+          let params = new URL(details.url).searchParams;
+          let login = params.get("login"), password = params.get("password");
+          if (login && password) {
+            requestHeaders["Authorization"] = "Basic " + Buffer.from(`${login}:${password}`).toString("base64");
+            console.log(`Signal main: injected auth header for ${details.resourceType} ${details.url.replace(/password=[^&]*/, "password=…")}`);
+          }
+        } catch (ex) { console.error("Signal main: failed to inject auth header", ex); }
       }
       callback({ requestHeaders: requestHeaders });
     }
@@ -286,24 +306,7 @@ function allowCrossDomainRequestsFromFrontend() {
       callback({ responseHeaders, statusLine });
     }
   );
-
-  // Signal auth
-  session.defaultSession.webRequest.onBeforeSendHeaders(
-    { urls: ["https://*.signal.org/*", "wss://chat.signal.org/*"] },
-    (details, callback) => {
-      let requestHeaders = details.requestHeaders ?? {};
-      if (details.url.includes("login=")) {
-        try {
-          let params = new URL(details.url).searchParams;
-          let login = params.get("login"), password = params.get("password");
-          if (login && password) {
-            requestHeaders["Authorization"] = "Basic " + Buffer.from(`${login}:${password}`).toString("base64");
-          }
-        } catch (ex) { /* leave headers as-is */ }
-      }
-      callback({ requestHeaders: requestHeaders });
-    }
-  );
+  console.log("Signal main: header bridge installed (CORS + wss Authorization)");
 }
 
 function setWindowOpenHandler(webContents: WebContents) {

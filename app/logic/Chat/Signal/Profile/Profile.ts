@@ -19,16 +19,27 @@ import { base64Encode, base64Decode, aesGCMDecrypt } from "../Crypto/primitives"
 import { appGlobal } from "../../../app";
 import { blobToDataURL } from "../../../util/util";
 
-/** GET /v1/profile/{aci} (+versioned) response (Docs/05 §A.4). All field values are
- * base64; the encrypted ones are decrypted with the contact's profile key. */
+/** `GET /v1/profile/{aci}[/{version}[/{credentialRequest}]]` response. The base
+ * fields (`VersionedProfileResponse` unwraps `BaseProfileResponse`) are flat, per
+ * `entities/{BaseProfileResponse,VersionedProfileResponse}.java` +
+ * `ExpiringProfileKeyCredentialProfileResponse.java`. `identityKey`/`uuid` are
+ * unpadded/padded base64 strings; `unidentifiedAccess` is padded base64;
+ * `name`/`about`/`aboutEmoji`/`paymentAddress`/`phoneNumberSharing` are padded
+ * base64 ciphertexts (decrypted with the owner's profile key); `avatar` is a CDN
+ * object path; `credential` (only on the credential endpoint) is base64. */
 interface ProfileResponse {
   identityKey?: string;
   name?: string | null;
   about?: string | null;
   aboutEmoji?: string | null;
   avatar?: string | null;
+  paymentAddress?: string | null;
+  phoneNumberSharing?: string | null;
   unidentifiedAccess?: string | null;
+  unrestrictedUnidentifiedAccess?: boolean;
   capabilities?: { [name: string]: boolean };
+  badges?: any[];
+  credential?: string | null;
   uuid?: string;
 }
 
@@ -114,12 +125,14 @@ export class SignalProfile {
     }
   }
 
-  /** Write our own profile (PUT /v1/profile, Docs/05 §A.4). Encrypts name/about/
-   * aboutEmoji under our profile key and sends the versioned-write JSON.
-   * ⚠️ The zk `commitment` (ProfileKeyCommitment) and avatar S3 upload form are
-   * deferred (ExpiringProfileKeyCredential, Docs/05 §A.2/§A.5); this writes the
-   * encrypted fields + version. Returns the server response (avatar upload form on
-   * an UPDATE, see TODO). */
+  /** Write our own profile (`PUT /v1/profile`). Encrypts name/about/aboutEmoji
+   * under our profile key and sends the `CreateProfileRequest` JSON.
+   *
+   * The server's `CreateProfileRequest.commitment` is `@NotNull`, so we always
+   * send the 97-byte zk `ProfileKeyCommitment` (see {@link profileKeyCommitment}).
+   * `avatar=false`+`sameAvatar=true` means AvatarChange.UNCHANGED (no avatar
+   * upload); the avatar-upload form is only returned on AvatarChange.UPDATE.
+   * Returns the server response (empty on a field-only write). */
   async setOwnProfile(profile: { givenName: string, familyName?: string, about?: string, aboutEmoji?: string }): Promise<any> {
     if (!this.account.profileKey || !this.account.aci) {
       throw new Error("Signal: no profile key / ACI to write a profile");
@@ -130,7 +143,7 @@ export class SignalProfile {
       name: base64Encode(await encryptProfileName(profileKey, profile.givenName, profile.familyName ?? "")),
       avatar: false,
       sameAvatar: true,
-      // ⚠️ commitment (97-byte ProfileKeyCommitment, Docs/05 §A.2) deferred.
+      commitment: base64Encode(await profileKeyCommitment(profileKey, this.account.aci)),
     };
     if (profile.about != null) {
       body.about = base64Encode(await encryptProfileAbout(profileKey, profile.about));
@@ -138,15 +151,7 @@ export class SignalProfile {
     if (profile.aboutEmoji != null) {
       body.aboutEmoji = base64Encode(await encryptProfileEmoji(profileKey, profile.aboutEmoji));
     }
-    // UNKNOWN (live-confirm): whether the server requires the zk `commitment`
-    // (ProfileKeyCommitment) on a field-only write. We omit it. If this 4xx's
-    // (logged by SignalApi), the commitment is required → implement
-    // ExpiringProfileKeyCredential/ProfileKeyCommitment (Docs/05 §A.2, TODO-crypto.md).
-    console.log("Signal PUT /v1/profile — WITHOUT zk commitment; version", body.version,
-      "| if this 4xx's, the server requires a ProfileKeyCommitment");
-    let res = await this.account.api(SignalHosts.chat).json("PUT", "/v1/profile", body, this.account.authCredentials());
-    console.log("Signal PUT /v1/profile: ACCEPTED — no commitment required for a field-only write");
-    return res;
+    return await this.account.api(SignalHosts.chat).json("PUT", "/v1/profile", body, this.account.authCredentials());
   }
 }
 
@@ -156,8 +161,10 @@ export async function decryptAvatar(profileKey: Uint8Array, data: Uint8Array): P
   return await aesGCMDecrypt(profileKey, nonce, data.subarray(12));
 }
 
-/** The 64-hex `ProfileKeyVersion` for the URL/write (Docs/05 §A.2): SHO over the
- * label, then `profileKey(32) ‖ aci_uuid(16)`. Uses the verified zkgroup `Sho`. */
+/** The 64-hex `ProfileKeyVersion` for the URL/write. Byte-for-byte per libsignal
+ * `zkgroup/src/api/profiles/profile_key_version.rs#get_profile_key_version`: a Sho
+ * seeded with the label, then `absorbAndRatchet(profileKey(32) ‖ aci_uuid(16))`,
+ * squeeze 32 bytes (PROFILE_KEY_VERSION_LEN), lower-hex-encode (→ 64 chars). */
 export async function profileKeyVersion(profileKey: Uint8Array, aci: ServiceId): Promise<string> {
   let { Sho } = await import("../Encryption/ZKGroup/sho");
   let sho = new Sho("Signal_ZKGroup_20200424_ProfileKeyAndUid_ProfileKey_GetProfileKeyVersion");
@@ -169,12 +176,54 @@ export async function profileKeyVersion(profileKey: Uint8Array, aci: ServiceId):
   return [...raw].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-/** PUT /v1/profile body (Docs/05 §A.4). */
+/** The 97-byte zkgroup `ProfileKeyCommitment` the server REQUIRES on every
+ * `PUT /v1/profile` (`CreateProfileRequest.commitment` is `@NotNull`). Computed
+ * byte-for-byte per libsignal `zkgroup/src/crypto/profile_key_commitment.rs`:
+ *
+ *   j3 = Sho("…ProfileKeyCommitment_Calcj3", profileKey(32)‖uid(16)).getScalar()
+ *   (M3, M4) = ProfileKeyStruct(profileKey, uid)         // = profileKeyStructPoints
+ *   J1 = j3·G_j1 + M3,  J2 = j3·G_j2 + M4,  J3 = j3·G_j3
+ *
+ * Serialized (bincode) as `ReservedByte(0x00) ‖ J1(32) ‖ J2(32) ‖ J3(32)` and
+ * base64-encoded (standard, with padding) by `ProfileKeyCommitmentAdapter`. */
+export async function profileKeyCommitment(profileKey: Uint8Array, aci: ServiceId): Promise<Uint8Array> {
+  let { Sho } = await import("../Encryption/ZKGroup/sho");
+  let { profileKeyStructPoints } = await import("../Encryption/ZKGroup/groupParams");
+  let { Writer } = await import("../Encryption/ZKGroup/serialize");
+  // G_j1, G_j2, G_j3: three SHO points off the empty-seeded "…SystemParams_Generate"
+  // label (profile_key_commitment.rs SystemParams::generate; equals SYSTEM_HARDCODED).
+  let gensSho = new Sho("Signal_ZKGroup_20200424_Constant_ProfileKeyCommitment_SystemParams_Generate");
+  gensSho.absorbAndRatchet(new Uint8Array(0));
+  let Gj1 = gensSho.getPoint();
+  let Gj2 = gensSho.getPoint();
+  let Gj3 = gensSho.getPoint();
+  let j3Sho = new Sho("Signal_ZKGroup_20200424_ProfileKeyAndUid_ProfileKeyCommitment_Calcj3");
+  let combined = new Uint8Array(48);
+  combined.set(profileKey.subarray(0, 32));
+  combined.set(aci.uuid, 32);
+  j3Sho.absorbAndRatchet(combined);
+  let j3 = j3Sho.getScalar();
+  let { M3, M4 } = profileKeyStructPoints(profileKey, aci.uuid);
+  let J1 = Gj1.multiply(j3).add(M3);
+  let J2 = Gj2.multiply(j3).add(M4);
+  let J3 = Gj3.multiply(j3);
+  return new Writer().u8(0).point(J1).point(J2).point(J3).finish();
+}
+
+/** `PUT /v1/profile` body — the server's `CreateProfileRequest` record. Field names
+ * and JSON shape per `entities/CreateProfileRequest.java`. All byte fields are
+ * base64 (standard, with padding). `commitment` is `@NotNull` (always required);
+ * `version` is 64 hex chars; `name`/`about`/`aboutEmoji`/`paymentAddress` are
+ * fixed-bucket-padded ciphertexts; `avatar`(bool)/`sameAvatar` drive AvatarChange;
+ * `badgeIds` is an optional list. */
 interface ProfileWriteJSON {
   version: string;
   name: string;
   about?: string;
   aboutEmoji?: string;
+  paymentAddress?: string;
   avatar: boolean;
   sameAvatar: boolean;
+  commitment: string;
+  badgeIds?: string[];
 }

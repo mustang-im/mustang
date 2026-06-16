@@ -443,7 +443,18 @@ export class SignalAccount extends ChatAccount {
   protected async handleEnvelope(envelope: Envelope): Promise<void> {
     let content = await this.decryptEnvelope(envelope); // gated on SPQR/sealed-sender
     let senderId = this.envelopeSender(envelope);
-    if (!content || !senderId) {
+    if (!content) {
+      return;
+    }
+    // A SyncMessage is sent BY our own account from another device (SignalService.proto
+    // Content.syncMessage); the sender is always us, so route on the sync payload — a
+    // Sent transcript goes to the DESTINATION's room as an outgoing message.
+    if (content.syncMessage) {
+      await this.handleSyncMessage(content.syncMessage);
+      this.scheduleSave();
+      return;
+    }
+    if (!senderId) {
       return;
     }
     let outgoing = !!this.aci && senderId.equals(this.aci);
@@ -459,6 +470,62 @@ export class SignalAccount extends ChatAccount {
       await room.saveNewMessages([msg]);
     }
     this.scheduleSave(); // decrypting advanced the ratchet
+  }
+
+  /** Handle an inbound SyncMessage (a message we sent/read from another linked
+   * device, mirrored here). `Sent` re-creates the message we sent in the
+   * destination's room as OUTGOING (from our own contact); `Read` marks our sent
+   * messages as seen. SignalService.proto SyncMessage. */
+  protected async handleSyncMessage(sync: NonNullable<ContentType["syncMessage"]>): Promise<void> {
+    if (sync.sent) {
+      await this.handleSentTranscript(sync.sent);
+    }
+    for (let read of sync.read ?? []) {
+      this.handleSyncRead(read);
+    }
+  }
+
+  /** A `SyncMessage.Sent` transcript: route the (data or edit) message we sent to
+   * the destination's room as an outgoing message. The destination is a 1:1 peer
+   * (destinationServiceId / …Binary) or a group (message.groupV2.masterKey). */
+  protected async handleSentTranscript(sent: NonNullable<NonNullable<ContentType["syncMessage"]>["sent"]>): Promise<void> {
+    let inner = sent.editMessage
+      ? { editMessage: sent.editMessage } as ContentType
+      : sent.message ? { dataMessage: sent.message } as ContentType : null;
+    if (!inner) {
+      return;
+    }
+    let data = sent.message ?? sent.editMessage?.dataMessage;
+    let masterKey = data?.groupV2?.masterKey;
+    let room: SignalChatRoom | null = masterKey?.length
+      ? await this.getOrCreateGroupRoom(masterKey)
+      : await this.destinationRoom(sent);
+    if (!room) {
+      return;
+    }
+    let msg = await room.handleContent(inner, this.getOwnContact(), true);
+    if (msg) {
+      room.lastMessage = msg;
+      await room.saveNewMessages([msg]);
+    }
+  }
+
+  /** The 1:1 room for a Sent transcript's destination ServiceId (binary preferred). */
+  protected async destinationRoom(sent: NonNullable<NonNullable<ContentType["syncMessage"]>["sent"]>): Promise<SignalChatRoom | null> {
+    let destination = sent.destinationServiceIdBinary?.length
+      ? serviceIdFromBinary(sent.destinationServiceIdBinary)
+      : sent.destinationServiceId ? ServiceId.parse(sent.destinationServiceId) : null;
+    return destination ? await this.getOrCreateRoom(destination) : null;
+  }
+
+  /** A `SyncMessage.Read`: mark our matching sent message(s) as seen across rooms. */
+  protected handleSyncRead(read: { timestamp?: number }): void {
+    if (read.timestamp == null) {
+      return;
+    }
+    for (let room of this.rooms.values()) {
+      room.markSentMessageRead(read.timestamp);
+    }
   }
 
   /** Group rooms first seen live, keyed by hex group id. Decrypted group state is
@@ -694,14 +761,14 @@ export class SignalAccount extends ChatAccount {
     let deviceIDs = await this.deviceIDsFor(serviceId);
     let messages = await this.encryptForDevices(serviceId, deviceIDs, padded);
     try {
-      await this.putMessages(serviceId, { destination: serviceId.toString(), timestamp, online: false, urgent: true, messages });
+      await this.putMessages(serviceId, { messages, timestamp, online: false, urgent: true });
     } catch (ex) {
       let retry = await this.handleDeviceMismatch(serviceId, ex);
       if (!retry) {
         throw ex;
       }
       messages = await this.encryptForDevices(serviceId, retry, padded);
-      await this.putMessages(serviceId, { destination: serviceId.toString(), timestamp, online: false, urgent: true, messages });
+      await this.putMessages(serviceId, { messages, timestamp, online: false, urgent: true });
     }
   }
 
@@ -996,19 +1063,23 @@ interface GroupCredentialsResponse {
   pni?: string;
 }
 
-/** One `/v1/messages` per-device entry (Docs/01 §5.1). `content` is base64. */
+/** One `/v1/messages` per-device entry — the server's `IncomingMessage` entity
+ * (Signal-Server entities/IncomingMessage.java): `type`, `destinationDeviceId`,
+ * `destinationRegistrationId`, `content` (base64). */
 interface OutgoingMessage {
   type: number; // Envelope.Type
   destinationDeviceId: number;
   destinationRegistrationId: number;
   content: string;
 }
+/** PUT /v1/messages/{destination} body — the server's `IncomingMessageList`
+ * (entities/IncomingMessageList.java): `{messages, online, urgent, timestamp}`.
+ * The destination is the URL path param, NOT a body field. */
 interface OutgoingMessageList {
-  destination: string;
-  timestamp: number;
+  messages: OutgoingMessage[];
   online: boolean;
   urgent: boolean;
-  messages: OutgoingMessage[];
+  timestamp: number;
 }
 
 /** A fetched + parsed prekey bundle for one device, ready to start a PQXDH session. */

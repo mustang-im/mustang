@@ -137,21 +137,12 @@ export class SignalGroup {
   }
 
   protected decryptAttributeBlob(blob: Uint8Array): GroupAttributeBlob {
-    return decode(GroupAttributeBlob, this.stripPadding(this.params.decryptBlob(blob)));
-  }
-
-  /** Some blobs are length-hidden with a 4-byte big-endian padding-length prefix
-   * (`encrypt_blob_with_padding`); strip it when present. A bare blob has no prefix,
-   * so only strip when the declared length fits. */
-  protected stripPadding(plaintext: Uint8Array): Uint8Array {
-    if (plaintext.length < 4) {
-      return plaintext;
-    }
-    let len = (plaintext[0] << 24) | (plaintext[1] << 16) | (plaintext[2] << 8) | plaintext[3];
-    if (len >= 0 && 4 + len <= plaintext.length) {
-      return plaintext.subarray(4, 4 + len);
-    }
-    return plaintext;
+    // No padding-length prefix: group attribute blobs use the plain (non-padding)
+    // form. GroupsV2Operations.decryptBlob() = GroupAttributeBlob.decode(decryptBlob())
+    // directly; encryptTitle/encryptDescription/encryptTimer call the plain
+    // clientZkGroupCipher.encryptBlob(blob.encode()) (zkgroup group_params.rs
+    // encrypt_blob, NOT encrypt_blob_with_padding).
+    return decode(GroupAttributeBlob, this.params.decryptBlob(blob));
   }
 
   protected requireServiceId(ciphertext: Uint8Array, what: string): ServiceId {
@@ -226,17 +217,18 @@ export class SignalGroup {
       publicKey: this.params.getPublicParams().serialize(),
       version: 0,
       title: this.encryptTitle(init.title),
+      // Only attributes + members are set, both MEMBER; addFromInviteLink/memberLabel
+      // are left at the proto3 default (UNKNOWN, omitted). Mirrors
+      // GroupsV2Operations.createNewGroup() exactly.
       accessControl: {
         attributes: AccessRequired.Member,
         members: AccessRequired.Member,
-        addFromInviteLink: AccessRequired.Unsatisfiable,
-        memberLabel: AccessRequired.Member,
       },
       members: init.members.map(m => ({ role: m.role ?? MemberRole.Default, presentation: m.presentation })),
     };
-    if (init.timerSeconds) {
-      group.disappearingMessagesTimer = this.encryptTimer(init.timerSeconds);
-    }
+    // createNewGroup always sets the timer blob (encryptTimer of the requested
+    // seconds, 0 if none) rather than omitting it.
+    group.disappearingMessagesTimer = this.encryptTimer(init.timerSeconds ?? 0);
     let body = await api.bytes("PUT", "/v2/groups/", encode(Group, group),
       "application/x-protobuf", this.authCreds(auth));
     return this.decryptGroup(decode(GroupResponse, body).group!);

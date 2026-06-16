@@ -143,6 +143,43 @@ export const EditMessage = message({
 });
 export type EditMessage = TypeOf<typeof EditMessage>;
 
+// --- sync messages (linked-device transcripts) ---
+
+/** SyncMessage.Sent — a transcript of a message WE sent from another device,
+ * mirrored to our linked devices. Field numbers from SignalService.proto
+ * (SyncMessage.Sent): destinationE164=1, timestamp=2, message=3,
+ * expirationStartTimestamp=4, isRecipientUpdate=6, destinationServiceId=7,
+ * editMessage=10, destinationServiceIdBinary=12. */
+export const SyncSent = message({
+  destinationE164: string(1),
+  timestamp: int(2),
+  message: sub(3, () => DataMessage),
+  expirationStartTimestamp: int(4),
+  isRecipientUpdate: bool(6),
+  destinationServiceId: string(7),
+  editMessage: sub(10, () => EditMessage),
+  destinationServiceIdBinary: bytes(12),
+});
+export type SyncSent = TypeOf<typeof SyncSent>;
+
+/** SyncMessage.Read — our device read a peer's message (SignalService.proto
+ * SyncMessage.Read): senderAci=3, timestamp=2, senderAciBinary=4. */
+export const SyncRead = message({
+  senderAci: string(3),
+  timestamp: int(2),
+  senderAciBinary: bytes(4),
+});
+export type SyncRead = TypeOf<typeof SyncRead>;
+
+/** SyncMessage — the messaging-essential subset. Top-level field numbers from
+ * SignalService.proto: sent=1, read=5 (repeated). Other members (contacts=2,
+ * request=4, blocked=6, configuration=9, keys=13, …) are not yet parsed. */
+export const SyncMessage = message({
+  sent: sub(1, () => SyncSent),
+  read: repeated(sub(5, () => SyncRead)),
+});
+export type SyncMessage = TypeOf<typeof SyncMessage>;
+
 // --- receipts / typing / null ---
 
 export const ReceiptMessage = message({
@@ -167,7 +204,7 @@ export type NullMessage = TypeOf<typeof NullMessage>;
 
 export const Content = message({
   dataMessage: sub(1, () => DataMessage),
-  syncMessage: bytes(2),                 // TODO: typed SyncMessage schema
+  syncMessage: sub(2, () => SyncMessage),
   callMessage: bytes(3),                 // see Meet/Signal calling layer
   nullMessage: sub(4, () => NullMessage),
   receiptMessage: sub(5, () => ReceiptMessage),

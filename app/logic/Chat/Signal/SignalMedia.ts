@@ -1,13 +1,28 @@
 /** Attachment upload/download for Signal. Encrypts with the verified
  * `AttachmentCipher` (AES-CBC + HMAC, SHA-256 digest) and moves the blobs through
- * the CDN. Mirrors `XMPPMedia`. See Docs/05-profiles-attachments-cdn. */
+ * the CDN. Mirrors `XMPPMedia` (raw `fetch` against the CDN host). The wire is
+ * byte-verified against Signal-Server `AttachmentControllerV4` +
+ * Signal-Android `PushServiceSocket` (getResumableUploadUrl / uploadToCdn2 /
+ * uploadToCdn3 / retrieveAttachment). See Docs/05-profiles-attachments-cdn. */
 import { Attachment } from "../../Abstract/Attachment";
 import type { SignalAccount } from "./SignalAccount";
 import type { SignalChatMessage } from "./SignalChatMessage";
 import { encryptAttachment, decryptAttachment, newAttachmentKey } from "./Encryption/AttachmentCipher";
-import { cdnHost, SignalApi } from "./Connection/SignalApi";
+import { cdnHost } from "./Connection/SignalApi";
 import type { AttachmentPointer, DataMessage } from "./Proto/signalService";
 import { base64Encode } from "./Crypto/primitives";
+
+/** `GET /v4/attachments/form/upload` response — the server's `AttachmentDescriptorV3`
+ * record (`entities/AttachmentDescriptorV3.java`). `cdn` is 2 (GCS resumable) or 3
+ * (TUS); `key` is the URL-safe base64 cdnKey to put in the AttachmentPointer;
+ * `headers` are time-limited upload credentials that MUST be replayed on every
+ * upload request; `signedUploadLocation` is where to start the resumable upload. */
+interface AttachmentUploadForm {
+  cdn: number;
+  key: string;
+  headers: Record<string, string>;
+  signedUploadLocation: string;
+}
 
 export class SignalMedia {
   constructor(readonly account: SignalAccount) {}
@@ -34,16 +49,91 @@ export class SignalMedia {
     return pointers;
   }
 
-  /** Upload an encrypted blob to the attachments CDN (v4 resumable form).
-   * @returns the cdnKey + cdnNumber to put in the AttachmentPointer. */
+  /** Upload an encrypted blob via the v4 resumable form. Two phases, per
+   * `PushServiceSocket.getResumableUploadUrl` + `uploadToCdn{2,3}`:
+   *   1. `GET /v4/attachments/form/upload` (authenticated) for the form.
+   *   2. POST the form's `signedUploadLocation` (with the form `headers`) to obtain
+   *      a resumable upload URL from the `Location` response header.
+   *   3. CDN2: PUT the bytes with a `Content-Range`; CDN3 (TUS): PATCH the bytes
+   *      with `Upload-Offset`/`Upload-Length`/`Tus-Resumable` (+ the form headers).
+   * @returns the cdnKey (= form.key) + cdnNumber (= form.cdn) for the pointer. */
   protected async upload(data: Uint8Array): Promise<{ cdnKey: string, cdnNumber: number }> {
-    // GET an upload form, then PUT the bytes to the returned location. The exact
-    // resumable (tus/cdn3) handshake is per Docs/05; this is the request shape.
-    let form = await this.account.api().json<any>("GET", "/v4/attachments/form/upload", undefined, this.account.authCredentials());
-    let location: string = form.signedUploadLocation;
-    let api = new SignalApi(new URL(location).origin);
-    await api.bytes("PUT", new URL(location).pathname + new URL(location).search, data, "application/octet-stream");
-    return { cdnKey: form.key, cdnNumber: form.cdn ?? 3 };
+    let form = await this.account.api().json<AttachmentUploadForm>(
+      "GET", "/v4/attachments/form/upload", undefined, this.account.authCredentials());
+    let resumableURL = await this.startResumableUpload(form);
+    if (form.cdn == 3) {
+      await this.uploadCdn3(resumableURL, form.headers, data);
+    } else {
+      await this.uploadCdn2(resumableURL, data);
+    }
+    return { cdnKey: form.key, cdnNumber: form.cdn };
+  }
+
+  /** POST the signed upload location to start the resumable upload; the resumable
+   * URL comes back in the `Location` header (resolved against the CDN base if
+   * relative). CDN2 sends GCS init headers, CDN3 sends the TUS init headers.
+   * (`PushServiceSocket.getResumableUploadUrl`.) */
+  protected async startResumableUpload(form: AttachmentUploadForm): Promise<string> {
+    let headers: Record<string, string> = {};
+    for (let [name, value] of Object.entries(form.headers ?? {})) {
+      if (name.toLowerCase() != "host") {
+        headers[name] = value;
+      }
+    }
+    headers["Content-Length"] = "0";
+    if (form.cdn == 2) {
+      headers["Content-Type"] = "application/octet-stream";
+    } else if (form.cdn == 3) {
+      headers["Upload-Defer-Length"] = "1";
+      headers["Tus-Resumable"] = "1.0.0";
+    } else {
+      throw new Error(`Signal: unknown attachment CDN version ${form.cdn}`);
+    }
+    let res = await fetch(form.signedUploadLocation, { method: "POST", headers, body: "" });
+    if (!res.ok) {
+      throw new Error(`Signal: starting resumable upload failed: HTTP ${res.status}`);
+    }
+    let location = res.headers.get("location");
+    if (!location) {
+      throw new Error("Signal: resumable upload start returned no Location header");
+    }
+    return new URL(location, form.signedUploadLocation).toString();
+  }
+
+  /** CDN2 (GCS): a single PUT of the whole blob with a `Content-Range`
+   * (`PushServiceSocket.uploadToCdn2`, fresh upload → contentStart 0). */
+  protected async uploadCdn2(resumableURL: string, data: Uint8Array): Promise<void> {
+    let res = await fetch(resumableURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Range": `bytes 0-${data.length - 1}/${data.length}`,
+      },
+      body: data as unknown as BodyInit,
+    });
+    if (!res.ok) {
+      throw new Error(`Signal: CDN2 attachment upload failed: HTTP ${res.status}`);
+    }
+  }
+
+  /** CDN3 (TUS): PATCH the whole blob at offset 0 (`PushServiceSocket.uploadToCdn3`,
+   * fresh upload). The form `headers` are replayed here too. */
+  protected async uploadCdn3(resumableURL: string, formHeaders: Record<string, string>, data: Uint8Array): Promise<void> {
+    let headers: Record<string, string> = {
+      "Content-Type": "application/offset+octet-stream",
+      "Upload-Offset": "0",
+      "Upload-Length": String(data.length),
+      "Tus-Resumable": "1.0.0",
+    };
+    for (let [name, value] of Object.entries(formHeaders ?? {})) {
+      if (name.toLowerCase() != "host") {
+        headers[name] = value;
+      }
+    }
+    let res = await fetch(resumableURL, { method: "PATCH", headers, body: data as unknown as BodyInit });
+    if (!res.ok) {
+      throw new Error(`Signal: CDN3 attachment upload failed: HTTP ${res.status}`);
+    }
   }
 
   /** Turn each AttachmentPointer in a received DataMessage into an Attachment,
@@ -58,11 +148,18 @@ export class SignalMedia {
     if (!pointer.key) {
       return;
     }
+    // V4 (cdnKey) → `attachments/{urlEncode(cdnKey)}`; legacy V2 (cdnId) →
+    // `attachments/{cdnId}` (`PushServiceSocket.retrieveAttachment`). CDN downloads
+    // are unauthenticated (no chat Authorization header — see downloadFromCdn).
     let path = pointer.cdnKey
-      ? `/attachments/${pointer.cdnKey}`
-      : `/attachments/${pointer.cdnId}`;
-    let api = new SignalApi(cdnHost(pointer.cdnNumber ?? 0));
-    let blobBytes = await api.getBytes(path, this.account.authCredentials());
+      ? `attachments/${encodeURIComponent(pointer.cdnKey)}`
+      : `attachments/${pointer.cdnId}`;
+    let url = `${cdnHost(pointer.cdnNumber ?? 0)}/${path}`;
+    let res = await fetch(url, { method: "GET" });
+    if (!res.ok) {
+      throw new Error(`Signal: attachment download failed: HTTP ${res.status}`);
+    }
+    let blobBytes = new Uint8Array(await res.arrayBuffer());
     let plaintext = await decryptAttachment(pointer.key, blobBytes, pointer.digest);
     let att = message.newAttachment();
     att.mimeType = pointer.contentType || "application/octet-stream";

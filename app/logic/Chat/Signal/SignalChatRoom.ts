@@ -133,6 +133,16 @@ export class SignalChatRoom extends ChatRoom {
     this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
   }
 
+  /** Mark our outgoing message with this sent-timestamp as seen — used by a
+   * `SyncMessage.Read` from another linked device (SignalAccount.handleSyncRead). */
+  markSentMessageRead(sentTimestamp: number): void {
+    let target = this.findBySentTimestamp(sentTimestamp);
+    if (target instanceof ChatMessage && target.outgoing) {
+      target.deliveryStatus = DeliveryStatus.Seen;
+      this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    }
+  }
+
   protected applyReceipt(receipt: NonNullable<Content["receiptMessage"]>, sender: SignalContact): void {
     let status = receipt.type == ReceiptType.Read || receipt.type == ReceiptType.Viewed
       ? DeliveryStatus.Seen : DeliveryStatus.User;
