@@ -4,6 +4,7 @@ import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
+import { installSignalServiceCATrust } from './signalServiceCA'
 
 function createWindow(): void {
   try {
@@ -142,6 +143,7 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
+  installSignalServiceCATrust(); // trust Signal's private service CA (chat/storage/cdn/cdsi/sfu)
 
   createMenu();
   createWindow();
