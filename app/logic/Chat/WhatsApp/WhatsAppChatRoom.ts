@@ -42,7 +42,7 @@ export class WhatsAppChatRoom extends ChatRoom {
   async receiveMessage(stanza: WANode, rawPayload: WAMessage, sender: JID, outgoing = false): Promise<void> {
     let payload = WhatsAppMessage.unwrap(rawPayload);
     if (payload.reactionMessage) {
-      await this.reactToMessage(payload.reactionMessage, sender);
+      await this.reactionToMessage(payload.reactionMessage, sender);
     } else if (payload.protocolMessage?.type == ProtocolMessageType.Revoke) {
       await this.deleteMessageByID(payload.protocolMessage.key?.id);
     } else if (payload.protocolMessage?.type == ProtocolMessageType.MessageEdit && payload.protocolMessage.editedMessage) {
@@ -105,7 +105,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     return this.contact;
   }
 
-  protected async reactToMessage(reaction: ReactionMessage, sender: JID): Promise<void> {
+  protected async reactionToMessage(reaction: ReactionMessage, sender: JID): Promise<void> {
     let target = this.messages.find(msg => msg.id == reaction.key?.id);
     if (!target) {
       return;

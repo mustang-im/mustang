@@ -147,6 +147,20 @@ export class Message extends Observable {
   async markStarred(starred = true) {
     this.isStarred = starred;
   }
+  async setReaction(emoji: string | null) {
+    await this.setReactionOnLocally(emoji);
+    await this.setReactionOnServer(emoji);
+  }
+  async setReactionOnLocally(emoji: string | null) {
+    let me = this.outgoing ? this.from : this.from; // TODO to (if me)
+    if (emoji) {
+      this.reactions.set(me, emoji);
+    } else {
+      this.reactions.delete(me);
+    }
+  }
+  async setReactionOnServer(emoji: string | null) {
+  }
 
   newAttachment(): Attachment {
     throw new AbstractFunction();

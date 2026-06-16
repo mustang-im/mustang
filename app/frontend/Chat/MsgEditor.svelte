@@ -3,6 +3,18 @@
   <!--on:inline-files={onAddInline}
   allowInline={true}>-->
   <vbox flex class="msg-editor">
+    {#if showEmojis}
+      <hbox>
+        <vbox class="emojis">
+          <GraphicSelector
+            on:select={onEmoji}
+            on:backspace={() => catchErrors(onBackspace)}
+            bind:isOpen={showEmojis}
+            />
+        </vbox>
+        <vbox class="emoji-empty" flex />
+      </hbox>
+    {/if}
     {#if $attachments.hasItems}
       <vbox class="attachments">
         <AttachmentsPane message={to.draftMessage} />
@@ -12,6 +24,13 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <vbox flex class="editor-wrapper" on:keydown|capture={ev => isEnterSend && onKeyEnter(ev, () => catchErrors(send))}>
         <HTMLEditorToolbar {editor}>
+          <Button classes="emoji-toggle"
+            onClick={() => showEmojis = !showEmojis}
+            icon={EmojiIcon}
+            iconSize="16px"
+            selected={showEmojis}
+            slot="start"
+            />
           <Button classes="enter-toggle"
             onClick={() => isEnterSend = !isEnterSend}
             icon={EnterKeyIcon}
@@ -45,15 +64,18 @@
 <script lang="ts">
   import type { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { insertImage } from "../Shared/Editor/InsertImage";
+  import { selectedDraft, selectedEditor } from "./selected";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
   import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
+  import GraphicSelector from "./Emoji/GraphicSelector.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
   import SendIcon from "lucide-svelte/icons/send";
   import EnterKeyIcon from "lucide-svelte/icons/corner-down-left";
+  import EmojiIcon from "lucide-svelte/icons/smile";
   import { onKeyEnter } from "../Util/util";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
@@ -66,6 +88,9 @@
   let isEnterSend = true;
   $: to.draftMessage ??= to.newMessage();
   $: attachments = $to.draftMessage.attachments;
+  $: $selectedDraft = $to.draftMessage;
+  $: $selectedEditor = editor;
+  let showEmojis = false;
 
   async function send() {
     assert(to.draftMessage.hasHTML || to.draftMessage.attachments.hasItems, "Message is empty");
@@ -98,6 +123,18 @@
       insertImage(editor, file, to.draftMessage);
     }
   }
+
+  function onEmoji(ev: CustomEvent) {
+    let emoji = ev.detail.emoji;
+    if (emoji) {
+      editor.commands.insertContent(emoji);
+    }
+  }
+
+  function onBackspace() {
+    editor.view.focus();
+    document.execCommand("delete");
+  }
 </script>
 
 <style>
@@ -105,6 +142,10 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
     padding: 4px 4px 10px 10px;
+  }
+  .emojis {
+    height: 300px;
+    width: 400px;
   }
   .attachments {
     height: 112px;

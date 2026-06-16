@@ -3,10 +3,10 @@
     <Header bind:selectedAccount={$selectedAccount} {accounts} />
     <RoomList {rooms} bind:selectedRoom={$selectedRoom} />
   </vbox>
-  <vbox class="right-pane" slot="right">
+  <vbox class="right-pane  background-pattern" slot="right">
     {#if messages && $selectedRoom }
       <PersonHeader person={$selectedRoom.contact} />
-      <vbox flex class="messages background-pattern">
+      <vbox flex class="messages">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             {#if message instanceof ChatMessage }

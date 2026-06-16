@@ -1,9 +1,12 @@
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <hbox flex
   class="message"
   class:incoming={!$message.outgoing}
   class:outgoing={$message.outgoing}
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
+  on:pointerenter={onHoverStart}
+  on:pointerleave={onHoverEnd}
   >
   {#if !$message.outgoing}
     <vbox class="avatar"  from={author?.name}>
@@ -23,6 +26,13 @@
         </hbox>
         <hbox class="time value">{getDateTimeString($message.sent)}</hbox>
       </hbox>
+    {/if}
+    {#if showActions}
+      <vbox class="hover-popup-anchor">
+        <vbox class="hover-above-msg">
+          <ActionBar {message} />
+        </vbox>
+      </vbox>
     {/if}
     <Attachments message={$message} />
     {#if $message.rawText || $message.hasHTML}
@@ -44,11 +54,18 @@
       </vbox>
     {/if}
     {#if $reactions.length > 0}
-      <hbox class="reactions">
+      <hbox class="reactions" class:cloak={showActions}>
         {#each [...$reactions.entries()] as [sender, emoji]}
           <hbox class="reaction" title={emoji + " " + sender?.name}>{emoji}</hbox>
         {/each}
       </hbox>
+    {/if}
+    {#if showActions}
+      <vbox class="hover-popup-anchor" class:haveReaction={$reactions.length}>
+        <vbox class="hover-after-msg">
+          <ReactionBar {message} bind:isOpen={showActions} />
+        </vbox>
+      </vbox>
     {/if}
   </vbox>
 </hbox>
@@ -62,6 +79,8 @@
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import { ChatPersonUID } from "../../../logic/Chat/ChatPersonUID";
+  import ReactionBar from "./ReactionBar.svelte";
+  import ActionBar from "./ActionBar.svelte";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import Attachments from "./Attachments.svelte";
@@ -82,6 +101,23 @@
   $: reactions = $message.reactions;
 
   $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+
+  let showActions = false; // on hover (desktop) or long press (mobile)
+  let hoverTimer: NodeJS.Timeout | null = null;
+  function onHoverStart() {
+    if (hoverTimer) {
+      return;
+    }
+    hoverTimer = setTimeout(() => {
+      hoverTimer = null;
+      showActions = true;
+    }, 300)
+  }
+  function onHoverEnd() {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+    showActions = false;
+  }
 </script>
 
 <style>
@@ -204,6 +240,40 @@
   }
   .outgoing .reactions {
     background-color: white;
+  }
+  .hover-popup-anchor {
+    position: relative;
+    height: 0;
+    width: 100%;
+    overflow: visible;
+  }
+  .hover-above-msg,
+  .hover-after-msg {
+    position: absolute;
+    z-index: 2;
+    align-self: flex-end;
+    margin-inline-end: 16px;
+    min-width: max-content;
+    padding: 0px 4px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    background-color: white;
+    box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 10%);
+  }
+  .hover-above-msg {
+    bottom: 0px;
+    right: 10px;
+  }
+  .hover-after-msg {
+    top: 0px;
+    right: 10px;
+  }
+  /** avoid that the following messages move oh hover */
+  .reactions.cloak {
+    visibility: hidden;
+  }
+  .hover-after-msg.haveReactions {
+    margin-block-start: -24px;
   }
 
   .menu {
