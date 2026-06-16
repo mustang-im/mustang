@@ -9,7 +9,7 @@ import { KeyPair } from "../../../../logic/Chat/Signal/Crypto/KeyPair";
 import { xeddsaSign } from "../../../../logic/Chat/Signal/Crypto/curve";
 import {
   encodeHandshakeMessage, decodeHandshakeMessage, CertChain, ClientPayload,
-} from "../../../../logic/Chat/Signal/Proto/handshakeSchema";
+} from "../../../../logic/Chat/WhatsApp/Proto/handshakeSchema";
 import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
 import { ProtoWriter } from "../../../../logic/Chat/Signal/Proto/ProtobufLite";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";

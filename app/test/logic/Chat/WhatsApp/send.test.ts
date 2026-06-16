@@ -9,7 +9,7 @@ import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import {
   initiateSession, encrypt, decryptPreKeyMessage, decryptSignalMessage, type EncryptedSignalMessage,
 } from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
-import { decodeWAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
+import { decodeWAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { bigEndian } from "../../../../logic/Chat/WhatsApp/util";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";

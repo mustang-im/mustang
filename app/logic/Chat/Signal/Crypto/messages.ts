@@ -12,6 +12,9 @@ export interface SignalMessageFields {
   counter: number;
   previousCounter: number;
   ciphertext: Uint8Array;
+  /** SPQR triple-ratchet blob (wire field 5, `optional bytes pq_ratchet`). Set
+   * only for Signal's triple ratchet; WhatsApp leaves it unset → field absent. */
+  pqRatchet?: Uint8Array;
 }
 
 /** SignalMessage = version || protobuf || 8-byte MAC. The MAC covers
@@ -23,6 +26,7 @@ export function serializeSignalMessage(fields: SignalMessageFields, macKey: Uint
     .varint(2, fields.counter)
     .varint(3, fields.previousCounter)
     .bytes(4, fields.ciphertext)
+    .bytes(5, fields.pqRatchet)
     .finish();
   let versioned = concatBytes(new Uint8Array([kSignalVersion]), proto);
   let mac = hmacSHA256(macKey, concatBytes(senderIdentity, receiverIdentity, versioned)).subarray(0, kMacLength);
@@ -44,6 +48,7 @@ export function parseSignalMessage(data: Uint8Array): ParsedSignalMessage {
     counter: getInt(fields, 2) ?? 0,
     previousCounter: getInt(fields, 3) ?? 0,
     ciphertext: getBytes(fields, 4)!,
+    pqRatchet: getBytes(fields, 5),
     versionedBody: versionedBody.slice(),
     mac: mac.slice(),
   };

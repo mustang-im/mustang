@@ -6,7 +6,7 @@ import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
 import { decryptPreKeyMessage, decryptSignalMessage } from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
 import { processDistributionMessage, groupDecrypt } from "../../../../logic/Chat/Signal/Crypto/GroupCipher";
-import { decodeWAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
+import { decodeWAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { bigEndian } from "../../../../logic/Chat/WhatsApp/util";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";

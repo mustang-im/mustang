@@ -91,20 +91,25 @@ test("XEdDSA sign and verify (self-consistent)", () => {
 });
 
 test("XEdDSA signatures verify under independent Ed25519 verifier", () => {
-  // An XEdDSA signature is a valid Ed25519 signature over the sign-normalized
-  // Edwards public key. Cross-check against @noble's Ed25519 verify.
+  // An XEdDSA signature `R ‖ s` is a valid Ed25519 signature over the Edwards
+  // public key A, where A's sign bit is carried in bit 255 of s (Signal /
+  // curve25519-dalek convention). Reconstruct A with that sign bit and strip it
+  // out of s, then cross-check against @noble's Ed25519 verify.
   let kp = KeyPair.generate();
   let msg = randomBytes(64);
   let sig = xeddsaSign(kp.privateKey, msg, randomBytes(64));
-  // Derive the Edwards public key the same way (Montgomery u -> Edwards y, sign 0)
+  // Derive the Edwards public key (Montgomery u -> Edwards y)
   let Point = ed25519.Point;
   let p = Point.Fp.ORDER;
   let u = bytesToNumberLE(kp.publicKey) % p;
   let inv = modInv(u + 1n, p);
   let y = ((u - 1n) * inv % p + p) % p;
   let Aenc = numberToBytesLE(y, 32);
-  Aenc[31] &= 0x7F;
-  expect(ed25519.verify(sig, msg, Aenc)).toBe(true);
+  let signBit = sig[63] & 0x80;
+  Aenc[31] = (Aenc[31] & 0x7F) | signBit;
+  let stdSig = sig.slice();
+  stdSig[63] &= 0x7F;
+  expect(ed25519.verify(stdSig, msg, Aenc)).toBe(true);
 });
 
 function modInv(a: bigint, m: bigint): bigint {

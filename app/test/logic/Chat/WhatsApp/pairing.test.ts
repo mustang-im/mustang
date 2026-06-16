@@ -12,7 +12,7 @@ import {
   encodeHandshakeMessage, decodeHandshakeMessage,
   CertChain, ClientPayload, type DevicePairingRegistrationData,
   ADVSignedDeviceIdentityHMAC, ADVSignedDeviceIdentity, ADVDeviceIdentity,
-} from "../../../../logic/Chat/Signal/Proto/handshakeSchema";
+} from "../../../../logic/Chat/WhatsApp/Proto/handshakeSchema";
 import { ProtoWriter } from "../../../../logic/Chat/Signal/Proto/ProtobufLite";
 import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";

@@ -10,6 +10,7 @@ import {
   serializeSignalMessage, parseSignalMessage, verifySignalMessageMAC,
   serializePreKeySignalMessage, parsePreKeySignalMessage,
 } from "./messages";
+import { deriveTripleRatchetKeys } from "../Encryption/SPQR/tripleRatchet";
 
 export class SessionState {
   rootKey: Uint8Array;
@@ -23,6 +24,10 @@ export class SessionState {
   remoteIdentityKey: Uint8Array; // 33-byte djb
   localIdentityKey: Uint8Array; // 33-byte djb
   pendingPreKey?: { preKeyID?: number, signedPreKeyID: number, baseKey: Uint8Array };
+  /** PQXDH-only: the kyber prekey id + ciphertext for the first outgoing `pkmsg`
+   * (set by initiatePqxdhSession; consumed by the PQXDH encrypt wrapper). Carried
+   * alongside pendingPreKey and cleared once the peer confirms the session. */
+  pendingKyber?: { kyberPreKeyID: number, ciphertext: Uint8Array };
   remoteRegistrationID?: number;
   /** For a session we built as the responder: the initiator's base key (33-byte
    * djb) from the `pkmsg` that established it. Lets a later `pkmsg` tell "the one
@@ -50,6 +55,10 @@ export class SessionState {
         signedPreKeyID: this.pendingPreKey.signedPreKeyID,
         baseKey: base64Encode(this.pendingPreKey.baseKey),
       } : undefined,
+      pendingKyber: this.pendingKyber ? {
+        kyberPreKeyID: this.pendingKyber.kyberPreKeyID,
+        ciphertext: base64Encode(this.pendingKyber.ciphertext),
+      } : undefined,
       remoteRegistrationID: this.remoteRegistrationID,
       establishingBaseKey: this.establishingBaseKey ? base64Encode(this.establishingBaseKey) : undefined,
     };
@@ -76,6 +85,12 @@ export class SessionState {
         preKeyID: json.pendingPreKey.preKeyID,
         signedPreKeyID: json.pendingPreKey.signedPreKeyID,
         baseKey: base64Decode(json.pendingPreKey.baseKey),
+      };
+    }
+    if (json.pendingKyber) {
+      state.pendingKyber = {
+        kyberPreKeyID: json.pendingKyber.kyberPreKeyID,
+        ciphertext: base64Decode(json.pendingKyber.ciphertext),
       };
     }
     state.remoteRegistrationID = json.remoteRegistrationID;
@@ -121,6 +136,32 @@ function chainStep(chainKey: Uint8Array): { messageKey: Uint8Array, nextChainKey
 function deriveMessageKeys(messageKey: Uint8Array): { cipherKey: Uint8Array, macKey: Uint8Array, iv: Uint8Array } {
   let out = hkdfSHA256(messageKey, kZero32, enc("WhisperMessageKeys"), 80);
   return { cipherKey: out.slice(0, 32), macKey: out.slice(32, 64), iv: out.slice(64, 80) };
+}
+
+/** Optional Signal-only triple-ratchet hooks (Docs/08). Absent (the WhatsApp /
+ * OMEMO / classic-X3DH path) → `deriveMessageKeys` zero-salt derivation and no
+ * `pq_ratchet` field; the on-wire SignalMessage is byte-identical to before.
+ *
+ * `EncryptPqr`: the session layer's SPQR `send()` output — the per-message key to
+ * mix in (HKDF salt; null before SPQR's first epoch lands) and the wire blob to
+ * carry as SignalMessage field 5.
+ *
+ * `DecryptPqr`: a callback the session layer supplies; given the incoming
+ * `pq_ratchet` blob it advances its SPQR `recv()` and returns the per-message key
+ * to mix. Called *before* MAC verification, matching libsignal `triple_ratchet.rs`
+ * (the session layer commits its SPQR state to the store only on overall success). */
+export interface EncryptPqr {
+  key: Uint8Array | null;
+  ratchetBytes: Uint8Array;
+}
+export type DecryptPqr = (ratchetBytes: Uint8Array | undefined) => Uint8Array | null;
+
+/** Picks the triple-ratchet derivation (SPQR key as HKDF salt) when a `pqrKey` is
+ * given, else the classic zero-salt derivation. The two are bit-identical when
+ * `pqrKey` is null, so a triple-ratchet session before its first epoch — and any
+ * classic session — derive exactly the legacy keys. */
+function deriveKeys(messageKey: Uint8Array, pqrKey: Uint8Array | null | undefined): { cipherKey: Uint8Array, macKey: Uint8Array, iv: Uint8Array } {
+  return pqrKey === undefined ? deriveMessageKeys(messageKey) : deriveTripleRatchetKeys(messageKey, pqrKey);
 }
 
 // --- plaintext padding (WhatsApp: 1..15 trailing bytes, each = the count) ---
@@ -214,7 +255,7 @@ function createSessionFromPreKey(store: SignalStore, address: string, data: Uint
 
 // --- encrypt / decrypt ---
 
-export async function encrypt(store: SignalStore, address: string, plaintext: Uint8Array, pad = true): Promise<EncryptedSignalMessage> {
+export async function encrypt(store: SignalStore, address: string, plaintext: Uint8Array, pad = true, pqr?: EncryptPqr): Promise<EncryptedSignalMessage> {
   let state = store.sessions.get(address);
   if (!state) {
     throw new Error(`No session for ${address}`);
@@ -223,13 +264,14 @@ export async function encrypt(store: SignalStore, address: string, plaintext: Ui
   let counter = state.senderChainIndex;
   state.senderChainKey = nextChainKey;
   state.senderChainIndex++;
-  let keys = deriveMessageKeys(messageKey);
+  let keys = deriveKeys(messageKey, pqr ? pqr.key : undefined);
   // WhatsApp adds its own 1..15-byte padding; OMEMO (`pad` false) relies solely
   // on the AES-CBC PKCS#7 padding, matching upstream libsignal.
   let ciphertext = await aesCBCEncrypt(keys.cipherKey, keys.iv, pad ? padPlaintext(plaintext) : plaintext);
   let signal = serializeSignalMessage({
     ratchetKey: djbEncode(state.senderRatchetKeyPair.publicKey),
     counter, previousCounter: state.previousCounter, ciphertext,
+    pqRatchet: pqr?.ratchetBytes,
   }, keys.macKey, state.localIdentityKey, state.remoteIdentityKey);
   if (state.pendingPreKey) {
     let body = serializePreKeySignalMessage({
@@ -260,7 +302,7 @@ export async function encrypt(store: SignalStore, address: string, plaintext: Ui
  *
  * If a rebuilt session fails to decrypt, it's rolled back (and the one-time
  * prekey left intact) so a later message or peer retry can establish cleanly. */
-export async function decryptPreKeyMessage(store: SignalStore, address: string, data: Uint8Array, pad = true): Promise<Uint8Array> {
+export async function decryptPreKeyMessage(store: SignalStore, address: string, data: Uint8Array, pad = true, pqr?: DecryptPqr): Promise<Uint8Array> {
   let pkmsg = parsePreKeySignalMessage(data);
   let previous = store.sessions.get(address);
   let sameSession = !!previous?.establishingBaseKey && bytesEqual(previous.establishingBaseKey, pkmsg.baseKey);
@@ -268,7 +310,7 @@ export async function decryptPreKeyMessage(store: SignalStore, address: string, 
     createSessionFromPreKey(store, address, data); // overwrites any unrelated session at this address
   }
   try {
-    let plaintext = await decryptSignalMessage(store, address, pkmsg.message, pad);
+    let plaintext = await decryptSignalMessage(store, address, pkmsg.message, pad, pqr);
     if (!sameSession && pkmsg.preKeyID != null) {
       store.preKeys.delete(pkmsg.preKeyID); // confirmed: consume the one-time prekey
     }
@@ -288,7 +330,7 @@ export async function decryptPreKeyMessage(store: SignalStore, address: string, 
 }
 
 /** Decrypts a `msg` (SignalMessage) on an existing session. */
-export async function decryptSignalMessage(store: SignalStore, address: string, data: Uint8Array, pad = true): Promise<Uint8Array> {
+export async function decryptSignalMessage(store: SignalStore, address: string, data: Uint8Array, pad = true, pqr?: DecryptPqr): Promise<Uint8Array> {
   let state = store.sessions.get(address);
   if (!state) {
     throw new Error(`No session for ${address}`);
@@ -302,13 +344,15 @@ export async function decryptSignalMessage(store: SignalStore, address: string, 
     dhRatchet(state, theirRatchet);
   }
   let messageKey = getReceiverMessageKey(state, theirRatchet, parsed.counter);
-  let keys = deriveMessageKeys(messageKey);
+  let pqrKey = pqr ? pqr(parsed.pqRatchet) : undefined;
+  let keys = deriveKeys(messageKey, pqrKey);
   if (!verifySignalMessageMAC(parsed, keys.macKey, state.remoteIdentityKey, state.localIdentityKey)) {
     throw new Error("Bad MAC on SignalMessage");
   }
   let decrypted = await aesCBCDecrypt(keys.cipherKey, keys.iv, parsed.ciphertext);
   let plaintext = pad ? unpadPlaintext(decrypted) : decrypted;
   state.pendingPreKey = undefined; // the session is now confirmed by the peer
+  state.pendingKyber = undefined;
   return plaintext;
 }
 

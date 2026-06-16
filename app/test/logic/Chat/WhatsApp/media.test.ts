@@ -1,7 +1,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
-import { encodeWAMessage, decodeWAMessage, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
+import { encodeWAMessage, decodeWAMessage, type WAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { mediaDescriptorFor, downloadMedia, checkMediaURL, uploadMedia, buildMediaMessage, mediaTypeForMIME } from "../../../../logic/Chat/WhatsApp/WhatsAppMedia";
 import { randomBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";

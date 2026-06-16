@@ -59,23 +59,27 @@ function hash1(data: Uint8Array): Uint8Array {
   return sha512(input);
 }
 
-/** XEdDSA signature (64 bytes) over `message`, using an X25519 private key. */
+/** XEdDSA signature (64 bytes) over `message`, using an X25519 private key.
+ *
+ * Follows the Signal/curve25519-dalek convention: the Edwards public key A is
+ * `a·B` (with its natural sign bit), and **A's sign bit is carried in bit 255 of
+ * s** (always 0 for a genuine scalar, so it's free to reuse). The hash binds the
+ * full `A` encoding including that sign bit. */
 export function xeddsaSign(privateKey: Uint8Array, message: Uint8Array, random?: Uint8Array): Uint8Array {
   let Z = random ?? randomBytes(64);
   let a = clampedScalar(privateKey);
   let A = Point.BASE.multiply(a);
   let Aenc = A.toBytes();
-  if (Aenc[31] & 0x80) { // force the sign bit to 0, negate the scalar to match
-    a = mod(-a, q);
-    Aenc[31] &= 0x7F;
-  }
+  let signBit = Aenc[31] & 0x80; // A's sign bit, carried in s below
   let aBytes = numberToBytesLE(a, 32);
   let r = mod(bytesToNumberLE(hash1(concat(aBytes, message, Z))), q);
   let R = Point.BASE.multiply(r);
   let Renc = R.toBytes();
   let h = mod(bytesToNumberLE(sha512(concat(Renc, Aenc, message))), q);
   let s = mod(r + h * a, q);
-  return concat(Renc, numberToBytesLE(s, 32));
+  let sBytes = numberToBytesLE(s, 32);
+  sBytes[31] |= signBit;
+  return concat(Renc, sBytes);
 }
 
 /** Verifies an XEdDSA signature against an X25519 public key (the Montgomery
@@ -86,13 +90,16 @@ export function xeddsaVerify(publicKey: Uint8Array, message: Uint8Array, signatu
     // Montgomery u -> Edwards y: y = (u - 1) / (u + 1)
     let y = mod((u - 1n) * modInverse(u + 1n, p), p);
     let Aenc = numberToBytesLE(y, 32);
-    Aenc[31] &= 0x7F; // sign bit 0
-    let A = Point.fromBytes(Aenc);
     let Renc = signature.subarray(0, 32);
-    let s = bytesToNumberLE(signature.subarray(32, 64));
+    let sBytes = signature.slice(32, 64);
+    let signBit = sBytes[31] & 0x80; // A's sign bit travels in bit 255 of s
+    sBytes[31] &= 0x7F;
+    let s = bytesToNumberLE(sBytes);
     if (s >= q) {
       return false;
     }
+    Aenc[31] = (Aenc[31] & 0x7F) | signBit;
+    let A = Point.fromBytes(Aenc);
     let h = mod(bytesToNumberLE(sha512(concat(Renc, Aenc, message))), q);
     // Check R == sB - hA
     let check = Point.BASE.multiplyUnsafe(s).subtract(A.multiplyUnsafe(h));

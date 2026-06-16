@@ -28,6 +28,32 @@ export class ProtoWriter {
     return this;
   }
 
+  /** A wire-type-1 fixed 64-bit value (little-endian), e.g. proto `fixed64`. */
+  fixed64(field: number, value: number | bigint | undefined): this {
+    if (value == null) {
+      return this;
+    }
+    this.tag(field, 1);
+    let v = BigInt(value) & 0xFFFFFFFFFFFFFFFFn;
+    for (let i = 0; i < 8; i++) {
+      this.buffer.push(Number((v >> BigInt(i * 8)) & 0xFFn));
+    }
+    return this;
+  }
+
+  /** A wire-type-5 fixed 32-bit value (little-endian), e.g. proto `fixed32`. */
+  fixed32(field: number, value: number | undefined): this {
+    if (value == null) {
+      return this;
+    }
+    this.tag(field, 5);
+    let v = value >>> 0;
+    for (let i = 0; i < 4; i++) {
+      this.buffer.push((v >>> (i * 8)) & 0xFF);
+    }
+    return this;
+  }
+
   finish(): Uint8Array {
     return Uint8Array.from(this.buffer);
   }
@@ -82,9 +108,19 @@ export function readProto(data: Uint8Array): Map<number, ProtoField[]> {
       value.data = data.subarray(pos, pos + len).slice();
       pos += len;
     } else if (wireType == 1) {
+      let v = 0n;
+      for (let i = 0; i < 8; i++) {
+        v |= BigInt(data[pos + i]) << BigInt(i * 8);
+      }
       pos += 8;
+      value.int = v;
     } else if (wireType == 5) {
+      let v = 0n;
+      for (let i = 0; i < 4; i++) {
+        v |= BigInt(data[pos + i]) << BigInt(i * 8);
+      }
       pos += 4;
+      value.int = v;
     } else {
       throw new Error(`Unsupported protobuf wire type ${wireType}`);
     }

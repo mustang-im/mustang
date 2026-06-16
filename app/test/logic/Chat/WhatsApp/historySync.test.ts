@@ -10,7 +10,7 @@ import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
 import {
   HistorySync, HistorySyncType, ProtocolMessageType, PeerDataOperationRequestType,
   PeerDataOperationRequestMessage, Message, decodeHistorySync, decodeWAMessage,
-} from "../../../../logic/Chat/Signal/Proto/schema";
+} from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { expect, test } from "vitest";
 
 const kAliceJID = "491761111111@s.whatsapp.net";

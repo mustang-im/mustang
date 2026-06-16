@@ -10,7 +10,7 @@ import { ChatPersonUID } from "../../../../logic/Chat/ChatPersonUID";
 import { WhatsAppContact } from "../../../../logic/Chat/WhatsApp/WhatsAppContact";
 import { Group } from "../../../../logic/Abstract/Group";
 import { encode } from "../../../../logic/Chat/Signal/Proto/codec";
-import { HistorySync, decodeHistorySync, encodeWAMessage, decodeWAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
+import { HistorySync, decodeHistorySync, encodeWAMessage, decodeWAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { WANode } from "../../../../logic/Chat/WhatsApp/Binary/WANode";
 import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
 import { createSenderKey, createDistributionMessage, groupEncrypt } from "../../../../logic/Chat/Signal/Crypto/GroupCipher";

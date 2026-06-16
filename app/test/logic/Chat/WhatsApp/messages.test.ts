@@ -2,7 +2,7 @@ import { appGlobal } from "../../../../logic/app";
 import { WhatsAppMessage } from "../../../../logic/Chat/WhatsApp/WhatsAppMessage";
 import { WhatsAppChatRoom } from "../../../../logic/Chat/WhatsApp/WhatsAppChatRoom";
 import { WhatsApp1to1ChatRoom } from "../../../../logic/Chat/WhatsApp/WhatsApp1to1ChatRoom";
-import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage } from "../../../../logic/Chat/Signal/Proto/schema";
+import { encodeWAMessage, decodeWAMessage, ProtocolMessageType, type WAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { MediaType, encryptMedia, decryptMedia } from "../../../../logic/Chat/WhatsApp/Crypto/mediaCrypto";
 import { verifyAccountSignature, generateDeviceSignature, verifyDeviceIdentityHMAC }
   from "../../../../logic/Chat/WhatsApp/Crypto/adv";

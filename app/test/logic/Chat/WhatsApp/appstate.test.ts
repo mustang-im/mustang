@@ -2,7 +2,7 @@ import {
   expandAppStateKeys, valueMac, indexMac, decryptMutationValue, encContentOf, valueMacOf,
   WAPatchIntegrity, LTHash, snapshotMac, patchMac,
 } from "../../../../logic/Chat/WhatsApp/Crypto/appStateCrypto";
-import { SyncActionData, SyncdOperation } from "../../../../logic/Chat/Signal/Proto/schema";
+import { SyncActionData, SyncdOperation } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { encode, decode } from "../../../../logic/Chat/Signal/Proto/codec";
 import { aesCBCEncrypt, randomBytes, concatBytes, bytesEqual } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { expect, test } from "vitest";

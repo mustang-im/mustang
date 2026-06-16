@@ -17,7 +17,7 @@
  * (string/bytes/nested message), and repeated of those. */
 import { ProtoWriter, readProto } from "./ProtobufLite";
 
-export type WireType = "varint" | "bool" | "string" | "bytes" | "message";
+export type WireType = "varint" | "varint64" | "bool" | "string" | "bytes" | "message" | "fixed64" | "fixed32";
 
 export interface Field<T = unknown> {
   id: number;
@@ -36,9 +36,15 @@ export interface MessageDef<T = any> {
 
 // --- field builders ---
 export function int(id: number): Field<number> { return { id, wire: "varint" }; }
+/** proto `uint64`/`int64` as a bigint — exact past 2^53, e.g. a random CallId. */
+export function int64(id: number): Field<bigint> { return { id, wire: "varint64" }; }
 export function bool(id: number): Field<boolean> { return { id, wire: "bool" }; }
 export function string(id: number): Field<string> { return { id, wire: "string" }; }
 export function bytes(id: number): Field<Uint8Array> { return { id, wire: "bytes" }; }
+/** proto `fixed64`/`sfixed64` — a bigint (can exceed 2^53, e.g. AttachmentPointer.cdnId). */
+export function fixed64(id: number): Field<bigint> { return { id, wire: "fixed64" }; }
+/** proto `fixed32`/`sfixed32`. */
+export function fixed32(id: number): Field<number> { return { id, wire: "fixed32" }; }
 export function sub<T>(id: number, ref: () => MessageDef<T>): Field<T> {
   return { id, wire: "message", ref: ref as () => MessageDef };
 }
@@ -74,10 +80,13 @@ export function encode<T>(def: MessageDef<T>, obj: T): Uint8Array {
 function writeField(writer: ProtoWriter, field: Field, value: any) {
   switch (field.wire) {
     case "varint": writer.varint(field.id, value); break;
+    case "varint64": writer.varint(field.id, value); break;
     case "bool": writer.varint(field.id, value ? 1 : 0); break;
     case "string": writer.bytes(field.id, new TextEncoder().encode(value)); break;
     case "bytes": writer.bytes(field.id, value); break;
     case "message": writer.bytes(field.id, encode(field.ref!(), value)); break;
+    case "fixed64": writer.fixed64(field.id, value); break;
+    case "fixed32": writer.fixed32(field.id, value); break;
   }
 }
 
@@ -98,9 +107,12 @@ export function decode<T>(def: MessageDef<T>, data: Uint8Array): T {
 function readField(field: Field, entry: { int?: bigint, data?: Uint8Array }): any {
   switch (field.wire) {
     case "varint": return Number(entry.int ?? 0n);
+    case "varint64": return entry.int ?? 0n;
     case "bool": return (entry.int ?? 0n) != 0n;
     case "string": return new TextDecoder().decode(entry.data ?? new Uint8Array());
     case "bytes": return entry.data ?? new Uint8Array();
     case "message": return decode(field.ref!(), entry.data ?? new Uint8Array());
+    case "fixed64": return entry.int ?? 0n;
+    case "fixed32": return Number(entry.int ?? 0n);
   }
 }
