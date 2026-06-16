@@ -4,7 +4,6 @@ import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
-import { installSignalServiceCATrust } from './signalServiceCA'
 
 function createWindow(): void {
   try {
@@ -143,7 +142,6 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
-  installSignalServiceCATrust(); // trust Signal's private service CA (chat/storage/cdn/cdsi/sfu)
 
   createMenu();
   createWindow();
@@ -237,10 +235,9 @@ function handleCommandline(args: string[]) {
 }
 
 function allowCrossDomainRequestsFromFrontend() {
-  const sendFilter = { urls: ["https://*/*", "http://*/*", "wss://*/*" ] };
-  const allHTTP = { urls: ["https://*/*", "http://*/*"] };
+  const filter = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    sendFilter,
+    filter,
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
       for (let name in requestHeaders) {
@@ -262,23 +259,11 @@ function allowCrossDomainRequestsFromFrontend() {
           break;
         }
       }
-      // Signal chat-service auth: translate the `?login=&password=` on the URL into the
-      // Authorization header the server reads (works for both the wss handshake and REST).
-      if (new URL(details.url).hostname.endsWith("signal.org") && details.url.includes("login=")) {
-        try {
-          let params = new URL(details.url).searchParams;
-          let login = params.get("login"), password = params.get("password");
-          if (login && password) {
-            requestHeaders["Authorization"] = "Basic " + Buffer.from(`${login}:${password}`).toString("base64");
-            console.log(`Signal main: injected auth header for ${details.resourceType} ${details.url.replace(/password=[^&]*/, "password=…")}`);
-          }
-        } catch (ex) { console.error("Signal main: failed to inject auth header", ex); }
-      }
       callback({ requestHeaders: requestHeaders });
     }
   );
   session.defaultSession.webRequest.onHeadersReceived(
-    allHTTP,
+    filter,
     (details, callback) => {
       let responseHeaders = details.responseHeaders ?? {};
       // Remove server response
@@ -299,7 +284,6 @@ function allowCrossDomainRequestsFromFrontend() {
       callback({ responseHeaders, statusLine });
     }
   );
-  console.log("Signal main: header bridge installed (CORS + wss Authorization)");
 }
 
 function setWindowOpenHandler(webContents: WebContents) {

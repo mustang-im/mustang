@@ -16,6 +16,7 @@ import { DAVClient } from "tsdav";
 import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import net from "node:net";
+import { WebSocket as NodeWebSocket } from "ws";
 import zlib from "node:zlib";
 import path from "node:path";
 import os from "node:os";
@@ -92,6 +93,7 @@ async function createSharedAppObject() {
     newAdmZIP,
     newHTTPServer,
     newTCPSocket,
+    newWebSocket,
     gunzip,
     readFile,
     writeFile,
@@ -252,6 +254,16 @@ function newHTTPServer() {
  * You can attach `connect`/`error`/`data` listeners and `connect()` */
 function newTCPSocket(): net.Socket {
   return new net.Socket();
+}
+
+/** A new `ws` WebSocket, for the Signal chat-service socket. The renderer's browser
+ * WebSocket can't set the `Authorization` header (and Electron's webRequest doesn't
+ * fire for WebSocket upgrades), and Node's default TLS doesn't trust Signal's private
+ * root CA — both are solved here by forwarding `options.headers` and `options.ca`
+ * (PEM) to `ws`. It connects on creation; attach `open`/`message`/`close`/`error`
+ * listeners over JPC. */
+function newWebSocket(url: string, options?: { headers?: Record<string, string>, ca?: string }): NodeWebSocket {
+  return new NodeWebSocket(url, { headers: options?.headers, ca: options?.ca });
 }
 
 /** Decompresses a gzip (or zlib) buffer — used for the WhatsApp history-sync

@@ -4,17 +4,20 @@
  * /api/v1/message`) that we ACK with a 200 RESPONSE. See Docs/01-transport.
  *
  * Auth is an `Authorization: Basic base64("<username>:<password>")` request header
- * on the WebSocket handshake — NOT `?login=&password=` query params. The server
- * (`AccountAuthenticator` via `BasicAuthorizationHeader.fromString`) only reads the
- * header; the Android client sets it via `Credentials.basic(username, password)`
- * (Signal-Android OkHttpWebSocketConnection.java). The `ws` package forwards
- * `options.headers` on the upgrade request. We keep `?login=&password=` on the URL
- * too so a header-incapable browser bridge can still translate it. */
+ * on the WebSocket handshake — the server (`WebSocketAccountAuthenticator`) reads
+ * ONLY the header and ignores query params. The renderer's browser WebSocket can't
+ * set request headers, and Electron's webRequest does not fire for WebSocket
+ * upgrades, so on desktop the socket is opened in the Node backend with the `ws`
+ * package (which forwards `options.headers` and trusts Signal's private CA); see
+ * `openSocket`. The Android client sets the same header via `Credentials.basic`
+ * (Signal-Android OkHttpWebSocketConnection.java). */
 import { encode, decode } from "../Proto/codec";
 import { WebSocketMessage, WebSocketMessageType, type WebSocketRequestMessage } from "../Proto/websocket";
 import { SignalHosts, type Credentials } from "./SignalApi";
 import { base64Encode } from "../Crypto/primitives";
 import { signalLog, redactURL } from "../util";
+import { kSignalServiceRootCA } from "./serviceCA";
+import { appGlobal } from "../../../app";
 
 export interface WebSocketLike {
   binaryType: string;
@@ -26,12 +29,45 @@ export interface WebSocketLike {
   onerror: ((ev: any) => void) | null;
 }
 
-/** Opens a platform WebSocket (browser/Electron global, or `ws` on Node). The `ws`
- * package accepts `options.headers` for the upgrade request (Authorization); the
- * browser global ignores the third arg, so the URL also carries login/password. */
+/** Opens the chat-service WebSocket. On desktop the renderer's browser WebSocket
+ * can't set the Authorization header and Electron's webRequest doesn't fire for
+ * WebSocket upgrades, so we open it in the Node backend over JPC (`newWebSocket`),
+ * which sets the header and trusts Signal's private root CA via `ws`. Web builds and
+ * unit tests (no backend factory) fall back to the platform WebSocket / `ws`. */
 async function openSocket(url: string, headers?: Record<string, string>): Promise<WebSocketLike> {
+  if ((appGlobal.remoteApp as any)?.newWebSocket) {
+    let proxy = await appGlobal.remoteApp.newWebSocket(url, { headers, ca: kSignalServiceRootCA });
+    return new RemoteWebSocket(proxy);
+  }
   let WS: any = (globalThis as any).WebSocket ?? (await import("ws")).WebSocket;
   return new WS(url, undefined, headers ? { headers } : undefined) as WebSocketLike;
+}
+
+/** Adapts a backend `ws` WebSocket (reached over JPC) to the WebSocketLike interface.
+ * The `ws` socket starts connecting on creation; we attach the listeners immediately
+ * so none is missed (TLS/network latency far exceeds the local JPC round-trip). Each
+ * `proxy.on(...)`/`send`/`close` call crosses the JPC boundary. */
+class RemoteWebSocket implements WebSocketLike {
+  binaryType = "arraybuffer";
+  onopen: ((ev: any) => void) | null = null;
+  onmessage: ((ev: { data: any }) => void) | null = null;
+  onclose: ((ev: any) => void) | null = null;
+  onerror: ((ev: any) => void) | null = null;
+
+  constructor(protected proxy: any) {
+    proxy.on("open", () => this.onopen?.({ type: "open" }));
+    proxy.on("message", (data: any) => this.onmessage?.({ data }));
+    proxy.on("close", (code: number, reason: any) => this.onclose?.({ code, reason: String(reason ?? "") }));
+    proxy.on("error", (ex: any) => this.onerror?.({ message: ex?.message ?? String(ex), type: "error" }));
+  }
+
+  send(data: Uint8Array): void {
+    this.proxy.send(data);
+  }
+
+  close(): void {
+    this.proxy.close();
+  }
 }
 
 interface Pending {
