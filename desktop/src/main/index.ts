@@ -237,9 +237,9 @@ function handleCommandline(args: string[]) {
 }
 
 function allowCrossDomainRequestsFromFrontend() {
-  const filter = { urls: ["https://*/*", "http://*/*"] };
+  const allHTTP = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    filter,
+    allHTTP,
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
       for (let name in requestHeaders) {
@@ -265,7 +265,7 @@ function allowCrossDomainRequestsFromFrontend() {
     }
   );
   session.defaultSession.webRequest.onHeadersReceived(
-    filter,
+    allHTTP,
     (details, callback) => {
       let responseHeaders = details.responseHeaders ?? {};
       // Remove server response
@@ -284,6 +284,24 @@ function allowCrossDomainRequestsFromFrontend() {
       let statusLine = details.method == "OPTIONS" ? "HTTP/1.1 200 OK" : details.statusLine;
       // console.log("Response", details.url, responseHeaders);
       callback({ responseHeaders, statusLine });
+    }
+  );
+
+  // Signal auth
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ["https://*.signal.org/*", "wss://chat.signal.org/*"] },
+    (details, callback) => {
+      let requestHeaders = details.requestHeaders ?? {};
+      if (details.url.includes("login=")) {
+        try {
+          let params = new URL(details.url).searchParams;
+          let login = params.get("login"), password = params.get("password");
+          if (login && password) {
+            requestHeaders["Authorization"] = "Basic " + Buffer.from(`${login}:${password}`).toString("base64");
+          }
+        } catch (ex) { /* leave headers as-is */ }
+      }
+      callback({ requestHeaders: requestHeaders });
     }
   );
 }
