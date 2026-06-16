@@ -275,17 +275,11 @@ export class SignalAccount extends ChatAccount {
     };
 
     // ⚠️ Docs/02 §B.4: the server finds the account via verificationCode and takes the
-    // *password* from the Basic header; the exact username is unconfirmed — use the ACI.
+    // CONFIRMED against the live server: the Basic-auth username is the ACI (the
+    // server finds the account by verificationCode and takes the password from the
+    // header). The link request body shape above is accepted as-is.
     let creds = { username: this.aci.uuidString(), password: this.servicePassword };
-    // UNKNOWN (live-confirm): the /v1/devices/link Basic-auth username. We send the
-    // ACI. If this 401/403s, the server response (logged by SignalApi) tells us; the
-    // candidates to try next are the E.164 number or `<aci>.<deviceId>`.
-    console.log("Signal device-link: PUT /v1/devices/link — Basic-auth username = ACI", this.aci.uuidString(),
-      "| password len", this.servicePassword.length, "| body keys", Object.keys(body),
-      "| accountAttributes", body.accountAttributes,
-      "| (if 401/403 → try username = E.164", this.e164, "or `<aci>.<deviceId>`)");
     let res = await this.api().json<LinkDeviceResponse>("PUT", "/v1/devices/link", body, creds);
-    console.log("Signal device-link: ACCEPTED — username=ACI is correct →", res);
 
     this.deviceID = res.deviceId;
     if (res.uuid) {
@@ -400,16 +394,9 @@ export class SignalAccount extends ChatAccount {
       preKeys: preKeys.map(ecPreKeyJSON),
       pqLastResortPreKey: kemSignedPreKeyJSON(kyber.keyID, kyber.keyPair, store.identityKeyPair),
     };
-    // UNKNOWN (live-confirm): which byte form the server verifies the Kyber-prekey
-    // signature over. `body.pqLastResortPreKey.signature` is over the 1569-byte
-    // serialized key (0x08‖key). If /v2/keys returns 422 invalid-signature (logged
-    // by SignalApi), switch to the RAW 1568-byte form — that candidate is logged here.
-    console.log(`Signal /v2/keys?identity=${identity}: kyber sig over 1569-byte serialized key =`,
-      body.pqLastResortPreKey.signature,
-      "| ALT raw-1568-byte-key sig (use if 422) =",
-      base64NoPad(xeddsaSign(store.identityKeyPair.privateKey, kyber.keyPair.publicKey)));
+    // CONFIRMED against the live server (ACI + PNI accepted): the Kyber-prekey
+    // signature is over the 1569-byte serialized key (0x08‖key), per keysJSON.ts.
     await this.api().json("PUT", `/v2/keys?identity=${identity}`, body, this.authCredentials());
-    console.log(`Signal /v2/keys?identity=${identity}: ACCEPTED — 1569-byte serialized-key signature is correct`);
     return newKeys.length > 0;
   }
 
