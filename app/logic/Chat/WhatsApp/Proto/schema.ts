@@ -2,7 +2,7 @@
  * definition; the TypeScript types are inferred from these declarations (see
  * codec.ts), so there is nothing to keep in sync by hand. To add a field, add
  * one line with its number. */
-import { message, string, bytes, int, bool, sub, repeated, encode, decode, type TypeOf } from "./codec";
+import { message, string, bytes, int, bool, sub, repeated, encode, decode, type TypeOf } from "../../Signal/Proto/codec";
 
 /** ProtocolMessage.type values (used for edits and deletes). */
 export enum ProtocolMessageType {

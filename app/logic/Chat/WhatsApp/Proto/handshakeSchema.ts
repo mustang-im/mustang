@@ -1,6 +1,6 @@
 /** Schemas for the Noise handshake, the login/registration ClientPayload, and
  * the server certificate chain — same readable DSL as the message schema. */
-import { message, string, bytes, int, bool, sub, encode, decode, type TypeOf } from "./codec";
+import { message, string, bytes, int, bool, sub, encode, decode, type TypeOf } from "../../Signal/Proto/codec";
 
 /** UserAgent.platform values. */
 export enum Platform {

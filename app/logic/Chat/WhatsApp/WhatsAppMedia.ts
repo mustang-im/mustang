@@ -16,7 +16,7 @@ import { WANode } from "./Binary/WANode";
 import { decryptMedia, encryptMedia, MediaType, type EncryptedMedia } from "./Crypto/mediaCrypto";
 import { bytesEqual, sha256, randomBytes, base64Encode } from "../Signal/Crypto/primitives";
 import { kWaHttpUserAgent } from "./clientInfo";
-import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage, WAMessage } from "../Signal/Proto/schema";
+import type { ImageMessage, VideoMessage, AudioMessage, DocumentMessage, StickerMessage, WAMessage } from "./Proto/schema";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";

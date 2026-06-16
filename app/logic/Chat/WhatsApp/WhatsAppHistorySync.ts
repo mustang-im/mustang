@@ -19,7 +19,7 @@ import { waLog } from "./util";
 import {
   decodeHistorySync, HistorySyncType, ProtocolMessageType, PeerDataOperationRequestType,
   type HistorySync, type HistorySyncNotification, type Conversation, type WAMessage,
-} from "../Signal/Proto/schema";
+} from "./Proto/schema";
 import type { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import { appGlobal } from "../../app";
 

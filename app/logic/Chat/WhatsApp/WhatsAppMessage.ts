@@ -8,7 +8,7 @@ import { MediaType } from "./Crypto/mediaCrypto";
 import { mediaDescriptorFor, downloadMedia, type MediaDescriptor } from "./WhatsAppMedia";
 import type { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import type { WANode } from "./Binary/WANode";
-import type { WAMessage } from "../Signal/Proto/schema";
+import type { WAMessage } from "./Proto/schema";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 /**

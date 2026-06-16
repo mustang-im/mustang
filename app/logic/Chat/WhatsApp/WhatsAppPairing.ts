@@ -31,7 +31,7 @@ import { encode, decode } from "../Signal/Proto/codec";
 import {
   ADVSignedDeviceIdentityHMAC, ADVSignedDeviceIdentity, ADVDeviceIdentity,
   type DevicePairingRegistrationData,
-} from "../Signal/Proto/handshakeSchema";
+} from "./Proto/handshakeSchema";
 
 /** The long-lived keys a paired companion keeps. Created fresh per pairing and,
  * once paired, persisted with the account so we can log in again without

@@ -18,7 +18,7 @@ import { decodeNode } from "./Binary/decoder";
 import {
   encodeHandshakeMessage, decodeHandshakeMessage, encodeClientPayload, decodeCertChain,
   kWaCertPublicKey, type ClientPayload,
-} from "../Signal/Proto/handshakeSchema";
+} from "./Proto/handshakeSchema";
 import { readProto, getBytes, getInt } from "../Signal/Proto/ProtobufLite";
 import { waLog, nodePreview } from "./util";
 import { appGlobal } from "../../app";

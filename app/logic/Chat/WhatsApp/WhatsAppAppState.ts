@@ -25,7 +25,7 @@ import { decode } from "../Signal/Proto/codec";
 import {
   SyncdSnapshot, SyncdPatch, SyncdMutations, SyncActionData, SyncdOperation, ExternalBlobReference,
   type AppStateSyncKeyShare, type SyncdRecord,
-} from "../Signal/Proto/schema";
+} from "./Proto/schema";
 
 /** Contact names live in this collection. */
 const kContactsCollection = "critical_unblock_low";

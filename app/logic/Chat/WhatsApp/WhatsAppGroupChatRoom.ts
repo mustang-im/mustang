@@ -4,7 +4,7 @@ import { Group } from "../../Abstract/Group";
 import type { Person } from "../../Abstract/Person";
 import { JID, kServerLid } from "./Binary/JID";
 import { WANode } from "./Binary/WANode";
-import type { MessageKey } from "../Signal/Proto/schema";
+import type { MessageKey } from "./Proto/schema";
 import { waLog } from "./util";
 
 /** One member of a group. `jid` is the primary address to send to (LID in a LID

@@ -14,7 +14,7 @@
 import {
   type ClientPayload, type DevicePairingRegistrationData,
   Platform, Product, ConnectType, ConnectReason, DevicePlatformType, DeviceProps,
-} from "../Signal/Proto/handshakeSchema";
+} from "./Proto/handshakeSchema";
 import { encode } from "../Signal/Proto/codec";
 import { md5 } from "../Signal/Crypto/primitives";
 import { appName } from "../../build";

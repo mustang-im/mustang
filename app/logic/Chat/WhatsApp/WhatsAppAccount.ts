@@ -14,7 +14,7 @@ import { WhatsAppPairing } from "./WhatsAppPairing";
 import { deferred, type Deferred, stanzaErrorText, bigEndian, waLog, nodePreview, waDebugState } from "./util";
 import { kDjbType } from "../Signal/Crypto/curve";
 import { getLoginPayload } from "./clientInfo";
-import { decodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
+import { decodeWAMessage, type WAMessage } from "./Proto/schema";
 import { WANode } from "./Binary/WANode";
 import { JID, kServerUser } from "./Binary/JID";
 import { WhatsAppContact } from "./WhatsAppContact";

@@ -27,7 +27,7 @@ import { PreKeyBundle } from "../Signal/Crypto/Identity";
 import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal/Crypto/SessionCipher";
 import { createSenderKey, createDistributionMessage, groupEncrypt } from "../Signal/Crypto/GroupCipher";
 import { sha256, base64Encode } from "../Signal/Crypto/primitives";
-import { encodeWAMessage, type WAMessage } from "../Signal/Proto/schema";
+import { encodeWAMessage, type WAMessage } from "./Proto/schema";
 import { uploadMedia, buildMediaMessage, mediaTypeForMIME } from "./WhatsAppMedia";
 import type { Attachment } from "../../Abstract/Attachment";
 import { waLog, nodeTree } from "./util";
