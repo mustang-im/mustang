@@ -237,14 +237,7 @@ function handleCommandline(args: string[]) {
 }
 
 function allowCrossDomainRequestsFromFrontend() {
-  // Electron keeps only the LAST onBeforeSendHeaders listener per session, so the
-  // generic CORS/Origin stripping and the Signal Authorization-header injection must
-  // live in ONE listener (a second registration silently replaces the first). wss/ws
-  // are included because the renderer's browser WebSocket can't set request headers;
-  // the Signal chat server (WebSocketAccountAuthenticator) authenticates the upgrade
-  // ONLY from the Authorization header and ignores query params, so we translate the
-  // `?login=&password=` we put on the URL into that header here.
-  const sendFilter = { urls: ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"] };
+  const sendFilter = { urls: ["https://*/*", "http://*/*", "wss://*/*" ] };
   const allHTTP = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
     sendFilter,
@@ -271,7 +264,7 @@ function allowCrossDomainRequestsFromFrontend() {
       }
       // Signal chat-service auth: translate the `?login=&password=` on the URL into the
       // Authorization header the server reads (works for both the wss handshake and REST).
-      if (details.url.includes("signal.org") && details.url.includes("login=")) {
+      if (new URL(details.url).hostname.endsWith("signal.org") && details.url.includes("login=")) {
         try {
           let params = new URL(details.url).searchParams;
           let login = params.get("login"), password = params.get("password");
