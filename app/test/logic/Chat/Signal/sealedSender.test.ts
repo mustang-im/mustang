@@ -64,6 +64,21 @@ test("KAT: parses + validates committed SenderCertificate (uuidBytes form)", () 
   expect(validateSenderCertificate(cert, trustRootPub, 31336n)).toBe(true);
 });
 
+test("KAT: parses + validates a by-id SenderCertificate (signer referenced by id, not embedded)", () => {
+  // libsignal sealed_sender.rs test_known_server_cert: the signer is field 8 = the
+  // 0x7357C357 KNOWN_SERVER_CERTIFICATES id (not an embedded ServerCertificate). That
+  // cert's paired trust root is the all-zero private key's public key (= trustRootPub).
+  let blob = wrapSenderCert(
+    "100119697a000000000000222105d75b13e15c7700079dd226f51e5a790ba395e819e88a74d0cf5cedfad8b4334840d786df9a07322461616161616161612d373030302d313165622d623332612d333362386138613438376136",
+    "e62667bce627caed56ca2ab309b6ae7bc890a30a7482c0e1fd77ec9c3b7528abfd45c8c42b240509a71d973ef5e0f1dbd2685fe01410f0fdbaa8fb247a67e08f",
+  );
+  let cert = deserializeSenderCertificate(blob);
+  expect(cert.senderUuid).toBe("aaaaaaaa-7000-11eb-b32a-33b8a8a487a6");
+  expect(cert.senderDeviceId).toBe(1);
+  expect(cert.signer.keyId).toBe(0x7357C357); // resolved from the known-cert table
+  expect(validateSenderCertificate(cert, trustRootPub, 31336n)).toBe(true);
+});
+
 test("KAT: a SenderCertificate signed by the wrong trust root fails validation", () => {
   let blob = wrapSenderCert(
     "100119697a0000000000002221056c9d1f8deb82b9a898f9c277a1b74989ec009afb5c0acb5e8e69e3d5ca29d6322a690a2508011221053b03ca070e6f6b2f271d32f27321689cdf4e59b106c10b58fbe15063ed868a5a124024bc92954e52ad1a105b5bda85c9db410dcfeb42a671b45a523b3a46e9594a8bde0efc671d8e8e046b32c67f59b80a46ffdf24071850779bc21325107902af89322461616161616161612d373030302d313165622d623332612d333362386138613438376136ba3e136372617368696e6720726967687420646f776e",

@@ -78,9 +78,12 @@ export class SignalProfile {
     if (res.name) {
       let { givenName, familyName } = await decryptProfileName(profileKey, base64Decode(res.name));
       let name = [givenName, familyName].filter(Boolean).join(" ").trim();
+      console.log(`Signal: profile ${contact.serviceId.toString()} → decrypted name "${name}"`);
       if (name) {
         contact.name = name;
       }
+    } else {
+      console.log(`Signal: profile ${contact.serviceId.toString()} carried no encrypted name`);
     }
     if (res.avatar) {
       let picture = await this.fetchAvatar(res.avatar, profileKey);

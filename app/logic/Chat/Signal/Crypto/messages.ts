@@ -4,7 +4,11 @@ import { ProtoWriter, readProto, getBytes, getInt } from "../Proto/ProtobufLite"
 import { hmacSHA256, concatBytes, bytesEqual } from "./primitives";
 import { xeddsaSign, xeddsaVerify } from "./curve";
 
-export const kSignalVersion = 0x33; // (3 << 4) | 3
+export const kSignalVersion = 0x33; // (3 << 4) | 3 — WhatsApp/OMEMO; Signal SenderKey msgs
+/** Signal 1:1 PQXDH+SPQR messages are version 4 (libsignal CIPHERTEXT_MESSAGE_CURRENT_VERSION
+ * = 4; the byte is (4 << 4) | 4). A v3 SignalMessage would be decrypted WITHOUT the SPQR
+ * key mix by the peer → Bad MAC, so SPQR-bearing messages must declare v4. */
+export const kSignalVersionV4 = 0x44;
 const kMacLength = 8;
 
 export interface SignalMessageFields {
@@ -20,7 +24,7 @@ export interface SignalMessageFields {
 /** SignalMessage = version || protobuf || 8-byte MAC. The MAC covers
  * senderIdentity || receiverIdentity || version || protobuf (33-byte identities). */
 export function serializeSignalMessage(fields: SignalMessageFields, macKey: Uint8Array,
-    senderIdentity: Uint8Array, receiverIdentity: Uint8Array): Uint8Array {
+    senderIdentity: Uint8Array, receiverIdentity: Uint8Array, version = kSignalVersion): Uint8Array {
   let proto = new ProtoWriter()
     .bytes(1, fields.ratchetKey)
     .varint(2, fields.counter)
@@ -28,7 +32,7 @@ export function serializeSignalMessage(fields: SignalMessageFields, macKey: Uint
     .bytes(4, fields.ciphertext)
     .bytes(5, fields.pqRatchet)
     .finish();
-  let versioned = concatBytes(new Uint8Array([kSignalVersion]), proto);
+  let versioned = concatBytes(new Uint8Array([version]), proto);
   let mac = hmacSHA256(macKey, concatBytes(senderIdentity, receiverIdentity, versioned)).subarray(0, kMacLength);
   return concatBytes(versioned, mac);
 }

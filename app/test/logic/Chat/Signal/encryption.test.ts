@@ -58,7 +58,7 @@ test("ML-KEM-1024 encapsulate/decapsulate agree on the shared secret", () => {
   let bob = KyberKeyPair.generate();
   expect(bob.publicKey.length).toBe(1568);
   let { cipherText, sharedSecret } = kyberEncapsulate(bob.publicKey);
-  expect(cipherText.length).toBe(1568);
+  expect(cipherText.length).toBe(1569); // serialized: 0x08 type byte ‖ 1568-byte ML-KEM ct
   expect(sharedSecret.length).toBe(32);
   expect(bytesEqual(bob.decapsulate(cipherText), sharedSecret)).toBe(true);
 });

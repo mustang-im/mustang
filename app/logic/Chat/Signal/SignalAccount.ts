@@ -433,6 +433,8 @@ export class SignalAccount extends ChatAccount {
       try {
         await this.handleEnvelope(decode(Envelope, req.body));
       } catch (ex) {
+        let e = ex as any;
+        console.error("Signal: INBOUND PROCESSING FAILED —", e?.constructor?.name ?? typeof ex, "| msg:", e?.message ?? String(ex), "\nstack:", e?.stack);
         this.errorCallback(ex);
       }
       return 200;
@@ -441,33 +443,39 @@ export class SignalAccount extends ChatAccount {
   }
 
   protected async handleEnvelope(envelope: Envelope): Promise<void> {
-    let content = await this.decryptEnvelope(envelope); // gated on SPQR/sealed-sender
-    let senderId = this.envelopeSender(envelope);
-    if (!content) {
+    console.log(`Signal: handleEnvelope type=${envelope.type} envSource=${envelope.sourceServiceId ?? "(none)"}.${envelope.sourceDeviceId ?? "?"} ts=${envelope.serverTimestamp ?? envelope.clientTimestamp} contentLen=${envelope.content?.length ?? 0}`);
+    let decrypted = await this.decryptEnvelope(envelope); // gated on SPQR/sealed-sender
+    if (!decrypted) {
+      console.log("Signal: handleEnvelope — decryptEnvelope returned nothing (dropped / receipt / call); no room created");
       return;
     }
+    // Use the sender from the DECRYPTED ciphertext, not the Envelope: sealed-sender
+    // envelopes carry no source (the whole point), so `envelope.sourceServiceId` is empty.
+    let { content, sender: senderId } = decrypted;
     // A SyncMessage is sent BY our own account from another device (SignalService.proto
     // Content.syncMessage); the sender is always us, so route on the sync payload — a
     // Sent transcript goes to the DESTINATION's room as an outgoing message.
     if (content.syncMessage) {
+      console.log(`Signal: handleEnvelope — syncMessage (sent=${!!content.syncMessage.sent}, read=${content.syncMessage.read?.length ?? 0})`);
       await this.handleSyncMessage(content.syncMessage);
       this.scheduleSave();
-      return;
-    }
-    if (!senderId) {
       return;
     }
     let outgoing = !!this.aci && senderId.equals(this.aci);
     // A groupV2 context routes the message to the GROUP room (by masterKey→groupId),
     // not the 1:1 sender room (Docs/04 §7/§9).
     let masterKey = content.dataMessage?.groupV2?.masterKey;
+    console.log(`Signal: handleEnvelope — routing sender=${senderId.toString()} outgoing=${outgoing} group=${masterKey?.length ? "yes" : "no"} dataMessage=${!!content.dataMessage}`);
     let room = masterKey?.length
       ? await this.getOrCreateGroupRoom(masterKey)
       : await this.getOrCreateRoom(senderId);
+    console.log(`Signal: handleEnvelope — room id=${room.id} name="${room.name}" totalRooms=${this.rooms.contents.length}`);
     let msg = await room.handleContent(content, this.getContact(senderId), outgoing);
+    console.log(`Signal: handleEnvelope — handleContent → message=${!!msg}${msg ? ` text=${JSON.stringify(((msg as any).text ?? "").slice(0, 40))}` : ""}`);
     if (msg) {
       room.lastMessage = msg;
       await room.saveNewMessages([msg]);
+      console.log(`Signal: handleEnvelope — DONE: saved message, room "${room.name}" should now be visible`);
     }
     this.scheduleSave(); // decrypting advanced the ratchet
   }
@@ -574,6 +582,7 @@ export class SignalAccount extends ChatAccount {
     let auth = await this.groupAuth();
     let decrypted = await room.group.fetch(this.api(SignalHosts.storage), auth);
     room.populate(decrypted);
+    console.log(`Signal: group ${room.id} fetched → title "${decrypted.title ?? ""}", ${decrypted.members?.length ?? 0} members`);
     await room.save();
   }
 
@@ -662,12 +671,13 @@ export class SignalAccount extends ChatAccount {
    * PQXDH/Double-Ratchet/SPQR triple ratchet (DoubleRatchet=`msg`,
    * PreKeyMessage=`pkmsg`), then strips the 0x80 padding (Docs/03, 08).
    * Routes a `callMessage` to the dependent calling layer and returns null. */
-  protected async decryptEnvelope(envelope: Envelope): Promise<ContentType | null> {
+  protected async decryptEnvelope(envelope: Envelope): Promise<{ content: ContentType, sender: ServiceId, deviceID: number } | null> {
     if (envelope.type == EnvelopeType.ServerDeliveryReceipt) {
       return null;
     }
     let info = this.resolveCiphertext(envelope);
     if (!info) {
+      console.log(`Signal: envelope type ${envelope.type} (sealed=${envelope.type == EnvelopeType.UnidentifiedSender}) resolved to no ciphertext — DROPPED`);
       return null;
     }
     let address = this.deviceAddress(info.sender, info.deviceID);
@@ -685,12 +695,16 @@ export class SignalAccount extends ChatAccount {
         "→", (ex as any)?.message ?? ex);
       throw ex;
     }
+    console.log(`Signal: decryptContent OK (${padded.length}b) from ${info.sender.toString()} — decoding Content`);
     let content = decode(Content, unpadContent(padded));
+    console.log(`Signal: Content decoded — dataMessage=${!!content.dataMessage} body=${content.dataMessage?.body ? JSON.stringify(content.dataMessage.body.slice(0, 40)) : "none"} sync=${!!content.syncMessage} call=${!!content.callMessage}`);
     if (content.callMessage) {
       this.handleCallMessage(content, info.sender, info.deviceID);
       return null;
     }
-    return content;
+    // Return the sender from the decrypted ciphertext (info.sender) — for sealed
+    // sender the Envelope itself carries NO source, so the caller must use this.
+    return { content, sender: info.sender, deviceID: info.deviceID };
   }
 
   /** Resolve an Envelope to its inner ciphertext: the sender ServiceId + device,
@@ -700,11 +714,19 @@ export class SignalAccount extends ChatAccount {
       { sender: ServiceId, deviceID: number, type: "pkmsg" | "msg", body: Uint8Array } | null {
     if (envelope.type == EnvelopeType.UnidentifiedSender) {
       if (!envelope.content?.length || !this.aciStore) {
+        console.log(`Signal: sealed-sender envelope missing content (${envelope.content?.length ?? 0}b) or no aciStore (${!!this.aciStore}) — DROPPED`);
         return null;
       }
-      let result = sealedSenderDecrypt(envelope.content, this.aciStore.identityKeyPair, kSignalTrustRoot, BigInt(Date.now()));
+      let result;
+      try {
+        result = sealedSenderDecrypt(envelope.content, this.aciStore.identityKeyPair, kSignalTrustRoot, BigInt(Date.now()));
+      } catch (ex) {
+        console.warn("Signal: sealed-sender unwrap FAILED:", (ex as any)?.message ?? ex);
+        throw ex;
+      }
       let type = result.type == CiphertextType.PreKey ? "pkmsg" as const
         : result.type == CiphertextType.Whisper ? "msg" as const : null;
+      console.log(`Signal: sealed-sender from ${result.sender.senderUuid}.${result.sender.senderDeviceId} → inner type ${result.type} (${type ?? "UNHANDLED"})`);
       if (!type) {
         return null; // SenderKey (group) / Plaintext are routed elsewhere
       }
@@ -716,11 +738,13 @@ export class SignalAccount extends ChatAccount {
     }
     let sender = this.envelopeSender(envelope);
     if (!sender || !envelope.content?.length) {
+      console.log(`Signal: unsealed envelope type ${envelope.type} missing sender (${!!sender}) or content (${envelope.content?.length ?? 0}b) — DROPPED`);
       return null;
     }
     let type = envelope.type == EnvelopeType.PreKeyMessage ? "pkmsg" as const
       : envelope.type == EnvelopeType.DoubleRatchet ? "msg" as const : null;
     if (!type) {
+      console.log(`Signal: unsealed envelope type ${envelope.type} is not pkmsg/msg — DROPPED`);
       return null;
     }
     return { sender, deviceID: envelope.sourceDeviceId ?? 1, type, body: envelope.content };

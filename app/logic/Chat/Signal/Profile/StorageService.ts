@@ -150,6 +150,7 @@ export class SignalStorageService {
     }
     contact.blocked = !!record.blocked;
     let name = contactName(record);
+    console.log(`Signal: storage contact ${serviceId.toString()} → saved name "${name ?? ""}", profileKey ${record.profileKey?.length ? "yes" : "no"}`);
     if (name) {
       contact.name = name;
     }

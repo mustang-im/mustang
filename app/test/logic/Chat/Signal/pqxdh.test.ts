@@ -82,10 +82,10 @@ test("PQXDH full round-trip: initiate, pkmsg with KEM, then bidirectional ratche
 
   let first = await encryptPqxdh(alice, "bob", td.encode("hello bob (pq)"));
   expect(first.type).toBe("pkmsg");
-  // The pkmsg must carry the kyber prekey id + 1568-byte ciphertext.
+  // The pkmsg must carry the kyber prekey id + serialized ciphertext (0x08 ‖ 1568).
   let parsed = parsePqPreKeyMessage(first.body);
   expect(parsed.kyberPreKeyID).toBe(kyberPreKey.keyID);
-  expect(parsed.kyberCiphertext!.length).toBe(1568);
+  expect(parsed.kyberCiphertext!.length).toBe(1569);
 
   // Bob decapsulates with his Kyber prekey and decrypts.
   let got = await decryptPqxdhPreKeyMessage(bob, "alice", first.body, kyberKeyPair);
@@ -122,7 +122,7 @@ test("PQXDH works without a one-time prekey (signed prekey only)", async () => {
   let first = await encryptPqxdh(alice, "bob", td.encode("no one-time prekey"));
   let parsed = parsePqPreKeyMessage(first.body);
   expect(parsed.preKeyID).toBeUndefined();
-  expect(parsed.kyberCiphertext!.length).toBe(1568);
+  expect(parsed.kyberCiphertext!.length).toBe(1569); // serialized: 0x08 ‖ 1568-byte ct
 
   let got = await decryptPqxdhPreKeyMessage(bob, "alice", first.body, kyberKeyPair);
   expect(ts.decode(got)).toBe("no one-time prekey");

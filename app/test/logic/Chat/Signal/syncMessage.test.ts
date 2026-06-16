@@ -32,10 +32,10 @@ import { expect, test, beforeEach } from "vitest";
  * `Content` straight into the real `handleEnvelope` routing (no crypto needed). */
 class TestSignalAccount extends SignalAccount {
   protected nextContent: Content | null = null;
-  protected override async decryptEnvelope(_envelope: Envelope): Promise<Content | null> {
+  protected override async decryptEnvelope(_envelope: Envelope): Promise<{ content: Content, sender: ServiceId, deviceID: number } | null> {
     let content = this.nextContent;
     this.nextContent = null;
-    return content;
+    return content ? { content, sender: this.aci!, deviceID: 2 } : null;
   }
   /** Feed a decrypted Content as if the websocket delivered + decrypted it. */
   async receiveSync(content: Content): Promise<void> {

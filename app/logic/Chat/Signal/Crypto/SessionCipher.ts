@@ -9,6 +9,7 @@ import { PreKeyBundle, verifyPreKeyBundle } from "./Identity";
 import {
   serializeSignalMessage, parseSignalMessage, verifySignalMessageMAC,
   serializePreKeySignalMessage, parsePreKeySignalMessage,
+  kSignalVersion, kSignalVersionV4,
 } from "./messages";
 import { deriveTripleRatchetKeys } from "../Encryption/SPQR/tripleRatchet";
 
@@ -272,7 +273,8 @@ export async function encrypt(store: SignalStore, address: string, plaintext: Ui
     ratchetKey: djbEncode(state.senderRatchetKeyPair.publicKey),
     counter, previousCounter: state.previousCounter, ciphertext,
     pqRatchet: pqr?.ratchetBytes,
-  }, keys.macKey, state.localIdentityKey, state.remoteIdentityKey);
+    // SPQR-bearing 1:1 messages declare version 4 so the peer applies the SPQR key mix.
+  }, keys.macKey, state.localIdentityKey, state.remoteIdentityKey, pqr ? kSignalVersionV4 : kSignalVersion);
   if (state.pendingPreKey) {
     let body = serializePreKeySignalMessage({
       registrationID: store.registrationID,

@@ -28,7 +28,7 @@ import { bytesToHex } from "@noble/curves/utils.js";
 import type { SignalStore } from "../Crypto/Store";
 import { PreKeyBundle, verifyPreKeyBundle } from "../Crypto/Identity";
 import { SessionState, encrypt, decryptSignalMessage, type DecryptPqr, type EncryptPqr } from "../Crypto/SessionCipher";
-import { kSignalVersion } from "../Crypto/messages";
+import { kSignalVersionV4 } from "../Crypto/messages";
 import { ProtoWriter, readProto, getBytes, getInt } from "../Proto/ProtobufLite";
 import { KyberKeyPair, kyberEncapsulate, kKyberPublicKeyLength } from "./kyber";
 
@@ -260,7 +260,7 @@ export function serializePqPreKeyMessage(fields: PqPreKeyMessageFields): Uint8Ar
     .bytes(3, fields.identityKey)
     .bytes(4, fields.message)
     .finish();
-  return concatBytes(new Uint8Array([kSignalVersion]), proto);
+  return concatBytes(new Uint8Array([kSignalVersionV4]), proto); // PQXDH pkmsg is version 4
 }
 
 export function parsePqPreKeyMessage(data: Uint8Array): PqPreKeyMessageFields {

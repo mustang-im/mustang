@@ -257,15 +257,19 @@ export class SignalChatRoom extends ChatRoom {
 
   async saveNewMessages(messages: RoomMessage[]): Promise<void> {
     if (!this.account.storage) {
+      console.warn(`Signal: saveNewMessages — NO storage on account; ${messages.length} message(s) NOT persisted`);
       return;
     }
     if (!this.dbID) {
       await this.save();
     }
+    console.log(`Signal: saveNewMessages — room ${this.id} dbID=${this.dbID}, persisting ${messages.length} message(s)`);
     for (let msg of messages) {
       try {
         await this.account.storage.saveMessage(msg);
+        console.log(`Signal: saveNewMessages — saved msg id=${msg.id} dbID=${(msg as any).dbID}`);
       } catch (ex) {
+        console.error("Signal: saveMessage FAILED —", (ex as any)?.constructor?.name, "|", (ex as any)?.message ?? ex, "\nstack:", (ex as any)?.stack);
         this.account.errorCallback(ex);
       }
     }
@@ -280,11 +284,21 @@ export class SignalChatRoom extends ChatRoom {
     }
   }
 
+  /** Whether the persisted history has been loaded this session (load once). NOT
+   * `messages.hasItems`: a live message can arrive before the room is opened, and
+   * keying on "has any message" would then skip the DB load and hide the older
+   * persisted history (the "after restart only new messages appear" bug). */
+  protected historyLoaded = false;
+
   protected async readMessagesFromDB(): Promise<void> {
-    if (this.messages.hasItems || !this.dbID) {
+    console.log(`Signal: readMessagesFromDB — room ${this.id} dbID=${this.dbID} historyLoaded=${this.historyLoaded} inMemory=${this.messages.contents.length}`);
+    if (this.historyLoaded || !this.dbID) {
       return;
     }
+    this.historyLoaded = true;
+    // readAll dedups by dbID, so any live message already in memory is not duplicated.
     await SQLChatMessage.readAll(this);
+    console.log(`Signal: readMessagesFromDB — room ${this.id} now has ${this.messages.contents.length} message(s) after DB load`);
     this.lastMessage = this.messages.contents
       .filter((m): m is ChatMessage => m instanceof ChatMessage)
       .reduce((last, m) => !last || m.sent > last.sent ? m : last, null as ChatMessage | null);
