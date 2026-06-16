@@ -4,6 +4,7 @@
  * See Docs/01-transport. */
 import ky, { type KyInstance, HTTPError } from "ky";
 import { base64Encode } from "../Crypto/primitives";
+import { signalLog } from "../util";
 
 /** Production service hosts (libsignal `env.rs` / Signal-Android BuildConfig). */
 export const SignalHosts = {
@@ -59,21 +60,25 @@ export class SignalApi {
 
   /** GET/PUT/POST/DELETE returning parsed JSON (or `undefined` for 204). */
   async json<T = any>(method: string, path: string, body?: any, creds?: Credentials): Promise<T> {
+    signalLog(`>> HTTP ${method} ${this.baseURL}/${stripLeadingSlash(path)}`);
     let res = await this.client(stripLeadingSlash(path), {
       method,
       headers: { ...authHeader(creds), ...(body !== undefined ? { "Content-Type": "application/json" } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
+    signalLog(`<< HTTP ${res.status} ${method} ${stripLeadingSlash(path)}`);
     return await this.parse<T>(res);
   }
 
   /** PUT/POST raw bytes (e.g. multi-recipient messages, CDN uploads). */
   async bytes(method: string, path: string, body: Uint8Array, contentType: string, creds?: Credentials): Promise<Uint8Array> {
+    signalLog(`>> HTTP ${method} ${this.baseURL}/${stripLeadingSlash(path)} (${body.length}b)`);
     let res = await this.client(stripLeadingSlash(path), {
       method,
       headers: { ...authHeader(creds), "Content-Type": contentType },
       body: body as unknown as BodyInit,
     });
+    signalLog(`<< HTTP ${res.status} ${method} ${stripLeadingSlash(path)}`);
     if (!res.ok) {
       let errorBody = await safeJson(res);
       // Diagnostic: a live run's log shows exactly what the server rejected, so any
@@ -87,7 +92,9 @@ export class SignalApi {
 
   /** GET raw bytes (CDN download, group avatars). */
   async getBytes(path: string, creds?: Credentials): Promise<Uint8Array> {
+    signalLog(`>> HTTP GET ${this.baseURL}/${stripLeadingSlash(path)}`);
     let res = await this.client(stripLeadingSlash(path), { method: "GET", headers: authHeader(creds) });
+    signalLog(`<< HTTP ${res.status} GET ${stripLeadingSlash(path)}`);
     if (!res.ok) {
       let errorBody = await safeJson(res);
       // Diagnostic: a live run's log shows exactly what the server rejected, so any

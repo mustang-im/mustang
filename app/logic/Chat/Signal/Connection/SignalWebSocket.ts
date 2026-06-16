@@ -8,6 +8,7 @@
 import { encode, decode } from "../Proto/codec";
 import { WebSocketMessage, WebSocketMessageType, type WebSocketRequestMessage } from "../Proto/websocket";
 import { SignalHosts, type Credentials } from "./SignalApi";
+import { signalLog, redactURL } from "../util";
 
 export interface WebSocketLike {
   binaryType: string;
@@ -53,17 +54,20 @@ export class SignalWebSocket {
     let base = SignalHosts.chat.replace(/^https/, "wss");
     let auth = creds ? `?login=${encodeURIComponent(creds.username)}&password=${encodeURIComponent(creds.password)}` : "";
     let url = `${base}${this.path}${auth}`;
+    signalLog(`ws connecting ${redactURL(url)}`);
     let socket = await openSocket(url);
     socket.binaryType = "arraybuffer";
     this.socket = socket;
-    await new Promise<void>((resolve, reject) => {
-      socket.onopen = () => resolve();
-      socket.onerror = () => reject(new Error("Signal WebSocket connection failed"));
-      socket.onclose = () => reject(new Error("Signal WebSocket closed during connect"));
-    });
+    // Attach onmessage BEFORE awaiting open: an authenticated connect triggers the
+    // server to push the queued-message burst immediately, and we must not miss it.
     socket.onmessage = ev => this.onFrame(new Uint8Array(ev.data));
-    socket.onclose = () => this.handleClosed();
-    socket.onerror = () => this.handleClosed();
+    await new Promise<void>((resolve, reject) => {
+      socket.onopen = () => { signalLog("ws connected"); resolve(); };
+      socket.onerror = (ev: any) => reject(new Error(`Signal WebSocket connection failed: ${ev?.message ?? ev?.type ?? "error"}`));
+      socket.onclose = (ev: any) => reject(new Error(`Signal WebSocket closed during connect (code ${ev?.code ?? "?"})`));
+    });
+    socket.onclose = (ev: any) => { signalLog(`ws closed (code ${ev?.code ?? "?"} ${ev?.reason ?? ""})`); this.handleClosed(); };
+    socket.onerror = (ev: any) => { signalLog("ws error:", ev?.message ?? ev?.type ?? ev); this.handleClosed(); };
     this.startKeepAlive();
   }
 
@@ -73,6 +77,7 @@ export class SignalWebSocket {
       throw new Error("Signal WebSocket not connected");
     }
     let id = this.nextID++;
+    signalLog(`>> ${verb} ${path}${body ? ` (${body.length}b)` : ""} id=${id}`);
     let frame = encode(WebSocketMessage, {
       type: WebSocketMessageType.Request,
       request: { verb, path, body, headers, id },
@@ -87,13 +92,17 @@ export class SignalWebSocket {
   protected onFrame(bytes: Uint8Array): void {
     let msg = decode(WebSocketMessage, bytes);
     if (msg.type == WebSocketMessageType.Response && msg.response) {
+      signalLog(`<< RESPONSE id=${msg.response.id} status=${msg.response.status}${msg.response.body ? ` (${msg.response.body.length}b)` : ""}`);
       let pending = this.pending.get(msg.response.id ?? 0);
       if (pending) {
         this.pending.delete(msg.response.id!);
         pending.resolve({ status: msg.response.status ?? 0, body: msg.response.body, headers: msg.response.headers ?? [] });
       }
     } else if (msg.type == WebSocketMessageType.Request && msg.request) {
+      signalLog(`<< REQUEST ${msg.request.verb} ${msg.request.path}${msg.request.body ? ` (${msg.request.body.length}b)` : ""}`);
       this.dispatchRequest(msg.request).catch(() => undefined);
+    } else {
+      signalLog("<< unknown frame, type", msg.type);
     }
   }
 
