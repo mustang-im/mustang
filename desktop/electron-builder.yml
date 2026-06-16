@@ -75,7 +75,9 @@ pacman:
 flatpak:
   runtime: org.freedesktop.Platform
   sdk: org.freedesktop.Sdk
-  runtimeVersion: "25.08"
+  runtimeVersion: 25.08
+  base: org.electronjs.Electron2.BaseApp
+  baseVersion: 25.08
 protocols:
   name: Send mail
   schemes:
