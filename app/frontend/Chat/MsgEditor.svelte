@@ -79,7 +79,7 @@
   }
 
   function reset() {
-    to.draftMessage = null;
+    to.draftMessage = to.newMessage();
     editor.commands.setContent(""); // TODO fix HTMLEditor to listen to `html`
   }
 
