@@ -111,6 +111,8 @@ export class SignalAccount extends ChatAccount {
 
   readonly media = new SignalMedia(this);
   connection: SignalWebSocket | null = null;
+  /** The in-progress device-linking flow, so the setup UI can cancel it. */
+  protected provisioning: Provisioning | null = null;
   protected ownContact: SignalContact | null = null;
   /** Voice/video calls run through this dependent Meet account. */
   meetAccount: SignalMeetAccount | null = null;
@@ -198,9 +200,14 @@ export class SignalAccount extends ChatAccount {
    * builds our Signal store from the primary's ACI identity key, registers as a
    * new device, and connects. @param onQR render this string as a QR code. */
   async linkDevice(onQR: (qr: string) => void): Promise<void> {
-    let provisioning = new Provisioning();
+    let provisioning = this.provisioning = new Provisioning();
     provisioning.onQR = onQR;
-    let { message } = await provisioning.run();
+    let message: ProvisionMessage;
+    try {
+      message = (await provisioning.run()).message;
+    } finally {
+      this.provisioning = null;
+    }
     this.aci = ServiceId.aci(message.aciBinary ?? uuidToBytes(message.aci!));
     this.pni = message.pniBinary ? ServiceId.pni(message.pniBinary)
       : message.pni ? ServiceId.parse(message.pni) : null;
@@ -222,6 +229,12 @@ export class SignalAccount extends ChatAccount {
     await this.finishLink(message);
     await this.save();
     await this.connect();
+  }
+
+  /** Cancel an in-progress {@link linkDevice} (e.g. the setup window was closed). */
+  cancelLinking(): void {
+    this.provisioning?.cancel();
+    this.provisioning = null;
   }
 
   /** A fresh Signal store wrapping an identity keypair: new registration id, one
