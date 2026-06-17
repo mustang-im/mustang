@@ -86,6 +86,20 @@ export class WhatsAppAppState {
     await this.syncCollection(kContactsCollection);
   }
 
+  /** A `server_sync` notification: the phone changed one or more app-state
+   * collections (saving a contact name pushes one). Re-sync only when our tracked
+   * collection is among them — the post-link snapshot is usually still empty, and
+   * the names arrive in a later push like this; other collections (`regular*`, …)
+   * we don't read, so skip them rather than re-download the snapshot needlessly. */
+  async onServerSync(node: WANode): Promise<void> {
+    let names = node.children("collection").map(c => c.attrs.name).filter(Boolean);
+    if (!names.includes(kContactsCollection)) {
+      return;
+    }
+    waLog("app-state: server_sync for", names.join(", "), "— re-syncing");
+    await this.sync();
+  }
+
   /** Requests a collection's snapshot + patches, then decrypts, verifies, and
    * applies them. A snapshot or patch that fails verification is skipped (logged),
    * leaving the rest applied. */

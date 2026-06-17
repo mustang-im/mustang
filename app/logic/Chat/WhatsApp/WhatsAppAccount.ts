@@ -399,6 +399,12 @@ export class WhatsAppAccount extends ChatAccount {
     } else if (node.attrs.type == "w:gp2") {
       await this.onGroupNotification(node)
         .catch(ex => console.error("WhatsApp: handling a group notification failed:", ex));
+    } else if (node.attrs.type == "server_sync") {
+      // The phone pushed app-state changes (saved contact names live here); re-sync.
+      // The initial post-link snapshot is often still empty, so without this the
+      // names never load and 1:1 chats stay shown as their numeric JID.
+      await this.appState.onServerSync(node)
+        .catch(ex => console.error("WhatsApp: app-state server_sync failed:", ex));
     }
     await this.sendAck(node);
   }
