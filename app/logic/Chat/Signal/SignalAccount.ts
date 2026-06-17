@@ -356,13 +356,38 @@ export class SignalAccount extends ChatAccount {
   }
 
   /** After connecting: top up + publish prekeys so peers can start sessions to us,
-   * then sync the roster (storage service) and message history, then fetch the
+   * then sync the roster (storage service), turn it into rooms, and fetch the
    * roster's profiles (name + avatar) in the background. */
   protected async afterLogin(): Promise<void> {
     await this.uploadPreKeys().catch(this.errorCallback);
     await this.syncRoster().catch(this.errorCallback);
+    await this.createRoomsFromRoster();
     for (let contact of this.roster.contents) {
       this.fetchContactProfile(contact); // background, best-effort
+    }
+  }
+
+  /** Turn the synced roster + known groups into chat rooms, so the contacts and the
+   * chat list appear right after linking — not only once a message arrives. (Signal
+   * does not transfer old message history to a linked device, so the rooms start
+   * empty and fill from new messages.) */
+  protected async createRoomsFromRoster(): Promise<void> {
+    for (let masterKey of this.groupMasterKeys.values()) {
+      try {
+        await this.getOrCreateGroupRoom(masterKey);
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+    for (let contact of this.roster.contents) {
+      if (!contact.serviceId || contact.blocked || (this.aci && contact.serviceId.equals(this.aci))) {
+        continue;
+      }
+      try {
+        await this.getOrCreateRoom(contact.serviceId);
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
     }
   }
 
