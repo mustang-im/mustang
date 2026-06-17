@@ -467,9 +467,6 @@ export class SignalAccount extends ChatAccount {
       room.group = signalGroup;
       this.groupRooms.set(groupIdHex, room);
       room.save().catch(this.errorCallback); // persist the masterKey so future loads have it
-      console.log(`Signal: linked group room ${groupIdHex} to its master key (from storage)`);
-    } else {
-      console.log(`Signal: noted group masterKey; ${room ? "room already linked" : "no loaded room matches groupId " + groupIdHex}`);
     }
   }
 
@@ -508,14 +505,11 @@ export class SignalAccount extends ChatAccount {
     // A groupV2 context routes the message to the GROUP room (by masterKey→groupId),
     // not the 1:1 sender room (Docs/04 §7/§9).
     let masterKey = content.dataMessage?.groupV2?.masterKey;
-    let d = content.dataMessage;
-    console.log(`Signal: inbound from ${senderId.toString()} ts=${envelope.serverTimestamp ?? envelope.clientTimestamp} — body=${d?.body ? JSON.stringify(d.body.slice(0, 30)) : "none"} reaction=${!!d?.reaction} delete=${!!d?.delete} flags=${d?.flags ?? 0} group=${masterKey?.length ? "yes" : "no"} receipt=${!!content.receiptMessage} typing=${!!content.typingMessage}`);
     let room = masterKey?.length
       ? await this.getOrCreateGroupRoom(masterKey)
       : await this.getOrCreateRoom(senderId);
     let msg = SignalChatMessage.processMessage(room, content, this.getContact(senderId), outgoing);
     if (msg) {
-      console.log(`Signal: received message in "${room.name}" from ${senderId.toString()}${outgoing ? " (own device, synced)" : ""}`);
       room.lastMessage = msg;
       await room.saveNewMessages([msg]);
     }
@@ -633,7 +627,6 @@ export class SignalAccount extends ChatAccount {
     let auth = await this.groupAuth();
     let decrypted = await room.group.fetch(this.api(SignalHosts.storage), auth);
     room.populate(decrypted);
-    console.log(`Signal: group ${room.id} fetched → title "${decrypted.title ?? ""}", ${decrypted.members?.length ?? 0} members`);
     await room.save();
   }
 
@@ -663,8 +656,6 @@ export class SignalAccount extends ChatAccount {
     // UNKNOWN (live-confirm): the AuthCredentialWithPniResponse JSON shape AND that
     // our production ServerPublicParams constant matches the live issuing key. If the
     // receive below throws (verification failed), one of those is off.
-    console.log("Signal group-auth: response had", res.credentials?.length, "credentials; using redemptionTime",
-      entry.redemptionTime, "| credential b64 len", entry.credential?.length);
     let credential: AuthCredentialWithPni;
     try {
       credential = receiveAuthCredentialWithPniZkc(
@@ -675,7 +666,6 @@ export class SignalAccount extends ChatAccount {
         "or the response layout is wrong:", (ex as any)?.message ?? ex);
       throw ex;
     }
-    console.log("Signal group-auth: credential verified against ServerPublicParams ✓");
     this.cachedGroupAuth = { redemptionTime: entry.redemptionTime, credential };
     return { credential, serverPublicParams };
   }
@@ -728,7 +718,6 @@ export class SignalAccount extends ChatAccount {
     }
     let info = this.resolveCiphertext(envelope);
     if (!info) {
-      console.log(`Signal: envelope type ${envelope.type} (sealed=${envelope.type == EnvelopeType.UnidentifiedSender}) resolved to no ciphertext — DROPPED`);
       return null;
     }
     let address = this.deviceAddress(info.sender, info.deviceID);
@@ -746,9 +735,7 @@ export class SignalAccount extends ChatAccount {
       }
       return null;
     }
-    console.log(`Signal: decryptContent OK (${padded.length}b) from ${info.sender.toString()} — decoding Content`);
     let content = decode(Content, unpadContent(padded));
-    console.log(`Signal: Content decoded — dataMessage=${!!content.dataMessage} body=${content.dataMessage?.body ? JSON.stringify(content.dataMessage.body.slice(0, 40)) : "none"} sync=${!!content.syncMessage} call=${!!content.callMessage}`);
     if (content.callMessage) {
       this.handleCallMessage(content, info.sender, info.deviceID);
       return null;
@@ -765,7 +752,6 @@ export class SignalAccount extends ChatAccount {
       { sender: ServiceId, deviceID: number, type: "pkmsg" | "msg", body: Uint8Array } | null {
     if (envelope.type == EnvelopeType.UnidentifiedSender) {
       if (!envelope.content?.length || !this.aciStore) {
-        console.log(`Signal: sealed-sender envelope missing content (${envelope.content?.length ?? 0}b) or no aciStore (${!!this.aciStore}) — DROPPED`);
         return null;
       }
       let result;
@@ -777,7 +763,6 @@ export class SignalAccount extends ChatAccount {
       }
       let type = result.type == CiphertextType.PreKey ? "pkmsg" as const
         : result.type == CiphertextType.Whisper ? "msg" as const : null;
-      console.log(`Signal: sealed-sender from ${result.sender.senderUuid}.${result.sender.senderDeviceId} → inner type ${result.type} (${type ?? "UNHANDLED"})`);
       if (!type) {
         return null; // SenderKey (group) / Plaintext are routed elsewhere
       }
@@ -789,13 +774,11 @@ export class SignalAccount extends ChatAccount {
     }
     let sender = this.envelopeSender(envelope);
     if (!sender || !envelope.content?.length) {
-      console.log(`Signal: unsealed envelope type ${envelope.type} missing sender (${!!sender}) or content (${envelope.content?.length ?? 0}b) — DROPPED`);
       return null;
     }
     let type = envelope.type == EnvelopeType.PreKeyMessage ? "pkmsg" as const
       : envelope.type == EnvelopeType.DoubleRatchet ? "msg" as const : null;
     if (!type) {
-      console.log(`Signal: unsealed envelope type ${envelope.type} is not pkmsg/msg — DROPPED`);
       return null;
     }
     return { sender, deviceID: envelope.sourceDeviceId ?? 1, type, body: envelope.content };
@@ -863,7 +846,6 @@ export class SignalAccount extends ChatAccount {
         this.deviceRegistrationID.set(address, registrationID);
       }
       let encrypted = await sessions.encryptContent(address, padded);
-      console.log(`Signal: send → ${address} reusedSession=${reusedSession} type=${encrypted.type} regID=${registrationID}`);
       messages.push({
         type: encrypted.type == "pkmsg" ? EnvelopeType.PreKeyMessage : EnvelopeType.DoubleRatchet,
         destinationDeviceId: deviceID,

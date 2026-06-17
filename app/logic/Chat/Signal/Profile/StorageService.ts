@@ -155,7 +155,6 @@ export class SignalStorageService {
     }
     contact.blocked = !!record.blocked;
     let name = contactName(record);
-    console.log(`Signal: storage contact ${serviceId.toString()} → saved name "${name ?? ""}", profileKey ${record.profileKey?.length ? "yes" : "no"}`);
     if (name) {
       contact.name = name;
     }
@@ -177,7 +176,6 @@ export class SignalStorageService {
 
   /** A GroupV2Record → note the group master key so its room can appear (Docs/04). */
   applyGroupV2(record: GroupV2Record): void {
-    console.log(`Signal: storage groupV2 record — masterKey=${record.masterKey?.length ? "yes" : "no"}`);
     if (record.masterKey?.length) {
       this.account.noteGroupMasterKey(record.masterKey);
     }
