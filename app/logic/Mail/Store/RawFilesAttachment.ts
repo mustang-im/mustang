@@ -2,7 +2,7 @@ import type { MailContentStorage } from "../MailAccount";
 import type { Attachment } from "../../Abstract/Attachment";
 import type { Message } from "../../Abstract/Message";
 import { EMail } from "../EMail";
-import { ChatMessage } from "../../Chat/Message";
+import { ChatMessage } from "../../Chat/ChatMessage";
 import { ChatPersonUID } from "../../Chat/ChatPersonUID";
 import { SQLChatMessage } from "../../Chat/SQL/SQLChatMessage";
 import { SQLEMail } from "../SQL/SQLEMail";

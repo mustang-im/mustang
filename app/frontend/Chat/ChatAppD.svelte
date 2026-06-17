@@ -28,7 +28,7 @@
   import { Person } from "../../logic/Abstract/Person";
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
-  import { ChatMessage } from "../../logic/Chat/Message";
+  import { ChatMessage } from "../../logic/Chat/ChatMessage";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedAccount, selectedRoom } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";

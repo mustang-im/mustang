@@ -1,7 +1,7 @@
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Attachment } from "../../Abstract/Attachment";
 import { NotReached } from "../../util/util";
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import type { GraphChatRoom } from "./GraphChatRoom";
 import type { TGraphChatMessage } from "./TGraphChat";
 

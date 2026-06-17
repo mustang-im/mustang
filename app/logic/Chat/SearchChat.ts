@@ -1,4 +1,4 @@
-import type { ChatMessage } from "./Message";
+import type { ChatMessage } from "./ChatMessage";
 import type { Person } from "../Abstract/Person";
 import type { ChatAccount } from "./ChatAccount";
 import { getTagByName, type Tag } from "../Abstract/Tag";

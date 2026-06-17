@@ -1,5 +1,5 @@
 import { ChatRoom } from "../../../logic/Chat/ChatRoom";
-import type { ChatMessage } from "../../../logic/Chat/Message";
+import type { ChatMessage } from "../../../logic/Chat/ChatMessage";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";

@@ -1,7 +1,7 @@
 import type { Person } from "../../Abstract/Person";
 import { Message } from "../../Abstract/Message";
 import type { EMail } from "../../Mail/EMail";
-import type { ChatMessage } from "../../Chat/Message";
+import type { ChatMessage } from "../../Chat/ChatMessage";
 import { VideoConfMeeting } from "../../Meet/VideoConfMeeting";
 import { Event, RecurrenceCase } from "../../Calendar/Event";
 import { File } from "../../Files/File";

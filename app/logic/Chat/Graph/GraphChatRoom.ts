@@ -5,7 +5,7 @@ import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import { GraphChatPerson } from "./GraphChatPerson";
 import type { GraphChatAccount } from "./GraphChatAccount";
 import type { TGraphChat, TGraphChatMember, TGraphChatMessage } from "./TGraphChat";
-import { ChatMessage, DeliveryStatus } from "../Message";
+import { ChatMessage, DeliveryStatus } from "../ChatMessage";
 import { Group } from "../../Abstract/Group";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";

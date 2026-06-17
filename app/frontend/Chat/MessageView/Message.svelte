@@ -72,7 +72,7 @@
 
 <script lang="ts">
   import type { Message } from "../../../logic/Abstract/Message";
-  import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
+  import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/ChatMessage";
   import { Group } from "../../../logic/Abstract/Group";
   import { Person } from "../../../logic/Abstract/Person";
   import cssContent from "../../Mail/Message/content.css?inline";

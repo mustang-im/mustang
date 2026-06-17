@@ -2,7 +2,7 @@ import { TCPAccount } from "../Abstract/TCPAccount";
 import { ChatPersonUID } from "./ChatPersonUID";
 import type { Group } from "../Abstract/Group";
 import { ChatRoom } from "./ChatRoom";
-import type { RoomMessage } from "./Message";
+import type { RoomMessage } from "./ChatMessage";
 import type { AttachmentStorage } from "../Abstract/Attachment";
 import { SQLChatRoom } from "./SQL/SQLChatRoom";
 import { appGlobal } from "../app";

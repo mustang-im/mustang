@@ -3,7 +3,7 @@ import { MailAccount } from './Mail/MailAccount';
 import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import type { MeetAccount } from './Meet/MeetAccount';
-import { ChatMessage, DeliveryStatus } from './Chat/Message';
+import { ChatMessage, DeliveryStatus } from './Chat/ChatMessage';
 import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';

@@ -1,4 +1,4 @@
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import type { XMPPChat } from "./XMPPChat";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { fileExtensions } from "../../Files/FileType/MIMETypes";

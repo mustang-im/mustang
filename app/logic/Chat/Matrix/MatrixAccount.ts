@@ -1,7 +1,7 @@
 import { ChatAccount } from '../ChatAccount';
 import { MatrixRoom } from './MatrixRoom';
 import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
-import { ChatMessage } from '../Message';
+import { ChatMessage } from '../ChatMessage';
 import { SQLChatMessage } from '../SQL/SQLChatMessage';
 import { IncomingCall, RoomEventKind } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';

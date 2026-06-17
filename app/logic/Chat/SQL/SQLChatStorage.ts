@@ -2,7 +2,7 @@ import { SQLChatAccount } from "./SQLChatAccount";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import type { ChatRoom } from "../ChatRoom";
 import { SQLChatRoom } from "./SQLChatRoom";
-import type { RoomMessage } from "../Message";
+import type { RoomMessage } from "../ChatMessage";
 import { SQLChatMessage } from "./SQLChatMessage";
 import type { Collection } from "svelte-collections";
 import type { Attachment } from "../../Abstract/Attachment";

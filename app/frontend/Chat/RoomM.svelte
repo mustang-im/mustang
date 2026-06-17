@@ -23,7 +23,7 @@
 
 <script lang="ts">
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
-  import { ChatMessage } from "../../logic/Chat/Message";
+  import { ChatMessage } from "../../logic/Chat/ChatMessage";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";

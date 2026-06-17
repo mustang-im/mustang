@@ -1,6 +1,6 @@
 import type { ChatAccount } from "../../logic/Chat/ChatAccount";
 import type { ChatRoom } from "../../logic/Chat/ChatRoom";
-import type { ChatMessage } from "../../logic/Chat/Message";
+import type { ChatMessage } from "../../logic/Chat/ChatMessage";
 import type { Editor } from '@tiptap/core';
 import { writable, type Writable } from "svelte/store";
 

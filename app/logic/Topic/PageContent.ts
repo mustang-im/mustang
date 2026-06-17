@@ -1,6 +1,6 @@
 import type { Topic } from "./Topic";
 import type { EMail } from "../Mail/EMail";
-import type { ChatMessage } from "../Chat/Message";
+import type { ChatMessage } from "../Chat/ChatMessage";
 import type { SearchEMail } from "../Mail/Store/SearchEMail";
 import type { SearchChat } from "../Chat/SearchChat";
 import { Observable, notifyChangedProperty } from "../util/Observable";

@@ -1,5 +1,5 @@
 import { SearchChat } from "../SearchChat";
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import { SQLChatMessage } from "./SQLChatMessage";
 import { getDatabase } from "./SQLDatabase";
 import { backgroundError } from "../../../frontend/Util/error";

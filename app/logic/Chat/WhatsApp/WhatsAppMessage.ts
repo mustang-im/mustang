@@ -1,4 +1,4 @@
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { Person } from "../../Abstract/Person";
 import type { Group } from "../../Abstract/Group";

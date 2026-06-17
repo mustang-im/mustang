@@ -1,7 +1,7 @@
 import type { Attachment } from "../../Abstract/Attachment";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import type { ChatRoom } from "../ChatRoom";
-import type { RoomMessage } from "../Message";
+import type { RoomMessage } from "../ChatMessage";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export class DummyChatStorage implements ChatAccountStorage {

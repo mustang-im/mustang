@@ -1,4 +1,4 @@
-import { type RoomMessage, ChatMessage, DeliveryStatus } from "./Message";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "./ChatMessage";
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave, RoomEventKind, RoomNameChange } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
 import { ChatPersonUID } from "./ChatPersonUID";

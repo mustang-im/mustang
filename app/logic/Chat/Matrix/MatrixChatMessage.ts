@@ -1,4 +1,4 @@
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { MatrixRoom } from "./MatrixRoom";

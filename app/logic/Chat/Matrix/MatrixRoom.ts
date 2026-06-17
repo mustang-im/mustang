@@ -4,7 +4,7 @@ import { MatrixChatMessage } from "./MatrixChatMessage";
 import { MatrixRoomEvent } from "./MatrixRoomEvent";
 import { MatrixPerson } from "./MatrixPerson";
 import type { Group } from "../../Abstract/Group";
-import { type RoomMessage, ChatMessage, DeliveryStatus } from "../Message";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "../ChatMessage";
 import { ChatRoomEvent, JoinLeave, RoomEventKind } from "../RoomEvent";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

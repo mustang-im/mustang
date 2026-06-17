@@ -3,7 +3,7 @@ import { WhatsAppMessage } from "./WhatsAppMessage";
 import { WhatsAppRoomEvent } from "./WhatsAppRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import { WhatsAppContact } from "./WhatsAppContact";
-import { DeliveryStatus } from "../Message";
+import { DeliveryStatus } from "../ChatMessage";
 import type { Group } from "../../Abstract/Group";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import type { WhatsAppAccount } from "./WhatsAppAccount";

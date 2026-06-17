@@ -1,4 +1,4 @@
-import { ChatMessage, type RoomMessage } from "../Message";
+import { ChatMessage, type RoomMessage } from "../ChatMessage";
 import { ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import type { ChatRoom } from "../ChatRoom";
 import type { ChatAccount } from "../ChatAccount";

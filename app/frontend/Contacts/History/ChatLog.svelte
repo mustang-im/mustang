@@ -12,7 +12,7 @@
 </Clickable>
 
 <script lang="ts">
-  import type { ChatMessage } from "../../../logic/Chat/Message";
+  import type { ChatMessage } from "../../../logic/Chat/ChatMessage";
   import Clickable from "../../Shared/Clickable.svelte";
 
   export let message: ChatMessage;

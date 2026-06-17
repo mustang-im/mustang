@@ -4,7 +4,7 @@ import { XMPPChatMessage } from "./XMPPChatMessage";
 import { XMPPRoomEvent } from "./XMPPRoomEvent";
 import { type ChatRoomEvent, RoomEventKind } from "../RoomEvent";
 import type { XMPPPerson } from "./XMPPPerson";
-import { ChatMessage, DeliveryStatus, type RoomMessage } from "../Message";
+import { ChatMessage, DeliveryStatus, type RoomMessage } from "../ChatMessage";
 import { SQLChatMessage } from "../SQL/SQLChatMessage";
 import { isFileURL } from "./XMPPMedia";
 import type { Group } from "../../Abstract/Group";

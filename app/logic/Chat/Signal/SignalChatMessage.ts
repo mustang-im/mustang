@@ -1,4 +1,4 @@
-import { ChatMessage, DeliveryStatus } from "../Message";
+import { ChatMessage, DeliveryStatus } from "../ChatMessage";
 import type { SignalChatRoom } from "./SignalChatRoom";
 import type { SignalContact } from "./SignalContact";
 import type { Content, DataMessage } from "./Proto/signalService";

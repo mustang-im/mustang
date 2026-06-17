@@ -44,7 +44,7 @@
 <script lang="ts">
   import type { LogEntry } from "../../../logic/Contacts/History/History";
   import { EMail } from "../../../logic/Mail/EMail";
-  import { ChatMessage } from "../../../logic/Chat/Message";
+  import { ChatMessage } from "../../../logic/Chat/ChatMessage";
   import { File } from "../../../logic/Files/File";
   import { Event } from "../../../logic/Calendar/Event";
   import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";

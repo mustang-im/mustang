@@ -4,7 +4,7 @@
  * parsing and sending live on `SignalChatMessage`; the wire encryption + transport
  * live on `SignalAccount`; the room is crypto-free. */
 import { ChatRoom } from "../ChatRoom";
-import { ChatMessage, type RoomMessage } from "../Message";
+import { ChatMessage, type RoomMessage } from "../ChatMessage";
 import { SignalChatMessage } from "./SignalChatMessage";
 import type { SignalContact } from "./SignalContact";
 import type { SignalAccount } from "./SignalAccount";

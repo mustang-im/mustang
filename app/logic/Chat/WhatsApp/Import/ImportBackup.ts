@@ -1,6 +1,6 @@
 import type { WhatsAppAccount } from "../WhatsAppAccount";
 import type { ChatRoom } from "../../ChatRoom";
-import { ChatMessage, type RoomMessage } from "../../Message";
+import { ChatMessage, type RoomMessage } from "../../ChatMessage";
 import { SQLChatMessage } from "../../SQL/SQLChatMessage";
 import { getDatabase } from "../../SQL/SQLDatabase";
 import { ContactEntry, Person } from "../../../Abstract/Person";
