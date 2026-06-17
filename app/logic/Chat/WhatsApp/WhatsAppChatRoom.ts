@@ -75,14 +75,18 @@ export class WhatsAppChatRoom extends ChatRoom {
    * instead of a live stanza. @returns whether a displayable message was added. */
   async addHistoryMessage(info: WebMessageInfo): Promise<boolean> {
     let id = info.key?.id;
-    if (!id || !info.message || this.messages.some(msg => msg.id == id)) {
+    if (!id || !info.message) {
       return false;
+    }
+    let sent = new Date(Number(info.messageTimestamp ?? 0) * 1000);
+    if (this.hasMessage(id, sent)) {
+      return false; // already here — from live sync or a prior backup import
     }
     let message = this.newMessage();
     message.id = id;
     message.outgoing = !!info.key.fromMe;
-    message.sent = new Date(Number(info.messageTimestamp ?? 0) * 1000);
-    message.received = message.sent;
+    message.sent = sent;
+    message.received = sent;
     message.isRead = true;
     message.contact = info.key.fromMe
       ? await this.account.getOwnContact()
@@ -96,6 +100,15 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     await message.save();
     return true;
+  }
+
+  /** Whether a message is already in this room
+   * Matches on the WhatsApp message key id (a backup import stores the same
+   * bare id as live history), falling back to the send time for an existing message
+   * that has no id to compare. */
+  hasMessage(keyID: string, sent: Date): boolean {
+    return this.messages.some(msg =>
+      msg.id ? msg.id == keyID : msg.sent?.getTime() == sent.getTime());
   }
 
   /** The person an incoming stored message is from. In a 1:1 it's the chat

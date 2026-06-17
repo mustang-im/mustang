@@ -215,3 +215,43 @@ test("on-demand paging (on by default) requests the page before the oldest messa
   expect(request.oldestMsgID).toBe("anchor");
   expect(request.onDemandMsgCount).toBe(50);
 });
+
+test("history sync skips a message already in the room (e.g. from a backup import), by key id", async () => {
+  let account = setup();
+  let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice");
+  // A backup import stores the bare WhatsApp key id, the same as live history sync.
+  let imported = room.newMessage();
+  imported.id = "KEYID123";
+  imported.sent = new Date(1700000000 * 1000);
+  imported.text = "hello";
+  room.messages.add(imported);
+
+  // The same message arriving via live history is recognized, not re-added.
+  expect(await room.addHistoryMessage({
+    key: { remoteJID: kAliceJID, fromMe: false, id: "KEYID123" },
+    message: { conversation: "hello" }, messageTimestamp: 1700000000,
+  } as any)).toBe(false);
+  expect(room.messages.contents.length).toBe(1);
+
+  // A genuinely different message (different key id) is still added.
+  expect(await room.addHistoryMessage({
+    key: { remoteJID: kAliceJID, fromMe: false, id: "KEYID456" },
+    message: { conversation: "world" }, messageTimestamp: 1700000100,
+  } as any)).toBe(true);
+  expect(room.messages.contents.length).toBe(2);
+});
+
+test("history sync falls back to send time when an existing message has no key id", async () => {
+  let account = setup();
+  let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice");
+  let existing = room.newMessage();
+  existing.id = null as any; // an existing message we can't match by id
+  existing.sent = new Date(1700000000 * 1000);
+  room.messages.add(existing);
+
+  expect(await room.addHistoryMessage({
+    key: { remoteJID: kAliceJID, fromMe: false, id: "KEYID123" },
+    message: { conversation: "hello" }, messageTimestamp: 1700000000, // same second
+  } as any)).toBe(false);
+  expect(room.messages.contents.length).toBe(1);
+});

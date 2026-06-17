@@ -339,8 +339,7 @@ export class WhatsAppBackupImport {
         if (this.progress.messagesDone % 100 == 0) {
           this.notifyProgress();
         }
-        let id = this.messageID(row.keyID, row.fromMe, row.senderJidRowID);
-        if (known.has(id)) {
+        if (known.has(row.keyID)) {
           this.progress.knownMessages++;
           continue;
         }
@@ -348,9 +347,9 @@ export class WhatsAppBackupImport {
         if (!msg) {
           continue;
         }
-        msg.id = id;
+        msg.id = row.keyID; // the bare WhatsApp key id, same as live history sync
         await SQLChatMessage.save(msg);
-        known.add(id);
+        known.add(row.keyID);
         newMessages.push(msg);
         this.messageByRowID.set(row.rowID, msg);
         this.progress.newMessages++;
@@ -365,14 +364,6 @@ export class WhatsAppBackupImport {
     if (last) {
       room.lastMessage = last;
     }
-  }
-
-  /** Stable identity of a message across backups, mirroring WhatsApp's own
-   * unique index (chat, from_me, key_id, sender). Used to skip messages
-   * that a previous import already got. */
-  protected messageID(keyID: string, fromMe: number, senderJidRowID: number): string {
-    let sender = senderJidRowID ? this.jidByRowID.get(senderJidRowID) : null;
-    return `${keyID} ${fromMe ? 1 : 0}${sender ? " " + sender : ""}`;
   }
 
   protected async convertMessage(room: ChatRoom, row: any, isGroup: boolean): Promise<RoomMessage | null> {
@@ -414,7 +405,7 @@ export class WhatsAppBackupImport {
       return null; // e.g. calls, polls, and other types that we cannot show
     }
     if (row.quotedKeyID) {
-      msg.inReplyTo = this.messageID(row.quotedKeyID, row.quotedFromMe, row.quotedSenderJidRowID);
+      msg.inReplyTo = row.quotedKeyID;
     }
     return msg;
   }
