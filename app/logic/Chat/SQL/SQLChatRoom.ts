@@ -40,9 +40,11 @@ export class SQLChatRoom extends ChatRoom {
         chat.dbID = existing.id;
       }
     }
-    // personID alone is ambiguous, because Person and Group have separate ID spaces
+    // personID alone is ambiguous, because Person and Group have separate ID spaces.
+    // Merge any protocol-specific room state (e.g. Signal's group masterKey/revision).
     let jsonStr = JSON.stringify({
       contactType: chat.contact instanceof Group ? "group" : "person",
+      ...chat.toExtraJSON(),
     });
     if (!chat.dbID) {
       let insert = await (await getDatabase()).run(sql`
@@ -193,6 +195,7 @@ export class SQLChatRoom extends ChatRoom {
       }
     }
     chat.name = sanitize.label(row.name, chat.contact.name);
+    chat.fromExtraJSON(json); // protocol-specific room state (e.g. Signal group masterKey)
     return chat;
   }
 

@@ -6,7 +6,8 @@
 import { SignalChatRoom } from "./SignalChatRoom";
 import type { Group } from "../../Abstract/Group";
 import { ServiceId } from "./ServiceId";
-import type { SignalGroup } from "./Groups/Group";
+import { SignalGroup } from "./Groups/Group";
+import { base64Encode, base64Decode } from "./Crypto/primitives";
 import type { DecryptedGroup } from "./Proto/groups";
 import type { DataMessage } from "./Proto/signalService";
 
@@ -29,7 +30,27 @@ export class SignalGroupChatRoom extends SignalChatRoom {
   }
 
   protected groupContext(): DataMessage["groupV2"] {
+    if (!this.masterKey) {
+      console.warn(`Signal: group room ${this.id} has NO masterKey at send time → message will be delivered as 1:1!`);
+    }
     return this.masterKey ? { masterKey: this.masterKey, revision: this.revision } : undefined;
+  }
+
+  /** Persist the group's wire identity so a DB-loaded room can send with the groupV2
+   * context (the room id is the one-way-derived groupId, which can't recover the key). */
+  override toExtraJSON(): any {
+    return {
+      masterKey: this.masterKey ? base64Encode(this.masterKey) : undefined,
+      revision: this.revision || undefined,
+    };
+  }
+  override fromExtraJSON(json: any): void {
+    if (json?.masterKey) {
+      this.masterKey = base64Decode(json.masterKey);
+      this.group = new SignalGroup(this.masterKey);
+      this.groupId = this.group.groupId;
+    }
+    this.revision = json?.revision ?? 0;
   }
 
   protected typingGroupId(): Uint8Array | undefined {

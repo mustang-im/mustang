@@ -427,6 +427,24 @@ export class SignalAccount extends ChatAccount {
    * the group room can be created/shown later (Docs/04). */
   noteGroupMasterKey(masterKey: Uint8Array): void {
     this.groupMasterKeys.set(bytesToHex(masterKey), masterKey);
+    // A group room loaded from the DB has no master key (the room id is the one-way
+    // groupId, so it can't recover the key itself). Link it here — from the storage
+    // sync — so the room can send with the groupV2 context; otherwise group messages
+    // are delivered into the recipient's 1:1 chat instead of the group.
+    let signalGroup = new SignalGroup(masterKey);
+    let groupIdHex = bytesToHex(signalGroup.groupId);
+    let room = this.rooms.contents.find((r): r is SignalGroupChatRoom =>
+      r instanceof SignalGroupChatRoom && r.id == groupIdHex);
+    if (room && !room.masterKey) {
+      room.masterKey = masterKey;
+      room.groupId = signalGroup.groupId;
+      room.group = signalGroup;
+      this.groupRooms.set(groupIdHex, room);
+      room.save().catch(this.errorCallback); // persist the masterKey so future loads have it
+      console.log(`Signal: linked group room ${groupIdHex} to its master key (from storage)`);
+    } else {
+      console.log(`Signal: noted group masterKey; ${room ? "room already linked" : "no loaded room matches groupId " + groupIdHex}`);
+    }
   }
 
   // --- inbound ---
@@ -436,9 +454,9 @@ export class SignalAccount extends ChatAccount {
       try {
         await this.handleEnvelope(decode(Envelope, req.body));
       } catch (ex) {
-        let e = ex as any;
-        console.error("Signal: INBOUND PROCESSING FAILED —", e?.constructor?.name ?? typeof ex, "| msg:", e?.message ?? String(ex), "\nstack:", e?.stack);
-        this.errorCallback(ex);
+        // decryptEnvelope handles per-message decrypt failures quietly; this catches the
+        // rarer routing/persistence error. One concise line, no stack spam.
+        console.warn("Signal: inbound message not processed:", (ex as any)?.message ?? ex);
       }
       return 200;
     }
@@ -446,20 +464,16 @@ export class SignalAccount extends ChatAccount {
   }
 
   protected async handleEnvelope(envelope: Envelope): Promise<void> {
-    console.log(`Signal: handleEnvelope type=${envelope.type} envSource=${envelope.sourceServiceId ?? "(none)"}.${envelope.sourceDeviceId ?? "?"} ts=${envelope.serverTimestamp ?? envelope.clientTimestamp} contentLen=${envelope.content?.length ?? 0}`);
     let decrypted = await this.decryptEnvelope(envelope); // gated on SPQR/sealed-sender
     if (!decrypted) {
-      console.log("Signal: handleEnvelope — decryptEnvelope returned nothing (dropped / receipt / call); no room created");
-      return;
+      return; // dropped (receipt/call/undecryptable; decryptEnvelope logged any failure)
     }
     // Use the sender from the DECRYPTED ciphertext, not the Envelope: sealed-sender
     // envelopes carry no source (the whole point), so `envelope.sourceServiceId` is empty.
     let { content, sender: senderId } = decrypted;
-    // A SyncMessage is sent BY our own account from another device (SignalService.proto
-    // Content.syncMessage); the sender is always us, so route on the sync payload — a
-    // Sent transcript goes to the DESTINATION's room as an outgoing message.
+    // A SyncMessage is sent BY our own account from another device (the sender is us);
+    // route on the sync payload — a Sent transcript goes to the DESTINATION's room.
     if (content.syncMessage) {
-      console.log(`Signal: handleEnvelope — syncMessage (sent=${!!content.syncMessage.sent}, read=${content.syncMessage.read?.length ?? 0})`);
       await this.handleSyncMessage(content.syncMessage);
       this.scheduleSave();
       return;
@@ -468,17 +482,16 @@ export class SignalAccount extends ChatAccount {
     // A groupV2 context routes the message to the GROUP room (by masterKey→groupId),
     // not the 1:1 sender room (Docs/04 §7/§9).
     let masterKey = content.dataMessage?.groupV2?.masterKey;
-    console.log(`Signal: handleEnvelope — routing sender=${senderId.toString()} outgoing=${outgoing} group=${masterKey?.length ? "yes" : "no"} dataMessage=${!!content.dataMessage}`);
+    let d = content.dataMessage;
+    console.log(`Signal: inbound from ${senderId.toString()} ts=${envelope.serverTimestamp ?? envelope.clientTimestamp} — body=${d?.body ? JSON.stringify(d.body.slice(0, 30)) : "none"} reaction=${!!d?.reaction} delete=${!!d?.delete} flags=${d?.flags ?? 0} group=${masterKey?.length ? "yes" : "no"} receipt=${!!content.receiptMessage} typing=${!!content.typingMessage}`);
     let room = masterKey?.length
       ? await this.getOrCreateGroupRoom(masterKey)
       : await this.getOrCreateRoom(senderId);
-    console.log(`Signal: handleEnvelope — room id=${room.id} name="${room.name}" totalRooms=${this.rooms.contents.length}`);
     let msg = await room.handleContent(content, this.getContact(senderId), outgoing);
-    console.log(`Signal: handleEnvelope — handleContent → message=${!!msg}${msg ? ` text=${JSON.stringify(((msg as any).text ?? "").slice(0, 40))}` : ""}`);
     if (msg) {
+      console.log(`Signal: received message in "${room.name}" from ${senderId.toString()}${outgoing ? " (own device, synced)" : ""}`);
       room.lastMessage = msg;
       await room.saveNewMessages([msg]);
-      console.log(`Signal: handleEnvelope — DONE: saved message, room "${room.name}" should now be visible`);
     }
     this.scheduleSave(); // decrypting advanced the ratchet
   }
@@ -553,6 +566,15 @@ export class SignalAccount extends ChatAccount {
       ?? this.rooms.contents.find((r): r is SignalGroupChatRoom => r instanceof SignalGroupChatRoom && r.id == key);
     if (existing) {
       this.groupRooms.set(key, existing);
+      // A DB-loaded room may lack the master key (room id is the one-way groupId);
+      // an incoming group message carries it, so set + persist it now → group sends
+      // from this room then carry the groupV2 context instead of going to a 1:1.
+      if (!existing.masterKey) {
+        existing.masterKey = masterKey;
+        existing.groupId = signalGroup.groupId;
+        existing.group = signalGroup;
+        await existing.save();
+      }
       return existing;
     }
     let group = appGlobal.personalAddressbook.newGroup();
@@ -688,17 +710,15 @@ export class SignalAccount extends ChatAccount {
     try {
       padded = await this.getSessions().decryptContent(address, info.type, info.body);
     } catch (ex) {
-      // A redelivered message we already processed (the ratchet chain advanced past it)
-      // is benign: ACK it (return null, so the server drains it) without error spam.
-      if ((ex as any)?.message?.includes("Duplicate or too-old")) {
-        return null;
+      // A per-message decrypt failure is non-fatal: ACK it (return null so the server
+      // drains it) and don't spam. "Duplicate or too-old" (a redelivery we already
+      // processed) is silent; anything else (e.g. Bad MAC on an old pre-relink message)
+      // logs ONE concise line for diagnosis — no stack, no double-log.
+      let why = (ex as any)?.message ?? String(ex);
+      if (!why.includes("Duplicate or too-old")) {
+        console.warn(`Signal: could not decrypt ${info.type} from ${info.sender.toString()}.${info.deviceID} ts=${envelope.serverTimestamp ?? envelope.clientTimestamp} (${info.body.length}b) — ${why}`);
       }
-      console.warn("Signal DECRYPT FAILED:", "envelopeType", envelope.type,
-        "sealedSender", envelope.type == EnvelopeType.UnidentifiedSender,
-        "from", info.sender.toString(), "device", info.deviceID,
-        "ciphertextType", info.type, "len", info.body.length,
-        "→", (ex as any)?.message ?? ex);
-      throw ex;
+      return null;
     }
     console.log(`Signal: decryptContent OK (${padded.length}b) from ${info.sender.toString()} — decoding Content`);
     let content = decode(Content, unpadContent(padded));

@@ -88,6 +88,15 @@ export class ChatRoom extends Observable {
     throw new AbstractFunction();
   }
 
+  /** Protocol-specific room state persisted alongside the room (merged into the SQL
+   * `json` column) so the room looks identical after a restart. Override in a subclass;
+   * default is none. Paired with {@link fromExtraJSON}. */
+  toExtraJSON(): any {
+    return {};
+  }
+  fromExtraJSON(_json: any): void {
+  }
+
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: ChatMessage) {

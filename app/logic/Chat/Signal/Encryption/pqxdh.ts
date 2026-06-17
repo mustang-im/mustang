@@ -207,6 +207,7 @@ function createPqxdhSessionFromPreKey(store: SignalStore, address: string, pkmsg
     throw new Error(`Unknown signed prekey ${pkmsg.signedPreKeyID}`);
   }
   let oneTime = pkmsg.preKeyID != null ? store.preKeys.get(pkmsg.preKeyID) : undefined;
+  console.log(`Signal PQXDH responder ${address}: signedPreKeyID=${pkmsg.signedPreKeyID} (have=${store.signedPreKeys.has(pkmsg.signedPreKeyID)}) preKeyID=${pkmsg.preKeyID ?? "none"} (haveOneTime=${pkmsg.preKeyID != null ? store.preKeys.has(pkmsg.preKeyID) : "n/a"}) kyberPreKeyID=${pkmsg.kyberPreKeyID} — we hold ${store.preKeys.size} one-time EC prekeys [${[...store.preKeys.keys()].slice(0, 6).join(",")}]`);
   let theirIdentity = djbDecode(pkmsg.identityKey);
   let theirBaseKey = djbDecode(pkmsg.baseKey);
   let secrets = [kDiscontinuity,

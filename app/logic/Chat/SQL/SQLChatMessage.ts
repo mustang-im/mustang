@@ -41,11 +41,15 @@ export class SQLChatMessage {
     let jsonStr: string | null = null;
     if (msg instanceof ChatRoomEvent) {
       jsonStr = JSON.stringify(msg.toExtraJSON(), null, 2);
-    } else if (from instanceof ChatPersonUID) {
-      jsonStr = JSON.stringify({
-        fromName: from.name,
-        fromID: from.chatID,
-      }, null, 2);
+    } else {
+      // Merge the sender (to rebuild ChatPersonUID on read) with any protocol-specific
+      // message state (e.g. Signal's deleted/edited/sealedSender) so it round-trips.
+      let json: any = msg instanceof ChatMessage ? msg.toExtraJSON() : {};
+      if (from instanceof ChatPersonUID) {
+        json.fromName = from.name;
+        json.fromID = from.chatID;
+      }
+      jsonStr = Object.keys(json).length ? JSON.stringify(json, null, 2) : null;
     }
     let reactionsJSON = await SQLChatMessage.saveReactions(msg);
     if (!msg.dbID) {
@@ -182,6 +186,10 @@ export class SQLChatMessage {
         : msg.to.contact;
     } else {
       // TODO msg.to = chat
+    }
+    // Restore protocol-specific message state (e.g. Signal's deleted/edited/sealedSender).
+    if (msg instanceof ChatMessage) {
+      msg.fromExtraJSON(sanitize.json(row.json, {}) as any);
     }
     if (readAttachments) {
       let attRows = await (await getDatabase()).all(sql`

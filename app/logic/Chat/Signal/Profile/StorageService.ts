@@ -177,6 +177,7 @@ export class SignalStorageService {
 
   /** A GroupV2Record → note the group master key so its room can appear (Docs/04). */
   applyGroupV2(record: GroupV2Record): void {
+    console.log(`Signal: storage groupV2 record — masterKey=${record.masterKey?.length ? "yes" : "no"}`);
     if (record.masterKey?.length) {
       this.account.noteGroupMasterKey(record.masterKey);
     }
