@@ -215,7 +215,13 @@ export class WhatsAppHistorySync {
     if (!this.paging.has(id)) {
       return;
     }
-    if (added < kOnDemandPageSize) {
+    // Stop when the chat is exhausted. Gauge that by the RAW page size, not the
+    // post-dedup `added`: the response can re-include the anchor message we paged
+    // from, so a full 50-message page can yield added=49 and would wrongly look
+    // "short". Also stop when nothing new arrived (added=0) — no progress, so the
+    // next request would just re-fetch the same page (and loop).
+    let fullPage = (conversation.messages?.length ?? 0) >= kOnDemandPageSize;
+    if (added == 0 || !fullPage) {
       this.paging.delete(id); // reached the start of this chat's history
       return;
     }
