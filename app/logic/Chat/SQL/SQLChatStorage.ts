@@ -21,8 +21,14 @@ export class SQLChatStorage implements ChatAccountStorage {
       await attachment.save();
     }
   }
+  async deleteMessage(message: RoomMessage): Promise<void> {
+    await SQLChatMessage.deleteIt(message);
+  }
   async saveRoom(room: ChatRoom): Promise<void> {
     await SQLChatRoom.save(room);
+  }
+  async deleteRoom(room: ChatRoom): Promise<void> {
+    await SQLChatRoom.deleteIt(room);
   }
 
   static async readChatAccounts(): Promise<Collection<ChatAccount>> {

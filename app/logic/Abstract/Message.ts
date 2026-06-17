@@ -1,7 +1,7 @@
 import type { Group } from "./Group";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
-import type { ChatPersonUID } from "../Chat/ChatPersonUID";
+import { ChatPersonUID } from "../Chat/ChatPersonUID";
 import type { Attachment } from "./Attachment";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -44,6 +44,7 @@ export class Message extends Observable {
   inReplyTo: string | null = null;
   readonly attachments = new ArrayColl<Attachment>();
 
+  /** Contains all reactions, as seen by the server, including mine */
   readonly reactions = new MapColl<PersonUID, string>();
 
   @notifyChangedProperty
@@ -147,17 +148,24 @@ export class Message extends Observable {
   async markStarred(starred = true) {
     this.isStarred = starred;
   }
+
+  /** Sets own user's reaction to a message from somebody else. */
   async setReaction(emoji: string | null) {
-    await this.setReactionOnLocally(emoji);
+    await this.setReactionLocally(emoji);
     await this.setReactionOnServer(emoji);
   }
-  async setReactionOnLocally(emoji: string | null) {
-    let me = this.outgoing ? this.from : this.from; // TODO to (if me)
+  async setReactionLocally(emoji: string | null) {
+    let me = this.outgoing
+      ? this.from
+      : this.contact instanceof ChatPersonUID
+        ? this.contact
+        : this.from;
     if (emoji) {
       this.reactions.set(me, emoji);
     } else {
       this.reactions.delete(me);
     }
+    await this.save();
   }
   async setReactionOnServer(emoji: string | null) {
   }
@@ -166,8 +174,11 @@ export class Message extends Observable {
     throw new AbstractFunction();
   }
 
+  async save() {
+    throw new AbstractFunction();
+  }
   async deleteMessage() {
-    console.log("Delete message");
+    throw new AbstractFunction();
   }
 
   copyFrom(other: Message, withAttachments: boolean = false): void {

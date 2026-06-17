@@ -98,7 +98,9 @@ export class ChatAccount extends TCPAccount {
 
 export interface ChatAccountStorage extends AttachmentStorage {
   saveMessage(message: RoomMessage): Promise<void>;
+  deleteMessage(message: RoomMessage): Promise<void>;
   saveRoom(room: ChatRoom): Promise<void>;
+  deleteRoom(room: ChatRoom): Promise<void>;
   saveAccount(account: ChatAccount): Promise<void>;
   deleteAccount(account: ChatAccount): Promise<void>;
 }

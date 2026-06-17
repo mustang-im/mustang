@@ -4,6 +4,7 @@ import { notifyChangedProperty } from "../util/Observable";
 import type { ChatPersonUID } from "./ChatPersonUID";
 import type { ChatRoom } from "./ChatRoom";
 import type { ChatRoomEvent } from "./RoomEvent";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert } from "../util/util";
 import { ArrayColl, type MapColl } from "svelte-collections";
 
@@ -37,6 +38,24 @@ export class ChatMessage extends Message {
     this.to = val;
   }
 
+  isEdited: boolean;
+
+  async save() {
+    await this.to.account.storage.saveMessage(this);
+  }
+  async deleteMessage() {
+    await this.to.account.storage.deleteMessage(this);
+  }
+
+  toExtraJSON(): any {
+    return {
+      isEdited: this.isEdited,
+    };
+  }
+  fromExtraJSON(json: any): void {
+    this.isEdited = sanitize.boolean(json.isEdited);
+  }
+
   newAttachment(): Attachment {
     let att = new Attachment();
     att.message = this;
@@ -44,7 +63,6 @@ export class ChatMessage extends Message {
     att.storage = new ArrayColl([this.room.account.storage]);
     return att;
   }
-
 }
 
 /** Everything that can appear in the timeline of a chat room */
