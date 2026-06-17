@@ -30,11 +30,11 @@ export class WhatsAppHistorySync {
   constructor(protected account: WhatsAppAccount) {
   }
 
-  /** Opt-in: after the FULL dump, page back through messages OLDER than it via
-   * on-demand requests (secondary, best-effort — see {@link pageOlderMessages}).
-   * Off by default: requireFullSync is the reliable path and the server may
+  /** Page back through messages OLDER than the bootstrap/full blob via on-demand
+   * requests (see {@link pageOlderMessages}), so each chat fills its full history
+   * rather than only the recent slice the phone pushes. Best-effort: the server may
    * silently drop on-demand requests for companion devices. */
-  pageOnDemand = false;
+  pageOnDemand = true;
 
   /** Chat JIDs with an on-demand paging loop in flight, so the import of the
    * resulting ON_DEMAND blob knows to request the next page (and stop on an
@@ -58,6 +58,11 @@ export class WhatsAppHistorySync {
       waLog("history:", kSyncTypeName[syncType] ?? syncType, "imported",
         result.chats, "chats,", result.messages, "messages",
         syncType == HistorySyncType.Full ? "(full dump)" : "");
+      // The bootstrap/full blob only carries each chat's recent slice. Page back
+      // through every chat to pull the rest of its history (older than that slice).
+      if (syncType == HistorySyncType.InitialBootstrap || syncType == HistorySyncType.Full) {
+        await this.pageAllRooms();
+      }
     } catch (ex) {
       // One bad blob shouldn't break the message stream; log and move on.
       console.error("WhatsApp: history sync failed:", (ex as any)?.message ?? ex);
@@ -144,6 +149,17 @@ export class WhatsAppHistorySync {
   // Best-effort: the server may silently drop on-demand requests for companion
   // devices, so this never replaces requireFullSync; it is gated
   // behind {@link pageOnDemand} and verifiable only against a live phone.
+
+  /** Kick off backward paging for every chat that isn't already paging, to pull the
+   * messages older than the recent slice the bootstrap/full blob carried. Each chat's
+   * loop then continues (continuePaging) until the server returns a short/empty page. */
+  protected async pageAllRooms(): Promise<void> {
+    for (let room of this.account.rooms.contents) {
+      if (!this.paging.has(room.id)) {
+        await this.pageOlderMessages(room as WhatsAppChatRoom);
+      }
+    }
+  }
 
   /** Requests the page of messages just before this room's oldest stored one.
    * No-op unless {@link pageOnDemand} is on, the room has a message to page from,

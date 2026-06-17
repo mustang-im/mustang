@@ -194,16 +194,24 @@ test("on-demand request: PeerDataOperationRequestMessage round-trips on the wire
   expect(bare.historySyncOnDemandRequest!.onDemandMsgCount).toBe(50);
 });
 
-test("on-demand paging is gated off by default: pageOlderMessages does nothing", async () => {
+test("on-demand paging (on by default) requests the page before the oldest message", async () => {
   let account = setup();
   let room = await account.getOrCreateRoom(JID.parse(kAliceJID), "Alice");
-  // Even with a stored message to anchor on, the default (pageOnDemand=false)
-  // must not attempt a send (account has no sendPeerMessage), so this is a no-op.
   await room.addHistoryMessage({
     key: { remoteJID: kAliceJID, fromMe: false, id: "anchor" },
     message: { conversation: "anchor" },
     messageTimestamp: 1700000000,
   } as any);
-  await account.historySync.pageOlderMessages(room); // must not throw
-  expect(account.historySync.pageOnDemand).toBe(false);
+
+  // Capture the peer request the paging issues, anchored on the oldest message.
+  let sent: any = null;
+  account.sendPeerMessage = async (payload: any) => { sent = payload; return "id"; };
+
+  expect(account.historySync.pageOnDemand).toBe(true);
+  await account.historySync.pageOlderMessages(room);
+
+  let request = sent.protocolMessage.peerDataOperationRequestMessage.historySyncOnDemandRequest;
+  expect(request.chatJID).toBe(room.id);
+  expect(request.oldestMsgID).toBe("anchor");
+  expect(request.onDemandMsgCount).toBe(50);
 });
