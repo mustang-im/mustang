@@ -16,6 +16,8 @@
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: string }>();
 
   /** in/out */
   export let html: string;
@@ -67,6 +69,7 @@
       },
       onUpdate: ({ editor }) => {
         html = lastHTML = editor.getHTML();
+        dispatchEvent("change", html);
       },
     });
     lastHTML = html;

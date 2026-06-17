@@ -5,9 +5,13 @@ import type { Group } from "../Abstract/Group";
 import type { Message } from "../Abstract/Message";
 import type { Event } from "../Calendar/Event";
 import type { File } from "../Files/File";
+import { convertHTMLToText } from "../util/convertHTML";
+import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { assert } from "../util/util";
+import { NotReached, assert } from "../util/util";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class Topic extends Observable {
   id: string = crypto.randomUUID();
@@ -49,6 +53,44 @@ export class Topic extends Observable {
       p = this.content.last;
     }
   }
+
+  toHTML(level = 1): string {
+    // Heading
+    let html = `<h${level}>${this.name}</h${level}>`;
+
+    // Text body
+    for (let content of this.content) {
+      if (content instanceof Paragraph) {
+        if (content.hasContent) {
+          html += content.html;
+        }
+      }
+    }
+
+    // Child topics
+    level = Math.min(++level, 6);
+    for (let child of this.children) {
+      html += child.toHTML(level);
+    }
+    return html;
+  }
+
+  toFile(mimeType: string): globalThis.File {
+    let html = this.toHTML();
+    let fileContent: string;
+    if (mimeType == "text/html") {
+      fileContent = html;
+    } else if (mimeType == "text/markdown") {
+      fileContent = convertHTMLToText(html);
+    } else {
+      throw new NotReached(gt`File type ${mimeType} is not supported`);
+    }
+    return new globalThis.File(
+      [fileContent],
+      sanitize.filename(this.name + "." + fileExtensionForMIMEType(mimeType)),
+      { type : mimeType });
+  }
+
 
   async newChild(name: string): Promise<Topic> {
     assert(this.account, "Need account");

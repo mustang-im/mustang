@@ -1,3 +1,4 @@
+import { convertHTMLToText } from "../util/convertHTML";
 import { Paragraph, type PageContent } from "./PageContent";
 import type { Topic } from "./Topic";
 

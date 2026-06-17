@@ -20,6 +20,16 @@
           iconSize="24px"
           />
         <MenuItem
+          label={$t`Export as Markdown text`}
+          tooltip={$t`Save this topic as MarkDown file`}
+          icon={ExportIcon}
+          onClick={() => onExport("text/markdown")} />
+        <MenuItem
+          label={$t`Export as HTML`}
+          tooltip={$t`Save this topic as an HTML file`}
+          icon={ExportIcon}
+          onClick={() => onExport("text/html")} />
+        <MenuItem
           classes="danger"
           label={$t`Delete topic`}
           tooltip={$t`Delete topic ${topic.name} including all contents`}
@@ -36,7 +46,8 @@
             on:keydown={event => onKeyEnter(event, onTitleEnter)}/>
         </hbox>
         <vbox class="content" flex>
-          <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions} />
+          <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions}
+            on:change={onChange} />
         </vbox>
       </vbox>
     </Paper>
@@ -59,12 +70,14 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
+  import ExportIcon from "lucide-svelte/icons/file-down";
   import TrashIcon from "lucide-svelte/icons/trash-2";
+  import { onKeyEnter, saveBlobAsFile } from "../../Util/util";
   import { gt, t } from "../../../l10n/l10n";
   import type { Editor } from "@tiptap/core";
   import { DOMSerializer } from "@tiptap/pm/model";
+  import debounce from "lodash/debounce";
   import { mount, unmount } from "svelte";
-  import { onKeyEnter } from "../../Util/util";
 
   export let topic: Topic;
 
@@ -123,6 +136,10 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  async function onExport(mimeType: string) {
+    await saveBlobAsFile(topic.toFile(mimeType));
+  }
+
   async function onTitleEnter() {
     editor.commands.focus();
     await topic.save();
@@ -132,6 +149,12 @@
     let blocks = editorToBlocks();
     await applyPageBlocks(topic, blocks, (id) => contentRegistry.get(id));
     await topic.save();
+  }
+
+  const saveDebounced = debounce(() => onSave(), 1000);
+  // Auto-save
+  function onChange() {
+    saveDebounced();
   }
 
   /** Converts the current TipTap document to neutral PageBlocks. */
