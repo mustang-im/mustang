@@ -1,5 +1,5 @@
 import { makeTestDatabase } from '../../../../logic/Chat/SQL/SQLDatabase';
-import { ChatMessage } from '../../../../logic/Chat/Message';
+import { ChatMessage } from '../../../../logic/Chat/ChatMessage';
 import { ChatPersonUID } from '../../../../logic/Chat/ChatPersonUID';
 import { SQLChatAccount } from '../../../../logic/Chat/SQL/SQLChatAccount';
 import { SQLChatRoom } from '../../../../logic/Chat/SQL/SQLChatRoom';

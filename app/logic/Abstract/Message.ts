@@ -149,12 +149,13 @@ export class Message extends Observable {
     this.isStarred = starred;
   }
 
-  /** Sets own user's reaction to a message from somebody else. */
-  async setReaction(emoji: string | null) {
-    await this.setReactionLocally(emoji);
-    await this.setReactionOnServer(emoji);
+  /** Sets or removes our own user's emoji reaction to this message.
+   * @param emoji the reaction to set, or null to remove our reaction. */
+  async setMyReaction(emoji: string | null) {
+    await this.setMyReactionLocally(emoji);
+    await this.setMyReactionOnServer(emoji);
   }
-  async setReactionLocally(emoji: string | null) {
+  async setMyReactionLocally(emoji: string | null) {
     let me = this.outgoing
       ? this.from
       : this.contact instanceof ChatPersonUID
@@ -167,7 +168,7 @@ export class Message extends Observable {
     }
     await this.save();
   }
-  async setReactionOnServer(emoji: string | null) {
+  async setMyReactionOnServer(emoji: string | null) {
   }
 
   newAttachment(): Attachment {

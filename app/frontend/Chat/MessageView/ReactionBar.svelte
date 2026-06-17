@@ -18,6 +18,13 @@
       </RoundButton>
     {/each}
     <RoundButton
+      label={$t`Remove your reaction`}
+      onClick={() => onAdd(null)}
+      icon={XIcon}
+      border={false} classes="plain"
+      padding="4px"
+      />
+    <RoundButton
       label={$t`Show more emojis`}
       onClick={() => showAll = !showAll}
       icon={MoreIcon}
@@ -32,6 +39,7 @@
   import EmojiSelector from "../Emoji/EmojiSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis-vertical";
+  import XIcon from "lucide-svelte/icons/x";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -44,7 +52,7 @@
   let searchTerm: string;
 
   async function onAdd(emoji: string) {
-    await message.setReaction(emoji);
+    await message.setMyReaction(emoji);
     isOpen = false;
   }
 </script>

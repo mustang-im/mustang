@@ -8,33 +8,43 @@
     padding="4px"
     />
   {#if message.outgoing}
-    <RoundButton
-      label={$t`Edit`}
-      icon={EditIcon}
-      onClick={onEdit}
-      border={false} classes="plain"
-      padding="4px"
-      />
-    <ButtonMenu bind:isMenuOpen={isDeleteMenuOpen}>
+    {#if message instanceof ChatMessage}
+      <RoundButton
+        label={$t`Edit`}
+        icon={EditIcon}
+        onClick={onEdit}
+        border={false} classes="plain"
+        padding="4px"
+        />
+      <ButtonMenu bind:isMenuOpen={isDeleteMenuOpen}>
+        <RoundButton
+          label={$t`Delete`}
+          icon={TrashIcon}
+          onClick={() => isDeleteMenuOpen = !isDeleteMenuOpen}
+          border={false} classes="plain"
+          padding="4px"
+          slot="control"
+          />
+        <MenuItem
+          label={$t`Delete for myself`}
+          icon={TrashIcon}
+          onClick={onDelete}
+          />
+        <MenuItem
+          label={$t`Delete for everybody`}
+          icon={TrashIcon}
+          onClick={onDeleteForOthers}
+          />
+      </ButtonMenu>
+    {:else}
       <RoundButton
         label={$t`Delete`}
         icon={TrashIcon}
-        onClick={() => isDeleteMenuOpen = !isDeleteMenuOpen}
+        onClick={onDelete}
         border={false} classes="plain"
         padding="4px"
-        slot="control"
         />
-      <MenuItem
-        label={$t`Delete for myself`}
-        icon={TrashIcon}
-        onClick={onDelete}
-        />
-      <MenuItem
-        label={$t`Delete for everybody`}
-        icon={TrashIcon}
-        onClick={onDelete}
-        />
-    </ButtonMenu>
+    {/if}
   {/if}
   <RoundButton
     label={$t`Reply`}
@@ -53,8 +63,8 @@
 </hbox>
 
 <script lang="ts">
-  import { t } from "../../../l10n/l10n";
   import { Message } from "../../../logic/Abstract/Message";
+  import { ChatMessage } from "../../../logic/Chat/ChatMessage";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Toolbar from "../../Shared/Toolbar/Toolbar.svelte";
   import TrashIcon from "lucide-svelte/icons/trash-2";
@@ -64,9 +74,10 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import CheckIcon from "lucide-svelte/icons/check";
   import ShareIcon from "lucide-svelte/icons/trash-2";
-  import { sleep } from "../../../logic/util/util";
+  import { assert, sleep } from "../../../logic/util/util";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let message: Message;
 
@@ -74,9 +85,21 @@
   async function onDelete() {
     await message.deleteMessage();
   }
+  async function onDeleteForOthers() {
+    assert(message instanceof ChatMessage, "Cannot get back emails");
+    await message.deleteForOthers();
+  }
   async function onEdit() {
+    assert(message instanceof ChatMessage, "Cannot get back emails");
+    assert(message.canEdit, gt`You cannot edit this message`);
+    message.to.draftMessage = await message.createEdit();
   }
   async function onReply() {
+    /*let previousText = message.to.draftMessage.html;
+    message.to.draftMessage = await message.reply();
+    if (previousText) {
+      message.to.draftMessage.html += previousText;
+    }*/
   }
   async function onForward() {
   }

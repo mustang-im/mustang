@@ -9,7 +9,7 @@ import { Database } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
 import { XMPPRoomEvent } from "../../../../logic/Chat/XMPP/XMPPRoomEvent";
-import { ChatMessage } from "../../../../logic/Chat/Message";
+import { ChatMessage } from "../../../../logic/Chat/ChatMessage";
 import { JoinLeave, RoomEventKind } from "../../../../logic/Chat/RoomEvent";
 import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
 import { makeTestDatabase as makeChatTestDatabase, getDatabase as getChatDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";

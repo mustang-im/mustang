@@ -9,7 +9,7 @@ import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import {
   initiateSession, encrypt, decryptPreKeyMessage, decryptSignalMessage, type EncryptedSignalMessage,
 } from "../../../../logic/Chat/Signal/Crypto/SessionCipher";
-import { decodeWAMessage } from "../../../../logic/Chat/WhatsApp/Proto/schema";
+import { decodeWAMessage, ProtocolMessageType } from "../../../../logic/Chat/WhatsApp/Proto/schema";
 import { bigEndian } from "../../../../logic/Chat/WhatsApp/util";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
@@ -229,6 +229,29 @@ test("new contact: first message is a pkmsg the recipient decrypts, follow-up is
   let enc2 = stanza2.child("participants")!.child("to")!.child("enc")!;
   expect(enc2.attrs.type).toBe("pkmsg");
   expect(decodeWAMessage(await decryptPreKeyMessage(bob, ourAddress, enc2.contentBytes!)).conversation).toBe("second");
+});
+
+test("delete-for-everyone sends a REVOKE tagged edit=7 referencing the original", async () => {
+  let connection = new FakeConnection();
+  let account = makeAccount(connection);
+  let bob = SignalStore.createNew();
+  connection.deviceList.set("491762222222", [0]);
+  connection.deviceStores.set("491762222222:0@s.whatsapp.net", bob);
+
+  await account.sender.sendMessage(JID.parse(kBobJID), {
+    protocolMessage: {
+      key: { remoteJID: kBobJID, fromMe: true, id: "3EB0ORIGINAL" },
+      type: ProtocolMessageType.Revoke,
+    },
+  });
+  let stanza = connection.sent.at(-1)!;
+  // The `edit` attribute is what makes WhatsApp delete the original (sender revoke);
+  // without it the peer and our own devices silently ignore the revoke.
+  expect(stanza.attrs.edit).toBe("7");
+
+  let ourAddress = `${JID.parse(kSelfJID).user}.${JID.parse(kSelfJID).device}`;
+  let msg = await decryptSentTo(stanza, "491762222222:0@s.whatsapp.net", bob, ourAddress);
+  expect(msg.protocolMessage.key.id).toBe("3EB0ORIGINAL"); // targets the original message
 });
 
 test("once the recipient replies, our next message is a plain msg (session confirmed)", async () => {

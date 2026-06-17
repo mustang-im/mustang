@@ -34,7 +34,7 @@ export class XMPPChat extends ChatRoom {
   declare contact: XMPPPerson | Group;
 
   /** XMPP wire type of the messages in this chat */
-  protected messageType: "chat" | "groupchat" = "chat";
+  messageType: "chat" | "groupchat" = "chat";
   @notifyChangedProperty
   encryption = Encryption.None;
   /** The other side is currently typing (XEP-0085) */
@@ -223,9 +223,10 @@ export class XMPPChat extends ChatRoom {
     }
   }
 
-  protected findMessage(id: string): RoomMessage | undefined {
+  findMessage(id: string): RoomMessage | undefined {
     return this.messages.find(msg =>
-      msg.id == id || (msg instanceof XMPPChatMessage && msg.stanzaID == id));
+      msg.id == id ||
+      (msg instanceof XMPPChatMessage && msg.stanzaID == id));
   }
 
   /** The contact who sent `json`, as the key for the reaction map.
@@ -241,8 +242,12 @@ export class XMPPChat extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: ChatMessage): Promise<void> {
+  async sendMessage(message: XMPPChatMessage): Promise<void> {
     assert(this.account.isLoggedIn, "Chat account is not logged in");
+    if (message.isEdit) {
+      await message.sendEdit();
+      return;
+    }
     assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     message.deliveryStatus = DeliveryStatus.Sending;
     message.id ??= crypto.randomUUID();
@@ -307,8 +312,9 @@ export class XMPPChat extends ChatRoom {
   }
 
   /** The message ID that reactions/receipts/corrections from peers reference.
-   * 1:1 uses the message ID; MUC uses the server-assigned stanza ID. */
-  protected referenceID(message: XMPPChatMessage): string {
+   * 1:1 uses the message ID
+   * MUC uses the server-assigned stanza ID. */
+  referenceID(message: XMPPChatMessage): string {
     return message.id;
   }
 
@@ -331,71 +337,13 @@ export class XMPPChat extends ChatRoom {
     stanza.body = gt`This message is encrypted with OMEMO.`;
   }
 
-  /** Adds or removes our user's emoji reactions to a message (XEP-0444).
-   * `emojis` is the full set we want shown; empty removes our reactions. */
-  async sendReaction(target: ChatMessage, emojis: string[]): Promise<void> {
-    this.account.client.sendMessage({
-      type: this.messageType,
-      to: this.id,
-      id: crypto.randomUUID(),
-      reactions: { id: this.referenceID(target as XMPPChatMessage), emojis },
-      processingHints: { store: true },
-    });
-    let me = this.account.getOwnContact();
-    if (emojis.length) {
-      target.reactions.set(me, emojis.join(""));
-    } else {
-      target.reactions.delete(me);
-    }
-    target.save()
-      .catch(this.account.errorCallback);
-  }
-
-  /** Edits a message our user already sent (XEP-0308). */
-  async sendCorrection(target: ChatMessage, newText: string): Promise<void> {
-    let stanza: Message = {
-      type: this.messageType,
-      to: this.id,
-      id: crypto.randomUUID(),
-      body: newText,
-      replace: this.referenceID(target as XMPPChatMessage),
-    };
+  /** OMEMO-encrypts `stanza` in place when this room is encrypted; otherwise
+   * leaves it plaintext. Lets a message encrypt its own outgoing stanza (edits)
+   * without reaching into the room's OMEMO internals. */
+  async encryptIfEnabled(stanza: Message, body: string): Promise<void> {
     if (this.encryption == Encryption.OMEMO) {
-      await this.encryptOutgoing(stanza, newText);
+      await this.encryptOutgoing(stanza, body);
     }
-    this.account.client.sendMessage(stanza);
-    target.text = newText;
-    (target as XMPPChatMessage).edited = true;
-    await target.save();
-  }
-
-  /** Retracts (deletes for everyone) a message our user sent (XEP-0424). */
-  async sendRetraction(target: ChatMessage): Promise<void> {
-    this.account.client.sendMessage({
-      type: this.messageType,
-      to: this.id,
-      id: crypto.randomUUID(),
-      retract: { id: this.referenceID(target as XMPPChatMessage) },
-      // A body so clients without XEP-0424 still show that something happened
-      body: gt`This message was deleted`,
-      processingHints: { store: true },
-    });
-    (target as XMPPChatMessage).retracted = true;
-    target.text = gt`This message was deleted`;
-    await target.save();
-  }
-
-  /** Tells the other side our user has read up to `message` (XEP-0333). */
-  async sendDisplayedMarker(message: ChatMessage): Promise<void> {
-    if (message.outgoing) {
-      return;
-    }
-    this.account.client.sendMessage({
-      type: this.messageType,
-      to: this.id,
-      id: crypto.randomUUID(),
-      marker: { type: "displayed", id: this.referenceID(message as XMPPChatMessage) },
-    });
   }
 
   /** Sends a typing notification (XEP-0085). */

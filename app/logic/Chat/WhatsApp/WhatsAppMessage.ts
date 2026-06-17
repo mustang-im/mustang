@@ -8,8 +8,12 @@ import { MediaType } from "./Crypto/mediaCrypto";
 import { mediaDescriptorFor, downloadMedia, type MediaDescriptor } from "./WhatsAppMedia";
 import type { WhatsAppChatRoom } from "./WhatsAppChatRoom";
 import type { WANode } from "./Binary/WANode";
-import type { WAMessage } from "./Proto/schema";
+import { ProtocolMessageType, type WAMessage, type MessageKey } from "./Proto/schema";
+import { JID } from "./Binary/JID";
+import { WhatsAppContact } from "./WhatsAppContact";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 /**
  * A message in a WhatsApp chat, written by a human.
@@ -20,6 +24,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
  * deletions are *operations on* an existing message, so the chat room applies
  * those (see WhatsAppChatRoom); this class only represents the message itself. */
 export class WhatsAppMessage extends ChatMessage {
+  declare to: WhatsAppChatRoom;
+
   /** Resolves once the background media download (if any) has finished, settled
    * or failed. Lets callers/tests await the attachment bytes; never rejects. */
   mediaDownload: Promise<void> = Promise.resolve();
@@ -56,6 +62,85 @@ export class WhatsAppMessage extends ChatMessage {
       return true;
     }
     return this.readMedia(payload);
+  }
+
+  override get canEdit(): boolean {
+    return this.outgoing;
+  }
+  override get canDeleteForOthers(): boolean {
+    return this.outgoing || this.to.isAdmin;
+  }
+  override canReact = true;
+
+  /** Delete this message for everyone: a ProtocolMessage(REVOKE) with this
+   * message's key (the send counterpart of {@link WhatsAppChatRoom.deleteMessageByID}). */
+  protected override async sendRetractionToOthers(): Promise<void> {
+    await this.chatRoom.account.sender.sendMessage(JID.parse(this.chatRoom.id), {
+      protocolMessage: {
+        key: this.messageKey(),
+        type: ProtocolMessageType.Revoke,
+      },
+    });
+  }
+
+  /** Add or remove our own emoji reaction to this message
+   * Empty text removes it.
+   * Sends a ReactionMessage.
+   * The send counterpart of {@link WhatsAppChatRoom.reactionToMessage} */
+  override async setMyReaction(emoji: string | null): Promise<void> {
+    await this.chatRoom.account.sender.sendMessage(JID.parse(this.chatRoom.id), {
+      reactionMessage: {
+        key: this.messageKey(),
+        text: emoji ?? "",
+        senderTimestampMS: Date.now(),
+      },
+    });
+
+    // Locally
+    let me = await this.chatRoom.account.getOwnContact();
+    if (emoji) {
+      this.reactions.set(me, emoji);
+    } else {
+      this.reactions.delete(me);
+    }
+    await this.save();
+  }
+
+  /** This message's WhatsApp key, to target it in a revoke or reaction: the chat,
+   * whether we sent it, and its id. `participant` names the original sender for
+   * someone else's message (e.g. a group admin revoke). */
+  protected messageKey(): MessageKey {
+    let participant = !this.outgoing && this.contact instanceof WhatsAppContact
+      ? this.contact.jid.toString() : undefined;
+    return { remoteJID: this.chatRoom.id, fromMe: this.outgoing, id: this.id, participant };
+  }
+
+  /** Edits a message we already sent
+   * A ProtocolMessage MESSAGE_EDIT carrying the new content and the original's key,
+   * then update the original in place.
+   * The send counterpart of {@link editMessage} */
+  async sendEdit(): Promise<void> {
+    assert(this.isEdit, "Not an edited message");
+    let room = this.to;
+    let account = this.to.account;
+    let original = room.messages.find(msg => msg.id == this.isEdit) as WhatsAppMessage;
+    assert(original, gt`Cannot find the message to edit`);
+    await account.sender.sendMessage(JID.parse(room.id), {
+      protocolMessage: {
+        key: {
+          remoteJID: room.id,
+          fromMe: true,
+          id: this.isEdit,
+        },
+        type: ProtocolMessageType.MessageEdit,
+        editedMessage: {
+          conversation: this.text,
+        },
+        timestampMS: Date.now(),
+      },
+    });
+    original.text = this.text;
+    await original.save();
   }
 
   protected readMedia(payload: WAMessage): boolean {

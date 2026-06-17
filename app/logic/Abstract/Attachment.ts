@@ -104,10 +104,16 @@ export class Attachment extends Observable {
     saveBlobAsFile(this.content);
   }
   async deleteFile() {
-    throw new NotImplemented();
+    await this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        await storage.deleteAttachment(this);
+      }
+    });
+    this.filepathLocal = null;
+    await this.save();
   }
   async read() {
-    return this.storageRunOnce.runOnce(async () => {
+    await this.storageRunOnce.runOnce(async () => {
       for (let storage of this.storage) {
         if (await storage.readAttachment(this)) {
           break;
@@ -116,7 +122,7 @@ export class Attachment extends Observable {
     });
   }
   async save() {
-    return this.storageRunOnce.runOnce(async () => {
+    await this.storageRunOnce.runOnce(async () => {
       for (let storage of this.storage) {
         await storage.saveAttachment(this);
       }

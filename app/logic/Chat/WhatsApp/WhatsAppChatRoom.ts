@@ -169,6 +169,10 @@ export class WhatsAppChatRoom extends ChatRoom {
    * XMPPChat.sendMessage — recipient/text come from the message object. A group
    * `id` (g.us) routes the sender to its sender-key path; the rest is the same. */
   async sendMessage(message: WhatsAppMessage): Promise<void> {
+    if (message.isEdit) {
+      await message.sendEdit();
+      return;
+    }
     let text = message.text;
     assert(text || message.attachments.hasItems, `Message is empty`);
     assert(message.attachments.every(att => att.content), gt`Attachment is empty`);

@@ -34,7 +34,7 @@ export class MatrixRoom extends ChatRoom {
     if (type == "m.room.message") {
       return this.getUserMessage(event);
     } else if (type == "m.room.redaction") {
-      this.redactMessage(event);
+      await this.redactedMessage(event);
       return null;
     } else if (type == "m.reaction") {
       await this.getReaction(event);
@@ -56,7 +56,10 @@ export class MatrixRoom extends ChatRoom {
           : convertTextToHTML(sanitize.nonemptystring(event.topic));
       await this.save();
       return null;
-    } else if (type == "m.room.power_levels" ||
+    } else if (type == "m.room.power_levels") {
+      this.updateAdminFromPowerLevels(event);
+      return null;
+    } else if (
       type == "m.room.encryption" ||
       type == "m.room.avatar" || // TODO Handle `{ url: "mxc://matrix.org/5646" }`
       type == "m.room.join_rules" ||
@@ -134,8 +137,26 @@ export class MatrixRoom extends ChatRoom {
     return this.getUserMessage(event);
   }
 
-  redactMessage(event): void {
-    // TODO
+  /** Someone redacted (deleted for everyone) a message. Show the target as
+   * deleted, the receive side of {@link MatrixChatMessage.sendRetractionToOthers}. */
+  async redactedMessage(event): Promise<void> {
+    // The SDK normalizes the redaction target (top-level `redacts`, or `content.redacts`
+    // in room v11) to `getAssociatedId()`, so we don't read either wire location ourselves.
+    let targetID = sanitize.nonemptystring(event.getAssociatedId(), null);
+    let target = this.messages.find(m => m.id == targetID);
+    if (target instanceof ChatMessage) {
+      target.text = gt`This message was deleted`;
+      await target.save();
+    }
+  }
+
+  /** Tracks whether our user may redact other people's messages: our power level
+   * meets the room's `redact` threshold (`m.room.power_levels`). */
+  protected updateAdminFromPowerLevels(event): void {
+    let content = event.getContent();
+    let myLevel = content.users?.[this.account.globalUserID] ?? content.users_default ?? 0;
+    let needed = content.redact ?? content.state_default ?? 50;
+    this.isAdmin = myLevel >= needed;
   }
 
   async getReaction(event): Promise<void> {
@@ -215,6 +236,10 @@ export class MatrixRoom extends ChatRoom {
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: MatrixChatMessage) {
+    if (message.isEdit) {
+      await message.sendEdit();
+      return;
+    }
     message.deliveryStatus = DeliveryStatus.Sending;
     assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     this.messages.add(message);

@@ -27,7 +27,7 @@ import { PreKeyBundle } from "../Signal/Crypto/Identity";
 import { initiateSession, encrypt, type EncryptedSignalMessage } from "../Signal/Crypto/SessionCipher";
 import { createSenderKey, createDistributionMessage, groupEncrypt } from "../Signal/Crypto/GroupCipher";
 import { sha256, base64Encode } from "../Signal/Crypto/primitives";
-import { encodeWAMessage, type WAMessage } from "./Proto/schema";
+import { encodeWAMessage, ProtocolMessageType, type WAMessage } from "./Proto/schema";
 import { uploadMedia, buildMediaMessage, mediaTypeForMIME } from "./WhatsAppMedia";
 import type { Attachment } from "../../Abstract/Attachment";
 import { waLog, nodeTree } from "./util";
@@ -116,7 +116,9 @@ export class WhatsAppSender {
       this.account.scheduleSave(); // we advanced/created sessions
     }
     this.account.rememberSent(messageID, payload); // so a retry receipt can re-send
-    await connection.sendNode(this.messageStanza(messageID, chat.toNonDevice(), encNodes, anyPreKey));
+    let node = this.messageStanza(messageID, chat.toNonDevice(), encNodes, anyPreKey);
+    this.applyEditAttribute(node, payload);
+    await connection.sendNode(node);
     return messageID;
   }
 
@@ -198,6 +200,7 @@ export class WhatsAppSender {
     let messageID = stanza.attrs.id;
     this.account.rememberSent(messageID, payload);
     this.account.rememberGroupPhash(messageID, chat.toNonDevice().toString(), phash);
+    this.applyEditAttribute(stanza, payload);
     await connection.sendNode(stanza);
     return messageID;
   }
@@ -295,6 +298,7 @@ export class WhatsAppSender {
     let encrypted = await encrypt(store, address, plaintext);
     this.account.scheduleSave();
     let stanza = this.messageStanza(messageID, from.toNonDevice(), [this.participantNode(device, encrypted)], encrypted.type == "pkmsg");
+    this.applyEditAttribute(stanza, payload);
     await connection.sendNode(stanza);
   }
 
@@ -502,6 +506,22 @@ export class WhatsAppSender {
   }
 
   // --- stanza assembly ---
+
+  /** Tags an outgoing `<message>` so the peer (and our own other devices) apply it
+   * to an *existing* message rather than show it as new: `edit="7"` sender revoke
+   * or `"8"` admin revoke for a delete-for-everyone, `"1"` for an edit. Without it
+   * the `protocolMessage` is ignored and nothing disappears or changes. */
+  protected applyEditAttribute(node: WANode, payload: WAMessage): void {
+    let key = payload.protocolMessage?.key;
+    if (!key) {
+      return;
+    }
+    if (payload.protocolMessage!.type == ProtocolMessageType.Revoke) {
+      node.attrs.edit = key.fromMe ? "7" : "8";
+    } else if (payload.protocolMessage!.type == ProtocolMessageType.MessageEdit) {
+      node.attrs.edit = "1";
+    }
+  }
 
   /** The outgoing `<message>` envelope: the per-device `<enc>` nodes wrapped in
    * `<participants>`, with our `<device-identity>` attached when any enc is a

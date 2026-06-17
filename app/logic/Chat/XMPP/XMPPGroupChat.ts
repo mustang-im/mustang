@@ -26,7 +26,7 @@ export class XMPPGroupChat extends XMPPChat {
   protected occupantQueue: Promise<void> = Promise.resolve();
   /** The initial member list arrived, after we entered the room */
   protected joinDone = false;
-  protected messageType: "chat" | "groupchat" = "groupchat";
+  messageType: "chat" | "groupchat" = "groupchat";
 
   get group(): Group | null {
     return this.contact instanceof Group ? this.contact : null;
@@ -43,6 +43,10 @@ export class XMPPGroupChat extends XMPPChat {
     let pres = await this.account.client.joinRoom(this.id, this.nick);
     // the room may have changed our nickname, e.g. on conflicts
     this.nick = nickOfOccupant(pres.from) ?? this.nick;
+    // Our own affiliation/role in the room (XEP-0045): owners/admins, or a
+    // moderator, may retract other people's messages.
+    let affiliation = pres.muc?.affiliation;
+    this.isAdmin = affiliation == "owner" || affiliation == "admin" || pres.muc?.role == "moderator";
     // XEP-0045 7.1: The members arrive before our own join presence
     await this.occupantQueue;
     this.joinDone = true;
@@ -156,7 +160,7 @@ export class XMPPGroupChat extends XMPPChat {
 
   /** In a MUC, reactions/markers reference the room's stanza ID (XEP-0359),
    * which all occupants see, not the sender's own message ID. */
-  protected referenceID(message: XMPPChatMessage): string {
+  referenceID(message: XMPPChatMessage): string {
     return message.stanzaID ?? message.id;
   }
 

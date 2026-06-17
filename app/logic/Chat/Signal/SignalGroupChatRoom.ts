@@ -8,7 +8,7 @@ import type { Group } from "../../Abstract/Group";
 import { ServiceId } from "./ServiceId";
 import { SignalGroup } from "./Groups/Group";
 import { base64Encode, base64Decode } from "./Crypto/primitives";
-import type { DecryptedGroup } from "./Proto/groups";
+import { MemberRole, type DecryptedGroup } from "./Proto/groups";
 import type { DataMessage } from "./Proto/signalService";
 
 export class SignalGroupChatRoom extends SignalChatRoom {
@@ -78,6 +78,12 @@ export class SignalGroupChatRoom extends SignalChatRoom {
       return contact;
     });
     this.members.replaceAll(members);
+    // If we're a group admin, we may delete others' messages using `deleteForOthers()`
+    let myAci = this.account.aci;
+    this.isAdmin = !!myAci && (decrypted.members ?? []).some(m =>
+      m.role == MemberRole.Administrator &&
+      !!m.aciBytes &&
+      ServiceId.aci(m.aciBytes).equals(myAci));
   }
 
   async listMembers(): Promise<void> {

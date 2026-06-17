@@ -8,7 +8,7 @@ import { appGlobal } from "../../../../logic/app";
 import { Database } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPPGroupChat } from "../../../../logic/Chat/XMPP/XMPPGroupChat";
-import { ChatMessage } from "../../../../logic/Chat/Message";
+import { ChatMessage } from "../../../../logic/Chat/ChatMessage";
 import { SQLChatStorage } from "../../../../logic/Chat/SQL/SQLChatStorage";
 import { makeTestDatabase as makeChatTestDatabase, getDatabase as getChatDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
 import { makeTestDatabase as makeContactsTestDatabase, getDatabase as getContactsDatabase } from "../../../../logic/Contacts/SQL/SQLDatabase";

@@ -134,6 +134,8 @@ export class WhatsAppGroupChatRoom extends WhatsAppChatRoom {
         // settings flags — no UI surface yet
       }
     }
+    // We may delete others' messages (`deleteForOthers`) if we're a group admin.
+    this.isAdmin = this.participants.some(p => p.isAdmin && this.account.isOwnJID(p.jid));
   }
 
   /** Writes the subject, description and resolved participants onto the

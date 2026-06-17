@@ -3,6 +3,7 @@ import type { SignalChatRoom } from "./SignalChatRoom";
 import type { SignalContact } from "./SignalContact";
 import type { Content, DataMessage } from "./Proto/signalService";
 import { ReceiptType, TypingAction } from "./Proto/signalService";
+import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 /** A Signal chat message
@@ -19,6 +20,13 @@ export class SignalChatMessage extends ChatMessage {
   edited = false;
   /** Whether this message was delivered sealed-sender (no server-visible sender). */
   sealedSender = false;
+  override get canEdit(): boolean {
+    return this.outgoing;
+  }
+  override get canDeleteForOthers(): boolean {
+    return this.outgoing || this.to.isAdmin;
+  }
+  override canReact = true;
 
   constructor(room: SignalChatRoom) {
     super(room);
@@ -149,11 +157,52 @@ export class SignalChatMessage extends ChatMessage {
     this.id = String(timestamp);
   }
 
-  // --- sending: push this message (and its side-channels) to the room ---
+  /** Delete this message for everyone (DataMessage.delete). */
+  protected override async sendRetractionToOthers(): Promise<void> {
+    let data: DataMessage = {
+      timestamp: Date.now(),
+      groupV2: this.to.groupContext(),
+      delete: { targetSentTimestamp: this.sentTimestamp },
+    };
+    await this.to.account.sendToRoom(this.to, { message: data }, data.timestamp!);
+    this.deleted = true;
+    this.text = gt`This message was deleted`;
+    await this.save();
+  }
+
+  /** Add or remove our own emoji reaction to this message (DataMessage.reaction). */
+  override async setMyReaction(emoji: string | null): Promise<void> {
+    let account = this.to.account;
+    let isRemoval = !emoji;
+    let data: DataMessage = {
+      timestamp: Date.now(),
+      groupV2: this.to.groupContext(),
+      reaction: {
+        emoji: emoji ?? "",
+        remove: isRemoval,
+        targetAuthorAci: (this.from as SignalContact)?.serviceId?.uuidString(),
+        targetSentTimestamp: this.sentTimestamp,
+      },
+    };
+    await account.sendToRoom(this.to, { message: data }, data.timestamp!);
+
+    // local
+    let me = account.getOwnContact();
+    if (isRemoval) {
+      this.reactions.delete(me);
+    } else {
+      this.reactions.set(me, emoji);
+    }
+    await this.save();
+  }
 
   /** Send this message to its room (the 1:1 partner, or every group member). */
   async send(): Promise<void> {
     let account = this.to.account;
+    if (this.isEdit) {
+      await this.sendEdit();
+      return;
+    }
     if (!this.sentTimestamp) {
       this.setSentTimestamp(Date.now());
     }
@@ -181,45 +230,26 @@ export class SignalChatMessage extends ChatMessage {
     await this.to.saveNewMessages([this]);
   }
 
-  /** React to this message with `emoji`, or remove our reaction. */
-  async sendReaction(emoji: string, remove = false): Promise<void> {
-    let account = this.to.account;
-    let data: DataMessage = {
-      timestamp: Date.now(),
-      groupV2: this.to.groupContext(),
-      reaction: {
-        emoji, remove,
-        targetAuthorAci: (this.from as SignalContact)?.serviceId?.uuidString(),
-        targetSentTimestamp: this.sentTimestamp,
+  /** Send this as an edit (EditMessage) of the message it supersedes (`isEdit`),
+   * then update that original in place.
+   * The send counterpart of {@link fromSignalEdit}.
+   * Reached from {@link send} for an edit message, built by `createEdit()`. */
+  protected async sendEdit(): Promise<void> {
+    let original = this.to.findBySentTimestamp(Number(this.isEdit));
+    assert(original, gt`Cannot find the message to edit`);
+    let now = Date.now();
+    let editMessage = {
+      targetSentTimestamp: original.sentTimestamp,
+      dataMessage: {
+        body: this.text,
+        timestamp: now,
+        groupV2: this.to.groupContext(),
       },
     };
-    await account.sendToRoom(this.to, { message: data }, data.timestamp!);
-    let me = account.getOwnContact();
-    remove ? this.reactions.delete(me) : this.reactions.set(me, emoji);
-    await this.save();
-  }
-
-  /** Edit this (outgoing) message's text and notify the room (EditMessage). */
-  async sendCorrection(newText: string): Promise<void> {
-    let data: DataMessage = { body: newText, timestamp: Date.now(), groupV2: this.to.groupContext() };
-    let editMessage = { targetSentTimestamp: this.sentTimestamp, dataMessage: data };
-    await this.to.account.sendToRoom(this.to, { editMessage }, data.timestamp!);
-    this.text = newText;
-    this.edited = true;
-    await this.save();
-  }
-
-  /** Remote-delete this (outgoing) message for everyone (DataMessage.delete). */
-  async sendRetraction(): Promise<void> {
-    let data: DataMessage = {
-      timestamp: Date.now(),
-      groupV2: this.to.groupContext(),
-      delete: { targetSentTimestamp: this.sentTimestamp },
-    };
-    await this.to.account.sendToRoom(this.to, { message: data }, data.timestamp!);
-    this.deleted = true;
-    this.text = gt`This message was deleted`;
-    await this.save();
+    await this.to.account.sendToRoom(this.to, { editMessage }, now);
+    original.text = this.text;
+    original.edited = true;
+    await original.save();
   }
 
   /** Tell the sender we've read this (incoming) message (ReceiptMessage READ). */

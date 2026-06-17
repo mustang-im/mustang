@@ -9,6 +9,8 @@ import type { Message, Forward } from "stanza/protocol";
 import type { JSONElement } from "stanza/jxt";
 
 export class XMPPChatMessage extends ChatMessage {
+  declare to: XMPPChat;
+
   /** Server/room-assigned ID (XEP-0359), referenced by reactions etc. in MUCs */
   stanzaID: string | null = null;
   /** This message arrived OMEMO-encrypted (XEP-0384) */
@@ -52,6 +54,116 @@ export class XMPPChatMessage extends ChatMessage {
     if (json.reply?.id) {
       this.inReplyTo = json.reply.id; // XEP-0461
     }
+  }
+
+  override get canEdit(): boolean {
+    return this.outgoing;
+  }
+  override get canDeleteForOthers(): boolean {
+    return this.outgoing || this.to.isAdmin;
+  }
+  override canReact = true;
+
+  /** Retract this message for everyone (XEP-0424). */
+  protected override async sendRetractionToOthers(): Promise<void> {
+    let room = this.chatRoom;
+    room.account.client.sendMessage({
+      type: room.messageType,
+      to: room.id,
+      id: crypto.randomUUID(),
+      retract: {
+        id: room.referenceID(this),
+      },
+      // A body so clients without XEP-0424 still show that something happened
+      body: gt`This message was deleted`,
+      processingHints: {
+        store: true,
+      },
+    });
+  }
+
+  /** Add or remove our own emoji reaction to this message (XEP-0444).
+   * `emoji` null removes it; the wire carries the full set we want shown. */
+  override async setMyReaction(emoji: string | null): Promise<void> {
+    let room = this.chatRoom;
+    room.account.client.sendMessage({
+      type: room.messageType,
+      to: room.id,
+      id: crypto.randomUUID(),
+      reactions: {
+        id: room.referenceID(this),
+        emojis: emoji ? [emoji] : [],
+      },
+      processingHints: {
+        store: true,
+      },
+    });
+
+    // locally
+    let me = room.account.getOwnContact();
+    if (emoji) {
+      this.reactions.set(me, emoji);
+    } else {
+      this.reactions.delete(me);
+    }
+    await this.save();
+  }
+
+  /** An edit (created via `createEdit()`) supersedes the original
+   * send a XEP-0308 correction that references the original message,
+   * but carries our new text, then update the original in place.
+   * `this` is the new version and `this.isEdit` is the ID of the original it replaces. */
+  async sendEdit(): Promise<void> {
+    assert(this.isEdit, "Not an edited message");
+    let room = this.chatRoom;
+    let original = room.findMessage(this.isEdit);
+    assert(original instanceof XMPPChatMessage, gt`Cannot find the message to edit`);
+    let stanza: Message = {
+      type: room.messageType,
+      to: room.id,
+      id: crypto.randomUUID(),
+      body: this.text, // the new text
+      replace: room.referenceID(original),
+    };
+    await room.encryptIfEnabled(stanza, this.text);
+    room.account.client.sendMessage(stanza);
+    original.text = this.text;
+    original.edited = true;
+    await original.save();
+  }
+
+  /** Mark this message as read locally, and — when actually reading (not
+   * un-reading) — send the sender a read receipt (see {@link sendDisplayedMarker}). */
+  override async markRead(read = true): Promise<void> {
+    await super.markRead(read);
+    if (read && !this.outgoing) {
+      await this.sendDisplayedMarker();
+    }
+  }
+
+  /**
+   * Send the sender a "read receipt" for this message
+   * XEP-0333 chat marker of ype `displayed`.
+   *
+   * Its purpose is to tell the other side that our user has actually *seen*
+   * (displayed) this message, not merely that it was delivered, so the sender's
+   * client can show a "read"/"seen" indicator next to their message.
+   * It is the read-level acknowledgement, above XEP-0184 delivery receipts.
+   */
+  async sendDisplayedMarker(): Promise<void> {
+    if (this.outgoing) {
+      return;
+    }
+    let room = this.chatRoom;
+    room.account.client.sendMessage({
+      type: room.messageType,
+      to: room.id,
+      id: crypto.randomUUID(),
+      marker: {
+        type: "displayed",
+        id: room.referenceID(this),
+      },
+    });
   }
 
   /** Creates an attachment for a shared-file URL (XEP-0363 / OMEMO media) and

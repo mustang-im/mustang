@@ -5,7 +5,7 @@ import type { ChatPersonUID } from "./ChatPersonUID";
 import type { ChatRoom } from "./ChatRoom";
 import type { ChatRoomEvent } from "./RoomEvent";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { NotImplemented, assert } from "../util/util";
+import { NotSupported, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, type MapColl } from "svelte-collections";
 
@@ -39,6 +39,17 @@ export class ChatMessage extends Message {
     this.to = val;
   }
 
+  /** Whether our user can edit this message after sending it, using `createEdit()` */
+  get canEdit(): boolean {
+    return false;
+  }
+  /** Whether our user can delete this message for everyone, using `deleteForOthers()` */
+  get canDeleteForOthers(): boolean {
+    return false;
+  }
+  /** Whether we can react to this message with an emoji, using `setMyReaction()` */
+  canReact = false;
+
   /**
    * If a string is set, then this message is an edit of another
    * message. The string is the ID of the other message.
@@ -53,7 +64,20 @@ export class ChatMessage extends Message {
    * The new message will have `isEdit` set. */
   async createEdit(): Promise<ChatMessage> {
     assert(this.outgoing, gt`You can only edit your own messages`);
-    throw new NotImplemented(gt`This provider does not support editing messages that have already been sent`)
+    assert(this.canEdit, gt`You cannot edit this message`);
+    let edit = this.to.newMessage();
+    edit.isEdit = this.id;
+    edit.from = this.from;
+    edit.contact = this.contact;
+    edit.outgoing = true;
+    edit.sent = this.sent ? new Date(this.sent.getTime()) : new Date();
+    edit.received = new Date();
+    edit.inReplyTo = this.inReplyTo;
+    edit.text = this.text;
+    if (this.hasHTML) {
+      edit.rawHTMLDangerous = this.rawHTMLDangerous;
+    }
+    return edit;
   }
 
   /**
@@ -75,8 +99,38 @@ export class ChatMessage extends Message {
    * adminstrator, also on other people's messages in that group.
    */
   async deleteForOthers(): Promise<void> {
-    assert(this.outgoing || this.to.isAdmin, gt`You can only edit your own messages, or in group chat rooms where you are admin`);
-    throw new NotImplemented(gt`This provider does not support editing messages that have already been sent`)
+    assert(this.canDeleteForOthers, gt`This message cannot be deleted for others, only for yourself`);
+    //assert(this.outgoing || this.to.isAdmin, gt`You can only edit your own messages, or in group chat rooms where you are admin`);
+    await this.sendRetractionToOthers();
+
+    //await this.deleteMessageLocally();
+    this.html = gt`You deleted this message`;
+    for (let attachment of this.attachments) {
+      await attachment.deleteFile();
+    }
+    this.attachments.clear();
+    await this.save();
+  }
+
+  /** Sends a "delete for everyone" (retraction) for this message to everybody. */
+  protected async sendRetractionToOthers(): Promise<void> {
+    throw new NotSupported(gt`This provider does not support deleting messages that have already been sent`);
+  }
+
+  /** Set or remove our own user's emoji reaction to this message, and tell the
+   * room. The local `reactions` update and the wire send both happen per protocol
+   * in `setMyReactionOnServer` (which resolves our own user correctly); we skip the
+   * base `setMyReactionLocally`, since its generic "me" is wrong — or `undefined` —
+   * for an incoming message. */
+  override async setMyReaction(emoji: string | null): Promise<void> {
+    await this.setMyReactionLocally(emoji);
+    await this.setMyReactionOnServer(emoji);
+  }
+
+  /** Tell emoji reaction to this message to others in the room.
+   * @param emoji the reaction to set, or null to remove our reaction. */
+  override async setMyReactionOnServer(emoji: string | null): Promise<void> {
+    assert(this.canReact, gt`This provider does not support reactions`);
   }
 
   async save() {
@@ -98,11 +152,11 @@ export class ChatMessage extends Message {
 
   toExtraJSON(): any {
     return {
-      isEdited: this.isEdit,
+      isEdit: this.isEdit,
     };
   }
   fromExtraJSON(json: any): void {
-    this.isEdit = sanitize.boolean(json.isEdited);
+    this.isEdit = sanitize.nonemptystring(json.isEdit, null);
   }
 
   newAttachment(): Attachment {

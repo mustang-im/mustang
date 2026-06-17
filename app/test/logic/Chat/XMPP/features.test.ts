@@ -4,7 +4,7 @@ import { setupChatTestEnv } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
-import { DeliveryStatus } from "../../../../logic/Chat/Message";
+import { DeliveryStatus } from "../../../../logic/Chat/ChatMessage";
 import { XMPPChatMessage } from "../../../../logic/Chat/XMPP/XMPPChatMessage";
 import { beforeAll, beforeEach, describe, expect, test } from "vitest";
 
@@ -104,34 +104,37 @@ describe("XMPP message features — receiving", () => {
 });
 
 describe("XMPP message features — sending", () => {
-  test("sendReaction sends the full emoji set and shows it locally", async () => {
+  test("setMyReaction sends the emoji and shows it locally", async () => {
     let target = chat.newMessage();
     target.id = "t1";
     chat.messages.add(target);
-    await chat.sendReaction(target, ["👍"]);
+    await target.setMyReaction("👍");
     expect(sent[0].reactions).toEqual({ id: "t1", emojis: ["👍"] });
     expect(target.reactions.get(account.getOwnContact())).toBe("👍");
   });
 
-  test("sendCorrection sends a replace and updates locally", async () => {
-    let target = chat.newMessage();
-    target.id = "t2";
-    target.text = "frist";
-    chat.messages.add(target);
-    await chat.sendCorrection(target, "first");
-    expect(sent[0].replace).toBe("t2");
-    expect(sent[0].body).toBe("first");
-    expect(target.text).toBe("first");
-    expect((target as XMPPChatMessage).edited).toBe(true);
+  test("sendEdit sends a replace and updates the original locally", async () => {
+    let original = chat.newMessage();
+    original.id = "t2";
+    original.text = "frist";
+    chat.messages.add(original);
+    let edit = chat.newMessage();
+    edit.isEdit = "t2"; // references the original
+    edit.text = "first"; // the new text
+    await edit.sendEdit();
+    expect(sent[0].replace).toBe("t2"); // references the original
+    expect(sent[0].body).toBe("first"); // carries the new text
+    expect(original.text).toBe("first"); // original updated in place
+    expect(original.edited).toBe(true);
   });
 
-  test("sendRetraction sends a retract for the message", async () => {
+  test("deleteForOthers sends a retract for the message", async () => {
     let target = chat.newMessage();
     target.id = "t3";
+    target.outgoing = true; // can only retract our own message
     chat.messages.add(target);
-    await chat.sendRetraction(target);
+    await target.deleteForOthers();
     expect(sent[0].retract).toEqual({ id: "t3" });
-    expect((target as XMPPChatMessage).retracted).toBe(true);
   });
 
   test("sendMessage requests a receipt and marks the message markable", async () => {
@@ -146,7 +149,7 @@ describe("XMPP message features — sending", () => {
 
   test("a displayed marker is sent when our user reads an incoming message", async () => {
     let msg = await incoming({ id: "r1", body: "read me" });
-    await chat.sendDisplayedMarker(msg!);
+    await msg!.markRead();
     expect(sent[0].marker).toEqual({ type: "displayed", id: "r1" });
   });
 });
