@@ -101,8 +101,8 @@ export class ChatRoom extends Observable {
    * Data like recipient etc. is in the message object. */
   async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
-    this.messages.push(message);
-    throw new Error("not implemented for this protocol");
+    this.messages.add(message);
+    throw new AbstractFunction();
   }
 
   newMessage(): ChatMessage {

@@ -31,8 +31,7 @@ export class WhatsAppMessage extends ChatMessage {
     return this.to as WhatsAppChatRoom;
   }
 
-  /** Populates this message from a received message stanza and its decrypted
-   * payload, mirroring JMAPEMail.fromJMAP() / IMAPEMail.fromFlow().
+  /** Populates this message from a received message stanza and its decrypted payload
    * @param from the resolved sender (the room knows its members)
    * @returns false if the payload has nothing we can display. */
   fromWAMessage(stanza: WANode, payload: WAMessage, from: PersonUID | Person | Group, outgoing = false): boolean {

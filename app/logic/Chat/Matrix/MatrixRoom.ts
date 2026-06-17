@@ -214,7 +214,7 @@ export class MatrixRoom extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: ChatMessage) {
+  async sendMessage(message: MatrixChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
     assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     this.messages.add(message);

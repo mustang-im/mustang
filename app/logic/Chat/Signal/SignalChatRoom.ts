@@ -46,8 +46,8 @@ export class SignalChatRoom extends ChatRoom {
       (m): m is SignalChatMessage => m instanceof SignalChatMessage && m.sentTimestamp == timestamp);
   }
 
-  async sendMessage(message: ChatMessage): Promise<void> {
-    await (message as SignalChatMessage).send();
+  async sendMessage(message: SignalChatMessage): Promise<void> {
+    await message.send();
   }
 
   sendTyping(started: boolean): void {
