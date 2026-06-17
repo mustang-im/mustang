@@ -829,13 +829,15 @@ export class SignalAccount extends ChatAccount {
     for (let deviceID of deviceIDs) {
       let address = this.deviceAddress(serviceId, deviceID);
       let registrationID = this.deviceRegistrationID.get(address) ?? 0;
-      if (!sessions.hasSession(address)) {
+      let reusedSession = sessions.hasSession(address);
+      if (!reusedSession) {
         let fetched = await this.fetchPreKeyBundle(serviceId, deviceID);
         sessions.initiate(address, fetched.bundle, fetched.kyberPreKey);
         registrationID = fetched.bundle.registrationID;
         this.deviceRegistrationID.set(address, registrationID);
       }
       let encrypted = await sessions.encryptContent(address, padded);
+      console.log(`Signal: send → ${address} reusedSession=${reusedSession} type=${encrypted.type} regID=${registrationID}`);
       messages.push({
         type: encrypted.type == "pkmsg" ? EnvelopeType.PreKeyMessage : EnvelopeType.DoubleRatchet,
         destinationDeviceId: deviceID,

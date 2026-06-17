@@ -1,6 +1,8 @@
 /** Persistence round-trip: the protocol-specific state the SQL layer stores in the
  * `json` column via toExtraJSON/fromExtraJSON must come back identical after a restart.
  * Pure-logic (no DB): exercises the exact hooks SQLChatMessage/SQLChatRoom call. */
+// app first, to resolve the import cycle around Abstract/Account.ts
+import "../../../../logic/app";
 import { SignalChatMessage } from "../../../../logic/Chat/Signal/SignalChatMessage";
 import { SignalGroupChatRoom } from "../../../../logic/Chat/Signal/SignalGroupChatRoom";
 import { SignalGroup } from "../../../../logic/Chat/Signal/Groups/Group";

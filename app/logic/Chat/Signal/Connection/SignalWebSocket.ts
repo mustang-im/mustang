@@ -77,8 +77,8 @@ interface Pending {
 
 export class SignalWebSocket {
   protected socket: WebSocketLike | null = null;
-  protected nextID = 1;
-  protected pending = new Map<number, Pending>();
+  protected nextID = 1n;
+  protected pending = new Map<bigint, Pending>();
   protected keepAliveTimer: ReturnType<typeof setInterval> | null = null;
 
   /** Called for each inbound server REQUEST (e.g. a delivered Envelope). Return
@@ -143,7 +143,7 @@ export class SignalWebSocket {
     let msg = decode(WebSocketMessage, bytes);
     if (msg.type == WebSocketMessageType.Response && msg.response) {
       signalLog(`<< RESPONSE id=${msg.response.id} status=${msg.response.status}${msg.response.body ? ` (${msg.response.body.length}b)` : ""}`);
-      let pending = this.pending.get(msg.response.id ?? 0);
+      let pending = this.pending.get(msg.response.id ?? 0n);
       if (pending) {
         this.pending.delete(msg.response.id!);
         pending.resolve({ status: msg.response.status ?? 0, body: msg.response.body, headers: msg.response.headers ?? [] });
@@ -160,6 +160,7 @@ export class SignalWebSocket {
   protected async dispatchRequest(req: WebSocketRequestMessage): Promise<void> {
     let status = await this.onRequest(req).catch(() => 500);
     if (this.socket && req.id != null) {
+      signalLog(`>> ACK ${req.path} id=${req.id} status=${status}`);
       this.socket.send(encode(WebSocketMessage, {
         type: WebSocketMessageType.Response,
         response: { id: req.id, status, message: status == 200 ? "OK" : "Error", headers: [] },

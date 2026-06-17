@@ -53,12 +53,27 @@ test("WebSocketMessage REQUEST round-trips (the transport frame)", () => {
   let inner = encode(DataMessage, { body: "x" });
   let msg: WebSocketMessage = {
     type: WebSocketMessageType.Request,
-    request: { verb: "PUT", path: "/v1/messages/aci", body: inner, headers: ["content-type:application/json"], id: 7 },
+    request: { verb: "PUT", path: "/v1/messages/aci", body: inner, headers: ["content-type:application/json"], id: 7n },
   };
   let back = decode(WebSocketMessage, encode(WebSocketMessage, msg));
   expect(back.type).toBe(WebSocketMessageType.Request);
   expect(back.request!.verb).toBe("PUT");
   expect(back.request!.path).toBe("/v1/messages/aci");
-  expect(back.request!.id).toBe(7);
+  expect(back.request!.id).toBe(7n); // uint64 id — bigint so large server ids don't lose precision
   expect(decode(DataMessage, back.request!.body!).body).toBe("x");
+});
+
+test("WebSocket id survives a server-sized (>2^53) value — the message-redelivery bug", () => {
+  // The server's request id is Math.abs(SECURE_RANDOM.nextLong()), routinely above
+  // Number.MAX_SAFE_INTEGER. If the id field decoded as a JS number it would lose
+  // precision, our echoed ack would not match, and the server would never delete the
+  // message → every message redelivers each session (and the ratchet desyncs).
+  let bigID = 9223372036854775783n; // a 63-bit value, > 2^53
+  expect(bigID > BigInt(Number.MAX_SAFE_INTEGER)).toBe(true);
+  let frame = encode(WebSocketMessage, {
+    type: WebSocketMessageType.Response,
+    response: { id: bigID, status: 200 },
+  });
+  let back = decode(WebSocketMessage, frame);
+  expect(back.response!.id).toBe(bigID); // exact — no precision loss
 });
