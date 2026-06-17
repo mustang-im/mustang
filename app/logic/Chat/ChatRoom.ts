@@ -47,6 +47,12 @@ export class ChatRoom extends Observable {
    * Calculating this would be very slow. */
   @notifyChangedProperty
   lastMessage: ChatMessage = null;
+
+  /** Our user is admin in this chat room.
+   * Allows e.g. to delete other people's messages,
+   * and to kick people out. */
+  @notifyChangedProperty
+  isAdmin = false;
   /** Message that our user is currently composing, to this chat room */
   @notifyChangedProperty
   draftMessage: ChatMessage | null = null;
