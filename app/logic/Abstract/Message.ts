@@ -65,6 +65,8 @@ export class Message extends Observable {
    * to keep them in sync. */
   set text(val: string) {
     this._text = val;
+    this._rawHTML = null;
+    this._sanitizedHTML = null;
   }
 
   /** HTML version of the message.
