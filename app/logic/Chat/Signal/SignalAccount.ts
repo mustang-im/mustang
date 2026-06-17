@@ -5,6 +5,7 @@ import type { Group } from "../../Abstract/Group";
 import { SignalChatRoom } from "./SignalChatRoom";
 import { Signal1to1ChatRoom } from "./Signal1to1ChatRoom";
 import { SignalGroupChatRoom } from "./SignalGroupChatRoom";
+import { SignalChatMessage } from "./SignalChatMessage";
 import { SignalContact } from "./SignalContact";
 import { SignalMedia } from "./SignalMedia";
 import { ServiceId } from "./ServiceId";
@@ -487,7 +488,7 @@ export class SignalAccount extends ChatAccount {
     let room = masterKey?.length
       ? await this.getOrCreateGroupRoom(masterKey)
       : await this.getOrCreateRoom(senderId);
-    let msg = await room.handleContent(content, this.getContact(senderId), outgoing);
+    let msg = SignalChatMessage.processMessage(room, content, this.getContact(senderId), outgoing);
     if (msg) {
       console.log(`Signal: received message in "${room.name}" from ${senderId.toString()}${outgoing ? " (own device, synced)" : ""}`);
       room.lastMessage = msg;
@@ -527,7 +528,7 @@ export class SignalAccount extends ChatAccount {
     if (!room) {
       return;
     }
-    let msg = await room.handleContent(inner, this.getOwnContact(), true);
+    let msg = SignalChatMessage.processMessage(room, inner, this.getOwnContact(), true);
     if (msg) {
       room.lastMessage = msg;
       await room.saveNewMessages([msg]);
@@ -548,7 +549,7 @@ export class SignalAccount extends ChatAccount {
       return;
     }
     for (let room of this.rooms.values()) {
-      room.markSentMessageRead(read.timestamp);
+      room.findBySentTimestamp(read.timestamp)?.markSentRead();
     }
   }
 

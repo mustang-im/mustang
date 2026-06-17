@@ -11,7 +11,11 @@ export class DummyChatStorage implements ChatAccountStorage {
   }
   async saveMessage(message: RoomMessage): Promise<void> {
   }
+  async deleteMessage(message: RoomMessage): Promise<void> {
+  }
   async saveRoom(chat: ChatRoom): Promise<void> {
+  }
+  async deleteRoom(room: ChatRoom): Promise<void> {
   }
 
   static async readChatAccounts(): Promise<Collection<ChatAccount>> {

@@ -1,10 +1,14 @@
-/** A Signal chat message. Mirrors `XMPPChatMessage`: it is the `ChatMessage` the
- * UI renders, plus Signal-specific identity (the sender-timestamp that Signal uses
- * to reference messages for reactions/edits/deletes/receipts). */
+/** A Signal chat message. Mirrors `IMAPEMail`: besides being the `ChatMessage` the
+ * UI renders, it parses a decrypted Signal `Content` into itself (`fromSignal` and
+ * the `fromSignal*` side-channel appliers) and pushes per-message operations to the
+ * server (`send`, `sendReaction`, …) by reaching into its room + account. The wire
+ * encryption + transport live on `SignalAccount`; this stays crypto-free. */
 import { ChatMessage, DeliveryStatus } from "../Message";
 import type { SignalChatRoom } from "./SignalChatRoom";
 import type { SignalContact } from "./SignalContact";
-import type { DataMessage } from "./Proto/signalService";
+import type { Content, DataMessage } from "./Proto/signalService";
+import { ReceiptType, TypingAction } from "./Proto/signalService";
+import { gt } from "../../../l10n/l10n";
 
 export class SignalChatMessage extends ChatMessage {
   declare to: SignalChatRoom;
@@ -20,12 +24,64 @@ export class SignalChatMessage extends ChatMessage {
     super(room);
   }
 
+  /** Interprets messages coming into a room into a message or message state changes
+   * (or in few cases into room state changes). */
+  static processMessage(room: SignalChatRoom, content: Content, sender: SignalContact, isOutgoing: boolean): SignalChatMessage | null {
+    if (content.typingMessage) { // Room state
+      room.contactIsTyping = content.typingMessage.action == TypingAction.Started;
+      return null;
+    }
+    if (content.receiptMessage) {
+      let status = content.receiptMessage.type == ReceiptType.Read || content.receiptMessage.type == ReceiptType.Viewed
+        ? DeliveryStatus.Seen : DeliveryStatus.User;
+      for (let ts of content.receiptMessage.timestamp ?? []) {
+        room.findBySentTimestamp(ts)?.
+          fromSignalReceipt(status);
+      }
+      return null;
+    }
+    if (content.editMessage?.dataMessage) {
+      room.findBySentTimestamp(content.editMessage.targetSentTimestamp!)?.
+        fromSignalEdit(content.editMessage.dataMessage);
+      return null;
+    }
+    let data = content.dataMessage;
+    if (!data) {
+      return null;
+    }
+    if (data.flags && (data.flags & 2 /* EXPIRATION_TIMER_UPDATE */)) { // Room state
+      room.expireTimer = data.expireTimer ?? 0;
+      room.expireTimerVersion = data.expireTimerVersion ?? room.expireTimerVersion;
+      return null;
+    }
+    if (data.reaction) {
+      room.findBySentTimestamp(data.reaction.targetSentTimestamp!)?.
+        fromSignalReaction(data.reaction, sender);
+      return null;
+    }
+    if (data.delete) {
+      room.findBySentTimestamp(data.delete.targetSentTimestamp!)?.
+        fromSignalDelete();
+      return null;
+    }
+    if (!data.body && !data.attachments?.length) {
+      return null; // nothing to show (e.g. a profile-key update)
+    }
+
+    // This is a new chat message
+    let msg = room.newMessage();
+    msg.fromSignal(data, sender, isOutgoing);
+    room.messages.add(msg);
+    return msg;
+  }
+
+  /** Fill this new message from an incoming or sync'd DataMessage. */
   fromSignal(data: DataMessage, sender: SignalContact, isOutgoing: boolean) {
     let account = this.to.account;
     this.setSentTimestamp(data.timestamp ?? Date.now());
     this.outgoing = isOutgoing;
     this.from = isOutgoing ? account.getOwnContact() : sender;
-    this.contact = this.contact;
+    this.contact = this.to.contact;
     this.text = data.body ?? "";
     this.sent = new Date(data.timestamp ?? Date.now());
     this.received = new Date();
@@ -35,6 +91,45 @@ export class SignalChatMessage extends ChatMessage {
       account.media.downloadOne(this, attachment)
         // download + decrypt in the background
         .catch(ex => account.errorCallback(ex));
+    }
+  }
+
+  /** Apply an incoming reaction (DataMessage.reaction) from `sender`. */
+  fromSignalReaction(reaction: NonNullable<DataMessage["reaction"]>, sender: SignalContact): void {
+    if (reaction.remove) {
+      this.reactions.delete(sender);
+    } else if (reaction.emoji) {
+      this.reactions.set(sender, reaction.emoji);
+    }
+    this.save().catch(this.to.account.errorCallback);
+  }
+
+  /** Tombstone this message (incoming DataMessage.delete). */
+  fromSignalDelete(): void {
+    this.deleted = true;
+    this.text = gt`This message was deleted`;
+    this.save().catch(this.to.account.errorCallback);
+  }
+
+  /** Replace this message's content (incoming EditMessage). */
+  fromSignalEdit(data: DataMessage): void {
+    this.text = data.body ?? "";
+    this.edited = true;
+    this.save().catch(this.to.account.errorCallback);
+  }
+
+  /** A delivery/read receipt (ReceiptMessage) for this outgoing message. */
+  fromSignalReceipt(status: DeliveryStatus): void {
+    if (this.outgoing) {
+      this.deliveryStatus = status;
+    }
+  }
+
+  /** Mark this outgoing message seen — from another linked device's SyncMessage.Read. */
+  markSentRead(): void {
+    if (this.outgoing) {
+      this.deliveryStatus = DeliveryStatus.Seen;
+      this.save().catch(this.to.account.errorCallback);
     }
   }
 
@@ -52,6 +147,90 @@ export class SignalChatMessage extends ChatMessage {
   /** Sets `sentTimestamp` and uses it as the message `id` (Signal's message key). */
   setSentTimestamp(timestamp: number): void {
     this.id = String(timestamp);
+  }
+
+  // --- sending: push this message (and its side-channels) to the room ---
+
+  /** Send this message to its room (the 1:1 partner, or every group member). */
+  async send(): Promise<void> {
+    let account = this.to.account;
+    if (!this.sentTimestamp) {
+      this.setSentTimestamp(Date.now());
+    }
+    this.from ??= account.getOwnContact();
+    this.contact = this.to.contact;
+    this.deliveryStatus = DeliveryStatus.Sending;
+    if (!this.to.messages.contents.includes(this)) {
+      this.to.messages.add(this);
+    }
+    let attachments = await account.media.uploadAll(this.attachments.contents);
+    let data: DataMessage = {
+      body: this.text || undefined,
+      timestamp: this.sentTimestamp,
+      attachments: attachments.length ? attachments : undefined,
+      expireTimer: this.to.expireTimer || undefined,
+      expireTimerVersion: this.to.expireTimer ? this.to.expireTimerVersion : undefined,
+      groupV2: this.to.groupContext(),
+    };
+    await account.sendContent(this.to.recipients(), { dataMessage: data }, this.sentTimestamp);
+    this.sent = new Date();
+    this.received = new Date();
+    this.deliveryStatus = DeliveryStatus.Server;
+    this.to.lastMessage = this;
+    await this.to.saveNewMessages([this]);
+  }
+
+  /** React to this message with `emoji`, or remove our reaction. */
+  async sendReaction(emoji: string, remove = false): Promise<void> {
+    let account = this.to.account;
+    let data: DataMessage = {
+      timestamp: Date.now(),
+      groupV2: this.to.groupContext(),
+      reaction: {
+        emoji, remove,
+        targetAuthorAci: (this.from as SignalContact)?.serviceId?.uuidString(),
+        targetSentTimestamp: this.sentTimestamp,
+      },
+    };
+    await account.sendContent(this.to.recipients(), { dataMessage: data }, data.timestamp!);
+    let me = account.getOwnContact();
+    remove ? this.reactions.delete(me) : this.reactions.set(me, emoji);
+    await this.save();
+  }
+
+  /** Edit this (outgoing) message's text and notify the room (EditMessage). */
+  async sendCorrection(newText: string): Promise<void> {
+    let data: DataMessage = { body: newText, timestamp: Date.now(), groupV2: this.to.groupContext() };
+    await this.to.account.sendContent(this.to.recipients(),
+      { editMessage: { targetSentTimestamp: this.sentTimestamp, dataMessage: data } }, data.timestamp!);
+    this.text = newText;
+    this.edited = true;
+    await this.save();
+  }
+
+  /** Remote-delete this (outgoing) message for everyone (DataMessage.delete). */
+  async sendRetraction(): Promise<void> {
+    let data: DataMessage = {
+      timestamp: Date.now(),
+      groupV2: this.to.groupContext(),
+      delete: { targetSentTimestamp: this.sentTimestamp },
+    };
+    await this.to.account.sendContent(this.to.recipients(), { dataMessage: data }, data.timestamp!);
+    this.deleted = true;
+    this.text = gt`This message was deleted`;
+    await this.save();
+  }
+
+  /** Tell the sender we've read this (incoming) message (ReceiptMessage READ). */
+  async sendReadReceipt(): Promise<void> {
+    if (this.outgoing) {
+      return;
+    }
+    let from = (this.from as SignalContact)?.serviceId;
+    if (from) {
+      await this.to.account.sendContent([from],
+        { receiptMessage: { type: ReceiptType.Read, timestamp: [this.sentTimestamp] } }, Date.now());
+    }
   }
 
   override toExtraJSON(): any {

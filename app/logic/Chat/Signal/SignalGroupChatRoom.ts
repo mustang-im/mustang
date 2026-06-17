@@ -29,7 +29,7 @@ export class SignalGroupChatRoom extends SignalChatRoom {
       .filter((s): s is ServiceId => !!s && !(this.account.aci && s.equals(this.account.aci)));
   }
 
-  protected groupContext(): DataMessage["groupV2"] {
+  override groupContext(): DataMessage["groupV2"] {
     if (!this.masterKey) {
       console.warn(`Signal: group room ${this.id} has NO masterKey at send time → message will be delivered as 1:1!`);
     }
