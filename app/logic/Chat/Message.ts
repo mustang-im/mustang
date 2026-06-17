@@ -7,6 +7,7 @@ import type { ChatRoomEvent } from "./RoomEvent";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert } from "../util/util";
 import { ArrayColl, type MapColl } from "svelte-collections";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 /**
  * A message between humans.

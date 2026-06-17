@@ -170,6 +170,27 @@ export class Message extends Observable {
   async setReactionOnServer(emoji: string | null) {
   }
 
+  /** Sets own user's reaction to a message from somebody else. */
+  async setReaction(emoji: string | null) {
+    this.setReactionLocally(emoji);
+    this.setReactionOnServer(emoji);
+  }
+  async setReactionLocally(emoji: string | null) {
+    let me = this.outgoing
+      ? this.from
+      : this.contact instanceof ChatPersonUID
+        ? this.contact
+        : this.from;
+    if (emoji) {
+      this.reactions.set(me, emoji);
+    } else {
+      this.reactions.delete(me);
+    }
+    await this.save();
+  }
+  async setReactionOnServer(emoji: string | null) {
+  }
+
   newAttachment(): Attachment {
     throw new AbstractFunction();
   }
