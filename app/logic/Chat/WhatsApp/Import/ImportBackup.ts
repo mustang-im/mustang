@@ -5,6 +5,7 @@ import { SQLChatMessage } from "../../SQL/SQLChatMessage";
 import { getDatabase } from "../../SQL/SQLDatabase";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { WhatsAppContact } from "../WhatsAppContact";
+import { JID } from "../Binary/JID";
 import { Group } from "../../../Abstract/Group";
 import { Attachment, ContentDisposition } from "../../../Abstract/Attachment";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -159,7 +160,10 @@ export class WhatsAppBackupImport {
     let isGroup = jid.endsWith("@g.us");
     this.progress.currentChat = isGroup ? chat.subject : this.displayName(jid);
     this.notifyProgress();
-    let room = this.account.rooms.contents.find(r => r.id == jid);
+    // Match (and create) the room with the same id the live account uses, so an
+    // import on top of a live account re-uses its rooms and its messages dedup.
+    let roomID = JID.parse(jid).toNonDevice().toString();
+    let room = this.account.rooms.contents.find(r => r.id == roomID);
     // WhatsApp has chat rows for many contacts without any conversation,
     // e.g. when our user merely opened the chat screen, or for groups with
     // only system events. Don't create rooms (and contacts) for those.
@@ -171,7 +175,7 @@ export class WhatsAppBackupImport {
       group = await this.importGroup(chat, jid, group);
       if (!room) {
         room = this.account.newRoom();
-        room.id = jid;
+        room.id = roomID;
         room.contact = group;
         this.account.rooms.set(group, room);
       }

@@ -38,6 +38,8 @@ import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
+import { WhatsAppAccount } from "../../logic/Chat/WhatsApp/WhatsAppAccount";
+import WhatsAppImportBackup from "./Chat/WhatsAppImportBackup.svelte";
 import { Addressbook } from "../../logic/Contacts/Addressbook";
 import { Calendar } from "../../logic/Calendar/Calendar";
 import { CardDAVAddressbook } from "../../logic/Contacts/CardDAV/CardDAVAddressbook";
@@ -101,6 +103,7 @@ settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
 accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
+accountSettings.add(new AccSetting(WhatsAppAccount, "whatsapp-import", gt`Import backup`, WhatsAppImportBackup, true));
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
 // #endif

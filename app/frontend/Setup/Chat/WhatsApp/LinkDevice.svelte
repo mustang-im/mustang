@@ -46,7 +46,7 @@
 </hbox>
 
 <ButtonsBottom canContinue={false} showContinue={false} canCancel={true} onCancel={onCancelLink}>
-  <Button label={$t`Import messages from backup`} classes="secondary" onClick={onImportBackup} />
+  <!--<Button label={$t`Import messages from backup`} classes="secondary" onClick={onImportBackup} />-->
 </ButtonsBottom>
 
 <script lang="ts">
