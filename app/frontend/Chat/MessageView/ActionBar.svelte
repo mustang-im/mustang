@@ -7,44 +7,44 @@
     border={false} classes="plain"
     padding="4px"
     />
-  {#if message.outgoing}
-    {#if message instanceof ChatMessage}
-      <RoundButton
-        label={$t`Edit`}
-        icon={EditIcon}
-        onClick={onEdit}
-        border={false} classes="plain"
-        padding="4px"
-        />
-      <ButtonMenu bind:isMenuOpen={isDeleteMenuOpen}>
-        <RoundButton
-          label={$t`Delete`}
-          icon={TrashIcon}
-          onClick={() => isDeleteMenuOpen = !isDeleteMenuOpen}
-          border={false} classes="plain"
-          padding="4px"
-          slot="control"
-          />
-        <MenuItem
-          label={$t`Delete for myself`}
-          icon={TrashIcon}
-          onClick={onDelete}
-          />
-        <MenuItem
-          label={$t`Delete for everybody`}
-          icon={TrashIcon}
-          onClick={onDeleteForOthers}
-          />
-      </ButtonMenu>
-    {:else}
+  {#if message instanceof ChatMessage && message.canEdit}
+    <RoundButton
+      label={$t`Edit`}
+      icon={EditIcon}
+      onClick={onEdit}
+      border={false} classes="plain"
+      padding="4px"
+      />
+  {/if}
+  {#if message instanceof ChatMessage && message.canDeleteForOthers}
+    <ButtonMenu bind:isMenuOpen={isDeleteMenuOpen}>
       <RoundButton
         label={$t`Delete`}
         icon={TrashIcon}
-        onClick={onDelete}
+        onClick={() => isDeleteMenuOpen = !isDeleteMenuOpen}
         border={false} classes="plain"
         padding="4px"
+        slot="control"
         />
-    {/if}
+      <MenuItem
+        label={$t`Delete for myself`}
+        icon={TrashIcon}
+        onClick={onDelete}
+        />
+      <MenuItem
+        label={$t`Delete for everybody`}
+        icon={TrashIcon}
+        onClick={onDeleteForOthers}
+        />
+    </ButtonMenu>
+  {:else}
+    <RoundButton
+      label={$t`Delete`}
+      icon={TrashIcon}
+      onClick={onDelete}
+      border={false} classes="plain"
+      padding="4px"
+      />
   {/if}
   <RoundButton
     label={$t`Reply`}
@@ -91,7 +91,6 @@
   }
   async function onEdit() {
     assert(message instanceof ChatMessage, "Cannot get back emails");
-    assert(message.canEdit, gt`You cannot edit this message`);
     message.to.draftMessage = await message.createEdit();
   }
   async function onReply() {
