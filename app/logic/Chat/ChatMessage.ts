@@ -73,10 +73,8 @@ export class ChatMessage extends Message {
     edit.sent = this.sent ? new Date(this.sent.getTime()) : new Date();
     edit.received = new Date();
     edit.inReplyTo = this.inReplyTo;
-    edit.text = this.text;
-    if (this.hasHTML) {
-      edit.rawHTMLDangerous = this.rawHTMLDangerous;
-    }
+    // Don't set `.text`, because editor writes to `edit.rawHTMLDangerous` and does not clear `.text`
+    edit.rawHTMLDangerous = this.html;
     return edit;
   }
 
@@ -115,16 +113,6 @@ export class ChatMessage extends Message {
   /** Sends a "delete for everyone" (retraction) for this message to everybody. */
   protected async sendRetractionToOthers(): Promise<void> {
     throw new NotSupported(gt`This provider does not support deleting messages that have already been sent`);
-  }
-
-  /** Set or remove our own user's emoji reaction to this message, and tell the
-   * room. The local `reactions` update and the wire send both happen per protocol
-   * in `setMyReactionOnServer` (which resolves our own user correctly); we skip the
-   * base `setMyReactionLocally`, since its generic "me" is wrong — or `undefined` —
-   * for an incoming message. */
-  override async setMyReaction(emoji: string | null): Promise<void> {
-    await this.setMyReactionLocally(emoji);
-    await this.setMyReactionOnServer(emoji);
   }
 
   /** Tell emoji reaction to this message to others in the room.

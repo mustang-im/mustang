@@ -10,7 +10,7 @@ import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appName } from '../../build';
 import { assert } from '../../util/util';
 import { ArrayColl, MapColl } from 'svelte-collections';
-import type { MatrixClient } from 'matrix-js-sdk';
+import type { MatrixClient, PendingEventOrdering } from 'matrix-js-sdk';
 import type { MatrixCall, MatrixEvent, Room, RoomMember, UIAuthCallback } from 'matrix-js-sdk/lib/matrix';
 
 export class MatrixAccount extends ChatAccount {
@@ -80,7 +80,11 @@ export class MatrixAccount extends ChatAccount {
     await this.loginOnly(interactive);
     //let crypto = this.client.getCrypto();
     //await crypto.requestOwnUserVerification();
-    await this.client.startClient();
+    // "detached": local echoes live in a separate pending list. Required for sending
+    // events that relate to another (e.g. an `m.replace` edit): the SDK resolves the
+    // target via `room.getPendingEvents()`, which throws under the legacy default
+    // `chronological` ordering ("Cannot call getPendingEvents with ...").
+    await this.client.startClient({ pendingEventOrdering: "detached" as PendingEventOrdering });
     await this.waitForEvent("sync"); // Sync finished
 
     this.listRooms()

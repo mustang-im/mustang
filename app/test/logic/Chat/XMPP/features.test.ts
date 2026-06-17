@@ -135,6 +135,9 @@ describe("XMPP message features — sending", () => {
     chat.messages.add(target);
     await target.deleteForOthers();
     expect(sent[0].retract).toEqual({ id: "t3" });
+    // XEP-0428 fallback marker, so a supporting client applies the retraction
+    // instead of showing the fallback <body> as a new message.
+    expect(sent[0].fallback).toEqual({ for: "urn:xmpp:message-retract:1" });
   });
 
   test("sendMessage requests a receipt and marks the message markable", async () => {
@@ -144,6 +147,9 @@ describe("XMPP message features — sending", () => {
     expect(sent[0].body).toBe("Hi Alice");
     expect(sent[0].receipt).toEqual({ type: "request" });
     expect(sent[0].marker).toEqual({ type: "markable" });
+    // XEP-0359 origin-id, so the recipient can match a later edit/retraction we
+    // send that references this id (otherwise it's shown as a new message).
+    expect(sent[0].originId).toBe(msg.id);
     expect(msg.deliveryStatus).toBe(DeliveryStatus.Server);
   });
 

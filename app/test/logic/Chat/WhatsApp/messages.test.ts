@@ -118,6 +118,16 @@ test("room edits and deletes a message", async () => {
   expect(target.text).toBe("This message was deleted");
 });
 
+test("a revoke with no type field (REVOKE is the omitted protobuf default) still deletes", async () => {
+  let room = makeRoom();
+  await room.receiveMessage(stanza("M1"), { conversation: "secret" }, peer);
+  let target = room.messages.first;
+  // Real WhatsApp omits the enum value 0 (REVOKE) on the wire, so the decoded
+  // protocolMessage has no `type` — we must still treat it as a delete.
+  await room.receiveMessage(stanza("D1"), { protocolMessage: { key: { id: "M1" } } }, peer);
+  expect(target.text).toBe("This message was deleted");
+});
+
 test("room sends files as media, with the text as the first file's caption", async () => {
   let sentMedia: Array<{ caption: string | undefined, filename: string }> = [];
   let account = {

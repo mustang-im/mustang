@@ -5,6 +5,7 @@ import { fileExtensions } from "../../Files/FileType/MIMETypes";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { NS_RETRACT } from "./XMPPStanzaExtensions";
 import type { Message, Forward } from "stanza/protocol";
 import type { JSONElement } from "stanza/jxt";
 
@@ -13,6 +14,9 @@ export class XMPPChatMessage extends ChatMessage {
 
   /** Server/room-assigned ID (XEP-0359), referenced by reactions etc. in MUCs */
   stanzaID: string | null = null;
+  /** Sender-assigned stable ID (XEP-0359 origin-id). What edits (XEP-0308) and
+   * retractions (XEP-0424) reference, so we match incoming ones against it too. */
+  originID: string | null = null;
   /** This message arrived OMEMO-encrypted (XEP-0384) */
   encrypted = false;
   /** The sender deleted this message again (XEP-0424) */
@@ -39,6 +43,7 @@ export class XMPPChatMessage extends ChatMessage {
     this.id = sanitize.nonemptystring(json.id, null) ??
       sanitize.nonemptystring(archiveID, null) ?? crypto.randomUUID();
     this.stanzaID = json.stanzaIds?.find(stanzaID => stanzaID.id)?.id ?? null;
+    this.originID = sanitize.nonemptystring(json.originId, null);
     this.sent = sanitize.date(wrapper?.delay?.timestamp ?? json.delay?.timestamp, new Date());
     this.received = new Date(this.sent); // copy: callers may mutate dates in place
     // The chat resolves the sender (the chat partner for 1:1, the occupant for MUC)
@@ -67,19 +72,31 @@ export class XMPPChatMessage extends ChatMessage {
   /** Retract this message for everyone (XEP-0424). */
   protected override async sendRetractionToOthers(): Promise<void> {
     let room = this.chatRoom;
-    room.account.client.sendMessage({
+    let fallbackBody = gt`This message was deleted`;
+    let stanza: Message = {
       type: room.messageType,
       to: room.id,
       id: crypto.randomUUID(),
       retract: {
         id: room.referenceID(this),
       },
+      // XEP-0428: marks the body below as a fallback for the retraction, so a
+      // client that supports XEP-0424 ignores the body and applies the retraction
+      // instead of showing it as a new message (Conversations needs this).
+      fallback: { for: NS_RETRACT },
       // A body so clients without XEP-0424 still show that something happened
-      body: gt`This message was deleted`,
+      body: fallbackBody,
       processingHints: {
         store: true,
       },
-    });
+    };
+    // In an OMEMO chat the retraction must be encrypted too: Conversations only
+    // applies a retraction whose OMEMO fingerprint matches the original message's
+    // (`fingerprintsMatch`). A plaintext retraction of an encrypted message has no
+    // fingerprint and is silently rejected. Encrypting carries our device key's
+    // fingerprint, which equals the original's (same device).
+    await room.encryptIfEnabled(stanza, fallbackBody);
+    room.account.client.sendMessage(stanza);
   }
 
   /** Add or remove our own emoji reaction to this message (XEP-0444).
@@ -127,7 +144,10 @@ export class XMPPChatMessage extends ChatMessage {
     };
     await room.encryptIfEnabled(stanza, this.text);
     room.account.client.sendMessage(stanza);
+    // Update our own view in place. The bubble renders `.html`, so refresh both
+    // `text` and `html`; setting only `text` leaves the stale rendered HTML.
     original.text = this.text;
+    original.html = this.html;
     original.edited = true;
     await original.save();
   }

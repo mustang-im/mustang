@@ -226,7 +226,7 @@ export class XMPPChat extends ChatRoom {
   findMessage(id: string): RoomMessage | undefined {
     return this.messages.find(msg =>
       msg.id == id ||
-      (msg instanceof XMPPChatMessage && msg.stanzaID == id));
+      (msg instanceof XMPPChatMessage && (msg.stanzaID == id || msg.originID == id)));
   }
 
   /** The contact who sent `json`, as the key for the reaction map.
@@ -305,8 +305,14 @@ export class XMPPChat extends ChatRoom {
   }
 
   /** Adds the 1:1-only delivery receipt + read-marker requests to an outgoing
-   * message. XMPPGroupChat overrides to add an origin-id instead. */
+   * message, plus a stable origin-id. XMPPGroupChat overrides this. */
   protected decorateOutgoing(stanza: Message): void {
+    // XEP-0359 origin-id: the stable id the recipient indexes this message by, so a
+    // later edit (XEP-0308 `replace`) or retraction (XEP-0424 `retract`) we send —
+    // which reference this id — can be matched back to it. Without it, Conversations
+    // can't find the original and renders our edit/deletion as a new message. It
+    // equals the stanza id, which is also what `referenceID()` uses.
+    stanza.originId = stanza.id;
     stanza.receipt = { type: "request" };
     stanza.marker = { type: "markable" };
   }

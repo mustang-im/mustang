@@ -12,6 +12,7 @@ import { JID } from "./Binary/JID";
 import { ProtocolMessageType, type WAMessage, type ReactionMessage, type WebMessageInfo, type MessageKey } from "./Proto/schema";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { waLog } from "./util";
 import type { ArrayColl } from "svelte-collections";
 
 /** A WhatsApp chat room. The shared message machinery (receive/store/react/edit/
@@ -41,13 +42,21 @@ export class WhatsAppChatRoom extends ChatRoom {
    * or applies a reaction / edit / deletion to the message it targets. */
   async receiveMessage(stanza: WANode, rawPayload: WAMessage, sender: JID, outgoing = false): Promise<void> {
     let payload = WhatsAppMessage.unwrap(rawPayload);
+    let protocol = payload.protocolMessage;
     if (payload.reactionMessage) {
       await this.reactionToMessage(payload.reactionMessage, sender);
-    } else if (payload.protocolMessage?.type == ProtocolMessageType.Revoke) {
-      await this.deleteMessageByID(payload.protocolMessage.key?.id);
-    } else if (payload.protocolMessage?.type == ProtocolMessageType.MessageEdit && payload.protocolMessage.editedMessage) {
-      await this.editMessage(payload.protocolMessage.key?.id, payload.protocolMessage.editedMessage);
-    } else if (!payload.protocolMessage) {
+    } else if (protocol) {
+      // REVOKE is protobuf enum value 0 — the default — which WhatsApp omits on the
+      // wire, so the decoded `type` is `undefined`, not 0. Normalize it, otherwise
+      // an incoming delete-for-everyone is silently dropped (the message stays).
+      let type = protocol.type ?? ProtocolMessageType.Revoke;
+      waLog("recv protocolMessage: type", type, "key.id", protocol.key?.id, "edited", !!protocol.editedMessage);
+      if (type == ProtocolMessageType.MessageEdit && protocol.editedMessage) {
+        await this.editMessage(protocol.key?.id, protocol.editedMessage);
+      } else if (type == ProtocolMessageType.Revoke) {
+        await this.deleteMessageByID(protocol.key?.id);
+      }
+    } else {
       await this.addMessage(stanza, payload, sender, outgoing);
     }
   }
@@ -145,6 +154,7 @@ export class WhatsAppChatRoom extends ChatRoom {
 
   protected async deleteMessageByID(targetID: string | undefined): Promise<void> {
     let target = this.messages.find(msg => msg.id == targetID);
+    waLog("revoke incoming: target id", targetID, "found", !!target);
     if (!target) {
       return;
     }

@@ -17,6 +17,7 @@ export const NS_REACTIONS = "urn:xmpp:reactions:0";
 export const NS_RETRACT = "urn:xmpp:message-retract:1";
 export const NS_RETRACT_OLD = "urn:xmpp:message-retract:0";
 export const NS_REPLY = "urn:xmpp:reply:0";
+export const NS_FALLBACK = "urn:xmpp:fallback:0";
 
 /** Emoji reactions to another message (XEP-0444) */
 export interface Reactions {
@@ -40,11 +41,19 @@ export interface Reply {
   id: string;
 }
 
+/** Marks the message's `<body>` as a fallback for a feature (XEP-0428), so a
+ * client that understands that feature (e.g. retraction) ignores the body. */
+export interface Fallback {
+  /** Namespace of the feature this body is a fallback for, e.g. the retraction ns */
+  for: string;
+}
+
 declare module "stanza/protocol" {
   interface Message {
     reactions?: Reactions;
     retract?: Retract;
     reply?: Reply;
+    fallback?: Fallback;
   }
 }
 
@@ -54,6 +63,7 @@ export function registerXMPPExtensions(client: Agent): void {
       reactions: { importer: importReactions, exporter: exportReactions },
       retract: { importer: importRetract, exporter: exportRetract },
       reply: { importer: importReply, exporter: exportReply },
+      fallback: { importer: importFallback, exporter: exportFallback },
     }),
     // stanza's built-in OMEMO serializes the prekey flag as `prekey="1"`;
     // Conversations and the other clients send the literal `prekey="true"` (and
@@ -124,4 +134,13 @@ function exportReply(message: XMLElement, data: Reply): void {
     attributes.to = data.to;
   }
   message.appendChild(new XMLElement("reply", attributes));
+}
+
+function importFallback(message: XMLElement): Fallback | undefined {
+  let fallback = message.getChild("fallback", NS_FALLBACK);
+  return fallback ? { for: fallback.getAttribute("for") ?? "" } : undefined;
+}
+
+function exportFallback(message: XMLElement, data: Fallback): void {
+  message.appendChild(new XMLElement("fallback", { xmlns: NS_FALLBACK, for: data.for }));
 }

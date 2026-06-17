@@ -520,7 +520,16 @@ export class WhatsAppSender {
       node.attrs.edit = key.fromMe ? "7" : "8";
     } else if (payload.protocolMessage!.type == ProtocolMessageType.MessageEdit) {
       node.attrs.edit = "1";
+    } else {
+      return;
     }
+    // Each <enc> of an edit/revoke is flagged `decrypt-fail="hide"` (matching
+    // WhatsApp Web / whatsmeow), so a device that never saw the original doesn't
+    // surface a decryption-error placeholder for the in-place change.
+    for (let enc of encChildren(node)) {
+      enc.attrs["decrypt-fail"] = "hide";
+    }
+    waLog("send: edit/revoke wire node (key.id=" + key.id + ", edit=" + node.attrs.edit + "):\n" + nodeTree(node));
   }
 
   /** The outgoing `<message>` envelope: the per-device `<enc>` nodes wrapped in
@@ -581,6 +590,21 @@ export class WhatsAppSender {
   }
 }
 
+
+/** All `<enc>` descendant nodes of a message stanza (the per-device ciphertexts
+ * under `<participants><to>`, plus a group `<enc type=skmsg>`). */
+function encChildren(node: WANode): WANode[] {
+  let result: WANode[] = [];
+  if (Array.isArray(node.content)) {
+    for (let child of node.content) {
+      if (child.tag == "enc") {
+        result.push(child);
+      }
+      result.push(...encChildren(child));
+    }
+  }
+  return result;
+}
 
 /** The `<message type>` attr from the payload: "media" for any media content,
  * else "text" (the only two we send). */
