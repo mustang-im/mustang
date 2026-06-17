@@ -90,7 +90,7 @@ function newAccount(name: string): TestSignalAccount {
   let kyberKeyPair = KyberKeyPair.generate();
   account.kyberLastResort = {
     keyID: 1, keyPair: kyberKeyPair,
-    signature: xeddsaSign(store.identityKeyPair.privateKey, kyberKeyPair.publicKey),
+    signature: signKyberPreKey(store.identityKeyPair.privateKey, kyberKeyPair.publicKey),
   };
   appGlobal.chatAccounts.add(account);
   return account;

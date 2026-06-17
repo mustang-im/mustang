@@ -16,7 +16,7 @@ import { SignalChatMessage } from "../../../../logic/Chat/Signal/SignalChatMessa
 import { ServiceId } from "../../../../logic/Chat/Signal/ServiceId";
 import { SignalStore } from "../../../../logic/Chat/Signal/Crypto/Store";
 import { KyberKeyPair } from "../../../../logic/Chat/Signal/Encryption/kyber";
-import { KyberPreKeyBundle } from "../../../../logic/Chat/Signal/Encryption/pqxdh";
+import { KyberPreKeyBundle, signKyberPreKey } from "../../../../logic/Chat/Signal/Encryption/pqxdh";
 import { PreKeyBundle } from "../../../../logic/Chat/Signal/Crypto/Identity";
 import { xeddsaSign } from "../../../../logic/Chat/Signal/Crypto/curve";
 import { base64Encode, base64Decode, randomBytes } from "../../../../logic/Chat/Signal/Crypto/primitives";
@@ -172,7 +172,7 @@ function newAccount(name: string): TestSignalAccount {
   let kyberKeyPair = KyberKeyPair.generate();
   account.kyberLastResort = {
     keyID: 1, keyPair: kyberKeyPair,
-    signature: xeddsaSign(account.aciStore.identityKeyPair.privateKey, kyberKeyPair.publicKey),
+    signature: signKyberPreKey(account.aciStore.identityKeyPair.privateKey, kyberKeyPair.publicKey),
   };
   appGlobal.chatAccounts.add(account);
   network.set(account.aci.toString(), account);

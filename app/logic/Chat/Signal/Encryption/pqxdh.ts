@@ -279,14 +279,23 @@ export function parsePqPreKeyMessage(data: Uint8Array): PqPreKeyMessageFields {
 
 // --- Kyber prekey signing/verification ---
 
-/** Signs a Kyber prekey's public key with the identity key (XEdDSA), exactly as
- * a signed (curve) prekey is signed — over the raw public key bytes. */
+/** libsignal-serialized Kyber public key: type byte 0x08 (KeyType::Kyber1024) ‖ raw
+ * 1568-byte ML-KEM key. The prekey signature is over THIS form (not the raw key), so
+ * both sign and verify re-frame; matches `keysJSON.serializeKyberPublicKey` on publish. */
+function serializeKyberKey(publicKey: Uint8Array): Uint8Array {
+  let out = new Uint8Array(1 + publicKey.length);
+  out[0] = 0x08;
+  out.set(publicKey, 1);
+  return out;
+}
+
+/** Signs a Kyber prekey with the identity key (XEdDSA), over the serialized key. */
 export function signKyberPreKey(identityPrivateKey: Uint8Array, publicKey: Uint8Array): Uint8Array {
-  return xeddsaSign(identityPrivateKey, publicKey);
+  return xeddsaSign(identityPrivateKey, serializeKyberKey(publicKey));
 }
 
 /** Verifies a Kyber prekey's signature against the bundle's identity key. */
 export function verifyKyberPreKey(identityKey: Uint8Array, kyberPreKey: KyberPreKeyBundle): boolean {
-  return xeddsaVerify(identityKey, kyberPreKey.publicKey, kyberPreKey.signature);
+  return xeddsaVerify(identityKey, serializeKyberKey(kyberPreKey.publicKey), kyberPreKey.signature);
 }
 

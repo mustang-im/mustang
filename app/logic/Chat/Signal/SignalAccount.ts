@@ -23,7 +23,7 @@ import {
 import { signalServerPublicParams } from "./Connection/serverParams";
 import { registerNewAccount, type KyberLastResort } from "./Connection/Registration";
 import { receiveAuthCredentialWithPniZkc, type AuthCredentialWithPni, type ServerPublicParams } from "./Encryption/ZKGroup/credentials";
-import { KyberPreKeyBundle } from "./Encryption/pqxdh";
+import { KyberPreKeyBundle, signKyberPreKey } from "./Encryption/pqxdh";
 import { SignalSessions } from "./Encryption/SignalSession";
 import { padContent, unpadContent } from "./Proto/contentPadding";
 import { sealedSenderDecrypt, CiphertextType } from "./Encryption/SealedSender";
@@ -255,7 +255,8 @@ export class SignalAccount extends ChatAccount {
    * serialized form (keysJSON.ts). */
   protected generateKyberLastResort(identityKey: KeyPair): KyberLastResort {
     let keyPair = KyberKeyPair.generate();
-    return { keyID: 1, keyPair, signature: xeddsaSign(identityKey.privateKey, keyPair.publicKey) };
+    // Sign over the serialized key (0x08 ‖ raw), matching publish + verify (libsignal).
+    return { keyID: 1, keyPair, signature: signKyberPreKey(identityKey.privateKey, keyPair.publicKey) };
   }
 
   /** Register this device with the server (PUT /v1/devices/link, Docs/02 §B.5): a
@@ -408,7 +409,9 @@ export class SignalAccount extends ChatAccount {
       console.warn("Signal: no storage master key yet — skipping roster sync (Docs/06)");
       return;
     }
-    await new SignalStorageService(this).sync();
+    // Force a full re-apply: we don't persist the decrypted contact names/profile keys,
+    // so each startup must re-read them from storage (otherwise a 204 leaves UUIDs).
+    await new SignalStorageService(this).sync(true);
   }
 
   /** The storage-service master key from a linking ProvisionMessage. Newer accounts
@@ -685,9 +688,11 @@ export class SignalAccount extends ChatAccount {
     try {
       padded = await this.getSessions().decryptContent(address, info.type, info.body);
     } catch (ex) {
-      // UNKNOWN (live-confirm): our triple-ratchet + sealed-sender wire bytes are
-      // bit-exact in offline round-trips, but a real Signal peer is their first live
-      // test. A failure HERE pinpoints the remaining wire detail — log everything.
+      // A redelivered message we already processed (the ratchet chain advanced past it)
+      // is benign: ACK it (return null, so the server drains it) without error spam.
+      if ((ex as any)?.message?.includes("Duplicate or too-old")) {
+        return null;
+      }
       console.warn("Signal DECRYPT FAILED:", "envelopeType", envelope.type,
         "sealedSender", envelope.type == EnvelopeType.UnidentifiedSender,
         "from", info.sender.toString(), "device", info.deviceID,
@@ -1151,7 +1156,14 @@ function parsePreKeyResponse(json: PreKeyResponse, deviceID: number): FetchedBun
     bundle.preKeyID = device.preKey.keyId;
     bundle.preKeyPublic = unframeDjb(base64Decode(device.preKey.publicKey));
   }
+  // The fetched Kyber prekey is the libsignal-serialized form (0x08 type byte ‖ 1568-byte
+  // raw ML-KEM key = 1569). Strip the type byte to the raw key our crypto uses;
+  // verifyKyberPreKey re-frames it because the signature is over the serialized form.
+  let kyberPublic = base64Decode(device.pqPreKey.publicKey);
+  if (kyberPublic.length == 1569) {
+    kyberPublic = kyberPublic.subarray(1);
+  }
   let kyberPreKey = new KyberPreKeyBundle(
-    device.pqPreKey.keyId, base64Decode(device.pqPreKey.publicKey), base64Decode(device.pqPreKey.signature));
+    device.pqPreKey.keyId, kyberPublic, base64Decode(device.pqPreKey.signature));
   return { bundle, kyberPreKey };
 }

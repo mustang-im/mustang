@@ -33,20 +33,25 @@ export class SignalStorageService {
 
   /** Pull the manifest, diff against what we last synced, fetch + apply the
    * changed records. A no-op (returns false) when already up to date. */
-  async sync(): Promise<boolean> {
+  /** @param forceReapply ignore the version/known-id diff cache: fetch the FULL
+   * manifest and apply EVERY record. We don't persist the decrypted contact data
+   * (display names, profile keys) across restarts, so a normal sync (manifest
+   * unchanged → 204) would leave contacts showing their UUID. The startup roster
+   * sync forces a re-apply so names/avatars are restored each run. */
+  async sync(forceReapply = false): Promise<boolean> {
     let storageKey = this.account.storageKey;
     if (!storageKey) {
       throw new Error("Signal: no storage key — master key not yet sourced (Docs/06 §3)");
     }
     let creds = await this.storageCredentials();
-    let manifest = await this.fetchManifest(creds, this.account.storageManifestVersion);
+    let manifest = await this.fetchManifest(creds, forceReapply ? 0 : this.account.storageManifestVersion);
     if (!manifest) {
       return false; // 204 same version, or 404 no manifest yet
     }
     let manifestRecord = await this.decryptManifest(storageKey, manifest);
 
-    // Diff by 16-byte raw id: fetch ids we don't already know.
-    let known = this.account.storageKnownIds;
+    // Diff by 16-byte raw id: fetch ids we don't already know (all of them when forcing).
+    let known = forceReapply ? new Set<string>() : this.account.storageKnownIds;
     let identifiers = manifestRecord.identifiers ?? [];
     let changed = identifiers.filter(id => id.raw && !known.has(bytesToHex(id.raw)));
 
