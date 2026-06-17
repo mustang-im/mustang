@@ -40,8 +40,9 @@ export class SignalMedia {
       let key = newAttachmentKey();
       let enc = await encryptAttachment(key, plaintext);
       let { cdnKey, cdnNumber } = await this.upload(enc.data);
+      // cdnKey and cdnId are a oneof — set only cdnKey for v4 uploads.
       pointers.push({
-        cdnKey, cdnNumber, cdnId: 0n,
+        cdnKey, cdnNumber,
         key, digest: enc.digest, size: enc.size,
         contentType: att.mimeType || "application/octet-stream",
         fileName: att.filename || undefined,
@@ -90,7 +91,10 @@ export class SignalMedia {
     } else {
       throw new Error(`Signal: unknown attachment CDN version ${form.cdn}`);
     }
-    let res = await fetch(form.signedUploadLocation, { method: "POST", headers, body: "" });
+    // Empty body as a BufferSource, NOT a string: a string body makes fetch add
+    // `Content-Type: text/plain`, which the CDN3 (TUS) creation endpoint rejects with
+    // 415. Signal-Android sends `RequestBody.create(null, "")` — empty, no Content-Type.
+    let res = await fetch(form.signedUploadLocation, { method: "POST", headers, body: new Uint8Array(0) });
     if (!res.ok) {
       throw new Error(`Signal: starting resumable upload failed: HTTP ${res.status}`);
     }
