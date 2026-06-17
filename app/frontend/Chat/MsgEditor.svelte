@@ -17,7 +17,7 @@
     {/if}
     {#if $attachments.hasItems}
       <vbox class="attachments">
-        <AttachmentsPane message={draftMessage} />
+        <AttachmentsPane message={to.draftMessage} />
       </vbox>
     {/if}
     <hbox flex>
@@ -42,7 +42,7 @@
         <vbox flex class="editor-scroll-wrapper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={draftMessage.rawHTMLDangerous} bind:editor />
+              <HTMLEditor bind:html={to.draftMessage.rawHTMLDangerous} bind:editor />
             </vbox>
           </Scroll>
         </vbox>
@@ -54,7 +54,7 @@
           iconSize="24px"
           padding="6px"
           border={false}
-          disabled={!$draftMessage.hasHTML && $attachments.isEmpty}
+          disabled={!to.draftMessage.hasHTML && $attachments.isEmpty}
           />
       </vbox>
     </hbox>
@@ -87,15 +87,14 @@
 
   let isEnterSend = true;
   $: to.draftMessage ??= to.newMessage();
-  $: draftMessage = $to.draftMessage;
   $: attachments = $to.draftMessage.attachments;
   $: $selectedDraft = $to.draftMessage;
   $: $selectedEditor = editor;
   let showEmojis = false;
 
   async function send() {
-    assert(draftMessage.hasHTML || draftMessage.attachments.hasItems, "Message is empty");
-    let msg = draftMessage;
+    assert(to.draftMessage.hasHTML || to.draftMessage.attachments.hasItems, "Message is empty");
+    let msg = to.draftMessage;
     msg.outgoing = true;
     msg.text; // Generate to keep in sync
     msg.contact = to.contact;
