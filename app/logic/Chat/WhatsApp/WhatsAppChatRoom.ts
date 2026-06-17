@@ -67,7 +67,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     this.messages.add(message);
     this.lastMessage = message;
-    await this.account.storage.saveMessage(message);
+    await message.save();
   }
 
   /** Adds a stored message from history sync (a WebMessageInfo) to this room.
@@ -94,7 +94,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     if (!this.lastMessage || message.sent > this.lastMessage.sent) {
       this.lastMessage = message;
     }
-    await this.account.storage.saveMessage(message);
+    await message.save();
     return true;
   }
 
@@ -116,7 +116,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     } else {
       target.reactions.delete(person); // empty emoji removes the reaction
     }
-    await this.account.storage.saveMessage(target);
+    await target.save();
   }
 
   protected async editMessage(targetID: string | undefined, edited: WAMessage): Promise<void> {
@@ -127,7 +127,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     target.text = "";
     target.attachments.clear();
     target.readContent(WhatsAppMessage.unwrap(edited));
-    await this.account.storage.saveMessage(target);
+    await target.save();
   }
 
   protected async deleteMessageByID(targetID: string | undefined): Promise<void> {
@@ -136,7 +136,7 @@ export class WhatsAppChatRoom extends ChatRoom {
       return;
     }
     target.text = gt`This message was deleted`;
-    await this.account.storage.saveMessage(target);
+    await target.save();
   }
 
   /** Who an incoming message is from: in a 1:1 it's the chat partner;
@@ -181,7 +181,7 @@ export class WhatsAppChatRoom extends ChatRoom {
     }
     this.lastMessage = message;
     message.deliveryStatus = DeliveryStatus.Server;
-    await this.account.storage.saveMessage(message);
+    await message.save();
   }
 
   newMessage(): WhatsAppMessage {

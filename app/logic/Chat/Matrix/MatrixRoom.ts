@@ -87,7 +87,7 @@ export class MatrixRoom extends ChatRoom {
         let content = event.getContent()["m.new_content"];
         orgMessage.text = content.body;
         orgMessage.rawHTMLDangerous = content.formatted_body;
-        await this.account.storage.saveMessage(orgMessage);
+        await orgMessage.save();
       }
       return null;
     }
@@ -154,7 +154,7 @@ export class MatrixRoom extends ChatRoom {
     }
     assert(reactTo instanceof ChatMessage, "Reacting to something that is not a message");
     reactTo.reactions.set(person, emoji);
-    await this.account.storage.saveMessage(reactTo);
+    await reactTo.save();
   }
 
   getJoinLeaveInviteEvent(event): ChatRoomEvent {

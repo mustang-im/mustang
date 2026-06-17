@@ -44,7 +44,7 @@ export class SignalChatRoom extends ChatRoom {
   /** Interpret a decrypted Content from `sender` at `serverTimestamp`. Applies a
    * side-channel (reaction/edit/delete/receipt/typing) to an existing message, or
    * returns a new message for the account to store. */
-  async handleContent(content: Content, sender: SignalContact, outgoing: boolean): Promise<SignalChatMessage | null> {
+  async handleContent(content: Content, sender: SignalContact, isOutgoing: boolean): Promise<SignalChatMessage | null> {
     if (content.receiptMessage) {
       this.applyReceipt(content.receiptMessage, sender);
       return null;
@@ -77,21 +77,11 @@ export class SignalChatRoom extends ChatRoom {
     if (!data.body && !data.attachments?.length) {
       return null; // nothing to show (e.g. a profile-key update)
     }
-    return this.buildMessage(data, sender, outgoing);
-  }
 
-  protected buildMessage(data: DataMessage, sender: SignalContact, outgoing: boolean): SignalChatMessage {
     let msg = this.newMessage();
-    msg.setSentTimestamp(data.timestamp ?? Date.now());
-    msg.outgoing = outgoing;
-    msg.from = outgoing ? this.account.getOwnContact() : sender;
-    msg.contact = this.contact;
-    msg.text = data.body ?? "";
-    msg.sent = new Date(data.timestamp ?? Date.now());
-    msg.received = new Date();
-    msg.deliveryStatus = outgoing ? DeliveryStatus.Server : DeliveryStatus.User;
-    this.account.media.addAttachments(msg, data); // download + decrypt in the background
+    msg.fromSignal(data, sender, isOutgoing);
     this.messages.add(msg);
+    await msg.save();
     return msg;
   }
 
@@ -110,7 +100,8 @@ export class SignalChatRoom extends ChatRoom {
     } else if (reaction.emoji) {
       target.reactions.set(sender, reaction.emoji);
     }
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   protected applyDelete(targetSentTimestamp: number): void {
@@ -120,7 +111,8 @@ export class SignalChatRoom extends ChatRoom {
     }
     target.deleted = true;
     target.text = gt`This message was deleted`;
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   protected applyEdit(targetSentTimestamp: number, data: DataMessage): void {
@@ -130,7 +122,8 @@ export class SignalChatRoom extends ChatRoom {
     }
     target.text = data.body ?? "";
     target.edited = true;
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   /** Mark our outgoing message with this sent-timestamp as seen — used by a
@@ -139,7 +132,8 @@ export class SignalChatRoom extends ChatRoom {
     let target = this.findBySentTimestamp(sentTimestamp);
     if (target instanceof ChatMessage && target.outgoing) {
       target.deliveryStatus = DeliveryStatus.Seen;
-      this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+      target.save()
+        .catch(this.account.errorCallback);
     }
   }
 
@@ -198,7 +192,7 @@ export class SignalChatRoom extends ChatRoom {
     await this.account.sendContent(this.recipients(), { dataMessage: data }, data.timestamp!);
     let me = this.account.getOwnContact();
     remove ? target.reactions.delete(me) : target.reactions.set(me, emoji);
-    await this.account.storage?.saveMessage(target);
+    await target.save();
   }
 
   async sendCorrection(target: ChatMessage, newText: string): Promise<void> {
@@ -208,7 +202,7 @@ export class SignalChatRoom extends ChatRoom {
       { editMessage: { targetSentTimestamp: t.sentTimestamp, dataMessage: data } }, data.timestamp!);
     target.text = newText;
     t.edited = true;
-    await this.account.storage?.saveMessage(target);
+    await target.save();
   }
 
   async sendRetraction(target: ChatMessage): Promise<void> {
@@ -221,7 +215,7 @@ export class SignalChatRoom extends ChatRoom {
     await this.account.sendContent(this.recipients(), { dataMessage: data }, data.timestamp!);
     t.deleted = true;
     target.text = gt`This message was deleted`;
-    await this.account.storage?.saveMessage(target);
+    await target.save();
   }
 
   /** Read receipt for a received message (ReceiptMessage type READ). */
@@ -256,20 +250,13 @@ export class SignalChatRoom extends ChatRoom {
   // --- persistence + history ---
 
   async saveNewMessages(messages: RoomMessage[]): Promise<void> {
-    if (!this.account.storage) {
-      console.warn(`Signal: saveNewMessages — NO storage on account; ${messages.length} message(s) NOT persisted`);
-      return;
-    }
     if (!this.dbID) {
       await this.save();
     }
-    console.log(`Signal: saveNewMessages — room ${this.id} dbID=${this.dbID}, persisting ${messages.length} message(s)`);
     for (let msg of messages) {
       try {
-        await this.account.storage.saveMessage(msg);
-        console.log(`Signal: saveNewMessages — saved msg id=${msg.id} dbID=${(msg as any).dbID}`);
+        await msg.save();
       } catch (ex) {
-        console.error("Signal: saveMessage FAILED —", (ex as any)?.constructor?.name, "|", (ex as any)?.message ?? ex, "\nstack:", (ex as any)?.stack);
         this.account.errorCallback(ex);
       }
     }
@@ -291,14 +278,12 @@ export class SignalChatRoom extends ChatRoom {
   protected historyLoaded = false;
 
   protected async readMessagesFromDB(): Promise<void> {
-    console.log(`Signal: readMessagesFromDB — room ${this.id} dbID=${this.dbID} historyLoaded=${this.historyLoaded} inMemory=${this.messages.contents.length}`);
     if (this.historyLoaded || !this.dbID) {
       return;
     }
     this.historyLoaded = true;
     // readAll dedups by dbID, so any live message already in memory is not duplicated.
     await SQLChatMessage.readAll(this);
-    console.log(`Signal: readMessagesFromDB — room ${this.id} now has ${this.messages.contents.length} message(s) after DB load`);
     this.lastMessage = this.messages.contents
       .filter((m): m is ChatMessage => m instanceof ChatMessage)
       .reduce((last, m) => !last || m.sent > last.sent ? m : last, null as ChatMessage | null);

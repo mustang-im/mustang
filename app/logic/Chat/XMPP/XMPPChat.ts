@@ -114,6 +114,7 @@ export class XMPPChat extends ChatRoom {
     this.addMediaAttachments(msg, json);
     this.messages.add(msg);
     this.contactIsTyping = false;
+    await msg.save();
     return msg;
   }
 
@@ -171,7 +172,8 @@ export class XMPPChat extends ChatRoom {
     } else {
       target.reactions.delete(sender);
     }
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   protected receiveRetraction(targetID: string): void {
@@ -181,7 +183,8 @@ export class XMPPChat extends ChatRoom {
     }
     target.retracted = true;
     target.text = gt`This message was deleted`;
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   /** Applies a XEP-0308 correction (edit) to the message it replaces.
@@ -196,7 +199,8 @@ export class XMPPChat extends ChatRoom {
       target.fromHTML(json.html.body);
     }
     target.edited = true;
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
     return true;
   }
 
@@ -343,8 +347,8 @@ export class XMPPChat extends ChatRoom {
     } else {
       target.reactions.delete(me);
     }
-    // Best-effort: the reaction already shows; persisting our own is non-critical.
-    this.account.storage?.saveMessage(target).catch(this.account.errorCallback);
+    target.save()
+      .catch(this.account.errorCallback);
   }
 
   /** Edits a message our user already sent (XEP-0308). */
@@ -362,7 +366,7 @@ export class XMPPChat extends ChatRoom {
     this.account.client.sendMessage(stanza);
     target.text = newText;
     (target as XMPPChatMessage).edited = true;
-    await this.account.storage?.saveMessage(target);
+    await target.save();
   }
 
   /** Retracts (deletes for everyone) a message our user sent (XEP-0424). */
@@ -378,7 +382,7 @@ export class XMPPChat extends ChatRoom {
     });
     (target as XMPPChatMessage).retracted = true;
     target.text = gt`This message was deleted`;
-    await this.account.storage?.saveMessage(target);
+    await target.save();
   }
 
   /** Tells the other side our user has read up to `message` (XEP-0333). */
@@ -404,15 +408,12 @@ export class XMPPChat extends ChatRoom {
 
   /** Saves new messages to our DB */
   async saveNewMessages(messages: RoomMessage[]): Promise<void> {
-    if (!this.account.storage) {
-      return;
-    }
     if (!this.dbID) {
       await this.save();
     }
     for (let msg of messages) {
       try {
-        await this.account.storage.saveMessage(msg);
+        await msg.save();
       } catch (ex) {
         this.account.errorCallback(ex);
       }

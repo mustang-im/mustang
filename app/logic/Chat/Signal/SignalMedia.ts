@@ -136,15 +136,7 @@ export class SignalMedia {
     }
   }
 
-  /** Turn each AttachmentPointer in a received DataMessage into an Attachment,
-   * downloading + decrypting in the background (best-effort). */
-  addAttachments(message: SignalChatMessage, data: DataMessage): void {
-    for (let pointer of data.attachments ?? []) {
-      this.downloadOne(message, pointer).catch(ex => console.error("Signal: attachment download failed", ex));
-    }
-  }
-
-  protected async downloadOne(message: SignalChatMessage, pointer: AttachmentPointer): Promise<void> {
+  async downloadOne(message: SignalChatMessage, pointer: AttachmentPointer): Promise<void> {
     if (!pointer.key) {
       return;
     }

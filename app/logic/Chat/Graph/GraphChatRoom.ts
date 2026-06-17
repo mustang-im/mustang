@@ -74,6 +74,7 @@ export class GraphChatRoom extends ChatRoom {
       await msg.fromGraph(messageJSON);
       msg.isRead = this.lastReadTime && msg.received && this.lastReadTime > msg.received;
       this.messages.add(msg);
+      await msg.save();
     }
   }
 
