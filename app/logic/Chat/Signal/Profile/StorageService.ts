@@ -67,7 +67,7 @@ export class SignalStorageService {
     // Record the new manifest version + the full id set so the next sync diffs cheaply.
     this.account.storageManifestVersion = Number(manifestRecord.version ?? 0n);
     this.account.storageKnownIds = new Set(identifiers.filter(id => id.raw).map(id => bytesToHex(id.raw!)));
-    this.account.scheduleSave();
+    await this.account.save(); // persist the new manifest version + id set
     return true;
   }
 

@@ -21,7 +21,7 @@ import { Signal1to1ChatRoom } from "../../../../logic/Chat/Signal/Signal1to1Chat
 import { SignalGroupChatRoom } from "../../../../logic/Chat/Signal/SignalGroupChatRoom";
 import { SignalChatMessage } from "../../../../logic/Chat/Signal/SignalChatMessage";
 import { SignalGroup } from "../../../../logic/Chat/Signal/Groups/Group";
-import { DeliveryStatus } from "../../../../logic/Chat/Message";
+import { DeliveryStatus } from "../../../../logic/Chat/ChatMessage";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";

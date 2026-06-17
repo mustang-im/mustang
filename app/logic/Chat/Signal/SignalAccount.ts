@@ -370,6 +370,20 @@ export class SignalAccount extends ChatAccount {
     this.connection = null;
   }
 
+  /** Stop everything running on this account: cancel an in-progress device link or
+   * history transfer, close the chat-service websocket (and its keepalive), and sign
+   * out the calls (Meet) account. Background syncs (roster/profile fetches) check
+   * `isOnline`, which {@link disconnect} clears, so they stop on their own. Called on
+   * sign-out and by {@link ChatAccount.deleteIt} (Account.deleteIt → logout), so a
+   * deleted account leaves nothing running that could re-create its config rows. */
+  override async logout(): Promise<void> {
+    this.provisioning?.cancel();
+    this.provisioning = null;
+    this.backupImport?.cancel();
+    await super.logout(); // → disconnect(): closes the websocket + keepalive
+    await this.meetAccount?.logout();
+  }
+
   /** Creates (or reuses) the dependent Meet account that handles Signal calls. */
   protected setupMeetAccount(): void {
     this.meetAccount ??= appGlobal.meetAccounts.find(
@@ -432,7 +446,7 @@ export class SignalAccount extends ChatAccount {
       replenished = await this.uploadIdentityPreKeys("pni", this.pniStore, this.pniKyberLastResort) || replenished;
     }
     if (replenished) {
-      this.scheduleSave();
+      await this.save(); // persist the consumed/replenished prekeys
     }
   }
 
@@ -526,7 +540,7 @@ export class SignalAccount extends ChatAccount {
     // route on the sync payload — a Sent transcript goes to the DESTINATION's room.
     if (content.syncMessage) {
       await this.handleSyncMessage(content.syncMessage);
-      this.scheduleSave();
+      await this.save(); // decrypting advanced the ratchet
       return;
     }
     let outgoing = !!this.aci && senderId.equals(this.aci);
@@ -541,7 +555,7 @@ export class SignalAccount extends ChatAccount {
       room.lastMessage = msg;
       await room.saveNewMessages([msg]);
     }
-    this.scheduleSave(); // decrypting advanced the ratchet
+    await this.save(); // decrypting advanced the ratchet
   }
 
   /** Handle an inbound SyncMessage (a message we sent/read from another linked
@@ -837,7 +851,7 @@ export class SignalAccount extends ChatAccount {
         this.errorCallback(ex);
       }
     }
-    this.scheduleSave(); // encrypting advanced the ratchet
+    await this.save(); // encrypting advanced the ratchet
   }
 
   /** Encrypt the padded Content to each of a recipient's devices and PUT the
@@ -997,20 +1011,6 @@ export class SignalAccount extends ChatAccount {
   }
 
   // --- persistence ---
-
-  protected saveTimer: ReturnType<typeof setTimeout> | null = null;
-
-  /** Debounced persist of the ratchet/key state (copy of WhatsApp's pattern). */
-  scheduleSave(): void {
-    if (this.saveTimer) {
-      return;
-    }
-    this.saveTimer = setTimeout(() => {
-      this.saveTimer = null;
-      this.save().catch(ex => console.error("Signal: failed to persist state:", ex));
-    }, 5000);
-    (this.saveTimer as any)?.unref?.();
-  }
 
   fromConfigJSON(json: any): void {
     super.fromConfigJSON(json);

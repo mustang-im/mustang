@@ -26,7 +26,7 @@ import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { DummyAddressbookStorage } from "../../../../logic/Contacts/SQL/DummyAddressbookStorage";
 import { Person } from "../../../../logic/Abstract/Person";
-import { ChatMessage } from "../../../../logic/Chat/Message";
+import { ChatMessage } from "../../../../logic/Chat/ChatMessage";
 import { expect, test, beforeEach } from "vitest";
 
 /** A SignalAccount wired for in-process delivery: `fetchPreKeyBundle` reads the
