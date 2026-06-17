@@ -90,7 +90,6 @@ accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, A
 accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
 accountSettings.add(new AccSetting(MailAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
 
-// #if [DEV]
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
 chatSettings.subCategories.addAll([
   new SettingsCategory("chat-appearance", gt`Appearance`),
@@ -106,7 +105,6 @@ accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, A
 accountSettings.add(new AccSetting(WhatsAppAccount, "whatsapp-import", gt`Import backup`, WhatsAppImportBackup, true));
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
-// #endif
 
 const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, true);
 calendarSettings.subCategories.addAll([

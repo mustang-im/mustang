@@ -6,6 +6,7 @@
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
   import { openApp, selectedApp, mustangApps } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
+  import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
   import { PhoneAccount } from "../../logic/Meet/PhoneAccount";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
@@ -32,7 +33,8 @@
   // HACK to use Phone until we have Meet officially enabled
   $: meetAccounts = appGlobal.meetAccounts;
   $: if ($meetAccounts.find(acc => acc instanceof PhoneAccount) && !$mustangApps.contains(meetMustangApp)) {
-    mustangApps.splice(2, 0, meetMustangApp);
+    let pos = mustangApps.indexOf(calendarMustangApp);
+    mustangApps.splice(pos, 0, meetMustangApp);
   }
 
   async function onMeetingURL(event: Event, url: string) {

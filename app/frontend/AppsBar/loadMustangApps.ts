@@ -25,6 +25,7 @@ export function loadMustangApps() {
   mustangApps.replaceAll([
     contactsMustangApp,
     mailMustangApp,
+    chatMustangApp,
     calendarMustangApp,
     // #if [!WEBMAIL]
     filesMustangApp,
