@@ -70,6 +70,21 @@ export class SignalApi {
     return await this.parse<T>(res);
   }
 
+  /** A GET that the server holds open until data is ready or its own timeout fires
+   * (e.g. `/v1/devices/transfer_archive`). Returns the parsed JSON, or `undefined`
+   * on a 204 (server-side long-poll timeout - the caller loops). `timeoutMs` must
+   * exceed the server-side `?timeout=` so the client doesn't abort first. */
+  async jsonLongPoll<T = any>(path: string, creds: Credentials | undefined, timeoutMs: number): Promise<T> {
+    signalLog(`>> HTTP GET ${this.baseURL}/${stripLeadingSlash(path)} (long-poll ${timeoutMs}ms)`);
+    let res = await this.client(stripLeadingSlash(path), {
+      method: "GET",
+      headers: authHeader(creds),
+      timeout: timeoutMs,
+    });
+    signalLog(`<< HTTP ${res.status} GET ${stripLeadingSlash(path)}`);
+    return await this.parse<T>(res);
+  }
+
   /** PUT/POST raw bytes (e.g. multi-recipient messages, CDN uploads). */
   async bytes(method: string, path: string, body: Uint8Array, contentType: string, creds?: Credentials): Promise<Uint8Array> {
     signalLog(`>> HTTP ${method} ${this.baseURL}/${stripLeadingSlash(path)} (${body.length}b)`);

@@ -33,6 +33,7 @@ import { deriveStorageKey, deriveMasterKeyFromAEP } from "./Encryption/StorageCi
 import { SignalStorageService } from "./Profile/StorageService";
 import { SignalProfile } from "./Profile/Profile";
 import { Provisioning } from "./Connection/Provisioning";
+import { MessageBackupImport, type BackupImportStatus } from "./Connection/MessageBackupImport";
 import type { ProvisionMessage } from "./Proto/provisioning";
 import { base64Encode, base64Decode, randomBytes } from "./Crypto/primitives";
 import { uuidToBytes } from "./ServiceId";
@@ -114,6 +115,8 @@ export class SignalAccount extends ChatAccount {
   connection: SignalWebSocket | null = null;
   /** The in-progress device-linking flow, so the setup UI can cancel it. */
   protected provisioning: Provisioning | null = null;
+  /** The in-progress message-history transfer, so the UI can skip the wait. */
+  protected backupImport: MessageBackupImport | null = null;
   protected ownContact: SignalContact | null = null;
   /** Voice/video calls run through this dependent Meet account. */
   meetAccount: SignalMeetAccount | null = null;
@@ -200,7 +203,7 @@ export class SignalAccount extends ChatAccount {
    * QR for the user's phone to scan, receives the encrypted ProvisionMessage,
    * builds our Signal store from the primary's ACI identity key, registers as a
    * new device, and connects. @param onQR render this string as a QR code. */
-  async linkDevice(onQR: (qr: string) => void): Promise<void> {
+  async linkDevice(onQR: (qr: string) => void, onHistoryStatus?: (status: BackupImportStatus) => void): Promise<void> {
     let provisioning = this.provisioning = new Provisioning();
     provisioning.onQR = onQR;
     let message: ProvisionMessage;
@@ -230,12 +233,37 @@ export class SignalAccount extends ChatAccount {
     await this.finishLink(message);
     await this.save();
     await this.connect();
+    await this.importHistory(message, onHistoryStatus);
+  }
+
+  /** If the user opted to transfer message history on their phone, the primary put a
+   * one-time `ephemeralBackupKey` in the ProvisionMessage and uploads a backup for us
+   * to fetch (Docs/02 §B.6). Pull + import it, reporting progress so the UI can tell
+   * the user to approve the transfer on their phone. Best-effort — never blocks the
+   * link from completing. */
+  protected async importHistory(message: ProvisionMessage, onStatus: (status: BackupImportStatus) => void = () => undefined): Promise<void> {
+    if (!message.ephemeralBackupKey?.length || !this.aci) {
+      return;
+    }
+    this.backupImport = new MessageBackupImport(this);
+    try {
+      await this.backupImport.run(message.ephemeralBackupKey, onStatus);
+    } finally {
+      this.backupImport = null;
+    }
+  }
+
+  /** Stop waiting for the history transfer (the user chose "Skip" in the dialog).
+   * Linking is already done; we just stop polling. */
+  cancelHistoryTransfer(): void {
+    this.backupImport?.cancel();
   }
 
   /** Cancel an in-progress {@link linkDevice} (e.g. the setup window was closed). */
   cancelLinking(): void {
     this.provisioning?.cancel();
     this.provisioning = null;
+    this.backupImport?.cancel();
   }
 
   /** A fresh Signal store wrapping an identity keypair: new registration id, one

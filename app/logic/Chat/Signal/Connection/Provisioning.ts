@@ -59,11 +59,13 @@ export class Provisioning {
     return { message, ephemeralKeyPair: this.ephemeralKeyPair };
   }
 
-  /** The `sgnl://linkdevice` URI shown as a QR code (Docs/02; pub_key is base64,
-   * no padding). */
+  /** The `sgnl://linkdevice` URI shown as a QR code
+   * (Docs/02; pub_key is base64, no padding).
+   * `capabilities=backup5` advertises that we can receive a link-and-sync
+   * message-history transfer, so the primary offers it (Docs/02 §B.6). */
   protected qrCode(provisioningUuid: string): string {
     let pubKey = base64Encode(djbEncode(this.ephemeralKeyPair.publicKey)).replace(/=+$/, "");
-    return `sgnl://linkdevice?uuid=${encodeURIComponent(provisioningUuid)}&pub_key=${encodeURIComponent(pubKey)}`;
+    return `sgnl://linkdevice?uuid=${encodeURIComponent(provisioningUuid)}&pub_key=${encodeURIComponent(pubKey)}&capabilities=backup5`;
   }
 
   cancel(): void {

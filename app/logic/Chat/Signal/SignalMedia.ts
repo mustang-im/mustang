@@ -10,6 +10,7 @@ import type { SignalChatMessage } from "./SignalChatMessage";
 import { encryptAttachment, decryptAttachment, newAttachmentKey } from "./Encryption/AttachmentCipher";
 import { cdnHost } from "./Connection/SignalApi";
 import type { AttachmentPointer, DataMessage } from "./Proto/signalService";
+import type { FilePointer } from "./Proto/backup";
 import { base64Encode } from "./Crypto/primitives";
 
 /** `GET /v4/attachments/form/upload` response — the server's `AttachmentDescriptorV3`
@@ -159,5 +160,27 @@ export class SignalMedia {
     att.content = new File([plaintext as unknown as BlobPart], att.filename, { type: att.mimeType });
     att.size = plaintext.length;
     message.attachments.add(att);
+  }
+
+  /** Download a message-backup `FilePointer` (Docs/10) by mapping its transit-CDN
+   * locator onto an AttachmentPointer and reusing {@link downloadOne}. Backup-only
+   * (media-tier) attachments without a transit locator are skipped (we can't fetch
+   * them without the media-tier credentials). @returns false if nothing to download. */
+  async downloadFilePointer(message: SignalChatMessage, pointer: FilePointer): Promise<boolean> {
+    let loc = pointer.locatorInfo;
+    if (!loc?.transitCdnKey || !loc.key?.length) {
+      return false; // not on the transit CDN (e.g. media-tier only, or expired)
+    }
+    await this.downloadOne(message, {
+      cdnKey: loc.transitCdnKey,
+      cdnNumber: loc.transitCdnNumber ?? 2,
+      cdnId: 0n,
+      key: loc.key,
+      digest: loc.encryptedDigest,
+      size: loc.size,
+      contentType: pointer.contentType,
+      fileName: pointer.fileName,
+    });
+    return true;
   }
 }

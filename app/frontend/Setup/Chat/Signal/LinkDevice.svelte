@@ -14,6 +14,10 @@
         <ErrorMessageInline ex={error} />
         <Button label={$t`Try again`} classes="secondary" onClick={startLinking} />
       </vbox>
+    {:else if historyStatus}
+      <vbox class="status inprogress">
+        <StatusMessage status="processing" message={historyStatusLabel} />
+      </vbox>
     {:else if qrData}
       <vbox class="qr-area">
         <QRCode data={qrData} size={264} />
@@ -24,7 +28,16 @@
       </hbox>
     {/if}
   </vbox>
-  {#if !paired}
+  {#if historyStatus == "awaiting-approval"}
+    <vbox class="instructions">
+      <p>{$t`Fetching your messages`}</p>
+      <ol>
+        <li>{@html $t`On your phone, tap <span class="mock-button">Transfer</span> (or <span class="mock-button">Transfer Message History</span>)`}</li>
+        <li>{$t`Keep your phone nearby and online`}</li>
+      </ol>
+      <Button label={$t`Skip`} classes="secondary" onClick={onSkipHistory} />
+    </vbox>
+  {:else if !paired && !historyStatus}
     <vbox class="instructions">
       <ol>
         <li>{$t`Open Signal on your phone`}</li>
@@ -40,6 +53,7 @@
 
 <script lang="ts">
   import type { SignalAccount } from "../../../../logic/Chat/Signal/SignalAccount";
+  import type { BackupImportStatus } from "../../../../logic/Chat/Signal/Connection/MessageBackupImport";
   import { appGlobal } from "../../../../logic/app";
   import Header from "../../Shared/Header.svelte";
   import StatusMessage from "../../Shared/StatusMessage.svelte";
@@ -61,8 +75,16 @@
   let error: Error | null = null;
   let paired = false;
   let closing = false;
+  /** Set once the message-history transfer phase starts (Docs/02 §B.6); drives the
+   * "approve on your phone" dialog. Cleared back to null on `done`/`skipped`. */
+  let historyStatus: BackupImportStatus | null = null;
 
   config.name = "Signal";
+
+  $: historyStatusLabel =
+    historyStatus == "downloading" ? $t`Downloading your chats…` :
+    historyStatus == "importing" ? $t`Importing your chats…` :
+    $t`Transferring your chats…`;
 
   onMount(() => {
     startLinking();
@@ -77,9 +99,11 @@
     error = null;
     qrData = null;
     paired = false;
+    historyStatus = null;
     try {
-      await config.linkDevice(qr => qrData = qr);
+      await config.linkDevice(qr => qrData = qr, onHistoryStatus);
       qrData = null;
+      historyStatus = null;
       paired = true;
       if (!appGlobal.chatAccounts.includes(config)) {
         appGlobal.chatAccounts.add(config);
@@ -91,6 +115,15 @@
         error = ex as Error;
       }
     }
+  }
+
+  function onHistoryStatus(status: BackupImportStatus) {
+    qrData = null; // the phone is done scanning; show the transfer dialog instead
+    historyStatus = status == "done" || status == "skipped" ? null : status;
+  }
+
+  function onSkipHistory() {
+    config.cancelHistoryTransfer();
   }
 
   function onCancelLink(event: Event) {

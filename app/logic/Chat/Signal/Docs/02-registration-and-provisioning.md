@@ -434,6 +434,31 @@ Errors (`DeviceController.java:223-230`): 403 account not found / wrong code; 40
 
 > The primary obtains `provisioningCode` from `GET /v1/devices/provisioning/code` → `LinkedDeviceVerificationCodeResponse {verificationCode, tokenIdentifier}` (`LinkDeviceApi.kt:84-88`, server `DeviceController.createDeviceToken` line 193, returns `LinkDeviceToken{verificationCode, tokenIdentifier}`). The primary puts `verificationCode` into the `ProvisionMessage.provisioningCode`; the new device echoes it back in `PUT /v1/devices/link`. The primary may poll `GET /v1/devices/wait_for_linked_device/{tokenIdentifier}?timeout=…` to learn when linking completed.
 
+### B.6 Link-and-sync — message-history transfer (`ephemeralBackupKey` + `transfer_archive`)
+
+Signal's "[A Synchronized Start for Linked Devices](https://signal.org/blog/a-synchronized-start-for-linked-devices/)" lets a newly linked device receive recent message history **automatically over the server relay — no manual file copy.** It rides on the link ceremony plus a one-time **"Transfer Message History"** confirmation the user taps on the *primary*; it is not re-requestable on demand afterward.
+
+Flow (companion = us):
+
+1. We advertise support in the QR: `...&capabilities=backup5` (§B.4). The primary only offers the transfer when it sees this.
+2. The user taps **Transfer Message History** on the primary. The primary then includes `ephemeralBackupKey` (field 14, a random 32-byte one-time backup key) in the `ProvisionMessage` it sends us. **Its presence ⇒ a transfer is coming**; if absent, the user declined and we skip.
+3. We finish `PUT /v1/devices/link` as usual (the primary learns our `deviceId`/`registrationId` via `wait_for_linked_device`).
+4. The primary exports an encrypted **message backup** of recent history, uploads it as a plain v4 attachment (`AttachmentUploadUtil`, see Docs/05), then `PUT /v1/devices/transfer_archive` announcing the location to our device.
+5. We long-poll `GET /v1/devices/transfer_archive` for that location, download the blob from the CDN, decrypt it with `ephemeralBackupKey`, and import. **Media > 45 days old is not synced** (CDN retention); the archive carries attachment *pointers*, not bytes.
+
+**Endpoints** (`DeviceController.java`, both `@Auth <aci>.<deviceId>:<password>`):
+
+| method | path | who | body |
+|--------|------|-----|------|
+| `PUT` | `/v1/devices/transfer_archive` | primary announces upload | `TransferArchiveUploadedRequest` → 204 |
+| `GET` | `/v1/devices/transfer_archive?timeout=<1–3600>` | **our device** long-polls (default 30s) | → `RemoteAttachment` \| `RemoteAttachmentError`; **204 on timeout** (loop) |
+
+- `RemoteAttachment` = `{ cdn: int, key: base64url(≤64) }` — download is the normal unauthenticated v4 attachment fetch: `GET {cdnHost(cdn)}/attachments/{urlEncode(key)}`. The blob is the self-encrypting backup file (no separate attachment key/digest, hence `RemoteAttachment` carries none).
+- `RemoteAttachmentError` = `{ error: <CONTINUE_WITHOUT_UPLOAD | RELINK_REQUESTED | ...> }` — the primary couldn't produce it; give up and continue without history.
+- `TransferArchiveUploadedRequest` = `{ destinationDeviceId, destinationDeviceRegistrationId, transferArchive: RemoteAttachment|RemoteAttachmentError }`.
+
+The backup file format + key derivation are in **Docs/10-link-sync-message-backup**. Our implementation: `Connection/MessageBackupImport.ts` (request/poll/download/import), `Encryption/MessageBackupCipher.ts` (keys + decrypt), `Proto/backup.ts` (frame subset).
+
 ---
 
 ## C. KEY UPLOAD (shared by both flows)
