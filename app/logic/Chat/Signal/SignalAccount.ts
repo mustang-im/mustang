@@ -854,12 +854,56 @@ export class SignalAccount extends ChatAccount {
     await this.save(); // encrypting advanced the ratchet
   }
 
+  /** Send an outgoing message or edit (a new message, reaction, delete, or text
+   * edit) to a room's recipients *and* mirror it to our own other devices in one
+   * call — the pattern every send follows. The payload's `message`/`editMessage` is
+   * what goes out and what the {@link sendSentTranscript} carries. */
+  async sendToRoom(room: SignalChatRoom, payload: SentTranscriptPayload, timestamp: number): Promise<void> {
+    let content: ContentType = payload.editMessage
+      ? { editMessage: payload.editMessage }
+      : { dataMessage: payload.message };
+    await this.sendContent(room.recipients(), content, timestamp);
+    await this.sendSentTranscript(room, payload, timestamp);
+  }
+
+  /** Mirror something we just sent (a message, edit, reaction, or delete — anything
+   * that goes out as a `dataMessage` or `editMessage`) to our own other linked
+   * devices, e.g. the phone. Sent to our own ACI; the fan-out skips this device
+   * ({@link encryptForDevices}). Best-effort — `sendContent` swallows errors. */
+  async sendSentTranscript(room: SignalChatRoom, payload: SentTranscriptPayload, timestamp: number): Promise<void> {
+    if (!this.aci) {
+      return;
+    }
+    let sent: NonNullable<NonNullable<ContentType["syncMessage"]>["sent"]> = { timestamp, ...payload };
+    // 1:1 → name the destination peer; a group is identified by the message's groupV2.
+    if (!(room instanceof SignalGroupChatRoom)) {
+      let partner = (room.contact as SignalContact | undefined)?.serviceId;
+      if (partner) {
+        sent.destinationServiceIdBinary = partner.serviceIdFixedWidthBinary();
+      }
+    }
+    await this.sendContent([this.aci], { syncMessage: { sent } }, timestamp);
+  }
+
+  /** Mirror a "read up to here" to our own other devices (the phone) so they clear
+   * the unread marker too, keyed by the read message's ACI sender + send timestamp. */
+  async sendReadSync(sender: ServiceId, sentTimestamp: number): Promise<void> {
+    if (!this.aci) {
+      return;
+    }
+    await this.sendContent([this.aci],
+      { syncMessage: { read: [{ senderAciBinary: sender.serviceIdBinary(), timestamp: sentTimestamp }] } }, Date.now());
+  }
+
   /** Encrypt the padded Content to each of a recipient's devices and PUT the
    * per-device messages. Handles 409 (missing/extra devices) and 410 (stale
    * registration ids) minimally: log + re-shape the device set + one retry. */
   protected async sendToRecipient(serviceId: ServiceId, padded: Uint8Array, timestamp: number): Promise<void> {
     let deviceIDs = await this.deviceIDsFor(serviceId);
     let messages = await this.encryptForDevices(serviceId, deviceIDs, padded);
+    if (!messages.length) {
+      return; // nothing to send (e.g. a sync to self with no other linked device)
+    }
     try {
       await this.putMessages(serviceId, { messages, timestamp, online: false, urgent: true });
     } catch (ex) {
@@ -877,7 +921,11 @@ export class SignalAccount extends ChatAccount {
   protected async encryptForDevices(serviceId: ServiceId, deviceIDs: number[], padded: Uint8Array): Promise<OutgoingMessage[]> {
     let sessions = this.getSessions();
     let messages: OutgoingMessage[] = [];
+    let toSelf = !!this.aci && serviceId.equals(this.aci);
     for (let deviceID of deviceIDs) {
+      if (toSelf && deviceID == this.deviceID) {
+        continue; // a sync to our own account must skip this very device
+      }
       let address = this.deviceAddress(serviceId, deviceID);
       let registrationID = this.deviceRegistrationID.get(address) ?? 0;
       let reusedSession = sessions.hasSession(address);
@@ -1110,6 +1158,10 @@ const kSecondsPerDay = 86400;
 function todayRedemptionSeconds(): number {
   return Math.floor(Date.now() / 1000 / kSecondsPerDay) * kSecondsPerDay;
 }
+
+/** The outgoing part of a `SyncMessage.Sent` transcript: either the `dataMessage`
+ * (a new message, reaction, or delete) or the `editMessage` we just sent. */
+type SentTranscriptPayload = Pick<NonNullable<NonNullable<ContentType["syncMessage"]>["sent"]>, "message" | "editMessage">;
 
 /** PUT /v1/devices/link response (Docs/02 §B.5). */
 interface LinkDeviceResponse {

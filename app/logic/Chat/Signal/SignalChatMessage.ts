@@ -172,7 +172,8 @@ export class SignalChatMessage extends ChatMessage {
       expireTimerVersion: this.to.expireTimer ? this.to.expireTimerVersion : undefined,
       groupV2: this.to.groupContext(),
     };
-    await account.sendContent(this.to.recipients(), { dataMessage: data }, this.sentTimestamp);
+    // Send to the room's recipients and mirror to our own devices (e.g. the phone).
+    await account.sendToRoom(this.to, { message: data }, this.sentTimestamp);
     this.sent = new Date();
     this.received = new Date();
     this.deliveryStatus = DeliveryStatus.Server;
@@ -192,7 +193,7 @@ export class SignalChatMessage extends ChatMessage {
         targetSentTimestamp: this.sentTimestamp,
       },
     };
-    await account.sendContent(this.to.recipients(), { dataMessage: data }, data.timestamp!);
+    await account.sendToRoom(this.to, { message: data }, data.timestamp!);
     let me = account.getOwnContact();
     remove ? this.reactions.delete(me) : this.reactions.set(me, emoji);
     await this.save();
@@ -201,8 +202,8 @@ export class SignalChatMessage extends ChatMessage {
   /** Edit this (outgoing) message's text and notify the room (EditMessage). */
   async sendCorrection(newText: string): Promise<void> {
     let data: DataMessage = { body: newText, timestamp: Date.now(), groupV2: this.to.groupContext() };
-    await this.to.account.sendContent(this.to.recipients(),
-      { editMessage: { targetSentTimestamp: this.sentTimestamp, dataMessage: data } }, data.timestamp!);
+    let editMessage = { targetSentTimestamp: this.sentTimestamp, dataMessage: data };
+    await this.to.account.sendToRoom(this.to, { editMessage }, data.timestamp!);
     this.text = newText;
     this.edited = true;
     await this.save();
@@ -215,7 +216,7 @@ export class SignalChatMessage extends ChatMessage {
       groupV2: this.to.groupContext(),
       delete: { targetSentTimestamp: this.sentTimestamp },
     };
-    await this.to.account.sendContent(this.to.recipients(), { dataMessage: data }, data.timestamp!);
+    await this.to.account.sendToRoom(this.to, { message: data }, data.timestamp!);
     this.deleted = true;
     this.text = gt`This message was deleted`;
     await this.save();
@@ -230,6 +231,8 @@ export class SignalChatMessage extends ChatMessage {
     if (from) {
       await this.to.account.sendContent([from],
         { receiptMessage: { type: ReceiptType.Read, timestamp: [this.sentTimestamp] } }, Date.now());
+      // Mirror the read to our own other devices (the phone) so they clear unread too.
+      await this.to.account.sendReadSync(from, this.sentTimestamp);
     }
   }
 
