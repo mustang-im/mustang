@@ -1,10 +1,10 @@
-id: im.mustang.Mustang
+id: com.beonex.Parula
 runtime: org.freedesktop.Platform
 runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: '25.08'
-command: mustang
+command: parula
 
 finish-args:
   - --share=ipc
@@ -20,13 +20,13 @@ finish-args:
   - --env=ELECTRON_OZONE_PLATFORM_HINT=auto
 
 modules:
-  - name: mustang
+  - name: parula
     buildsystem: simple
     build-commands:
-      - ar x mustang_0.9.30_arm64.deb
+      - ar x parula_0.9.30_arm64.deb
     sources:
       - type: file
-        url: https://github.com/mustang-im/mustang/releases/download/v0.9.30/mustang_0.9.30_arm64.deb
-        dest-filename: mustang_0.9.30_arm64.deb
+        url: https://github.com/mustang-im/mustang/releases/download/v0.9.30/parula_0.9.30_arm64.deb
+        dest-filename: parula_0.9.30_arm64.deb
         only-arches:
           - arm64
