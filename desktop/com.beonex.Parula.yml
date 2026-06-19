@@ -8,16 +8,10 @@ command: parula
 
 finish-args:
   - --share=ipc
-  - --socket=wayland
   - --socket=fallback-x11
-  - --share=network
+  - --socket=wayland
   - --device=dri
-  - --socket=pulseaudio
-  - --device=all
-  - --talk-name=org.freedesktop.Notifications
-  - --talk-name=org.kde.StatusNotifierWatcher
-  - --filesystem=xdg-download
-  - --env=ELECTRON_OZONE_PLATFORM_HINT=auto
+  - --share=network
 
 modules:
   - name: parula
