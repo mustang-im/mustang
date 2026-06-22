@@ -9,4 +9,4 @@ fi
 (cd ../app/build/; sh parula-brand.sh)
 yarn build:linux
 git delete-cur
-rm -rf ../../mobile/dfhgdhgd
+rm -rf ../mobile/assets/
