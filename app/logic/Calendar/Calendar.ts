@@ -111,10 +111,11 @@ export class Calendar extends Account {
     this.meetAccountID = meet?.id;
   }
   get meetAccountsAvailable(): Collection<MeetAccount> {
-    let dependentMeetAccounts = this.mainAccount?.dependentAccounts().filterObservable(acc => acc instanceof MeetAccount) as ArrayColl<MeetAccount>;
+    let dependentMeetAccounts = this.mainAccount?.dependentAccounts().filterObservable(acc =>
+      acc instanceof MeetAccount && acc.canCreateURL) as ArrayColl<MeetAccount>;
     return dependentMeetAccounts?.hasItems
       ? dependentMeetAccounts
-      : appGlobal.meetAccounts;
+      : appGlobal.meetAccounts.filterObservable(acc => acc.canCreateURL);
   }
 
   async save(): Promise<void> {
