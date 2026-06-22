@@ -6,7 +6,6 @@ import { getICal } from "../ICal/ICalGenerator";
 import type { EMail } from "../../Mail/EMail";
 import type { Calendar } from "../Calendar";
 import { MailAccount } from "../../Mail/MailAccount";
-import { Attachment } from "../../Abstract/Attachment";
 import { appGlobal } from "../../app";
 import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -23,14 +22,9 @@ export class OutgoingInvitation {
     assert(this.event.participants.isEmpty, "This is already a meeting");
     assert(!this.event.isIncomingMeeting, "This is a meeting you have been invitated to. You cannot be the organizer.");
     this.event.myParticipation = InvitationResponse.Organizer;
-    let identity = this.identity;
+    let identity = this.event.calendar.inviteAs;
+    assert(identity, gt`No suitable email identity to organise this meeting`);
     this.event.participants.add(new Participant(identity.emailAddress, identity.realname, InvitationResponse.Organizer));
-  }
-
-  get identity(): MailIdentity {
-    let account = appGlobal.emailAccounts.find(account => account.canSendInvitations);
-    assert(account, gt`No suitable email identity to organise this meeting`);
-    return account.identities.first;
   }
 
   async sendInvitationsTo(participants: Collection<Participant>) {
@@ -82,7 +76,9 @@ export class OutgoingInvitation {
   }
 
   protected async send(method: iCalMethod, participants: Collection<Participant>) {
-    let email = this.newEMailFrom();
+    let email = this.event.calendar.inviteAs.newEMailFrom();
+    let organizer = this.event.participants.find(participant => participant.response == InvitationResponse.Organizer);
+    assert(email.from.emailAddress == organizer.emailAddress, `Organizer ${organizer.emailAddress} does not match the mail identity for this calendar ${email.from.emailAddress}`);
     email.to.addAll(participants);
     email.iCalMethod = method;
     email.event = this.event;
@@ -100,14 +96,6 @@ export class OutgoingInvitation {
       email.html = this.event.descriptionHTML;
     }
     await email.folder.account.send(email);
-  }
-
-  protected newEMailFrom(): EMail {
-    let organizer = this.event.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    let identity = findIdentityForEMailAddress(organizer.emailAddress);
-    let email = identity.account.newEMailFrom();
-    email.from = organizer;
-    return email;
   }
 
   /**
