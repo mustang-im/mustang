@@ -44,6 +44,8 @@ import { Addressbook } from "../../logic/Contacts/Addressbook";
 import { Calendar } from "../../logic/Calendar/Calendar";
 import { CardDAVAddressbook } from "../../logic/Contacts/CardDAV/CardDAVAddressbook";
 import { CalDAVCalendar } from "../../logic/Calendar/CalDAV/CalDAVCalendar";
+import MailConnectedAccounts from "./Mail/ConnectedAccounts.svelte";
+import CalendarConnectedAccounts from "./Calendar/ConnectedAccounts.svelte";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
 // #if [PROPRIETARY]
@@ -82,6 +84,7 @@ mailSettings.newAccountURL = "/setup/mail";
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
 
+accountSettings.add(new AccSetting(MailAccount, "mail-connected", gt`Connected accounts`, MailConnectedAccounts, true));
 // #if [!WEBMAIL]
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
 // #endif
@@ -117,6 +120,8 @@ calendarSettings.newAccountURL = "/setup/calendar";
 // #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
+
+accountSettings.add(new AccSetting(Calendar, "calendar-connected", gt`Connected accounts`, CalendarConnectedAccounts, true));
 accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
 accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 

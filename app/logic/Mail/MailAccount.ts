@@ -8,6 +8,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import type { AttachmentStorage } from "../Abstract/Attachment";
+import { Calendar } from "../Calendar/Calendar";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -18,13 +19,15 @@ import { gt } from "../../l10n/l10n";
 
 export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
-  readonly canSendInvitations: boolean = true;
   /** SMTP server
    * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
   _outgoing: SMTPAccount = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   protected _inbox: Folder;
+  readonly canSendInvitations: boolean = true;
+  /** @see `calendar` */
+  protected calendarID: string;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
@@ -81,6 +84,21 @@ export class MailAccount extends TCPAccount {
     if (smtp && smtp.mainAccount != this) {
       smtp.mainAccount = this;
     }
+  }
+
+  /** When accepting an incoming invitation, put the meeting in this calendar, by default.
+   * The user can still change it in the dropdown. */
+  get calendar(): Calendar | null {
+    return appGlobal.calendars.find(cal => cal.id == this.calendarID);
+  }
+  set calendar(cal: Calendar) {
+    this.calendarID = cal?.id;
+  }
+  get calendarsAvailable(): Collection<Calendar> {
+    let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof Calendar) as ArrayColl<Calendar>;
+    return dependentCalendars?.hasItems
+      ? dependentCalendars
+      : appGlobal.calendars;
   }
 
   /**
@@ -200,6 +218,15 @@ export class MailAccount extends TCPAccount {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
     }
+    // On startup, the calendar might not be read yet, so we store the ID and resolve in the getter.
+    this.calendarID = sanitize.alphanumdash(json.calendarID, null);
+    this.calendar ??= this.calendarsAvailable.first;
+    /*if (!this.calendar) {
+      // HACK: Wait for calendars to be read
+      setTimeout(() => {
+        this.calendar ??= this.calendarsAvailable.first;
+      }, 1000);
+    }*/
 
     if (!appGlobal.me.name && this.realname) {
       appGlobal.me.name = this.realname;
@@ -214,6 +241,7 @@ export class MailAccount extends TCPAccount {
     json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
     json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
     json.emailAddress = this.emailAddress;
+    json.calendarID = this.calendarID;
     return json;
   }
 
@@ -228,6 +256,7 @@ export class MailAccount extends TCPAccount {
     this.password = other.password;
     this.emailAddress = other.emailAddress;
     this.realname = other.realname;
+    this.calendarID = other.calendarID;
 
     // objects
     this.oAuth2 = other.oAuth2;

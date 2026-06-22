@@ -7,10 +7,15 @@ import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
 import { SQLEvent } from "./SQL/SQLEvent";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 import { recurrenceColl } from "./RecurrenceColl";
+import type { MailIdentity } from "../Mail/MailIdentity";
+import { MailAccount } from "../Mail/MailAccount";
+import { MeetAccount } from "../Meet/MeetAccount";
 import { appGlobal } from "../app";
 import { RunOnce } from "../util/flow/RunOnce";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
+import { notifyChangedProperty } from "../util/Observable";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -20,8 +25,16 @@ export class Calendar extends Account {
    * - recurring exceptions
    * If you want events to display @see eventWithRecurrences() */
   readonly events = new ArrayColl<Event>();
+
   /** Can this calendar accept incoming invitations from inboxes in other accounts? */
   readonly canAcceptAnyInvitation: boolean = true;
+  /** @see `inviteAs` */
+  @notifyChangedProperty
+  protected inviteAsIdentityID: string;
+  /** @see `meetAccount` */
+  @notifyChangedProperty
+  protected meetAccountID: string;
+
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
   readDBRunOnce = new RunOnce();
@@ -77,6 +90,33 @@ export class Calendar extends Account {
     return [];
   }
 
+  /** When organizing an event, send invitations to participants using this email address and account */
+  get inviteAs(): MailIdentity | null {
+    let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
+    return identities.find(identity => identity.id == this.inviteAsIdentityID);
+  }
+  set inviteAs(identity: MailIdentity) {
+    this.inviteAsIdentityID = identity?.id;
+  }
+  get identitiesAvailable(): Collection<MailIdentity> {
+    return (this.mainAccount as MailAccount)?.identities
+      ?? appGlobal.emailAccounts.first?.identities;
+  }
+  /** When organizing an event, create online meetings using this meet account, by default.
+   * The user can still change it in the dropdown. */
+  get meetAccount(): MeetAccount | null {
+    return appGlobal.meetAccounts.find(cal => cal.id == this.meetAccountID);
+  }
+  set meetAccount(meet: MeetAccount) {
+    this.meetAccountID = meet?.id;
+  }
+  get meetAccountsAvailable(): Collection<MeetAccount> {
+    let dependentMeetAccounts = this.mainAccount?.dependentAccounts().filterObservable(acc => acc instanceof MeetAccount) as ArrayColl<MeetAccount>;
+    return dependentMeetAccounts?.hasItems
+      ? dependentMeetAccounts
+      : appGlobal.meetAccounts;
+  }
+
   async save(): Promise<void> {
     await super.save();
     await this.storage?.saveCalendar(this);
@@ -101,6 +141,12 @@ export class Calendar extends Account {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.syncState = json.syncState;
+
+    // On startup, the meet account might not be read yet, so we store the ID and resolve in the getter.
+    this.meetAccountID = sanitize.alphanumdash(json.meetAccountID, null);
+    this.inviteAsIdentityID = sanitize.alphanumdash(json.inviteAsIdentityID, null);
+    this.meetAccount ??= this.meetAccountsAvailable.first;
+    this.inviteAs ??= this.identitiesAvailable.first;
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
