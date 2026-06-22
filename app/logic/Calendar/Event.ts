@@ -497,6 +497,10 @@ export class Event extends Observable {
     return !this.dbID;
   }
 
+  get isEditable(): boolean {
+    return !this.isIncomingMeeting;
+  }
+
   get isIncomingMeeting(): boolean {
     switch (this.myParticipation) {
     case InvitationResponse.Unknown:
