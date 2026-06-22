@@ -66,6 +66,11 @@ export class Calendar extends Account {
     return new ICalIncomingInvitation(this, message);
   }
 
+  /** Has a corresponding event with the same `calUID` */
+  hasMatchingEvent(event: Event) {
+    return this.events.some(ev => ev.calUID == event.calUID);
+  }
+
   async startup() {
     await super.startup();
     await this.listEvents();

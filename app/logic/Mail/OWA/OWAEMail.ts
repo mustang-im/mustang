@@ -7,13 +7,10 @@ import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
-import type { Calendar } from "../../Calendar/Calendar";
-import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 export class OWAEMail extends EMail {
   declare folder: OWAFolder;
@@ -146,15 +143,6 @@ export class OWAEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.contents.map(tag => tag.name), "Categories");
     await this.folder.account.callOWA(request);
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // OWA always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as OWACalendar).useForInvitations);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** OWA only provides event data for invitations,

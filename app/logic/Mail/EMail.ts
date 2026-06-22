@@ -6,7 +6,6 @@ import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
-import type { Calendar } from "../Calendar/Calendar";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
@@ -15,7 +14,6 @@ import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/Invit
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import type { EncryptionSystem } from "./Encryption/enums";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
-import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { Lock } from "../util/flow/Lock";
@@ -280,17 +278,6 @@ export class EMail extends Message {
       }
     }
     return identities.first;
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    let validCalendars = this.folder.account.calendarsAvailable;
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // Allow the user to move the local invitation event to another calendar
-      return validCalendars;
-    }
-    let foundCalendars = validCalendars.filterOnce(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
-    return foundCalendars;
   }
 
   async loadEvent() {

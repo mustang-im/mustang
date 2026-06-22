@@ -2,17 +2,14 @@ import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../../Abstract/Tag";
-import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
-import type { Calendar } from "../../Calendar/Calendar";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
@@ -208,15 +205,6 @@ export class EWSEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.hasItems ? { t$String: this.tags.contents.map(tag => tag.name) } : null, "item:Categories");
     await this.folder.account.callEWS(request);
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // EWS always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).useForInvitations);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** EWS only provides event data for invitations,

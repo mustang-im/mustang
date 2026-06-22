@@ -4,12 +4,10 @@ import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import type { Calendar } from "../../Calendar/Calendar";
 import { InvitationMessage  } from "../../Calendar/Invitation/InvitationStatus";
 import { ensureArray, assert, NotSupported } from "../../util/util";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
 
 const ExchangeScheduling: Record<string, number> = {
@@ -186,15 +184,6 @@ export class ActiveSyncEMail extends EMail {
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // ActiveSync always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** ActiveSync only does not provide complete event data.

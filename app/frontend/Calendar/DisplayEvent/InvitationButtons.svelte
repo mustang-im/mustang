@@ -98,6 +98,7 @@
   export let invitation: IncomingInvitation | Event;
 
   async function respond(response: InvitationResponseInMessage) {
+    console.log("respond", invitation)
     myParticipation = response;
     if (invitation instanceof Event) {
       await invitation.respondToInvitation(response);
@@ -121,6 +122,7 @@
   }
 
   async function onOpenInCalendar() {
+    console.log("open in cal", invitation)
     let calEvent: Event
     if (invitation instanceof IncomingInvitation) {
       calEvent = invitation.calEvent();
