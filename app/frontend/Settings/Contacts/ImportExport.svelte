@@ -1,7 +1,7 @@
 <vbox flex />
 <vbox class="settings">
   <HeaderGroupBox>
-    <hbox slot="header">{$t`Import / Export`}</hbox>
+    <hbox slot="header">{$t`Import / Export *=> Data from or to another application`}</hbox>
     <hbox class="buttons">
       <Button
         label={$t`Import from vCard file…`}
