@@ -1,5 +1,5 @@
 <AccountDropDown
-  bind:selectedAccount={selectedAddressbook}
+  selectedAccount={selectedAddressbook}
   accounts={addressbooks}
   filterByWorkspace={false}
   icon={selectedAddressbook?.icon ?? AddressbookIcon}
@@ -19,7 +19,7 @@
   export let person: Person;
   export let withLabel = false;
 
-  let selectedAddressbook = person?.addressbook;
+  $: selectedAddressbook = person?.addressbook;
   $: addressbooks = appGlobal.addressbooks.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
 
   async function onChangeAddressbook(newAddressbook: Addressbook) {
