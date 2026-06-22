@@ -23,7 +23,7 @@
   import Poll from "./Poll.svelte";
   import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
   import Book from "../../Calendar/SML/BookMe/Book.svelte";
-  import InvitationInMail from "../../Calendar/DisplayEvent/InvitationInMail.svelte";
+  import InvitationInMail from "../../Calendar/Invitation/InvitationInMail.svelte";
 
   export let sml: SMLData;
   export let message: EMail | null = null;

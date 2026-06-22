@@ -29,14 +29,13 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
-  import EventInDayView from "./EventInDayView.svelte";
-  import { t } from "../../../l10n/l10n";
   import IncomingInvitationInMail from "./IncomingInvitationInMail.svelte";
   import InvitationResponseInMail from "./InvitationResponseInMail.svelte";
   import InvitationCancellationInMail from "./InvitationCancellationInMail.svelte";
+  import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   let width: number;

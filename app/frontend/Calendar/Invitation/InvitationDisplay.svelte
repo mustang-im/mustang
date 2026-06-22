@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import DetailsGrid from "./DetailsGrid.svelte";
+  import DetailsGrid from "../DisplayEvent/DetailsGrid.svelte";
 
   export let event: Event;
 </script>

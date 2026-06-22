@@ -22,7 +22,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
-  import DialogHeader from "./DialogHeader.svelte";
+  import DialogHeader from "../DisplayEvent/DialogHeader.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import cssContent from "../../Mail/Message/content.css?inline";

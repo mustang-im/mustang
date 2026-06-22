@@ -15,7 +15,7 @@
   import { appGlobal } from "../../../logic/app";
   import EditEvent from "../EditEvent/EditEvent.svelte";
   import DisplayEvent from "./DisplayEvent.svelte";
-  import InvitationInCalendar from "./InvitationInCalendar.svelte";
+  import InvitationInCalendar from "../Invitation/InvitationInCalendar.svelte";
   import ShowEventBarM from "./ShowEventBarM.svelte";
 
   export let event: Event;
