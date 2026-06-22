@@ -4,15 +4,16 @@
   class:tentative={$participant.response == InvitationResponse.Tentative}
   class:organizer={$participant.response == InvitationResponse.Organizer}
   class:unknown={$participant.response == InvitationResponse.Unknown}
+  title={$participant.responseLabel}
   >
   {#if $participant.response == InvitationResponse.Organizer}
-    <OrganizerIcon {size} title={$t`Tentative *=> Not sure to join this business meeting`} />
+    <OrganizerIcon {size} />
   {:else if $participant.response == InvitationResponse.Accept}
-    <AcceptedIcon {size} title={$t`Confirmed *=> Accepted to join this business meeting`} />
+    <AcceptedIcon {size} />
   {:else if $participant.response == InvitationResponse.Decline}
-    <DeclinedIcon {size} title={$t`Declined *=> Refused to join this business meeting`} />
+    <DeclinedIcon {size} />
   {:else if $participant.response == InvitationResponse.Tentative}
-    <TentativeIcon {size} title={$t`Tentative *=> Not sure to join this business meeting`} />
+    <TentativeIcon {size} />
   {:else}
     <!--<UnknownIcon {size} title={$t`No response yet`} />-->
   {/if}
@@ -25,8 +26,6 @@
   import DeclinedIcon from "lucide-svelte/icons/x";
   import TentativeIcon from "lucide-svelte/icons/circle-question-mark";
   import OrganizerIcon from "lucide-svelte/icons/contact-round";
-  import UnknownIcon from "lucide-svelte/icons/dot";
-  import { t } from "../../../l10n/l10n";
 
   export let participant: Participant;
   export let size = 16;

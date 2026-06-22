@@ -1,12 +1,12 @@
 <hbox class="participant-status-text font-smallest">
   {#if $participant.response == InvitationResponse.Organizer }
-    <span class="organizer">{$t`Organizer *=> The person who invited to this meeting`}</span>
+    <span class="organizer">{$participant.responseLabel}</span>
   {:else if $participant.response == InvitationResponse.Accept }
-    <span class="confirmed">{$t`Confirmed *=> Accepted to join this business meeting`}</span>
+    <span class="confirmed">{$participant.responseLabel}</span>
   {:else if $participant.response == InvitationResponse.Decline }
-    <span class="declined">{$t`Declined *=> Refused to join this business meeting`}</span>
+    <span class="declined">{$participant.responseLabel}</span>
   {:else if $participant.response == InvitationResponse.Tentative }
-    <span class="tentative">{$t`Tentative *=> Not sure to join this business meeting`}</span>
+    <span class="tentative">{$participant.responseLabel}</span>
   {:else}
     <span class="unknown">{$t`No response yet`}</span>
   {/if}

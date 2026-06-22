@@ -1,6 +1,7 @@
 import { PersonUID, findPerson, kDummyPerson } from "../Abstract/PersonUID";
 import { InvitationResponse, kInviteeResponses } from "./Invitation/InvitationStatus";
 import { notifyChangedProperty } from "../util/Observable";
+import { gt } from "../../l10n/l10n";
 
 export class Participant extends PersonUID {
   @notifyChangedProperty
@@ -20,5 +21,13 @@ export class Participant extends PersonUID {
 
   get isInvitee(): boolean {
     return kInviteeResponses.includes(this.response);
+  }
+
+  get responseLabel(): string {
+    return this.response == InvitationResponse.Organizer ? gt`Organizer *=> The person who invited to this meeting` :
+    this.response == InvitationResponse.Accept ? gt`Confirmed *=> Accepted to join this business meeting` :
+    this.response == InvitationResponse.Decline ? gt`Declined *=> Refused to join this business meeting` :
+    this.response == InvitationResponse.Tentative ? gt`Tentative *=> Not sure to join this business meeting` :
+    "";
   }
 }
