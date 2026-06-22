@@ -1,19 +1,31 @@
 <hbox class="invitation" bind:offsetWidth={width}>
   <vbox class="appointment">
     {#if $message.event}
-      <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+      <InvitationDisplay event={$message.event} />
     {:else if $message.invitationMessage}
       {#await loadEvent(message)}
         {$t`Loading event...`}
       {:then}
         {#if $message.event}
-          <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+          <InvitationDisplay event={$message.event} />
         {:else}
           {$t`No event found`}
         {/if}
       {:catch ex}
         {ex?.message ?? ex}
       {/await}
+    {/if}
+    {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation && calendars}
+      <hbox class="calendar-selector">
+        <AccountDropDown
+          accounts={calendars}
+          selectedAccount={selectedCalendar}
+          on:select={ev => selectCalendar(ev.detail as Calendar)}
+          filterByWorkspace={false}
+          disabled={calendars.length <= 1}
+          icon={AccountIcon}
+          />
+      </hbox>
     {/if}
     <hbox class="buttons">
       {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
@@ -61,6 +73,7 @@
   import EventInDayView from "./EventInDayView.svelte";
   import ParticipantConfirmIcon from "../EditEvent/ParticipantConfirmIcon.svelte";
   import ParticipantConfirmText from "../EditEvent/ParticipantConfirmText.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import AccountIcon from "lucide-svelte/icons/book-user";
   import { t } from "../../../l10n/l10n";
@@ -87,10 +100,10 @@
     selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID))
       ?? calendars.first;
     if (selectedCalendar) {
-      await selectCalendar();
+      await selectCalendar(selectedCalendar);
     }
   }
-  async function selectCalendar() {
+  async function selectCalendar(calendar: Calendar) {
     if (event && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
       await event.moveToCalendar(selectedCalendar);
     }
@@ -125,6 +138,12 @@
     padding: 8px 12px;
     border-radius: 3px;
     margin: 8px;
+  }
+  .calendar-selector {
+    margin-inline-start: 12px;
+  }
+  .calendar-selector :global(select) {
+    margin-inline-start: 8px;
   }
   .participant-reply .status {
     align-items: center;

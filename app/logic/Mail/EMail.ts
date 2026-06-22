@@ -284,12 +284,12 @@ export class EMail extends Message {
 
   getUpdateCalendars(): Collection<Calendar> {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    let validCalendars = appGlobal.calendars.filter(calendar => calendar.canAcceptAnyInvitation);
+    let validCalendars = this.folder.account.calendarsAvailable;
     if (this.invitationMessage == InvitationMessage.Invitation) {
       // Allow the user to move the local invitation event to another calendar
       return validCalendars;
     }
-    let foundCalendars = validCalendars.filter(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
+    let foundCalendars = validCalendars.filterOnce(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
     return foundCalendars;
   }
 

@@ -1,7 +1,7 @@
 <vbox class="show-event" flex>
   <DialogHeader {event} />
   <vbox class="content">
-    <InvitationDisplay {event} selectedCalendar={event.calendar} {calendars} />
+    <InvitationDisplay {event} />
 
     {#if $event.isCancelled }
       <hbox class="cancelled-text">
@@ -27,12 +27,9 @@
   import Paper from "../../Shared/Paper.svelte";
   import cssContent from "../../Mail/Message/content.css?inline";
   import cssBody from "../../Mail/Message/content-body.css?inline";
-  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
-
-  $: calendars = new ArrayColl([event.calendar]);
 
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>

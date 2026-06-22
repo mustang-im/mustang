@@ -98,7 +98,7 @@ export class MailAccount extends TCPAccount {
     let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof Calendar) as ArrayColl<Calendar>;
     return dependentCalendars?.hasItems
       ? dependentCalendars
-      : appGlobal.calendars;
+      : appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
   }
 
   /**

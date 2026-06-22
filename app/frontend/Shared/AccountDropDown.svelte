@@ -8,7 +8,9 @@
       {/if}
     </hbox>
   {/if}
-  <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
+  <select bind:value={selectedAccount}
+    class:withLabel {disabled}
+    on:change={onSelect}>
     {#if showAllOption || typeof(showAllOption) == "string"}
       <option value={null}>
         {#if typeof(showAllOption) == "string"}
@@ -40,6 +42,7 @@
   export let showAllOption: string | boolean = false;
   export let icon: ConstructorOfATypedSvelteComponent | null = null;
   export let withLabel: boolean = true;
+  export let disabled: boolean = false;
 
   $: accountIcon = $selectedAccount?.icon;
   $: console.log(selectedAccount?.name, "icon", accountIcon);
