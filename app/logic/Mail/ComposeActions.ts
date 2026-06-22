@@ -308,6 +308,7 @@ export class ComposeActions {
     if (sig) {
       this.email.html += `<footer class="signature">${sig}</footer>`;
     }
+    this.email.regenerateTextFromHTML();
     this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
     if (fromIdentity.isCatchAll) {

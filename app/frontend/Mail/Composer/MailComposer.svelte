@@ -336,7 +336,6 @@
     null;
 
   async function onSend() {
-    mail.text = null;
     await mail.compose.send();
     onClose();
   }

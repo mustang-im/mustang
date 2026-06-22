@@ -69,6 +69,12 @@ export class Message extends Observable {
     this._sanitizedHTML = null;
   }
 
+  /** Re-create the plaintext from the current HTML, which is the source of
+   * truth in the composer. Unlike `set text`, this keeps the HTML. */
+  regenerateTextFromHTML() {
+    this._text = this._rawHTML ? convertHTMLToText(this._rawHTML) : null;
+  }
+
   /** HTML version of the message.
    * Directly from the network.
    * Attention: Untrusted. MUST be sanitized before using it.
