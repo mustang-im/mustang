@@ -1,7 +1,6 @@
-import { MailAccount } from "../MailAccount";
+import { ExchangeMailAccount } from "./ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, deleteExchangePermissions, setExchangePermissions, getEWSItem } from "./EWSFolder";
@@ -30,11 +29,8 @@ import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json 
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-export class EWSAccount extends MailAccount implements EWSSubscribable {
+export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
-  readonly port: number = 443;
-  readonly tls = TLSSocketType.TLS;
-  readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
   protected throttle = new Throttle(50, 1);
   protected semaphore = new Semaphore(20);

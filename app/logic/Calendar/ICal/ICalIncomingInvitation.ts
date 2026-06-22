@@ -46,7 +46,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
 
   static participantMe(event: Event, mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
     let results = [];
-    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations);
+    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendOutgoingInvitations);
     for (let account of accounts) {
       for (let identity of account.identities) {
         for (let myParticipant of event.participants) {

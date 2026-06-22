@@ -1,4 +1,4 @@
-import { MailAccount } from "../MailAccount";
+import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
@@ -37,11 +37,8 @@ import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util"
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-export class OWAAccount extends MailAccount {
+export class OWAAccount extends ExchangeMailAccount {
   readonly protocol: string = "owa";
-  readonly port: number = 443;
-  readonly tls = TLSSocketType.TLS;
-  readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, OWAFolder>;
   /**
    * We get notifications for folders we're not interested in.

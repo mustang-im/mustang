@@ -25,7 +25,7 @@ export class MailAccount extends TCPAccount {
   _outgoing: SMTPAccount = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   protected _inbox: Folder;
-  readonly canSendInvitations: boolean = true;
+  readonly canSendOutgoingInvitations: boolean = true;
   /** @see `calendar` */
   protected calendarID: string;
   /** Where we got the config from, during setup */

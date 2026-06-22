@@ -1,4 +1,5 @@
-import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
+import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
+import type { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
@@ -14,15 +15,11 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
-export class OWACalendar extends Calendar {
+export class OWACalendar extends ExchangeCalendar {
   readonly protocol: string = "calendar-owa";
   declare readonly events: ArrayColl<OWAEvent>;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
-  /** Is this the default calendar that handles incoming invitations */
-  useForInvitations: boolean = false;
   protected listEventsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
@@ -168,12 +165,10 @@ export class OWACalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

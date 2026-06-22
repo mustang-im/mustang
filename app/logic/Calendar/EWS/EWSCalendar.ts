@@ -1,4 +1,5 @@
-import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
+import { ExchangeCalendar } from "./ExchangeCalendar";
+import type { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
@@ -11,15 +12,11 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export class EWSCalendar extends Calendar implements EWSSubscribable {
+export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
   readonly protocol: string = "calendar-ews";
   declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
-  /** Is this the default calendar that handles incoming invitations */
-  useForInvitations: boolean = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -346,12 +343,10 @@ export class EWSCalendar extends Calendar implements EWSSubscribable {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

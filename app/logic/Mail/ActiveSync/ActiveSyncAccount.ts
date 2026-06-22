@@ -1,4 +1,4 @@
-import { MailAccount } from "../MailAccount";
+import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
@@ -24,22 +24,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
-const kFolderSyncKeyError = "9";
-
-export interface ActiveSyncPingable {
-  // (async) Callback for when the ActiveSync mentions this in a Ping response.
-  ping(): Promise<void>;
-  // The pingable's ActiveSync ID.
-  readonly serverID: string;
-  // The pingable's ActiveSync class name.
-  readonly folderClass: "Email" | "Calendar" | "Contacts" | "Tasks";
-}
-
-export class ActiveSyncAccount extends MailAccount {
+export class ActiveSyncAccount extends ExchangeMailAccount {
   readonly protocol: string = "activesync";
-  readonly port: number = 443;
-  readonly tls = TLSSocketType.TLS;
-  readonly canSendInvitations: boolean = false;
   protocolVersion: string;
   protected readonly pingsMRU = new ArrayColl<ActiveSyncPingable>();
   protected maxPings = kMaxCount;
@@ -494,7 +480,9 @@ export class ActiveSyncAccount extends MailAccount {
               calendar.serverID = sanitize.nonemptystring(change.ServerId);
               appGlobal.calendars.add(calendar);
             }
-            if (!isMainCalendar) {
+            if (isMainCalendar) {
+              calendar.useForInvitations = true;
+            } else {
               calendar.name = sanitize.nonemptylabel(change.DisplayName, calendar.name);
             }
             await calendar.save();
@@ -624,3 +612,14 @@ export class ActiveSyncAccount extends MailAccount {
     return folder;
   }
 }
+
+export interface ActiveSyncPingable {
+  // (async) Callback for when the ActiveSync mentions this in a Ping response.
+  ping(): Promise<void>;
+  // The pingable's ActiveSync ID.
+  readonly serverID: string;
+  // The pingable's ActiveSync class name.
+  readonly folderClass: "Email" | "Calendar" | "Contacts" | "Tasks";
+}
+
+const kFolderSyncKeyError = "9";

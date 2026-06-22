@@ -1,4 +1,4 @@
-import { Calendar } from "../Calendar";
+import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
 import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
 import { ActiveSyncIncomingInvitation } from "./ActiveSyncIncomingInvitation";
@@ -13,11 +13,9 @@ import type { ArrayColl } from "svelte-collections";
 
 const kHalfHour = 30 * 60 * 1000; // milliseconds
 
-export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
+export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   declare readonly events: ArrayColl<ActiveSyncEvent>;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
   protected readonly requestLock = new Lock();
   /** ActiveSync ServerId for this calendar */

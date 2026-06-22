@@ -1,4 +1,5 @@
-import { MailAccount, DeleteStrategy } from "../MailAccount";
+import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
+import { DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { GraphFolder } from "./GraphFolder";
 import type { TGraphFolder } from "./TGraphMail";
@@ -19,7 +20,7 @@ import { assert, blobToBase64, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
 
-export class GraphAccount extends MailAccount {
+export class GraphAccount extends ExchangeMailAccount {
   readonly protocol: string = "graph";
   accountID: string;
   userID: UUID;
