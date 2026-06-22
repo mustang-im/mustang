@@ -57,6 +57,10 @@ export class PersonUID extends Observable {
     return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
   }
 
+  matches(other: PersonUID): boolean {
+    return other && other.emailAddress == this.emailAddress;
+  }
+
   /** The email address does not belong to the end user,
    * but a mailling list or messaging system */
   get isProxyAddress(): boolean {
