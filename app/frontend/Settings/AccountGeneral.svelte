@@ -112,7 +112,7 @@
       $selectedMailAccount = appGlobal.emailAccounts.first;
       $selectedFolder = $selectedMailAccount?.inbox;
       $selectedMessage = null;
-      $selectedMessages.clear();
+      $selectedMessages?.clear();
     }
   }
 </script>
