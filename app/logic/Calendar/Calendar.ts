@@ -98,10 +98,16 @@ export class Calendar extends Account {
   /** When organizing an event, send invitations to participants using this email address and account */
   get inviteAs(): MailIdentity | null {
     let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
-    return identities.find(identity => identity.id == this.inviteAsIdentityID);
+    let identity = identities.find(identity => identity.id == this.inviteAsIdentityID);
+    if (!identity) {
+      this.inviteAs = identity = this.identitiesAvailable.first;
+    }
+    return identity;
   }
-  set inviteAs(identity: MailIdentity) {
+  set inviteAs(identity: MailIdentity | null) {
     this.inviteAsIdentityID = identity?.id;
+    this.save()
+      .catch(this.errorCallback);
   }
   get identitiesAvailable(): Collection<MailIdentity> {
     return (this.mainAccount as MailAccount)?.identities
@@ -110,10 +116,17 @@ export class Calendar extends Account {
   /** When organizing an event, create online meetings using this meet account, by default.
    * The user can still change it in the dropdown. */
   get meetAccount(): MeetAccount | null {
-    return appGlobal.meetAccounts.find(cal => cal.id == this.meetAccountID);
+    let meet = appGlobal.meetAccounts.find(cal => cal.id == this.meetAccountID);
+    if (!meet) {
+      this.mainAccount = meet = this.meetAccountsAvailable.first;
+    }
+    return meet;
+
   }
-  set meetAccount(meet: MeetAccount) {
+  set meetAccount(meet: MeetAccount | null) {
     this.meetAccountID = meet?.id;
+    this.save()
+      .catch(this.errorCallback);
   }
   get meetAccountsAvailable(): Collection<MeetAccount> {
     let dependentMeetAccounts = this.mainAccount?.dependentAccounts().filterObservable(acc =>
@@ -151,8 +164,6 @@ export class Calendar extends Account {
     // On startup, the meet account might not be read yet, so we store the ID and resolve in the getter.
     this.meetAccountID = sanitize.alphanumdash(json.meetAccountID, null);
     this.inviteAsIdentityID = sanitize.alphanumdash(json.inviteAsIdentityID, null);
-    this.meetAccount ??= this.meetAccountsAvailable.first;
-    this.inviteAs ??= this.identitiesAvailable.first;
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();

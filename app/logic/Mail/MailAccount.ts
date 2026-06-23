@@ -89,10 +89,16 @@ export class MailAccount extends TCPAccount {
   /** When accepting an incoming invitation, put the meeting in this calendar, by default.
    * The user can still change it in the dropdown. */
   get calendar(): Calendar | null {
-    return appGlobal.calendars.find(cal => cal.id == this.calendarID);
+    let cal = appGlobal.calendars.find(cal => cal.id == this.calendarID);
+    if (!cal) {
+      this.calendar = cal = this.calendarsAvailable.first;
+    }
+    return cal;
   }
-  set calendar(cal: Calendar) {
+  set calendar(cal: Calendar | null) {
     this.calendarID = cal?.id;
+    this.save()
+      .catch(this.errorCallback);
   }
   get calendarsAvailable(): Collection<Calendar> {
     let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof Calendar) as ArrayColl<Calendar>;
@@ -220,13 +226,6 @@ export class MailAccount extends TCPAccount {
     }
     // On startup, the calendar might not be read yet, so we store the ID and resolve in the getter.
     this.calendarID = sanitize.alphanumdash(json.calendarID, null);
-    this.calendar ??= this.calendarsAvailable.first;
-    /*if (!this.calendar) {
-      // HACK: Wait for calendars to be read
-      setTimeout(() => {
-        this.calendar ??= this.calendarsAvailable.first;
-      }, 1000);
-    }*/
 
     if (!appGlobal.me.name && this.realname) {
       appGlobal.me.name = this.realname;
