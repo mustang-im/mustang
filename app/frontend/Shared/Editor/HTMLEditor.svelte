@@ -10,7 +10,7 @@
   import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
-  import { BoldStar, ItalicSlash } from './StdConventions';
+  import { BoldStar, ItalicSlash, StrikeDoubleTidle } from './StdConventions';
   import { ParagraphNewLine } from './ParagraphNewLine';
   import { TabIndent } from './TabIndent';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
@@ -41,7 +41,13 @@
     editor = new Editor({
       element: rootEl,
       extensions: [
-        StarterKit,
+        // Disable some extensions because you cannot override the default
+        // input/mark rules
+        StarterKit.configure({
+          bold: false,
+          italic: false,
+          strike: false,
+        }),
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
@@ -55,6 +61,7 @@
         }),
         BoldStar,
         ItalicSlash,
+        StrikeDoubleTidle,
         ParagraphNewLine,
         TabIndent,
         // CodeBlockLowlightFeature.configure({
