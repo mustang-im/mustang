@@ -49,7 +49,7 @@
     let addressbook = selectedAddressbook ?? appGlobal.addressbooks.first;
     assert(addressbook, $t`Please add an addressbook first`);
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
-    let person = persons.find(p => !p.dbID);
+    let person = persons.find(p => !p.dbID && !p.name);
     if (!person) {
       person = addressbook.newPerson();
       person.name = "";
