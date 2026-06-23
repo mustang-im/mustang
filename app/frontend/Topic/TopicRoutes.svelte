@@ -2,7 +2,7 @@
   <TopicGraph selectedTopic={$selectedTopic} />
 </Route>
   <Route path="page/:topicID" let:params={urlParams}>
-  {$selectedTopic = params?.topic ?? appGlobal.topics.find(topic => topic.id == urlParams.topicID) ?? $selectedTopic ?? requiredParam(), ""}
+  {params.topic ??= urlParams.topicID ? appGlobal.topics.find(topic => topic.id == urlParams.topicID) : null, ""}
   <TopicPage bind:topic={$selectedTopic} />
 </Route>
 <Route path="/">
@@ -21,4 +21,11 @@
 
   $: location = useLocation();
   $: params = getParams($location.state);
+  $: params, setTopic()
+  // Set only when params.foo changes, not when $selectedFoo changes
+  function setTopic() {
+    if (params.topic) {
+      $selectedTopic = params.topic;
+    }
+  }
 </script>
