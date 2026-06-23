@@ -750,14 +750,15 @@ export class Event extends Observable {
    *
    * TODO Call this when the user scrolls further than the default fill date.
    */
-  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
+  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems || // cached
         !this.calendar) { // Not for pseudo events in messages
       // TODO Fill more, if seriesEndTime >> last.startTime
-      return this.instances;
+      return;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(seriesEndTime);
+    let instances = [];
     for (let occurrence of occurrences) {
       if (this.exceptions.some(exception => exception.recurrenceStartTime.getTime() == occurrence.getTime())) {
         continue;
@@ -773,9 +774,9 @@ export class Event extends Observable {
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
-      this.instances.add(instance);
+      instances.push(instance);
     }
-    return this.instances;
+    this.instances.addAll(instances);
   }
 
   /**
