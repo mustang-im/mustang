@@ -31,10 +31,10 @@
   export let allDay = false;
 
   function adaptAllDays(newValue: number) {
-    console.log("adapt", newValue, durationInSeconds);
-    if (newValue < k1DayS) {
+    let oldValue = durationInSeconds;
+    if (newValue < k1DayS && oldValue >= k1DayS) {
       dispatchEvent("setAllDay", false);
-    } else if (kDayOptions.includes(newValue / k1DayS)) {
+    } else if (k1DayS <= newValue && k1DayS > oldValue) {
       dispatchEvent("setAllDay", true);
       durationInSeconds = newValue;
     }
