@@ -4,7 +4,7 @@
   filterByWorkspace={false}
   icon={selectedAddressbook?.icon ?? AddressbookIcon}
   {withLabel}
-  on:select={() => catchErrors(() => onChangeAddressbook(selectedAddressbook))}
+  on:select={(ev) => catchErrors(() => onChangeAddressbook(ev.detail as Addressbook))}
   />
 
 <script lang="ts">
@@ -24,6 +24,10 @@
 
   async function onChangeAddressbook(newAddressbook: Addressbook) {
     console.log("Selected addressbook", newAddressbook?.name, "old", person?.addressbook?.name);
-    person.moveToAddressbook(newAddressbook);
+    if (!person.dbID) {
+      person.addressbook = newAddressbook;
+    } else {
+      person.moveToAddressbook(newAddressbook);
+    }
   }
 </script>
