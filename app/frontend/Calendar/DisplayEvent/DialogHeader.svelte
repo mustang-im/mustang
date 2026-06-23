@@ -171,9 +171,8 @@
   }
 
   function onShrink() {
-    $selectedEvent = event;
-    openApp(calendarMustangApp, { event: event });
-  }
+    onClose();
+ }
   // </copied>
 </script>
 
