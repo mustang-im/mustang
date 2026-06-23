@@ -84,7 +84,7 @@ jobs:
       with:
         tag_name: ${{ env.APP_VERSION }}
         prerelease: ${{ inputs.release_type == 'prerelease' }}
-        make_latest: ${{ inputs.release_type != 'prerelease' }}
+        make_latest: ${{ inputs.release_type == 'release' }}
         files: |
           mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab

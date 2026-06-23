@@ -90,7 +90,7 @@ jobs:
         with:
           tag_name: ${{ env.APP_VERSION }}
           prerelease: ${{ inputs.release_type == 'prerelease' }}
-          make_latest: ${{ inputs.release_type != 'prerelease' }}
+          make_latest: ${{ inputs.release_type == 'release' }}
           files: ${{ env.IPA_FILE_PATH }}
 
       - name: Upload app to TestFlight
