@@ -8,10 +8,19 @@
 
         <label for="name">{$t`Located`}</label>
         <hbox class="radiogroup">
-          <input type="radio" value="subfolder" id="subfolder" bind:group={location} disabled={isSubfolderDisabled} />
-          <label for="subfolder" class:disabled={isSubfolderDisabled}>{$t`Subfolder of ${parentFolder.name}`}</label>
-          <input type="radio" value="toplevel" id="toplevel" bind:group={location} />
-          <label for="toplevel">{$t`Top-level, like Inbox`}</label>
+          <label class:disabled={isSubfolderDisabled}>
+            <input type="radio"
+              value="subfolder"
+              bind:group={location}
+              disabled={isSubfolderDisabled} />
+            {$t`Subfolder of ${parentFolder.name}`}
+          </label>
+          <label>
+            <input type="radio"
+              value="toplevel"
+              bind:group={location} />
+            {$t`Top-level, like Inbox`}
+          </label>
         </hbox>
       </grid>
     </vbox>

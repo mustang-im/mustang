@@ -12,17 +12,16 @@
   <vbox class="configs">
     {#each $uniqueConfigs.each as altConfig}
       <vbox class="alt">
-        <Clickable onClick={event => onChange(altConfig, event)}>
-          <hbox class="protocol-header">
+        <hbox class="protocol-header">
+          <label class="protocol">
             <input type="radio"
               checked={altConfig == config}
-              value={altConfig.protocol}
-              name="protocol"
-              on:change={event => onChange(altConfig, event)}
+              value={altConfig}
+              bind:group={config}
               />
-            <label class="protocol" for={altConfig.protocol}>{labelForMailProtocol(altConfig.protocol)}</label>
-          </hbox>
-        </Clickable>
+            {labelForMailProtocol(altConfig.protocol)}
+          </label>
+        </hbox>
         {#if altConfig == config}
           <hbox class="display">
             <DisplayConfig config={altConfig} />
@@ -38,7 +37,6 @@
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
-  import Clickable from "../../Shared/Clickable.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import { filterUnique } from "../../../logic/util/collections";
   import type { ArrayColl } from "svelte-collections";
@@ -51,11 +49,6 @@
   // Show only the most preferred (= first) config of the same protocol
   // TODO POP3 not yet implemented
   $: uniqueConfigs = filterUnique(altConfigs?.filter(a => a.protocol != "pop3"), (a, b) => a.protocol == b.protocol);
-
-  function onChange(newConfig: MailAccount, event: Event) {
-    config = newConfig;
-    event.stopPropagation();
-  }
 
   $: successMessage = !config?.source ? $t`No config found` :
     config.source == "ispdb" ? $t`We found the configuration in our database.` :

@@ -7,7 +7,6 @@
   {/each}
 </vbox>
 
-
 <script lang="ts" context="module">
   export class ProtocolDescription {
     label: string;
