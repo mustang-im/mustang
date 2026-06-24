@@ -178,7 +178,7 @@
     const updateSizeThrottled = throttle(updateSize, 30);
     const resizeObserver = new ResizeObserver(updateSizeThrottled);
     resizeObserver.observe(listE);
-    return () => resizeObserver.unobserve(listE);
+    return () => resizeObserver.disconnect();
   });
 
   function onKey(event: KeyboardEvent) {
