@@ -60,11 +60,14 @@
         </hbox>
       </hbox>-->
       <hbox class="account-selector">
+        <!-- Moving events has too many bugs. #1277 and many others. Fix them first.
         <AccountDropDown
           selectedAccount={newCalendar}
           accounts={appGlobal.calendars}
           filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
+        -->
+        {newCalendar.name}
       </hbox>
       <hbox flex class="spacer" />
       <hbox class="buttons">
@@ -365,6 +368,7 @@
   }
   .account-selector {
     align-items: end;
+    margin-inline-start: 6px;
     margin-block-end: 4px;
   }
   .account-icon-dummy {
