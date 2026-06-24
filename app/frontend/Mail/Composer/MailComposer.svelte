@@ -97,6 +97,13 @@
       <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
     {/if}
     <HTMLEditorToolbar {editor}>
+      <Button classes="emoji-toggle"
+        onClick={() => showEmojis = !showEmojis}
+        icon={EmojiIcon}
+        iconSize="16px"
+        selected={showEmojis}
+        slot="start"
+        />
       <Button
         label={$t`Spell check`}
         icon={SpellCheckIcon}
@@ -125,6 +132,15 @@
       <Spinner size="64px" />
     {/if}
     <hbox flex class="editor-and-attachments">
+      {#if showEmojis}
+        <vbox class="emojis">
+          <GraphicSelector
+            on:select={onEmoji}
+            on:backspace={() => catchErrors(onEmojiBackspace)}
+            bind:isOpen={showEmojis}
+            />
+        </vbox>
+      {/if}
       <vbox flex class="editor-wrapper">
         <Paper>
           <Scroll>
@@ -188,6 +204,7 @@
   import IdentitySelector from "./IdentitySelector.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
   import EncryptionDetails from "./EncryptionDetails.svelte";
+  import GraphicSelector from "../../Chat/Emoji/GraphicSelector.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
@@ -199,6 +216,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import SendIcon from "lucide-svelte/icons/send";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import EmojiIcon from "lucide-svelte/icons/smile";
   import SMLIcon from "lucide-svelte/icons/list-checks";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
@@ -329,6 +347,20 @@
     }
   }
 
+  let showEmojis = false;
+
+  function onEmoji(ev: CustomEvent) {
+    let emoji = ev.detail.emoji;
+    if (emoji) {
+      editor.commands.insertContent(emoji);
+    }
+  }
+
+  function onEmojiBackspace() {
+    editor.view.focus();
+    document.execCommand("delete");
+  }
+
   $: sendDisabledTooltip =
     !mail.subject ? $t`Please enter a subject` :
     $to.isEmpty ? $t`Please add some recipients` :
@@ -442,6 +474,9 @@
   }
   .buttons :global(.send.disabled) {
     opacity: 30%;
+  }
+  .emojis {
+    width: 400px;
   }
   .sml-add-dialog {
     padding: 16px 24px;

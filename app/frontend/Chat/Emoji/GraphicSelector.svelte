@@ -30,6 +30,13 @@
   <vbox flex>
     <hbox class="search">
       <SearchField bind:searchTerm />
+      <hbox flex />
+      <RoundButton
+        label={$t`Close`}
+        icon={XIcon}
+        border={false} classes="plain"
+        onClick={() => isOpen = false}
+        />
     </hbox>
 
     {#if showGraphicType == GraphicType.Emoji}
@@ -54,6 +61,7 @@
   import StickerIcon from "lucide-svelte/icons/heart";
   import BackspaceIcon from "lucide-svelte/icons/delete";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
+  import XIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ backspace: void }>();

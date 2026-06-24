@@ -8,7 +8,7 @@
         <vbox class="emojis">
           <GraphicSelector
             on:select={onEmoji}
-            on:backspace={() => catchErrors(onBackspace)}
+            on:backspace={() => catchErrors(onEmojiBackspace)}
             bind:isOpen={showEmojis}
             />
         </vbox>
@@ -131,7 +131,7 @@
     }
   }
 
-  function onBackspace() {
+  function onEmojiBackspace() {
     editor.view.focus();
     document.execCommand("delete");
   }
@@ -145,7 +145,7 @@
   }
   .emojis {
     height: 300px;
-    width: 400px;
+    width: 600px;
   }
   .attachments {
     height: 112px;

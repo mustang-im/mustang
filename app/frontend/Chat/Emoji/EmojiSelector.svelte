@@ -96,7 +96,6 @@
   }
   .emojis {
     flex-wrap: wrap;
-    max-width: 330px;
     margin-block-end: 8px;
   }
   .selector {
