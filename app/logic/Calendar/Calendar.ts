@@ -118,7 +118,7 @@ export class Calendar extends Account {
   get meetAccount(): MeetAccount | null {
     let meet = appGlobal.meetAccounts.find(cal => cal.id == this.meetAccountID);
     if (!meet) {
-      this.mainAccount = meet = this.meetAccountsAvailable.first;
+      this.meetAccount = meet = this.meetAccountsAvailable.first;
     }
     return meet;
 
