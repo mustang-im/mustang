@@ -1,17 +1,20 @@
 <hbox class="account-selector">
   {#if icon}
-    <hbox class="icon foop"
-      style:width={iconSize} style:height={iconSize}
-      style="--account-color: {$selectedAccount?.color ?? "black"}">
-      {#if accountIcon && typeof(accountIcon) == "string" }
-        <img src={accountIcon} width={iconSize} height={iconSize} alt="" class="logo" />
-      {:else if icon}
-        <svelte:component this={icon} />
-      {/if}
-    </hbox>
+    <Clickable onClick={onIconClick}>
+      <hbox class="icon foop"
+        style:width={iconSize} style:height={iconSize}
+        style="--account-color: {$selectedAccount?.color ?? "black"}">
+        {#if accountIcon && typeof(accountIcon) == "string" }
+          <img src={accountIcon} width={iconSize} height={iconSize} alt="" class="logo" />
+        {:else if icon}
+          <svelte:component this={icon} />
+        {/if}
+      </hbox>
+    </Clickable>
   {/if}
   <select bind:value={selectedAccount}
     class:withLabel {disabled}
+    bind:this={selectE}
     on:change={onSelect}>
     {#if showAllOption || typeof(showAllOption) == "string"}
       <option value={null}>
@@ -36,6 +39,7 @@
   import { t } from "../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { createEventDispatcher } from 'svelte';
+  import Clickable from "./Clickable.svelte";
   const dispatch = createEventDispatcher<{ select: Account }>();
 
   export let selectedAccount: Account; /* in/out */
@@ -48,7 +52,6 @@
   export let disabled: boolean = false;
 
   $: accountIcon = $selectedAccount?.icon;
-  $: console.log(selectedAccount?.name, "icon", accountIcon);
 
   $: showAccounts = filterByWorkspace && $selectedWorkspace
     ? accounts.filterObservable(acc => acc.workspace == $selectedWorkspace)
@@ -72,12 +75,23 @@
     }
   }
 
+  let selectE: HTMLSelectElement;
+  function onIconClick() {
+    selectE.showPicker();
+  }
+
   function onSelect() {
     dispatch("select", selectedAccount);
   }
 </script>
 
 <style>
+  .account-selector {
+    align-items: center;
+  }
+  .icon:has(:global(svg)) {
+    margin-block-end: 4px;
+  }
   select {
     border: none;
     color: inherit;
