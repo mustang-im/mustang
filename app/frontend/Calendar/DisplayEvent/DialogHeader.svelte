@@ -54,11 +54,11 @@
             />
         {/if}
       </hbox>
-      <hbox class="account-icon">
+      <!--<hbox class="account-icon">
         <hbox class="account-icon-dummy">
           <Button icon={AccountIcon} />
         </hbox>
-      </hbox>
+      </hbox>-->
       <hbox class="account-name">
         {event.calendar?.name}
       </hbox>
