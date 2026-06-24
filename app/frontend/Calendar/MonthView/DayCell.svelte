@@ -1,5 +1,6 @@
 <Clickable onClick={selectDay} onDoubleClick={addEvent}>
-  <vbox flex class="events">
+  <vbox flex class="events"
+    style="--selected-calendar-color: {$selectedCalendar.color}">
     {#if $displayEvents?.hasItems}
       <Scroll>
         {#each $displayEvents.each as event (event.id)}
@@ -66,6 +67,10 @@
     position: relative;
     border-left: 1px dotted var(--border);
     border-bottom: 1px dotted var(--border);
+  }
+  .events:hover {
+    background-color: color-mix(in srgb, var(--selected-calendar-color) 10%, transparent);
+    color: white;
   }
   .month-name {
     position: absolute;

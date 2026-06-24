@@ -1,5 +1,6 @@
 <Clickable {onDoubleClick}>
   <vbox flex class="events"
+    style="--selected-calendar-color: {$selectedCalendar.color}"
     on:pointerenter={() => hovering = true}
     on:pointerleave={() => hovering = false}
     >
@@ -31,6 +32,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { selectedCalendar } from "../selected";
   import EventContainer from "./EventContainer.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import { ArrayColl, Collection } from "svelte-collections";
@@ -77,6 +79,10 @@
     background-position: bottom;
     background-size: 3px 1px;
     background-repeat: repeat-x;
+  }
+  .events:hover {
+    background-color: color-mix(in srgb, var(--selected-calendar-color) 10%, transparent);
+    color: white;
   }
   .events :global(.event) {
     z-index: 1;
