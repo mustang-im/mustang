@@ -309,7 +309,15 @@ export class EWSEvent extends Event {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-      await this.calendar.account.callEWS(request);
+      try {
+        await this.calendar.account.callEWS(request);
+      } catch (ex) {
+        if (ex.type == "ErrorItemNotFound") {
+          // already done
+        } else {
+          throw ex;
+        }
+      }
     } else if (this.parentEvent) {
       // Create an exclusion.
       let request = {

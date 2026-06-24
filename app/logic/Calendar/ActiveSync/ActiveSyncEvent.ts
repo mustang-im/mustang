@@ -247,6 +247,7 @@ export class ActiveSyncEvent extends Event {
       };
       let response = await this.calendar.makeSyncRequest(data);
       if (response.Responses) {
+        // TODO ignore "ErrorItemNotFound" error
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }

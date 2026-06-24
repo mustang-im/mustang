@@ -348,7 +348,15 @@ export class OWAEvent extends Event {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-      await this.calendar.callOWA(request);
+      try {
+        await this.calendar.callOWA(request);
+      } catch (ex) {
+        if (ex.type == "ErrorItemNotFound") {
+          // already done
+        } else {
+          throw ex;
+        }
+      }
     } else if (this.parentEvent) {
       await this.calendar.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
