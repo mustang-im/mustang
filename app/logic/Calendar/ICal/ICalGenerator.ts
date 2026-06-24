@@ -53,6 +53,7 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.allDay) {
     lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
     lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
+    lines.push(["X-MICROSOFT-CDO-ALLDAYEVENT", "TRUE"]);
     if (event.recurrenceStartTime) {
       lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
     }
