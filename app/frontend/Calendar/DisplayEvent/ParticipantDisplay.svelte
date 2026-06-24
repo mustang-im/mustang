@@ -1,5 +1,7 @@
 <Clickable onClick={() => onOpenParticipant(participant)}>
-  <hbox class="participant" title={participant.name + ($participant.responseLabel ? ": " : "") + $participant.responseLabel}>
+  <hbox class="participant"
+    class:declined={participant.response == InvitationResponse.Decline}
+    title={participant.name + ($participant.responseLabel ? ": " : "") + $participant.responseLabel}>
     <ParticipantConfirmIcon {participant} />
     <hbox class="participant-name">
       {participant.name}
@@ -9,6 +11,7 @@
 
 <script lang="ts">
   import { Participant } from "../../../logic/Calendar/Participant";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { openPersonFromOtherApp } from "../../Contacts/open";
   import ParticipantConfirmIcon from "../EditEvent/ParticipantConfirmIcon.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
@@ -27,6 +30,9 @@
 <style>
   .participant {
     align-items: center;
+  }
+  .participant.declined {
+    text-decoration: line-through;
   }
   .participant-name {
     cursor: pointer;
