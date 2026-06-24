@@ -1,8 +1,10 @@
 <hbox class="account-selector">
   {#if icon}
-    <hbox class="icon" style="--account-color: {$selectedAccount?.color ?? "black"}">
+    <hbox class="icon foop"
+      style:width={iconSize} style:height={iconSize}
+      style="--account-color: {$selectedAccount?.color ?? "black"}">
       {#if accountIcon && typeof(accountIcon) == "string" }
-        <img src={accountIcon} width="18px" height="18px" alt="" class="logo" />
+        <img src={accountIcon} width={iconSize} height={iconSize} alt="" class="logo" />
       {:else if icon}
         <svelte:component this={icon} />
       {/if}
@@ -41,6 +43,7 @@
   export let filterByWorkspace: boolean;
   export let showAllOption: string | boolean = false;
   export let icon: ConstructorOfATypedSvelteComponent | null = null;
+  export let iconSize = "18px";
   export let withLabel: boolean = true;
   export let disabled: boolean = false;
 
@@ -75,9 +78,6 @@
 </script>
 
 <style>
-  .account-selector {
-    align-items: center;
-  }
   select {
     border: none;
     color: inherit;
@@ -89,6 +89,7 @@
   }
   .account-selector .icon {
     color: var(--account-color);
+    margin-inline-end: 2px;
   }
   .account-selector .icon :global(svg) {
     stroke-width: 1.5;

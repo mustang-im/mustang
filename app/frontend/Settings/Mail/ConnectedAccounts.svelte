@@ -4,12 +4,12 @@
     <vbox class="content">
       <grid>
         <label for="name">{$t`Add invitations to calendar`}</label>
-        <select bind:value={account.calendar} name="calendar"
-          disabled={$calendars.length <= 1}>
-          {#each $calendars as calendar}
-            <option value={calendar}>{calendar.name}</option>
-          {/each}
-        </select>
+        <AccountDropDown accounts={calendars}
+          bind:selectedAccount={account.calendar}
+          filterByWorkspace={false}
+          icon={CalendarIcon}
+          iconSize="16px"
+          disabled={$calendars.length <= 1} />
       </grid>
     </vbox>
   </HeaderGroupBox>
@@ -18,6 +18,8 @@
 <script lang="ts">
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
