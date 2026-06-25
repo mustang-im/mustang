@@ -1,31 +1,44 @@
 <hbox class="new-event-button" style:background-color={$selectedCalendar.color}>
-  <ButtonMenu bind:isMenuOpen>
+  {#if haveMultipleCalendars}
+    <ButtonMenu bind:isMenuOpen>
+      <RoundButton
+        classes="add-button create"
+        label={$t`New event`}
+        icon={AddToCalendarIcon}
+        iconSize="22px"
+        padding="6px"
+        slot="control"
+        onClick={() => isMenuOpen = !isMenuOpen}
+        />
+      {#each appGlobal.calendars.each as calendar}
+        <hbox class="menuitem" style="--calendar-color: {calendar.color}">
+          <MenuItem
+            icon={CalendarIcon}
+            label={calendar.name}
+            onClick={() => addEvent(calendar)}
+            />
+        </hbox>
+      {/each}
+    </ButtonMenu>
+  {:else}
     <RoundButton
       classes="add-button create"
       label={$t`New event`}
       icon={AddToCalendarIcon}
       iconSize="22px"
       padding="6px"
-      slot="control"
-      onClick={() => isMenuOpen = !isMenuOpen}
+      onClick={() => addEvent($selectedCalendar)}
       />
-    {#each appGlobal.calendars.each as calendar}
-      <hbox class="menuitem" style="--calendar-color: {calendar.color}">
-        <MenuItem
-          icon={calendar.icon ?? CalendarIcon}
-          label={calendar.name}
-          onClick={() => addEvent(calendar)}
-          />
-      </hbox>
-    {/each}
-  </ButtonMenu>
-  <AccountDropDown
-    accounts={appGlobal.calendars}
-    bind:selectedAccount={$selectedCalendar}
-    withLabel={false}
-    filterByWorkspace={true}
-    icon={CalendarIcon}
-    />
+  {/if}
+  {#if haveMultipleCalendars}
+    <AccountDropDown
+      accounts={appGlobal.calendars}
+      bind:selectedAccount={$selectedCalendar}
+      withLabel={false}
+      filterByWorkspace={true}
+      icon={CalendarIcon}
+      />
+  {/if}
 </hbox>
 
 <script lang="ts">
@@ -41,10 +54,15 @@
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../l10n/l10n";
+  import { assert } from "../../logic/util/util";
 
+  $: calendars = appGlobal.calendars;
+  $: haveMultipleCalendars = $calendars.length > 1;
   let isMenuOpen = false;
 
   function addEvent(calendar: Calendar) {
+    calendar ??= appGlobal.calendars.first;
+    assert(calendar, $t`Please set up a calendar first`);
     $selectedCalendar = calendar;
     let event = calendar.newEvent();
     setNewEventTime(event, false, $selectedDate);
