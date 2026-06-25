@@ -110,8 +110,10 @@ export class Calendar extends Account {
       .catch(this.errorCallback);
   }
   get identitiesAvailable(): Collection<MailIdentity> {
-    return (this.mainAccount as MailAccount)?.identities
-      ?? appGlobal.emailAccounts.first?.identities;
+    if (this.mainAccount instanceof MailAccount) {
+      return this.mainAccount.identities;
+    }
+    return appGlobal.emailAccounts.filter(acc => acc.canSendOutgoingInvitations).flatMap(acc => acc.identities);
   }
   /** When organizing an event, create online meetings using this meet account, by default.
    * The user can still change it in the dropdown. */
