@@ -39,13 +39,18 @@
 
   export let message: EMail;
   let width: number;
-
-  $: console.log(message.subject, message.event, "invitationMessage", message.invitationMessage, "invitation");
 </script>
 
 <style>
   .appointment {
-    padding: 24px 32px;
+    padding: 20px 32px 24px 32px;
     flex: 2 0 0;
+  }
+  :global(.message-display):has(.invitation) :global(.recipients),
+  :global(.message-display):has(.invitation) :global(.subject-line) {
+    display: none;
+  }
+  :global(.message-display):has(.invitation) :global(.message-header) {
+    min-height: unset;
   }
 </style>
