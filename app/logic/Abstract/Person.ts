@@ -110,6 +110,11 @@ export class Person extends ContactBase {
   notifyObservers(propertyName?: string, oldValue?: any): void {
     if (propertyName == "name" && this.name && typeof (this.name) == "string") {
       this.fixName();
+    } else if ((propertyName == "firstName" &&
+      this.firstName && typeof (this.firstName) == "string") ||
+      (propertyName == "lastName" &&
+        this.lastName && typeof (this.lastName) == "string")) {
+      this.joinName();
     }
     super.notifyObservers(propertyName, oldValue);
   }
@@ -136,6 +141,10 @@ export class Person extends ContactBase {
         }
       }
     }
+  }
+
+  protected joinName() {
+    this.name = [this.firstName ?? "", this.lastName ?? ""].join(" ");
   }
 
   async merge(other: Person) {
