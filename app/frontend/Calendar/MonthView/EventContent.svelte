@@ -45,6 +45,7 @@
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
     padding-inline-start: 4px;
+    width: 100%;
   }
   @media (prefers-color-scheme: dark) {
     .event {

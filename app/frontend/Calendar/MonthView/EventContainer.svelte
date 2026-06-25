@@ -26,9 +26,11 @@
     min-height: 1.4em;
   }
   .event.all-day {
-    margin-block-end: 6px;
-    padding: 0px 4px;
     opacity: 85%;
+  }
+  /* Gap between all-day events and time-based events */
+  .event.all-day:has(+ :global(.event:not(.all-day))) {
+    margin-block-end: 6px;
   }
   .event.cancelled {
     opacity: 30%;

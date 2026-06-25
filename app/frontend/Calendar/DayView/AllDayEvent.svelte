@@ -32,7 +32,7 @@
   .event {
     position: relative;
     padding: 4px;
-    margin: 2px 0px;
+    margin-block-end: 1px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
