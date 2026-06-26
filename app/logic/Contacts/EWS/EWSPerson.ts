@@ -23,7 +23,10 @@ export class EWSPerson extends Person {
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.emailAddress(entry.Value), "work", "mailto")));
+      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry)
+        .filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP"))
+        .map(entry => new ContactEntry(sanitize.emailAddress(entry.Value, null), "work", "mailto"))
+        .filter(ce => ce.value));
     }
     if (xmljs.PhoneNumbers?.Entry) {
       for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {

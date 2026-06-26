@@ -11,6 +11,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
+import { kDummyPerson } from "../../Abstract/PersonUID";
 
 export class GraphChatRoom extends ChatRoom {
   declare account: GraphChatAccount;
@@ -40,13 +41,18 @@ export class GraphChatRoom extends ChatRoom {
     let membersJSON = await this.account.account.graphGetAll<TGraphChatMember>(this.path + "/members");
     let members = new ArrayColl<GraphChatPerson>();
     for (let memberJSON of membersJSON) {
-      let id = sanitize.nonemptystring(memberJSON.id);
-      let name = sanitize.label(memberJSON.displayName, null);
-      let person = this.account.getPersonUID(id, name);
-      if (memberJSON.email) {
-        person.emailAddress = sanitize.emailAddress(memberJSON.email);
+      try {
+        let id = sanitize.nonemptystring(memberJSON.id);
+        let name = sanitize.label(memberJSON.displayName, null);
+        let person = this.account.getPersonUID(id, name);
+        if (memberJSON.email &&
+            (!person.emailAddress || person.emailAddress == kDummyPerson.emailAddress)) {
+          person.emailAddress = sanitize.emailAddress(memberJSON.email, null);
+        }
+        members.add(person);
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
-      members.add(person);
     }
     this.members.replaceAll(members.contents);
     if (this.info.chatType == "oneOnOne" && this.members.hasItems) {

@@ -442,8 +442,8 @@ export class EWSEvent extends Event {
 
 function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: string }, ResponseType: string }[], participants: Participant[], organizer?: string) {
   for (let attendee of ensureArray(attendees)) {
-    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
-    if (emailAddress != organizer) {
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress, null);
+    if (emailAddress != organizer && emailAddress) {
       participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }

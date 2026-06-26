@@ -287,7 +287,7 @@ export function getEmailAddressOrX400(emailAddress: string): string {
   if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
-  return sanitize.emailAddress(emailAddress);
+  return sanitize.emailAddress(emailAddress, null);
 }
 
 /**
@@ -330,7 +330,7 @@ export function convertX400ToEmailAddress(x400: string): string {
       username = ensureAlphaNum(part);
     }
   }
-  return sanitize.emailAddress(username + "@" + domain, kDummyPerson.emailAddress);
+  return sanitize.emailAddress(username + "@" + domain, null);
 }
 
 function ensureAlphaNum(str: string): string {

@@ -94,13 +94,13 @@ export class ActiveSyncEvent extends Event {
     let attendees = ensureArray(wbxmljs.Attendees?.Attendee);
     if (wbxmljs.OrganizerEmail && attendees.length) {
       for (let attendee of attendees) {
-        attendee.Email = sanitize.emailAddress(attendee.Email);
+        attendee.Email = sanitize.emailAddress(attendee.Email, null);
       }
-      let organizerEmail = sanitize.emailAddress(wbxmljs.OrganizerEmail);
+      let organizerEmail = sanitize.emailAddress(wbxmljs.OrganizerEmail, null);
       let organizer = attendees.find(attendee => attendee.Email == organizerEmail);
       if (organizer) {
         organizer.AttendeeStatus = InvitationResponse.Organizer;
-      } else {
+      } else if (organizerEmail) {
         attendees.unshift({
           Email: organizerEmail,
           Name: sanitize.label(wbxmljs.OrganizerName),
