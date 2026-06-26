@@ -1,6 +1,6 @@
 <Clickable {onDoubleClick}>
   <vbox flex class="events"
-    style="--selected-calendar-color: {$selectedCalendar.color}"
+    style="--selected-calendar-color: {$selectedCalendar?.color ?? "black"}"
     on:pointerenter={() => hovering = true}
     on:pointerleave={() => hovering = false}
     >

@@ -1,6 +1,6 @@
 <Clickable onClick={selectDay} onDoubleClick={addEvent}>
   <vbox flex class="events"
-    style="--selected-calendar-color: {$selectedCalendar.color}">
+    style="--selected-calendar-color: {$selectedCalendar?.color ?? "black"}">
     {#if $displayEvents?.hasItems}
       <Scroll>
         {#each $displayEvents.each as event (event.id)}

@@ -1,4 +1,4 @@
-<hbox class="new-event-button" style:background-color={$selectedCalendar.color}>
+<hbox class="new-event-button" style:background-color={$selectedCalendar?.color ?? "black"}>
   {#if haveMultipleCalendars}
     <ButtonMenu bind:isMenuOpen>
       <RoundButton
