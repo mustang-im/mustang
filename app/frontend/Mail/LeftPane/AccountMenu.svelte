@@ -25,6 +25,7 @@
   async function getNewMessages() {
     if (!account.isLoggedIn) {
       await account.login(true);
+      await account.startup();
     }
     await account.inbox.getNewMessages();
 

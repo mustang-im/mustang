@@ -31,7 +31,7 @@
   {:else if !$mailAccount?.isLoggedIn}
     <vbox class="login">
       <hbox class="label">{$t`Please log in to account ${mailAccount?.name} first`}</hbox>
-      <Button label={$t`Login`} onClick={async () => await mailAccount.login(true)} />
+      <Button label={$t`Login`} onClick={login} />
     </vbox>
   {/if}
 </vbox>
@@ -58,6 +58,11 @@
   $: mailAccount = account as MailAccount;
   let selectedFolders: ArrayColl<Folder>;
   let isCreating: "toplevel" | "subfolder" | false = false;
+
+  async function login() {
+    await account.login(true);
+    await account.startup();
+  }
 </script>
 
 <style>

@@ -63,6 +63,7 @@
     assert(ab?.canSync, "Cannot sync " + ab.protocol);
     if (!ab.isLoggedIn) {
       await ab.login(true);
+      await ab.startup();
     }
     await ab.listContacts();
   }

@@ -54,6 +54,7 @@
   async function login() {
     if (!account.isLoggedIn) {
       await account.login(true);
+      await account.startup();
     }
     await account.sync();
   }

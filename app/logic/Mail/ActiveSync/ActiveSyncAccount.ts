@@ -91,8 +91,6 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
           throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
         }
       }
-
-      await this.startup();
     });
   }
 

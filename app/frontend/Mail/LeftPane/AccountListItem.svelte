@@ -60,6 +60,7 @@
 
   async function login() {
     await account.login(true);
+    await account.startup();
   }
 
   async function openSettings() {

@@ -53,6 +53,7 @@
       if (!account.isLoggedIn) {
         status = Status.Login;
         await account.login(true);
+        await account.startup();
       }
       status = Status.Fetching;
       await folder.getNewMessages();
