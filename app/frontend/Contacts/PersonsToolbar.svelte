@@ -26,7 +26,7 @@
   </hbox>
 </hbox>
 {#if $newPerson}
-  <hbox class="new-person">
+  <hbox class="new-person" class:selected={$selectedPerson == $newPerson}>
     <PersonLine person={$newPerson} {pictureSize} />
     <SparklesIcon size={pictureSize} />
   </hbox>
@@ -104,6 +104,8 @@
   }
   .new-person {
     margin-block-end: 10px;
+  }
+  .new-person.selected {
     background-color: var(--selected-bg);
   }
 </style>
