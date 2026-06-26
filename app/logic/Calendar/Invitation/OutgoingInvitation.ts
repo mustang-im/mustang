@@ -109,8 +109,8 @@ export class OutgoingInvitation {
   participantsToNotify(): Collection<Participant> {
     let participants = this.event.participants;
     return this.changesNeedToNotify()
-      ? participants.filterOnce(participant => participant.response != InvitationResponse.Organizer)
-      : participants.subtract(this.event.unedited.participants);
+      ? participants.filterOnce(participant => participant.response != InvitationResponse.Organizer) // everybody
+      : participants.subtract(this.event.unedited.participants); // newly added participants
   }
 
   /**
