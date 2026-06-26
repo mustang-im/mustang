@@ -13,6 +13,7 @@ export class SMTPAccount extends MailAccount {
     return super.mainAccount as MailAccount;
   }
   set mainAccount(imap: MailAccount) {
+    assert(imap, "SMTP account lost its connection to the IMAP account");
     super.mainAccount = imap;
     if (imap.outgoing != this) {
       imap.outgoing = this;
