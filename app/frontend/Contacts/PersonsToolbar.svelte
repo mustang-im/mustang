@@ -61,6 +61,7 @@
     if (!$newPerson) {
       $newPerson = addressbook.newPerson();
       $newPerson.name = "";
+      $newPerson.addressbook = addressbook;
     }
     $selectedPerson = $newPerson;
   }
