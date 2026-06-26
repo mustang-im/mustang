@@ -33,6 +33,10 @@
       }
     }
 
-    await toDelete.deleteIt();
+    if (toDelete.dbID) {
+      await toDelete.deleteIt();
+    } else {
+      toDelete.addressbook.persons.remove(toDelete);
+    }
   }
 </script>

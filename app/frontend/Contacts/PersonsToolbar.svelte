@@ -53,7 +53,8 @@
     if (!person) {
       person = addressbook.newPerson();
       person.name = "";
-      persons.add(person);
+      person.addressbook = addressbook;
+      addressbook.persons.add(person);
     }
     $selectedPerson = person;
   }
