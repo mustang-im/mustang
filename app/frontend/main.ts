@@ -24,13 +24,22 @@ const app = mount(MainWindow, {
 export default app;
 
 function loadWindowSettings() {
-  let windowSize = getLocalStorage("window.size", [window.outerWidth, window.outerHeight]).value;
-  let windowPosition = getLocalStorage("window.position", [window.screenX, window.screenY]).value;
-  assert(windowSize.length == 2 && windowSize.every(i => sanitize.integer(i)), gt`Bad window size` + windowSize);
-  assert(windowPosition.length == 2 && windowPosition.every(i => sanitize.integer(i)), gt`Bad window position` + windowPosition);
-  windowSize[0] = Math.min(windowSize[0], screen.width);
-  windowSize[1] = Math.min(windowSize[1], screen.height);
-  window.resizeTo(windowSize[0], windowSize[1]);
-  window.moveTo(windowPosition[0], windowPosition[1]);
+  let windowSize = getLocalStorage("window.size", []).value;
+  try {
+    assert(windowSize?.length == 2 && windowSize.every(i => sanitize.integer(i)), "Bad window size");
+    windowSize[0] = Math.min(windowSize[0], screen.width);
+    windowSize[1] = Math.min(windowSize[1], screen.height);
+    window.resizeTo(windowSize[0], windowSize[1]);
+  } catch (ex) {
+    throw gt`Bad window size: ` + windowSize;
+  }
+
+  let windowPosition = getLocalStorage("window.position", []).value;
+  try {
+    assert(windowPosition?.length == 2 && windowPosition.every(i => sanitize.integer(i)), "Bad window position");
+    window.moveTo(windowPosition[0], windowPosition[1]);
+  } catch (ex) {
+    throw gt`Bad window position: ` + windowPosition;
+  }
 }
 window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false);
