@@ -27,10 +27,8 @@
 </hbox>
 {#if $newPerson}
   <hbox class="new-person" class:selected={$selectedPerson == $newPerson}>
-    <PersonLine person={$newPerson} pictureSize={20} />
-    <hbox class="icon">
-      <SparklesIcon size={18} />
-    </hbox>
+    <PersonLine person={$newPerson} {pictureSize} />
+    <SparklesIcon size={pictureSize} />
   </hbox>
 {/if}
 
@@ -54,6 +52,8 @@
   export let persons: Collection<Person>;
   /** in/out */
   export let selectedAddressbook: Addressbook;
+
+  let pictureSize = appGlobal.isMobile ? 32 : 20;
 
   function addPerson() {
     let addressbook = selectedAddressbook ?? appGlobal.addressbooks.first;
@@ -104,11 +104,6 @@
   }
   .new-person {
     margin-block-end: 10px;
-    padding-inline: 2px;
-  }
-  .new-person .icon {
-    margin-block: auto;
-    margin-inline-end: 2px;
   }
   .new-person.selected {
     background-color: var(--selected-bg);
