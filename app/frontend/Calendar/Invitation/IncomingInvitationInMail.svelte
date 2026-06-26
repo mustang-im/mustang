@@ -4,10 +4,11 @@
       accounts={calendars}
       bind:selectedAccount={selectedCalendar}
       filterByWorkspace={false}
-      disabled={calendars.length <= 1}
+      disabled={calendars.length <= 1 || !!eventInCalendar}
       icon={AccountIcon}
       />
     {#if selectedCalendar != currentCalendar}
+      {blockMoves(), ""}
       <Button
         label={$t`Move`}
         onClick={() => moveToCalendar(selectedCalendar)}
@@ -52,19 +53,28 @@
   }
   let currentCalendar: Calendar;
   function selectCalendar(calendar: Calendar) {
-    console.log("message", message, "default cal", message.folder.account.calendar, "available cals", message.folder.account.calendarsAvailable.contents.map(cal => cal.name))
+    //console.log("message", message, "default cal", message.folder.account.calendar, "available cals", message.folder.account.calendarsAvailable.contents.map(cal => cal.name))
     assert(calendar, "Need calendar");
     selectedCalendar = calendar;
     currentCalendar = calendar;
     incomingInvitation = selectedCalendar.getIncomingInvitationForEMail(message);
     eventInCalendar = incomingInvitation.calEvent();
-    console.log("select calendar", calendar.name, "incoming invitation", incomingInvitation)
+    //console.log("select calendar", calendar.name, "incoming invitation", incomingInvitation)
   }
   async function moveToCalendar(calendar: Calendar) {
     if (eventInCalendar && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
       await eventInCalendar.moveToCalendar(selectedCalendar);
     }
     selectCalendar(calendar);
+  }
+  /** Very HACKy workaround to prevent the user to move an event to another calendar #1280
+   * Unfortunately, the [Confirm] happens in `<InvitationButtons>`, which calls `IncomingInvitation`,
+   * which is not observable, and our `eventInCalendar` doesn't update, so check it now. */
+  function blockMoves() {
+    eventInCalendar ??= incomingInvitation.calEvent();
+    if (eventInCalendar) {
+      selectedCalendar = currentCalendar;
+    }
   }
 </script>
 
