@@ -28,8 +28,9 @@ class AppGlobal extends Observable {
   readonly workspaces = new ArrayColl<Workspace>();
   readonly webApps = new WebApps();
 
-  personalAddressbook: Addressbook;
-  collectedAddressbook: Addressbook;
+  // TODO Observe this.addressbooks
+  personalAddressbook = this.addressbooks.filterObservable(ab => ab.isPrimary).first ?? this.addressbooks.first;
+  collectedAddressbook = this.addressbooks.filterObservable(ab => ab.isCollected).first ?? this.addressbooks.get(1);
   readonly persons: Collection<Person> = mergeColls(this.addressbooks.map(ab => ab.persons));
   readonly topics: Collection<Topic> = mergeColls(this.topicAccounts.map(acc => acc.topics));
   //readonly allContacts: Collection<Contact> = mergeColls(this.addressbooks.map(ab => ab.contacts));

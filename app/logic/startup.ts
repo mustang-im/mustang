@@ -64,9 +64,6 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.topicAccounts.addAll(await readTopicAccounts());
   setMainAccounts();
 
-  // TODO Save the address book type and ensure that they are of the right type
-  appGlobal.personalAddressbook = appGlobal.addressbooks.first;
-  appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
   await loadTagsList();
 }

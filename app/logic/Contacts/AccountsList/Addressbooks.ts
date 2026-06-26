@@ -59,8 +59,16 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
 // #if [!WEBMAIL]
 export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbookStorage.readAddressbooks();
-  if (addressbooks.isEmpty) {
-    addressbooks.add(await createPersonalAddressbook());
+
+  if (!addressbooks.find(ab => ab.isPrimary)) {
+    let first = addressbooks.first;
+    if (first) {
+      first.isPrimary = true;
+    } else {
+      addressbooks.add(await createPersonalAddressbook());
+    }
+  }
+  if (!addressbooks.find(ab => ab.isCollected)) {
     addressbooks.add(await createCollectedAddressbook());
   }
   return addressbooks;
@@ -71,6 +79,7 @@ export async function createPersonalAddressbook(): Promise<Addressbook> {
   console.log("Creating personal address book");
   let personal = newAddressbookForProtocol("addressbook-local");
   personal.name = gt`Personal addressbook`;
+  personal.isPrimary = true;
   await personal.save();
   return personal;
 }
@@ -78,6 +87,7 @@ export async function createPersonalAddressbook(): Promise<Addressbook> {
 export async function createCollectedAddressbook(): Promise<Addressbook> {
   let collected = newAddressbookForProtocol("addressbook-local");
   collected.name = gt`Collected contacts`;
+  collected.isCollected = true;
   await collected.save();
   return collected;
 }

@@ -13,6 +13,16 @@ import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 export class Addressbook extends Account {
   readonly protocol: string = "addressbook-local";
   canSync: boolean = false;
+  /** This is the primary personal address book of the users
+   * Manually saved persons will go here by default.
+   * Only one of the address books should have this flag.
+   * Will set `appGlobal.personalAddressbook` */
+  isPrimary: boolean = false;
+  /** This addressbook is automatically populated by implicit user actions.
+   * When the user sends replies or otherwise contacts persons
+   * that are not yet in any of his address books, they will be added here.
+   * Will set `appGlobal.collectedAddressbook` */
+  isCollected: boolean = false;
   readonly persons = new ArrayColl<Person>();
   readonly groups = new ArrayColl<Group>();
   readonly contacts: Collection<Contact> = mergeColl(this.persons as Collection<Contact>, this.groups as Collection<Contact>);
