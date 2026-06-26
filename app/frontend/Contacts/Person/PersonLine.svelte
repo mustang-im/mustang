@@ -1,11 +1,8 @@
 <hbox flex class="person" class:selected={isSelected} on:click
   style="--account-color: {addressbook?.color ?? "transparent"};"
   >
-  {#if $$slots.icon}
     <slot name="icon" />
-  {:else}
     <PersonPicture {person} size={pictureSize} />
-  {/if}
   <vbox flex class="main">
     <hbox class="first-row">
       <hbox flex class="name {fontClass}">{$person.name}</hbox>
