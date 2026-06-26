@@ -25,17 +25,24 @@
       />
   </hbox>
 </hbox>
+{#if $newPerson}
+  <hbox class="new-person">
+    <PersonLine person={$newPerson} isSelected {pictureSize} />
+  </hbox>
+{/if}
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "./Person/Selected";
+  import { newPerson, selectedPerson } from "./Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
+  import PersonLine from "./Person/PersonLine.svelte";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
+  import SparklesIcon from "lucide-svelte/icons/sparkles";
   import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
@@ -45,17 +52,17 @@
   /** in/out */
   export let selectedAddressbook: Addressbook;
 
+  let pictureSize = appGlobal.isMobile ? 32 : 20;
+
   function addPerson() {
     let addressbook = selectedAddressbook ?? appGlobal.addressbooks.first;
     assert(addressbook, $t`Please add an addressbook first`);
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
-    let person = persons.find(p => !p.dbID && !p.name);
-    if (!person) {
-      person = addressbook.newPerson();
-      person.name = "";
-      persons.add(person);
+    if (!$newPerson) {
+      $newPerson = addressbook.newPerson();
+      $newPerson.name = "";
     }
-    $selectedPerson = person;
+    $selectedPerson = $newPerson;
   }
 
   async function sync() {
@@ -92,5 +99,8 @@
   }
   .buttons :global(.button.disabled) {
     opacity: 10%;
+  }
+  .new-person {
+    margin-block-end: 10px;
   }
 </style>

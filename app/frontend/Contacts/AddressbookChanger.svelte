@@ -10,6 +10,7 @@
 <script lang="ts">
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import type { Person } from "../../logic/Abstract/Person";
+  import { newPerson } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
@@ -24,8 +25,12 @@
 
   async function onChangeAddressbook(newAddressbook: Addressbook) {
     console.log("Selected addressbook", newAddressbook?.name, "old", person?.addressbook?.name);
-    if (!person.dbID) {
+    if (person == $newPerson) {
+      let oldPerson = person;
+      person = newAddressbook.newPerson();
       person.addressbook = newAddressbook;
+      person.copyFrom(oldPerson);
+      $newPerson = person;
     } else {
       person.moveToAddressbook(newAddressbook);
     }

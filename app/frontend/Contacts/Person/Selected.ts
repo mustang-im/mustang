@@ -3,6 +3,7 @@ import { ArrayColl } from "svelte-collections";
 import { writable } from "svelte/store";
 
 export const selectedPerson = writable<Person>(null);
+export const newPerson = writable<Person>(null);
 export const selectedContactEntry = writable<ContactEntry>(null);
 
 export const lastPersons = new ArrayColl<Person>();
