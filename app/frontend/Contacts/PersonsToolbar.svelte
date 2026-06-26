@@ -27,8 +27,9 @@
 </hbox>
 {#if $newPerson}
   <hbox class="new-person" class:selected={$selectedPerson == $newPerson}>
-    <PersonLine person={$newPerson} {pictureSize} />
-    <SparklesIcon size={pictureSize} />
+    <PersonLine person={$newPerson} {pictureSize}>
+      <SparklesIcon size={pictureSize} slot="icon" />
+    </PersonLine>
   </hbox>
 {/if}
 

@@ -1,7 +1,11 @@
 <hbox flex class="person" class:selected={isSelected} on:click
   style="--account-color: {addressbook?.color ?? "transparent"};"
   >
-  <PersonPicture {person} size={pictureSize} />
+  {#if $$slots.icon}
+    <slot name="icon" />
+  {:else}
+    <PersonPicture {person} size={pictureSize} />
+  {/if}
   <vbox flex class="main">
     <hbox class="first-row">
       <hbox flex class="name {fontClass}">{$person.name}</hbox>
@@ -35,7 +39,8 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .person :global(.avatar) {
+  .person :global(.avatar),
+  .person :global(svg) {
     margin: 2px 14px;
   }
 
