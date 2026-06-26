@@ -5,6 +5,7 @@ import { writable } from "svelte/store";
 export const selectedPerson = writable<Person>(null);
 export const selectedContactEntry = writable<ContactEntry>(null);
 
+export const newPerson = writable<Person>(null);
 export const lastPersons = new ArrayColl<Person>();
 /*selectedPerson.subscribe(person => {
   lastPersons.remove(person);

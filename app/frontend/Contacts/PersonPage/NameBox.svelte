@@ -97,6 +97,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
+  import { newPerson } from "../Person/Selected";
   import CallButtons from "./CallButtons.svelte";
   import EditableSimpleText from "./EditableSimpleText.svelte";
   import GroupBox from "./GroupBox.svelte";
@@ -117,6 +118,7 @@
     try {
       await person.save();
       isEditing = false;
+      $newPerson = null;
     } catch (ex) {
       showError(ex);
     }

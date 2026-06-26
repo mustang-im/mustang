@@ -8,7 +8,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { selectedPerson } from "../Person/Selected";
+  import { newPerson, selectedPerson } from "../Person/Selected";
   import { goTo } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
@@ -33,6 +33,10 @@
       }
     }
 
-    await toDelete.deleteIt();
+    if (toDelete == $newPerson) {
+      $newPerson = null;
+    } else {
+      await toDelete.deleteIt();
+    }
   }
 </script>
