@@ -53,12 +53,12 @@ export async function testDataOn() {
   appGlobal.meetAccounts.clear();
   appGlobal.fileSharingAccounts.clear();
 
+  await readAvatarList();
   realMe = appGlobal.me;
   if (!appGlobal.me?.name) {
     appGlobal.me = new FakeChatPerson();
   }
   let addressbook = new FakeAddressbook();
-  await readAvatarList();
   let persons = fakePersons(10, addressbook);
   appGlobal.addressbooks.replaceAll([ addressbook ]);
   appGlobal.emailAccounts.replaceAll([ new FakeMailAccount(persons, appGlobal.me) ]);
