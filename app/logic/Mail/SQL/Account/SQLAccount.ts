@@ -31,7 +31,7 @@ export class SQLAccount {
       assert(existing.protocol == acc.protocol, "Protocol in accounts DB does not match");
       await (await getDatabase()).run(sql`
         UPDATE account SET
-          mainAccountIDStr = ${acc.mainAccount?.id},
+          mainAccountIDStr = ${acc.mainAccount?.id ?? acc._mainAccountID},
           json = ${jsonStr}
         WHERE idStr = ${acc.id}
         `);

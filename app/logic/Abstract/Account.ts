@@ -1,9 +1,10 @@
 import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
-import { Observable, notifyChangedProperty } from "../util/Observable";
-import { SpecificError, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { Observable, notifyChangedProperty } from "../util/Observable";
+import { logError } from "../../frontend/Util/error";
+import { SpecificError, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Account extends Observable {
@@ -275,9 +276,13 @@ export function getAllAccounts(): Collection<Account> {
 export function setMainAccounts(): void {
   let accounts = getAllAccounts();
   for (let account of accounts) {
-    let mainID = account._mainAccountID;
-    if (mainID && !account.mainAccount) {
-      account.mainAccount = accounts.find(acc => acc.id == mainID);
+    try {
+      let mainID = account._mainAccountID;
+      if (mainID && !account.mainAccount) {
+        account.mainAccount = accounts.find(acc => acc.id == mainID);
+      }
+    } catch (ex) {
+      logError(ex);
     }
   }
 }
