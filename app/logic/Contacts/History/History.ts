@@ -14,6 +14,9 @@ import { appGlobal } from "../../app";
 export type LogEntry = Message | File | Event | VideoConfMeeting; // & { time: Date }
 
 export function searchLog(person: Person, limit: number): Collection<LogEntry> {
+  if (!person) {
+    return new ArrayColl();
+  }
   let colls = new ArrayColl<Collection<LogEntry>>();
   addColl(colls, getEMails(person, limit));
   // addColl(colls, getChatMessages(person, limit));
