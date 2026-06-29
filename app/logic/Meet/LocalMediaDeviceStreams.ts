@@ -91,17 +91,17 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
   protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
     let setup = {
       video: cameraOn ? {
-        deviceId: cameraDevice,
+        deviceId: cameraDevice ? { exact: cameraDevice } : undefined,
         facingMode: "user",
       } : false,
       audio: { // Mic always on, to avoid camera flicker on mute/unmute
-        deviceId: micDevice,
+        deviceId: micDevice ? { exact: micDevice } : undefined,
         echoCancellation: "system" as any as boolean, // (wrong TypeScript declaration)
         noiseSuppression: true,
         autoGainControl: true,
       },
     };
-    this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
+      this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
     assert(this.cameraMicStream, gt`Unable to start your camera/mic`);
     this._cameraDevice = cameraDevice;
     this._micDevice = micDevice;
