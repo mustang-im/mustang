@@ -53,34 +53,38 @@
               {/if}
             </vbox>
             <hbox class="actions">
-              {#if $meeting.state == MeetingState.OutgoingCallConfirm}
-                <RoundButton classes="cancel action"
-                  label={$t`Cancel`}
-                  icon={XIcon}
-                  iconSize="24px"
-                  onClick={cancel}
-                  />
-              {:else}
-                <RoundButton classes="hangup action"
-                  label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
-                  icon={HangUpIcon}
-                  onClick={hangup}
-                  iconSize="24px"
-                  border={false} />
-              {/if}
+              <hbox class="buttons">
+                {#if $meeting.state == MeetingState.OutgoingCallConfirm}
+                  <RoundButton classes="cancel action"
+                    label={$t`Cancel`}
+                    icon={XIcon}
+                    iconSize="24px"
+                    onClick={cancel}
+                    />
+                {:else}
+                  <RoundButton classes="hangup action"
+                    label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
+                    icon={HangUpIcon}
+                    onClick={hangup}
+                    iconSize="24px"
+                    border={false} />
+                {/if}
+              </hbox>
               <hbox flex />
               <hbox class="mic-setup">
                 <DeviceSetup withVideo={false} />
               </hbox>
               <hbox flex />
-              {#if $meeting.state != MeetingState.OutgoingCall}
-                <RoundButton classes="accept action"
-                  label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
-                  icon={CallIcon}
-                  iconSize="24px"
-                  onClick={accept}
-                  border={false} />
-              {/if}
+              <hbox class="buttons">
+                {#if $meeting.state != MeetingState.OutgoingCall}
+                  <RoundButton classes="accept action"
+                    label={$meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
+                    icon={CallIcon}
+                    iconSize="24px"
+                    onClick={accept}
+                    border={false} />
+                {/if}
+              </hbox>
             </hbox>
           </vbox>
           <hbox class="gap" />
@@ -251,6 +255,9 @@
     align-items: center;
     justify-content: center;
   }
+  .buttons {
+    align-items: end;
+  }
   .actions {
     margin-block-start: 12px;
   }
@@ -268,8 +275,10 @@
     background-color: #20AF9E;
   }
   .actions :global(button.hangup) {
-    transform: rotate(135deg);
     background-color: #F34949 !important;
+  }
+  .actions :global(button.hangup svg) {
+    transform: rotate(135deg);
   }
   .mic-setup :global(.buttons) {
     margin-block-start: 14px;
