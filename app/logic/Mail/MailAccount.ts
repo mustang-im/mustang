@@ -8,7 +8,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import type { AttachmentStorage } from "../Abstract/Attachment";
-import { Calendar } from "../Calendar/Calendar";
+import type { Calendar } from "../Calendar/Calendar";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -101,7 +101,7 @@ export class MailAccount extends TCPAccount {
       .catch(this.errorCallback);
   }
   get calendarsAvailable(): Collection<Calendar> {
-    let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof Calendar) as ArrayColl<Calendar>;
+    let dependentCalendars = this.dependentAccounts().filterObservable(acc => !!(acc as Calendar).events) as ArrayColl<Calendar>;
     return dependentCalendars?.hasItems
       ? dependentCalendars
       : appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
