@@ -8,7 +8,7 @@
       <hbox flex />
       <hbox class="boxes" flex>
         <hbox flex />
-        {#if $meeting.state != MeetingState.Init}
+        {#if showAvatar}
           <vbox class="box">
             <vbox class="text">
               <hbox class="what">
@@ -59,7 +59,7 @@
                     label={$t`Cancel`}
                     icon={XIcon}
                     iconSize="24px"
-                    onClick={cancel}
+                    onClick={hangup}
                     />
                 {:else}
                   <RoundButton classes="hangup action"
@@ -93,17 +93,17 @@
           <vbox class="device-setup">
             <DeviceSetup>
               <hbox class="actions left" flex slot="buttons-left">
-                {#if $meeting.state == MeetingState.Init}
+                {#if !showAvatar}
                   <RoundButton classes="cancel"
                     label={$t`Cancel`}
                     icon={XIcon}
                     iconSize="24px"
-                    onClick={cancel}
+                    onClick={hangup}
                     />
                 {/if}
               </hbox>
               <hbox class="actions right" flex slot="buttons-right">
-                {#if $meeting.state == MeetingState.Init}
+                {#if !showAvatar}
                   <RoundButton classes="accept"
                     label={$t`Start conference`}
                     icon={OpenIcon}
@@ -182,6 +182,7 @@
 
   $: participants = meeting.participants;
   $: person = $participants.first?.findPerson();
+  $: showAvatar = $meeting.state != MeetingState.Init && $meeting.state != MeetingState.JoinConference;
   $: showContactHistory = person && !$meeting.hasVideo && !appGlobal.isMobile;
   let width: number;
 
@@ -191,10 +192,6 @@
   const upcomingMeetings = appGlobal.calendarEvents.filterObservable(event => event.startTime > now && event.startTime < maxUpcoming);
   $: upcomingMeeting = $upcomingMeetings.first;
   $: upcomingMeetingInMin = upcomingMeeting?.startTime ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
-
-  async function cancel() {
-    await meeting.hangup();
-  }
 
   async function accept() {
     if (meeting.state == MeetingState.IncomingCall) {
@@ -233,11 +230,13 @@
     color: var(--inverted-fg);
   }
   .box {
+    min-width: 400px;
     max-width: 400px;
     max-height: 400px;
     padding: 40px;
   }
   .device-setup {
+    min-width: 400px;
     max-width: 400px;
     max-height: 440px;
     padding: 20px 0px;
@@ -303,7 +302,7 @@
     stroke-width: 1.5px;
   }
   .device-setup :global(.self-video video) {
-    width: 350px;
+    width: 100%;
   }
 
   .bottom-bar {
