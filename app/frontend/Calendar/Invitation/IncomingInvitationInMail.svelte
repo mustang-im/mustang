@@ -58,7 +58,7 @@
     selectedCalendar = calendar;
     currentCalendar = calendar;
     incomingInvitation = selectedCalendar.getIncomingInvitationForEMail(message);
-    eventInCalendar = incomingInvitation.calEvent();
+    eventInCalendar = incomingInvitation?.calEvent();
     //console.log("select calendar", calendar.name, "incoming invitation", incomingInvitation)
   }
   async function moveToCalendar(calendar: Calendar) {
@@ -71,7 +71,7 @@
    * Unfortunately, the [Confirm] happens in `<InvitationButtons>`, which calls `IncomingInvitation`,
    * which is not observable, and our `eventInCalendar` doesn't update, so check it now. */
   function blockMoves() {
-    eventInCalendar ??= incomingInvitation.calEvent();
+    eventInCalendar ??= incomingInvitation?.calEvent();
     if (eventInCalendar) {
       selectedCalendar = currentCalendar;
     }
