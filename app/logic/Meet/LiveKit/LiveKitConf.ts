@@ -124,6 +124,9 @@ export class LiveKitConf extends VideoConfMeeting {
     }
     let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + params;
     let response = await fetch(tokenURL);
+    if (!response.ok) { // fetch() doesn't throw on HTTP errors, unlike ky
+      throw new Error(gt`Could not join the meeting` + ` (HTTP ${response.status} ${response.statusText})`);
+    }
     let json = await response.json();
     console.log("invitation code result", json);
     this.webSocketURL = sanitize.url(json.webSocketURL, undefined, ["wss"]);
@@ -193,7 +196,6 @@ export class LiveKitConf extends VideoConfMeeting {
     this.room = new Room();
     await this.room.connect(this.webSocketURL, participantToken);
     this.title = this.room.name;
-    this.room.localParticipant.setName(this.account.realname);
     this.mediaDeviceStreams.localParticipant = this.room.localParticipant;
 
     this.myParticipant = new MeetingParticipant();
