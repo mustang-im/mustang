@@ -30,6 +30,14 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     return !!this.screenStream;
   }
 
+  /** Camera actually in use. May differ from selected, e.g. after a fallback. */
+  get cameraDevice(): string {
+    return this._cameraDevice;
+  }
+  get micDevice(): string {
+    return this._micDevice;
+  }
+
   async setCameraOn(on: boolean, device: string = this._cameraDevice) {
     device ??= this._cameraDevice;
     await this.setCameraMicOn(on, this._micOn, device, this._micDevice);
@@ -89,7 +97,8 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     }
   }
   protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
-    let setup = {
+    // Chrome ignores the `ideal` deviceId and only uses `exact` (Bug)
+    let setup: MediaStreamConstraints = {
       video: cameraOn ? {
         deviceId: cameraDevice ? { exact: cameraDevice } : undefined,
         facingMode: "user",
@@ -104,26 +113,65 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     try {
       this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
     } catch (ex) {
-      if (ex?.name == "NotReadableError") {
-        let devices = await navigator.mediaDevices.enumerateDevices();
-        let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
-        throw exMessage(ex, cameras == 1
-          ? gt`Your camera is in use. Please stop the other video application.`
-          : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
-      } else if (ex?.name == "OverconstrainedError") {
-        throw exMessage(ex, gt`The selected camera or microphone is disconnected. Please chose another device.`);
-      } else {
-        throw ex;
+      // If the selected device is gone or busy, then re-try with other device.
+      // Without this, on Firefox, we cannot even list devices and the user cannot choose another.
+      if (!(this.isDeviceStartError(ex) && (cameraDevice || micDevice))) {
+        throw await this.getDeviceStartErrorMessage(ex, cameraOn);
+      }
+      let anyVideo: MediaTrackConstraints | false =
+        cameraOn ? {
+          facingMode: "user",
+        } : false;
+      let anyAudio: MediaTrackConstraints = {
+        echoCancellation: "system" as any as boolean,
+        noiseSuppression: true,
+        autoGainControl: true,
+      };
+      let retries = [
+        { video: setup.video, audio: anyAudio }, // mic broken, keep camera
+        { video: anyVideo, audio: setup.audio }, // camera broken, keep mic
+        { video: anyVideo, audio: anyAudio }, // both broken
+      ] as MediaStreamConstraints[];
+      for (let retry of retries) {
+        try {
+          this.cameraMicStream = await navigator.mediaDevices.getUserMedia(retry);
+          break;
+        } catch (ex2) {
+          // try the next variation
+        }
+      }
+      if (!this.cameraMicStream) {
+        throw await this.getDeviceStartErrorMessage(ex, cameraOn);
       }
     }
     assert(this.cameraMicStream, gt`Unable to start your camera/mic`);
-    this._cameraDevice = cameraDevice;
-    this._micDevice = micDevice;
+    // Save the actual device used, e.g. after a fallback above
+    this._cameraDevice = this.cameraMicStream.getVideoTracks()[0]?.getSettings()?.deviceId ?? cameraDevice;
+    this._micDevice = this.cameraMicStream.getAudioTracks()[0]?.getSettings()?.deviceId ?? micDevice;
     this._cameraOn = cameraOn;
     this._micOn = true; // We started the mic unconditionally
     if (!micOn) {
       this.enableAudio(false); // mute
     }
+  }
+  protected isDeviceStartError(ex: Error): boolean {
+    return ex?.name == "NotReadableError" || ex?.name == "AbortError" || ex?.name == "OverconstrainedError";
+  }
+  protected async getDeviceStartErrorMessage(ex: Error, cameraOn: boolean): Promise<Error> {
+    if (ex?.name == "OverconstrainedError") {
+      return exMessage(ex, gt`The selected camera or microphone is disconnected. Please chose another device.`);
+    }
+    if (ex?.name == "NotReadableError" || ex?.name == "AbortError") {
+      if (!cameraOn) {
+        return exMessage(ex, gt`Your microphone is in use. Please stop the other application.`);
+      }
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
+      return exMessage(ex, cameras == 1
+        ? gt`Your camera is in use. Please stop the other video application.`
+        : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
+    }
+    return ex;
   }
   /** mute/unmute
    * @param on

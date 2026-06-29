@@ -44,10 +44,23 @@
     deviceStream ??= new LocalMediaDeviceStreams();
     try {
       await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+      persistActualDevices();
     } catch (ex) {
       showErrorInline(ex);
     }
     await getDevices();
+  }
+
+  /** In case the selected device is gone or busy and we fell back to another,
+   * update the dropdown selector and save the new device. */
+  function persistActualDevices() {
+    // Change only as necessary, because setting triggers the camera restart below
+    if (deviceStream?.cameraDevice && deviceStream.cameraDevice != selectedCameraSetting.value) {
+      selectedCameraSetting.value = deviceStream.cameraDevice;
+    }
+    if (deviceStream?.micDevice && deviceStream.micDevice != selectedMicSetting.value) {
+      selectedMicSetting.value = deviceStream.micDevice;
+    }
   }
 
   async function stopCamMic() {
@@ -72,7 +85,12 @@
     navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
   });
 
-  $: ex = null, catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value), showErrorInline);
+  $: $cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value, catchErrors(applyDeviceSettings, showErrorInline);
+  async function applyDeviceSettings() {
+    await deviceStream?.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+    persistActualDevices();
+    ex = null;
+  }
 
   let ex: Error | null = null;
   function showErrorInline(error: Error) {
