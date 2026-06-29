@@ -21,8 +21,7 @@
     try {
       await videoEl.play();
     } catch (ex) {
-      if (ex?.message?.includes("https://goo.gl/LdLk22")) {
-        console.error(ex);
+      if (ex?.name == "AbortError" || ex?.message?.includes("https://goo.gl/LdLk22")) {
         // ignore
       } else {
         throw ex;
