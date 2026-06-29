@@ -52,8 +52,7 @@
       let account = folder.account;
       if (!account.isLoggedIn) {
         status = Status.Login;
-        await account.login(true);
-        await account.startup();
+        await account.loginAndStartup();
       }
       status = Status.Fetching;
       await folder.getNewMessages();
