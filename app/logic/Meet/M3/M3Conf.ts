@@ -149,7 +149,7 @@ export class M3Conf extends VideoConfMeeting {
     if (this.account.oauth2) {
       let me = await this.httpGet("users/me");
       return {
-        name: sanitize.nonemptylabel(me.display_name, gt`me`) || appGlobal.me.name,
+        name: sanitize.nonemptylabel(me.display_name, this.account.realname),
         email: sanitize.emailAddress(me.email),
         picture: sanitize.url(me.avatar_url, null, ["https", "data", "blob"]),
         id: sanitize.string(me.id),

@@ -50,8 +50,7 @@
   export let meeting: VideoConfMeeting;
 
   async function accept() {
-    nameSetting.value = name;
-    appGlobal.me.name = name;
+    meeting.account.realname = appGlobal.me.name = nameSetting.value = name;
     await meeting.start();
   }
 

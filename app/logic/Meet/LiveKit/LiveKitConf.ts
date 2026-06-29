@@ -74,7 +74,7 @@ export class LiveKitConf extends VideoConfMeeting {
     if (this.encryptionKey) {
       anchor.set("key", this.encryptionKey);
     }
-    if (this.encryptionKey) {
+    if (forName) {
       anchor.set("name", forName);
     } else {
       anchor.delete("name");
@@ -114,13 +114,15 @@ export class LiveKitConf extends VideoConfMeeting {
     this.invitationURL = url;
     let anchor = new URLSearchParams(new URL(url).hash?.substring(1));
     let invitationToken = sanitize.alphanumdash(anchor.get("invitation"));
-    let myName = appGlobal.me.name;
 
-    let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + new URLSearchParams({
+    let params = new URLSearchParams({
       roomName: this.id,
-      myName,
       invitationToken,
     });
+    if (this.account.realname) {
+      params.set("myName", this.account.realname);
+    }
+    let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + params;
     let response = await fetch(tokenURL);
     let json = await response.json();
     console.log("invitation code result", json);
@@ -130,7 +132,6 @@ export class LiveKitConf extends VideoConfMeeting {
 
   /** @returns participant token */
   protected async createMyParticipant(): Promise<string> {
-    let myName = appGlobal.me.name;
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
         "Content-Type": "application/json",
@@ -139,7 +140,7 @@ export class LiveKitConf extends VideoConfMeeting {
       result: "json",
     });
     let json = await ky.post(this.account.apiURL + "meeting?" + new URLSearchParams({
-      myName,
+      myName: this.account.realname,
     }), {
       headers: {
         "X-AuthToken": btoa(JSON.stringify(getSavedTicket())),
@@ -153,9 +154,9 @@ export class LiveKitConf extends VideoConfMeeting {
   }
 
   /** For testing only: LiveKit Cloud Sandbox
-   * @returns participant token */
+   * @returns participant token *
   protected async createMyParticipantInLiveKitCloudSandbox(): Promise<string> {
-    let myName = appGlobal.me.name;
+    let myName = this.account.realname;
     assert(this.account.webFrontendBaseURL, "Need web frontend base URL");
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
@@ -173,10 +174,15 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipantToken = sanitize.nonemptystring(response.participantToken);
     // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(participantToken)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
     return this.myParticipantToken;
-  }
+  }*/
 
   async start() {
     assert(this.id, "Need to create the conference first");
+    // Hack for MeetWeb/Join.svelte
+    if (this.state == MeetingState.Init && this.invitationURL) {
+      await this.join(this.invitationURL);
+    }
+
     await super.start();
     this.myParticipantToken ??= await this.createMyParticipant();
     await this.joinAfterStart(this.myParticipantToken);
@@ -187,11 +193,12 @@ export class LiveKitConf extends VideoConfMeeting {
     this.room = new Room();
     await this.room.connect(this.webSocketURL, participantToken);
     this.title = this.room.name;
+    this.room.localParticipant.setName(this.account.realname);
     this.mediaDeviceStreams.localParticipant = this.room.localParticipant;
 
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.room.localParticipant.sid;
-    this.myParticipant.name = this.room.localParticipant.name || appGlobal.me.name;
+    this.myParticipant.name = this.room.localParticipant.name;
     this.myParticipant.role = ParticipantRole.User;
     this.myParticipant.subscribe((_obj, propName) => catchErrors(() => this.myUserChanged(propName), this.errorCallback));
     this.state = MeetingState.Ongoing;

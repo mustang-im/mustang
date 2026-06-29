@@ -62,7 +62,7 @@ export class SIPMeeting extends PhoneCall {
   protected createMyParticipant(): void {
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.account.mySIPID;
-    this.myParticipant.name = appGlobal.me.name;
+    this.myParticipant.name = this.account.realname;
     this.myParticipant.role = ParticipantRole.User;
   }
 

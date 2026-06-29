@@ -39,9 +39,8 @@
     account.url = "https://" + urlObj.host;
     let meeting = new LiveKitConf(account);
     meeting.webSocketURL = "wss://" + urlObj.host;
+    meeting.invitationURL = urlObj.href;
     appGlobal.meetAccounts.add(account);
     appGlobal.meetings.add(meeting);
-
-    await meeting.join(urlObj.href);
   }
 </script>
