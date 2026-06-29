@@ -56,14 +56,22 @@
   }
 
   async function getDevices() {
-    if (devices) {
-      return;
-    }
     await tick();
     // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
+
+    navigator.mediaDevices.addEventListener("devicechange", onDeviceChange);
   }
+
+  function onDeviceChange() {
+    getDevices()
+      .catch(ex2 => ex = ex2);
+  }
+
+  onDestroy(() => {
+    navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
+  });
 
   $: ex = null, catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value), showErrorInline);
 

@@ -29,7 +29,7 @@
       disabled={!on}
       />
     <MenuLabel label={video ? $t`Your cameras` : $t`Your microphones`} />
-    {#if devices}
+    {#if availableDevices}
       {#each availableDevices as device (device.deviceId)}
         <MenuItem
           onClick={() => selectDevice(device)}

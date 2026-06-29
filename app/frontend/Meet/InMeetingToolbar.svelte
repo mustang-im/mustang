@@ -156,9 +156,9 @@
   import RemoveIcon from "lucide-svelte/icons/minus";
   import DialPadIcon from "lucide-svelte/icons/grip";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors, showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
-  import { tick } from "svelte";
+  import { onDestroy, tick } from "svelte";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;
@@ -186,14 +186,22 @@
 
   let devices: MediaDeviceInfo[];
   async function getDevices() {
-    if (devices) {
-      return;
-    }
     await tick();
     // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
+
+    navigator.mediaDevices.addEventListener("devicechange", onDeviceChange);
   }
+
+  function onDeviceChange() {
+    getDevices()
+      .catch(showError);
+  }
+
+  onDestroy(() => {
+    navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
+  });
 
   async function leave() {
     await meeting.hangup();
