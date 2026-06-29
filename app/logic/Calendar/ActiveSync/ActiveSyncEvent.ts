@@ -11,6 +11,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
+const kSyncStatusItemNotFound = "8";
+
 const kRequiredAttendee = "1";
 const kRecurrenceTypes = [Frequency.Daily, Frequency.Weekly, Frequency.Monthly, Frequency.Monthly, /* don't know why Microsoft left this one out */, Frequency.Yearly, Frequency.Yearly];
 
@@ -246,8 +248,7 @@ export class ActiveSyncEvent extends Event {
         },
       };
       let response = await this.calendar.makeSyncRequest(data);
-      if (response.Responses) {
-        // TODO ignore "ErrorItemNotFound" error
+      if (response.Responses && response.Responses.Delete.Status != kSyncStatusItemNotFound) {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
