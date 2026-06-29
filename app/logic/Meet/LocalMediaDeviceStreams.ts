@@ -96,20 +96,28 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
       lock.release();
     }
   }
-  protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
-    // Chrome ignores the `ideal` deviceId and only uses `exact` (Bug)
-    let setup: MediaStreamConstraints = {
+  protected streamParams(cameraOn: boolean): MediaStreamConstraints {
+    return {
       video: cameraOn ? {
-        deviceId: cameraDevice ? { exact: cameraDevice } : undefined,
         facingMode: "user",
       } : false,
-      audio: { // Mic always on, to avoid camera flicker on mute/unmute
-        deviceId: micDevice ? { exact: micDevice } : undefined,
+      audio: {
+        // Mic always on, to avoid camera flicker on mute/unmute
         echoCancellation: "system" as any as boolean, // (wrong TypeScript declaration)
         noiseSuppression: true,
         autoGainControl: true,
       },
     };
+  }
+  protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
+    let setup = this.streamParams(cameraOn);
+    if (setup.video && cameraDevice) {
+      // Chrome ignores the `ideal` deviceId and only uses `exact` (Bug)
+      (setup.video as MediaTrackConstraints).deviceId = { exact: cameraDevice };
+    }
+    if (setup.audio && micDevice) {
+      (setup.audio as MediaTrackConstraints).deviceId = { exact: micDevice };
+    }
     try {
       this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
     } catch (ex) {
@@ -118,19 +126,11 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
       if (!(this.isDeviceStartError(ex) && (cameraDevice || micDevice))) {
         throw await this.getDeviceStartErrorMessage(ex, cameraOn);
       }
-      let anyVideo: MediaTrackConstraints | false =
-        cameraOn ? {
-          facingMode: "user",
-        } : false;
-      let anyAudio: MediaTrackConstraints = {
-        echoCancellation: "system" as any as boolean,
-        noiseSuppression: true,
-        autoGainControl: true,
-      };
+      let anyDevice = this.streamParams(cameraOn);
       let retries = [
-        { video: setup.video, audio: anyAudio }, // mic broken, keep camera
-        { video: anyVideo, audio: setup.audio }, // camera broken, keep mic
-        { video: anyVideo, audio: anyAudio }, // both broken
+        { video: setup.video, audio: anyDevice.audio }, // mic broken, keep camera
+        { video: anyDevice.video, audio: setup.audio }, // camera broken, keep mic
+        { video: anyDevice.video, audio: anyDevice.audio }, // both broken
       ] as MediaStreamConstraints[];
       for (let retry of retries) {
         try {
