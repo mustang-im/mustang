@@ -114,8 +114,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.invitationURL = url;
     let anchor = new URLSearchParams(new URL(url).hash?.substring(1));
     let invitationToken = sanitize.alphanumdash(anchor.get("invitation"));
-    let myName = sanitize.label(anchor.get("name"), null) ?? appGlobal.me.name;
-    appGlobal.me.name ??= myName;
+    let myName = appGlobal.me.name;
 
     let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + new URLSearchParams({
       roomName: this.id,
