@@ -28,6 +28,12 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   get screenShareOn(): boolean {
     return this.localParticipant.isScreenShareEnabled;
   }
+  get cameraDevice(): string {
+    return this._cameraDevice;
+  }
+  get micDevice(): string {
+    return this._micDevice;
+  }
 
   async setCameraOn(on: boolean, device?: string) {
     device ??= this._cameraDevice;

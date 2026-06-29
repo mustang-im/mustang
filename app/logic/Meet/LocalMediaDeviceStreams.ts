@@ -13,7 +13,9 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
   protected _cameraOn: boolean = false;
   @notifyChangedProperty
   protected _micOn: boolean = false;
+  @notifyChangedProperty
   protected _cameraDevice: string;
+  @notifyChangedProperty
   protected _micDevice: string;
   protected _lock = new Lock();
 
@@ -28,6 +30,12 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
   @notifyChangedAccessor
   get screenShareOn(): boolean {
     return !!this.screenStream;
+  }
+  get cameraDevice(): string {
+    return this._cameraDevice;
+  }
+  get micDevice(): string {
+    return this._micDevice;
   }
 
   async setCameraOn(on: boolean, device: string = this._cameraDevice) {
@@ -123,6 +131,35 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
     this._micOn = true; // We started the mic unconditionally
     if (!micOn) {
       this.enableAudio(false); // mute
+    }
+  }
+  /** Call this when the selected device was disconnected.
+   * It will change to another available device.
+   * Read the new `this.cameraDevice`/`micOn` etc. after this function returned.
+   */
+  async deviceDisconnected() {
+    let devices = await navigator.mediaDevices.enumerateDevices();
+    let cameraDevice = this._cameraDevice;
+    let micDevice = this._micDevice;
+    let camConnected = devices.some(dev => dev.kind == "videoinput" && dev.deviceId == cameraDevice);
+    let micConnected = devices.some(dev => dev.kind == "audioinput" && dev.deviceId == micDevice);
+    if (!camConnected) {
+      cameraDevice = devices.find(dev => dev.kind == "videoinput")?.deviceId;
+    }
+    if (!micConnected) {
+      micDevice = devices.find(dev => dev.kind == "audioinput")?.deviceId;
+    }
+    let cameraOn = this._cameraOn && !!cameraDevice;
+    let micOn = this._micOn && !!micDevice;
+    let retry = !camConnected && cameraOn || !micConnected && micOn;
+    console.log(
+      "retry", retry, "with: \n",
+      "cam on", this._cameraOn == cameraOn ? cameraOn : this._cameraOn + " => " + cameraOn, "\n",
+      "mic on", this.micOn == micOn ? micOn : this._micOn + " => " + micOn, "\n",
+      "cam device", this._cameraDevice == cameraDevice ? cameraDevice?.substring(0, 4) : this._cameraDevice?.substring(0, 4) + " => " + cameraDevice?.substring(0, 4), "\n",
+      "mic device", this._micDevice == micDevice ? micDevice?.substring(0, 4) : this._micDevice?.substring(0, 4) + " => " + micDevice?.substring(0, 4), "\n");
+    if (retry) {
+      await this.setCameraMicOn(cameraOn, micOn, cameraDevice, micDevice);
     }
   }
   /** mute/unmute

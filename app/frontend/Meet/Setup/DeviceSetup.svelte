@@ -45,6 +45,18 @@
     try {
       await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
     } catch (ex) {
+      if (false && ex.name == "OverconstrainedError") { // TODO prevents device list to show up at all
+        await deviceStream.deviceDisconnected();
+        cameraOnSetting.value = deviceStream.cameraOn ?? false;
+        micOnSetting.value = deviceStream.micOn ?? false;
+        if (deviceStream.cameraDevice) {
+          selectedCameraSetting.value = deviceStream.cameraDevice;
+        }
+        if (deviceStream.micDevice) {
+          selectedMicSetting.value = deviceStream.micDevice;
+        }
+        return;
+      }
       showErrorInline(ex);
     }
     await getDevices();
@@ -67,6 +79,24 @@
     getDevices()
       .catch(ex2 => ex = ex2);
   }
+
+  /* TODO loops when selecting device
+  // E.g. when the selected camera was unplugged and we automatically selected another camera
+  $: cameraChanged($deviceStream?.cameraDevice)
+  function cameraChanged(newCamID: string) {
+    if (!newCamID || newCamID == selectedCameraSetting.value) {
+      return;
+    }
+    selectedCameraSetting.value = newCamID;
+  }
+  $: micChanged($deviceStream?.micDevice)
+  function micChanged(newMicID: string) {
+    if (!newMicID || newMicID == selectedMicSetting.value) {
+      return;
+    }
+    selectedMicSetting.value = newMicID;
+  }
+  */
 
   onDestroy(() => {
     navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);

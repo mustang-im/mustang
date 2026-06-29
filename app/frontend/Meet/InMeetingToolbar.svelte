@@ -23,8 +23,8 @@
   {/if}
   {#if meeting.account.canVideo && $meeting.hasVideo}
     <DeviceButton video={true} {devices}
-      on={$me?.cameraOn}
-      selectedID={$selectedCameraSetting.value}
+      on={$stream.cameraOn || $me?.cameraOn}
+      selectedID={$stream.cameraDevice ?? $selectedCameraSetting.value}
       on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
       on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
       stream={$stream.cameraMicStream}
@@ -32,8 +32,8 @@
   {/if}
   {#if meeting.account.canAudio}
     <DeviceButton video={false} {devices}
-      on={$me?.micOn}
-      selectedID={$selectedMicSetting.value}
+      on={$stream.micOn || $me?.micOn}
+      selectedID={$stream.micDevice ?? $selectedMicSetting.value}
       on:changeOn={event => catchErrors(() => changeMicOn(event.detail))}
       on:changeDevice={event => catchErrors(() => changeMicSelected(event.detail))}
       stream={$stream.cameraMicStream}
