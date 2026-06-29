@@ -34,7 +34,6 @@
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
-  import { gt } from "../../../l10n/l10n";
 
   export let withVideo = true;
 
@@ -77,13 +76,6 @@
 
   let ex: Error | null = null;
   function showErrorInline(error: Error) {
-    if (error?.name == "NotReadableError") {
-      let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
-      ex = new Error(cameras == 1
-        ? gt`Your camera is in use. Please stop the other video application.`
-        : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
-      return;
-    }
     ex = error;
   }
 

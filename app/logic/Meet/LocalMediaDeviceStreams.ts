@@ -2,7 +2,7 @@ import { MediaDeviceStreams } from "./MediaDeviceStreams";
 import { appGlobal } from "../app";
 import { notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
-import { assert } from "../util/util";
+import { assert, exMessage } from "../util/util";
 import { webMail } from "../build";
 import { gt } from "../../l10n/l10n";
 
@@ -101,7 +101,21 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
         autoGainControl: true,
       },
     };
+    try {
       this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
+    } catch (ex) {
+      if (ex?.name == "NotReadableError") {
+        let devices = await navigator.mediaDevices.enumerateDevices();
+        let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
+        throw exMessage(ex, cameras == 1
+          ? gt`Your camera is in use. Please stop the other video application.`
+          : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
+      } else if (ex?.name == "OverconstrainedError") {
+        throw exMessage(ex, gt`The selected camera or microphone is disconnected. Please chose another device.`);
+      } else {
+        throw ex;
+      }
+    }
     assert(this.cameraMicStream, gt`Unable to start your camera/mic`);
     this._cameraDevice = cameraDevice;
     this._micDevice = micDevice;
