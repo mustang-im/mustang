@@ -1,5 +1,4 @@
 import { ICalParser } from "./ICalParser";
-import { InvitationEvent } from "../Invitation/InvitationEvent";
 import type { EMail } from "../../Mail/EMail";
 import { InvitationMessage } from "../Invitation/InvitationStatus";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProcessor";
@@ -15,6 +14,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     let invitationStr = await invitationBlob.text();
     let ics = new ICalParser(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
+    const { InvitationEvent } = await import("../Invitation/InvitationEvent"); // avoid circular import: InvitationEvent extends Event
     let event = new InvitationEvent();
     let vevent = ics.containers.vevent?.[0];
     if (!vevent) {
