@@ -15,8 +15,7 @@
 
   export let message: EMail;
 
-  $: attachments = message.attachments.filterObservable(a =>
-        a.disposition == ContentDisposition.attachment && !a.hidden);
+  $: attachments = message.attachments.filterObservable(a => !a.hidden);
 </script>
 
 <style>
