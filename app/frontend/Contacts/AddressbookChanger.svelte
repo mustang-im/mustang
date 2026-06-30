@@ -10,7 +10,7 @@
 <script lang="ts">
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import type { Person } from "../../logic/Abstract/Person";
-  import { newPerson } from "./Person/Selected";
+  import { newPerson, selectedPerson } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
@@ -30,9 +30,9 @@
       person = newAddressbook.newPerson();
       person.addressbook = newAddressbook;
       person.copyFrom(oldPerson);
-      $newPerson = person;
+      $selectedPerson = $newPerson = person;
     } else {
-      person.moveToAddressbook(newAddressbook);
+      $selectedPerson = await person.moveToAddressbook(newAddressbook);
     }
   }
 </script>

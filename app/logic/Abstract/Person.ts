@@ -154,10 +154,14 @@ export class Person extends ContactBase {
     await other.deleteIt();
   }
 
-  /** Person class needs to match account class, so need to clone. */
-  async moveToAddressbook(newAddressbook: Addressbook): Promise<void> {
+  /** Person class needs to match account class, so need to clone.
+   * @returns reference to the new person created or the existing
+   * person if it was already in the new addressbook or the
+   * same addressbook type
+   */
+  async moveToAddressbook(newAddressbook: Addressbook): Promise<Person> {
     if (this.addressbook == newAddressbook || !newAddressbook) {
-      return;
+      return this;
     }
     let newPerson = newAddressbook.newPerson();
     if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newPerson)) {
@@ -165,7 +169,7 @@ export class Person extends ContactBase {
       this.addressbook = newAddressbook;
       newAddressbook.persons.add(this);
       await this.save();
-      return;
+      return this;
     }
     newPerson.copyFrom(this);
     newPerson.addressbook = newAddressbook;
@@ -173,6 +177,7 @@ export class Person extends ContactBase {
     newAddressbook.persons.add(newPerson);
     await this.deleteIt();
     await newPerson.save();
+    return newPerson;
   }
 
   async copyToAddressbook(newAddressbook: Addressbook): Promise<void> {
