@@ -30,9 +30,11 @@
   $: params = getParams($location.state);
   // Set only when params.event changes, not when $selectedEvent changes
   $: params, setEvent()
+  let lastEvent = null;
   function setEvent() {
-    if (params.event) {
+    if (params.event && params.event != lastEvent) {
       $selectedEvent = params.event;
+      lastEvent = params.event;
     }
   }
 </script>

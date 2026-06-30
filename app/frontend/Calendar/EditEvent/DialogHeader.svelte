@@ -213,9 +213,11 @@
   }
 
   function onCancel() {
-    // assert(event.unedited, "need unedited state");
     event.cancelEditing();
     event.parentEvent?.cancelEditing(); // master, when recurrence was changed
+    if (event.isNew && $selectedEvent == event) {
+      $selectedEvent = null;
+    }
     onClose();
   }
 

@@ -58,12 +58,16 @@
   $: params = getParams($location.state);
   $: params, setFolder()
   // Set only when params.foo changes, not when $selectedFoo changes
+  let lastAccount = null;
+  let lastFolder = null;
   function setFolder() {
-    if (params.account) {
+    if (params.account && params.account != lastAccount) {
       $selectedAccount = params.account;
+      lastAccount = params.account;
     }
-    if (params.folder) {
+    if (params.folder && params.folder != lastFolder) {
       $selectedFolder = params.folder;
+      lastFolder = params.folder;
     }
   }
 

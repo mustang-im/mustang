@@ -23,9 +23,11 @@
   $: params = getParams($location.state);
   $: params, setTopic()
   // Set only when params.foo changes, not when $selectedFoo changes
+  let lastTopic = null;
   function setTopic() {
-    if (params.topic) {
+    if (params.topic && params.topic != lastTopic) {
       $selectedTopic = params.topic;
+      lastTopic = params.topic;
     }
   }
 </script>
