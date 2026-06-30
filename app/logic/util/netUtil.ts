@@ -26,3 +26,68 @@ export function getBaseDomainFromURL(url: string): string {
   let hostname = new URL(url).hostname;
   return getBaseDomainFromHost(hostname);
 }
+
+/** Like `fetch()`'s `RequestInit`, plus an optional `timeout`. */
+export interface FetchOptions extends RequestInit {
+  /** Abort the request after this many milliseconds. */
+  timeout?: number;
+}
+
+/** A non-2xx HTTP response. `httpCode` is the status, e.g. 404.
+ * Read the response body on demand with `text()` or `json()` - most protocols
+ * don't return a body for errors, so it isn't read unless you ask for it. */
+export class HTTPError extends Error {
+  readonly httpCode: number;
+  readonly statusText: string;
+  protected readonly response: Response;
+  protected bodyText: Promise<string> | undefined;
+  constructor(response: Response) {
+    super(`HTTP ${response.status} ${response.statusText}`);
+    this.httpCode = response.status;
+    this.statusText = response.statusText;
+    this.response = response;
+  }
+
+  /** The response body as text, read (once) on demand. */
+  async text(): Promise<string> {
+    this.bodyText ??= this.response.text();
+    return await this.bodyText;
+  }
+
+  /** The response body parsed as JSON, or undefined if it isn't valid JSON. */
+  async json(): Promise<any> {
+    try {
+      return JSON.parse(await this.text());
+    } catch (ex) {
+      return undefined;
+    }
+  }
+}
+
+/** Like `fetch()`, but returns the parsed JSON body.
+ * @throws HTTPError if the response status is not 2xx */
+export async function fetchJSON(url: RequestInfo | URL, options?: FetchOptions): Promise<any> {
+  let response = await fetchChecked(url, options);
+  return await response.json();
+}
+
+/** Like `fetch()`, but returns the response body as a string.
+ * @throws HTTPError if the response status is not 2xx */
+export async function fetchText(url: RequestInfo | URL, options?: FetchOptions): Promise<string> {
+  let response = await fetchChecked(url, options);
+  return await response.text();
+}
+
+async function fetchChecked(url: RequestInfo | URL, options?: FetchOptions): Promise<Response> {
+  let { timeout, ...init } = options ?? {};
+  if (timeout) {
+    init.signal = init.signal
+      ? AbortSignal.any([init.signal, AbortSignal.timeout(timeout)])
+      : AbortSignal.timeout(timeout);
+  }
+  let response = await fetch(url, init);
+  if (!response.ok) {
+    throw new HTTPError(response);
+  }
+  return response;
+}

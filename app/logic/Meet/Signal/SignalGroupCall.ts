@@ -26,6 +26,7 @@ import type { SignalMeetAccount } from "./SignalMeetAccount";
 import { newCallKeyPair, deriveSRTPKeys } from "./callSRTP";
 import { encode, decode } from "../../Chat/Signal/Proto/codec";
 import { SignalingCallMessage, type MediaKey } from "./signalingProto";
+import { fetchJSON, HTTPError } from "../../util/netUtil";
 import { bytesToHex, hexToBytes } from "@noble/curves/utils.js";
 
 /** The Signal SFU base URL (Docs/07 §D). */
@@ -92,17 +93,17 @@ export class SignalGroupCall extends VideoConfMeeting {
    * ADVANCED: the Authorization header needs the zkgroup membership proof
    * (Docs/07 §D.7) — supply via `authHeader`. */
   async peek(authHeader: string): Promise<SfuPeekInfo | null> {
-    let res = await fetch(`${kSfuURL}/v2/conference/participants`, {
-      method: "GET",
-      headers: { Authorization: authHeader },
-    });
-    if (res.status == 404) {
-      return null;
+    try {
+      return await fetchJSON(`${kSfuURL}/v2/conference/participants`, {
+        method: "GET",
+        headers: { Authorization: authHeader },
+      }) as SfuPeekInfo;
+    } catch (ex) {
+      if (ex instanceof HTTPError && ex.httpCode == 404) {
+        return null;
+      }
+      throw ex;
     }
-    if (!res.ok) {
-      throw new Error(`SFU peek failed: ${res.status}`);
-    }
-    return await res.json() as SfuPeekInfo;
   }
 
   // --- join ---
@@ -122,15 +123,11 @@ export class SignalGroupCall extends VideoConfMeeting {
       dhePublicKey: bytesToHex(this.callKeyPair.publicKey),
       hkdfExtraInfo: "",
     };
-    let res = await fetch(`${kSfuURL}/v2/conference/participants`, {
+    let join = await fetchJSON(`${kSfuURL}/v2/conference/participants`, {
       method: "PUT",
       headers: { Authorization: authHeader, "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      throw new Error(`SFU join failed: ${res.status}`);
-    }
-    let join = await res.json() as SfuJoinResponse;
+    }) as SfuJoinResponse;
     this.eraId = join.conferenceId;
     this.demuxId = join.demuxId;
     this.deriveSfuSRTP(join);

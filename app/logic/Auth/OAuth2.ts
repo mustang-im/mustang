@@ -10,6 +10,7 @@ import { notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { RunOnce } from "../util/flow/RunOnce";
 import { assert, type URLString } from "../util/util";
+import { fetchJSON, HTTPError } from "../util/netUtil";
 import pkceChallenge from "pkce-challenge";
 
 /**
@@ -218,19 +219,27 @@ export class OAuth2 extends WebBasedAuth {
       }
       console.log("OAuth2", this.account.name, "get new access token", tokenURL, params);
 
-      let response = await fetch(tokenURL, {
-        body: new URLSearchParams(params),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-          ...additionalHeaders,
-        },
-        method: "POST",
-        signal: AbortSignal.timeout(3000),
-      });
-      let data = await response.json();
-      if (data.error) {
-        throw new OAuth2ServerError(this.account.name, data);
+      let data: any;
+      try {
+        data = await fetchJSON(tokenURL, {
+          body: new URLSearchParams(params),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            ...additionalHeaders,
+          },
+          method: "POST",
+          timeout: 3000,
+        });
+      } catch (ex) {
+        // OAuth2 servers report errors as HTTP 400/401 with the details in the JSON body.
+        if (ex instanceof HTTPError) {
+          let errorData = await ex.json();
+          if (errorData?.error) {
+            throw new OAuth2ServerError(this.account.name, errorData);
+          }
+        }
+        throw ex;
       }
       if (!data.access_token) {
         throw new OAuth2Error(`${this.account.name}: OAuth2: No access token`);

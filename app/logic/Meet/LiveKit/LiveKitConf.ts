@@ -8,6 +8,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
+import { fetchJSON } from "../../util/netUtil";
 import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 import type { Room, RemoteParticipant, RpcInvocationData } from "livekit-client";
 
@@ -123,11 +124,12 @@ export class LiveKitConf extends VideoConfMeeting {
       params.set("myName", this.account.realname);
     }
     let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + params;
-    let response = await fetch(tokenURL);
-    if (!response.ok) { // fetch() doesn't throw on HTTP errors, unlike ky
-      throw new Error(gt`Could not join the meeting` + ` (HTTP ${response.status} ${response.statusText})`);
+    let json;
+    try {
+      json = await fetchJSON(tokenURL);
+    } catch (ex) {
+      throw new Error(gt`Could not join the meeting` + ` (${ex.message})`);
     }
-    let json = await response.json();
     console.log("invitation code result", json);
     this.webSocketURL = sanitize.url(json.webSocketURL, undefined, ["wss"]);
     this.myParticipantToken = sanitize.nonemptystring(json.joinToken);

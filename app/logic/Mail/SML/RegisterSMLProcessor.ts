@@ -1,6 +1,6 @@
 import { SMLProcessor } from "./SMLProcessor";
 import type { EMail } from "../EMail";
-import { getBaseDomainFromURL, getDomainForEmailAddress } from "../../util/netUtil";
+import { fetchJSON, getBaseDomainFromURL, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
@@ -25,8 +25,7 @@ export abstract class RegisterSMLProcessor extends SMLProcessor {
     let domain = getBaseDomainFromURL(confirmURL);
     // Make sure that it's a trusted domain before confirming: Either our server or the email hoster
     assert(domain == emailDomain || trustedDomains.includes(domain), "Ignoring registration request for unknown domain " + domain);
-    let oAuth2Call = await fetch(confirmURL) as any;
-    let oAuth2Response = await oAuth2Call.json();
+    let oAuth2Response = await fetchJSON(confirmURL);
     smlAccount.setAccessToken(sanitize.nonemptystring(oAuth2Response.access_token));
     await smlAccount.save();
     await email.deleteMessage();

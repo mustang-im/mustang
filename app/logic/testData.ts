@@ -25,6 +25,7 @@ import { DummyMailStorage } from './Mail/Store/DummyMailStorage';
 import { DummyChatStorage } from './Chat/SQL/DummyChatStorage';
 import { DummyCalendarStorage } from './Calendar/SQL/DummyCalendarStorage';
 import { DummyAddressbookStorage } from './Contacts/SQL/DummyAddressbookStorage';
+import { fetchJSON } from './util/netUtil';
 import { notifyChangedProperty } from './util/Observable';
 import { assert } from './util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';
@@ -559,8 +560,7 @@ async function readAvatarList() {
   const rootURL = "https://avatar.mustang.im";
   for (let listName of ["man", "woman"]) {
     avatarFiles[listName] = new ArrayColl<string>();
-    let response = await fetch(`${rootURL}/${listName}/list.json`);
-    let fileNames = await response.json();
+    let fileNames = await fetchJSON(`${rootURL}/${listName}/list.json`);
     for (let fileName of fileNames) {
       avatarFiles[listName].add(`${rootURL}/${listName}/${fileName}`);
     }
