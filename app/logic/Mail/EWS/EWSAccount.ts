@@ -1057,9 +1057,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return true;
   }
 
-  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | null> {
     // well, some of them at least...
-    return await (this.inbox as EWSFolder).getSharedPersons();
+    return await (this.inbox as EWSFolder)?.getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

@@ -730,9 +730,9 @@ export class OWAAccount extends ExchangeMailAccount {
     return true;
   }
 
-  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | null> {
     // well, some of them at least...
-    return await (this.inbox as OWAFolder).getSharedPersons();
+    return await (this.inbox as OWAFolder)?.getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {

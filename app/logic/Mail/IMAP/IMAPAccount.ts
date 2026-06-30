@@ -406,9 +406,9 @@ export class IMAPAccount extends MailAccount {
     return this.namespaces?.other?.length > 0;
   }
 
-  async getSharedPersons(): Promise<ArrayColl<PersonUID> | undefined> {
+  async getSharedPersons(): Promise<ArrayColl<PersonUID> | null> {
     // well, some of them at least...
-    return await (this.inbox as IMAPFolder).getSharedPersons();
+    return await (this.inbox as IMAPFolder)?.getSharedPersons();
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
