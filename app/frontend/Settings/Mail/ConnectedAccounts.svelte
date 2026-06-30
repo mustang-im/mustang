@@ -24,7 +24,12 @@
 
   export let account: MailAccount;
 
-  $: calendars = account.calendarsAvailable;
+  let lastAccount = account;
+  let calendars = account.calendarsAvailable;
+  $: if (account !== lastAccount) {
+    lastAccount = account;
+    calendars = account.calendarsAvailable;
+  }
 </script>
 
 <style>
