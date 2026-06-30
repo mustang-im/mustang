@@ -352,7 +352,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     } finally {
       lock.release();
     }
-    response.responseText = await response.text();
+    try {
+      response.responseText = await response.text();
+    } catch (ex) {
+      response.responseText = "";
+    }
     this.fatalError = null;
     if (response.status == 200) {
       try {
