@@ -12,4 +12,6 @@ export const selectedMessage = writable<EMail>();
 export const selectedMessages = writable<ArrayColl<EMail>>();
 export const selectedSearchTab = writable<SearchView>(SearchView.Folder);
 
+/** The current quick search criteria that filter the message list.
+ * Allows to restore the view after coming back. */
 export const quickSearch = new QuickSearchEMail();

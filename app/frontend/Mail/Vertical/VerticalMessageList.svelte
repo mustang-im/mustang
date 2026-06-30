@@ -6,6 +6,7 @@
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
     bind:isAtTop
+    on:init={ev => ev.detail.scrollToItem(selectedMessage)}
     columns="auto">
     <svelte:fragment slot="header">
     </svelte:fragment>

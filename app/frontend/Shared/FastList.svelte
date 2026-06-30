@@ -53,8 +53,12 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
-  import { onMount, tick } from "svelte";
   import throttle from "lodash/throttle";
+  import { onMount, tick } from "svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{
+    init: { scrollToIndex: (index: number) => void, scrollToItem: (item: T) => void },
+  }>();
 
   type T = $$Generic;
 
@@ -164,6 +168,7 @@
 
       showRows = Math.ceil(availableHeight / rowHeight);
       //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight, "rowheight", rowHeight, "available", availableHeight, " showrows", showRows);
+      dispatchEvent("init", { scrollToIndex: scrollIntoView, scrollToItem: scrollItemIntoView });
     } catch (ex) {
       console.error(ex);
     }
@@ -247,6 +252,14 @@
     } else if (indexMaxY > listE.scrollTop) {
       listE.scrollTop = indexMaxY;
     }
+  }
+
+  function scrollItemIntoView(item: T) {
+    if (!item) {
+      return;
+    }
+    let index = items.contents.indexOf(item);
+    scrollIntoView(index);
   }
 
   const onScrollThrottled = throttle(onScroll, 10);
