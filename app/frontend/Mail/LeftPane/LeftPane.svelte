@@ -16,7 +16,12 @@
     </hbox>
 
   {#if activeTab == SearchView.Person}
-    <PersonsList persons={appGlobal.persons} bind:selected={$selectedPerson} />
+    <PersonsList
+      persons={appGlobal.persons}
+      bind:selected={$selectedPerson}
+      selectedPersons={new ArrayColl()}
+      on:selected={ev => showPerson(ev.detail as Person)}
+      />
     <ViewSwitcher />
   {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={endSearchMode} />
@@ -41,7 +46,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { type Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { Person } from "../../../logic/Abstract/Person";
+  import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
@@ -61,7 +66,7 @@
   import SearchSwitcher, { SearchView } from "./SearchSwitcher.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from "../../Util/error";
-  import type { ArrayColl, Collection } from 'svelte-collections';
+  import { ArrayColl, type Collection } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
 
   export let accounts: Collection<MailAccount>; /** in */
@@ -96,9 +101,8 @@
   }
 
   let lastPerson: Person;
-  $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
-    if (lastPerson == person) {
+    if (lastPerson == person || !person || !(person instanceof Person)) {
       return;
     }
     lastPerson = person;

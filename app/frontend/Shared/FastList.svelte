@@ -58,6 +58,7 @@
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{
     init: { scrollToIndex: (index: number) => void, scrollToItem: (item: T) => void },
+    selected: T,
   }>();
 
   type T = $$Generic;
@@ -259,6 +260,9 @@
       return;
     }
     let index = items.contents.indexOf(item);
+    if (index <= 0) {
+      return;
+    }
     scrollIntoView(index);
   }
 
@@ -295,6 +299,7 @@
     } else { // no modifier, i.e. a simple single-selection click
       selectedItems.clear();
       selectedItems.add(clickedItem);
+      dispatchEvent("selected", clickedItem);
     }
   }
 

@@ -2,7 +2,13 @@
   {#if showSearch}
     <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
   {/if}
-  <FastList items={sortedPersons} bind:selectedItem={selected} bind:selectedItems={selectedPersons} columns="auto">
+  <FastList
+    items={sortedPersons}
+    bind:selectedItem={selected}
+    bind:selectedItems={selectedPersons}
+    on:init={ev => ev.detail.scrollToItem(selected)}
+    on:selected
+    columns="auto">
     <vbox class="person" slot="row" let:item={person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} on:click>
         <slot name="top-right" slot="top-right" {person} />
