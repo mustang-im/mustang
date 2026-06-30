@@ -78,6 +78,11 @@ export class OWAEvent extends Event {
     }
     this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
+    if (this.allDay && this.timezone) {
+      this.startTime = new Date(this.startTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.endTime = new Date(this.endTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.timezone = null;
+    }
     if (json.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {

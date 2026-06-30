@@ -73,6 +73,11 @@ export class ActiveSyncEvent extends Event {
     if (wbxmljs.Timezone) { // Omitted in 16.1 for all day events
       this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
     }
+    if (this.allDay && this.timezone) {
+      this.startTime = new Date(this.startTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.endTime = new Date(this.endTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.timezone = null;
+    }
     if (wbxmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
