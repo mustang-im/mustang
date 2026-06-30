@@ -1,4 +1,5 @@
-import { Event, RecurrenceCase } from "../Event";
+import { ExchangeEvent } from "../EWS/ExchangeEvent";
+import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -32,7 +33,7 @@ enum WeekOfMonth {
   'Last' = 5,
 };
 
-export class OWAEvent extends Event {
+export class OWAEvent extends ExchangeEvent {
   declare calendar: OWACalendar;
   declare parentEvent: OWAEvent;
   declare readonly exceptions: ArrayColl<OWAEvent>;
@@ -78,6 +79,7 @@ export class OWAEvent extends Event {
     }
     this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
+    this.fixupExchangeAllDayEvent();
     if (json.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
