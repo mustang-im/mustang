@@ -153,7 +153,7 @@
 <script lang="ts">
   import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
   import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
-  import { selectedContactEntry } from "../Person/Selected";
+  import { newPerson, selectedContactEntry } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
@@ -249,6 +249,7 @@
   async function save() {
     try {
       await person.save();
+      $newPerson = null;
     } catch (ex) {
       showError(ex);
     }
