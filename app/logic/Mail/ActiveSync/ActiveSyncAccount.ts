@@ -77,6 +77,14 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
         });
         await this.oAuth2.login(interactive);
       }
+
+      await this.startup();
+    });
+  }
+
+  async startup() {
+    await this.startupRunOnce.runOnce(async () => {
+      // This needs to run first before trying to sync.
       this.protocolVersion = this.getStorageItem("protocolVersion");
       if (this.protocolVersion == "14.0") {
         let request = {
@@ -92,12 +100,6 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
         }
       }
 
-      await this.startup();
-    });
-  }
-
-  async startup() {
-    await this.startupRunOnce.runOnce(async () => {
       await super.startup();
 
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
