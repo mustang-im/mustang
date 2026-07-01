@@ -511,9 +511,16 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
+    let types = ["Email"];
+    if (this.haveContacts) {
+      types.push("ContactCard");
+    }
+    if (this.haveCalendar) {
+      types.push("CalendarEvent");
+    }
     url = url
       .replace("{accountId}", this.accountID)
-      .replace("{types}", "Email,ContactCard") // TJMAPObjectTypes.join(","))
+      .replace("{types}", types.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
     while (this.isLoggedIn) {
