@@ -282,7 +282,7 @@ export class JMAPCalendar extends Calendar {
 
   protected async saveEvents(events: Collection<Event>) {
     for (let event of events) {
-      await event.save();
+      await event.saveLocally();
     }
   }
 

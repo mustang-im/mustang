@@ -272,7 +272,7 @@ export class JMAPAddressbook extends Addressbook {
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
     for (let person of persons) {
-      await person.save();
+      await person.saveLocally();
     }
   }
 
