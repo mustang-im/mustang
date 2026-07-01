@@ -10,12 +10,9 @@ export class OWAPerson extends Person {
   declare addressbook: OWAAddressbook | null;
   fields: Record<string, string> = this.toFields();
 
-  get personaID() {
-    return this.id;
-  }
-  set personaID(val) {
-    this.id = val;
-  }
+  /** The Exchange PersonaId,
+   * or the empty string if the item has not been saved to the server. */
+  personaID = "";
 
   fromJSON(json: any): OWAPerson {
     this.personaID = sanitize.nonemptystring(json.PersonaId?.Id);
@@ -113,6 +110,18 @@ export class OWAPerson extends Person {
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.callOWA(request);
     this.addressbook.persons.remove(this);
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    // Old existing contacts saved the personaID in the id
+    this.personaID = sanitize.string(json.serverID, this.id);
+  }
+
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.personaID = this.personaID;
+    return json;
   }
 }
 

@@ -13,12 +13,9 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 export class EWSGroup extends Group {
   declare addressbook: EWSAddressbook | null;
 
-  get itemID() {
-    return this.id;
-  }
-  set itemID(val) {
-    this.id = val;
-  }
+  /** The Exchange ItemId,
+   * or the empty string if the item has not been saved to the server. */
+  itemID = "";
 
   fromXML(xmljs: any) {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
@@ -48,6 +45,18 @@ export class EWSGroup extends Group {
   async deleteFromServer() {
     let request = new EWSDeleteItemRequest(this.itemID);
     await this.addressbook.account.callEWS(request);
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    // Old existing contacts saved the itemID in the id
+    this.itemID = sanitize.string(json.itemID, this.id);
+  }
+
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.itemID = this.itemID;
+    return json;
   }
 }
 
