@@ -69,7 +69,8 @@
     if (selectedAccount === null && showAllOption) {
       return;
     }
-    if (!showAccounts.includes(selectedAccount)) {
+    if (showAccounts.hasItems &&
+      !showAccounts.includes(selectedAccount)) {
       selectedAccount = null;
       defaultSelection();
     }
