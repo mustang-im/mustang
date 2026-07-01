@@ -191,8 +191,8 @@ export class JMAPCalendar extends Calendar {
       for (let calendar of allCalendars) {
         await calendar.readEventsFromDB();
         let removed = this.findMovedAway(changedResponse.list, calendar);
-        let addedThisCal = addedByCal.get(calendar.id);
-        let changedThisCal = changedByCal.get(calendar.id);
+        let addedThisCal = addedByCal.get(calendar.jmapID);
+        let changedThisCal = changedByCal.get(calendar.jmapID);
         if (!(addedThisCal || changedThisCal ||
           removed.hasItems || changes.destroyed?.length)) {
           continue;

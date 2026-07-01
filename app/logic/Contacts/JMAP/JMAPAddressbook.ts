@@ -183,8 +183,8 @@ export class JMAPAddressbook extends Addressbook {
       for (let addressbook of allAddressbooks) {
         await addressbook.readContactsFromDB();
         let removed = this.findMovedAway(changedResponse.list, addressbook);
-        let addedThisAB = addedByAB.get(addressbook.id);
-        let changedThisAB = changedByAB.get(addressbook.id);
+        let addedThisAB = addedByAB.get(addressbook.jmapID);
+        let changedThisAB = changedByAB.get(addressbook.jmapID);
         if (!(addedThisAB || changedThisAB ||
               removed.hasItems || changes.destroyed?.length)) {
               continue;
