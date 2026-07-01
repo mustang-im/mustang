@@ -598,6 +598,9 @@ export class Event extends Observable {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     this.calUID ??= crypto.randomUUID();
+    if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
+      await this.outgoingInvitation.markInvitationsNeeded();
+    }
     await this.calendar.storage.saveEvent(this);
 
     if (this.recurrenceCase == RecurrenceCase.Master) {
