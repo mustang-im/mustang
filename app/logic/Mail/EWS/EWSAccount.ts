@@ -103,8 +103,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
       await super.login(interactive);
       await this.loginCommon(interactive);
-
-      await this.startup();
     });
   }
 
