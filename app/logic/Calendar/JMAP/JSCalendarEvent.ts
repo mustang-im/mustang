@@ -275,10 +275,13 @@ export class JSCalendarEvent {
   }
 
   static fromDate(date: Date, event: Event): string {
-    // All-day events should have a time of zero and no UTC indicator.
-    // `toISOString` might not even provide the right date in this case.
-    // "lt" locale has date format YYYY-MM-DD.
-    return event.allDay ? date.toLocaleDateString("lt") + "T00:00:00" : date.toISOString();
+    // "lt" locale has date/time format YYYY-MM-DD HH:MM:SS.
+    if (event.allDay) {
+      // toISOString() might return the wrong date
+      return date.toLocaleDateString("lt") + "T00:00:00";
+    }
+    let options = event.timezone ? { timeZone: event.timezone } : undefined;
+    return date.toLocaleString("lt", options).replace(" ", "T");
   }
 }
 
