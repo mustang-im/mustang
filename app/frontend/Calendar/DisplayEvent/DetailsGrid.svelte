@@ -14,7 +14,7 @@
     <ParticipantsDisplay {event} />
   {/if}
 
-  {#if event.location}
+  {#if $event.location}
     <LocationIcon size="16px" />
     <value class="location font-normal">
       {$event.location}

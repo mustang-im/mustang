@@ -2,7 +2,7 @@
   <DialogHeader {event} />
   <hbox class="title-row">
     <hbox class="title selectable font-normal">
-      {event.title ?? ""}
+      {$event.title ?? ""}
     </hbox>
   </hbox>
   <vbox class="details-grid">
