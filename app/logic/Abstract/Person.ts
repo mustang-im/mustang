@@ -206,8 +206,20 @@ export class Person extends ContactBase {
     this.custom.addAll(other.custom.map(ce => ce.clone()));
   }
 
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.company = this.company;
+    json.department = this.department;
+    json.position = this.position;
+    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
+    return json;
+  }
+
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
+    this.company = sanitize.string(json.company, null);
+    this.department = sanitize.string(json.department, null);
+    this.position = sanitize.string(json.position, null);
     this.encryptionPublicKeys.clear();
     for (let keyJSON of sanitize.array(json.encryptionPublicKeys, [])) {
       try {
@@ -217,11 +229,6 @@ export class Person extends ContactBase {
         this.addressbook?.errorCallback(ex);
       }
     }
-  }
-  toExtraJSON(): any {
-    let json = super.toExtraJSON();
-    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
-    return json;
   }
 }
 
