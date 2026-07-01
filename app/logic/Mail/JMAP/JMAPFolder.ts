@@ -196,7 +196,8 @@ export class JMAPFolder extends Folder {
         await folder.readFolder();
         removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
         removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
-        let addedResult = folder.parseMessageList(addedThisFolder ?? [], false);
+        // A draft or email uploaded from here comes back in `created`, so need dup checks
+        let addedResult = folder.parseMessageList(addedThisFolder ?? []);
         let changedResult = folder.parseMessageList(changedThisFolder ?? []);
         addedResult.newMessages.addAll(changedResult.newMessages);
         //console.log(folder.name, "added messages", addedResult.newMessages.contents.map(e => e.subject));
