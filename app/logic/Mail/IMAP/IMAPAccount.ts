@@ -36,9 +36,9 @@ export class IMAPAccount extends MailAccount {
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
   /** High level logging about the commands we issue, logged by us */
-  logCommands = true;
+  logCommands = false;
   /** Logs by ImapFlow */
-  logLibrary = true;
+  logLibrary = false;
 
   constructor() {
     super();
