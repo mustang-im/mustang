@@ -21,6 +21,8 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { Throttle } from "../../util/flow/Throttle";
+import { waitUntilOnline, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
@@ -523,33 +525,45 @@ export class JMAPAccount extends MailAccount {
       .replace("{types}", types.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
+    let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
-      let stream = await fetch(url, {
-        headers: {
-          Authorization: this.authorizationHeader(),
-        }
-      });
-      if (!stream.ok) {
-        throw new Error(`EventSource <${url}> failed with HTTP ${stream.status} ${stream.statusText}`);
-      }
-      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
-      for await (let event of eventStream) {
-        if (event.name == "state") {
-          try {
-            let json = JSON.parse(event.data);
-            assert(json.changed, "Need state changes");
-            let changes = json.changed[this.accountID];
-            for (let typename in changes) {
-              let newState = changes[typename];
-              let type = typename as TJMAPObjectType;
-              if (newState == this.syncState.get(type)) {
-                continue;
-              }
-              await this.sync(type, newState);
-            }
-          } catch (ex) {
-            console.error(ex);
+      await reconnectThrottle.throttle();
+      try {
+        let stream = await fetch(url, {
+          headers: {
+            Authorization: this.authorizationHeader(),
           }
+        });
+        if (!stream.ok) {
+          throw new HTTPError(stream);
+        }
+        let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+        for await (let event of eventStream) {
+          if (event.name == "state") {
+            try {
+              let json = JSON.parse(event.data);
+              assert(json.changed, "Need state changes");
+              let changes = json.changed[this.accountID];
+              for (let typename in changes) {
+                let newState = changes[typename];
+                let type = typename as TJMAPObjectType;
+                if (newState == this.syncState.get(type)) {
+                  continue;
+                }
+                await this.sync(type, newState);
+              }
+            } catch (ex) {
+              console.error(ex);
+            }
+          }
+        }
+      } catch (ex) {
+        if (ex instanceof TypeError &&
+            ex.message?.match(/network ?error|failed to fetch|load failed/i)) {
+          this.errorCallback(ex);
+          await waitUntilOnline(); // Computer sleep drops the network
+        } else {
+          throw ex;
         }
       }
     }

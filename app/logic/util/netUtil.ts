@@ -27,6 +27,14 @@ export function getBaseDomainFromURL(url: string): string {
   return getBaseDomainFromHost(hostname);
 }
 
+/** Resolves once the network is online: at once if it already is, else when
+ * the browser fires `online`, e.g. after the OS wakes from sleep. */
+export function waitUntilOnline(): Promise<void> {
+  return navigator.onLine
+    ? Promise.resolve()
+    : new Promise(resolve => addEventListener("online", () => resolve(), { once: true }));
+}
+
 /** Like `fetch()`'s `RequestInit`, plus an optional `timeout`. */
 export interface FetchOptions extends RequestInit {
   /** Abort the request after this many milliseconds. */
