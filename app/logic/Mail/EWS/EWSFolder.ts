@@ -150,12 +150,12 @@ export class EWSFolder extends Folder {
 
   protected async processSyncReadFlagChange(email: EWSEMail, change: any) {
     email.isRead = sanitize.boolean(change.IsRead, false);
-    await this.storage.saveMessageWritableProps(email);
+    await email.saveWritablePropsLocally();
   }
 
   protected async processSyncUpdate(email: EWSEMail, update: any) {
     email.setFlags(update);
-    await this.storage.saveMessageWritableProps(email);
+    await email.saveWritablePropsLocally();
   }
 
   protected async processSyncDelete(email: EWSEMail) {
@@ -217,7 +217,7 @@ export class EWSFolder extends Folder {
           let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
           if (email) {
             email.setFlags(message);
-            await this.storage.saveMessageWritableProps(email);
+            await email.saveWritablePropsLocally();
             allMsgs.add(email);
           } else {
             newMessageIDs.push(message.ItemId);
@@ -313,7 +313,7 @@ export class EWSFolder extends Folder {
             }
             let email = this.newEMail();
             email.fromXML(getEWSItem(result.Items));
-            await this.storage.saveMessage(email);
+            await email.saveMetadataLocally();
             newMsgs.add(email);
           } catch (ex) {
             this.account.errorCallback(ex);

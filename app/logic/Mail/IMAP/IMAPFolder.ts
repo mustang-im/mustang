@@ -403,7 +403,7 @@ export class IMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject && email.dbID) {
-          await this.storage.saveMessageWritableProps(email);
+          await email.saveWritablePropsLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);

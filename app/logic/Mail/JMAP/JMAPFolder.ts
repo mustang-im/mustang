@@ -339,7 +339,7 @@ export class JMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessage(email);
+          await email.saveMetadataLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -353,7 +353,7 @@ export class JMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessageWritableProps(email);
+          await email.saveWritablePropsLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);

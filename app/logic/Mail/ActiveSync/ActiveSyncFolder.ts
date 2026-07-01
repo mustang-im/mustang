@@ -159,12 +159,12 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
           let email = this.getEmailByServerID(serverID);
           if (email) {
             email.setFlags(item.ApplicationData);
-            await this.storage.saveMessageWritableProps(email);
+            await email.saveWritablePropsLocally();
           } else {
             email = this.newEMail();
             email.serverID = serverID;
             email.fromWBXML(item.ApplicationData);
-            await this.storage.saveMessage(email);
+            await email.saveMetadataLocally();
             newMsgs.add(email);
           }
         } catch (ex) {

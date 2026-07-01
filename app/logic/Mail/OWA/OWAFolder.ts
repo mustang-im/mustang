@@ -112,7 +112,7 @@ export class OWAFolder extends Folder {
           let email = this.getEmailByItemID(id);
           if (email) {
             email.setFlags(message);
-            await this.storage.saveMessageWritableProps(email);
+            await email.saveWritablePropsLocally();
             allMsgs.add(email);
           } else {
             newMessageIDs.push(id);
@@ -142,7 +142,7 @@ export class OWAFolder extends Folder {
         try {
           let email = this.newEMail();
           email.fromJSON(item);
-          await this.storage.saveMessage(email);
+          await email.saveMetadataLocally();
           newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);

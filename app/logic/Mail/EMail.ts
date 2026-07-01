@@ -207,7 +207,7 @@ export class EMail extends Message {
   async markDraft(isDraft = true) {
     this.isDraft = isDraft;
     if (this.dbID) {
-      await this.storage.saveMessageWritableProps(this);
+      await this.saveWritablePropsLocally();
     }
   }
 
@@ -399,6 +399,14 @@ export class EMail extends Message {
     this.inReplyTo = null;
   }
 
+  async saveMetadataLocally() {
+    await this.storage.saveMessage(this);
+  }
+
+  async saveWritablePropsLocally() {
+    await this.storage.saveMessageWritableProps(this);
+  }
+
   /**
    * Saves the email
    * 1. in the database (meta-data, body text)
@@ -412,14 +420,14 @@ export class EMail extends Message {
       return;
     }
     await this.processMessage();
-    await this.storage.saveMessage(this);
+    await this.saveMetadataLocally();
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
       contentSaves.add(contentStorage.save(this));
     }
     await contentSaves.wait();
     this.downloadComplete = true;
-    await this.storage.saveMessageWritableProps(this); // save downloadComplete = true
+    await this.saveWritablePropsLocally(); // save downloadComplete = true
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -547,12 +555,12 @@ export class EMail extends Message {
       threadID = parent?.threadID ?? parent?.inReplyTo;
       if (threadID && parent.threadID != threadID) {
         parent.threadID = threadID;
-        await this.storage.saveMessageWritableProps(parent);
+        await parent.saveWritablePropsLocally();
       }
     }
     if (threadID && this.threadID != threadID) {
       this.threadID = threadID;
-      await this.storage.saveMessageWritableProps(this);
+      await this.saveWritablePropsLocally();
     }
     return this.threadID;
   }
