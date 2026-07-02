@@ -85,9 +85,7 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
   for (let account of allAccounts) {
     if (account.loginOnStartup && !account.isDependentAccount) {
       (async () => {
-        if (!account.isLoggedIn) {
-          await account.login(false);
-        }
+        await account.login(false);
         await account.startup();
       })().catch(errorWithAccountName(account, startupErrorCallback));
     }
