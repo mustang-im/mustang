@@ -108,7 +108,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
             person.serverID = sanitize.nonemptystring(item.ServerId);
             person.fromWBXML(item.ApplicationData);
             await person.saveLocally();
-            this.persons.add(person);
           }
         } catch (ex) {
           this.account.errorCallback(ex);

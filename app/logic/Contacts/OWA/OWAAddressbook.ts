@@ -92,7 +92,6 @@ export class OWAAddressbook extends Addressbook {
           person = this.newPerson();
           person.fromJSON(result);
           await person.saveLocally();
-          this.persons.add(person);
         }
       } catch (ex) {
         this.account.errorCallback(ex);

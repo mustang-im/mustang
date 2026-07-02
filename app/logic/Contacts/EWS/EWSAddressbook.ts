@@ -190,7 +190,6 @@ export class EWSAddressbook extends Addressbook implements EWSSubscribable {
             person = new EWSPerson(this);
             person.fromXML(result.Items.Contact);
             await person.saveLocally();
-            this.persons.add(person);
           }
         } catch (ex) {
           this.account.errorCallback(ex);
