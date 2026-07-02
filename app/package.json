@@ -50,7 +50,7 @@
     "ini": "^6.0.0",
     "js-sha256": "^0.11.0",
     "ky": "^1.14.2",
-    "livekit-client": "^2.16.1",
+    "livekit-client": "^2.20.0",
     "lodash": "^4.17.21",
     "lowlight": "^3.3.0",
     "lucide-svelte": "^0.562.0",
