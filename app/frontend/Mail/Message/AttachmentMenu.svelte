@@ -27,7 +27,6 @@
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
-  import type { EMail } from "../../../logic/Mail/EMail";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import OpenIcon from "lucide-svelte/icons/external-link";
@@ -45,10 +44,6 @@
     await attachment.openOSFolder();
   }
   async function saveFile() {
-    if (!attachment.content) {
-      let email = attachment.message as EMail;
-      await email.loadAttachments();
-    }
     await attachment.saveFile();
   }
   async function deleteIt() {

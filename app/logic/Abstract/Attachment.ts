@@ -1,5 +1,6 @@
 import { File as FileEntry } from "../Files/File";
 import { Message } from "./Message";
+import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveBlobAsFile } from "../../frontend/Util/util";
@@ -91,6 +92,12 @@ export class Attachment extends Observable {
     return this.filename.split(".").pop();
   }
 
+  async load() {
+    if (!this.content && this.message instanceof EMail) {
+      await this.message.loadAttachments();
+    }
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await openOSAppForFile(this.filepathLocal);
@@ -101,6 +108,7 @@ export class Attachment extends Observable {
     await appGlobal.remoteApp.showFileInFolder(this.filepathLocal);
   }
   async saveFile() {
+    await this.load();
     saveBlobAsFile(this.content);
   }
   async deleteFile() {

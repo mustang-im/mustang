@@ -470,9 +470,9 @@ export class EMail extends Message {
       return;
     }
     try {
-      let att = this.folder.account.contentStorage.find(store => store instanceof RawFilesAttachment); // RawFilesAttachment
-      assert(att, "Raw attachment storage not configured");
-      await att.read(this);
+      let storage = this.folder.account.contentStorage.find(store => store instanceof RawFilesAttachment);
+      assert(storage, "Raw attachment storage not configured");
+      await storage.read(this);
     } catch (ex) {
       console.error(ex);
       // fallback
