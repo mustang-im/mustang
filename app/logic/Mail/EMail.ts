@@ -478,6 +478,8 @@ export class EMail extends Message {
       // fallback
       await this.loadMIME();
     }
+    let unLoaded = this.attachments.filterOnce(a => !a.content).map(a => a.filename);
+    assert(!unLoaded.hasItems, `Error loading attachments: ${unLoaded.join(", ")}`);
   }
 
   async loadBody() {
