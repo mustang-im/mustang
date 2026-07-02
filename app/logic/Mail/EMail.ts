@@ -6,6 +6,7 @@ import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
+import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
@@ -469,9 +470,9 @@ export class EMail extends Message {
       return;
     }
     try {
-      let att = this.folder.account.contentStorage.find(store => (store as any).readAttachment); // RawFilesAttachment
-      assert(att, "Raw attachment storage not configured");
-      await att.read(this);
+      let storage = this.folder.account.contentStorage.find(store => store instanceof RawFilesAttachment);
+      assert(storage, "Raw attachment storage not configured");
+      await storage.read(this);
     } catch (ex) {
       console.error(ex);
       // fallback
