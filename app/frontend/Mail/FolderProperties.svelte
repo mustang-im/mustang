@@ -47,8 +47,9 @@
         return;
       }
     }
-    $selectedFolder = folder.parent ?? folder.account.inbox;
+    let next = folder.parent ?? folder.account.inbox;
     await folder.deleteIt();
+    $selectedFolder = next;
   }
 </script>
 
