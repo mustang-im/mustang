@@ -56,6 +56,13 @@ export class JMAPEvent extends Event {
   async saveToServer() {
     await this.prepareSaveToServer();
 
+    if (this.parentEvent) {
+      // Instances and exceptions are stored in the master's `recurrenceOverrides`.
+      // `saveLocally()` already added this event to the master.
+      await this.parentEvent.saveToServer();
+      return;
+    }
+
     let isNew = !this.original;
     let jsevent = this.original ?? {} as TJMAPCalendarEvent;
     JSCalendarEvent.fromEvent(this, jsevent); // overwrites `jsevent`, so must be first
@@ -81,6 +88,15 @@ export class JMAPEvent extends Event {
   }
 
   async deleteFromServer() {
+    if (this.parentEvent) {
+      // Instances and exceptions are stored in the master's `recurrenceOverrides`.
+      // `deleteLocally()` already added the exclusion to the master.
+      await this.parentEvent.saveToServer();
+      return;
+    }
+    if (!this.jmapID) { // never saved to the server
+      return;
+    }
     await this.account.makeSingleCall("CalendarEvent/set", {
       accountId: this.account.accountID,
       destroy: [this.jmapID],
