@@ -83,6 +83,11 @@ export class EWSEvent extends Event {
     }
     this.timezone = fromWindowsZone(sanitize.nonemptystring(xmljs.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
+    if (this.allDay && this.timezone) {
+      this.startTime = new Date(this.startTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.endTime = new Date(this.endTime.toLocaleDateString('lt', { timeZone: this.timezone }) + "T00:00:00");
+      this.timezone = null;
+    }
     if (xmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
