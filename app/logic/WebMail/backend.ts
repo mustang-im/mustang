@@ -1,4 +1,5 @@
 import { NotImplemented } from "util/util";
+import { StallTimeout } from "../../../lib/util/StallTimeout";
 import ky from "ky";
 
 /** Implements the same functions as desktop/backend/backend.ts ,
@@ -13,21 +14,22 @@ export class WebMailBackend {
     let kyFunc = ky.create(defaultOptions);
     for (let name in kyFunc) {
       kyObj[name] = async (input, options) => {
-        // let resultKy = ky.post(input, options);
-        let kyFetch = kyFunc[name](input, options);
         let resultType = options?.result || defaultOptions?.result;
         if (resultType &&
           ["text", "json", "formData", "blob", "arrayBuffer"].includes(resultType) &&
           ["get", "put", "post", "patch", "delete", "head"].includes(name)) {
+          // Reading the result would hang forever, if the connection breaks mid-response. #1252
+          let stall = new StallTimeout(options?.timeout ?? defaultOptions?.timeout ?? 10000, input);
           try {
             // console.log("Calling server", "input", input, "options", options, "defaults", defaultOptions);
-            // let json = await resultKy.json();
-            return await kyFetch[resultType]();
+            return await kyFunc[name](input, stall.wrapOptions(options))[resultType]();
           } catch (ex) {
             throw new HTTPFetchError(ex);
+          } finally {
+            stall.stop();
           }
         } else {
-          return kyFetch;
+          return kyFunc[name](input, options);
         }
       }
     }
