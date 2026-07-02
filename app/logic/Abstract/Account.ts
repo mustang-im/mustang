@@ -274,6 +274,8 @@ export function getAllAccounts(): Collection<Account> {
  * Called after all the account objects have been created.
  */
 export function setMainAccounts(): void {
+  // Note: We require that SMTP accounts are also in this list, so that they can be wired up
+  // with their IMAP accounts, even though SMTP accounts are not in `appGlobal.emailAccounts`
   let accounts = getAllAccounts();
   for (let account of accounts) {
     try {
