@@ -6,6 +6,9 @@ import { NotReached } from "../../util/util";
  * to call calendar.newEvent()` to create a protocol-specific calendar event
  * implementation and then clone into info from here into that calendar event. */
 export class InvitationEvent extends Event {
+  get isEditable(): boolean {
+    return false;
+  }
   async save(): Promise<never> {
     throw new NotReached("InvitationEvent holds a temporary copy of event data for incoming and outgoing invitations only");
   }
