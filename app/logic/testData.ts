@@ -487,7 +487,7 @@ class FakeEvent extends Event {
   }
   setTime(future: boolean) {
     this.startTime = future
-      ? faker.date.future({ years: 0.2 })
+      ? faker.date.soon({ days: 60 })
       : faker.date.recent();
     let endTimeMax = new Date(this.startTime);
     endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);
