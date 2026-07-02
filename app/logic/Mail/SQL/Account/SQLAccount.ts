@@ -24,7 +24,7 @@ export class SQLAccount {
         INSERT INTO account (
           idStr, type, protocol, mainAccountIDStr, json
         ) VALUES (
-          ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id},
+          ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id ?? acc._mainAccountID},
           ${jsonStr}
         )`);
     } else {

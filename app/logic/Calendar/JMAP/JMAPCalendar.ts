@@ -10,6 +10,7 @@ import { JMAPIncomingInvitation } from "./JMAPIncomingInvitation";
 import type { Participant } from "../Participant";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 export class JMAPCalendar extends Calendar {
@@ -26,6 +27,7 @@ export class JMAPCalendar extends Calendar {
   shouldShow = true;
 
   get account(): JMAPAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as JMAPAccount;
   }
 

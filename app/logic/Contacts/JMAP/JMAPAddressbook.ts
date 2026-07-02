@@ -7,6 +7,7 @@ import type { TJMAPContact } from "./TJSContact";
 import type { TJMAPChangeResponse, TJMAPGetResponse, TID } from "../../Mail/JMAP/TJMAPGeneric";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 export class JMAPAddressbook extends Addressbook {
@@ -23,6 +24,7 @@ export class JMAPAddressbook extends Addressbook {
   shouldShow = true;
 
   get account(): JMAPAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as JMAPAccount;
   }
 
