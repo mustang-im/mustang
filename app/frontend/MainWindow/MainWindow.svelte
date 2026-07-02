@@ -3,7 +3,10 @@
 </svelte:head>
 <svelte:window
   bind:outerWidth={windowWidth}
+  on:resize={saveWindowSettingsDebounced}
+  on:blur={() => catchErrors(saveWindowSettings)}
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
+  on:beforeunload={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
 <vbox flex class="main-window"
@@ -141,14 +144,15 @@
   }
 
   function saveWindowSettings() {
-    if (appGlobal.isMobile) {
+    if (appGlobal.isMobile || document.hidden) {
       return;
     }
-    let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
-    let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
-    windowSize.value = [ window.outerWidth, window.outerHeight ];
-    windowPosition.value = [ window.screenX, window.screenY ];
+    let windowSizeSetting = getLocalStorage("window.size", []);
+    let windowPositionSetting = getLocalStorage("window.position", []);
+    windowSizeSetting.value = [ window.outerWidth, window.outerHeight ];
+    windowPositionSetting.value = [ window.screenX, window.screenY ];
   }
+  const saveWindowSettingsDebounced = debounce(() => catchErrors(saveWindowSettings), 1000);
 
   async function onClickTopLevel(event: MouseEvent) {
     let targetE = event.target as HTMLElement;
