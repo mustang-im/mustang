@@ -299,7 +299,7 @@ class FakeEMail extends EMail {
   setFake(person: Person, pUID: PersonUID, meUID: PersonUID, lastReadTime: Date, emailNr: number) {
     this.loadedBody = true;
     this.id = emailNr + '@' + this.folder.account.emailAddress;
-    this.sent = faker.date.past({ years: 0.1 });
+    this.sent = faker.date.recent({ days: 30 });
     this.received = new Date(this.sent.getTime() + 500);
     this.size = Math.ceil(Math.random() * 2048 + 200);
     this.isRead = this.received < lastReadTime;
@@ -409,7 +409,7 @@ class FakeChat extends ChatRoom {
     if (this.messages.hasItems) {
       return;
     }
-    let lastTime = faker.date.past({ years: 0.1 });
+    let lastTime = faker.date.recent({ days: 30 });
     let msgCount = (this.account as FakeChatAccount).msgCount;
     for (let i = 1; i <= msgCount; i++) {
       let msg = this.newMessage();
@@ -442,8 +442,8 @@ class FakeChatMessage extends ChatMessage {
   setFakeTime(lastTime: Date) {
     let isFollowup = Math.random() < 0.5;
     this.sent = isFollowup
-      ? faker.date.future({ years: 0.000001, refDate: lastTime })
-      : faker.date.past({ years: 0.1 });
+      ? faker.date.soon({ days: 1, refDate: lastTime })
+      : faker.date.recent({ days: 30 });
     this.received = new Date(this.sent.getTime() + 500);
   }
 }
