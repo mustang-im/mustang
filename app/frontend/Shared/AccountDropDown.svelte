@@ -78,6 +78,9 @@
 
   let selectE: HTMLSelectElement;
   function onIconClick() {
+    if (disabled) {
+      return;
+    }
     selectE.showPicker();
   }
 
