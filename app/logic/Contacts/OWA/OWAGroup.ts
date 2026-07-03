@@ -1,12 +1,12 @@
-import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
+import { ExchangeGroup } from '../EWS/ExchangeGroup';
 import type { OWAAddressbook } from './OWAAddressbook';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
 
-export class OWAGroup extends Group {
+export class OWAGroup extends ExchangeGroup {
   declare addressbook: OWAAddressbook | null;
 
   get personaID() {

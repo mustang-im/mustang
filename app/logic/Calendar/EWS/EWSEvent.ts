@@ -1,8 +1,9 @@
-import { Event, RecurrenceCase } from "../Event";
+import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
+import { ExchangeEvent } from "./ExchangeEvent";
 import type { EWSCalendar } from "./EWSCalendar";
 import { EWSOutgoingInvitation } from "./EWSOutgoingInvitation";
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
@@ -37,7 +38,7 @@ const RecurrenceType: Record<string, Frequency> = {
   DailyRecurrence: Frequency.Daily,
 };
 
-export class EWSEvent extends Event {
+export class EWSEvent extends ExchangeEvent {
   declare calendar: EWSCalendar;
   declare parentEvent: EWSEvent;
   declare readonly exceptions: ArrayColl<EWSEvent>;

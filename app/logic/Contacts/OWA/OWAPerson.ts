@@ -1,12 +1,13 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
+import { ExchangePerson } from "../EWS/ExchangePerson";
 import type { OWAAddressbook } from './OWAAddressbook';
 import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
 import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";
 import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class OWAPerson extends Person {
+export class OWAPerson extends ExchangePerson {
   declare addressbook: OWAAddressbook | null;
   fields: Record<string, string> = this.toFields();
 

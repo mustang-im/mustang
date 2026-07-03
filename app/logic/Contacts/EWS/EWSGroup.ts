@@ -1,6 +1,6 @@
-import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
+import { ExchangeGroup } from './ExchangeGroup';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
@@ -10,7 +10,7 @@ import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class EWSGroup extends Group {
+export class EWSGroup extends ExchangeGroup {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {

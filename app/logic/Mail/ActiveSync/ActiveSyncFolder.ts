@@ -1,4 +1,5 @@
-import { Folder, SpecialFolder } from "../Folder";
+import { SpecialFolder } from "../Folder";
+import { ExchangeFolder } from "../EWS/ExchangeFolder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount";
 import { ActiveSyncError } from "./ActiveSyncError";
@@ -29,7 +30,7 @@ export enum FolderType {
   UserTasks = "15",
 }
 
-export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
+export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingable {
   declare account: ActiveSyncAccount;
   declare readonly messages: EMailCollection<ActiveSyncEMail>;
   declare readonly subFolders: ArrayColl<ActiveSyncFolder>;
@@ -351,9 +352,5 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
 
   async markAllRead() {
     throw new NotImplemented();
-  }
-
-  disableChangeSpecial(): string | false {
-    return "You cannot change Exchange special folders.";
   }
 }

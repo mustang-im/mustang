@@ -1,5 +1,6 @@
-import { Folder, SpecialFolder } from "../Folder";
+import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
+import { ExchangeFolder, MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/ExchangeFolder";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
@@ -12,15 +13,13 @@ import {
   owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
-import { gt } from "../../../l10n/l10n";
 
-export class OWAFolder extends Folder {
+export class OWAFolder extends ExchangeFolder {
   declare account: OWAAccount;
   declare readonly messages: EMailCollection<OWAEMail>;
   declare readonly subFolders: ArrayColl<OWAFolder>;
@@ -266,10 +265,6 @@ export class OWAFolder extends Folder {
   async markAllRead() {
     await super.markAllRead();
     await this.account.callOWA(owaFolderMarkAllMsgsReadRequest(this.id));
-  }
-
-  disableChangeSpecial(): string | false {
-    return gt`You cannot change special folders on the Exchange server`;
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

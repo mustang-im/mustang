@@ -1,7 +1,7 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "./ExchangeEMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
-import { type Tag, getTagByName } from "../../Abstract/Tag";
+import { getTagByName } from "../../Abstract/Tag";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -19,7 +19,7 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-export class EWSEMail extends EMail {
+export class EWSEMail extends ExchangeEMail {
   declare folder: EWSFolder;
 
   get itemID(): string | null {
@@ -187,14 +187,6 @@ export class EWSEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.itemID);
     }
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
   }
 
   async updateTags() {
