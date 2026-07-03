@@ -18,6 +18,7 @@
   import type { PersonOrGroup } from "./Person/PersonOrGroup";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedPerson } from "./Person/Selected";
+  import { selectedWorkspace } from "../MainWindow/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "./Person/PersonsList.svelte";
@@ -36,7 +37,8 @@
     // This must be above the `$: persons` statement, so that `persons` will be adapted and then the search happens
   }
 
-  $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
+  $: persons = (selectedAddressbook?.persons ??
+    appGlobal.persons.filterObservable(p => p.addressbook.workspace == $selectedWorkspace || !$selectedWorkspace)) as Collection<Person>;
   let selectedPersons: ArrayColl<PersonOrGroup>;
 </script>
 
