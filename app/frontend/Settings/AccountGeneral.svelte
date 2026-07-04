@@ -33,7 +33,7 @@
         {/if}
 
         <label for="workspace">{$t`Workspace`}</label>
-        <select bind:value={account.workspace} name="workspace">
+        <select bind:value={account.workspace} name="workspace" on:change={onChange}>
           {#each appGlobal.workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>
           {/each}
