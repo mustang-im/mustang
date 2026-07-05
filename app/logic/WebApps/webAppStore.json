@@ -161,6 +161,23 @@
   ],
   "apps": [
     {
+      "id": "parula-word",
+      "categoryFullIDs": [
+        "productivity/text-editor",
+        "recommended"
+      ],
+      "name": {
+        "en": "Parula Office"
+      },
+      "description": {
+        "en": "Open word processor with ODT and Word compatibility, real-time collaboration and change merges",
+        "de": "Offene Textverarbeitung mit ODT- und Word-Kompatibilität, Zusammenarbeit in Echtzeit, und Zusammenführen von Änderungen"
+      },
+      "homepage": "https://www.parula.app/features/",
+      "start": "https://office.parula.app/",
+      "icon": "https://parula.beonex.com/assets/images/parula_white.png"
+    },
+    {
       "id": "miro",
       "categoryFullIDs": [
         "graphics/diagram"
