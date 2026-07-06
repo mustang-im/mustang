@@ -37,8 +37,9 @@
     // This must be above the `$: persons` statement, so that `persons` will be adapted and then the search happens
   }
 
-  $: persons = (selectedAddressbook?.persons ??
-    appGlobal.persons.filterObservable(p => p.addressbook.workspace == $selectedWorkspace || !$selectedWorkspace)) as Collection<Person>;
+  $: persons = (selectedAddressbook?.persons ?? ($selectedWorkspace
+    ? appGlobal.persons.filterObservable(p => p.addressbook.workspace == $selectedWorkspace)
+    : appGlobal.persons)) as Collection<Person>;
   let selectedPersons: ArrayColl<PersonOrGroup>;
 </script>
 
