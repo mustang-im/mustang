@@ -4,9 +4,10 @@
     <vbox class="tile">
       <button class="icon">
         {#if open}
-          <FolderOpenIcon size="48" />
+          📁
+          <!--📂-->
         {:else}
-          <FolderClosedIcon size="48" />
+          📁
         {/if}
       </button>
     </vbox>
@@ -57,6 +58,7 @@
     align-self: center;
     opacity: 60%;
     border: none;
+    font-size: 5vw;
     background-color: transparent;
     padding-inline-start: 16px;
     padding-inline-end: 0px;

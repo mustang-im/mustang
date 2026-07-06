@@ -7,9 +7,9 @@
       {/each}
       <button class="icon">
         {#if open}
-          <FolderOpenIcon size="16" />
+          📂
         {:else}
-          <FolderClosedIcon size="16" />
+          📁
         {/if}
       </button>
       <hbox class="name">

@@ -12,6 +12,7 @@
   <MusicIcon {size} />
 {:else}
   <FileIcon {size} />
+  <!--<hbox style:width={size}>📄</hbox>-->
 {/if}
 
 <script lang="ts">
