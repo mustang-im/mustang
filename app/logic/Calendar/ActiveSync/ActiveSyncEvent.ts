@@ -1,8 +1,8 @@
+import { ExchangeEvent } from "../EWS/ExchangeEvent";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
-import { ExchangeEvent } from "../EWS/ExchangeEvent";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import { ActiveSyncOutgoingInvitation } from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";

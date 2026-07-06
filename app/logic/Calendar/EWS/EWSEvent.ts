@@ -1,9 +1,9 @@
+import { ExchangeEvent } from "./ExchangeEvent";
 import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
-import { ExchangeEvent } from "./ExchangeEvent";
 import type { EWSCalendar } from "./EWSCalendar";
 import { EWSOutgoingInvitation } from "./EWSOutgoingInvitation";
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";

@@ -1,6 +1,7 @@
+import { ExchangeFolder, MessageFlagsPidTag, IconIndexPidTag } from "./ExchangeFolder";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
-import { ExchangeFolder, MessageFlagsPidTag, IconIndexPidTag, getSharedPersons, ExchangePermission } from "./ExchangeFolder";
+import { getSharedPersons, ExchangePermission } from "./ExchangePermission";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";

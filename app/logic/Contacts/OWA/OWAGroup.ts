@@ -1,6 +1,6 @@
+import { ExchangeGroup } from '../EWS/ExchangeGroup';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
-import { ExchangeGroup } from '../EWS/ExchangeGroup';
 import type { OWAAddressbook } from './OWAAddressbook';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';

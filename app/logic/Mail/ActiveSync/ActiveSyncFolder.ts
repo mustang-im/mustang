@@ -1,5 +1,5 @@
-import { SpecialFolder } from "../Folder";
 import { ExchangeFolder } from "../EWS/ExchangeFolder";
+import { SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount";
 import { ActiveSyncError } from "./ActiveSyncError";

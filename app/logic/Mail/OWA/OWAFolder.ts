@@ -1,6 +1,7 @@
+import { ExchangeFolder, MessageFlagsPidTag } from "../EWS/ExchangeFolder";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
-import { ExchangeFolder, MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/ExchangeFolder";
+import { getSharedPersons, ExchangePermission } from "../EWS/ExchangePermission";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";

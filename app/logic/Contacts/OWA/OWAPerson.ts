@@ -1,6 +1,6 @@
+import { ExchangePerson } from "../EWS/ExchangePerson";
 import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
-import { ExchangePerson } from "../EWS/ExchangePerson";
 import type { OWAAddressbook } from './OWAAddressbook';
 import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
 import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";

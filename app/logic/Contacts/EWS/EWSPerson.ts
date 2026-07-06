@@ -1,6 +1,6 @@
+import { ExchangePerson } from "./ExchangePerson";
 import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
-import { ExchangePerson } from "./ExchangePerson";
 import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";

@@ -1,6 +1,6 @@
+import { ExchangePerson } from '../EWS/ExchangePerson';
 import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
-import { ExchangePerson } from '../EWS/ExchangePerson';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
