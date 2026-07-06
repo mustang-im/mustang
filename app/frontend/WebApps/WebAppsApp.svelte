@@ -3,6 +3,8 @@
   <Scroll>
     {#if showStore}
       <WebAppStore bind:showStore />
+    {:else}
+      <hbox class="background-pattern" flex />
     {/if}
   </Scroll>
 </hbox>

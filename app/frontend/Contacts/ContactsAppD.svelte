@@ -4,7 +4,7 @@
     <PersonsActionToolbar bind:selectedAddressbook {selectedPersons} />
     <PersonsList {persons} bind:selected={$selectedPerson} searchTerm={$globalSearchTerm} bind:selectedPersons />
   </vbox>
-  <vbox flex class="right-pane background-pattern" slot="right">
+  <vbox flex class="right-pane" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}
       <Scroll>
         <PersonDetails person={$selectedPerson} />
