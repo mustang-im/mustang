@@ -37,7 +37,7 @@ export class IncomingInvitation {
     // First find a standalone event or master.
     let event = this.calendar.events.find(event => event.calUID == this.event.calUID && !event.recurrenceStartTime);
     // If this is an occurrence, find it now.
-    return this.event.recurrenceStartTime ? event.getOccurrenceByDate(this.event.recurrenceStartTime) : event;
+    return this.event.recurrenceStartTime ? event?.getOccurrenceByDate(this.event.recurrenceStartTime) : event;
     // TODO What if you were only invited to a single exception?
   }
 
