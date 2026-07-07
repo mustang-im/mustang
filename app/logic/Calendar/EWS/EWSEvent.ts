@@ -1,4 +1,5 @@
-import { Event, RecurrenceCase } from "../Event";
+import { ExchangeEvent } from "./ExchangeEvent";
+import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -37,7 +38,7 @@ const RecurrenceType: Record<string, Frequency> = {
   DailyRecurrence: Frequency.Daily,
 };
 
-export class EWSEvent extends Event {
+export class EWSEvent extends ExchangeEvent {
   declare calendar: EWSCalendar;
   declare parentEvent: EWSEvent;
   declare readonly exceptions: ArrayColl<EWSEvent>;

@@ -1,11 +1,12 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { ExchangePerson } from '../EWS/ExchangePerson';
+import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 
-export class ActiveSyncPerson extends Person {
+export class ActiveSyncPerson extends ExchangePerson {
   declare addressbook: ActiveSyncAddressbook | null;
 
   get serverID() {

@@ -21,7 +21,7 @@ import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
-import { deleteExchangePermissions, setExchangePermissions } from "../EWS/EWSFolder";
+import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";

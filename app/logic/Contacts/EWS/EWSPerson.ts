@@ -1,4 +1,5 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { ExchangePerson } from "./ExchangePerson";
+import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
@@ -7,7 +8,7 @@ import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemReques
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 
-export class EWSPerson extends Person {
+export class EWSPerson extends ExchangePerson {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {

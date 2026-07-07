@@ -1,7 +1,7 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
-import { Tag, getTagByName } from "../../Abstract/Tag";
+import { getTagByName } from "../../Abstract/Tag";
 import { OWADeleteItemRequest } from "./Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
@@ -12,7 +12,7 @@ import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
-export class OWAEMail extends EMail {
+export class OWAEMail extends ExchangeEMail {
   declare folder: OWAFolder;
 
   get itemID(): string | null {
@@ -125,14 +125,6 @@ export class OWAEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.itemID);
     }
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
   }
 
   async updateTags() {

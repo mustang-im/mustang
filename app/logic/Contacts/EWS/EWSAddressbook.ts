@@ -1,19 +1,19 @@
-import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addressbook";
+import { ExchangeAddressbook } from "./ExchangeAddressbook";
+import { type AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
-import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export class EWSAddressbook extends Addressbook implements EWSSubscribable {
+export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribable {
   readonly protocol: string = "addressbook-ews";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
-  canSync: boolean = true;
   declare readonly persons: ArrayColl<EWSPerson>;
   declare readonly groups: ArrayColl<EWSGroup>;
 

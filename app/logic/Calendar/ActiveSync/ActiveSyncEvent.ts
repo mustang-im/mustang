@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { ExchangeEvent } from "../EWS/ExchangeEvent";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -22,7 +22,7 @@ const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
   [InvitationResponse.Decline]: 3,
 };
 
-export class ActiveSyncEvent extends Event {
+export class ActiveSyncEvent extends ExchangeEvent {
   declare calendar: ActiveSyncCalendar;
   declare parentEvent: ActiveSyncEvent;
   declare readonly exceptions: ArrayColl<ActiveSyncEvent>;

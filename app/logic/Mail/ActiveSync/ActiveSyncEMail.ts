@@ -1,8 +1,8 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
-import { type Tag, getTagByName } from "../../Abstract/Tag";
+import { getTagByName } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { InvitationMessage  } from "../../Calendar/Invitation/InvitationStatus";
 import { ensureArray, assert, NotSupported } from "../../util/util";
@@ -18,7 +18,7 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-export class ActiveSyncEMail extends EMail {
+export class ActiveSyncEMail extends ExchangeEMail {
   declare folder: ActiveSyncFolder;
 
   get serverID(): string | null {
@@ -156,14 +156,6 @@ export class ActiveSyncEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.serverID);
     }
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
   }
 
   async updateTags() {

@@ -1,4 +1,4 @@
-import { Addressbook } from "../Addressbook";
+import { ExchangeAddressbook } from "../EWS/ExchangeAddressbook";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
@@ -8,9 +8,8 @@ import { Lock } from "../../util/flow/Lock";
 import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
+export class ActiveSyncAddressbook extends ExchangeAddressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
-  canSync: boolean = true;
   declare readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
   protected readonly requestLock = new Lock();
