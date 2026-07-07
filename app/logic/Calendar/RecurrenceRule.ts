@@ -431,7 +431,8 @@ export function ruleAsLabel(r: RecurrenceRule): string {
       : gt`Every ${r.interval} weeks`;
     label += `, ` + gt`on *=> as in: Every week, on Thursday` + ` `;
 
-    let weekdays = kAllWeekdays.filter(weekday => r.weekdays.includes(weekday));
+    let ruleWeekdays = r.weekdays ?? [r.seriesStartTime.getUTCDay()];
+    let weekdays = kAllWeekdays.filter(weekday => ruleWeekdays.includes(weekday));
     label += sortedList(weekdays, weekday => weekdayLabel(weekday, "long"));
   } else if (r.frequency == Frequency.Monthly) {
     label += r.interval == 1
