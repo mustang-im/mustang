@@ -84,7 +84,7 @@ export class EWSEvent extends ExchangeEvent {
     }
     this.timezone = fromWindowsZone(sanitize.nonemptystring(xmljs.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
-    this.fixupExchangeAllDayEvent();
+    this.setAllDayTimeToLocalMidnight();
     if (xmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {

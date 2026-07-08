@@ -73,7 +73,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
     if (wbxmljs.Timezone) { // Omitted in 16.1 for all day events
       this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
     }
-    this.fixupExchangeAllDayEvent();
+    this.setAllDayTimeToLocalMidnight();
     if (wbxmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
@@ -333,6 +333,8 @@ export function fromCompact(date: string, v16AllDay?: boolean): Date {
   // In ActiveSync 14.1, all-day events are sent with a time zone,
   // and the start and end times are midnight in that zone,
   // but they are then converted to UTC.
+  // setAllDayTimeToLocalMidnight() will fix those times up for us,
+  // in the same way as it does for EWS and OWA.
   // In ActiveSync 16.1, all-day events are not sent with a time zone.
   // Start and end times are sent as if they were midnight in UTC.
   // We want them to show up as the user's local midnight.

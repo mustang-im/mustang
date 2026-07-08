@@ -79,7 +79,7 @@ export class OWAEvent extends ExchangeEvent {
     }
     this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
-    this.fixupExchangeAllDayEvent();
+    this.setAllDayTimeToLocalMidnight();
     if (json.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
