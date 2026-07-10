@@ -45,7 +45,7 @@
         onClick={() => openFileInCloudApp(file)}
         icon={OpenCloudIcon}
         label={$t`Open with a cloud app on the web`}
-        disabled={!editors || editors.isEmpty ? $t`${file.account.name} does not offer a cloud app for this file type` : null}
+        disabled={!editors || editors.isEmpty ? $t`${file.account?.name} does not offer a cloud app for this file type` : null}
         iconSize="20px"
         padding="6px"
         classes="secondary"
