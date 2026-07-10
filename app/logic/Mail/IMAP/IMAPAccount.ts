@@ -167,7 +167,12 @@ export class IMAPAccount extends MailAccount {
     connection.on("close", async () => {
       try {
         console.warn(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect(connection);
+        let purpose = this.connections.getKeyForValue(connection);
+        if (purpose == ConnectionPurpose.Main) {
+          this.reconnect(connection, purpose);
+        } else {
+          this.dropConnection(connection)
+        }
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -176,7 +181,12 @@ export class IMAPAccount extends MailAccount {
     connection.on("error", async (ex) => {
       try {
         console.warn(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}. Reconnecting...`);
-        await this.reconnect(connection);
+        let purpose = this.connections.getKeyForValue(connection);
+        if (purpose == ConnectionPurpose.Main) {
+          this.reconnect(connection, purpose);
+        } else {
+          this.dropConnection(connection)
+        }
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -224,6 +234,20 @@ export class IMAPAccount extends MailAccount {
         this.log(null, connection, "ImapFlow", entry.msg);
       });
     }
+  }
+
+  dropConnection(connection: ImapFlow): void {
+    let purpose = this.connections.getKeyForValue(connection);
+    assert(purpose, "Connection purpose unknown");
+    this.log(null, connection, "drop", purpose);
+    try {
+      connection.close();
+    } catch (ex) {
+      // Sometimes gives "Connection not available". Do nothing.
+    }
+    this.connectionLock.delete(connection);
+    this.connections.set(purpose, null);
+    this.notifyObservers();
   }
 
   async reconnect(connection: ImapFlow, purpose?: ConnectionPurpose): Promise<ImapFlow> {
