@@ -508,6 +508,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async subscribeToNotifications() {
+    if (this.subscriptionID) {
+      console.warn("EWS: Trying to re-subscribe");
+      return; // E.g. re-login after connection loss
+    }
     let subscribe = {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
