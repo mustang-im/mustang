@@ -22,6 +22,7 @@ export class SIPAccount extends PhoneAccount {
     assert(urlParsed.protocol == "wss:", "Need WebSocket URL");
     this.mySIPID = "sip:" + this.username + "@" + this.domain;
 
+    await this.userAgent?.stop(); // Re-login: Stop the previous connection
     this.userAgent = new UserAgent({
       authorizationUsername: this.username,
       authorizationPassword: this.password,
