@@ -122,10 +122,12 @@ export class IMAPAccount extends MailAccount {
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
         },
         disableAutoIdle: purpose != ConnectionPurpose.Main,
-        maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
+        maxIdleTime: kIDLERenewalSeconds * 1000, // renew IDLE, so that server and NAT don't drop us as stale
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
-        socketTimeout: 2 * 60 * 1000, // 2 mins of inactivity - MUST be longer than the IDLE above, but also kills unused Fetch and Display connections
+        socketTimeout: purpose == ConnectionPurpose.Main
+          ? (2 * kIDLERenewalSeconds) * 1000 + 1 * 60 * 1000 // 2 * 5 min IDLE + 1 min leeway
+          : 10 * 60 * 1000, // 10 min - Fetch/Display connections time one when unused, and we re-create them on demand
         logger: false, // true, // Run backend using: `yarn run dev | npx pino-pretty -i time,msg`
         emitLogs: this.logLibrary,
       }
@@ -166,21 +168,21 @@ export class IMAPAccount extends MailAccount {
   attachListeners(connection: ImapFlow): void {
     connection.on("close", async () => {
       try {
+        let purpose = this.connections.getKeyForValue(connection);
+        if (purpose == ConnectionPurpose.Main) {
+          await this.reconnect(connection, purpose);
+        } else if (purpose) {
+          this.dropConnection(connection);
+        } // else: We closed it ourselves, e.g. logout() or reconnect()
         console.warn(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
       }
     });
-    connection.on("error", async (ex) => {
-      try {
-        console.warn(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}. Reconnecting...`);
-        await this.reconnect(connection);
-      } catch (ex) {
-        this.fatalError = new ConnectError(ex,
-          `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
-      }
+    connection.on("error", async (ex: any) => {
+      // ImapFlow emits `close` right after `error`
+      console.warn(`${new Date().toISOString()} IMAP connection to ${this.hostname} for ${this.name} failed: ${ex.code ?? ""} ${ex.message}`);
     });
     connection.on("exists", async (info) => {
       try {
@@ -235,14 +237,11 @@ export class IMAPAccount extends MailAccount {
     this.log(null, connection, "reconnect", purpose);
 
     return await this.reconnectRunOnce.get(purpose).runOnce(async () => {
-      try {
-        await connection.close();
-      } catch (ex) {
-        // Sometimes gives "Connection not available". Do nothing.
+      let current = this.connections.get(purpose);
+      if (current && current != connection) {
+        return current; // Another caller already reconnected
       }
-      this.connectionLock.delete(connection);
-      this.connections.set(purpose, null);
-      this.notifyObservers();
+      this.dropConnection(connection);
 
       if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {
@@ -252,8 +251,28 @@ export class IMAPAccount extends MailAccount {
         throw new LoginError(new Error(), "Reconnect failed due to missing login");
       }
 
-      return await this.connection(false, purpose);
+      let newConn = await this.connection(false, purpose);
+      let inbox = this.inbox as IMAPFolder;
+      if (purpose == ConnectionPurpose.Main && inbox?.path) {
+        // ImapFlow starts IDLE only once a folder is open
+        await newConn.mailboxOpen(inbox.path);
+      }
+      return newConn;
     });
+  }
+
+  dropConnection(connection: ImapFlow): void {
+    let purpose = this.connections.getKeyForValue(connection);
+    assert(purpose, "Connection purpose unknown");
+    this.log(null, connection, "drop", purpose);
+    try {
+      connection.close();
+    } catch (ex) {
+      // Sometimes gives "Connection not available". Do nothing.
+    }
+    this.connectionLock.delete(connection);
+    this.connections.set(purpose, null);
+    this.notifyObservers();
   }
 
   async hasCapability(capa: string): Promise<boolean> {
@@ -373,14 +392,19 @@ export class IMAPAccount extends MailAccount {
   async logout(alsoOAuth2 = true): Promise<void> {
     this.stopPolling();
     for (let purpose of connectionPurposes) {
-      let conn = await this.connections.get(purpose);
+      let conn = this.connections.get(purpose);
       if (!conn) {
         continue;
       }
       this.log(null, conn, "logout");
-      await conn.logout();
+      // Remove first, so that the close handler knows that this is intentional
       this.connections.delete(purpose);
       this.connectionLock.delete(conn);
+      try {
+        await conn.logout();
+      } catch (ex) {
+        // Connection might already be dead
+      }
     }
     if (this.oAuth2 && alsoOAuth2) {
       await this.oAuth2.logout();
@@ -512,6 +536,11 @@ export enum ConnectionPurpose {
   Display = "display",
 }
 const connectionPurposes = [ConnectionPurpose.Main, ConnectionPurpose.Fetch, ConnectionPurpose.Display];
+
+/** How often to renew IDLE.
+ * Some servers (e.g. Gmail) drop connections that show no activity for ~10 minutes.
+ * RFC 2177 recommends renewing at least every 29 minutes. */
+const kIDLERenewalSeconds = 5 * 60;
 
 export class IMAPCommandError extends SpecificError {
 }
