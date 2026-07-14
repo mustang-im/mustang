@@ -439,7 +439,7 @@ export class EMail extends Message {
     let check = this.folder.newEMail();
     check.dbID = this.dbID;
     await this.storage.readMessageWritableProps(check);
-    return check.downloadComplete;
+    return this.downloadComplete = check.downloadComplete;
   }
 
   async loadForDisplay() {
