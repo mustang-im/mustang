@@ -13,8 +13,8 @@ import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Accoun
 import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
-import { logError } from '../frontend/Util/error';
-import { assert } from './util/util';
+import { catchErrors, logError } from '../frontend/Util/error';
+import { assert, sleep } from './util/util';
 
 /** Read JPC secret from frontent URL hash `jpcSecret=password`.
  * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
@@ -100,13 +100,14 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
 export function checkWakeUp(): void {
   let wasSleeping = false;
   let computerOn = getComputerOn();
-  computerOn.subscribe(() => {
+  computerOn.subscribe(() => catchErrors(async () => {
+    await sleep(1);
     if (wasSleeping && !computerOn.isSleeping && navigator.onLine) {
       checkAccounts();
     }
     // If the network is still down here, the `online` event below follows
     wasSleeping = computerOn.isSleeping;
-  });
+  }));
   window.addEventListener("online", checkAccounts); // network is back up
 }
 
