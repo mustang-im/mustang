@@ -162,6 +162,7 @@ export class IMAPFolder extends Folder {
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
+    await this.readFolder();
     let lock = await this.listMessagesLock.lock();
     try {
       let { newMessages } = await this.fetchMessageList({ all: true }, { uid: true });

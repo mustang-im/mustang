@@ -60,13 +60,15 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.account.storage;
   }
 
+  protected haveReadFolder = false;
+
   protected async readFolder() {
-    if (this.messages.hasItems) {
+    if (this.haveReadFolder) {
       return;
     }
     let lock = await this.readFolderLock.lock();
     try {
-      if (lock.wasWaiting) {
+      if (this.haveReadFolder) {
         return;
       }
       if (!this.dbID) {
@@ -79,6 +81,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
       console.time(log);
       await this.storage.readAllMessagesMainProperties(this, null, 200);
       console.timeEnd(log);
+      this.haveReadFolder = true;
     } finally {
       lock.release();
     }
