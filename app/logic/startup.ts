@@ -53,6 +53,7 @@ export async function getStartObjects(): Promise<void> {
   const secret = await getJPCSecret();
   let jpc = new JPCWebSocket(null);
   await jpc.connect(secret, "localhost", production ? 5455 : 5453);
+  jpc.reconnectCallback = checkAccounts;
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
