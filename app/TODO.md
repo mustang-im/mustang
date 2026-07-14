@@ -1,3 +1,11 @@
+# Crunch Jul 14
+* EWS: undefined.callEWS() #1341
+* JMAP timeout
+* JPC timeout
+* Test
+  * IMAP logout
+  * Lid close -> check mail
+
 # Bugs
 * Mail: Move multiple mails (desktop) - UI and backend buggy
 * Composer: Bulleted lists - Paragraphs vs. lines

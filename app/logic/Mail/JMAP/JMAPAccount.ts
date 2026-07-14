@@ -269,7 +269,7 @@ export class JMAPAccount extends MailAccount {
 
     return appGlobal.remoteApp.kyCreate({
       headers: headers,
-      timeout: 3000,
+      timeout: 60000,
       result: options.result ?? "json",
     });
   }
