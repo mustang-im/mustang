@@ -8,6 +8,7 @@ import { SQLChatMessage } from "../../Chat/SQL/SQLChatMessage";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { getFilesDir } from "../../util/backend-wrapper";
 import { appGlobal } from "../../app";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { fileExtensionForMIMEType, NotReached } from "../../util/util";
 
@@ -16,9 +17,18 @@ let filesDir: string = null;
 /** Save email attachments as files in the local disk filesystem */
 export class RawFilesAttachment implements MailContentStorage {
   async save(message: Message) {
-    if (message.attachments.hasItems) {
-      await Promise.allSettled(message.attachments.contents.map(a =>
-        this.saveAttachment(a)));
+    if (!message.dbID || !message.attachments.hasItems) {
+      return;
+    }
+    let saves = new PromiseAllDone();
+    for (let attachment of message.attachments) {
+      saves.add(this.saveAttachment(attachment));
+    }
+    try {
+      // Throws when a file could not be written, so that the caller
+      // knows that the message is not complete on disk.
+      await saves.wait();
+    } finally {
       await this.messageFinished(message);
     }
   }
