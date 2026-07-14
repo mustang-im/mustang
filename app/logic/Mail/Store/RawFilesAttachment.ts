@@ -20,6 +20,7 @@ export class RawFilesAttachment implements MailContentStorage {
     if (!message.dbID || !message.attachments.hasItems) {
       return;
     }
+    await this.messageStarted(message);
     let saves = new PromiseAllDone();
     for (let attachment of message.attachments) {
       saves.add(this.saveAttachment(attachment));
@@ -49,6 +50,15 @@ export class RawFilesAttachment implements MailContentStorage {
     } else if (message instanceof ChatMessage) {
       await SQLChatMessage.saveAttachmentFilename(message, attachment);
     }
+  }
+
+  /** Call this before writing attachment files for this message.
+   * The dir may still be read-only from `messageFinished()` of an earlier download,
+   * e.g. when re-downloading the message. */
+  protected async messageStarted(message: Message): Promise<void> {
+    let dir = await this.getDirPath(message);
+    await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
+    await appGlobal.remoteApp.fs.chmod(dir, 0o700);
   }
 
   /** Call this when you finished writing all attachments for this message.
