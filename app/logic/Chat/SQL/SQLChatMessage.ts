@@ -120,7 +120,7 @@ export class SQLChatMessage {
       if (existing?.id) {
         await (await getDatabase()).run(sql`
           UPDATE chatAttachment SET
-            filepathLocal = ${a.filepathLocal},
+            filepathLocal = COALESCE(${a.filepathLocal}, filepathLocal),
             mimeType = ${a.mimeType},
             size = ${a.size},
             related = ${a.related ? 1 : 0}

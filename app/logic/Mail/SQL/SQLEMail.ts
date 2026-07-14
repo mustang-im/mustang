@@ -56,6 +56,7 @@ export class SQLEMail {
         // -- contactEmail, contactName, myEmail
         email.dbID = insert.lastInsertRowid;
       } else {
+        // This might be an update with only metadata, so don't overwrite content
         await (await getDatabase()).run(sql`
           UPDATE email SET
             messageID = ${email.id},
@@ -69,8 +70,8 @@ export class SQLEMail {
             contactEmail = ${contact?.emailAddress},
             contactName = ${email.contact?.name},
             subject = ${email.subject},
-            plaintext = ${email.rawText},
-            html = ${email.rawHTMLDangerous}
+            plaintext = COALESCE(${email.rawText}, plaintext),
+            html = COALESCE(${email.rawHTMLDangerous}, html)
           WHERE id = ${email.dbID}
         `);
       }
@@ -92,6 +93,7 @@ export class SQLEMail {
         ? JSON.stringify(json, null, 2)
         : null;
 
+      // This might be an update with only metadata, so don't overwrite content
       await (await getDatabase()).run(sql`
         UPDATE email SET
           isRead = ${email.isRead ? 1 : 0},
@@ -99,9 +101,9 @@ export class SQLEMail {
           isReplied = ${email.isReplied ? 1 : 0},
           isSpam = ${email.isSpam ? 1 : 0},
           isDraft = ${email.isDraft ? 1 : 0},
-          threadID = ${email.threadID},
-          downloadComplete = ${email.downloadComplete ? 1 : 0},
-          json = ${jsonStr}
+          threadID = COALESCE(${email.threadID}, threadID),
+          downloadComplete = MAX(downloadComplete, ${email.downloadComplete ? 1 : 0}),
+          json = COALESCE(${jsonStr}, json)
         WHERE id = ${email.dbID}
         `);
 
