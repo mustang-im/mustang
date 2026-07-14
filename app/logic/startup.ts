@@ -13,7 +13,7 @@ import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Accoun
 import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
-import { catchErrors, logError } from '../frontend/Util/error';
+import { catchErrors, logError, showError } from '../frontend/Util/error';
 import { assert, sleep } from './util/util';
 
 /** Read JPC secret from frontent URL hash `jpcSecret=password`.
@@ -53,6 +53,7 @@ export async function getStartObjects(): Promise<void> {
   const secret = await getJPCSecret();
   let jpc = new JPCWebSocket(null);
   await jpc.connect(secret, "localhost", production ? 5455 : 5453);
+  jpc.errorCallback = showError;
   jpc.reconnectCallback = checkAccounts;
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
