@@ -170,21 +170,37 @@ export class SQLEMail {
      *     and we don't know the attachments yet.
      * b) the full email might be saved multiple times.
      *
-     * Solution: To avoid that we're adding the same attachments multiple times
-     * in the 1:n table, delete existing records before adding them here.
-     * Same problem in `saveRecipients()` above.
-     *
-     * Alternatives: Yes, it's ugly. Better solutions?
-     * `INSERT OR IGNORE` alone doesn't help.
-     * We wouldn't have that problem with a
-     * JSON-based record-is-a-document NoSQL database. */
-    await (await getDatabase()).run(sql`
-      DELETE FROM emailAttachment
+     * Solution:
+     * For a partial email:
+     * - leave the saved records alone
+     * Otherwise:
+     * - update the existing records, keeping `filepathLocal`
+     * - delete only records for attachments that no longer exist,
+     *   e.g. after decryption replaced them. */
+    if (email.attachments.isEmpty) {
+      return;
+    }
+    let db = await getDatabase();
+    let existingRows = await db.all(sql`
+      SELECT
+        id, filename, contentID
+      FROM emailAttachment
       WHERE emailID = ${email.dbID}
-      `);
-
+      `) as any[];
     for (let attachment of email.attachments) {
-      await this.saveAttachment(email, attachment);
+      let row = existingRows.find(row => row.filename == attachment.filename);
+      if (row) {
+        existingRows = existingRows.filter(r => r != row);
+        await this.updateAttachment(attachment, row.id);
+      } else {
+        await this.saveAttachment(email, attachment);
+      }
+    }
+    for (let row of existingRows) {
+      await db.run(sql`
+        DELETE FROM emailAttachment
+        WHERE id = ${row.id}
+        `);
     }
   }
 
@@ -200,6 +216,20 @@ export class SQLEMail {
       )`);
   }
 
+  protected static async updateAttachment(a: Attachment, rowID: number) {
+    let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
+    await (await getDatabase()).run(sql`
+      UPDATE emailAttachment SET
+        contentID = ${a.contentID},
+        mimeType = ${a.mimeType},
+        size = ${a.size},
+        disposition = ${a.disposition},
+        related = ${a.related ? 1 : 0},
+        filepathLocal = COALESCE(${filepath}, filepathLocal)
+      WHERE id = ${rowID}
+      `);
+  }
+
   /** After downloading and saving the attachment file locally, or moving it on disk,
    * save its local disk location. */
   static async saveAttachmentFilename(email: EMail, a: Attachment) {
@@ -210,7 +240,6 @@ export class SQLEMail {
         filepathLocal = ${filepath}
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
-        AND contentID = ${a.contentID}
       `);
   }
 
