@@ -1,8 +1,55 @@
 import { appGlobal } from "../app";
+import { webMail } from "../build";
+import { Observable, notifyChangedProperty } from "./Observable";
 import type { Database } from "../../../lib/rs-sqlite";
 // #if [MOBILE]
 import { Directory, Filesystem } from "@capacitor/filesystem";
 // #endif
+
+/** Tells us whether the computer is awake or in sleep mode.
+ * When `isSleeping` switches back to false, the computer just woke up:
+ * Our network connections may be dead, and e.g. new mail may have arrived. */
+export class ComputerOn extends Observable {
+  @notifyChangedProperty
+  isSleeping = false;
+}
+
+/** Our app went into the background, or came back to the foreground */
+class MobileComputerOn extends ComputerOn {
+  constructor() {
+    super();
+    let capacitorApp = (globalThis as any).Capacitor?.Plugins?.App;
+    capacitorApp?.addListener("pause", () => this.isSleeping = true);
+    capacitorApp?.addListener("resume", () => this.isSleeping = false);
+  }
+}
+
+/** The browser paused our page, and resumed it.
+ * Page Lifecycle API, Chromium only. */
+class WebMailComputerOn extends ComputerOn {
+  constructor() {
+    super();
+    document.addEventListener("freeze", () => this.isSleeping = true);
+    document.addEventListener("resume", () => this.isSleeping = false);
+  }
+}
+
+let computerOn: ComputerOn;
+
+/** Called by getStartObjects(), once `appGlobal.remoteApp` is connected */
+export function getComputerOn(): ComputerOn {
+  if (!computerOn) {
+    if ((globalThis as any).Capacitor) {
+      computerOn = new MobileComputerOn();
+    } else if (webMail) {
+      computerOn = new WebMailComputerOn();
+    } else {
+      // DesktopComputerOn, @see desktop/backend/backend.ts
+      computerOn = appGlobal.remoteApp.computerOn;
+    }
+  }
+  return computerOn;
+}
 
 let configDir: string;
 /**

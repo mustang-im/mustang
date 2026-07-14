@@ -10,6 +10,7 @@ import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
 import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
+import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
 import { logError } from '../frontend/Util/error';
@@ -88,6 +89,43 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
         await account.login(false);
         await account.startup();
       })().catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
+  checkWakeUp();
+}
+
+/** When the computer wakes up from sleep mode, or the network comes back up,
+ * log in again and check for new mail. Connections are re-opened as needed. */
+export function checkWakeUp(): void {
+  let wasSleeping = false;
+  let computerOn = getComputerOn();
+  computerOn.subscribe(() => {
+    if (wasSleeping && !computerOn.isSleeping && navigator.onLine) {
+      checkAccounts();
+    }
+    // If the network is still down here, the `online` event below follows
+    wasSleeping = computerOn.isSleeping;
+  });
+  window.addEventListener("online", checkAccounts); // network is back up
+}
+
+/** On wake up */
+function checkAccounts(): void {
+  for (let account of getAllAccounts()) {
+    if (!account.isLoggedIn && account.loginOnStartup && !account.isDependentAccount) {
+      (async () => {
+        await account.login(false);
+        await account.startup();
+      })().catch(account.errorCallback);
+    }
+  }
+  // Accounts that stayed logged in didn't run startup() above,
+  // but new mail may have arrived while we were sleeping
+  for (let account of appGlobal.emailAccounts) {
+    if (account.isLoggedIn) {
+      account.inbox?.getNewMessages()
+        .catch(account.errorCallback);
     }
   }
 }

@@ -8,7 +8,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences, powerMonitor } from "electron";
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
@@ -69,6 +69,7 @@ async function createSharedAppObject() {
     openFileInNativeApp,
     showFileInFolder,
     startupArgs,
+    computerOn,
     isDefaultApp,
     setAsDefaultApp,
     askForMediaAccess,
@@ -367,6 +368,20 @@ class StartupArgs extends Observable {
   }
 }
 export const startupArgs = new StartupArgs();
+
+/** Tells the UI whether the computer is awake or in sleep mode.
+ * The UI subscribes to it via `computerOn` in app/logic/util/backend-wrapper.ts */
+export class DesktopComputerOn extends Observable {
+  @notifyChangedProperty
+  isSleeping = false;
+
+  start(): void {
+    powerMonitor.on("suspend", () => this.isSleeping = true);
+    powerMonitor.on("resume", () => this.isSleeping = false);
+  }
+}
+const computerOn = new DesktopComputerOn();
+computerOn.start();
 
 /** @param protocol E.g. "mailto" */
 function isDefaultApp(protocol: string) {
