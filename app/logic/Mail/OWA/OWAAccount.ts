@@ -254,8 +254,12 @@ export class OWAAccount extends ExchangeMailAccount {
     assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
     if (folder.account.mainAccount) {
       let mainAccount = folder.account.mainAccount as OWAAccount;
-      let permissions = (await folder.getPermissions()).find(permissions => permissions.matchesEMailAddress(mainAccount.emailAddress));
-      if (!permissions.exchangePermissions.CanCreateItems) {
+      let permissions = await folder.getPermissions();
+      // The user may have access via the Default entry or a group membership,
+      // in which case there's no entry with his email address.
+      let permission = permissions.find(permission => permission.matchesEMailAddress(mainAccount.emailAddress))
+        ?? permissions.find(permission => permission.distinguishedUser == "Default");
+      if (!permission?.exchangePermissions?.CanCreateItems) {
         folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as OWAFolder;
       }
     }
