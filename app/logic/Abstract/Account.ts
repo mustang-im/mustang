@@ -140,8 +140,13 @@ export class Account extends Observable {
   get isDependentAccount(): boolean {
     return !!this._mainAccount;
   }
+  dependsOn(main: Account): boolean {
+    return this.mainAccount == main ||
+      // e.g. when `main` fails to load once
+      !this.mainAccount && this._mainAccountID == main.id;
+  }
   dependentAccounts(): Collection<Account> {
-    return getAllAccounts().filter(acc => acc.mainAccount == this);
+    return getAllAccounts().filter(acc => acc.dependsOn(this));
   }
   initFromMainAccount(main: Account) {
     this.mainAccount = main;

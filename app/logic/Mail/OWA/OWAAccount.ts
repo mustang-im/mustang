@@ -190,7 +190,7 @@ export class OWAAccount extends ExchangeMailAccount {
       await super.startup();
 
       // Create primary addressbook automatically
-      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
+      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
       if (!haveAddressbook) {
         let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
         let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
@@ -452,7 +452,7 @@ export class OWAAccount extends ExchangeMailAccount {
       result.RootFolder.ParentFolder = response.Folders[0];
     }
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
-    let haveCalendar = this.sharedFolderRoot != null || appGlobal.calendars.some(calendar => calendar.mainAccount == this);
+    let haveCalendar = this.sharedFolderRoot != null || appGlobal.calendars.some(calendar => calendar.dependsOn(this));
     this.folderMap.clear();
     for (let folder of result.RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {

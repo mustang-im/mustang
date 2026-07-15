@@ -765,7 +765,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return; // Don't automatically add shared addressbook or calendar.
     }
     // Create the primary address book and calendar automatically
-    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
+    let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
     if (!haveAddressbook) {
       let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
         folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
@@ -773,7 +773,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await addressbook.save();
       appGlobal.addressbooks.add(addressbook);
     }
-    let haveCalendar = appGlobal.calendars.some(calendar => calendar.mainAccount == this);
+    let haveCalendar = appGlobal.calendars.some(calendar => calendar.dependsOn(this));
     if (!haveCalendar) {
       let folder = ensureArray(result.RootFolder.Folders.CalendarFolder).find(folder =>
         folder.DistinguishedFolderId == "calendar");
