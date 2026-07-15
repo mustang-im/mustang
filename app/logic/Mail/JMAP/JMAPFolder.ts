@@ -309,7 +309,7 @@ export class JMAPFolder extends Folder {
   async getAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     let newMsgs = await this.listAllMessages();
     await this.downloadMessages(newMsgs);
-    let updateNew = await this.getAllMessages();
+    let updateNew = await this.getNewMessages();
     newMsgs.addAll(updateNew);
     return newMsgs;
   }
