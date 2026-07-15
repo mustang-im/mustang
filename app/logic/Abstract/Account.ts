@@ -106,6 +106,15 @@ export class Account extends Observable {
     }
   }
 
+  async loginAndStartup(interactive = true): Promise<void> {
+    if (this.isDependentAccount) {
+      await this.mainAccount.loginAndStartup(interactive);
+      return;
+    }
+    await this.login(interactive);
+    await this.startup();
+  }
+
   /** For setup only. Test that the login works. */
   async verifyLogin(): Promise<void> {
     await this.login(true);

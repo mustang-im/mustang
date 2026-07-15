@@ -13,7 +13,7 @@
 
   async function sync() {
     if (!account.isLoggedIn) {
-      await account.login(true);
+      await account.loginAndStartup();
     }
     await account.sync();
   }

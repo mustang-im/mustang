@@ -179,8 +179,6 @@ export class OWAAccount extends ExchangeMailAccount {
       this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
       this.hasLoggedIn = true;
       this.notifyObserversOfSubaccounts();
-
-      await this.startup();
     });
   }
 
