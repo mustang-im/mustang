@@ -125,14 +125,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     });
   }
 
-  async logout(): Promise<void> {
-    if (this.isDependentAccount) {
-      await this.mainAccount.logout();
-      return;
-    }
-    await super.logout();
-  }
-
   async disconnect(): Promise<void> {
     if (this.mainAccount) {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);

@@ -216,10 +216,6 @@ export class OWAAccount extends ExchangeMailAccount {
   }
 
   async logout(): Promise<void> {
-    if (this.isDependentAccount) {
-      await this.mainAccount.logout();
-      return;
-    }
     this.hasLoggedIn = false;
     this.notifyObserversOfSubaccounts();
     await super.logout();
