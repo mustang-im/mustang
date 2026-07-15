@@ -395,10 +395,13 @@ export class XMPPChat extends ChatRoom {
     }
   }
 
+  protected historyLoaded = false;
+
   protected async readMessagesFromDB(): Promise<void> {
-    if (this.messages.hasItems || !this.dbID) {
+    if (this.historyLoaded || !this.dbID) {
       return;
     }
+    this.historyLoaded = true;
     await SQLChatMessage.readAll(this);
     this.lastMessage = this.messages.contents
       .filter((msg): msg is ChatMessage => msg instanceof ChatMessage)
