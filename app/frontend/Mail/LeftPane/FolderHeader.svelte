@@ -39,7 +39,7 @@
   $: account = folder?.account;
 
   async function login() {
-    await account.loginAndStartup();
+    await account.loginAndSync();
   }
 </script>
 

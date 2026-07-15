@@ -35,7 +35,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   protected throttle = new Throttle(50, 1);
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
-  protected startupRunOnce = new RunOnce();
+  protected syncRunOnce = new RunOnce();
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
    * inbox: if this is an inbox shared with us */
@@ -106,14 +106,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     });
   }
 
-  async startup() {
-    await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
+  async initialSync() {
+    await this.syncRunOnce.runOnce(async () => {
+      await super.initialSync();
       if (this.isDependentAccount) {
         await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
         return;
       }
-      await this.startupDependentAccounts();
+      await this.syncDependentAccounts();
 
       appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
@@ -985,7 +985,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.startup();
+    await account.initialSync();
     return account;
   }
 
@@ -1016,7 +1016,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     addressbook.username = person.emailAddress;
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.addressbooks.add(addressbook);
-    await addressbook.startup();
+    await addressbook.initialSync();
     return addressbook;
   }
 
@@ -1047,7 +1047,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.username = person.emailAddress;
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     appGlobal.calendars.add(calendar);
-    await calendar.startup();
+    await calendar.initialSync();
     return calendar;
   }
 

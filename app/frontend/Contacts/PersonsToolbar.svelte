@@ -62,7 +62,7 @@
     let ab = $selectedAddressbook;
     assert(ab?.canSync, "Cannot sync " + ab.protocol);
     if (!ab.isLoggedIn) {
-      await ab.loginAndStartup();
+      await ab.login();
     }
     await ab.listContacts();
   }

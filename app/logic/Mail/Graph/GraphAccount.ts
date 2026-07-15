@@ -31,7 +31,7 @@ export class GraphAccount extends ExchangeMailAccount {
   pollIntervalMinutes = 10;
   logging = false;
   protected loginRunOnce = new RunOnce();
-  protected startupRunOnce = new RunOnce();
+  protected syncRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -56,15 +56,15 @@ export class GraphAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
-    await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
+  async initialSync() {
+    await this.syncRunOnce.runOnce(async () => {
+      await super.initialSync();
       let inbox = this.inbox as GraphFolder;
       assert(inbox, "Inbox not found");
       inbox.startPolling();
 
       await this.createDefaultDependentAccounts();
-      await this.startupDependentAccounts();
+      await this.syncDependentAccounts();
     });
   }
 

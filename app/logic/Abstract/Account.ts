@@ -60,22 +60,18 @@ export class Account extends Observable {
   }
 
   /**
-   * For local accounts, this is the startup entry point. It is overridden
-   * e.g. for contacts and calendar to load data from the database.
-   * Startup for accounts that need to log in will attempt to use a
-   * noninteractive `login` call instead. However if this is successful
-   * then the account's login code should finish by running its startup code.
+   * This is the entry point to perform post-login sync on this account.
    */
-  async startup() {
+  async initialSync() {
   }
 
   /**
-   * Convenience method for accounts to use to start up dependent accounts.
-   * This should be called after the account has finished its own startup.
+   * Convenience method for accounts to use to sync all dependent accounts.
+   * This should be called after the account has finished its own sync.
    */
-  protected async startupDependentAccounts() {
+  protected async syncDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
-      dependent.startup()
+      dependent.initialSync()
         .catch(dependent.errorCallback);
     }
   }
@@ -105,13 +101,13 @@ export class Account extends Observable {
     }
   }
 
-  async loginAndStartup(interactive = true): Promise<void> {
+  async loginAndSync(interactive = true): Promise<void> {
     if (this.isDependentAccount) {
-      await this.mainAccount.loginAndStartup(interactive);
+      await this.mainAccount.loginAndSync(interactive);
       return;
     }
     await this.login(interactive);
-    await this.startup();
+    await this.initialSync();
   }
 
   /** For setup only. Test that the login works. */

@@ -22,7 +22,7 @@
       loggingIn = true;
       let account = folder.account;
       if (!account.isLoggedIn) {
-        await account.loginAndStartup();
+        await account.login();
       }
       loggingIn = false;
       checkingMail = true;

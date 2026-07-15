@@ -58,7 +58,7 @@
   async function getNewMessages() {
     let account = folder.account;
     if (!account.isLoggedIn) {
-      await account.loginAndStartup();
+      await account.login();
     }
     await folder.getNewMessages();
   }

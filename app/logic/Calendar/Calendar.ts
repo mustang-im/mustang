@@ -71,8 +71,8 @@ export class Calendar extends Account {
     return this.events.some(ev => ev.calUID == event.calUID);
   }
 
-  async startup() {
-    await super.startup();
+  async initialSync() {
+    await super.initialSync();
     await this.listEvents();
   }
 

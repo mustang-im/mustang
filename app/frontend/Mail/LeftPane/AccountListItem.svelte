@@ -59,7 +59,7 @@
   export let account: MailAccount;
 
   async function login() {
-    await account.loginAndStartup();
+    await account.loginAndSync();
   }
 
   async function openSettings() {

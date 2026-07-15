@@ -59,11 +59,10 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
-    await this.startup();
   }
 
-  async startup() {
-    await super.startup();
+  async initialSync() {
+    await super.initialSync();
     this.startPushListener()
       .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
@@ -76,7 +75,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveCalendar) {
       await this.listCalendars();
     }
-    await this.startupDependentAccounts();
+    await this.syncDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {

@@ -59,7 +59,7 @@ export class OWAAccount extends ExchangeMailAccount {
   protected throttle = new Throttle(50, 1);
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
-  protected startupRunOnce = new RunOnce();
+  protected syncRunOnce = new RunOnce();
   // null: if this is our account
   // msgfolderroot: if this is an account shared with us
   // inbox: if this is an inbox shared with us
@@ -182,10 +182,10 @@ export class OWAAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
-    await this.startupRunOnce.runOnce(async () => {
+  async initialSync() {
+    await this.syncRunOnce.runOnce(async () => {
       // `listFolders()` will subscribe to new user-added calendars
-      await super.startup();
+      await super.initialSync();
 
       // Create primary addressbook automatically
       let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.mainAccount == this);
@@ -209,7 +209,7 @@ export class OWAAccount extends ExchangeMailAccount {
       this.notifications.start()
         .catch(this.errorCallback);
 
-      await this.startupDependentAccounts();
+      await this.syncDependentAccounts();
     });
   }
 

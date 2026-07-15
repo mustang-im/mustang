@@ -53,7 +53,7 @@
 
   async function login() {
     if (!account.isLoggedIn) {
-      await account.loginAndStartup();
+      await account.login();
     }
     await account.sync();
   }

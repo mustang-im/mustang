@@ -37,7 +37,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
   protected throttle = new Throttle(50, 1);
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
-  protected startupRunOnce = new RunOnce();
+  protected syncRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -94,9 +94,9 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
-    await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
+  async initialSync() {
+    await this.syncRunOnce.runOnce(async () => {
+      await super.initialSync();
 
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
@@ -110,7 +110,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       // is in sync, so each pingable registers with the account when
       // it's ready to be specified in the Ping operation.
 
-      await this.startupDependentAccounts();
+      await this.syncDependentAccounts();
     });
   }
 

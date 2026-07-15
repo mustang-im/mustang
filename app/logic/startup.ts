@@ -88,7 +88,7 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
         if (!account.isLoggedIn) {
           await account.login(false);
         }
-        await account.startup();
+        await account.initialSync();
       })().catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
