@@ -8,6 +8,7 @@ import type { JMAPEMail } from "../../Mail/JMAP/JMAPEMail";
 import type { TID, TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import { JMAPIncomingInvitation } from "./JMAPIncomingInvitation";
 import type { Participant } from "../Participant";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -70,7 +71,8 @@ export class JMAPCalendar extends Calendar {
     let hasMore = true;
     let allNewEvents = new ArrayColl<JMAPEvent>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newEvents, updatedEvents, syncState } = await this.fetchEvents(i, batchSize + 1);
+      let { newEvents, updatedEvents, syncState } = await retryOnTransientError(() =>
+        this.fetchEvents(i, batchSize + 1));
       state ??= syncState;
       this.events.addAll(newEvents);
       await this.saveEvents(newEvents);

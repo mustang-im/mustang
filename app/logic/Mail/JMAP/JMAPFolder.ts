@@ -8,6 +8,7 @@ import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
 import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl, SetColl, Collection } from "svelte-collections";
@@ -62,7 +63,8 @@ export class JMAPFolder extends Folder {
     let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
     for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages, syncState } = await this.fetchMessageList(i, batchSize);
+      let { newMessages, syncState } = await retryOnTransientError(() =>
+        this.fetchMessageList(i, batchSize));
       state ??= syncState;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);

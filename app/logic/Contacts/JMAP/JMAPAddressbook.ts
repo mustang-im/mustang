@@ -5,6 +5,7 @@ import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { TJMAPAddressbook } from "./TJMAPAddressbook";
 import type { TJMAPContact } from "./TJSContact";
 import type { TJMAPChangeResponse, TJMAPGetResponse, TID } from "../../Mail/JMAP/TJMAPGeneric";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -66,7 +67,8 @@ export class JMAPAddressbook extends Addressbook {
     let hasMore = true;
     let allNewPersons = new ArrayColl<JMAPPerson>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, updatedPersons, syncState } = await this.fetchPersons(i, batchSize + 1);
+      let { newPersons, updatedPersons, syncState } = await retryOnTransientError(() =>
+        this.fetchPersons(i, batchSize + 1));
       state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
