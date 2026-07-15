@@ -62,19 +62,24 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
+    let state: string;
     let hasMore = true;
     let allNewPersons = new ArrayColl<JMAPPerson>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, updatedPersons } = await this.fetchPersons(i, batchSize + 1);
+      let { newPersons, updatedPersons, syncState } = await this.fetchPersons(i, batchSize + 1);
+      state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
       hasMore = newPersons.length + updatedPersons.length > batchSize;
     }
+    if (state) {
+      this.account.syncState.set("ContactCard", state);
+    }
     return allNewPersons;
   }
 
-  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson>> {
+  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPContact>;
     let lock = await this.account.stateLock.lock();
@@ -108,9 +113,10 @@ export class JMAPAddressbook extends Addressbook {
       ]);
       listResponse = response["persons"] as TJMAPGetResponse<TJMAPContact>;
 
-      let result = this.parsePersonsList(listResponse.list);
-      this.account.syncState.set("ContactCard", listResponse.state);
-      return result;
+      return {
+        ...this.parsePersonsList(listResponse.list),
+        syncState: listResponse.state,
+      };
     } finally {
       lock.release();
     }
@@ -184,6 +190,9 @@ export class JMAPAddressbook extends Addressbook {
       let allAddressbooks = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       for (let addressbook of allAddressbooks) {
         await addressbook.readContactsFromDB();
+        if (addressbook.persons.isEmpty) {
+          continue; // Adding persons here would stop listAllPersons() from ever running
+        }
         let removed = this.findMovedAway(changedResponse.list, addressbook);
         let addedThisAB = addedByAB.get(addressbook.jmapID);
         let changedThisAB = changedByAB.get(addressbook.jmapID);

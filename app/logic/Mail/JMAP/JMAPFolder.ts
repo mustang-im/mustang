@@ -59,12 +59,17 @@ export class JMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     const batchSize = 200;
+    let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
     for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages } = await this.fetchMessageList(i, batchSize);
+      let { newMessages, syncState } = await this.fetchMessageList(i, batchSize);
+      state ??= syncState;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       allNewMessages.addAll(newMessages);
+    }
+    if (state) {
+      this.account.syncState.set("Email", state);
     }
     await this.storage.saveFolderProperties(this);
     return allNewMessages;
@@ -79,7 +84,7 @@ export class JMAPFolder extends Folder {
     return await this.fetchChangedMessagesForAllFolders();
   }
 
-  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
     let lock = await this.account.stateLock.lock();
@@ -113,9 +118,10 @@ export class JMAPFolder extends Folder {
       ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
       listResponse = response["emails"];
 
-      let result = this.parseMessageList(listResponse.list);
-      this.account.syncState.set("Email", listResponse.state);
-      return result;
+      return {
+        ...this.parseMessageList(listResponse.list),
+        syncState: listResponse.state,
+      };
     } finally {
       lock.release();
     }
@@ -168,7 +174,7 @@ export class JMAPFolder extends Folder {
       ]);
       //console.log("sync response", response);
 
-      let changes = response["changes"] as TJMAPChangeResponse;
+      let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
@@ -192,8 +198,12 @@ export class JMAPFolder extends Folder {
         /** To avoid reading all messages of all folders, we handle
          * - permanent deletes only from Trash / Spam (`DeleteStrategy.MoveToTrash`)
          * - moves only from folders that we already read
+         * - new messages only in folders that we already listed
          * This is a tradeoff. */
         await folder.readFolder();
+        if (folder.messages.isEmpty && folder.countTotal > 0) {
+          continue; // Adding messages here would stop listAllMessages() from ever running
+        }
         removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
         removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
         // A draft or email uploaded from here comes back in `created`, so need dup checks

@@ -66,20 +66,25 @@ export class JMAPCalendar extends Calendar {
   /** Lists all events in this calendar. */
   protected async listAllEvents(): Promise<ArrayColl<JMAPEvent>> {
     const batchSize = 200;
+    let state: string;
     let hasMore = true;
     let allNewEvents = new ArrayColl<JMAPEvent>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newEvents, updatedEvents } = await this.fetchEvents(i, batchSize + 1);
+      let { newEvents, updatedEvents, syncState } = await this.fetchEvents(i, batchSize + 1);
+      state ??= syncState;
       this.events.addAll(newEvents);
       await this.saveEvents(newEvents);
       await this.updateRecurrenceOverrides(newEvents);
       allNewEvents.addAll(newEvents);
       hasMore = newEvents.length + updatedEvents.length > batchSize;
     }
+    if (state) {
+      this.account.syncState.set("CalendarEvent", state);
+    }
     return allNewEvents;
   }
 
-  protected async fetchEvents(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPEvent>> {
+  protected async fetchEvents(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPEvent> & { syncState: string }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPCalendarEvent>;
     let lock = await this.account.stateLock.lock();
@@ -116,9 +121,10 @@ export class JMAPCalendar extends Calendar {
       ]);
       listResponse = response["events"] as TJMAPGetResponse<TJMAPCalendarEvent>;
 
-      let result = this.parseEventsList(listResponse.list);
-      this.account.syncState.set("CalendarEvent", listResponse.state);
-      return result;
+      return {
+        ...this.parseEventsList(listResponse.list),
+        syncState: listResponse.state,
+      };
     } finally {
       lock.release();
     }
@@ -192,6 +198,9 @@ export class JMAPCalendar extends Calendar {
       let allCalendars = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       for (let calendar of allCalendars) {
         await calendar.readEventsFromDB();
+        if (calendar.events.isEmpty) {
+          continue; // Adding events here would stop listAllEvents() from ever running
+        }
         let removed = this.findMovedAway(changedResponse.list, calendar);
         let addedThisCal = addedByCal.get(calendar.jmapID);
         let changedThisCal = changedByCal.get(calendar.jmapID);
