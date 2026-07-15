@@ -77,6 +77,7 @@ export class HTTPFetchError extends Error {
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
+    this.name = ex?.name ?? this.name; // own property, so it survives the JPC JSON serialization
     let request = (ex as any).request;
     let response = (ex as any).response;
     let cause = (ex as any).cause

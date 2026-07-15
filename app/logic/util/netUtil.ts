@@ -1,4 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { sleep } from "./util";
 import psl from "psl";
 
 export function getDomainForEmailAddress(emailAddress: string): string {
@@ -33,6 +34,47 @@ export function waitUntilOnline(): Promise<void> {
   return navigator.onLine
     ? Promise.resolve()
     : new Promise(resolve => addEventListener("online", () => resolve(), { once: true }));
+}
+
+/** Runs `func` with a network fetch, and returns its result.
+ * If it failed with a transient network or server error, tries again a few times.
+ * @throws Real errors
+ * @throws if failing after multiple tries. */
+export async function retryOnTransientError<T>(func: () => Promise<T>, attempts = 3, delaySeconds = 3): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await func();
+    } catch (ex) {
+      if (!isTransientError(ex) || attempt >= attempts) {
+        throw ex;
+      }
+      console.log(`Failed (attempt ${attempt} of ${attempts}), trying again in ${delaySeconds * attempt}s:`, ex?.message);
+      await sleep(delaySeconds * attempt);
+    }
+  }
+}
+
+/** Failed to reach the server: network down, DNS, connection dropped */
+export function isNetworkError(ex: any): boolean {
+  // Node fetch, via backend `HTTPFetchError`
+  const kNetworkErrorCodes = ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT",
+    "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
+    "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET"];
+  // Error class `instanceof` doesn't survive JPC
+  return kNetworkErrorCodes.includes(ex?.code) ||
+    // browser fetch
+    ex?.name == "TypeError" &&
+    /network ?error|failed to fetch|fetch failed|load failed/i.test(ex.message);
+}
+
+/** Errors that may go away by simply trying again:
+ * network drop, timeout, rate limit, or server overload. */
+export function isTransientError(ex: any): boolean {
+  const kTransientHTTPCodes = [408, 429, 502, 503, 504];
+  let httpCode = ex?.httpCode ?? ex?.status;
+  return isNetworkError(ex) ||
+    ex?.name == "TimeoutError" ||
+    kTransientHTTPCodes.includes(httpCode);
 }
 
 /** Like `fetch()`'s `RequestInit`, plus an optional `timeout`. */

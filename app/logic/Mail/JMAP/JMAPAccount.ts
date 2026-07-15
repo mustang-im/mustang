@@ -22,7 +22,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
 import { Throttle } from "../../util/flow/Throttle";
-import { waitUntilOnline, HTTPError } from "../../util/netUtil";
+import { waitUntilOnline, isNetworkError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
@@ -558,8 +558,7 @@ export class JMAPAccount extends MailAccount {
           }
         }
       } catch (ex) {
-        if (ex instanceof TypeError &&
-            ex.message?.match(/network ?error|failed to fetch|load failed/i)) {
+        if (isNetworkError(ex)) {
           this.errorCallback(ex);
           await waitUntilOnline(); // Computer sleep drops the network
         } else {
