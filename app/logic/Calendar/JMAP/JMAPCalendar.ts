@@ -150,10 +150,6 @@ export class JMAPCalendar extends Calendar {
     assert(this.account.syncState.has("CalendarEvent"), "No sync state");
     let lock = await this.account.stateLock.lock();
     try {
-      if (lock.wasWaiting && false) { // TODO always true
-        console.log("JMAP fetch changes for calendar", this.name, "already in progress");
-        return new ArrayColl();
-      }
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
         [

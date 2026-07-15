@@ -138,10 +138,6 @@ export class JMAPFolder extends Folder {
     assert(this.account.syncState.has("Email"), "No sync state");
     let lock = await this.account.stateLock.lock();
     try {
-      if (lock.wasWaiting && false) { // TODO always true
-        console.log("JMAP fetch changes for folder", this.name, "already in progress");
-        return new ArrayColl();
-      }
       //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
