@@ -12,7 +12,8 @@ import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest 
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends ExchangeCalendar {
@@ -23,6 +24,7 @@ export class OWACalendar extends ExchangeCalendar {
   protected listEventsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as OWAAccount;
   }
 

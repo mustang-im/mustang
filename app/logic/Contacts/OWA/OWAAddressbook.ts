@@ -9,6 +9,8 @@ import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPerson
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends ExchangeAddressbook {
@@ -20,6 +22,7 @@ export class OWAAddressbook extends ExchangeAddressbook {
   protected listContactsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as OWAAccount;
   }
 

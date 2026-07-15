@@ -7,7 +7,8 @@ import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribable {
@@ -18,6 +19,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
   declare readonly groups: ArrayColl<EWSGroup>;
 
   get account(): EWSAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as EWSAccount;
   }
 

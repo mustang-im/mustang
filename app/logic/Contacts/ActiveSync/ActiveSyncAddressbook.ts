@@ -5,7 +5,8 @@ import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
-import { ensureArray, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends ExchangeAddressbook implements ActiveSyncPingable {
@@ -17,6 +18,7 @@ export class ActiveSyncAddressbook extends ExchangeAddressbook implements Active
   serverID: string;
 
   get account(): ActiveSyncAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as ActiveSyncAccount;
   }
 

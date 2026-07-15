@@ -8,7 +8,8 @@ import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 const kHalfHour = 30 * 60 * 1000; // milliseconds
@@ -26,6 +27,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
   }
 
   get account(): ActiveSyncAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as ActiveSyncAccount;
   }
 

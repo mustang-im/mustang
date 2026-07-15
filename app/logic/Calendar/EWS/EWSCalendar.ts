@@ -9,7 +9,8 @@ import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExc
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
@@ -19,6 +20,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
   folderID: string;
 
   get account(): EWSAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as EWSAccount;
   }
 
