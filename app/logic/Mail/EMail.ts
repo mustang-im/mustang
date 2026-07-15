@@ -281,15 +281,22 @@ export class EMail extends Message {
     return identities.first;
   }
 
+  protected loadedEvent = false;
+  readonly loadEventRunOnce = new RunOnce<void>();
   async loadEvent() {
     assert(this.invitationMessage, "This is not an invitation or response");
-    assert(!this.event, "Event has already been loaded");
-    if (this.mime) {
-      await this.parseMIME();
-    } else {
-      await this.loadMIME();
+    if (this.event || this.loadedEvent) {
+      return;
     }
-    // indirectly calls @see `ICalEMailProcessor.process()`
+    await this.loadEventRunOnce.runOnce(async () => {
+      if (this.mime) {
+        await this.parseMIME();
+      } else {
+        await this.loadMIME();
+      }
+      // indirectly calls @see `ICalEMailProcessor.process()`
+      this.loadedEvent = true;
+    });
   }
 
   async parseMIME(): Promise<MIME> {
@@ -446,23 +453,26 @@ export class EMail extends Message {
     await this.loadMIME();
   }
 
+  readonly loadMIMERunOnce = new RunOnce<void>();
   async loadMIME() {
     if (this.mime) {
       return;
     }
-    if (this.dbID) {
-      try {
-        await this.storage.readMessage(this);
-        await this.folder.account.contentStorage.first.read(this);
-        if (this.mime) {
-          await this.parseMIME();
-          return;
+    await this.loadMIMERunOnce.runOnce(async () => {
+      if (this.dbID) {
+        try {
+          await this.storage.readMessage(this);
+          await this.folder.account.contentStorage.first.read(this);
+          if (this.mime) {
+            await this.parseMIME();
+            return;
+          }
+        } catch (ex) {
+          console.error(ex);
         }
-      } catch (ex) {
-        console.error(ex);
       }
-    }
-    await this.download();
+      await this.download();
+    });
   }
 
   async loadAttachments() {
@@ -480,24 +490,29 @@ export class EMail extends Message {
     }
   }
 
+  readonly loadBodyRunOnce = new RunOnce<void>();
   async loadBody() {
     if (this.loadedBody) {
       return;
     }
-    if (!this._rawHTML && !this._text) {
-      if (this.dbID) {
-        await this.storage.readMessageBody(this);
-      }
+    /* RunOnce: Svelte 5 re-invokes `{#await message.loadBody()}` while the
+     * load is still running, whenever an ancestor re-assigns the `message` prop */
+    await this.loadBodyRunOnce.runOnce(async () => {
       if (!this._rawHTML && !this._text) {
-        await this.download();
+        if (this.dbID) {
+          await this.storage.readMessageBody(this);
+        }
+        if (!this._rawHTML && !this._text) {
+          await this.download();
+        }
       }
-    }
 
-    let html = this.html;
-    if (html?.includes("cid:")) {
-      this._sanitizedHTML = await addCID(html, this);
-    }
-    this.loadedBody = true; // triggers UI reload
+      let html = this.html;
+      if (html?.includes("cid:")) {
+        this._sanitizedHTML = await addCID(html, this);
+      }
+      this.loadedBody = true; // triggers UI reload
+    });
   }
 
   get html(): string {
