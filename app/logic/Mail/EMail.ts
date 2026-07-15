@@ -654,6 +654,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
         ? attachment.blobURL
         : "";
       img.setAttribute("src", src);
+      attachment.hidden = true;
     }
     html = new XMLSerializer().serializeToString(doc);
   } catch (ex) {

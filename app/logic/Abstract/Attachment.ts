@@ -32,6 +32,10 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
+  /** Override the default hidden state.
+   * Currently not saved to DB. */
+  @notifyChangedProperty
+  protected _hidden: boolean | null = null;
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
@@ -140,7 +144,12 @@ export class Attachment extends Observable {
   /** Should not show to end user. This is true for auto-processing attachments
    * like calendar invitations (ICS), vCards, encryption signatures etc. */
   get hidden(): boolean {
-    return kHiddenMIMETypes.includes(this.mimeType);
+    return this._hidden != null
+      ? this._hidden
+      : kHiddenMIMETypes.includes(this.mimeType);
+  }
+  set hidden(val: boolean) {
+    this._hidden = val;
   }
 }
 
