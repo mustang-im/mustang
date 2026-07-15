@@ -49,9 +49,14 @@ export class GraphFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<GraphEMail>> {
     await this.readFolder();
-    return this.messages.isEmpty
-      ? await this.listAllMessages()
-      : await this.listChangedMessages();
+    let lock = await this.listMessagesLock.lock();
+    try {
+      return this.messages.isEmpty
+        ? await this.listAllMessages()
+        : await this.listChangedMessages();
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder.

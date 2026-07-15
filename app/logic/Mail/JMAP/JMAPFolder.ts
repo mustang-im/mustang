@@ -52,9 +52,14 @@ export class JMAPFolder extends Folder {
     }
 
     await this.readFolder();
-    return this.messages.isEmpty
-      ? await this.listAllMessages()
-      : await this.listChangedMessages();
+    let lock = await this.listMessagesLock.lock();
+    try {
+      return this.messages.isEmpty
+        ? await this.listAllMessages()
+        : await this.listChangedMessages();
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder.
