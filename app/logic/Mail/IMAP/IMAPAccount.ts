@@ -50,7 +50,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.connections.get(ConnectionPurpose.Main)?.authenticated;
+    return !!this.connections.get(ConnectionPurpose.Main);
   }
 
   async login(interactive: boolean): Promise<void> {
