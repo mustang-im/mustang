@@ -279,7 +279,12 @@ export function setMainAccounts(): void {
     try {
       let mainID = account._mainAccountID;
       if (mainID && !account.mainAccount) {
-        account.mainAccount = accounts.find(acc => acc.id == mainID);
+        let main = accounts.find(acc => acc.id == mainID);
+        if (main) {
+          account.mainAccount = main;
+        } else {
+          logError(new Error(`Account ${account.name} (${account.protocol}) lost its main account: Account ID ${mainID} did not load`));
+        }
       }
     } catch (ex) {
       logError(ex);
