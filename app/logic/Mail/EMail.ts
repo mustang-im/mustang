@@ -498,6 +498,7 @@ export class EMail extends Message {
     /* RunOnce: Svelte 5 re-invokes `{#await message.loadBody()}` while the
      * load is still running, whenever an ancestor re-assigns the `message` prop */
     await this.loadBodyRunOnce.runOnce(async () => {
+      await Promise.resolve(); // Work around Svelte 5 bug #17678
       if (!this._rawHTML && !this._text) {
         if (this.dbID) {
           await this.storage.readMessageBody(this);
