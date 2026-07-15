@@ -7,6 +7,7 @@ import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions } from "../Folder";
 import { assert, NotReached, SpecificError } from "../../util/util";
+import { retryOnTransientError } from "../../util/netUtil";
 import { Lock } from "../../util/flow/Lock";
 import { Throttle } from "../../util/flow/Throttle";
 import { RunOnce } from "../../util/flow/RunOnce";
@@ -171,7 +172,7 @@ export class IMAPAccount extends MailAccount {
       try {
         let purpose = this.connections.getKeyForValue(connection);
         if (purpose == ConnectionPurpose.Main) {
-          await this.reconnect(connection, purpose);
+          await retryOnTransientError(() => this.reconnect(connection, purpose));
         } else if (purpose) {
           this.dropConnection(connection);
         } // else: We closed it ourselves, e.g. logout() or reconnect()
@@ -242,7 +243,9 @@ export class IMAPAccount extends MailAccount {
       if (current && current != connection) {
         return current; // Another caller already reconnected
       }
-      this.dropConnection(connection);
+      if (this.connections.getKeyForValue(connection)) { // on retry, it was already dropped
+        this.dropConnection(connection);
+      }
 
       if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {

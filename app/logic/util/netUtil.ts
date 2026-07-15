@@ -59,7 +59,9 @@ export function isNetworkError(ex: any): boolean {
   // Node fetch, via backend `HTTPFetchError`
   const kNetworkErrorCodes = ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT",
     "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
-    "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET"];
+    "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET",
+    // ImapFlow
+    "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT"];
   // Error class `instanceof` doesn't survive JPC
   return kNetworkErrorCodes.includes(ex?.code) ||
     // browser fetch
