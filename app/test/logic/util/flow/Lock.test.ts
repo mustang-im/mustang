@@ -43,6 +43,21 @@ test("Lock", async () => {
   expect(a.ran).toBe(5);
 });
 
+test("Lock wasWaiting", async () => {
+  let lock = new Lock();
+  let first = await lock.lock();
+  expect(first.wasWaiting).toBe(false);
+  let secondPromise = lock.lock();
+  first.release();
+  let second = await secondPromise;
+  expect(second.wasWaiting).toBe(true);
+  second.release();
+  // All released, so the next lock() must not report waiting
+  let third = await lock.lock();
+  expect(third.wasWaiting).toBe(false);
+  third.release();
+});
+
 test("Without Lock", async () => {
   let a = new WithoutLock();
   let promise1 = a.run();
