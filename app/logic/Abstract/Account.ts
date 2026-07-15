@@ -194,7 +194,11 @@ export class Account extends Observable {
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
-    await this.logout();
+    try {
+      await this.logout();
+    } catch (ex) {
+      logError(ex); // e.g. server unreachable
+    }
     for (let dependent of this.dependentAccounts()) {
       await dependent.deleteIt();
     }
