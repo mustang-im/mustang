@@ -109,10 +109,10 @@ export class JSCalendarEvent {
     // Text
     jmap.title = event.title;
     if (event.hasHTML) {
-      jmap.descriptionContentType == "text/html";
+      jmap.descriptionContentType = "text/html";
       jmap.description = event.descriptionHTML;
     } else {
-      jmap.descriptionContentType == "text/plain";
+      jmap.descriptionContentType = "text/plain";
       jmap.description = event.descriptionText;
     }
 
