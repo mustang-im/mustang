@@ -86,7 +86,16 @@ export class SQLMailAccount {
     // aren't in `appGlobal.emailAccounts`, so `setMainAccounts()` won't find them.
     for (let smtp of smtpAccounts) {
       try {
-        smtp.mainAccount = accounts.find(acc => acc.id == smtp._mainAccountID);
+        let mainID = smtp._mainAccountID;
+        if (!mainID) {
+          continue;
+        }
+        let main = accounts.find(acc => acc.id == mainID);
+        if (main) {
+          smtp.mainAccount = main;
+        } else {
+          logError(new Error(`Account ${smtp.name} (${smtp.protocol}) lost its main account: Account ID ${mainID} did not load`));
+        }
       } catch (ex) {
         backgroundError(ex);
       }
