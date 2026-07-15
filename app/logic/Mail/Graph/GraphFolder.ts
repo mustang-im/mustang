@@ -5,6 +5,7 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { type TGraphFolder, type TGraphEMail, TGraphEMailHeaderProperties } from "./TGraphMail";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, type URLString } from "../../util/util";
@@ -223,22 +224,25 @@ export class GraphFolder extends Folder {
     let downloadedMsgs = new ArrayColl<GraphEMail>();
     const kMaxParallelCount = 5;
     let semaphore = new Semaphore(kMaxParallelCount);
+    let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
       if (msg.downloadRunOnce.running) {
         continue;
       }
       let lock = await semaphore.lock();
-      (async () => {
+      downloads.add((async () => {
         try {
           await msg.download();
+          downloadedMsgs.add(msg);
         } catch (ex) {
           this.account.errorCallback(ex);
         } finally {
           lock.release();
         }
-      })().catch(this.account.errorCallback);
+      })());
     }
+    await downloads.wait();
     return downloadedMsgs;
   }
 

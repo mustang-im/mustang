@@ -8,6 +8,7 @@ import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
 import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
@@ -319,22 +320,25 @@ export class JMAPFolder extends Folder {
     let downloadedMsgs = new ArrayColl<JMAPEMail>();
     const kMaxParallelCount = 5;
     let semaphore = new Semaphore(kMaxParallelCount);
+    let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
       if (msg.downloadRunOnce.running) {
         continue;
       }
       let lock = await semaphore.lock();
-      (async () => {
+      downloads.add((async () => {
         try {
           await msg.download();
+          downloadedMsgs.add(msg);
         } catch (ex) {
           this.account.errorCallback(ex);
         } finally {
           lock.release();
         }
-      })().catch(this.account.errorCallback);
+      })());
     }
+    await downloads.wait();
     return downloadedMsgs;
   }
 
