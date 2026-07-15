@@ -34,8 +34,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     await this.account.unsubscribeNotifications(this);
   }
 
-  async initialSync(): Promise<void> {
-    await super.initialSync();
+  async connect(): Promise<void> {
     if (this.username != this.account.username) {
       await this.account.subscribeToNotificationsForSubaccount(this);
     }

@@ -103,22 +103,28 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
       await super.login(interactive);
       await this.loginCommon(interactive);
+      await this.connected();
+      await this.dependentAccountsConnected();
     });
+  }
+
+  async connected() {
+    if (this.isDependentAccount) {
+      await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
+    } else {
+      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+
+      await this.subscribeToNotifications();
+    }
   }
 
   async initialSync() {
     await this.syncRunOnce.runOnce(async () => {
       await super.initialSync();
       if (this.isDependentAccount) {
-        await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
         return;
       }
       await this.syncDependentAccounts();
-
-      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-      await this.subscribeToNotifications();
     });
   }
 

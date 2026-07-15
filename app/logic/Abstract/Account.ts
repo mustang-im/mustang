@@ -76,6 +76,28 @@ export class Account extends Observable {
     }
   }
 
+  /**
+   * Entry point to notify the account that login has completed.
+   * Could potentially be used in conjunction with network offline events
+   * (`disconnect()` when going offline and `connected()` when back online)?
+   */
+  async connected() {
+  }
+
+  /**
+   * Convenience method for accounts to use to notify all dependent accounts
+   * that the login has completed.
+   */
+  protected async dependentAccountsConnected() {
+    for (let dependent of this.dependentAccounts()) {
+      try {
+        await dependent.connected();
+      } catch (ex) {
+        dependent.errorCallback(ex);
+      }
+    }
+  }
+
   get isLoggedIn(): boolean {
     return false;
   }

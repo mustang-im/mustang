@@ -59,12 +59,15 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
+    await this.connected();
+  }
+
+  async connected() {
+    this.startPushListener().catch(this.errorCallback);
   }
 
   async initialSync() {
     await super.initialSync();
-    this.startPushListener()
-      .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();

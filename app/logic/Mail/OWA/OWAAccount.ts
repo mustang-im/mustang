@@ -179,7 +179,24 @@ export class OWAAccount extends ExchangeMailAccount {
       this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);
       this.hasLoggedIn = true;
       this.notifyObserversOfSubaccounts();
+      await this.connected();
     });
+  }
+
+  async connected() {
+    if (this.isDependentAccount) {
+      return;
+    }
+
+    appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+
+    await this.callOWA(new OWASubscribeToNotificationRequest());
+
+    this.notifications = this.isOffice365()
+      ? new OWAOffice365Notifications(this)
+      : new OWAExchangeNotifications(this);
+    this.notifications.start()
+      .catch(this.errorCallback);
   }
 
   async initialSync() {
@@ -196,18 +213,6 @@ export class OWAAccount extends ExchangeMailAccount {
         appGlobal.addressbooks.add(addressbook);
         await addressbook.save();
       }
-
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
-      }
-
-      await this.callOWA(new OWASubscribeToNotificationRequest());
-
-      this.notifications = this.isOffice365()
-        ? new OWAOffice365Notifications(this)
-        : new OWAExchangeNotifications(this);
-      this.notifications.start()
-        .catch(this.errorCallback);
 
       await this.syncDependentAccounts();
     });

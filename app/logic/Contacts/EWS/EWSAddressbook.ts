@@ -36,8 +36,7 @@ export class EWSAddressbook extends Addressbook implements EWSSubscribable {
     await this.account.unsubscribeNotifications(this);
   }
 
-  async initialSync(): Promise<void> {
-    await super.initialSync();
+  async connected(): Promise<void> {
     if (this.username != this.account.username) {
       await this.account.subscribeToNotificationsForSubaccount(this);
     }

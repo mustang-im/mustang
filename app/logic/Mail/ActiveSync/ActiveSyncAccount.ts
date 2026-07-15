@@ -91,7 +91,17 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
           throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
         }
       }
+      await this.connected();
     });
+  }
+
+  async connected() {
+    appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+
+    // If this is a reconnect, try to continue from where we left off.
+    if (!this.listening) {
+      this.listenForPings().catch(this.errorCallback);
+    }
   }
 
   async initialSync() {
@@ -99,10 +109,6 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       await super.initialSync();
 
       // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
-      }
 
       // ActiveSync doesn't have streaming notifications, instead it
       // provides the Ping operation which will tell us when a pingable
