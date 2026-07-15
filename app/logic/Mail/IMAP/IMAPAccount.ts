@@ -67,6 +67,7 @@ export class IMAPAccount extends MailAccount {
   async startup() {
     this.namespaces = await this.getNamespaces();
     await super.startup();
+    await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
   }
@@ -252,13 +253,20 @@ export class IMAPAccount extends MailAccount {
       }
 
       let newConn = await this.connection(false, purpose);
-      let inbox = this.inbox as IMAPFolder;
-      if (purpose == ConnectionPurpose.Main && inbox?.path) {
-        // ImapFlow starts IDLE only once a folder is open
-        await newConn.mailboxOpen(inbox.path);
+      if (purpose == ConnectionPurpose.Main) {
+        await this.startIDLE(newConn);
       }
       return newConn;
     });
+  }
+
+  /** ImapFlow starts IDLE only once a folder is open */
+  protected async startIDLE(connection: ImapFlow): Promise<void> {
+    let inbox = this.inbox as IMAPFolder;
+    if (!inbox?.path) {
+      return;
+    }
+    await connection.mailboxOpen(inbox.path);
   }
 
   dropConnection(connection: ImapFlow): void {
