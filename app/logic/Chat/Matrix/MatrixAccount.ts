@@ -251,12 +251,14 @@ export class MatrixAccount extends ChatAccount {
 
   async waitForEventMatching(eventName: string, matches: ((event: MatrixEvent) => boolean)): Promise<MatrixEvent> {
     return await new Promise((resolve, reject) => {
-      this.client.on(eventName as any, (event: MatrixEvent) => {
+      let listener = (event: MatrixEvent) => {
         if (!matches(event)) {
           return;
         }
+        this.client.off(eventName as any, listener);
         resolve(event);
-      });
+      };
+      this.client.on(eventName as any, listener);
     });
   }
 
