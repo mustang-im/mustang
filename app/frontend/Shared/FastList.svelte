@@ -107,6 +107,8 @@
   let listE: HTMLDivElement;
   let headerE: HTMLDivElement;
   let contentE: HTMLDivElement;
+  /** The `items` that the `init` event was dispatched for */
+  let initDoneForItems: Collection<T> = null;
 
   $: headerHeight = headerE?.firstChild?.offsetHeight ?? 10;
 
@@ -169,7 +171,11 @@
 
       showRows = Math.ceil(availableHeight / rowHeight);
       //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight, "rowheight", rowHeight, "available", availableHeight, " showrows", showRows);
-      dispatchEvent("init", { scrollToIndex: scrollIntoView, scrollToItem: scrollItemIntoView });
+      if (initDoneForItems != items) {
+        // Dispatching on every item change would yank the view back to the selected row
+        initDoneForItems = items;
+        dispatchEvent("init", { scrollToIndex: scrollIntoView, scrollToItem: scrollItemIntoView });
+      }
     } catch (ex) {
       console.error(ex);
     }
