@@ -82,7 +82,8 @@ export class Attachment extends Observable {
   }
 
   asFileEntry(): FileEntry {
-    let file = new FileEntry();
+    let file = new AttachmentFile();
+    file.attachment = this;
     file.setFileName(this.filename);
     file.filepathLocal = this.filepathLocal;
     file.size = this.size;
@@ -150,6 +151,38 @@ export class Attachment extends Observable {
   }
   set hidden(val: boolean) {
     this._hidden = val;
+  }
+}
+
+/** A `File` view of an email `Attachment`, so the Files UI (contact history,
+ * person files pane) can open and preview it. Fetching the bytes delegates to
+ * the `Attachment`, which knows how to get them from disk or the email. */
+export class AttachmentFile extends FileEntry {
+  attachment: Attachment;
+
+  async download() {
+    if (this.contents) {
+      return;
+    }
+    await this.downloadRunOnce.runOnce(async () => {
+      if (this.contents) {
+        return;
+      }
+      let attachment = this.attachment;
+      let message = attachment.message;
+      if (!attachment.filepathLocal && message instanceof EMail) {
+        await message.loadMIME(); // downloads the email, if not already on disk
+        // `parseMIME()` may have replaced the attachment objects
+        attachment = message.attachments.find(a => a.contentID == attachment.contentID) ?? attachment;
+        this.attachment = attachment;
+      }
+      await attachment.load(); // read `content` from disk (or MIME)
+      if (attachment.content && !attachment.filepathLocal) {
+        await attachment.save(); // write to disk, so `openOSApp()` has a file path
+      }
+      this.contents = attachment.content;
+      this.filepathLocal = attachment.filepathLocal;
+    });
   }
 }
 
