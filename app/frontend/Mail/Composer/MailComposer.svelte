@@ -190,6 +190,7 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { draftRecovery } from "../../../logic/Mail/DraftRecovery";
   import { goBack } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
@@ -220,7 +221,8 @@
   import SMLIcon from "lucide-svelte/icons/list-checks";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
-  import { tick } from "svelte";
+  import { tick, onDestroy } from "svelte";
+  import debounce from "lodash/debounce";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -376,6 +378,10 @@
   let doOnClose: (() => void)[] = [];
   function onClose() {
     closing = true;
+    saveRecoveryDebounced.cancel();
+    clearInterval(autoSaveDraftTimer);
+    draftRecovery.delete(mail)
+      .catch(backgroundError);
     for (let func of doOnClose) {
       func();
     }
@@ -384,6 +390,59 @@
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
     goBack();
+  }
+
+  /* Crash recovery: keep a copy of the in-progress email in browser storage
+   * while editing, so an unexpected shutdown doesn't lose it. It's deleted in
+   * `onClose()` on any clean close, and restored by <MailInBackground>. */
+  $: $mail, $to, $ccList, $bccList, $attachmentsList, scheduleRecoverySave();
+  const saveRecoveryDebounced = debounce(() => catchErrors(saveRecovery), 5000);
+  function scheduleRecoverySave() {
+    if (!closing) {
+      saveRecoveryDebounced();
+    }
+  }
+  async function saveRecovery() {
+    // Don't write a to-be-encrypted email as plaintext to disk. Consistent with
+    // `saveAsDraft()`, which refuses encrypted drafts.
+    if (closing || mail.shouldEncrypt || !hasContent()) {
+      return;
+    }
+    await draftRecovery.save(mail);
+  }
+  onDestroy(() => {
+    clearInterval(autoSaveDraftTimer);
+    if (!closing) {
+      saveRecoveryDebounced.flush(); // persist latest before unmount (e.g. app switch)
+    }
+  });
+
+  /* Optionally save to the account's Drafts folder every n minutes,
+   * configurable in Settings | Mail | Send. */
+  let autoSaveDraftSetting = getLocalStorage("mail.send.autosave.minutes", 5); // 0 = off
+  let autoSaveDraftTimer: ReturnType<typeof setInterval>;
+  $: armAutoSaveDraft($autoSaveDraftSetting.value);
+  function armAutoSaveDraft(minutes: number) {
+    clearInterval(autoSaveDraftTimer);
+    if (!(minutes > 0)) {
+      return;
+    }
+    autoSaveDraftTimer = setInterval(() => catchErrors(autoSaveDraft), minutes * 60 * 1000);
+  }
+  async function autoSaveDraft() {
+    if (closing || mail.shouldEncrypt || !hasContent()) {
+      return;
+    }
+    await mail.compose.saveAsDraft();
+  }
+
+  /** Is there anything worth saving? Avoids storing empty composer windows. */
+  function hasContent(): boolean {
+    if (mail.subject || mail.to.hasItems || mail.cc.hasItems || mail.bcc.hasItems || mail.attachments.hasItems) {
+      return true;
+    }
+    let text = new DOMParser().parseFromString(mail.html ?? "", "text/html").body.textContent ?? "";
+    return !!text.trim();
   }
 
   let showSMLAdd = false;

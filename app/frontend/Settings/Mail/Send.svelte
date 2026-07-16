@@ -109,15 +109,38 @@
   </hbox>
 </HeaderGroupBox>
 
+<HeaderGroupBox>
+  <hbox slot="header">
+    {$t`Auto-save`}
+  </hbox>
+  <vbox class="autosave">
+    <label class="checkbox">
+      <input type="checkbox" bind:checked={autoSaveEnabled} on:change={onAutoSaveChanged} />
+      <T msg={$t`Automatically save to Drafts every # minutes`}>
+        <input type="number" bind:value={autoSaveMinutes} min={1} max={60} maxlength={2}
+          disabled={!autoSaveEnabled} on:change={onAutoSaveChanged} />
+      </T>
+    </label>
+  </vbox>
+</HeaderGroupBox>
+
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import T from '../../../l10n/T.svelte';
   import { t } from "../../../l10n/l10n";
   import Paper from "../../Shared/Paper.svelte";
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
   let quoteSetting = getLocalStorage("mail.send.quote", "below");
   let spellcheckEnabledSetting = getLocalStorage("mail.send.spellcheck.enabled", false);
+
+  let autoSaveSetting = getLocalStorage("mail.send.autosave.minutes", 5); // 0 = off
+  let autoSaveEnabled = autoSaveSetting.value > 0;
+  let autoSaveMinutes = autoSaveSetting.value > 0 ? autoSaveSetting.value : 5;
+  function onAutoSaveChanged() {
+    autoSaveSetting.value = autoSaveEnabled ? autoSaveMinutes : 0;
+  }
 </script>
 
 <style>
@@ -145,6 +168,13 @@
   }
   input[type="checkbox"] {
     margin-inline-end: 12px;
+  }
+  .autosave input[type="number"] {
+    width: 2.5em;
+    text-align: end;
+  }
+  .autosave .checkbox {
+    align-items: center;
   }
   label {
     margin-inline-start: 8px;

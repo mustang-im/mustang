@@ -15,12 +15,17 @@ export class MailMustangApp extends MustangApp {
   icon = mailIcon;
   appURL = "/mail";
 
-  writeMail(mail: EMail) {
+  /** @param bringToFront false only for crash-recovered drafts: the composer
+   * is re-created as a subapp with its restored state, but the user is not
+   * pulled into it unrequested. @see DraftRecovery */
+  writeMail(mail: EMail, bringToFront = true) {
     let composerApp = new WriteMailMustangApp();
     composerApp.title = derived(mail, () => mail.subject ?? composerApp.name);
     composerApp.windowParams = { mail: mail };
     mailMustangApp.subApps.add(composerApp);
-    openApp(composerApp, composerApp.windowParams);
+    if (bringToFront) {
+      openApp(composerApp, composerApp.windowParams);
+    }
   }
 
   login(tab: OAuth2Tab): LoginDialogMustangApp {
