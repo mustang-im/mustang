@@ -62,11 +62,11 @@ export class File extends FileOrDirectory {
   }
 
   async download() {
-    throw new NotImplemented(`Download of ${this.account.protocol} file not yet implemented`);
+    throw new NotImplemented(`Download of ${this.account?.protocol ?? ""} file not yet implemented`);
   }
 
   async upload() {
-    throw new NotImplemented(`Upload of ${this.account.protocol} file not yet implemented`);
+    throw new NotImplemented(`Upload of ${this.account?.protocol ?? ""} file not yet implemented`);
   }
 
   /** If the local file is newer than the server file,
