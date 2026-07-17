@@ -19,7 +19,13 @@ export class PEMEncoder extends DEREncoder {
 }
 
 function toBase64(buf: Uint8Array) {
-  return btoa(String.fromCharCode(...buf));
+  // Chunk, because spreading a large array into String.fromCharCode overflows
+  // the call stack for big DER blobs.
+  let str = "";
+  for (let i = 0; i < buf.length; i += 0x8000) {
+    str += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  }
+  return btoa(str);
 }
 
 declare global {

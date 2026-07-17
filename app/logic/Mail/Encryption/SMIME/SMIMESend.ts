@@ -6,7 +6,7 @@ import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { Oid, GeneralTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
-import { NotReached, assert } from "../../../util/util";
+import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 
 export class SMIMESend {
@@ -30,7 +30,9 @@ export class SMIMESend {
     if (mail.signed) {
       // Only the body and content type are signed, not the headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
-      let headers = mimeAsText.slice(0, pos).split(/\r\n\b/);
+      // Split on CRLF, but keep folded continuation lines (those starting with
+      // whitespace) attached to their header.
+      let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
       let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
       mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
@@ -96,7 +98,7 @@ export class SMIMESend {
       }
       let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
       mimeAsText = [
-        `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha256; boundary="${boundary}"`,
+        `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
         ...otherHeaders,
         '',
         `--${boundary}`,
@@ -116,7 +118,9 @@ export class SMIMESend {
     if (mail.shouldEncrypt) {
       // Only the body and content type are encrypted, not the headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
-      let headers = mimeAsText.slice(0, pos).split(/\r\n\b/);
+      // Split on CRLF, but keep folded continuation lines (those starting with
+      // whitespace) attached to their header.
+      let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
       let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
       mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
@@ -186,7 +190,13 @@ export class SMIMESend {
 }
 
 function toBase64(buf: Uint8Array): string {
-  return btoa(String.fromCharCode(...buf));
+  // Chunk, because spreading a large array (enveloped mail with attachments can
+  // be several MB) into String.fromCharCode overflows the call stack.
+  let str = "";
+  for (let i = 0; i < buf.length; i += 0x8000) {
+    str += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  }
+  return btoa(str);
 }
 
 declare global {

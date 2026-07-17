@@ -65,6 +65,16 @@ export function unpadPKCS(data: Uint8Array, blockType: BlockType): Uint8Array {
   if (pos < 10) {
     throw new Error("Decryption error");
   }
+  if (blockType == BlockType.Signed) {
+    // The padding of a signature block must be all 0xFF octets. RFC8017
+    // requires this, and accepting other bytes here opens BERserk-style
+    // signature forgeries against small-exponent (e.g. e=3) keys.
+    for (let i = 2; i < pos; i++) {
+      if (data[i] != 0xFF) {
+        throw new Error("Decryption error");
+      }
+    }
+  }
   return data.slice(pos + 1);
 }
 
@@ -120,6 +130,13 @@ export function decrypt(data: Uint8Array, key: RSAPrivateKey) {
 /**
  * Calculates v ** p % n but slightly more efficiently.
  * Assumes p and n are positive.
+ *
+ * Note: This is not constant-time and uses no blinding, so it is in principle
+ * open to timing/padding-oracle attacks. That is an inherent limitation of a
+ * hand-rolled bigint RSA (WebCrypto won't expose the raw RSA primitive we need
+ * for CMS). A local mail client has no adaptive network oracle, and decrypt
+ * errors are reported uniformly ("Decryption error"), so the practical risk is
+ * low; do not reuse this for a server-side or network-facing decryption path.
  */
 function UbigintModPow(v: bigint, p: bigint, n: bigint): bigint {
   let result = v;

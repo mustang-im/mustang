@@ -335,7 +335,7 @@ class DERNode extends Node {
       if (raw.length % 2 === 1) {
         return buffer.error('Decoding of string type: bmpstr length mismatch');
       }
-      const view = new DataView(raw.buffer);
+      const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
       let str = '';
       for (let i = 0; i < raw.length; i += 2) {
         str += String.fromCharCode(view.getUint16(i));
@@ -452,10 +452,15 @@ class DERNode extends Node {
     }
   }
 
-  _decodeInt(buffer: DecoderBuffer, values?: Record<string, string>): bigint | string {
+  _decodeInt(buffer: DecoderBuffer, values?: Record<string, string>): ReporterError | bigint | string {
     // Bigint, return as it is (assume big endian)
     const raw = buffer.raw();
-    let res = BigInt(new DataView(raw.buffer).getInt8(0));
+    if (raw.length === 0) {
+      return buffer.error('Decoding of integer: zero-length body');
+    }
+    // Pass byteOffset/byteLength explicitly: raw() copies today, but a future
+    // switch to a shared-buffer view would otherwise read the wrong bytes.
+    let res = BigInt(new DataView(raw.buffer, raw.byteOffset, raw.byteLength).getInt8(0));
     for (let byte of raw.slice(1)) {
       res = res << 8n | BigInt(byte);
     }

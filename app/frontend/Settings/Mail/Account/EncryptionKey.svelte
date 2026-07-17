@@ -209,10 +209,10 @@
             {:else if keyStatus == KeyStatus.Valid}
               <hbox>{$t`This private key has a valid certificate.`}</hbox>
             {:else}
-              <hbox>Unexpected private key status</hbox>
+              <hbox>{$t`Unexpected private key status`}</hbox>
             {/if}
           {:catch error}
-            <hbox>Something went wrong: {error.message}</hbox>
+            <ErrorMessageInline ex={error} />
           {/await}
           <hbox class="label">{$t`Certificate chain *=> Any additional certificates that might be required to authenticate this key`}</hbox>
           {#each $chain.each as certificate}
@@ -291,6 +291,7 @@
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Button from "../../../Shared/Button.svelte";
   import Clickable from "../../../Shared/Clickable.svelte";
+  import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import FileIcon from "lucide-svelte/icons/file-lock";
@@ -361,7 +362,7 @@
     keyStatusAsync = (key as SMIMEPrivateKey).keyStatus();
     await identity.account.save();
   }
-  async function onRemoveFromChain(certificate) {
+  async function onRemoveFromChain(certificate: SMIMEPublicKey) {
     (key as SMIMEPrivateKey).chain.remove(certificate);
     keyStatusAsync = (key as SMIMEPrivateKey).keyStatus();
     await identity.account.save();

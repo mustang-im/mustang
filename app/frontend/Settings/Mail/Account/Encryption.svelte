@@ -68,8 +68,6 @@
   $: keys = identity.encryptionPrivateKeys;
   $: showCreate = $keys.isEmpty;
   let showObsolete = false;
-
-  $: console.log("override", showCreateOverride, "empty", showCreate, "show", showCreateOverride || showCreate);
 </script>
 
 <style>
