@@ -42,6 +42,12 @@ import tr from './locales/tr/messages.json';
 import la from './locales/la/messages.json';
 import tlh from './locales/tlh/messages.json';
 
+import bn from './locales/bn/messages.json';
+import paArab from './locales/pa-Arab/messages.json';
+import ta from './locales/ta/messages.json';
+import ur from './locales/ur/messages.json';
+import vi from './locales/vi/messages.json';
+
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
 export const languageMessages: Record<string, Record<string, string>> = {
@@ -86,6 +92,11 @@ export const languageMessages: Record<string, Record<string, string>> = {
   tr: tr,
   la: la,
   tlh: tlh,
+  bn: bn,
+  "pa-Arab": paArab,
+  ta: ta,
+  ur: ur,
+  vi: vi,
 };
 
 export const sourceLocale = 'en';
@@ -98,7 +109,7 @@ export const localeNames = {
   //'sq': "Albanian / Shqip",
   'ar': "Arabic / اَلْعَرَبِيَّةُ",
   'az': "Azerbaijani / Azərbaycan dili",
-  //'bn': "Bengali / বাংলা",
+  'bn': "Bengali / বাংলা",
   'bg': "Bulgarian / Български",
   'zh': "Chinese (Simplified, China) / 简体中文",
   'zh-Hant': "Chinese (Traditional) / 繁體中文",
@@ -131,6 +142,7 @@ export const localeNames = {
   'fa': "Persian / فارسی",
   'pl': "Polish / Polski",
   'pt': "Portuguese / Português",
+  'pa-Arab': "Punjabi (Pakistan) / پنجابی",
   'ro': "Romanian / Românește",
   'ru': "Russian / Русский язык",
   'sk': "Slovak / Slovenčina",
@@ -138,11 +150,12 @@ export const localeNames = {
   'es': "Spanish / Español",
   'sv': "Swedish / Svenska",
   //'tl': "Tagalog / Wikang Tagalog",
+  'ta': "Tamil / தமிழ்",
   'th': "Thai / ภาษาไทย",
   'tr': "Turkish / Türkçe",
   'uk': "Ukranian / Українська",
-  //'ur': "Urdu / اُردُو",
-  //'vi': "Vietnamese / tiếng Việt",
+  'ur': "Urdu / اُردُو",
+  'vi': "Vietnamese / tiếng Việt",
 };
 
 /** key: locale code from navigator.language, in lower case
@@ -163,4 +176,4 @@ export const localeMapping: Record<string, string> = {
  * the imports in ./l10n.ts. */
 export const locales = Object.keys(localeNames);
 
-export const rtlLocales = [ 'ar', 'fa', 'he', 'ur' ];
+export const rtlLocales = [ 'ar', 'fa', 'he', 'pa-Arab', 'ur' ];
