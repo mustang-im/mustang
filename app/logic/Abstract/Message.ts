@@ -1,10 +1,12 @@
 import type { Group } from "./Group";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
+import { ChatPersonUID } from "../Chat/ChatPersonUID";
 import type { Attachment } from "./Attachment";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
+import { AbstractFunction } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
 
 export class Message extends Observable {
@@ -19,6 +21,9 @@ export class Message extends Observable {
    */
   @notifyChangedProperty
   contact: PersonUID | Person | Group;
+  /** Who sent this message. If outgoing = true, this is always our user. */
+  @notifyChangedProperty
+  from: PersonUID;
   /** When the message was sent */
   @notifyChangedProperty
   sent: Date;
@@ -39,6 +44,9 @@ export class Message extends Observable {
   inReplyTo: string | null = null;
   readonly attachments = new ArrayColl<Attachment>();
 
+  /** Contains all reactions, as seen by the server, including mine */
+  readonly reactions = new MapColl<PersonUID, string>();
+
   @notifyChangedProperty
   subject: string = "";
   @notifyChangedProperty
@@ -51,15 +59,20 @@ export class Message extends Observable {
     if (this._rawHTML) {
       return this._text = convertHTMLToText(this._rawHTML);
     }
-    if (this._rawHTML === "" || this._text === "") {
-      return "";
-    }
-    return null;
+    return "";
   }
   /** Must also set `.html` (or at least get `.html` to auto-generate it),
    * to keep them in sync. */
   set text(val: string) {
     this._text = val;
+    this._rawHTML = null;
+    this._sanitizedHTML = null;
+  }
+
+  /** Re-create the plaintext from the current HTML, which is the source of
+   * truth in the composer. Unlike `set text`, this keeps the HTML. */
+  regenerateTextFromHTML() {
+    this._text = this._rawHTML ? convertHTMLToText(this._rawHTML) : null;
   }
 
   /** HTML version of the message.
@@ -93,13 +106,10 @@ export class Message extends Observable {
       if (this._text) {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
-      if (this._rawHTML === "" || this._text === "") {
-        return "";
-      }
     } catch (ex) {
       backgroundError(ex);
     }
-    return null;
+    return "";
   }
 
   /** Must also set `.text` (or at least get `.text` to auto-generate it),
@@ -140,8 +150,6 @@ export class Message extends Observable {
     this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
 
-  readonly reactions = new MapColl<PersonUID, string>();
-
   async markRead(read = true) {
     this.isRead = read;
   }
@@ -149,8 +157,37 @@ export class Message extends Observable {
     this.isStarred = starred;
   }
 
+  /** Sets or removes our own user's emoji reaction to this message.
+   * @param emoji the reaction to set, or null to remove our reaction. */
+  async setMyReaction(emoji: string | null) {
+    await this.setMyReactionLocally(emoji);
+    await this.setMyReactionOnServer(emoji);
+  }
+  async setMyReactionLocally(emoji: string | null) {
+    let me = this.outgoing
+      ? this.from
+      : this.contact instanceof ChatPersonUID
+        ? this.contact
+        : this.from;
+    if (emoji) {
+      this.reactions.set(me, emoji);
+    } else {
+      this.reactions.delete(me);
+    }
+    await this.save();
+  }
+  async setMyReactionOnServer(emoji: string | null) {
+  }
+
+  newAttachment(): Attachment {
+    throw new AbstractFunction();
+  }
+
+  async save() {
+    throw new AbstractFunction();
+  }
   async deleteMessage() {
-    console.log("Delete message");
+    throw new AbstractFunction();
   }
 
   copyFrom(other: Message, withAttachments: boolean = false): void {

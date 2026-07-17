@@ -21,26 +21,27 @@
       <EncryptionKey {key} {identity} />
     {/each}
     {#if $keys.filterObservable(key => key.obsolete).hasItems}
-      <vbox class="expired-header"
-        class:expanded={showObsolete}
-        on:click={() => showObsolete = !showObsolete}>
-        <hbox class="first-row">
-          <hbox class="label font-smallest" flex>
-            {$t`Expired`}
+      <Clickable onClick={() => showObsolete = !showObsolete}>
+        <vbox class="expired-header"
+          class:expanded={showObsolete}>
+          <hbox class="first-row">
+            <hbox class="label font-smallest" flex>
+              {$t`Expired`}
+            </hbox>
+            <RoundButton
+              label={showObsolete ? $t`Collapse` : $t`Expand`}
+              icon={showObsolete ? ChevronUp : ChevronDown}
+              border={false}
+              classes="plain"
+              />
           </hbox>
-          <RoundButton
-            label={showObsolete ? $t`Collapse` : $t`Expand`}
-            icon={showObsolete ? ChevronUp : ChevronDown}
-            border={false}
-            classes="plain"
-            />
-        </hbox>
-        {#if showObsolete}
-          <hbox class="subtitle font-smallest" flex>
-            {$t`These below are your keys that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to read old emails that you have received and stored.`}
-          </hbox>
-        {/if}
-      </vbox>
+          {#if showObsolete}
+            <hbox class="subtitle font-smallest" flex>
+              {$t`These below are your keys that are expired, revoked, or obsolete. They will not be used for new emails. They are still necessary to read old emails that you have received and stored.`}
+            </hbox>
+          {/if}
+        </vbox>
+      </Clickable>
     {/if}
     {#if showObsolete}
       {#each $keys.filterObservable(key => key.obsolete).each as key}
@@ -54,6 +55,7 @@
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import EncryptionKey from "./EncryptionKey.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
+  import Clickable from "../../../Shared/Clickable.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";

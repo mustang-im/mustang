@@ -30,8 +30,7 @@
 <script lang="ts">
   import { Workspace } from "../../../logic/Abstract/Workspace";
   import { Account } from "../../../logic/Abstract/Account";
-  import { accountSettings } from "../SettingsCategory";
-  import { selectedCategory, selectedAccount } from "../Window/selected";
+  import { openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
   import { appGlobal } from "../../../logic/app";
   import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
@@ -48,8 +47,7 @@
   let workspaces = appGlobal.workspaces;
 
   function onOpenAccount() {
-    $selectedAccount = account;
-    $selectedCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+    openSettingsCategoryForAccount(account);
   }
   async function onMove(otherWorkspace: Workspace) {
     account.workspace = otherWorkspace;
@@ -60,7 +58,6 @@
 
   let isMenuOpen = false;
   function onMenuToggle(event: Event) {
-    event.stopPropagation();
     isMenuOpen = !isMenuOpen;
   }
 </script>

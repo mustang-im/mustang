@@ -5,23 +5,56 @@ import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
 import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readFileSharingAccounts } from './Files/AccountsList/FileSharingAccounts';
+import { readTopicAccounts } from './Topic/TopicAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
-import type { MailAccount } from './Mail/MailAccount';
-import type { Addressbook } from './Contacts/Addressbook';
-import type { Calendar } from './Calendar/Calendar';
-import type { FileSharingAccount } from './Files/FileSharingAccount';
-import { type Account, setMainAccounts } from './Abstract/Account';
+import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
+import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
-import { production } from './build';
-import { logError } from '../frontend/Util/error';
+import { production, webMail } from './build';
+import { catchErrors, logError, showError } from '../frontend/Util/error';
+import { assert, sleep } from './util/util';
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Read JPC secret from frontent URL hash `jpcSecret=password`.
+ * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
+let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecret");
+
+/**
+ * Desktop: frontend URL hash `jpcSecret=password`
+ * Mobile: Capacitor IPC bridge
+ */
+async function getJPCSecret(): Promise<string> {
+  // #if [MOBILE]
+  // runtime-registered `Capacitor.Plugins.NodeJS` from `capacitor-nodejs`
+  const NodeJS = (globalThis as any).Capacitor?.Plugins?.CapacitorNodeJS;
+  await NodeJS.whenReady();
+  return await new Promise<string>(async (resolve, reject) => {
+    try {
+      const listener = await NodeJS.addListener('jpc:secret', (data: { args: any[] }) => {
+        listener.remove();
+        resolve(data.args[0]);
+      });
+      await NodeJS.send({ eventName: 'jpc:get-secret', args: [] });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+  // #else
+  if (webMail) {
+    return "";
+  }
+  assert(jpcSecretFromURL, "No JPC secret was passed in the frontend URL");
+  return jpcSecretFromURL;
+  // #endif
+}
 
 export async function getStartObjects(): Promise<void> {
+  const secret = await getJPCSecret();
   let jpc = new JPCWebSocket(null);
-  await jpc.connect(kSecret, "localhost", production ? 5455 : 5453);
+  await jpc.connect(secret, "localhost", production ? 5455 : 5453);
+  jpc.errorCallback = showError;
+  jpc.reconnectCallback = checkAccounts;
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
@@ -31,6 +64,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.fileSharingAccounts.addAll(await readFileSharingAccounts());
   appGlobal.addressbooks.addAll(await readAddressbooks());
   appGlobal.calendars.addAll(await readCalendars());
+  appGlobal.topicAccounts.addAll(await readTopicAccounts());
   setMainAccounts();
 
   // TODO Save the address book type and ensure that they are of the right type
@@ -45,87 +79,57 @@ export async function getStartObjects(): Promise<void> {
  *
  * @param startupErrorCallback Called for login errors.
  *   May be called multiple times, e.g. once per account.
- * @param backgroundErrorCallback Called for errors while updating the folder etc.
- *   Called later on, if there are errors on processing server responses,
- *   e.g. the account being logged out, malformed data etc..
  */
-export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex: Error) => void): Promise<void> {
+export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void {
+  let allAccounts = getAllAccounts();
+  for (let account of allAccounts) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+  }
+  for (let account of allAccounts) {
+    if (account.loginOnStartup && !account.isDependentAccount) {
+      (async () => {
+        await account.login(false);
+        await account.startup();
+      })().catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
+  checkWakeUp();
+}
+
+/** When the computer wakes up from sleep mode, or the network comes back up,
+ * log in again and check for new mail. Connections are re-opened as needed. */
+export function checkWakeUp(): void {
+  let wasSleeping = false;
+  let computerOn = getComputerOn();
+  computerOn.subscribe(() => catchErrors(async () => {
+    await sleep(1);
+    if (wasSleeping && !computerOn.isSleeping && navigator.onLine) {
+      checkAccounts();
+    }
+    // If the network is still down here, the `online` event below follows
+    wasSleeping = computerOn.isSleeping;
+  }));
+  window.addEventListener("online", checkAccounts); // network is back up
+}
+
+/** On wake up */
+function checkAccounts(): void {
+  for (let account of getAllAccounts()) {
+    if (!account.isLoggedIn && account.loginOnStartup && !account.isDependentAccount) {
+      (async () => {
+        await account.login(false);
+        await account.startup();
+      })().catch(account.errorCallback);
+    }
+  }
+  // Accounts that stayed logged in didn't run startup() above,
+  // but new mail may have arrived while we were sleeping
   for (let account of appGlobal.emailAccounts) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      emailAccountLogin(account)
-        .catch(errorWithAccountName(account, startupErrorCallback));
+    if (account.isLoggedIn) {
+      account.inbox?.getNewMessages()
+        .catch(account.errorCallback);
     }
-  }
-  // Must log in email accounts before addressbooks and calenders,
-  // because many of the latter are dependent accounts of the former.
-
-  for (let account of appGlobal.chatAccounts) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      account.login(false)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-
-  for (let account of appGlobal.meetAccounts) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      account.login(false)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-
-  for (let account of appGlobal.fileSharingAccounts) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      fileShareLogin(account)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-
-  for (let account of appGlobal.addressbooks) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      addressbookLogin(account)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-
-  for (let account of appGlobal.calendars) {
-    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    if (account.loginOnStartup) {
-      calendarLogin(account)
-        .catch(errorWithAccountName(account, startupErrorCallback));
-    }
-  }
-}
-
-async function emailAccountLogin(account: MailAccount) {
-  await account.login(false);
-  if (account.isLoggedIn) {
-    await account.inbox.getNewMessages();
-  }
-}
-
-async function addressbookLogin(account: Addressbook) {
-  await account.login(false);
-  if (account.isLoggedIn) {
-    await account.listContacts();
-  }
-}
-
-async function calendarLogin(account: Calendar) {
-  await account.login(false);
-  if (account.isLoggedIn) {
-    await account.listEvents();
-  }
-}
-
-async function fileShareLogin(account: FileSharingAccount) {
-  await account.login(false);
-  if (account.isLoggedIn) {
-    await account.sync();
   }
 }
 
@@ -141,5 +145,8 @@ function errorWithAccountName(account: Account, errorCallback: (ex: Error) => vo
 
 function backgroundErrorInAccount(ex: Error, account: Account) {
   account.errors.add(ex);
+  if (ex?.message) {
+    ex.message = `${account.name}: ${ex.message}`;
+  }
   logError(ex);
 }

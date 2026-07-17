@@ -4,16 +4,14 @@
 
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
-  import { openApp, selectedApp } from "../AppsBar/selectedApp";
+  import { openApp, selectedApp, mustangApps } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
+  import { PhoneAccount } from "../../logic/Meet/PhoneAccount";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
 
   // HACK: Why are some ended meetings not removed? See `VideoConfMeeting.hangup()`
   $: meetings = appGlobal.meetings.filterObservable(m => m.state != MeetingState.Ended);
-
-  /** Open sidebar, if meeting is ongoing */
-  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
 
   /** When a call comes in or is placed, open the meet app,
    * which will then open the Calling screen. */
@@ -25,6 +23,16 @@
         meeting.state == MeetingState.IncomingCall) {
       openApp(meetMustangApp, { meeting });
     }
+  }
+
+  /** Open sidebar, if meeting is ongoing.
+   * Note: Has to be after `openMeet()`, so that sets the correct state first */
+  $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
+
+  // HACK to use Phone until we have Meet officially enabled
+  $: meetAccounts = appGlobal.meetAccounts;
+  $: if ($meetAccounts.find(acc => acc instanceof PhoneAccount) && !$mustangApps.contains(meetMustangApp)) {
+    mustangApps.splice(2, 0, meetMustangApp);
   }
 
   async function onMeetingURL(event: Event, url: string) {

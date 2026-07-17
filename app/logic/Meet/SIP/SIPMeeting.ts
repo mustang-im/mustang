@@ -1,5 +1,6 @@
 import type { SIPAccount } from "./SIPAccount";
-import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
+import { PhoneCall } from "../PhoneCall";
+import { MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import { VideoStream } from "../VideoStream";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
@@ -10,12 +11,10 @@ import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 import { assert, sleep, type URLString } from "../../util/util";
 import type { Session, Inviter, Invitation } from "sip.js";
 
-export class SIPMeeting extends VideoConfMeeting {
-  /* Authentication */
-  account: SIPAccount;
+export class SIPMeeting extends PhoneCall {
+  declare account: SIPAccount;
   inviter: Inviter; /** For outgoing calls */
   invitation: Invitation; /** For incoming calls */
-  remotePhoneNumber: string;
 
   get session(): Session | null {
     return this.inviter ?? this.invitation ?? null;
@@ -51,18 +50,19 @@ export class SIPMeeting extends VideoConfMeeting {
     let urlParsed = new URL(url);
     assert(urlParsed.protocol == "tel:", gt`Only tel: URLs are supported`);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
-    this.remotePhoneNumber = getInternationalPhoneNumber(
+    this.remotePhoneNumber = PhoneCall.getInternationalPhoneNumber(
       sanitize.string(urlParsed.pathname), this.account.countryCode);
 
     let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
-    this.title = `Call ${this.remotePhoneNumber} at ${time}`;
+    this.title = gt`Call ${this.remotePhoneNumber} at ${time} *=> Phone call person at time`;
+    this.setRemoteParticipant();
     this.state = MeetingState.OutgoingCallConfirm;
   }
 
   protected createMyParticipant(): void {
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.account.mySIPID;
-    this.myParticipant.name = appGlobal.me.name;
+    this.myParticipant.name = this.account.realname;
     this.myParticipant.role = ParticipantRole.User;
   }
 
@@ -100,16 +100,23 @@ export class SIPMeeting extends VideoConfMeeting {
     this.attachRemoteDevices();
   }
 
+  protected get peerConnection(): RTCPeerConnection {
+    return (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
+  }
+
   protected attachRemoteDevices() {
-    let p = new MeetingParticipant();
-    p.name = this.remotePhoneNumber;
-    this.participants.add(p);
+    let p = this.participants.first;
+    if (!p) {
+      let p = new MeetingParticipant();
+      p.name = this.remotePhoneNumber;
+      this.participants.add(p);
+    }
+    p.micOn = true;
 
     let mediaStream = new MediaStream();
     let v = new VideoStream(mediaStream, p);
     this.videos.add(v);
 
-    let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
     let addTrack = (track: MediaStreamTrack) => {
       // Avoid adding local tracks
       for (let localTrack of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
@@ -121,6 +128,7 @@ export class SIPMeeting extends VideoConfMeeting {
       console.log("Add remote track", track);
       mediaStream.addTrack(track);
     };
+    let peerConnection = this.peerConnection;
     for (let receiver of peerConnection.getReceivers()) {
       addTrack(receiver.track);
     }
@@ -128,8 +136,6 @@ export class SIPMeeting extends VideoConfMeeting {
   }
 
   protected async attachLocalDevices() {
-    let peerConnection = (this.session.sessionDescriptionHandler as any).peerConnection as RTCPeerConnection;
-
     // HACK Ensure that mic has time to open, esp. for incoming calls TODO Not working correctly, either
     const maxWaitMS = 2000;
     let start = Date.now();
@@ -141,6 +147,7 @@ export class SIPMeeting extends VideoConfMeeting {
     }
     assert(this.mediaDeviceStreams.cameraMicStream, "Local microphone is not ready");
 
+    let peerConnection = this.peerConnection;
     for (let track of this.mediaDeviceStreams.cameraMicStream.getTracks()) {
       console.log("Add local track", track);
       peerConnection.addTrack(track);
@@ -150,8 +157,10 @@ export class SIPMeeting extends VideoConfMeeting {
   onIncomingCall(invitation: Invitation) {
     this.invitation = invitation;
     let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
-    this.title = `Called by ${invitation.remoteIdentity.displayName} at ${time}`;
+    this.title = gt`Called by ${invitation.remoteIdentity.displayName} at ${time} *=> Called by phone by person at time`;
     this.state = MeetingState.IncomingCall;
+    this.remotePhoneNumber = PhoneCall.getInternationalPhoneNumber(invitation.remoteIdentity.uri.user, this.account.countryCode);
+    this.setRemoteParticipant();
     this.waitForState(SessionState.Terminated, () => this.callEnded());
   }
 
@@ -196,6 +205,33 @@ export class SIPMeeting extends VideoConfMeeting {
     await super.hangup();
   }
 
+  /** Send numbers to other end.
+   * @see SIPAccount.dtmfMthod */
+  async sendDTMF(digit: string) {
+    assert(this.session?.state == SessionState.Established, "Call not established");
+    assert(/^[0-9#*,]$/.test(digit), `Invalid DTMF tone: ${digit}`);
+
+    if (this.account.dtmfMethod == "info") {
+      await this.session.info({
+        requestOptions: {
+          body: {
+            contentDisposition: "render",
+            contentType: "application/dtmf-relay",
+            content: `Signal=${digit}\r\nDuration=200`,
+          },
+        },
+      });
+      await sleep(0.2);
+      return;
+    }
+
+    let peerConnection = this.peerConnection;
+    let audioSender = peerConnection.getSenders().find(sender => sender.track?.kind == "audio" && sender.dtmf);
+    assert(audioSender?.dtmf, "No DTMF capability on audio track");
+    // RFC 4733
+    audioSender.dtmf.insertDTMF(digit, 200, 70); // tone, duration ms, gap ms
+  }
+
   waitForState(desiredState: SessionState, onChangedToState: () => Promise<void>) {
     let listener = async (newState: SessionState) => {
       try {
@@ -219,25 +255,4 @@ enum SessionState {
   Established = "Established",
   Terminating = "Terminating",
   Terminated = "Terminated"
-}
-
-/** Throws when number cannot be parsed.
- * @returns e.g. "+49-123-000000" */
-export function getInternationalPhoneNumber(phoneNumber: string, myCountryCode: number): string {
-  phoneNumber = phoneNumber.replaceAll(/[^0-9\+]/g, ""); // Leave only numbers and leading +
-  assert(phoneNumber, gt`Need phone number`);
-  if (phoneNumber.startsWith("+")) {
-    // OK
-  } else if (phoneNumber.startsWith("00")) {
-    phoneNumber = "+" + phoneNumber.substring(2);
-  } else if (phoneNumber.startsWith("0")) {
-    phoneNumber = "+" + myCountryCode + phoneNumber.substring(1);
-  } else if (myCountryCode == 1 && phoneNumber.startsWith("011")) {
-    phoneNumber = "+" + phoneNumber.substring(3);
-  } else if (myCountryCode == 1 && !isNaN(phoneNumber[0] as any)) {
-    phoneNumber = "+1" + phoneNumber;
-  } else {
-    throw new Error(gt`Phone number not recognized. Supported formats: +49-611-000000 = 0611-000000 = 0049-611-000000, +1-650-555-0000 = 650-555-0000`);
-  }
-  return phoneNumber;
 }

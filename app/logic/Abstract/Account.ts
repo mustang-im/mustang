@@ -1,9 +1,10 @@
 import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
-import { Observable, notifyChangedProperty } from "../util/Observable";
-import { SpecificError, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { Observable, notifyChangedProperty } from "../util/Observable";
+import { logError } from "../../frontend/Util/error";
+import { SpecificError, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Account extends Observable {
@@ -36,6 +37,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   realname: string = appGlobal.me?.name;
   /** @see `mainAccount` */
+  @notifyChangedProperty
   _mainAccount: Account | null = null;
   /** Internal. Used only during load. */
   _mainAccountID: string | null = null;
@@ -58,6 +60,27 @@ export class Account extends Observable {
     this.color = randomAccountColor();
   }
 
+  /**
+   * For local accounts, this is the startup entry point. It is overridden
+   * e.g. for contacts and calendar to load data from the database.
+   * Startup for accounts that need to log in will attempt to use a
+   * noninteractive `login` call instead. However if this is successful
+   * then the account's login code should finish by running its startup code.
+   */
+  async startup() {
+  }
+
+  /**
+   * Convenience method for accounts to use to start up dependent accounts.
+   * This should be called after the account has finished its own startup.
+   */
+  protected async startupDependentAccounts() {
+    for (let dependent of this.dependentAccounts()) {
+      dependent.startup()
+        .catch(dependent.errorCallback);
+    }
+  }
+
   get isLoggedIn(): boolean {
     return false;
   }
@@ -77,6 +100,10 @@ export class Account extends Observable {
    */
   async login(interactive: boolean): Promise<void> {
     this.errors.clear();
+
+    if (this.isDependentAccount && !this.isLoggedIn) {
+      await this.mainAccount.login(interactive);
+    }
   }
 
   /** For setup only. Test that the login works. */
@@ -85,6 +112,8 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+    await this.disconnect();
+    await this.oAuth2?.logout();
   }
 
   /**
@@ -111,8 +140,13 @@ export class Account extends Observable {
   get isDependentAccount(): boolean {
     return !!this._mainAccount;
   }
+  dependsOn(main: Account): boolean {
+    return this.mainAccount == main ||
+      // e.g. when `main` fails to load once
+      !this.mainAccount && this._mainAccountID == main.id;
+  }
   dependentAccounts(): Collection<Account> {
-    return getAllAccounts().filter(acc => acc.mainAccount == this);
+    return getAllAccounts().filter(acc => acc.dependsOn(this));
   }
   initFromMainAccount(main: Account) {
     this.mainAccount = main;
@@ -160,7 +194,11 @@ export class Account extends Observable {
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
-    await this.logout();
+    try {
+      await this.logout();
+    } catch (ex) {
+      logError(ex); // e.g. server unreachable
+    }
     for (let dependent of this.dependentAccounts()) {
       await dependent.deleteIt();
     }
@@ -247,9 +285,18 @@ export function getAllAccounts(): Collection<Account> {
 export function setMainAccounts(): void {
   let accounts = getAllAccounts();
   for (let account of accounts) {
-    let mainID = account._mainAccountID;
-    if (mainID && !account.mainAccount) {
-      account.mainAccount = accounts.find(acc => acc.id == mainID);
+    try {
+      let mainID = account._mainAccountID;
+      if (mainID && !account.mainAccount) {
+        let main = accounts.find(acc => acc.id == mainID);
+        if (main) {
+          account.mainAccount = main;
+        } else {
+          logError(new Error(`Account ${account.name} (${account.protocol}) lost its main account: Account ID ${mainID} did not load`));
+        }
+      }
+    } catch (ex) {
+      logError(ex);
     }
   }
 }

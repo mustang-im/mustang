@@ -4,7 +4,8 @@ import { AccountType, SQLAccount, type AccountDBRow } from "./Account/SQLAccount
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";
-import { backgroundError } from "../../../frontend/Util/error";
+import { backgroundError, logError } from "../../../frontend/Util/error";
+import { exMessage } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
@@ -77,13 +78,27 @@ export class SQLMailAccount {
           accounts.add(account);
         }
       } catch (ex) {
-        backgroundError(ex);
+        // The account is skipped for this session. Its dependent accounts will not find it.
+        logError(exMessage(ex, `Failed to load ${row.protocol} account (ID ${row.idStr}): ${ex.message}`));
       }
     }
     // Need to special-case it here, because SMTP accounts
     // aren't in `appGlobal.emailAccounts`, so `setMainAccounts()` won't find them.
     for (let smtp of smtpAccounts) {
-      smtp.mainAccount = accounts.find(acc => acc.id == smtp._mainAccountID);
+      try {
+        let mainID = smtp._mainAccountID;
+        if (!mainID) {
+          continue;
+        }
+        let main = accounts.find(acc => acc.id == mainID);
+        if (main) {
+          smtp.mainAccount = main;
+        } else {
+          logError(new Error(`Account ${smtp.name} (${smtp.protocol}) lost its main account: Account ID ${mainID} did not load`));
+        }
+      } catch (ex) {
+        backgroundError(ex);
+      }
     }
     if (accounts.isEmpty) {
       await getDatabase(); // for migration only

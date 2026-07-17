@@ -1,7 +1,9 @@
 <hbox class="category">
-  <hbox flex class="name" on:click={onSelect}>{category.nameTranslated}</hbox>
+  <Clickable onClick={onSelect}>
+    <hbox flex class="name">{category.nameTranslated}</hbox>
+  </Clickable>
   {#if hasChildCategories}
-    <Button plain classes="openClose" on:click={toggleOpenClose} icon={isOpen ? ChevronUpIcon : ChevronDownIcon} />
+    <Button plain classes="openClose" onClick={toggleOpenClose} icon={isOpen ? ChevronUpIcon : ChevronDownIcon} />
   {/if}
 </hbox>
 {#if isOpen}
@@ -14,6 +16,7 @@
   import type { WebAppCategory } from "../../../logic/WebApps/WebAppCategory";
   import Categories from "./Categories.svelte";
   import Button from "../../Shared/Button.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import type { MapColl } from "svelte-collections";
@@ -33,7 +36,6 @@
   let isOpen = false;
   function toggleOpenClose(event: Event) {
     isOpen = !isOpen;
-    event.stopPropagation();
   }
 </script>
 

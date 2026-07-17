@@ -64,29 +64,29 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     console.log("Participant", this.rp.identity, "added a track", track.mediaStream, track.mediaStream.getTracks());
     assert(track.mediaStream, "Need mediaStream for Track");
     let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
-    let video: VideoStream;
-    if (isScreen) {
-      if (!this.screenShare) {
-        this.screenShare = new VideoStream(new MediaStream(), this);
-        this.screenShare.isScreenShare = true;
-        this.conf.videos.add(this.screenShare);
-      }
-      video = this.screenShare;
-    } else {
-      if (!this.video) {
-        this.video = new VideoStream(new MediaStream(), this);
-        this.conf.videos.add(this.video);
-      }
-      video = this.video;
+    let video = isScreen ? this.screenShare : this.video;
+    let isNew = !video;
+    if (isNew) {
+      video = new VideoStream(new MediaStream(), this);
+      video.isScreenShare = isScreen;
     }
+
+    // Must add the track before adding it to `conf.videos`, because that will create a
+    // `<video>` element, and Firefox needs the source already connected,
+    // otherwise it freezes on the first frame.
+    video.stream.addTrack(track.mediaStreamTrack);
     if (track.kind == Track.Kind.Video) {
       video.hasVideo = true;
     }
 
-    video.stream.addTrack(track.mediaStreamTrack);
-
-    this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
-    this.conf.participants._notifySvelteOfChanges();
+    if (isNew) {
+      if (isScreen) {
+        this.screenShare = video;
+      } else {
+        this.video = video;
+      }
+      this.conf.videos.add(video);
+    }
   }
   async removeTrack(track: TrackType) {
     console.log("Participant", this.rp.identity, "removed a track");
@@ -108,8 +108,6 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
         this.video = null;
       }
     }
-    this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
-    this.conf.participants._notifySvelteOfChanges();
   }
   async trackMuted(trackPub: TrackPublication) {
     this.updateProps();

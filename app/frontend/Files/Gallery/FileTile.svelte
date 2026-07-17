@@ -1,52 +1,40 @@
-<vbox class="file box"
-  class:selected={file == $selectedFile}
-  on:click={() => catchErrors(openFile)}
-  >
-  <vbox class="tile">
-    <button class="icon">
-      <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
-      <!--
-      {#if $file.isDownloaded}
-        <Thumbnail {file} size={48} />
-      {:else}
-        {#await $file.download()}
-          <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
-        {:catch ex}
-          {ex?.message + ex + ""}
-        {/await}
-      {/if}
-      -->
-    </button>
-  </vbox>
-  <vbox class="info">
-    <hbox class="name">
-      {file?.name}
-    </hbox>
-    <hbox class="second">
-      <hbox flex />
-      <hbox class="time font-smallest">
-        {file?.lastMod ? getDateTimeString(file.lastMod) : ""}
+<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file)}>
+  <vbox class="file box"
+    class:selected={file == $selectedFile}>
+    <vbox class="tile">
+      <button class="icon">
+        <Thumbnail {file} size={48} preview />
+      </button>
+    </vbox>
+    <vbox class="info">
+      <hbox class="name">
+        {$file?.name}
       </hbox>
-    </hbox>
+      <hbox class="second">
+        <hbox flex />
+        <hbox class="time font-smallest">
+          {$file?.lastMod ? getDateTimeString($file.lastMod) : ""}
+        </hbox>
+      </hbox>
+    </vbox>
   </vbox>
-</vbox>
+</Clickable>
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
+  import { canShowPreview, openFileInDefaultApp } from "../file";
   import { selectedFile } from "../selected";
-  import FileIcon from "../Thumbnail/FileIcon.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { assert } from "../../../logic/util/util";
 
   export let file: File;
 
-  async function openFile() {
-    assert(file instanceof File, "Need file");
-    console.log("open", file.filepathLocal);
-    await file.download();
-    await file.openOSApp();
+  $: catchErrors(async () => canShowPreview(file) && file.getURL(), console.error);
+
+  function onSelect() {
+    $selectedFile = file;
   }
 </script>
 
@@ -65,8 +53,7 @@
     align-self: center;
     border: none;
     background-color: transparent;
-    padding-inline-start: 16px;
-    padding-inline-end: 0px;
+    padding-inline: 0px;
     margin-block-start: 2px;
   }
   .icon :global(svg) {

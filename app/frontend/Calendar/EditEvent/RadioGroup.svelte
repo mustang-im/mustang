@@ -3,14 +3,16 @@
 <radiogroup class:vertical>
   {#each items as item, i}
     <hbox title={item.tooltip ?? item.label}>
-      <input type="radio"
-        value={item.value}
-        checked={item.value === value}
-        on:change={() => onChanged(item)}
-        {disabled}
-        id={"radio" + i}
-        />
-      <label for={"radio" + i}>{item.label}</label>
+      <label>
+        <input type="radio"
+          value={item.value}
+          checked={item.value === value}
+          on:change={() => onChanged(item)}
+          {name}
+          {disabled}
+          />
+        {item.label}
+      </label>
     </hbox>
   {/each}
 </radiogroup>
@@ -23,6 +25,8 @@
   export let value: any;
   export let disabled = false;
   export let vertical = false;
+
+  let name = "radio-" + Math.random() * 1000;
 
   function onChanged(item: any) {
     value = item.value;

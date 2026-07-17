@@ -269,7 +269,7 @@ export class JSONEMail {
 
   protected static readAttachment(email: EMail, json: any, fallbackID): Attachment | null {
     try {
-      let a = new Attachment();
+      let a = email.newAttachment();
       a.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
       a.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
       a.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));

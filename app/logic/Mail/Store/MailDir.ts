@@ -1,11 +1,12 @@
 import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { appGlobal } from "../../app";
 import type { Folder } from "../Folder";
+import type { Attachment } from "../../Abstract/Attachment";
+import { getFilesDir } from "../../util/backend-wrapper";
+import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
-import { getFilesDir } from "../../util/backend-wrapper";
 
 /** Save all emails of a mail folder in a folder in the local disk filesystem.
  * Each email is saved as original RFC822 MIME message, one file per email.
@@ -50,6 +51,22 @@ export class MailDir implements MailContentStorage {
     let dir = await this.getFilePath(email);
     MailDir.rmdirWithFiles(dir);
   }
+
+  supportsAttachments = true;
+  async readAttachment(attachment: Attachment): Promise<boolean> {
+    let email = attachment.message as EMail;
+    if (!email.mime) {
+      await this.read(email);
+    }
+    await email.parseMIME();
+    return true;
+  }
+  async saveAttachment(attachment: Attachment): Promise<void> {
+    await this.save(attachment.message as EMail);
+  }
+  async deleteAttachment(attachment: Attachment): Promise<void> {
+  }
+
 
   static async rmdirWithFiles(dir: string) {
     try {

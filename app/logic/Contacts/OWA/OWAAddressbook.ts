@@ -1,32 +1,35 @@
-import { Addressbook, type AddressbookShareCombinedPermissions } from "../Addressbook";
+import { ExchangeAddressbook } from "../EWS/ExchangeAddressbook";
+import { type AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
-import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
-export class OWAAddressbook extends Addressbook {
+export class OWAAddressbook extends ExchangeAddressbook {
   readonly protocol: string = "addressbook-owa";
   /** Exchange FolderID for this addressbook. Not DistinguishedFolderId */
   folderID: string;
-  canSync: boolean = true;
   declare readonly persons: ArrayColl<OWAPerson>;
   declare readonly groups: ArrayColl<OWAGroup>;
   protected listContactsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as OWAAccount;
   }
 
   callOWA(aRequest: any) {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
-      : this.account.callOWA(aRequest, { mailbox: this.username });
+      : this.account.callOWA(aRequest, this.username);
   }
 
   newPerson(): OWAPerson {
@@ -38,13 +41,6 @@ export class OWAAddressbook extends Addressbook {
 
   get isLoggedIn(): boolean {
     return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
   }
 
   async listContacts() {
@@ -99,7 +95,6 @@ export class OWAAddressbook extends Addressbook {
           person = this.newPerson();
           person.fromJSON(result);
           await person.saveLocally();
-          this.persons.add(person);
         }
       } catch (ex) {
         this.account.errorCallback(ex);

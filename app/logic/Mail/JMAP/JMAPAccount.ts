@@ -21,6 +21,8 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { Throttle } from "../../util/flow/Throttle";
+import { waitUntilOnline, isNetworkError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
@@ -59,7 +61,11 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
-    await this.listFolders();
+    await this.startup();
+  }
+
+  async startup() {
+    await super.startup();
     this.startPushListener()
       .catch(this.errorCallback);
     let inbox = this.inbox as JMAPFolder;
@@ -72,20 +78,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveCalendar) {
       await this.listCalendars();
     }
-    if (this.haveContacts) {
-      for (let addressbook of appGlobal.addressbooks) {
-        if (addressbook.mainAccount == this) {
-          await addressbook.listContacts();
-        }
-      }
-    }
-    if (this.haveCalendar) {
-      for (let calendar of appGlobal.calendars) {
-        if (calendar.mainAccount == this) {
-          await calendar.listEvents();
-        }
-      }
-    }
+    await this.startupDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {
@@ -276,7 +269,7 @@ export class JMAPAccount extends MailAccount {
 
     return appGlobal.remoteApp.kyCreate({
       headers: headers,
-      timeout: 3000,
+      timeout: 60000,
       result: options.result ?? "json",
     });
   }
@@ -416,12 +409,9 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async disconnect(): Promise<void> {
     this.stopPolling();
     this.session = null;
-    if (this.oAuth2) {
-      await this.oAuth2.logout();
-    }
   }
 
   async send(email: EMail): Promise<void> {
@@ -523,38 +513,56 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
+    let types = ["Email"];
+    if (this.haveContacts) {
+      types.push("ContactCard");
+    }
+    if (this.haveCalendar) {
+      types.push("CalendarEvent");
+    }
     url = url
       .replace("{accountId}", this.accountID)
-      .replace("{types}", "Email,ContactCard") // TJMAPObjectTypes.join(","))
+      .replace("{types}", types.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
+    let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
-      let stream = await fetch(url, {
-        headers: {
-          Authorization: this.authorizationHeader(),
-        }
-      });
-      if (!stream.ok) {
-        throw new Error(`EventSource <${url}> failed with HTTP ${stream.status} ${stream.statusText}`);
-      }
-      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
-      for await (let event of eventStream) {
-        if (event.name == "state") {
-          try {
-            let json = JSON.parse(event.data);
-            assert(json.changed, "Need state changes");
-            let changes = json.changed[this.accountID];
-            for (let typename in changes) {
-              let newState = changes[typename];
-              let type = typename as TJMAPObjectType;
-              if (newState == this.syncState.get(type)) {
-                continue;
-              }
-              await this.sync(type, newState);
-            }
-          } catch (ex) {
-            console.error(ex);
+      await reconnectThrottle.throttle();
+      try {
+        let stream = await fetch(url, {
+          headers: {
+            Authorization: this.authorizationHeader(),
           }
+        });
+        if (!stream.ok) {
+          throw new HTTPError(stream);
+        }
+        let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+        for await (let event of eventStream) {
+          if (event.name == "state") {
+            try {
+              let json = JSON.parse(event.data);
+              assert(json.changed, "Need state changes");
+              let changes = json.changed[this.accountID];
+              for (let typename in changes) {
+                let newState = changes[typename];
+                let type = typename as TJMAPObjectType;
+                if (newState == this.syncState.get(type)) {
+                  continue;
+                }
+                await this.sync(type, newState);
+              }
+            } catch (ex) {
+              console.error(ex);
+            }
+          }
+        }
+      } catch (ex) {
+        if (isNetworkError(ex)) {
+          this.errorCallback(ex);
+          await waitUntilOnline(); // Computer sleep drops the network
+        } else {
+          throw ex;
         }
       }
     }

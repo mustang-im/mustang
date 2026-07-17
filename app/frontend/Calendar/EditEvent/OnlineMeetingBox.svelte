@@ -17,7 +17,7 @@
       iconOnly
       plain
       disabled={!hasURL}
-      on:click={onCopyMeetingURL}
+      onClick={onCopyMeetingURL}
       />
     <Button
       label={$t`Open`}
@@ -26,7 +26,7 @@
       iconOnly
       plain
       disabled={!hasURL}
-      on:click={onOpenMeetingURL}
+      onClick={onOpenMeetingURL}
       />
     <Button
       label={$t`Delete`}
@@ -35,7 +35,7 @@
       iconOnly
       plain
       disabled={!event.isOnline}
-      on:click={onRemove}
+      onClick={onRemove}
       />
   </hbox>
 </hbox>
@@ -43,9 +43,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { openExternalURL } from "../../../logic/util/os-integration";
-  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { appGlobal } from "../../../logic/app";
-  import { Account, getAllAccounts } from "../../../logic/Abstract/Account";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import Button from "../../Shared/Button.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
@@ -64,14 +62,7 @@
 
   onMount(() => catchErrors(onLoad));
   function onLoad() {
-    event.createOnlineMeetingWithAccount ??= defaultMeetAccount(event.calendar);
-  }
-
-  function defaultMeetAccount(myAccount: Account): MeetAccount {
-    return getAllAccounts().filterOnce(acc =>
-      acc.mainAccount == myAccount?.mainAccount &&
-      acc instanceof MeetAccount &&
-      acc.canCreateURL).first as MeetAccount;
+    event.createOnlineMeetingWithAccount ??= event.calendar.meetAccount;
   }
 
   function onCopyMeetingURL() {

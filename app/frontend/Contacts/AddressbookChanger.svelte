@@ -1,15 +1,16 @@
 <AccountDropDown
-  bind:selectedAccount={selectedAddressbook}
+  selectedAccount={selectedAddressbook}
   accounts={addressbooks}
   filterByWorkspace={false}
   icon={selectedAddressbook?.icon ?? AddressbookIcon}
   {withLabel}
-  on:select={() => catchErrors(() => onChangeAddressbook(selectedAddressbook))}
+  on:select={(ev) => catchErrors(() => onChangeAddressbook(ev.detail as Addressbook))}
   />
 
 <script lang="ts">
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import type { Person } from "../../logic/Abstract/Person";
+  import { newPerson, selectedPerson } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
@@ -19,11 +20,19 @@
   export let person: Person;
   export let withLabel = false;
 
-  let selectedAddressbook = person?.addressbook;
+  $: selectedAddressbook = person?.addressbook;
   $: addressbooks = appGlobal.addressbooks.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
 
   async function onChangeAddressbook(newAddressbook: Addressbook) {
     console.log("Selected addressbook", newAddressbook?.name, "old", person?.addressbook?.name);
-    person.moveToAddressbook(newAddressbook);
+    if (person == $newPerson) {
+      let oldPerson = person;
+      person = newAddressbook.newPerson();
+      person.addressbook = newAddressbook;
+      person.copyFrom(oldPerson);
+      $selectedPerson = $newPerson = person;
+    } else {
+      $selectedPerson = await person.moveToAddressbook(newAddressbook);
+    }
   }
 </script>

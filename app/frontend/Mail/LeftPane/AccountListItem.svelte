@@ -29,11 +29,13 @@
           onClick={login}
           iconSize="16px" plain iconOnly />
       {/if}
-      <Button
-        label={$t`Account settings`}
-        icon={SettingsIcon}
-        onClick={openSettings}
-        iconSize="16px" plain iconOnly />
+      {#if account.protocol != "all"}
+        <Button
+          label={$t`Account settings`}
+          icon={SettingsIcon}
+          onClick={openSettings}
+          iconSize="16px" plain iconOnly />
+      {/if}
     </hbox>
 </hbox>
 

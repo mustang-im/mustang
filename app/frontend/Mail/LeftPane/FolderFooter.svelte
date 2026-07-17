@@ -5,32 +5,34 @@
       <GetMailButton {folder} />
     {/if}
     <hbox class="buttons">
-      <hbox class="attachment button" class:on={isShowAttachments}>
+      <hbox class="attachment button" class:on={$quickSearch.hasAttachment}>
         <RoundButton
           icon={AttachmentIcon}
           iconSize={$appGlobal.isMobile ? "20px" : "14px"}
           label={$t`Show only messages with attachments`}
           onClick={toggleAttachments}
-          selected={isShowAttachments}
+          selected={$quickSearch.hasAttachment}
           border={false}
           />
       </hbox>
-      <hbox class="star button" class:starred={isShowStarred}>
+      <hbox class="star button" class:starred={$quickSearch.isStarred}>
         <RoundButton
           icon={StarIcon}
           iconSize={$appGlobal.isMobile ? "24px" : "16px"}
           label={$t`Show only starred messages`}
           onClick={toggleStarred}
+          selected={$quickSearch.isStarred}
           border={false}
           />
       </hbox>
-      <hbox class="unread-dot button" class:unread={isShowUnread}>
+      <hbox class="unread-dot button" class:unread={$quickSearch.isRead === false}>
         <RoundButton
           icon={CircleIcon}
           iconSize={$appGlobal.isMobile ? "18px" : "10px"}
-          padding={$appGlobal.isMobile ? "11px" : "8px"}
+          padding="11px"
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
+          selected={$quickSearch.isRead === false}
           border={false}
           />
       </hbox>
@@ -47,41 +49,40 @@
       {/if}
     </hbox>
     {#if isShowSearchField}
-      <SearchField bind:searchTerm
-        on:input={() => catchErrors(onSearchTermChanged)}
+      <SearchField bind:searchTerm={quickSearch.bodyText}
         on:clear={toggleShowSearchField}
         placeholder={$t`Search only this folder`}
         showX={true}
         autofocus={true} />
-      <hbox flex />
-      {#if searchMessages && $searchMessages?.hasItems}
-        <hbox class="msg-count">
+      <hbox class="result-msg-count">
+        {#if searchMessages}
           {$searchMessages.length}
-        </hbox>
-      {/if}
-      <hbox flex />
+        {/if}
+      </hbox>
     {:else if !appGlobal.isMobile}
-      <hbox flex />
+      <Clickable onClick={toggleShowSearchField}>
+        <hbox flex class="no-search" />
+      </Clickable>
       <FolderMsgCount {folder} {searchMessages} />
     {/if}
-    <hbox flex />
   </hbox>
 {/if}
 
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
-  import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
+  import { quickSearch } from '../Selected';
   import { appGlobal } from '../../../logic/app';
   import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
   import RoundButton from '../../Shared/RoundButton.svelte';
+  import Clickable from "../../Shared/Clickable.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
-  import { catchErrors } from '../../Util/error';
+  import { catchErrors, showError } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
 
@@ -91,83 +92,34 @@
 
   $: account = folder?.account;
 
-  $: folder && catchErrors(startSearch);
-
-  let searchTerm: string;
-  async function onSearchTermChanged() {
-    await startSearch();
-  }
-
-  let isShowSearchField = false;
-  async function toggleShowSearchField() {
+  let isShowSearchField = quickSearch.hasSearch();
+  function toggleShowSearchField() {
     isShowSearchField = !isShowSearchField;
     if (!isShowSearchField) {
       clearSearch();
     }
   }
 
-  let isShowStarred = false;
-  async function toggleStarred() {
-    isShowStarred = !isShowStarred;
-    await startSearch();
+  function toggleStarred() {
+    quickSearch.isStarred = quickSearch.isStarred ? null : true;
+  }
+  function toggleUnread() {
+    quickSearch.isRead = quickSearch.isRead === false ? null : false;
+  }
+  function toggleAttachments() {
+    quickSearch.hasAttachment = quickSearch.hasAttachment ? null : true;
   }
 
-  let isShowUnread = false;
-  async function toggleUnread() {
-    isShowUnread = !isShowUnread;
-    await startSearch();
-  }
-
-  let isShowAttachments = false;
-  async function toggleAttachments() {
-    isShowAttachments = !isShowAttachments;
-    await startSearch();
-  }
+  $: quickSearch.folder = folder;
+  $: folder && $quickSearch && catchErrors(startSearch, showError);
 
   /** Filters the folder.messages array */
   async function startSearch() {
-    if (!isShowStarred && !isShowUnread && !isShowAttachments && !searchTerm) {
-      searchMessages = null;
-      return;
-    }
-    searchMessages = folder.messages.filterOnce(msg =>
-      (!isShowStarred || msg.isStarred === true) &&
-      (!isShowUnread || msg.isRead === false) &&
-      (!isShowAttachments || msg.hasVisibleAttachments === true) &&
-      (!searchTerm || searchTerm.length > 1) &&
-      (!searchTerm ||
-        msg.subject?.toLowerCase().includes(searchTerm) ||
-        msg.contact?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.name?.toLowerCase().includes(searchTerm) ||
-        msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
-        msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm) ||
-          to.emailAddress?.toLowerCase().includes(searchTerm)) ||
-        msg.text?.toLowerCase().includes(searchTerm))
-    ) as ArrayColl<EMail>;
-  }
-
-  /** Uses the DB to make a global search */
-  async function startSearchGlobal() {
-    if (!isShowStarred && !isShowUnread) {
-      searchMessages = null;
-      return;
-    }
-    let search = newSearchEMail();
-    if (isShowStarred) { // undefined != false
-      search.isStarred = true;
-    }
-    if (isShowUnread) {
-      search.isRead = false;
-    }
-    search.folder = folder;
-    searchMessages = await search.startSearch();
+    searchMessages = await quickSearch.startSearch();
   }
 
   function clearSearch() {
-    searchTerm = undefined;
-    isShowSearchField = false;
-    isShowStarred = false;
-    isShowUnread = false;
+    quickSearch.reset();
     searchMessages = null;
   }
 </script>
@@ -176,7 +128,7 @@
   .folder-header {
     align-items: center;
     justify-content: center;
-    max-height: 20px;
+    max-height: 32px;
     padding-block-start: 2px;
     padding-block-end: 2px;
     padding-inline-start: 4px;
@@ -188,10 +140,13 @@
     max-height: 32px;
     font-size: 16px;
   }
+  .buttons {
+    align-items: center;
+  }
   .folder-header :global(button) {
     background-color: unset;
     color: unset;
-    margin-inline-end: 4px;
+    margin-inline-start: -2px;
   }
   .folder-header :global(button:hover) {
     z-index: 1;
@@ -210,31 +165,34 @@
     stroke-width: 1.5px;
   }
   .folder-header :global(.search) {
-    height: 18px;
+    flex: 1 0 0;
+    height: 100%;
     margin-inline-start: 8px;
+    margin-inline-end: 8px;
   }
   .folder-header :global(input[type="search"]) {
-    height: 18px;
+    font-size: 15px;
   }
   :global(.mobile) .folder-header :global(.search),
   :global(.mobile) .folder-header :global(input[type="search"]) {
     height: 32px;
-    font-size: 16px;
   }
-  .msg-count {
+  .result-msg-count {
     align-items: center;
+    justify-content: end;
     padding-inline-start: 4px;
     padding-inline-end: 8px;
     opacity: 70%;
+    min-width: 1.5em;
+  }
+  .no-search {
+    height: 100%;
   }
   .attachment:not(.on) {
     opacity: 80%;
   }
   .star.starred :global(svg) {
     fill: orange;
-  }
-  .unread-dot.button {
-    margin-inline: -4px;
   }
   .unread-dot.unread :global(svg) {
     fill: green;

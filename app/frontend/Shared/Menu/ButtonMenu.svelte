@@ -47,7 +47,6 @@
   let menuAnchorE: HTMLElement;
   function onMenuToggle(event: MouseEvent) {
     isMenuOpen = !isMenuOpen;
-    event.stopPropagation();
   }
 </script>
 

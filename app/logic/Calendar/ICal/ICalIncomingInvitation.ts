@@ -1,6 +1,5 @@
 import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { type Event, RecurrenceCase } from "../Event";
-import { InvitationEvent } from "../Invitation/InvitationEvent";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { Participant } from "../Participant";
 import type { MailAccount } from "../../Mail/MailAccount";
@@ -46,7 +45,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
 
   static participantMe(event: Event, mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
     let results = [];
-    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations);
+    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendOutgoingInvitations);
     for (let account of accounts) {
       for (let identity of account.identities) {
         for (let myParticipant of event.participants) {
@@ -69,6 +68,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
     email.iCalMethod = "REPLY";
+    const { InvitationEvent } = await import("../Invitation/InvitationEvent"); // avoid circular import: InvitationEvent extends Event
     email.event = new InvitationEvent();
     email.event.copyFrom(repliedEvent);
     // Only myself in reply: RFC 5546 3.2.3

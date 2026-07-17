@@ -1,15 +1,15 @@
 {#if $file.isDownloaded}
-  {#await getThumbnail(file.path)}
-      <FileIcon ext={file.ext} localFilePath={file.path} {size} />
+  {#await getThumbnail($file.path)}
+      <FileIcon ext={$file.ext} localFilePath={$file.path} {size} />
     {:then}
       {#if imageURL}
         <img src={imageURL} width={size} height={size} alt="" />
       {:else}
-        <FileIcon ext={file.ext} localFilePath={file.path} {size} />
+        <FileIcon ext={$file.ext} localFilePath={$file.path} {size} />
       {/if}
     {/await}
 {:else}
-  <FileIcon ext={file.ext} localFilePath={file.path} {size} />
+  <FileIcon ext={$file.ext} localFilePath={$file.path} {size} />
 {/if}
 
 <script lang="ts">

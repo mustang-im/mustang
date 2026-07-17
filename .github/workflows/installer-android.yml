@@ -2,6 +2,14 @@ name: Installers for Android
 
 on:
   workflow_dispatch: # manually triggered
+    inputs:
+      release_type:
+        type: choice
+        options:
+          - release
+          - prerelease
+          - test
+        default: 'test'
   push:
     tags: 'v*'
 
@@ -12,20 +20,22 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build installers for Android
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 22.x
 
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin' # See 'Supported distributions' for available options
         java-version: '21'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-provider: basic
 
     - name: Set NDK to v28
       run:  echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
@@ -49,14 +59,14 @@ jobs:
         KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS }}
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: mustang.apk
         path: |
           mobile/android/app/build/outputs/apk/release/*.apk
 
     - name: Upload AAB
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: mustang.aab
         path: |
@@ -67,17 +77,14 @@ jobs:
         cd mobile
         VERSION=$(jq -r '.version' package.json)
         echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
-        if [[ "$VERSION" == *dev ]]; then
-          echo "RELEASE=false" >> $GITHUB_ENV
-        else
-          echo "RELEASE=true" >> $GITHUB_ENV
-        fi
 
     - name: Upload to GitHub release
-      uses: softprops/action-gh-release@v2
-      if: env.RELEASE == 'true'
+      uses: softprops/action-gh-release@v3
+      if: inputs.release_type != 'test'
       with:
         tag_name: ${{ env.APP_VERSION }}
+        prerelease: ${{ inputs.release_type == 'prerelease' }}
+        make_latest: ${{ inputs.release_type == 'release' }}
         files: |
           mobile/android/app/build/outputs/apk/release/*.apk
           mobile/android/app/build/outputs/bundle/release/*.aab

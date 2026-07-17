@@ -5,13 +5,8 @@
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
       {#if appGlobal.isMobile}
-        <hbox class="delete buttons">
-          <Button
-            label={$t`Discard`}
-            icon={TrashIcon}
-            iconSize="15px" iconOnly
-            onClick={onDelete}
-            />
+        <hbox class="close buttons mobile">
+          <CloseButton {mail} on:close={onClose} />
         </hbox>
       {/if}
       <IdentitySelector bind:selectedIdentity={fromIdentity}
@@ -21,19 +16,8 @@
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         {#if !appGlobal.isMobile}
-          <Button
-            label={$t`Discard`}
-            icon={TrashIcon}
-            iconSize="15px" iconOnly
-            onClick={onDelete}
-            />
+          <CloseButton {mail} on:close={onClose} />
         {/if}
-        <Button
-          label={$t`Save`}
-          icon={CloseIcon}
-          iconSize="15px" iconOnly
-          onClick={onSave}
-          />
         <RoundButton
           classes="send"
           label={sendDisabledTooltip ?? $t`Send`}
@@ -78,13 +62,13 @@
         <hbox class="cc buttons">
           <Button
             label={$t`Cc`}
-            on:click={() => {showCCForce = !showCCForce}}
+            onClick={() => {showCCForce = !showCCForce}}
             disabled={hasCC}
             selected={showCC}
             />
           <Button
             label={$t`Bcc`}
-            on:click={() => {showBCCForce = !showBCCForce}}
+            onClick={() => {showBCCForce = !showBCCForce}}
             disabled={hasBCC}
             selected={showBCC}
             />
@@ -113,6 +97,13 @@
       <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
     {/if}
     <HTMLEditorToolbar {editor}>
+      <Button classes="emoji-toggle"
+        onClick={() => showEmojis = !showEmojis}
+        icon={EmojiIcon}
+        iconSize="16px"
+        selected={showEmojis}
+        slot="start"
+        />
       <Button
         label={$t`Spell check`}
         icon={SpellCheckIcon}
@@ -141,6 +132,15 @@
       <Spinner size="64px" />
     {/if}
     <hbox flex class="editor-and-attachments">
+      {#if showEmojis}
+        <vbox class="emojis">
+          <GraphicSelector
+            on:select={onEmoji}
+            on:backspace={() => catchErrors(onEmojiBackspace)}
+            bind:isOpen={showEmojis}
+            />
+        </vbox>
+      {/if}
       <vbox flex class="editor-wrapper">
         <Paper>
           <Scroll>
@@ -158,7 +158,7 @@
       </vbox>
       {#if showAttachments}
         <vbox class="attachments">
-          <AttachmentsPane attachments={mail.attachments} />
+          <AttachmentsPane message={mail} />
         </vbox>
       {/if}
     </hbox>
@@ -190,9 +190,11 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { goBack } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
+  import CloseButton from "./CloseButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -202,6 +204,7 @@
   import IdentitySelector from "./IdentitySelector.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
   import EncryptionDetails from "./EncryptionDetails.svelte";
+  import GraphicSelector from "../../Chat/Emoji/GraphicSelector.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";
   import ComposerBarM from "./ComposerBarM.svelte";
@@ -212,14 +215,12 @@
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import SendIcon from "lucide-svelte/icons/send";
-  import TrashIcon from "lucide-svelte/icons/trash-2";
-  import CloseIcon from "lucide-svelte/icons/save";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import EmojiIcon from "lucide-svelte/icons/smile";
   import SMLIcon from "lucide-svelte/icons/list-checks";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { t, gt } from "../../../l10n/l10n";
   import { tick } from "svelte";
-  import { goBack } from "../../AppsBar/selectedApp";
   import type { Editor } from '@tiptap/core';
 
   export let mail: EMail;
@@ -325,19 +326,39 @@
     if (!file) {
       return;
     }
-    mail.attachments.add(Attachment.fromFile(file));
+    let attachment = mail.newAttachment();
+    attachment.fromFile(file);
+    mail.attachments.add(attachment);
   }
 
   function onFilesDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
-    mail.attachments.addAll(files.map(file => Attachment.fromFile(file)));
+    for (let file of files) {
+      let attachment = mail.newAttachment();
+      attachment.fromFile(file);
+      mail.attachments.add(attachment);
+    }
   }
 
   async function onFileInlineDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      await insertImage(editor, file, mail.attachments);
+      await insertImage(editor, file, mail);
     }
+  }
+
+  let showEmojis = false;
+
+  function onEmoji(ev: CustomEvent) {
+    let emoji = ev.detail.emoji;
+    if (emoji) {
+      editor.commands.insertContent(emoji);
+    }
+  }
+
+  function onEmojiBackspace() {
+    editor.view.focus();
+    document.execCommand("delete");
   }
 
   $: sendDisabledTooltip =
@@ -347,18 +368,8 @@
     null;
 
   async function onSend() {
-    mail.text = null;
     await mail.compose.send();
     onClose();
-  }
-
-  async function onSave() {
-    await mail.compose.saveAsDraft();
-    onClose();
-  }
-  async function onDelete() {
-    onClose();
-    await mail.compose.deleteDrafts();
   }
 
   let closing = false;
@@ -414,7 +425,7 @@
   .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
   }
-  .delete.buttons {
+  .close.buttons.mobile {
     margin-inline-end: 8px;
   }
   .close.buttons {
@@ -422,9 +433,6 @@
   }
   .close.buttons :global(svg) {
     stroke-width: 1.5px;
-  }
-  .close.buttons :global(button) {
-    border: 1px solid var(--border);
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
@@ -466,6 +474,9 @@
   }
   .buttons :global(.send.disabled) {
     opacity: 30%;
+  }
+  .emojis {
+    width: 400px;
   }
   .sml-add-dialog {
     padding: 16px 24px;

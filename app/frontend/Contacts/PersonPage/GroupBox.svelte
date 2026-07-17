@@ -6,7 +6,7 @@
       <slot name="buttons-top-right" />
       {#if addFunc && !appGlobal.isMobile}
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddIcon}
           iconOnly plain classes="add top" />
@@ -19,11 +19,11 @@
     {#if addFunc && appGlobal.isMobile && isEditing}
       <hbox class="add-row">
         <Button
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           plain classes="add text" />
         <RoundButton
-          on:click={addFunc}
+          onClick={addFunc}
           label={addLabel}
           icon={AddCircleIcon}
           border={false}
@@ -52,18 +52,13 @@
 <style>
   .group {
     margin: 5px;
-    border: 1px solid var(--border);
-    border-radius: 2px;
   }
   .header {
     align-items: center;
-    padding: 8px 16px 8px 20px;
-    background-color: rgba(32, 174, 158, 5%); /* #20AE9E0C */
+    padding: 8px 8px 6px 8px;
   }
-  @media (prefers-color-scheme: dark) {
-    .header {
-      background-color: #20202270;
-    }
+  .header h3 {
+    font-weight: normal;
   }
   h3 {
     margin-inline-start: 10px;
@@ -86,6 +81,7 @@
     background-color: var(--main-bg);
     color: var(--main-fg);
     padding: 8px 16px 10px 20px;
+    border-radius: 5px;
   }
   :global(.mobile) .group {
     border: none;

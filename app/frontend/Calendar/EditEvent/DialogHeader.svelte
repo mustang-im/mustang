@@ -19,7 +19,7 @@
               slot="control"
               label={$t`Delete event`}
               icon={DeleteIcon}
-              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              onClick={() => isDeleteSeriesOpen = !isDeleteSeriesOpen}
               classes="plain delete"
               border={false}
               iconSize="16px"
@@ -54,17 +54,20 @@
             />
         {/if}
       </hbox>
-      <hbox class="account-icon">
+      <!--<hbox class="account-icon">
         <hbox class="account-icon-dummy">
           <Button icon={AccountIcon} />
         </hbox>
-      </hbox>
+      </hbox>-->
       <hbox class="account-selector">
+        <!-- Moving events has too many bugs. #1277 and many others. Fix them first.
         <AccountDropDown
           selectedAccount={newCalendar}
           accounts={appGlobal.calendars}
           filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
+        -->
+        {newCalendar.name}
       </hbox>
       <hbox flex class="spacer" />
       <hbox class="buttons">
@@ -92,7 +95,7 @@
                 slot="control"
                 label={willSend ? $t`Send invitation` : $t`Save`}
                 icon={willSend ? SendIcon : SaveIcon}
-                onClick={event => { isSaveSeriesOpen = !isSaveSeriesOpen; event.stopPropagation(); }}
+                onClick={() => isSaveSeriesOpen = !isSaveSeriesOpen}
                 classes="plain save-or-close"
                 filled={true}
                 iconSize="16px"
@@ -210,9 +213,11 @@
   }
 
   function onCancel() {
-    // assert(event.unedited, "need unedited state");
     event.cancelEditing();
     event.parentEvent?.cancelEditing(); // master, when recurrence was changed
+    if (event.isNew && $selectedEvent == event) {
+      $selectedEvent = null;
+    }
     onClose();
   }
 
@@ -257,8 +262,8 @@
     }
     await saveEvent(master);
     master.finishEditing();
-    event.parentEvent.cancelEditing();
     event.cancelEditing();
+    event.parentEvent.cancelEditing();
     await event.truncateRecurrence();
     onClose();
   }
@@ -292,8 +297,8 @@
   }
 
   async function onDeleteRemainder() {
-    event.parentEvent.cancelEditing();
     event.cancelEditing();
+    event.parentEvent.cancelEditing();
     await event.truncateRecurrence();
     $selectedEvent = null;
     onClose();
@@ -310,8 +315,7 @@
   }
 
   function onShrink() {
-    $selectedEvent = event;
-    openApp(calendarMustangApp, { event });
+    onClose();
   }
 
   function onClose() {
@@ -366,6 +370,7 @@
   }
   .account-selector {
     align-items: end;
+    margin-inline-start: 6px;
     margin-block-end: 4px;
   }
   .account-icon-dummy {

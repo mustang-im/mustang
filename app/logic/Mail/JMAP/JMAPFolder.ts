@@ -8,6 +8,8 @@ import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
 import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl, SetColl, Collection } from "svelte-collections";
@@ -19,11 +21,11 @@ export class JMAPFolder extends Folder {
   declare account: JMAPAccount;
   declare readonly messages: EMailCollection<JMAPEMail>;
   declare readonly subFolders: ArrayColl<JMAPFolder>;
+  declare readonly deletions: Set<string>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<string>();
 
   constructor(account: JMAPAccount) {
     super(account);
@@ -50,21 +52,32 @@ export class JMAPFolder extends Folder {
     }
 
     await this.readFolder();
-    return this.messages.isEmpty
-      ? await this.listAllMessages()
-      : await this.listChangedMessages();
+    let lock = await this.listMessagesLock.lock();
+    try {
+      return this.messages.isEmpty
+        ? await this.listAllMessages()
+        : await this.listChangedMessages();
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     const batchSize = 200;
+    let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
     for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages } = await this.fetchMessageList(i, batchSize);
+      let { newMessages, syncState } = await retryOnTransientError(() =>
+        this.fetchMessageList(i, batchSize));
+      state ??= syncState;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       allNewMessages.addAll(newMessages);
+    }
+    if (state) {
+      this.account.syncState.set("Email", state);
     }
     await this.storage.saveFolderProperties(this);
     return allNewMessages;
@@ -79,7 +92,7 @@ export class JMAPFolder extends Folder {
     return await this.fetchChangedMessagesForAllFolders();
   }
 
-  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
     let lock = await this.account.stateLock.lock();
@@ -113,9 +126,10 @@ export class JMAPFolder extends Folder {
       ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
       listResponse = response["emails"];
 
-      let result = this.parseMessageList(listResponse.list);
-      this.account.syncState.set("Email", listResponse.state);
-      return result;
+      return {
+        ...this.parseMessageList(listResponse.list),
+        syncState: listResponse.state,
+      };
     } finally {
       lock.release();
     }
@@ -130,10 +144,6 @@ export class JMAPFolder extends Folder {
     assert(this.account.syncState.has("Email"), "No sync state");
     let lock = await this.account.stateLock.lock();
     try {
-      if (lock.wasWaiting && false) { // TODO always true
-        console.log("JMAP fetch changes for folder", this.name, "already in progress");
-        return new ArrayColl();
-      }
       //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
@@ -168,7 +178,7 @@ export class JMAPFolder extends Folder {
       ]);
       //console.log("sync response", response);
 
-      let changes = response["changes"] as TJMAPChangeResponse;
+      let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
       let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
@@ -192,11 +202,16 @@ export class JMAPFolder extends Folder {
         /** To avoid reading all messages of all folders, we handle
          * - permanent deletes only from Trash / Spam (`DeleteStrategy.MoveToTrash`)
          * - moves only from folders that we already read
+         * - new messages only in folders that we already listed
          * This is a tradeoff. */
         await folder.readFolder();
+        if (folder.messages.isEmpty && folder.countTotal > 0) {
+          continue; // Adding messages here would stop listAllMessages() from ever running
+        }
         removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
         removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
-        let addedResult = folder.parseMessageList(addedThisFolder ?? [], false);
+        // A draft or email uploaded from here comes back in `created`, so need dup checks
+        let addedResult = folder.parseMessageList(addedThisFolder ?? []);
         let changedResult = folder.parseMessageList(changedThisFolder ?? []);
         addedResult.newMessages.addAll(changedResult.newMessages);
         //console.log(folder.name, "added messages", addedResult.newMessages.contents.map(e => e.subject));
@@ -264,18 +279,22 @@ export class JMAPFolder extends Folder {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
-      let jmapID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(jmapID)) {
-        continue;
-      }
-      let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
-      if (msg) {
-        msg.fromJMAP(json);
-        updatedMessages.add(msg);
-      } else {
-        msg = this.newEMail();
-        msg.fromJMAP(json);
-        newMessages.add(msg);
+      try {
+        let jmapID = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(jmapID)) {
+          continue;
+        }
+        let msg = checkUpdates && this.getEMailByJMAPID(jmapID);
+        if (msg) {
+          msg.fromJMAP(json);
+          updatedMessages.add(msg);
+        } else {
+          msg = this.newEMail();
+          msg.fromJMAP(json);
+          newMessages.add(msg);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return { newMessages, updatedMessages };
@@ -292,7 +311,7 @@ export class JMAPFolder extends Folder {
   async getAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     let newMsgs = await this.listAllMessages();
     await this.downloadMessages(newMsgs);
-    let updateNew = await this.getAllMessages();
+    let updateNew = await this.getNewMessages();
     newMsgs.addAll(updateNew);
     return newMsgs;
   }
@@ -306,22 +325,25 @@ export class JMAPFolder extends Folder {
     let downloadedMsgs = new ArrayColl<JMAPEMail>();
     const kMaxParallelCount = 5;
     let semaphore = new Semaphore(kMaxParallelCount);
+    let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
       if (msg.downloadRunOnce.running) {
         continue;
       }
       let lock = await semaphore.lock();
-      (async () => {
+      downloads.add((async () => {
         try {
           await msg.download();
+          downloadedMsgs.add(msg);
         } catch (ex) {
           this.account.errorCallback(ex);
         } finally {
           lock.release();
         }
-      })().catch(this.account.errorCallback);
+      })());
     }
+    await downloads.wait();
     return downloadedMsgs;
   }
 
@@ -334,7 +356,7 @@ export class JMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessage(email);
+          await email.saveMetadataLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -348,7 +370,7 @@ export class JMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessageWritableProps(email);
+          await email.saveWritablePropsLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);

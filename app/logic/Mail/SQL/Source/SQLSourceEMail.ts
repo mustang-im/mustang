@@ -1,5 +1,6 @@
 import type { MailContentStorage } from "../../MailAccount";
 import type { EMail } from "../../EMail";
+import type { Attachment } from "../../../Abstract/Attachment";
 import { getDatabase } from "./SQLSourceDatabase";
 import { SQLEMail } from "../SQLEMail";
 import { assert } from "../../../util/util";
@@ -48,5 +49,20 @@ export class SQLSourceEMail implements MailContentStorage {
       DELETE FROM emailMIME
       WHERE emailID = ${email.dbID}
       `);
+  }
+
+  supportsAttachments = true;
+  async readAttachment(attachment: Attachment): Promise<boolean> {
+    let email = attachment.message as EMail;
+    if (!email.mime) {
+      await this.read(email);
+    }
+    await email.parseMIME();
+    return true;
+  }
+  async saveAttachment(attachment: Attachment): Promise<void> {
+    await this.save(attachment.message as EMail);
+  }
+  async deleteAttachment(attachment: Attachment): Promise<void> {
   }
 }

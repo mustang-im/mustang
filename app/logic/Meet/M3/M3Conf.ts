@@ -149,7 +149,7 @@ export class M3Conf extends VideoConfMeeting {
     if (this.account.oauth2) {
       let me = await this.httpGet("users/me");
       return {
-        name: sanitize.nonemptylabel(me.display_name, gt`me`) || appGlobal.me.name,
+        name: sanitize.nonemptylabel(me.display_name, this.account.realname),
         email: sanitize.emailAddress(me.email),
         picture: sanitize.url(me.avatar_url, null, ["https", "data", "blob"]),
         id: sanitize.string(me.id),
@@ -440,7 +440,13 @@ export class M3Conf extends VideoConfMeeting {
     peerConnection.ontrack = (event) => {
       let track = event.track;
       assert(track instanceof MediaStreamTrack, "Didn't get a track");
+      // Add the track *before* setting `hasVideo`, so that the `<video>`
+      // element created by the filter re-sort already has the video track.
+      // Otherwise Firefox shows only a frozen first frame.
       videoStream.stream.addTrack(track);
+      if (track.kind == "video") {
+        videoStream.hasVideo = true;
+      }
     };
     // TODO peerConnection.addEventListener("removetrack")?
     let offer = await this.waitForMessage("media", "sdp_offer", offer =>

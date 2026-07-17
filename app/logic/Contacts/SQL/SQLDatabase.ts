@@ -25,7 +25,8 @@ export async function getDatabase(): Promise<Database> {
  */
 export async function makeTestDatabase(): Promise<Database> {
   contactsDatabase = await getSQLiteDatabase("test-contacts.db");
-  await deleteDatabase();
+  await deleteDatabase(); // closes the database
+  contactsDatabase = await getSQLiteDatabase("test-contacts.db");
   await contactsDatabase.migrate(contactsDatabaseSchema);
   await contactsDatabase.pragma('foreign_keys = true');
   return contactsDatabase;

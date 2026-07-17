@@ -3,11 +3,13 @@
     onClick={openExternal}
     label={$t`Open in external app`}
     tooltip={$t`Open in external application`}
+    disabled={!$attachment.filepathLocal}
     icon={OpenIcon} />
   <MenuItem
     onClick={openFolder}
     label={$t`Open folder`}
     tooltip={$t`Open containing folder`}
+    disabled={!$attachment.filepathLocal}
     icon={FolderIcon} />
   <MenuItem
     onClick={saveFile}

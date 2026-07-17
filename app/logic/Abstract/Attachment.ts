@@ -1,9 +1,13 @@
 import { File as FileEntry } from "../Files/File";
+import { Message } from "./Message";
+import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { saveBlobAsFile, saveURLAsFile } from "../../frontend/Util/util";
+import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
+import type { Collection } from "svelte-collections";
+import { RunOnce } from "../util/flow/RunOnce";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -28,9 +32,16 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
+  /** Override the default hidden state.
+   * Currently not saved to DB. */
+  @notifyChangedProperty
+  protected _hidden: boolean | null = null;
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
+  message: Message;
+  storage: Collection<AttachmentStorage>;
+  storageRunOnce = new RunOnce<void>();
 
   protected static urlFinalizer = new FinalizationRegistry((url: URLString) => {
     URL.revokeObjectURL(url);
@@ -53,18 +64,16 @@ export class Attachment extends Observable {
     return this._blobURL;
   }
 
-  static fromFile(file: File): Attachment {
-    let attachment = new Attachment();
-    attachment.content = file;
-    attachment.filename = file.name;
-    attachment.mimeType = file.type;
-    attachment.size = file.size;
-    attachment.disposition = ContentDisposition.attachment;
-    return attachment;
+  fromFile(file: File) {
+    this.content = file;
+    this.filename = file.name;
+    this.mimeType = file.type;
+    this.size = file.size;
+    this.disposition = ContentDisposition.attachment;
   }
 
-  clone(): Attachment {
-    let clone = new Attachment();
+  cloneTo(to: Message): Attachment {
+    let clone = to.newAttachment();
     Object.assign(clone, this);
     if (this.content) {
       clone.content = new File([this.content], this.content.name);
@@ -73,7 +82,8 @@ export class Attachment extends Observable {
   }
 
   asFileEntry(): FileEntry {
-    let file = new FileEntry();
+    let file = new AttachmentFile();
+    file.attachment = this;
     file.setFileName(this.filename);
     file.filepathLocal = this.filepathLocal;
     file.size = this.size;
@@ -87,6 +97,12 @@ export class Attachment extends Observable {
     return this.filename.split(".").pop();
   }
 
+  async load() {
+    if (!this.content && this.message instanceof EMail) {
+      await this.message.loadAttachments();
+    }
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await openOSAppForFile(this.filepathLocal);
@@ -97,16 +113,76 @@ export class Attachment extends Observable {
     await appGlobal.remoteApp.showFileInFolder(this.filepathLocal);
   }
   async saveFile() {
+    await this.load();
     saveBlobAsFile(this.content);
   }
   async deleteFile() {
-    throw new NotImplemented();
+    await this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        await storage.deleteAttachment(this);
+      }
+    });
+    this.filepathLocal = null;
+    await this.save();
+  }
+  async read() {
+    await this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        if (await storage.readAttachment(this)) {
+          break;
+        }
+      }
+    });
+  }
+  async save() {
+    await this.storageRunOnce.runOnce(async () => {
+      for (let storage of this.storage) {
+        await storage.saveAttachment(this);
+      }
+    });
   }
 
   /** Should not show to end user. This is true for auto-processing attachments
    * like calendar invitations (ICS), vCards, encryption signatures etc. */
   get hidden(): boolean {
-    return kHiddenMIMETypes.includes(this.mimeType);
+    return this._hidden != null
+      ? this._hidden
+      : kHiddenMIMETypes.includes(this.mimeType);
+  }
+  set hidden(val: boolean) {
+    this._hidden = val;
+  }
+}
+
+/** A `File` view of an email `Attachment`, so the Files UI (contact history,
+ * person files pane) can open and preview it. Fetching the bytes delegates to
+ * the `Attachment`, which knows how to get them from disk or the email. */
+export class AttachmentFile extends FileEntry {
+  attachment: Attachment;
+
+  async download() {
+    if (this.contents) {
+      return;
+    }
+    await this.downloadRunOnce.runOnce(async () => {
+      if (this.contents) {
+        return;
+      }
+      let attachment = this.attachment;
+      let message = attachment.message;
+      if (!attachment.filepathLocal && message instanceof EMail) {
+        await message.loadMIME(); // downloads the email, if not already on disk
+        // `parseMIME()` may have replaced the attachment objects
+        attachment = message.attachments.find(a => a.contentID == attachment.contentID) ?? attachment;
+        this.attachment = attachment;
+      }
+      await attachment.load(); // read `content` from disk (or MIME)
+      if (attachment.content && !attachment.filepathLocal) {
+        await attachment.save(); // write to disk, so `openOSApp()` has a file path
+      }
+      this.contents = attachment.content;
+      this.filepathLocal = attachment.filepathLocal;
+    });
   }
 }
 
@@ -127,3 +203,16 @@ const kHiddenMIMETypes = [
   // "application/pkcs7-mime", // S/MIME encrypted
   // "application/pgp-encrypted", // PGP encrypted
 ];
+
+export interface AttachmentStorage {
+  /** Whether this class can save and read attachment content at all */
+  supportsAttachments: boolean;
+  /** @returns whether this storage was able to read this concrete attachment
+   * and has written the the content (and optionally metadata) to its variables. */
+  readAttachment(attachment: Attachment): Promise<boolean>;
+  /** May be a no-op, if this storage provider cannot save attachments individually,
+   * but only e.g. as part of an email */
+  saveAttachment(attachment: Attachment): Promise<void>;
+  /** @see save, same limitations */
+  deleteAttachment(attachment: Attachment): Promise<void>;
+}

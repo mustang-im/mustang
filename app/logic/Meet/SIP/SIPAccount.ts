@@ -1,29 +1,20 @@
 import { SIPMeeting } from "./SIPMeeting";
-import { MeetAccount } from "../MeetAccount";
+import { PhoneAccount } from "../PhoneAccount";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { UserAgent, Registerer, Invitation } from "sip.js";
 
-export class SIPAccount extends MeetAccount {
+export class SIPAccount extends PhoneAccount {
   readonly protocol: string = "sip";
   domain: string;
   hostname: string; /** during setup only. Part of `this.url` */
   port: number; /** ditto */
   mySIPID: string; /** e.g. "sip:fred@tele.com". Constructed from username + domain. */
+  dtmfMethod: "rfc4733" | "info" = "rfc4733";
   userAgent: UserAgent;
   registerer: Registerer;
-  /** Country phone prefix, e.g. 1 for USA+Kanada, 49 for Germany, 33 for France etc.
-   * Used to complete phone numbers in national notation.
-   * User setting.
-   * TODO add UI for the user setting */
-  countryCode = 49;
-
   canVideo = true;
-  canAudio = true;
-  canScreenShare = false;
-  canMultipleParticipants = false;
-  canCreateURL = false;
 
   async login(interactive: boolean, relogin = false): Promise<void> {
     const { UserAgent, Registerer } = await import("sip.js");
@@ -31,6 +22,7 @@ export class SIPAccount extends MeetAccount {
     assert(urlParsed.protocol == "wss:", "Need WebSocket URL");
     this.mySIPID = "sip:" + this.username + "@" + this.domain;
 
+    await this.userAgent?.stop(); // Re-login: Stop the previous connection
     this.userAgent = new UserAgent({
       authorizationUsername: this.username,
       authorizationPassword: this.password,

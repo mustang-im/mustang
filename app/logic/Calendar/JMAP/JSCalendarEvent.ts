@@ -37,6 +37,7 @@ export class JSCalendarEvent {
       let r = jmap.recurrenceRule;
       let rrinit: RecurrenceInit = {
         masterDuration: event.duration,
+        timezone: event.timezone,
         seriesStartTime: event.startTime,
         seriesEndTime: this.toDate(r.until, jmap, null),
         count: sanitize.integer(r.count, Infinity),
@@ -108,10 +109,10 @@ export class JSCalendarEvent {
     // Text
     jmap.title = event.title;
     if (event.hasHTML) {
-      jmap.descriptionContentType == "text/html";
+      jmap.descriptionContentType = "text/html";
       jmap.description = event.descriptionHTML;
     } else {
-      jmap.descriptionContentType == "text/plain";
+      jmap.descriptionContentType = "text/plain";
       jmap.description = event.descriptionText;
     }
 
@@ -247,6 +248,9 @@ export class JSCalendarEvent {
   }
 
   static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
+    if (!date) {
+      return null;
+    }
     if (/Z$/.test(date) || !jmap.timeZone || jmap.showWithoutTime) {
       // Easy cases:
       // - date was already in UTC
@@ -271,10 +275,13 @@ export class JSCalendarEvent {
   }
 
   static fromDate(date: Date, event: Event): string {
-    // All-day events should have a time of zero and no UTC indicator.
-    // `toISOString` might not even provide the right date in this case.
-    // "lt" locale has date format YYYY-MM-DD.
-    return event.allDay ? date.toLocaleDateString("lt") + "T00:00:00" : date.toISOString();
+    // "lt" locale has date/time format YYYY-MM-DD HH:MM:SS.
+    if (event.allDay) {
+      // toISOString() might return the wrong date
+      return date.toLocaleDateString("lt") + "T00:00:00";
+    }
+    let options = event.timezone ? { timeZone: event.timezone } : undefined;
+    return date.toLocaleString("lt", options).replace(" ", "T");
   }
 }
 

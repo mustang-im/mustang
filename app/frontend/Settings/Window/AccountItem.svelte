@@ -1,8 +1,10 @@
-<vbox class="account" class:selected={itemSelected} on:click={onSelect}>
-  <hbox class="label font-small">
-    {$account.name}
-  </hbox>
-</vbox>
+<Clickable onClick={onSelect}>
+  <vbox class="account" class:selected={itemSelected}>
+    <hbox class="label font-small">
+      {$account.name}
+    </hbox>
+  </vbox>
+</Clickable>
 {#if accountSelected}
   <SubCategoriesList {subCategories} mainCategory={category} />
 {/if}
@@ -12,7 +14,9 @@
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { accountSettings, type SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
+  import { getSettingsCategoryForAccount, openSettingsCategoryForAccount } from "./CategoriesUtils";
   import SubCategoriesList from "./SubCategoriesList.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
 
   /** in */
   export let account: Account;
@@ -20,7 +24,7 @@
 
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
-  $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+  $: mainAccountCategory = getSettingsCategoryForAccount(account);
   $: subCategories = accountSettings.filterObservable(cat => account instanceof cat.type && !cat.isMain && showCat(cat, account));
 
   function showCat(category: SettingsCategory, account: Account): boolean {
@@ -31,8 +35,7 @@
   }
 
   function onSelect() {
-    $selectedAccount = account;
-    $selectedCategory = mainAccountCategory;
+    openSettingsCategoryForAccount(account);
   }
 </script>
 

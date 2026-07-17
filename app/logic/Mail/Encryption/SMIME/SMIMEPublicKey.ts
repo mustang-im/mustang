@@ -1,4 +1,5 @@
-import { PublicKey, EncryptionSystem, TrustLevel } from "../PublicKey";
+import { PublicKey } from "../PublicKey";
+import { EncryptionSystem, TrustLevel } from "../enums";
 import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";

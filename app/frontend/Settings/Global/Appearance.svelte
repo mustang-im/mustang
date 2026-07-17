@@ -5,6 +5,11 @@
   </HeaderGroupBox>
 
   <HeaderGroupBox>
+    <hbox slot="header">{$t`Colors`}</hbox>
+    <AppThemeColors />
+  </HeaderGroupBox>
+
+  <HeaderGroupBox>
     <hbox slot="header">{$t`Language`}</hbox>
     <hbox class="wrap">
       <vbox class="setting language">
@@ -16,7 +21,7 @@
           <Button
             label="Save and restart"
             icon={RestartIcon}
-            on:click={onSaveLanguage}
+            onClick={onSaveLanguage}
             classes="restart"
             />
         {/if}
@@ -44,6 +49,7 @@
   import { getUILocale, getUILocalePref, getDateTimeLocale, getDateTimeLocalePref, saveDateTimeLocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
+  import AppThemeColors from "./AppThemeColors.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";

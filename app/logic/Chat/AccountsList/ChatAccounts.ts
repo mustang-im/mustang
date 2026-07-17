@@ -5,6 +5,8 @@ import { GraphChatAccount } from '../Graph/GraphChatAccount';
 // #endif
 // #if [!WEBMAIL]
 import { MatrixAccount } from '../Matrix/MatrixAccount';
+import { WhatsAppAccount } from '../WhatsApp/WhatsAppAccount';
+import { SignalAccount } from '../Signal/SignalAccount';
 import { SQLChatStorage } from '../SQL/SQLChatStorage';
 import { SQLSearchChat } from '../SQL/SQLSearchChat';
 // #else
@@ -31,6 +33,10 @@ function _newChatAccountForProtocol(protocol: string): ChatAccount {
   // #if [!WEBMAIL]
   if (protocol == "matrix") {
     return new MatrixAccount() as any as ChatAccount;
+  } else if (protocol == "whatsapp") {
+    return new WhatsAppAccount() as any as ChatAccount;
+  } else if (protocol == "signal") {
+    return new SignalAccount() as any as ChatAccount;
   } else if (protocol == "chat") {
     return new ChatAccount() as any as ChatAccount;
   }

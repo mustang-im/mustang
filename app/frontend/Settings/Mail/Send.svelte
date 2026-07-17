@@ -11,7 +11,17 @@
           <input type="radio" value="below" bind:group={quoteSetting.value} />
           {$t`Quote below, Reply above`}
         </label>
-        <img src={quoteBelowImg} title={$t`Quote below`} alt={$t`Quote below`} width="166" height="94" />
+        <vbox class="illustration-paper">
+          <Paper>
+            <div class="illustration">
+              <p>{$t`At 8:00 *=> Meet at 8 AM`}</p>
+              <p>{$t`${`Ben Bucksch`} wrote:`}</p>
+              <blockquote type="cite">
+                {$t`When do we meet?`}
+              </blockquote>
+            </div>
+          </Paper>
+        </vbox>
       </vbox>
 
       <vbox>
@@ -19,7 +29,17 @@
           <input type="radio" value="above" bind:group={quoteSetting.value} />
           {$t`Quote above, Reply below`}
         </label>
-        <img src={quoteAboveImg} title={$t`Quote above`} alt={$t`Quote above`} width="163" height="99" />
+        <vbox class="illustration-paper">
+          <Paper>
+            <div class="illustration">
+              <p>{$t`${`Ben Bucksch`} wrote: *=> Mail quote attribution line`}</p>
+              <blockquote type="cite">
+                {$t`When do we meet?`}
+              </blockquote>
+              <p>{$t`At 8:00 *=> Meet at 8 AM`}</p>
+            </div>
+          </Paper>
+        </vbox>
       </vbox>
 
       <vbox>
@@ -43,7 +63,19 @@
         <input type="radio" value="html" bind:group={formatSetting.value} />
         {$t`Send as HTML and Plaintext`}
       </label>
-      <img src={htmlImg} title={$t`HTML`} alt={$t`HTML`} width="248" height="96" />
+      <vbox class="illustration-paper">
+        <Paper>
+          <div class="illustration">
+            <blockquote type="cite">
+              {@html $t`<strong>When</strong> and <strong>where</strong> do we meet?`}
+            </blockquote>
+            <ul>
+              <li>{$t`At 8:00 *=> Meet at 8 AM`}</li>
+              <li>{@html $t`I'll come by <em>your</em> office`}</li>
+            </ul>
+          </div>
+        </Paper>
+      </vbox>
     </vbox>
 
     <vbox>
@@ -51,7 +83,16 @@
         <input type="radio" value="plaintext" bind:group={formatSetting.value} />
         {$t`Send as Plaintext only`}
       </label>
-      <img src={plaintextImg} title={$t`Plaintext`} alt={$t`Plaintext`} width="290" height="77" />
+      <vbox class="illustration-paper">
+        <Paper>
+          <div class="illustration">
+            <pre>&gt; {$t`*When* and *where* do we meet?`}
+
+* {$t`At 8:00 *=> Meet at 8 AM`}
+* {$t`I'll come by /your/ office`}</pre>
+          </div>
+        </Paper>
+      </vbox>
     </vbox>
   </hbox>
 </HeaderGroupBox>
@@ -71,11 +112,8 @@
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import htmlImg from "../../asset/settings/mail/send/html.png";
-  import plaintextImg from "../../asset/settings/mail/send/plaintext.png";
-  import quoteBelowImg from "../../asset/settings/mail/send/quote-below.png";
-  import quoteAboveImg from "../../asset/settings/mail/send/quote-above.png";
   import { t } from "../../../l10n/l10n";
+  import Paper from "../../Shared/Paper.svelte";
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
   let quoteSetting = getLocalStorage("mail.send.quote", "below");
@@ -89,6 +127,7 @@
   hbox.quote,
   hbox.format {
     flex-wrap: wrap;
+    gap: 16px;
   }
   .quote img {
     margin: 12px 48px 24px 28px;
@@ -110,10 +149,32 @@
   label {
     margin-inline-start: 8px;
   }
-  .format img {
-    opacity: 80%;
+  .illustration-paper {
+    margin-block-start: 8px;
+    margin-inline-start: 8px;
+    padding-inline-start: 8px;
   }
-  .quote img {
-    opacity: 50%;
+
+  .illustration {
+    margin-block-start: -4px;
+    margin-inline-start: 8px;
+    padding-inline-start: 8px;
+    margin-inline-end: 16px;
+  }
+  .illustration blockquote[type=cite] {
+    border-inline-start: 3px solid #20AE9E;
+    padding-inline-start: 20px;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+  }
+  .illustration pre {
+    margin-block-start: 16px;
+    font-size: 14px;
+  }
+  .illustration ul {
+    padding-inline-start: 24px;
+  }
+  .illustration strong {
+    font-weight: 800;
   }
 </style>

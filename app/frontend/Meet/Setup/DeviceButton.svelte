@@ -1,7 +1,7 @@
 <hbox class="device-button">
   <RoundButton
     label={video ? (on ? $t`Turn camera off` : $t`Turn camera on`) : (on ? $t`Mute` : $t`Unmute`)}
-    classes="toggle"
+    classes="toggle device-on-off"
     onClick={onToggleDevice}
     selected={on}
     padding={stream && on ? "0px" : "8px"}
@@ -29,12 +29,12 @@
       disabled={!on}
       />
     <MenuLabel label={video ? $t`Your cameras` : $t`Your microphones`} />
-    {#if devices}
+    {#if availableDevices}
       {#each availableDevices as device (device.deviceId)}
         <MenuItem
           onClick={() => selectDevice(device)}
           icon={video ? CameraIcon : MicrophoneIcon}
-          label={device.label}
+          label={device.label ?? defaultLabel(device)}
           selected={device.deviceId == selectedID}
           />
       {/each}
@@ -53,8 +53,8 @@
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import DownIcon from "lucide-svelte/icons/chevron-down";
-  import { assert } from "../../../logic/util/util";
-  import { t } from "../../../l10n/l10n";
+  import { assert, NotReached } from "../../../logic/util/util";
+  import { t, gt } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   import AudioLevelMeter from "./AudioLevelMeter.svelte";
   const dispatchEvent = createEventDispatcher<{ changeOn: boolean, changeDevice: string }>();
@@ -82,8 +82,19 @@
 
   let isMenuOpen: boolean;
   function onMenuToggle(event: Event) {
-    event.stopPropagation();
     isMenuOpen = !isMenuOpen;
+  }
+
+  function defaultLabel(dev: MediaDeviceInfo): string {
+    if (dev.kind == "videoinput") {
+      return gt`Camera`;
+    } else if (dev.kind == "audioinput") {
+      return gt`Microphone`;
+    } else if (dev.kind == "audiooutput") {
+      return gt`Loudspeaker`;
+    } else {
+      throw new NotReached();
+    }
   }
 </script>
 

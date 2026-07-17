@@ -1,5 +1,7 @@
-import { Folder, SpecialFolder } from "../Folder";
+import { ExchangeFolder, MessageFlagsPidTag } from "../EWS/ExchangeFolder";
+import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
+import { getSharedPersons, ExchangePermission } from "../EWS/ExchangePermission";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
@@ -12,18 +14,17 @@ import {
   owaSetFolderPermissionsRequest, owaGetPermissionsRequest
 } from "./Request/OWAFolderRequests";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { MessageFlagsPidTag, getSharedPersons, ExchangePermission } from "../EWS/EWSFolder";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
-import { gt } from "../../../l10n/l10n";
 
-export class OWAFolder extends Folder {
+export class OWAFolder extends ExchangeFolder {
   declare account: OWAAccount;
   declare readonly messages: EMailCollection<OWAEMail>;
   declare readonly subFolders: ArrayColl<OWAFolder>;
+  declare readonly deletions: Set<string>;
   // Whether a folder scan or notification changed the counts
   dirty: boolean = false;
 
@@ -104,13 +105,17 @@ export class OWAFolder extends Folder {
         let messages = result.RootFolder.Items;
         let newMessageIDs: string[] = [];
         for (let message of messages) {
-          let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+          let id = sanitize.nonemptystring(message.ItemId.Id);
+          if (this.deletions.has(id)) {
+            continue;
+          }
+          let email = this.getEmailByItemID(id);
           if (email) {
             email.setFlags(message);
-            await this.storage.saveMessageWritableProps(email);
+            await email.saveWritablePropsLocally();
             allMsgs.add(email);
           } else {
-            newMessageIDs.push(message.ItemId.Id);
+            newMessageIDs.push(id);
           }
         }
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
@@ -137,7 +142,7 @@ export class OWAFolder extends Folder {
         try {
           let email = this.newEMail();
           email.fromJSON(item);
-          await this.storage.saveMessage(email);
+          await email.saveMetadataLocally();
           newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);
@@ -261,10 +266,6 @@ export class OWAFolder extends Folder {
   async markAllRead() {
     await super.markAllRead();
     await this.account.callOWA(owaFolderMarkAllMsgsReadRequest(this.id));
-  }
-
-  disableChangeSpecial(): string | false {
-    return gt`You cannot change special folders on the Exchange server`;
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

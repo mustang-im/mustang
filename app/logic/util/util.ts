@@ -1,5 +1,5 @@
 
-export function assert(test: boolean | object | string | null | undefined, errorMessage: string): asserts test {
+export function assert(test: boolean | object | string | number | null | undefined, errorMessage: string): asserts test {
   if (!test) {
     throw new Error(errorMessage);
   }
@@ -95,18 +95,21 @@ export class SpecificError extends Error {
 }
 
 /** Replace the error message.
- * Some network exceptions are read-only and setting `ex.message` will throw.
+ * Some network exceptions are read-only and setting `ex.message` will throw. */
 export function exMessage(ex: Error, message: string): Error {
   try {
     ex.message = message;
     return ex;
-  } catch (e2) {
-    let e = new Error(message);
-    Object.assign(e, ex);
-    e.message = message;
-    return e;
+  } catch (exDummy) {
+    let exNew = new Error(message);
+    Object.assign(exNew, ex);
+    exNew.name = ex.name;
+    exNew.stack = ex.stack;
+    exNew.cause = ex;
+    exNew.message = message;
+    return exNew;
   }
-}*/
+}
 
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */

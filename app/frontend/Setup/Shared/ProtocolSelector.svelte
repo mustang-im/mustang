@@ -1,19 +1,11 @@
 <vbox class="protocol-selector">
   {#each protocols as protocol}
-    <hbox class="protocol"
-      on:click={event => onChange(protocol, event)}
-      >
-      <input type="radio"
-        checked={protocol.protocolID == selectedProtocol}
-        value={protocol}
-        name="protocol"
-        on:change={event => onChange(protocol, event)}
-        />
-      <label for="protocol" class="name">{protocol.label}</label>
-    </hbox>
+    <label class="protocol">
+      <input type="radio" bind:group={selectedDescr} value={protocol} name="protocol" />
+      <span class="name">{protocol.label}</span>
+    </label>
   {/each}
 </vbox>
-
 
 <script lang="ts" context="module">
   export class ProtocolDescription {
@@ -27,10 +19,8 @@
   /** in/out */
   export let selectedProtocol: string = protocols[0]?.protocolID;
 
-  function onChange(newProtocol: ProtocolDescription, event: Event) {
-    selectedProtocol = newProtocol.protocolID;
-    event.stopPropagation();
-  }
+  let selectedDescr: ProtocolDescription = protocols.find(p => p.protocolID == selectedProtocol) ?? protocols[0];
+  $: selectedProtocol = selectedDescr?.protocolID;
 </script>
 
 <style>

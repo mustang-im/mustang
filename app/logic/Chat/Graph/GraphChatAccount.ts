@@ -3,29 +3,26 @@ import type { GraphAccount } from '../../Mail/Graph/GraphAccount';
 import { GraphChatRoom } from './GraphChatRoom';
 import type { TGraphChat } from './TGraphChat';
 import type { Group } from '../../Abstract/Group';
-import type { ChatPerson } from '../ChatPerson';
-import { MapColl } from 'svelte-collections';
+import { GraphChatPerson } from './GraphChatPerson';
+import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {
   readonly protocol: string = "chat-graph";
-  readonly rooms = new MapColl<ChatPerson | Group, GraphChatRoom>;
+  declare readonly rooms: MapColl<GraphChatPerson | Group, GraphChatRoom>;
+  declare readonly roster: ArrayColl<GraphChatPerson>;
+  declare protected readonly allPersonsCached: MapColl<string, WeakRef<GraphChatPerson>>;
+  declare getPersonUID: (userID: string, name?: string) => GraphChatPerson;
 
   get account(): GraphAccount {
     return this.mainAccount as GraphAccount;
   }
 
-  /** Login to this account on the server. Opens network connection.
-   * You must call this after creating the object and having set its properties.
-   * This will populate `persons` and `chats`. */
-  async login(interactive: boolean) {
-    await super.login(interactive);
-    if (!this.account.isLoggedIn) {
-      await this.account.login(interactive);
-    }
-    await this.afterConnect();
+  protected newPersonUID(userID: string, name?: string): GraphChatPerson {
+    return new GraphChatPerson(userID, name);
+  }
+
+  async startup() {
     await this.listRooms();
-  };
-  protected async afterConnect() {
   }
 
   async listRooms(): Promise<void> {

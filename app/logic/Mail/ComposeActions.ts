@@ -153,13 +153,13 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Subject:</span> <span class="value">
-          ${this.email.subject}
+          ${this.email.subject ?? ""}
         </span>
       </div>
     </p>
     <p></p>
-    ${ this.email.html}`;
-    forward.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    ${ this.email.html }`;
+    forward.attachments.addAll(this.email.attachments.map(a => a.cloneTo(forward)));
     return forward;
   }
 
@@ -168,10 +168,10 @@ export class ComposeActions {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
-    let a = new Attachment();
+    let a = forward.newAttachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
-    a.filename = this.email.subject + ".eml";
+    a.filename = sanitize.filename(this.email.subject, "email") + ".eml";
     a.content = new File([this.email.mime], a.filename);
     a.size = this.email.size;
     forward.attachments.add(a);
@@ -184,7 +184,7 @@ export class ComposeActions {
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
     redirect.html = this.email.html;
-    redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    redirect.attachments.addAll(this.email.attachments.map(a => a.cloneTo(redirect)));
     return redirect;
   }
 
@@ -195,18 +195,22 @@ export class ComposeActions {
     clone.cc.addAll(this.email.cc);
     clone.subject = this.email.subject;
     clone.html = this.email.html;
-    clone.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    clone.attachments.addAll(this.email.attachments.map(a => a.cloneTo(clone)));
     return clone;
   }
 
   convertInlineAttachmentsURLs() {
-    let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous, "text/html");
+    let changed = false;
+    let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous ?? "", "text/html");
     for (let node of html.querySelectorAll("img[src]")) {
       let img = node as HTMLImageElement;
       // img.src = this.convertBlobURLToCIDURL(img.src);
       img.src = this.convertDataURLToCIDURL(img.src);
+      changed = true;
     }
-    this.email.rawHTMLDangerous = html.documentElement.outerHTML;
+    if (changed) {
+      this.email.rawHTMLDangerous = html.documentElement.outerHTML;
+    }
   }
 
   protected convertDataURLToCIDURL(url: URLString): URLString {
@@ -295,7 +299,8 @@ export class ComposeActions {
       this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.realname);
     }
     let account = fromIdentity.account;
-    this.email.html ??= "";
+
+    this.convertInlineAttachmentsURLs();
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
@@ -303,6 +308,7 @@ export class ComposeActions {
     if (sig) {
       this.email.html += `<footer class="signature">${sig}</footer>`;
     }
+    this.email.regenerateTextFromHTML();
     this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
     if (fromIdentity.isCatchAll) {
@@ -321,7 +327,6 @@ export class ComposeActions {
     }
     this.email.isDraft = false;
 
-    this.convertInlineAttachmentsURLs();
     let mail = await SendEncrypted.encryptAsNeeded(this.email);
     await account.send(mail);
 

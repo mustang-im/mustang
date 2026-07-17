@@ -8,16 +8,13 @@ import { ArrayColl, Collection } from "svelte-collections";
 export class JSONPerson {
   static save(person: Person): any {
     assert(person.addressbook?.id, "Need address book ID to save the person");
-    let json: any = {};
+    let json = person.toExtraJSON();
     json.id = person.id;
     json.name = person.name;
     json.firstName = person.firstName;
     json.lastName = person.lastName;
     json.picture = person.picture;
     json.notes = person.notes;
-    json.company = person.company;
-    json.department = person.department;
-    json.position = person.position;
     json.popularity = person.popularity;
     json.addressbookID = person.addressbook?.id;
     return json;
@@ -60,15 +57,13 @@ export class JSONPerson {
   }
 
   static read(person: Person, json: any): Person {
+    person.fromExtraJSON(json);
     person.id = sanitize.string(json.id, null);
     person.name = sanitize.label(json.name);
     person.firstName = sanitize.label(json.firstName, null);
     person.lastName = sanitize.string(json.lastName, null);
     person.picture = sanitize.url(json.picture, null);
     person.notes = sanitize.string(json.notes, null);
-    person.company = sanitize.string(person.company, null);
-    person.department = sanitize.string(person.department, null);
-    person.position = sanitize.string(person.position, null);
     person.popularity = sanitize.integer(json.popularity, 0);
     if (json.addressbookID) {
       let addressbookID = sanitize.nonemptystring(json.addressbookID);

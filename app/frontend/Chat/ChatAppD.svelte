@@ -3,13 +3,13 @@
     <Header bind:selectedAccount={$selectedAccount} {accounts} />
     <RoomList {rooms} bind:selectedRoom={$selectedRoom} />
   </vbox>
-  <vbox class="right-pane" slot="right">
+  <vbox class="right-pane  background-pattern" slot="right">
     {#if messages && $selectedRoom }
       <PersonHeader person={$selectedRoom.contact} />
-      <vbox flex class="messages background-pattern">
+      <vbox flex class="messages">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
-            {#if message instanceof UserChatMessage }
+            {#if message instanceof ChatMessage }
               <Message {message} {previousMessage} hideHeaderFollowup={true} />
             {:else if message instanceof ChatRoomEvent}
               <ChatRoomEventUI {message} />
@@ -26,7 +26,9 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { UserChatMessage } from "../../logic/Chat/Message";
+  import { ChatRoom } from "../../logic/Chat/ChatRoom";
+  import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
+  import { ChatMessage } from "../../logic/Chat/ChatMessage";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedAccount, selectedRoom } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
@@ -58,12 +60,24 @@
   }
 
   onMount(() => {
-    $selectedRoom = $selectedPerson && rooms.find(room => room.contact == $selectedPerson);
+    $selectedRoom = $selectedPerson && rooms.find(room => roomMatchesPerson(room, $selectedPerson));
   });
-  $: if ($selectedRoom?.contact instanceof Person) {
-    $selectedPerson = $selectedRoom.contact;
+  function roomMatchesPerson(room: ChatRoom, person: Person): boolean {
+    return room.contact instanceof ChatPersonUID && room.contact.matchesPerson(person);
   }
-  $: rooms, clearSelectedChat()
+
+  $: linkSelectedPerson($selectedRoom);
+  /** Link the open chat to an addressbook contact, so the other apps show the same person. */
+  function linkSelectedPerson(room: ChatRoom | null) {
+    let contact = room?.contact;
+    let person = contact instanceof ChatPersonUID ? contact.findPerson()
+      : contact instanceof Person ? contact : null;
+    if (person) {
+      $selectedPerson = person;
+    }
+  }
+
+  $: $rooms, clearSelectedChat()
   function clearSelectedChat() {
     if (!rooms.contains($selectedRoom)) {
       $selectedRoom = rooms.last;
@@ -76,8 +90,5 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
-  }
-  .editor {
-    height: 112px;
   }
 </style>

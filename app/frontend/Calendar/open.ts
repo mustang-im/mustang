@@ -5,7 +5,7 @@ import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { appGlobal } from "../../logic/app";
 
 // TODO compare openUIFor()
-export function openEventFromOtherApp(event: Event, edit = true) {
+export function openEvent(event: Event, edit = true) {
   selectedEvent.set(event);
   selectedDate.set(new Date(event.startTime));
   startDate.set(new Date(event.startTime));

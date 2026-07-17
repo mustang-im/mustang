@@ -8,25 +8,31 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, systemPreferences } from "electron";
-import electronUpdater from 'electron-updater';
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences, powerMonitor } from "electron";
+import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
+import { createClient as createWebDAVFileClient } from "webdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
+import net from "node:net";
+import { WebSocket as NodeWebSocket } from "ws";
+import zlib from "node:zlib";
 import path from "node:path";
 import tls from "node:tls";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import crypto from "node:crypto";
+import { RunOnce } from '../../app/logic/util/flow/RunOnce';
 const { autoUpdater } = electronUpdater;
 
 let jpc: JPCWebSocket | null = null;
 
-export async function startupBackend() {
+export async function startupBackend(jpcSecret: string) {
   let appGlobal = await createSharedAppObject();
   jpc = new JPCWebSocket(appGlobal);
-  await jpc.listen(kSecret, production ? 5455 : 5453, false);
+  await jpc.listen(jpcSecret, production ? 5455 : 5453, false);
 }
 
 export async function shutdownBackend() {
@@ -34,7 +40,17 @@ export async function shutdownBackend() {
   jpc = null;
 }
 
-const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+/** Returns a passcode with at least 32 chars. Only alpha-num-dash. */
+export function createJPCSecret(): string {
+  if (!production) {
+    // For tests, get it from env var. developer has to set it.
+    const env = process.env.JPC_SECRET;
+    if (env && env.length >= 32) {
+      return env;
+    }
+  }
+  return crypto.randomBytes(32).toString("hex"); // 256-bit hex secret
+}
 
 async function createSharedAppObject() {
   return {
@@ -54,6 +70,7 @@ async function createSharedAppObject() {
     openFileInNativeApp,
     showFileInFolder,
     startupArgs,
+    computerOn,
     isDefaultApp,
     setAsDefaultApp,
     askForMediaAccess,
@@ -72,13 +89,19 @@ async function createSharedAppObject() {
     verifyServerNodemailer,
     getMIMENodemailer,
     createWebDAVClient,
+    createTSDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newTCPSocket,
+    newWebSocket,
+    gunzip,
     getCACertificates,
     readFile,
     writeFile,
+    deleteFile,
+    statFile,
     getIconForLocalFile,
     getIconForFileType,
     getThumbnailForLocalFile,
@@ -104,9 +127,21 @@ async function readFile(path: string): Promise<ArrayBufferLike> {
   return buffer;
 }
 async function writeFile(path: string, permissions: number, contents: Uint8Array): Promise<void> {
+  await fsPromises.rm(path, { force: true });
   let fileHandle = await fsPromises.open(path, "w", permissions);
   await fileHandle.write(contents);
   await fileHandle.close();
+}
+async function deleteFile(path: string): Promise<void> {
+  await fsPromises.unlink(path);
+}
+/** @returns (only) `size` and `lastMod` of the given file */
+async function statFile(path: string): Promise<FileStat> {
+  let s = await fsPromises.stat(path);
+  let stat = {} as FileStat;
+  stat.size = s.size;
+  stat.lastMod = s.mtime;
+  return stat;
 }
 /**
  * E.g. ```
@@ -191,6 +226,7 @@ export class HTTPFetchError extends Error {
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
+    this.name = ex?.name ?? this.name; // own property, so it survives the JPC JSON serialization
     let request = (ex as any).request;
     let response = (ex as any).response;
     let cause = (ex as any).cause
@@ -216,6 +252,28 @@ export class HTTPFetchError extends Error {
 
 function newHTTPServer() {
   return new HTTPServer();
+}
+
+/** A new raw TCP socket, from the node net module.
+ * You can attach `connect`/`error`/`data` listeners and `connect()` */
+function newTCPSocket(): net.Socket {
+  return new net.Socket();
+}
+
+/** A new `ws` WebSocket, for the Signal chat-service socket. The renderer's browser
+ * WebSocket can't set the `Authorization` header (and Electron's webRequest doesn't
+ * fire for WebSocket upgrades), and Node's default TLS doesn't trust Signal's private
+ * root CA — both are solved here by forwarding `options.headers` and `options.ca`
+ * (PEM) to `ws`. It connects on creation; attach `open`/`message`/`close`/`error`
+ * listeners over JPC. */
+function newWebSocket(url: string, options?: { headers?: Record<string, string>, ca?: string }): NodeWebSocket {
+  return new NodeWebSocket(url, { headers: options?.headers, ca: options?.ca });
+}
+
+/** Decompresses a gzip (or zlib) buffer — used for the WhatsApp history-sync
+ * blob, which the renderer's DecompressionStream handles unreliably. */
+function gunzip(data: Uint8Array): Uint8Array {
+  return zlib.unzipSync(Buffer.from(data));
 }
 
 function getCACertificates(type: string) {
@@ -245,34 +303,42 @@ function restartApp() {
   app.quit();
 }
 
+class UpdateState {
+  update: UpdateCheckResult | null = null;
+
+  get haveUpdate(): boolean {
+    return !!this.update?.isUpdateAvailable;
+  }
+
+  async updateDownloaded(): Promise<boolean> {
+    if (!this.haveUpdate) return false;
+    return !!(await this.update.downloadPromise);
+  }
+}
+export const updateState = new UpdateState();
+
+const checkForUpdateRunOnce = new RunOnce<boolean>();
 /** @returns have update */
-async function checkForUpdate(): Promise<boolean | undefined> {
-  let result = await autoUpdater.checkForUpdates();
-  return result?.isUpdateAvailable;
-  /* return new Promise(async (resolve, reject) => {
-    let result = await autoUpdater.checkForUpdates();
-    if (result?.isUpdateAvailable) {
-      resolve(true);
-      return;
-    }
-    autoUpdater.once("update-available", () => {
-      resolve(true);
-    });
-    autoUpdater.once("update-not-available", () => {
-      resolve(false);
-    });
-    autoUpdater.once("error", reject);
-  });*/
+async function checkForUpdate(): Promise<boolean> {
+  if (updateState.haveUpdate) return true;
+  return await checkForUpdateRunOnce.runOnce(async () => {
+    updateState.update = await autoUpdater.checkForUpdates();
+    return updateState.haveUpdate;
+  });
 }
 
-async function installUpdate() {
-  await autoUpdater.downloadUpdate();
-  await new Promise((resolve, reject) => {
-    autoUpdater.once("update-downloaded", () => {
-      resolve(null);
-    });
-    autoUpdater.once("error", reject);
+export async function checkForUpdateAndNotify(): Promise<boolean> {
+  if (updateState.haveUpdate) return true;
+  return await checkForUpdateRunOnce.runOnce(async () => {
+    updateState.update = await autoUpdater.checkForUpdatesAndNotify();
+    return updateState.haveUpdate;
   });
+}
+
+export async function installUpdate() {
+  if (!await updateState.updateDownloaded()) {
+    throw new Error("No update downloaded");
+  }
   autoUpdater.quitAndInstall(true, true);
 }
 
@@ -292,13 +358,20 @@ function openFileInNativeApp(filePath: string) {
 }
 
 class StartupArgs extends Observable {
-  /** URL that our app should open, e.g. mailto: URL */
+  /** URL that our app should open
+   * E.g. a `mailto:` URL */
   @notifyChangedProperty
   url: string | null = null;
+  /** File that our app should open
+   * E.g. `/home/u/email.eml` */
+  @notifyChangedProperty
+  file: string | null = null;
+
   /** All OS commandline arguments.
    * Note: First argument is typically the app itself. */
   @notifyChangedProperty
   commandline: string[] | null = null;
+
   /** Clear parameters when a specific handler has understood and handled them */
   handled() {
     this.url = null;
@@ -306,6 +379,20 @@ class StartupArgs extends Observable {
   }
 }
 export const startupArgs = new StartupArgs();
+
+/** Tells the UI whether the computer is awake or in sleep mode.
+ * The UI subscribes to it via `computerOn` in app/logic/util/backend-wrapper.ts */
+export class DesktopComputerOn extends Observable {
+  @notifyChangedProperty
+  isSleeping = false;
+
+  start(): void {
+    powerMonitor.on("suspend", () => this.isSleeping = true);
+    powerMonitor.on("resume", () => this.isSleeping = false);
+  }
+}
+const computerOn = new DesktopComputerOn();
+computerOn.start();
 
 /** @param protocol E.g. "mailto" */
 function isDefaultApp(protocol: string) {
@@ -373,7 +460,10 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
-function getSQLiteDatabase(filename: string, options: any): Database {
+function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array): Database {
+  if (buffer) {
+    return new Database(Buffer.from(buffer), options);
+  }
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
   }
@@ -396,8 +486,12 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   return buffer;
 }
 
-function createWebDAVClient(options: any) {
+function createTSDAVClient(options: any) {
   return new DAVClient(options);
+}
+
+function createWebDAVClient(serverURL: string, options: any) {
+  return createWebDAVFileClient(serverURL, options);
 }
 
 function newAdmZIP(filepath: string) {

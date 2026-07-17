@@ -19,7 +19,7 @@
               slot="control"
               label={$t`Delete event`}
               icon={DeleteIcon}
-              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              onClick={() => isDeleteSeriesOpen = !isDeleteSeriesOpen}
               classes="plain delete"
               border={false}
               iconSize="16px"
@@ -54,11 +54,11 @@
             />
         {/if}
       </hbox>
-      <hbox class="account-icon">
+      <!--<hbox class="account-icon">
         <hbox class="account-icon-dummy">
           <Button icon={AccountIcon} />
         </hbox>
-      </hbox>
+      </hbox>-->
       <hbox class="account-name">
         {event.calendar?.name}
       </hbox>
@@ -74,11 +74,20 @@
             iconSize="16px"
             />
         {/if}
+        {#if event.isEditable}
+          <RoundButton
+            label={$t`Edit`}
+            icon={EditIcon}
+            onClick={onEdit}
+            classes="plain right edit"
+            iconSize="16px"
+            />
+        {/if}
         <RoundButton
           label={$t`Close`}
           icon={CloseIcon}
           onClick={onClose}
-          classes="plain save-or-close"
+          classes="plain right save-or-close"
           iconSize="16px"
           />
       </hbox>
@@ -99,6 +108,7 @@
   import AccountIcon from "lucide-svelte/icons/user-round";
   import ExpandDialogIcon from "lucide-svelte/icons/chevrons-left";
   import ShrinkDialogIcon from "lucide-svelte/icons/chevrons-right";
+  import EditIcon from "lucide-svelte/icons/pencil";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
@@ -107,6 +117,11 @@
 
   $: isFullWindow = $selectedApp instanceof CalendarEventMustangApp;
   let isDeleteSeriesOpen = false;
+
+  function onEdit() {
+    calendarMustangApp.showEvent(event); // open full screen
+    event.startEditing();
+  }
 
   // <copied from="../EditEvent/DialogHeader.svelte">
   async function onDelete() {
@@ -139,6 +154,8 @@
   }
 
   function onClose() {
+    // If event was sidebar only: Close event display, go back to default sidebar (e.g. tasks view)
+    // If event was full screen: go back to calendar, and keep the event in the sidebar as display-only
     let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
     calendarMustangApp.subApps.remove(me);
     if (isFullWindow) {
@@ -154,9 +171,8 @@
   }
 
   function onShrink() {
-    $selectedEvent = event;
-    openApp(calendarMustangApp, { event: event });
-  }
+    onClose();
+ }
   // </copied>
 </script>
 
@@ -181,7 +197,7 @@
   .buttons :global(button) {
     color: white;
   }
-  .buttons :global(button.save-or-close) {
+  .buttons :global(button.right) {
     border-color: white;
   }
   .buttons :global(.save-or-close path) {
@@ -189,7 +205,7 @@
   }
 
   .account-icon {
-    margin-inline-start: 32px;
+    margin-inline-start: 8px;
     margin-inline-end: 8px;
     align-self: end;
     position: relative;

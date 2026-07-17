@@ -1,9 +1,9 @@
 <vbox flex class="person-page font-small">
-  <NameBox {person} bind:isEditing={isEditingName} />
+  <NameBox {person} bind:isEditing />
 
   <Splitter initialRightRatio={1} name="contact-history">
     <Scroll hideHorizontalScrollbar={true} slot="left">
-      <ContactBoxes {person} bind:isEditing={isEditingContacts} showExpanders={true} />
+      <ContactBoxes {person} bind:isEditing showExpanders={true} />
     </Scroll>
     <ContactHistory {person} slot="right" />
   </Splitter>
@@ -19,8 +19,7 @@
 
   export let person: Person;
 
-  let isEditingName = false;
-  let isEditingContacts = false;
+  let isEditing = false;
 </script>
 
 <style>

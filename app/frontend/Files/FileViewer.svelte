@@ -1,11 +1,8 @@
-<WebView url={file.filepathLocal} title={file.nameWithoutExt} />
+<Thumbnail {file} preview={false} />
 
 <script lang="ts">
   import type { File } from "../../logic/Files/File";
-  import WebView from "../Shared/WebView.svelte";
+  import Thumbnail from "./Thumbnail/Thumbnail.svelte";
 
   export let file: File;
 </script>
-
-<style>
-</style>

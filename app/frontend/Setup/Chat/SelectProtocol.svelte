@@ -20,6 +20,8 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
+  import WhatsAppLinkDevice from "./WhatsApp/LinkDevice.svelte";
+  import SignalLinkDevice from "./Signal/LinkDevice.svelte";
   import { t } from "../../../l10n/l10n";
 
   /** out */
@@ -37,6 +39,8 @@
   const protocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
     { label: "Matrix", protocolID: "matrix" },
+    { label: "WhatsApp", protocolID: "whatsapp" },
+    { label: "Signal", protocolID: "signal" },
   ];
 
   function onContinue() {
@@ -45,6 +49,10 @@
       showPage = XMPPLogin;
     } else if (selectedProtocol == "matrix") {
       showPage = MatrixLogin;
+    } else if (selectedProtocol == "whatsapp") {
+      showPage = WhatsAppLinkDevice;
+    } else if (selectedProtocol == "signal") {
+      showPage = SignalLinkDevice;
     }
   }
 </script>

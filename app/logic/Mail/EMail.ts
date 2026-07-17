@@ -6,15 +6,15 @@ import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
-import type { Calendar } from "../Calendar/Calendar";
+import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
+import type { EncryptionSystem } from "./Encryption/enums";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
-import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { Lock } from "../util/flow/Lock";
@@ -23,7 +23,6 @@ import { notifyChangedProperty } from "../util/Observable";
 import { gt } from "../../l10n/l10n";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME, { type Email as MIME } from "postal-mime";
-import type { EncryptionSystem } from "./Encryption/PublicKey";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -161,32 +160,38 @@ export class EMail extends Message {
 
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(isSpam = true) {
-    let strategy = this.folder.account.spamStrategy;
-    if (strategy == DeleteStrategy.MoveToTrash) {
-      let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
-      assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
-      if (isSpam) {
-        /** Immediate reaction for end user */
-        await this.deleteMessageLocally();
-        await this.markSpam(isSpam);
-        await spamFolder.moveMessageHere(this);
-      } else {
-        await this.markSpam(isSpam);
-        if (this.folder == spamFolder) {
-          await this.folder.account.inbox.moveMessageHere(this);
+    if (this.pID) {
+      this.folder.deletions.add(this.pID);
+    }
+    try {
+      let strategy = this.folder.account.spamStrategy;
+      if (strategy == DeleteStrategy.MoveToTrash) {
+        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
+        assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+        if (isSpam) {
+          /** Immediate reaction for end user */
+          await this.deleteMessageLocally();
+          await this.markSpam(isSpam);
+          await spamFolder.moveMessageHere(this);
+        } else {
+          await this.markSpam(isSpam);
+          if (this.folder == spamFolder) {
+            await this.folder.account.inbox.moveMessageHere(this);
+          }
+        }
+      } else if (strategy == DeleteStrategy.DeleteImmediately) {
+        if (isSpam) {
+          /** Immediate reaction for end user */
+          await this.deleteMessageLocally();
+          await this.markSpam(isSpam);
+          await this.deleteMessage();
+        } else {
+          await this.markSpam(isSpam);
         }
       }
-    } else if (strategy == DeleteStrategy.DeleteImmediately) {
-      if (isSpam) {
-        /** Immediate reaction for end user */
-        await this.deleteMessageLocally();
-        await this.markSpam(isSpam);
-        /* The spam flag change might trigger a folder listener
-        * from the server, which re-adds this message to the local list.
-        * So, we might have to delete it locally again */
-        await this.deleteMessage();
-      } else {
-        await this.markSpam(isSpam);
+    } finally {
+      if (this.pID) {
+        this.folder.deletions.delete(this.pID);
       }
     }
   }
@@ -203,7 +208,7 @@ export class EMail extends Message {
   async markDraft(isDraft = true) {
     this.isDraft = isDraft;
     if (this.dbID) {
-      await this.storage.saveMessageWritableProps(this);
+      await this.saveWritablePropsLocally();
     }
   }
 
@@ -217,9 +222,9 @@ export class EMail extends Message {
     await archive.moveMessageHere(this);
   }
 
-  async deleteMessage() {
+  async deleteMessage(strategy?: DeleteStrategy) {
     await this.deleteMessageLocally();
-    await this.deleteMessageOnServer();
+    await this.deleteMessageOnServer(strategy);
   }
 
   async deleteMessageLocally() {
@@ -233,7 +238,7 @@ export class EMail extends Message {
     await contentDeletes.wait();
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy?: DeleteStrategy) {
   }
 
   async addTag(tag: Tag) {
@@ -254,6 +259,13 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
+  newAttachment(): Attachment {
+    let att = new Attachment();
+    att.message = this;
+    att.storage = this.folder.account.contentStorage.filterOnce(storage => storage.supportsAttachments);
+    return att;
+  }
+
   /** Returns the identity which best matches the recipient/from
    * of this email, out of the identities of the account where this email is. */
   getIdentity(): MailIdentity {
@@ -269,26 +281,22 @@ export class EMail extends Message {
     return identities.first;
   }
 
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    let validCalendars = appGlobal.calendars.filter(calendar => calendar.canAcceptAnyInvitation);
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // Allow the user to move the local invitation event to another calendar
-      return validCalendars;
-    }
-    let foundCalendars = validCalendars.filter(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
-    return foundCalendars;
-  }
-
+  protected loadedEvent = false;
+  readonly loadEventRunOnce = new RunOnce<void>();
   async loadEvent() {
     assert(this.invitationMessage, "This is not an invitation or response");
-    assert(!this.event, "Event has already been loaded");
-    if (this.mime) {
-      await this.parseMIME();
-    } else {
-      await this.loadMIME();
+    if (this.event || this.loadedEvent) {
+      return;
     }
-    // indirectly calls @see `ICalEMailProcessor.process()`
+    await this.loadEventRunOnce.runOnce(async () => {
+      if (this.mime) {
+        await this.parseMIME();
+      } else {
+        await this.loadMIME();
+      }
+      // indirectly calls @see `ICalEMailProcessor.process()`
+      this.loadedEvent = true;
+    });
   }
 
   async parseMIME(): Promise<MIME> {
@@ -321,7 +329,7 @@ export class EMail extends Message {
         sanitize.nonemptylabel(p.name, null));
     }
     if (!this.inReplyTo) {
-      this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
+      this.inReplyTo = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
 
@@ -337,7 +345,7 @@ export class EMail extends Message {
     let oldAttachments = new ArrayColl<Attachment>(this.attachments);
     this.attachments.replaceAll(mail.attachments.map(a => {
       try {
-        let attachment = new Attachment();
+        let attachment = this.newAttachment();
         attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
         attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
         attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
@@ -399,6 +407,14 @@ export class EMail extends Message {
     this.inReplyTo = null;
   }
 
+  async saveMetadataLocally() {
+    await this.storage.saveMessage(this);
+  }
+
+  async saveWritablePropsLocally() {
+    await this.storage.saveMessageWritableProps(this);
+  }
+
   /**
    * Saves the email
    * 1. in the database (meta-data, body text)
@@ -412,14 +428,14 @@ export class EMail extends Message {
       return;
     }
     await this.processMessage();
-    await this.storage.saveMessage(this);
+    await this.saveMetadataLocally();
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
       contentSaves.add(contentStorage.save(this));
     }
     await contentSaves.wait();
     this.downloadComplete = true;
-    await this.storage.saveMessageWritableProps(this); // save downloadComplete = true
+    await this.saveWritablePropsLocally(); // save downloadComplete = true
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -430,30 +446,33 @@ export class EMail extends Message {
     let check = this.folder.newEMail();
     check.dbID = this.dbID;
     await this.storage.readMessageWritableProps(check);
-    return check.downloadComplete;
+    return this.downloadComplete = check.downloadComplete;
   }
 
   async loadForDisplay() {
     await this.loadMIME();
   }
 
+  readonly loadMIMERunOnce = new RunOnce<void>();
   async loadMIME() {
     if (this.mime) {
       return;
     }
-    if (this.dbID) {
-      try {
-        await this.storage.readMessage(this);
-        await this.folder.account.contentStorage.first.read(this);
-        if (this.mime) {
-          await this.parseMIME();
-          return;
+    await this.loadMIMERunOnce.runOnce(async () => {
+      if (this.dbID) {
+        try {
+          await this.storage.readMessage(this);
+          await this.folder.account.contentStorage.first.read(this);
+          if (this.mime) {
+            await this.parseMIME();
+            return;
+          }
+        } catch (ex) {
+          console.error(ex);
         }
-      } catch (ex) {
-        console.error(ex);
       }
-    }
-    await this.download();
+      await this.download();
+    });
   }
 
   async loadAttachments() {
@@ -461,9 +480,9 @@ export class EMail extends Message {
       return;
     }
     try {
-      let att = this.folder.account.contentStorage.find(store => (store as any).readAttachment); // RawFilesAttachment
-      assert(att, "Raw attachment storage not configured");
-      await att.read(this);
+      let storage = this.folder.account.contentStorage.find(store => store instanceof RawFilesAttachment);
+      assert(storage, "Raw attachment storage not configured");
+      await storage.read(this);
     } catch (ex) {
       console.error(ex);
       // fallback
@@ -471,24 +490,30 @@ export class EMail extends Message {
     }
   }
 
+  readonly loadBodyRunOnce = new RunOnce<void>();
   async loadBody() {
     if (this.loadedBody) {
       return;
     }
-    if (!this._rawHTML && !this._text) {
-      if (this.dbID) {
-        await this.storage.readMessageBody(this);
-      }
+    /* RunOnce: Svelte 5 re-invokes `{#await message.loadBody()}` while the
+     * load is still running, whenever an ancestor re-assigns the `message` prop */
+    await this.loadBodyRunOnce.runOnce(async () => {
+      await Promise.resolve(); // Work around Svelte 5 bug #17678
       if (!this._rawHTML && !this._text) {
-        await this.download();
+        if (this.dbID) {
+          await this.storage.readMessageBody(this);
+        }
+        if (!this._rawHTML && !this._text) {
+          await this.download();
+        }
       }
-    }
 
-    let html = this.html;
-    if (html?.includes("cid:")) {
-      this._sanitizedHTML = await addCID(html, this);
-    }
-    this.loadedBody = true; // triggers UI reload
+      let html = this.html;
+      if (html?.includes("cid:")) {
+        this._sanitizedHTML = await addCID(html, this);
+      }
+      this.loadedBody = true; // triggers UI reload
+    });
   }
 
   get html(): string {
@@ -533,7 +558,7 @@ export class EMail extends Message {
     }
   }
 
-  async findThread(messages: Collection<EMail>): Promise<string | null>{
+  async findThread(messages: Collection<EMail>): Promise<string | null> {
     if (!this.dbID) {
       return null;
     }
@@ -547,12 +572,12 @@ export class EMail extends Message {
       threadID = parent?.threadID ?? parent?.inReplyTo;
       if (threadID && parent.threadID != threadID) {
         parent.threadID = threadID;
-        await this.storage.saveMessageWritableProps(parent);
+        await parent.saveWritablePropsLocally();
       }
     }
     if (threadID && this.threadID != threadID) {
       this.threadID = threadID;
-      await this.storage.saveMessageWritableProps(this);
+      await this.saveWritablePropsLocally();
     }
     return this.threadID;
   }
@@ -645,6 +670,9 @@ async function addCID(html: string, email: EMail): Promise<string> {
         ? attachment.blobURL
         : "";
       img.setAttribute("src", src);
+      if (src) {
+        attachment.hidden = true;
+      }
     }
     html = new XMLSerializer().serializeToString(doc);
   } catch (ex) {

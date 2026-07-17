@@ -9,7 +9,7 @@
       border={false}
       />
     <hbox flex />
-  {:else}
+  {:else if meeting.account.canScreenShare}
     <RoundButton
       label={$t`Screen share`}
       classes="screen-share large"
@@ -21,20 +21,35 @@
       />
     <SelectScreenShare bind:this={selectScreenShare} />
   {/if}
-  <DeviceButton video={true} {devices}
-    on={$me?.cameraOn}
-    selectedID={$selectedCameraSetting.value}
-    on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
-    on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
-    stream={$stream.cameraMicStream}
-    />
-  <DeviceButton video={false} {devices}
-    on={$me?.micOn}
-    selectedID={$selectedMicSetting.value}
-    on:changeOn={event => catchErrors(() => changeMicOn(event.detail))}
-    on:changeDevice={event => catchErrors(() => changeMicSelected(event.detail))}
-    stream={$stream.cameraMicStream}
-    />
+  {#if meeting.account.canVideo && $meeting.hasVideo}
+    <DeviceButton video={true} {devices}
+      on={$me?.cameraOn}
+      selectedID={$selectedCameraSetting.value}
+      on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
+      on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
+      stream={$stream.cameraMicStream}
+      />
+  {/if}
+  {#if meeting.account.canAudio}
+    <DeviceButton video={false} {devices}
+      on={$me?.micOn}
+      selectedID={$selectedMicSetting.value}
+      on:changeOn={event => catchErrors(() => changeMicOn(event.detail))}
+      on:changeDevice={event => catchErrors(() => changeMicSelected(event.detail))}
+      stream={$stream.cameraMicStream}
+      />
+  {/if}
+  {#if meeting instanceof PhoneCall}
+    <RoundButton
+      label={$t`Dial pad`}
+      classes="dialpad large"
+      onClick={() => $showDialPad = !$showDialPad}
+      selected={$showDialPad}
+      icon={DialPadIcon}
+      iconSize="24px"
+      border={false}
+      />
+  {/if}
   {#if !isSidebar}
     <hbox class="participants" flex>
       <Scroll>
@@ -78,15 +93,17 @@
         border={false}
         />
     {/if}
-    <RoundButton
-      label={`Change view of participant videos`}
-      classes="view-selector large"
-      onClick={onShowViewSelector}
-      selected={showViewSelector}
-      icon={viewSelectorIcon}
-      iconSize="24px"
-      border={false}
-      />
+    {#if selectedView != View.Phone}
+      <RoundButton
+        label={`Change view of participant videos`}
+        classes="view-selector large"
+        onClick={onShowViewSelector}
+        selected={showViewSelector}
+        icon={viewSelectorIcon}
+        iconSize="24px"
+        border={false}
+        />
+    {/if}
     <hbox bind:this={popupAnchor} />
     <hbox class="sidebar-button">
       <RoundButton
@@ -112,10 +129,11 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
+  import { PhoneCall } from "../../logic/Meet/PhoneCall";
   import { meetMustangApp } from "./MeetMustangApp";
   import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
+  import { showDialPad } from "./uiState";
   import { openApp } from "../AppsBar/selectedApp";
-  import { appGlobal } from "../../logic/app";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
   import SelectScreenShare from "./SelectScreenShare.svelte";
@@ -136,10 +154,11 @@
   import ViewSpeakerOnlyIcon from "lucide-svelte/icons/square-user-round";
   import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/minus";
+  import DialPadIcon from "lucide-svelte/icons/grip";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors, showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
-  import { tick } from "svelte";
+  import { onDestroy, tick } from "svelte";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;
@@ -167,14 +186,22 @@
 
   let devices: MediaDeviceInfo[];
   async function getDevices() {
-    if (devices) {
-      return;
-    }
     await tick();
     // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
+
+    navigator.mediaDevices.addEventListener("devicechange", onDeviceChange);
   }
+
+  function onDeviceChange() {
+    getDevices()
+      .catch(showError);
+  }
+
+  onDestroy(() => {
+    navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
+  });
 
   async function leave() {
     await meeting.hangup();
@@ -244,7 +271,7 @@
   let showViewSelector = false;
   let popupAnchor: HTMLElement;
   let viewSetting = getLocalStorage("meet.videoView", View.GalleryAutoView);
-  $: selectedView = $viewSetting.value;
+  $: selectedView = meeting instanceof PhoneCall ? View.Phone : $viewSetting.value;
   $: viewSelectorIcon =
     selectedView == View.SpeakerOnly ? ViewSpeakerOnlyIcon :
     selectedView == View.Thumbnails ? ViewThumbnailsRightIcon :
@@ -254,9 +281,10 @@
     ViewGallery2x2Icon;
 
   function onShowViewSelector(event: Event) {
-    event.stopPropagation();
     showViewSelector = !showViewSelector;
   }
+
+  $showDialPad = false; // Default off for a new call
 </script>
 
 <style>

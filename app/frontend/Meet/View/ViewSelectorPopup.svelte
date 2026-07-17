@@ -149,6 +149,7 @@
     Gallery5x5View = "gallery-5x5",
     Thumbnails = "thumbnails",
     SpeakerOnly = "speaker-only",
+    Phone = "phone",
   }
 
   export const meetGalleryViews = [

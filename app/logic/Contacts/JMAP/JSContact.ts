@@ -141,7 +141,9 @@ export class JSContact {
         company.units[0] ??= {} as TOrgUnit;
         company.units[0].name = person.department;
       } else {
-        delete company.units[0];
+        if (company.units?.length) {
+          delete company.units[0];
+        }
       }
     }
     setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry) => entry = company);

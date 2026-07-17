@@ -1,16 +1,16 @@
-import { Addressbook } from "../Addressbook";
+import { ExchangeAddressbook } from "../EWS/ExchangeAddressbook";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
-import { ensureArray, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
-export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
+export class ActiveSyncAddressbook extends ExchangeAddressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
-  canSync: boolean = true;
   declare readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
   protected readonly requestLock = new Lock();
@@ -18,6 +18,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   serverID: string;
 
   get account(): ActiveSyncAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as ActiveSyncAccount;
   }
 
@@ -34,13 +35,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
 
   get isLoggedIn(): boolean {
     return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
   }
 
   /**
@@ -115,7 +109,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
             person.serverID = sanitize.nonemptystring(item.ServerId);
             person.fromWBXML(item.ApplicationData);
             await person.saveLocally();
-            this.persons.add(person);
           }
         } catch (ex) {
           this.account.errorCallback(ex);

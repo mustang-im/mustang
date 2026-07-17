@@ -1,4 +1,4 @@
-import { Calendar } from "../Calendar";
+import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
 import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
 import { ActiveSyncIncomingInvitation } from "./ActiveSyncIncomingInvitation";
@@ -8,16 +8,15 @@ import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 const kHalfHour = 30 * 60 * 1000; // milliseconds
 
-export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
+export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   declare readonly events: ArrayColl<ActiveSyncEvent>;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
   protected readonly requestLock = new Lock();
   /** ActiveSync ServerId for this calendar */
@@ -28,18 +27,12 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   get account(): ActiveSyncAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as ActiveSyncAccount;
   }
 
   get isLoggedIn(): boolean {
     return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
   }
 
   async ping() {
@@ -50,7 +43,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
     return new ActiveSyncIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return Promise.all(participants.map(async participant => {
       let request = {
         To: participant.emailAddress,
@@ -63,7 +56,8 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       };
       let result = await this.account.callEAS("ResolveRecipients", request);
       if (result.Response.Status != "1") {
-        throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
+        //throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
+        return { participant };
       }
       let freebusy = sanitize.nonemptystring(result.Response.Recipient.Availability.MergedFreeBusy, "");
       let availability = freebusy.split("").map((c: string, i: number) => ({
@@ -152,7 +146,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           // Exceptions must be handled after the master event has been saved.
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
-              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionStartTime));
+              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime));
               let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
               if (existing) {
                 existing.fromWBXML(exception);

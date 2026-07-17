@@ -1,0 +1,114 @@
+import { WebDAVAccount } from "../WebDAV/WebDAVAccount";
+import { OpenCloudDirectory } from "./OpenCloudDirectory";
+import type { EditorWebApp } from "../EditorWebApp";
+import { AuthMethod } from "../../Abstract/Account";
+import { appGlobal } from "../../app";
+import { assert, NotReached } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { gt } from "../../../l10n/l10n";
+import { ArrayColl } from "svelte-collections";
+
+export class OpenCloudAccount extends WebDAVAccount {
+  readonly protocol: string = "webdav-opencloud";
+  declare readonly rootDirs: ArrayColl<OpenCloudDirectory>;
+  protected editorsCache: EditorWebApp[] | null = null;
+
+  newDirectory(name: string, dir = new OpenCloudDirectory()): OpenCloudDirectory {
+    return super.newDirectory(name, dir) as OpenCloudDirectory;
+  }
+
+  /** For setup. Verify that the URL is a WebDAV endpoint and the credentials work. */
+  async verifyLogin() {
+    assert(this.url, gt`Need URL`);
+
+    // Translate web frontend URL into WebDAV URL for openCloud / ownCloud.
+    // Both openCloud's legacy-compat layer and ownCloud Classic accept the
+    // `/remote.php/dav/files/<username>` path.
+    let urlObj = new URL(this.url);
+    if (urlObj.pathname == "/") {
+      urlObj.pathname = `/remote.php/dav/files/${this.username}`;
+      this.url = urlObj.href;
+    }
+
+    await super.verifyLogin();
+  }
+
+  /** List openCloud's enabled in-browser editors (Collabora, OnlyOffice, …).
+   * Cached per account instance — to refresh after the admin enables/disables
+   * an app, clear `editorsCache`. */
+  async listApps(): Promise<EditorWebApp[]> {
+    if (this.editorsCache) {
+      return this.editorsCache;
+    }
+    let appsByID = new Map<string, EditorWebApp>();
+    let json = await this.graphCall("GET", "/app/list");
+    let entries = sanitize.array(json?.["mime-types"], []) as any[];
+    // openCloud's response is grouped by MIME type, with each entry carrying
+    // a list of app_providers. Flatten into a per-provider list.
+    for (let entry of entries) {
+      let mimeType = sanitize.nonemptystring(entry?.mime_type, null);
+      let apps = entry?.app_providers;
+      if (!mimeType || !sanitize.array(apps, null)) {
+        continue;
+      }
+      for (let app of apps) {
+        let name = sanitize.nonemptylabel(app?.name, null);
+        if (!name) {
+          continue;
+        }
+        let id = name.toLowerCase().replaceAll(" ", "-");
+        let existingApp = appsByID.get(id);
+        if (existingApp) {
+          if (!existingApp.mimetypes.includes(mimeType)) {
+            existingApp.mimetypes.push(mimeType);
+          }
+          continue;
+        }
+        let iconURL = new URL(this.url);
+        iconURL.pathname = `/apps/${id}/img/app.svg`;
+        let homeURL = new URL(this.url);
+        homeURL.pathname = `/apps/${id}`;
+        appsByID.set(id, {
+          id: id,
+          name: name,
+          mimetypes: [mimeType],
+          optionalMimetypes: [],
+          icon: sanitize.url(app?.icon, iconURL.href),
+          homepage: homeURL.href,
+        });
+      }
+    }
+    return this.editorsCache = Array.from(appsByID.values());
+  }
+
+  /**
+   * Libre-Graph HTTPS request with JSON body.
+   * openCloud uses this for drives, items, permissions, and link shares.
+   * @param path server-absolute
+   *  e.g. `/graph/v1beta1/drives/.../createLink` or `/app/list`
+   */
+  async graphCall(method: "GET" | "POST", path: string, jsonBody?: any): Promise<any> {
+    let url = new URL(path, this.url).href;
+    let headers: Record<string, string> = {
+      "Accept": "application/json",
+    };
+    if (this.authMethod == AuthMethod.OAuth2) {
+      if (!this.oAuth2.isLoggedIn) {
+        await this.oAuth2.login(false);
+      }
+      headers["Authorization"] = "Bearer " + this.oAuth2.accessToken;
+    } else if (this.authMethod == AuthMethod.Password) {
+      headers["Authorization"] = "Basic " + btoa(`${this.username}:${this.password}`);
+    }
+    let ky = await appGlobal.remoteApp.kyCreate({ headers, result: "json", timeout: 10000 });
+    if (method == "GET") {
+      return await ky.get(url, {});
+    } else if (method == "POST") {
+      return await ky.post(url, {
+        json: jsonBody ?? {},
+      });
+    } else {
+      throw new NotReached();
+    }
+  }
+}

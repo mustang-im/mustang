@@ -5,6 +5,7 @@
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
+    on:init={ev => ev.detail.scrollToItem(selectedMessage)}
     columns="auto auto 1fr 3fr auto">
     <svelte:fragment slot="header">
       <hbox>{$t`S`}</hbox>

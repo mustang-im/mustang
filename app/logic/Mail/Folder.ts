@@ -32,6 +32,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
+  readonly deletions = new Set<number | string>();
   readonly storageLock = new Lock();
   protected readonly readFolderLock = new Lock();
   protected readonly listMessagesLock = new Lock();
@@ -59,13 +60,15 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.account.storage;
   }
 
+  protected haveReadFolder = false;
+
   protected async readFolder() {
-    if (this.messages.hasItems) {
+    if (this.haveReadFolder) {
       return;
     }
     let lock = await this.readFolderLock.lock();
     try {
-      if (lock.wasWaiting) {
+      if (this.haveReadFolder) {
         return;
       }
       if (!this.dbID) {
@@ -78,6 +81,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
       console.time(log);
       await this.storage.readAllMessagesMainProperties(this, null, 200);
       console.timeEnd(log);
+      this.haveReadFolder = true;
     } finally {
       lock.release();
     }
@@ -171,27 +175,44 @@ export class Folder extends Observable implements TreeItem<Folder> {
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
 
     if (action == "move") {
-      sourceFolder.messages.removeAll(messages);
-    }
-    if (!sameServer) {
-      for (let message of messages) {
-        await message.loadMIME();
-        await this.addMessage(message);
-        if (action == "move") {
-          await message.deleteMessage();
+      for (let msg of messages) {
+        if (msg.pID) {
+          sourceFolder.deletions.add(msg.pID);
         }
       }
-      return;
     }
+    try {
+      if (action == "move") {
+        sourceFolder.messages.removeAll(messages);
+      }
+      if (!sameServer) {
+        for (let message of messages) {
+          await message.loadMIME();
+          await this.addMessage(message);
+          if (action == "move") {
+            await message.deleteMessage();
+          }
+        }
+        return;
+      }
 
-    this.countTotal += messages.length;
+      this.countTotal += messages.length;
 
-    await this.moveOrCopyMessagesOnServer(action, messages);
+      await this.moveOrCopyMessagesOnServer(action, messages);
 
-    if (action == "move") {
-      sourceFolder.countTotal -= messages.length;
-      for (let sourceMsg of messages) {
-        await sourceMsg.deleteMessageLocally();
+      if (action == "move") {
+        sourceFolder.countTotal -= messages.length;
+        for (let sourceMsg of messages) {
+          await sourceMsg.deleteMessageLocally();
+        }
+      }
+    } finally {
+      if (action == "move") {
+        for (let msg of messages) {
+          if (msg.pID) {
+            sourceFolder.deletions.delete(msg.pID);
+          }
+        }
       }
     }
   }

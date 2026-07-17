@@ -1,6 +1,7 @@
 import { Account } from "../../Abstract/Account";
 import type { MailAccount } from "../MailAccount";
 import type { MailIdentity } from "../MailIdentity";
+import { fetchJSON, fetchText } from "../../util/netUtil";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, type Json, type URLString } from "../../util/util";
@@ -35,7 +36,7 @@ export class SMLHTTPAccount extends Account {
   async login(): Promise<void> {
     this.accessToken = null;
     console.log("Registering", this.emailAddress, "for SML HTTP");
-    await fetch(this.url + "/register", {
+    await fetchText(this.url + "/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -123,7 +124,7 @@ export class SMLHTTPAccount extends Account {
     bundleID ??= crypto.randomUUID();
     resourceID ??= crypto.randomUUID();
     let resourceURL = this.url + "/r/" + bundleID + "/" + resourceID;
-    await fetch(resourceURL, {
+    await fetchText(resourceURL, {
       method: "PUT",
       headers: {
         "Authorization": "Bearer " + this.accessToken,
@@ -142,14 +143,13 @@ export class SMLHTTPAccount extends Account {
    * @param json {JSON} the content of the resource that you want to write to the server
    */
   static async saveURL(url: URLString, json: Json): Promise<void> {
-    let response = await fetch(url, {
+    let result = await fetchJSON(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(json, null, 2),
     });
-    let result = await response.json();
     if (typeof (result.error) == "string") {
       throw new Error(result.error);
     }
@@ -182,13 +182,12 @@ export class SMLHTTPAccount extends Account {
    * @param accessToken_internal Do not set this, only for internal use by this.getURL()/getResource().
    */
   protected static async getURL(url: URLString, accessToken_internal?: string): Promise<any> {
-    let response = await fetch(url, {
+    let result = await fetchJSON(url, {
       headers: {
         "Authorization": accessToken_internal ? "Bearer " + accessToken_internal : undefined,
         "Content-Type": "application/json",
       },
     });
-    let result = await response.json();
     if (typeof (result.error) == "string") {
       throw new Error(result.error);
     }

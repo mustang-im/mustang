@@ -9,7 +9,7 @@
       <Button plain
         classes="description-collapse"
         label={showDescription ? $t`Collapse description` : $t`Show meeting description`}
-        on:click={() => showDescription = !showDescription}
+        onClick={() => showDescription = !showDescription}
         icon={showDescription ? CollapseIcon : ExpandIcon}
         iconOnly
         iconSize="16px"

@@ -17,7 +17,7 @@
           label={$t`Close`}
           icon={CloseIcon}
           iconSize="16px"
-          on:click={onClose}
+          onClick={onClose}
           />
         </hbox>
     </hbox>
@@ -33,7 +33,7 @@
       <Button label={$t`Close`}
         icon={CloseIcon}
         classes="close"
-        on:click={onClose}
+        onClick={onClose}
         />
     </hbox>
   </vbox>

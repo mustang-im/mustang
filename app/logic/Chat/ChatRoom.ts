@@ -1,6 +1,7 @@
-import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "./ChatMessage";
+import { ChatRoomEvent, IncomingCall, Invite, JoinLeave, RoomEventKind, RoomNameChange } from "./RoomEvent";
 import type { ChatAccount } from "./ChatAccount";
-import type { ChatPerson } from "./ChatPerson";
+import { ChatPersonUID } from "./ChatPersonUID";
 import { Group } from "../Abstract/Group";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
@@ -22,8 +23,8 @@ export class ChatRoom extends Observable {
   dbID: number;
   account: ChatAccount;
   /** If `contact` is a `Group`, then this is a chat room with multiple people.
-   * If `contact` is a `ChatPerson` or `Person`, this is a 1:1 conversation
-   * between our user and one other person/account. */
+   * If `contact` is a `ChatPersonUID`, this is a 1:1 conversation
+   * between our user and one other person. */
   @notifyChangedProperty
   contact: ChatContact;
   /** Chat room name/title. Only used for Groups.
@@ -38,15 +39,23 @@ export class ChatRoom extends Observable {
   /** The people in this chat room.
    * If this is a 1:1 chat, contains only 1.
    * Not including our own user. */
-  readonly members = new ArrayColl<ChatPerson>();
+  readonly members = new ArrayColl<ChatPersonUID>();
   /** The messages in this chat room.
    * This is also used for the MailChat view, so this may also contain EMails */
-  readonly messages = new ArrayColl<ChatMessage>();
+  readonly messages = new ArrayColl<RoomMessage>();
+  /** The newest human message, for the room list preview.
+   * Calculating this would be very slow. */
   @notifyChangedProperty
-  lastMessage: ChatMessage = null; // Calculating this would be very slow
+  lastMessage: ChatMessage = null;
+
+  /** Our user is admin in this chat room.
+   * Allows e.g. to delete other people's messages,
+   * and to kick people out. */
+  @notifyChangedProperty
+  isAdmin = false;
   /** Message that our user is currently composing, to this chat room */
   @notifyChangedProperty
-  draftMessage: string;
+  draftMessage: ChatMessage | null = null;
   syncState: string | null = null;
 
   constructor(account: ChatAccount) {
@@ -55,9 +64,12 @@ export class ChatRoom extends Observable {
   }
 
   get name(): string {
-    return this.contact instanceof Group && this._name
-      ? this._name
-      : this.contact.name;
+    if (this.contact instanceof Group && this._name) {
+      return this._name;
+    }
+    // `contact` is always set; `|| this.id` only covers a contact/group whose own
+    // name is empty, so the (NOT NULL) room name is never blank.
+    return this.contact.name || this.id;
   }
   set name(val: string) {
     if (this.contact instanceof Group) {
@@ -67,25 +79,57 @@ export class ChatRoom extends Observable {
   get picture(): string {
     return this.contact.picture;
   }
-
   async listMembers(): Promise<void> {
     throw new AbstractFunction();
+  }
+
+  /** Helper implementation for subclasses for 1:1 chat */
+  protected async listMembers1to1(): Promise<void> {
+    if (this.contact instanceof ChatPersonUID) {
+      this.members.replaceAll([this.contact]);
+    }
   }
 
   async listMessages(): Promise<void> {
     throw new AbstractFunction();
   }
 
+  /** Protocol-specific room state persisted alongside the room (merged into the SQL
+   * `json` column) so the room looks identical after a restart. Override in a subclass;
+   * default is none. Paired with {@link fromExtraJSON}. */
+  toExtraJSON(): any {
+    return {};
+  }
+  fromExtraJSON(_json: any): void {
+  }
+
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: ChatMessage) {
     message.deliveryStatus = DeliveryStatus.Sending;
-    this.messages.push(message);
-    throw new Error("not implemented for this protocol");
+    this.messages.add(message);
+    throw new AbstractFunction();
   }
 
   newMessage(): ChatMessage {
     return new ChatMessage(this);
+  }
+
+  /** @param kind For `Generic`, protocols return their own subclass.
+   * For all other kinds, this returns the kind's class. */
+  newRoomEvent(kind: RoomEventKind = RoomEventKind.Generic): ChatRoomEvent {
+    switch (kind) {
+      case RoomEventKind.JoinLeave:
+        return new JoinLeave(this);
+      case RoomEventKind.Invite:
+        return new Invite(this);
+      case RoomEventKind.RoomNameChange:
+        return new RoomNameChange(this);
+      case RoomEventKind.IncomingCall:
+        return new IncomingCall(this);
+      default:
+        return new ChatRoomEvent(this);
+    }
   }
 
   async save(): Promise<void> {
@@ -93,4 +137,4 @@ export class ChatRoom extends Observable {
   }
 }
 
-export type ChatContact = ChatPerson | Group;
+export type ChatContact = ChatPersonUID | Group;

@@ -1,4 +1,5 @@
-import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
+import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
+import type { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
@@ -8,24 +9,22 @@ import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../.
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
-export class OWACalendar extends Calendar {
+export class OWACalendar extends ExchangeCalendar {
   readonly protocol: string = "calendar-owa";
   declare readonly events: ArrayColl<OWAEvent>;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
-  /** Is this the default calendar that handles incoming invitations */
-  useForInvitations: boolean = false;
   protected listEventsRunOnce = new RunOnce();
 
   get account(): OWAAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as OWAAccount;
   }
 
@@ -33,17 +32,10 @@ export class OWACalendar extends Calendar {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
-  }
-
   callOWA(aRequest: any) {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
-      : this.account.callOWA(aRequest, { mailbox: this.username });
+      : this.account.callOWA(aRequest, this.username);
   }
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
@@ -54,11 +46,11 @@ export class OWACalendar extends Calendar {
     return new OWAIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     return participants.map((participant, i) => ({
       participant,
-      availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
+      availability: results.Responses[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
         from: new Date(event.Start + "Z"),
         to: new Date(event.End + "Z"),
         free: event.FreeBusyType == "Free",
@@ -175,12 +167,10 @@ export class OWACalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

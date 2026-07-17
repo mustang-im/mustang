@@ -1,56 +1,58 @@
 <vbox>
-  <vbox class="app" class:selected={app == selectedApp} on:click={onSelect}>
-    <vbox class="icon">
-      <img src={app.icon} width="96" height="96" alt="" />
-    </vbox>
-    <vbox class="nameDescr" flex>
-      <h2 class="app-name font-normal">{app.nameTranslated}</h2>
-      <div class="description font-smallest">{app.descriptionTranslated}</div>
-    </vbox>
-    <hbox class="actions">
-      {#if app.homepage}
-        <a class="homepage font-smallest" href={app.homepage} target="_blank">{$t`Info`}</a>
-      {/if}
-      <hbox flex />
-      <RoundButton
-        label={$t`Add`}
-        icon={AddIcon}
-        onClick={onAdd}
-        classes="add create {adding ? "hidden" : ""}"
-        />
-    </hbox>
-    {#if instances.hasItems}
-      <vbox class="instances-separator" />
-      <vbox class="instances">
-        {#each instances.each as iapp, i}
-          <hbox class="instance">
-            {#if iapp.account}
-              <RoundButton
-                label={iapp.account.name}
-                icon={iapp.account.icon}
-                classes="account plain" border={false}
-                />
-              <hbox class="account-name" flex>
-                {iapp.account.name}
-              </hbox>
-            {:else}
-              <RoundButton label="" icon={CircleIcon} disabled border={false}
-                classes="no-account plain" />
-              <hbox class="account-name" flex>
-                {iapp.nameTranslated?.split(" ").pop() + " " + i}
-              </hbox>
-            {/if}
-            <RoundButton
-              label={$t`Remove`}
-              icon={TrashIcon}
-              onClick={() => onRemove(iapp)}
-              classes="remove plain" border={false}
-              />
-          </hbox>
-        {/each}
+  <Clickable onClick={onSelect}>
+    <vbox class="app" class:selected={app == selectedApp}>
+      <vbox class="icon">
+        <img src={app.icon} width="96" height="96" alt="" />
       </vbox>
-    {/if}
-  </vbox>
+      <vbox class="nameDescr" flex>
+        <h2 class="app-name font-normal">{app.nameTranslated}</h2>
+        <div class="description font-smallest">{app.descriptionTranslated}</div>
+      </vbox>
+      <hbox class="actions">
+        {#if app.homepage}
+          <a class="homepage font-smallest" href={app.homepage} target="_blank">{$t`Info`}</a>
+        {/if}
+        <hbox flex />
+        <RoundButton
+          label={$t`Add`}
+          icon={AddIcon}
+          onClick={onAdd}
+          classes="add create {adding ? "hidden" : ""}"
+          />
+      </hbox>
+      {#if $instances.hasItems}
+        <vbox class="instances-separator" />
+        <vbox class="instances">
+          {#each $instances.each as iapp, i}
+            <hbox class="instance">
+              {#if iapp.account}
+                <RoundButton
+                  label={iapp.account.name}
+                  icon={iapp.account.icon}
+                  classes="account plain" border={false}
+                  />
+                <hbox class="account-name" flex>
+                  {iapp.account.name}
+                </hbox>
+              {:else}
+                <RoundButton label="" icon={CircleIcon} disabled border={false}
+                  classes="no-account plain" />
+                <hbox class="account-name" flex>
+                  {iapp.nameTranslated?.split(" ").pop() + " " + i}
+                </hbox>
+              {/if}
+              <RoundButton
+                label={$t`Remove`}
+                icon={TrashIcon}
+                onClick={() => onRemove(iapp)}
+                classes="remove plain" border={false}
+                />
+            </hbox>
+          {/each}
+        </vbox>
+      {/if}
+    </vbox>
+  </Clickable>
   {#if adding}
     <AddDialog {app} on:added={onAddDone} />
   {/if}
@@ -63,6 +65,7 @@
   import { appGlobal } from "../../../logic/app";
   import AddDialog from "./AddDialog.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import CircleIcon from "lucide-svelte/icons/circle";
@@ -79,7 +82,7 @@
   }
 
   $: myApps = appGlobal.webApps.myApps;
-  $: instances = $myApps.filterObservable(a => a.id == app.id);
+  $: instances = myApps.filterObservable(a => a.id == app.id);
 
   function onAdd() {
     adding = true;

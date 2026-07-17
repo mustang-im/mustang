@@ -1,8 +1,10 @@
-<vbox class="settings-category" class:selected on:click={onSelect}>
-  <hbox class="label font-small" class:main={category.isMain}>
-    {category.name}
-  </hbox>
-</vbox>
+<Clickable onClick={onSelect}>
+  <vbox class="settings-category" class:selected>
+    <hbox class="label font-small" class:main={category.isMain}>
+      {category.name}
+    </hbox>
+  </vbox>
+</Clickable>
 {#if isSectionOpen}
   <SubCategoriesList subCategories={category.subCategories} mainCategory={category} />
   <AccountsList {category} />
@@ -11,8 +13,10 @@
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
+  import { openSettingsCategory } from "./CategoriesUtils";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { appGlobal } from "../../../logic/app";
 
   /** in */
@@ -25,11 +29,8 @@
     if (appGlobal.isMobile && (category.subCategories.hasItems || category.accounts.hasItems)) {
       isSectionOpen = !isSectionOpen;
     } else {
-      $selectedCategory = category;
+      openSettingsCategory(category);
     }
-    /*if (!category.parent.accounts.contains($selectedAccount)) {
-      $selectedAccount = null;
-    }*/
   }
 </script>
 

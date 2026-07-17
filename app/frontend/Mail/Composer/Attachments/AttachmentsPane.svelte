@@ -6,7 +6,7 @@
     <hbox class="buttons">
       <RoundButton
         icon={AddIcon} label={$t`Add attachment`}
-        on:click={onAdd}
+        onClick={onAdd}
         />
     </hbox>
   </Scroll>
@@ -15,16 +15,16 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import { Attachment } from "../../../../logic/Abstract/Attachment";
+  import type { Message } from "../../../../logic/Abstract/Message";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
-  import type { Collection } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
-  export let attachments: Collection<Attachment>;
+  export let message: Message;
+  $: attachments = message.attachments;
 
   let fileSelector: FileSelector;
   export async function onAdd() {
@@ -33,8 +33,9 @@
       console.log("no file selected");
       return;
     }
-    console.log("Selected attachment file", file);
-    attachments.add(Attachment.fromFile(file));
+    let attachment = message.newAttachment();
+    attachment.fromFile(file);
+    message.attachments.add(attachment);
   }
 </script>
 

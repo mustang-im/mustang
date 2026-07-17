@@ -7,22 +7,27 @@ import { ContactEntry } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
+import type { AttachmentStorage } from "../Abstract/Attachment";
+import type { Calendar } from "../Calendar/Calendar";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction } from "../util/util";
+import { AbstractFunction, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl } from 'svelte-collections';
+import { gt } from "../../l10n/l10n";
 
 export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
-  readonly canSendInvitations: boolean = true;
   /** SMTP server
    * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
   _outgoing: SMTPAccount = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   protected _inbox: Folder;
+  readonly canSendOutgoingInvitations: boolean = true;
+  /** @see `calendar` */
+  protected calendarID: string;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
@@ -38,6 +43,13 @@ export class MailAccount extends TCPAccount {
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
+
+  async startup() {
+    await super.startup();
+    await this.listFolders();
+    assert(this.inbox, gt`Inbox not found`);
+    await this.inbox.getNewMessages();
+  }
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();
@@ -72,6 +84,27 @@ export class MailAccount extends TCPAccount {
     if (smtp && smtp.mainAccount != this) {
       smtp.mainAccount = this;
     }
+  }
+
+  /** When accepting an incoming invitation, put the meeting in this calendar, by default.
+   * The user can still change it in the dropdown. */
+  get calendar(): Calendar | null {
+    let cal = appGlobal.calendars.find(cal => cal.id == this.calendarID);
+    if (!cal) {
+      this.calendar = cal = this.calendarsAvailable.first;
+    }
+    return cal;
+  }
+  set calendar(cal: Calendar | null) {
+    this.calendarID = cal?.id;
+    this.save()
+      .catch(this.errorCallback);
+  }
+  get calendarsAvailable(): Collection<Calendar> {
+    let dependentCalendars = this.dependentAccounts().filterObservable(acc => !!(acc as Calendar).events) as ArrayColl<Calendar>;
+    return dependentCalendars?.hasItems
+      ? dependentCalendars
+      : appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
   }
 
   /**
@@ -191,6 +224,8 @@ export class MailAccount extends TCPAccount {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
     }
+    // On startup, the calendar might not be read yet, so we store the ID and resolve in the getter.
+    this.calendarID = sanitize.alphanumdash(json.calendarID, null);
 
     if (!appGlobal.me.name && this.realname) {
       appGlobal.me.name = this.realname;
@@ -205,6 +240,7 @@ export class MailAccount extends TCPAccount {
     json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
     json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
     json.emailAddress = this.emailAddress;
+    json.calendarID = this.calendarID;
     return json;
   }
 
@@ -219,6 +255,7 @@ export class MailAccount extends TCPAccount {
     this.password = other.password;
     this.emailAddress = other.emailAddress;
     this.realname = other.realname;
+    this.calendarID = other.calendarID;
 
     // objects
     this.oAuth2 = other.oAuth2;
@@ -268,7 +305,7 @@ export interface MailAccountStorage {
   readAllMessagesMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void>;
 }
 
-export interface MailContentStorage {
+export interface MailContentStorage extends AttachmentStorage {
   save(email: EMail): Promise<void>;
   read(email: EMail): Promise<void>;
   deleteIt(email: EMail): Promise<void>;

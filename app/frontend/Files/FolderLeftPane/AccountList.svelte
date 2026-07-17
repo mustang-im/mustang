@@ -36,6 +36,9 @@
 </script>
 
 <style>
+  .account-list {
+    margin-block-end: 12px;
+  }
   .account-list :global(.fast-list) {
     overflow: inherit;
   }

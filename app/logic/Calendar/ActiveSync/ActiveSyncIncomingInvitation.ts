@@ -21,11 +21,15 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.message.folder.id,
         RequestId: this.message.serverID,
+        SendResponse: this.calendar.account.protocolVersion == "16.1" ? {} : [],
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
     this.event.myParticipation = response;
-    await this.event.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
+    // We asked ActiveSync 16.1 to send the response for us.
+    if (this.calendar.account.protocolVersion != "16.1") {
+      await this.event.respondToInvitation(response, this.calendar.account);
+    }
     await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
     await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }

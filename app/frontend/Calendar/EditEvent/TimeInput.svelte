@@ -1,13 +1,19 @@
 <input type="time"
   bind:value={userValue}
-  on:change={onChange}
-  on:change
+  on:change={onChangeEvent}
+  on:blur={onChange}
+  on:keydown={() => isUsingKeyboard = true}
+  on:mousedown={() => isUsingKeyboard = false}
+  on:pointerdown={() => isUsingKeyboard = false}
   bind:this={inputE}
   {disabled}
   />
 
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
+  import debounce from "lodash/debounce";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: Date }>();
 
   export let time: Date; /* in/out */
   export let disabled = false;
@@ -29,6 +35,18 @@
     }
   }
 
+  // <copied from="DateInput.svelte">
+  const onChangeDebounced = debounce(() => onChange(), 1000);
+  let isUsingKeyboard = false;
+  function onChangeEvent() {
+    if (isUsingKeyboard) {
+      onChangeDebounced();
+    } else {
+      onChange();
+    }
+  }
+  // </copied>
+
   export function onChange() {
     try {
       let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);
@@ -44,15 +62,18 @@
         if (parts[5]) {
           hour += 12;
         }
-      } else if (hour > 23) {
+      } else if (hour >= 24) {
         throw new Error($t`Hour moust be less than 24`);
       }
       let minute = Number(parts[3] || 0);
-      if (minute > 59) {
-        throw new Error($t`Minute must be less than 59`);
+      if (minute >= 60) {
+        throw new Error($t`Minute must be less than 60`);
       }
-      time.setHours(hour, minute, 0, 0);
-      time = time; // force refresh - TODO Doesn't work on `event.startTime` to trigger `event` notifications
+
+      let newTime = new Date(time); // force refresh
+      newTime.setHours(hour, minute, 0, 0);
+      dispatchEvent("change", newTime);
+      time = newTime; // in case the variable was bound
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
     }

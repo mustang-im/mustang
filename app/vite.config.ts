@@ -39,6 +39,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@matrix-org/matrix-sdk-crypto-wasm'],
   },
+  test: {
+    server: {
+      deps: {
+        // Workaround for app/logic/Abstract/Workspace.ts
+        inline: [/lucide-svelte/],
+      },
+    },
+  },
   build: {
     sourcemap: true
   },

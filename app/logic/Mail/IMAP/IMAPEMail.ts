@@ -182,16 +182,20 @@ export class IMAPEMail extends EMail {
    * @param set -- true = add the flag, false = remove the flag
    */
   async setFlagServer(name: string, set = true) {
-    this.flagsChanging = true;
-    await this.folder.runCommand(async (conn) => {
-      this.folder.account.log(this.folder, conn, set ? "set" : "remove" + " email flag", this.uid, name, this.subject);
-      if (set) {
-        await conn.messageFlagsAdd(this.uid, [name], { uid: true });
-      } else {
-        await conn.messageFlagsRemove(this.uid, [name], { uid: true });
-      }
-    });
-    this.flagsChanging = false;
+    try {
+      this.flagsChanging = true;
+      await this.folder.runCommand(async (conn) => {
+        this.flagsChanging = true;
+        this.folder.account.log(this.folder, conn, set ? "set" : "remove" + " email flag", this.uid, name, this.subject);
+        if (set) {
+          await conn.messageFlagsAdd(this.uid, [name], { uid: true });
+        } else {
+          await conn.messageFlagsRemove(this.uid, [name], { uid: true });
+        }
+      });
+    } finally {
+      this.flagsChanging = false;
+    }
   }
 
   async addTagOnServer(tag: Tag) {

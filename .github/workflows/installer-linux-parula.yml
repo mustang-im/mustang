@@ -2,6 +2,14 @@ name: Parula Installers for Linux
 
 on:
   workflow_dispatch: # manually triggered
+    inputs:
+      release_type:
+        type: choice
+        options:
+          - release
+          - prerelease
+          - test
+        default: 'test'
   push:
     tags: 'v*'
 
@@ -12,12 +20,13 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build installers for Linux
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 24.x
+    - run: sudo apt-get -y install libarchive-tools
 
     - run: cd app/build; bash parula-brand.sh
     - run: cd app; yarn install
@@ -25,13 +34,20 @@ jobs:
     - run: cd desktop; yarn install
     - run: cd desktop/backend; yarn install
     - run: cd desktop; yarn run build:release:linux
-      env:
+      if: github.event_name == 'push' || inputs.release_type == 'release'
+      env: &build_env
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
+    - run: cd desktop; yarn run build:prerelease:linux
+      if: inputs.release_type == 'prerelease'
+      env: *build_env
+    - run: cd desktop; yarn run build:linux
+      if: inputs.release_type == 'test'
+      env: *build_env
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Parula Installers Linux
         path: |
@@ -40,3 +56,4 @@ jobs:
           desktop/dist/*.AppImage
           desktop/dist/*.flatpak
           desktop/dist/*.snap
+          desktop/dist/*.pacman

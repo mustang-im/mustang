@@ -1,3 +1,11 @@
+# Crunch Jul 14
+* EWS: undefined.callEWS() #1341
+* JMAP timeout
+* JPC timeout
+* Test
+  * IMAP logout
+  * Lid close -> check mail
+
 # Bugs
 * Mail: Move multiple mails (desktop) - UI and backend buggy
 * Composer: Bulleted lists - Paragraphs vs. lines
@@ -96,7 +104,6 @@
 * Manual setup: OAuth2 UI: "Browser" goes back to "Separate window"
 ## mjl
 * Back button (after clicking on an email address in an email, want to go back to email)
-* Selected message: After switching back to email, email is not longer selected
 * Tags in "Move to folder" button - icon not obvious. change tooltip.
 * Keyboard shortcuts
 * How to show keyboard shortcuts

@@ -1,8 +1,10 @@
-<vbox flex class="device-setup">
+<vbox flex class="device-setup" class:withVideo>
   <ErrorMessageInline {ex} />
-  <vbox class="self-video" flex>
-    <Video stream={$deviceStream?.cameraMicStream} muted={true} />
-  </vbox>
+  {#if withVideo}
+    <vbox class="self-video" flex>
+      <Video stream={$deviceStream?.cameraMicStream} muted={true} />
+    </vbox>
+  {/if}
   <hbox class="buttons">
     <slot name="buttons-left" />
     <DeviceButton video={false} {devices}
@@ -12,12 +14,14 @@
       on:changeOn={event => micOnSetting.value = event.detail}
       on:changeDevice={event => selectedMicSetting.value = event.detail}
       />
-    <DeviceButton video={true} {devices}
-      on={$cameraOnSetting.value}
-      selectedID={$selectedCameraSetting.value}
-      on:changeOn={event => cameraOnSetting.value = event.detail}
-      on:changeDevice={event => selectedCameraSetting.value = event.detail}
-      />
+    {#if withVideo}
+      <DeviceButton video={true} {devices}
+        on={$cameraOnSetting.value}
+        selectedID={$selectedCameraSetting.value}
+        on:changeOn={event => cameraOnSetting.value = event.detail}
+        on:changeDevice={event => selectedCameraSetting.value = event.detail}
+        />
+    {/if}
     <slot name="buttons-right" />
   </hbox>
 </vbox>
@@ -30,7 +34,8 @@
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
-  import { gt } from "../../../l10n/l10n";
+
+  export let withVideo = true;
 
   let devices: MediaDeviceInfo[];
 
@@ -39,10 +44,23 @@
     deviceStream ??= new LocalMediaDeviceStreams();
     try {
       await deviceStream.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+      persistActualDevices();
     } catch (ex) {
       showErrorInline(ex);
     }
     await getDevices();
+  }
+
+  /** In case the selected device is gone or busy and we fell back to another,
+   * update the dropdown selector and save the new device. */
+  function persistActualDevices() {
+    // Change only as necessary, because setting triggers the camera restart below
+    if (deviceStream?.cameraDevice && deviceStream.cameraDevice != selectedCameraSetting.value) {
+      selectedCameraSetting.value = deviceStream.cameraDevice;
+    }
+    if (deviceStream?.micDevice && deviceStream.micDevice != selectedMicSetting.value) {
+      selectedMicSetting.value = deviceStream.micDevice;
+    }
   }
 
   async function stopCamMic() {
@@ -50,26 +68,32 @@
   }
 
   async function getDevices() {
-    if (devices) {
-      return;
-    }
     await tick();
     // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
+
+    navigator.mediaDevices.addEventListener("devicechange", onDeviceChange);
   }
 
-  $: ex = null, catchErrors(() => deviceStream?.setCameraMicOn($cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value), showErrorInline);
+  function onDeviceChange() {
+    getDevices()
+      .catch(ex2 => ex = ex2);
+  }
+
+  onDestroy(() => {
+    navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
+  });
+
+  $: $cameraOnSetting.value, $micOnSetting.value, $selectedCameraSetting.value, $selectedMicSetting.value, catchErrors(applyDeviceSettings, showErrorInline);
+  async function applyDeviceSettings() {
+    await deviceStream?.setCameraMicOn(cameraOnSetting.value, micOnSetting.value, selectedCameraSetting.value, selectedMicSetting.value);
+    persistActualDevices();
+    ex = null;
+  }
 
   let ex: Error | null = null;
   function showErrorInline(error: Error) {
-    if (error?.name == "NotReadableError") {
-      let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
-      ex = new Error(cameras == 1
-        ? gt`Your camera is in use. Please stop the other video application.`
-        : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
-      return;
-    }
     ex = error;
   }
 
@@ -82,7 +106,7 @@
     align-items: center;
     justify-content: center;
   }
-  .buttons {
+  .withVideo .buttons {
     margin-block-start: -22px;
     justify-content: center;
     z-index: 1;

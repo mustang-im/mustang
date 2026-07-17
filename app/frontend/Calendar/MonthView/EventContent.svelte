@@ -1,17 +1,20 @@
-<hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
-  title={eventAsText}>
-  {#if !$event.allDay && !isContinued}
-    <hbox class="time">
-      {startTime}
-    </hbox>
-  {/if}
-  <hbox class="title">{$event.title}</hbox>
-</hbox>
+<Clickable onClick={onSelect} onDoubleClick={onOpen}>
+  <hbox class="event font-small"
+    title={eventAsText}>
+    {#if !$event.allDay && !isContinued}
+      <hbox class="time">
+        {startTime}
+      </hbox>
+    {/if}
+    <hbox class="title">{$event.title}</hbox>
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { selectedEvent } from "../selected";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
@@ -33,8 +36,7 @@
   }
 
   function onOpen() {
-    $selectedEvent = event;
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 
@@ -43,6 +45,7 @@
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
     padding-inline-start: 4px;
+    width: 100%;
   }
   @media (prefers-color-scheme: dark) {
     .event {

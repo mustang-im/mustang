@@ -51,6 +51,9 @@ export class JMAPPerson extends Person {
   }
 
   async deleteFromServer() {
+    if (!this.jmapID) { // never saved to the server
+      return;
+    }
     await this.account.makeSingleCall("ContactCard/set", {
       accountId: this.account.accountID,
       destroy: [this.jmapID],

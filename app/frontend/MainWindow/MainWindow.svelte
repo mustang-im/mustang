@@ -3,7 +3,10 @@
 </svelte:head>
 <svelte:window
   bind:outerWidth={windowWidth}
+  on:resize={saveWindowSettingsDebounced}
+  on:blur={() => catchErrors(saveWindowSettings)}
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
+  on:beforeunload={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
 <vbox flex class="main-window"
@@ -15,14 +18,12 @@
   {/if}
   <hbox flex>
     {#if !appGlobal.isMobile}
-      <DemoBarLeft />
       <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     {/if}
     <vbox flex>
-      <DemoBarTop />
       <NotificationBar notifications={$notifications} />
       {#if appGlobal.isMobile}
-        <Router primary={false}>
+        <Router primary={false} {history}>
           <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
             <vbox flex class="sidebar" slot="top">
               <svelte:component this={sidebar} />
@@ -32,7 +33,7 @@
           <NavigationM />
         </Router>
       {:else if $selectedApp}
-        <Router {basepath} primary={false}>
+        <Router primary={false} {history}>
           <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
             <AppContentRoutes slot="left"/>
             <vbox flex class="sidebar" slot="right">
@@ -49,7 +50,7 @@
 <WebAppsInBackground />
 
 <script lang="ts">
-  import { selectedApp, sidebarApp, mustangApps, goTo, openApp } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, goTo, openApp, history } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
@@ -65,6 +66,7 @@
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { categoriesLoaded } from "../Settings/SettingsCategories";
+  import { applyColors } from "../Settings/Global/AppThemeColors";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -75,9 +77,7 @@
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
-  import DemoBarLeft from "./DemoBarLeft.svelte";
-  import DemoBarTop from "./DemoBarTop.svelte";
-  import { catchErrors, backgroundError } from "../Util/error";
+  import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
@@ -91,16 +91,9 @@
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
-  let sidebar;
-  const setSidebarDebounced = debounce(() => sidebar = $sidebarApp?.sidebar);
-  $: $sidebarApp?.sidebar, setSidebarDebounced();
+  $: sidebar = $sidebarApp?.sidebar;
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   categoriesLoaded; /* make sure to import the file, so that that categories load */
-
-  let basepath: string; // default: no basepath
-  if (window.location.pathname[2] == ":") { // #854 Windows in production mode has URL pathnames like `/D:/mail/`
-    basepath = window.location.pathname.substring(0, 3);
-  }
 
   onMount(() => catchErrors(onLoad));
 
@@ -119,10 +112,10 @@
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
-      await loginOnStartup(console.error, backgroundError);
+      await loginOnStartup(console.error);
       // Setting $selectedApp late would overwrite commandline/URL handlers
       $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount.inbox;
+      $selectedFolder = $selectedAccount?.inbox;
     }
   }
 
@@ -141,6 +134,8 @@
     assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
     appGlobal.remoteApp.setTheme(theme);
   }
+  let colorsSetting = getLocalStorage("appearance.colors", {});
+  $: applyColors($colorsSetting.value);
 
   let windowWidth: number;
   $: windowWidth, setSmall()
@@ -149,14 +144,15 @@
   }
 
   function saveWindowSettings() {
-    if (appGlobal.isMobile) {
+    if (appGlobal.isMobile || document.hidden) {
       return;
     }
-    let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
-    let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
-    windowSize.value = [ window.outerWidth, window.outerHeight ];
-    windowPosition.value = [ window.screenX, window.screenY ];
+    let windowSizeSetting = getLocalStorage("window.size", []);
+    let windowPositionSetting = getLocalStorage("window.position", []);
+    windowSizeSetting.value = [ window.outerWidth, window.outerHeight ];
+    windowPositionSetting.value = [ window.screenX, window.screenY ];
   }
+  const saveWindowSettingsDebounced = debounce(() => catchErrors(saveWindowSettings), 1000);
 
   async function onClickTopLevel(event: MouseEvent) {
     let targetE = event.target as HTMLElement;

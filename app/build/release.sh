@@ -35,5 +35,3 @@ git commit package.json ../desktop/package.json ./logic/build.ts -m "Starting ve
 git push
 git push --tags
 # Build will be kicked off by GitHub Actions triggering on the git tag push
-
-bash build/webpage.sh $VERSION

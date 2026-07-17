@@ -2,7 +2,7 @@ import { makeTestDatabase } from './SQLDatabase';
 import { SQLMeetAccount } from './SQLMeetAccount';
 import { fakeMeetAccount, fakeChatPerson } from '../../testData';
 import { appGlobal } from '../../app';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { expect, test } from 'vitest';
 
 test("Save and read meet accounts from SQL database", { timeout: 10000 }, async () => {
@@ -44,9 +44,3 @@ test("Save and read meet accounts from SQL database", { timeout: 10000 }, async 
   expect(readAccount.url).toEqual(originalAccount.url);
 });
 
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}

@@ -23,6 +23,7 @@
 
 <script lang="ts">
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
+  import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
   import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedRoom } from "./selected";
   import { appGlobal } from "../../logic/app";
@@ -42,7 +43,7 @@
     }
     for (let account of appGlobal.chatAccounts) {
       for (let room of account.rooms) {
-        if (room.contact == person) { // TODO ChatPerson != Person. chat.contact as PersonUID? Use contact.matchesPerson() ?
+        if (room.contact instanceof ChatPersonUID && room.contact.matchesPerson(person)) {
           return room;
         }
       }

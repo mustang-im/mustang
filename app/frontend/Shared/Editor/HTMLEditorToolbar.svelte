@@ -5,7 +5,7 @@
     <Button
       label={$t`Bold`}
       shortCutInfo={$t`*bold* or **bold**`}
-      on:click={() => editor.chain().focus().toggleBold().run()}
+      onClick={() => editor.chain().focus().toggleBold().run()}
       disabled={!editor.can().chain().focus().toggleBold().run()}
       selected={editor.isActive('bold')}
       iconOnly
@@ -15,7 +15,7 @@
     <Button
       label={$t`Italic`}
       shortCutInfo={$t`/italic/ or _italic_`}
-      on:click={() => editor.chain().focus().toggleItalic().run()}
+      onClick={() => editor.chain().focus().toggleItalic().run()}
       disabled={!editor.can().chain().focus().toggleItalic().run()}
       selected={editor.isActive('italic')}
       icon={ItalicIcon}
@@ -24,7 +24,7 @@
       />
     <Button
       label={$t`Strike-through`}
-      on:click={() => editor.chain().focus().toggleStrike().run()}
+      onClick={() => editor.chain().focus().toggleStrike().run()}
       disabled={!editor.can().chain().focus().toggleStrike().run()}
       selected={editor.isActive('strike')}
       iconOnly
@@ -34,7 +34,7 @@
     <Button
       label={$t`Code word, within a phrase`}
       shortCutInfo={$t`\`code\``}
-      on:click={() => editor.chain().focus().toggleCode().run()}
+      onClick={() => editor.chain().focus().toggleCode().run()}
       disabled={!editor.can().chain().focus().toggleCode().run()}
       selected={editor.isActive('code')}
       icon={CodeWordIcon}
@@ -48,7 +48,7 @@
 code
 block
 3xENTER"
-      on:click={() => editor.chain().focus().toggleCodeBlock().run()}
+      onClick={() => editor.chain().focus().toggleCodeBlock().run()}
       disabled={!editor.can().chain().focus().toggleCodeBlock().run()}
       selected={editor.isActive('codeBlock')}
       icon={CodeBlockIcon}
@@ -58,7 +58,7 @@ block
     <Button
       label={$t`Quote of the original email`}
       shortCutInfo={$t`> Quote`}
-      on:click={() => editor.chain().focus().toggleBlockquote().run()}
+      onClick={() => editor.chain().focus().toggleBlockquote().run()}
       disabled={!editor.can().chain().focus().toggleBlockquote().run()}
       selected={editor.isActive('blockquote')}
       icon={QuoteMailIcon}
@@ -68,7 +68,7 @@ block
     <!--
     <Button
       label="Third party quote"
-      on:click={() => editor.chain().focus().toggleBlockquote().run()}
+      onClick={() => editor.chain().focus().toggleBlockquote().run()}
       disabled={!editor.can().chain().focus().toggleBlockquote().run()}
       selected={editor.isActive('blockquote')}
       icon={QuoteIcon}
@@ -79,7 +79,7 @@ block
     <Button
       label={$t`Bulleted list`}
       shortCutInfo={$t`* Item`}
-      on:click={() => editor.chain().focus().toggleBulletList().run()}
+      onClick={() => editor.chain().focus().toggleBulletList().run()}
       disabled={!editor.can().chain().focus().toggleBulletList().run()}
       selected={editor.isActive('bulletList')}
       icon={ListBulletedIcon}
@@ -88,7 +88,7 @@ block
     <Button
       label={$t`Ordered list`}
       shortCutInfo={$t`1. Item`}
-      on:click={() => editor.chain().focus().toggleOrderedList().run()}
+      onClick={() => editor.chain().focus().toggleOrderedList().run()}
       disabled={!editor.can().chain().focus().toggleOrderedList().run()}
       selected={editor.isActive('orderedList')}
       icon={ListNumberedIcon}
@@ -98,7 +98,7 @@ block
     <Button
       label={$t`Title`}
       shortCutInfo={$t`# Big title`}
-      on:click={() => editor.chain().focus().toggleHeading({ level: 1}).run()}
+      onClick={() => editor.chain().focus().toggleHeading({ level: 1}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 1}).run()}
       selected={editor.isActive('heading', { level: 1 })}
       iconOnly
@@ -108,7 +108,7 @@ block
     <Button
       label={$t`Heading, hierarchy level 2`}
       shortCutInfo={$t`## Sub header`}
-      on:click={() => editor.chain().focus().toggleHeading({ level: 2}).run()}
+      onClick={() => editor.chain().focus().toggleHeading({ level: 2}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 2}).run()}
       selected={editor.isActive('heading', { level: 2 })}
       iconOnly
@@ -118,7 +118,7 @@ block
     <Button
       label={$t`Heading, hierarchy level 3`}
       shortCutInfo={$t`### Sub sub header`}
-      on:click={() => editor.chain().focus().toggleHeading({ level: 3}).run()}
+      onClick={() => editor.chain().focus().toggleHeading({ level: 3}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 3}).run()}
       selected={editor.isActive('heading', { level: 3 })}
       iconOnly
@@ -147,7 +147,7 @@ block
       />
     <Button
       label={$t`Clear formatting`}
-      on:click={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
+      onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
       icon={ClearIcon}
       iconSize="16px"
       iconOnly
@@ -157,7 +157,7 @@ block
     <Button
       label={$t`Undo the last change`}
       shortCutInfo={$t`Ctrl-Z`}
-      on:click={() => editor.chain().focus().undo().run()}
+      onClick={() => editor.chain().focus().undo().run()}
       disabled={!editor.can().chain().focus().undo().run()}
       icon={UndoIcon}
       iconOnly
@@ -165,7 +165,7 @@ block
     <Button
       label={$t`Redo the change that was undone before`}
       shortCutInfo={$t`Ctrl-Y`}
-      on:click={() => editor.chain().focus().redo().run()}
+      onClick={() => editor.chain().focus().redo().run()}
       disabled={!editor.can().chain().focus().redo().run()}
       icon={RedoIcon}
       iconOnly

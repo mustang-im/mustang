@@ -1,15 +1,13 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
-import { type Tag, getTagByName } from "../../Abstract/Tag";
+import { getTagByName } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import type { Calendar } from "../../Calendar/Calendar";
 import { InvitationMessage  } from "../../Calendar/Invitation/InvitationStatus";
 import { ensureArray, assert, NotSupported } from "../../util/util";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
 
 const ExchangeScheduling: Record<string, number> = {
@@ -20,7 +18,7 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-export class ActiveSyncEMail extends EMail {
+export class ActiveSyncEMail extends ExchangeEMail {
   declare folder: ActiveSyncFolder;
 
   get serverID(): string | null {
@@ -140,27 +138,24 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let data = {
-      DeletesAsMoves: "1",
-      GetChanges: "0",
-      Commands: {
-        Delete: {
-          ServerId: this.serverID,
+    try {
+      this.folder.deletions.add(this.serverID);
+      let data = {
+        DeletesAsMoves: "1",
+        GetChanges: "0",
+        Commands: {
+          Delete: {
+            ServerId: this.serverID,
+          },
         },
-      },
-    };
-    let response = await this.folder.makeSyncRequest(data);
-    if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      };
+      let response = await this.folder.makeSyncRequest(data);
+      if (response.Responses) {
+        throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      }
+    } finally {
+      this.folder.deletions.delete(this.serverID);
     }
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
   }
 
   async updateTags() {
@@ -181,15 +176,6 @@ export class ActiveSyncEMail extends EMail {
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // ActiveSync always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** ActiveSync only does not provide complete event data.

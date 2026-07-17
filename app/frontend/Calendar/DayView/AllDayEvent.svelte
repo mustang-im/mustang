@@ -1,13 +1,16 @@
-<hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
-  title={eventAsText}
-  style="--account-color: {event.calendar?.color}"
-  class:selected={$selectedEvent == event}>
-  <hbox class="title">{event.title}</hbox>
-</hbox>
+<Clickable onClick={onSelect} onDoubleClick={onOpen}>
+  <hbox class="event font-small"
+    title={eventAsText}
+    style="--account-color: {event.calendar?.color}"
+    class:selected={$selectedEvent == event}>
+    <hbox class="title">{event.title}</hbox>
+  </hbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { openEventFromOtherApp } from "../open";
+  import Clickable from "../../Shared/Clickable.svelte";
+  import { openEvent } from "../open";
   import { selectedEvent } from "../selected";
 
   export let event: Event;
@@ -21,7 +24,7 @@
   }
 
   function onOpen() {
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 
@@ -29,7 +32,7 @@
   .event {
     position: relative;
     padding: 4px;
-    margin: 2px 0px;
+    margin-block-end: 1px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

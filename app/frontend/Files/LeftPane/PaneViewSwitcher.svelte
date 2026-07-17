@@ -9,6 +9,7 @@
       onClick={() => active = FilesView.Harddrive}
       selected={active == FilesView.Harddrive}
       />
+    {/if}
     <Button
       label={$t`Cloud storage`}
       icon={CloudIcon}
@@ -17,7 +18,6 @@
       onClick={() => active = FilesView.CloudStorage}
       selected={active == FilesView.CloudStorage}
       />
-    {/if}
     <Button
       label={$t`Persons`}
       icon={PersonIcon}

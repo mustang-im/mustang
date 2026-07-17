@@ -7,6 +7,7 @@
 
 <script lang="ts">
   import type { Directory } from '../../../logic/Files/Directory';
+  import { selectedFolder } from '../selected';
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -17,8 +18,9 @@
 
   async function deleteFolder() {
     await folder.deleteIt();
+
+    if ($selectedFolder == folder) {
+      $selectedFolder = null;
+    }
   }
 </script>
-
-<style>
-</style>

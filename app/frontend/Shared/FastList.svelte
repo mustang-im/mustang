@@ -53,8 +53,13 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
-  import { onMount, tick } from "svelte";
   import throttle from "lodash/throttle";
+  import { onMount, tick } from "svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{
+    init: { scrollToIndex: (index: number) => void, scrollToItem: (item: T) => void },
+    selected: T,
+  }>();
 
   type T = $$Generic;
 
@@ -102,6 +107,8 @@
   let listE: HTMLDivElement;
   let headerE: HTMLDivElement;
   let contentE: HTMLDivElement;
+  /** The `items` that the `init` event was dispatched for */
+  let initDoneForItems: Collection<T> = null;
 
   $: headerHeight = headerE?.firstChild?.offsetHeight ?? 10;
 
@@ -164,6 +171,11 @@
 
       showRows = Math.ceil(availableHeight / rowHeight);
       //console.log("size", "contentrow", contentRow.offsetHeight, "list", listE.offsetHeight, "header", headerE.offsetHeight, "rowheight", rowHeight, "available", availableHeight, " showrows", showRows);
+      if (initDoneForItems != items) {
+        // Dispatching on every item change would yank the view back to the selected row
+        initDoneForItems = items;
+        dispatchEvent("init", { scrollToIndex: scrollIntoView, scrollToItem: scrollItemIntoView });
+      }
     } catch (ex) {
       console.error(ex);
     }
@@ -178,7 +190,7 @@
     const updateSizeThrottled = throttle(updateSize, 30);
     const resizeObserver = new ResizeObserver(updateSizeThrottled);
     resizeObserver.observe(listE);
-    return () => resizeObserver.unobserve(listE);
+    return () => resizeObserver.disconnect();
   });
 
   function onKey(event: KeyboardEvent) {
@@ -249,6 +261,17 @@
     }
   }
 
+  function scrollItemIntoView(item: T) {
+    if (!item) {
+      return;
+    }
+    let index = items.contents.indexOf(item);
+    if (index <= 0) {
+      return;
+    }
+    scrollIntoView(index);
+  }
+
   const onScrollThrottled = throttle(onScroll, 10);
   function onScroll() {
     let topY = listE.scrollTop - headerHeight;
@@ -282,6 +305,7 @@
     } else { // no modifier, i.e. a simple single-selection click
       selectedItems.clear();
       selectedItems.add(clickedItem);
+      dispatchEvent("selected", clickedItem);
     }
   }
 

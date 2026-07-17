@@ -121,6 +121,7 @@ export class OWAEvent extends Event {
 
   protected newRecurrenceRuleFromJSON(json: any): RecurrenceRule {
     let masterDuration = this.duration;
+    let timezone = this.timezone;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
@@ -140,7 +141,7 @@ export class OWAEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, timezone, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
@@ -317,7 +318,7 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       recurrence.RecurrencePattern.DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -327,12 +328,12 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      recurrence.RecurrencePattern.DayOfMonth = rule.seriesStartTime.getDate();
+      recurrence.RecurrencePattern.DayOfMonth = rule.seriesStartTime.getUTCDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      recurrence.RecurrencePattern.Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
+      recurrence.RecurrencePattern.Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long", timeZone: "UTC" });
     }
-    recurrence.RecurrenceRange.StartDate = this.dateString(rule.seriesStartTime, true);
+    recurrence.RecurrenceRange.StartDate = this.dateString(this.startTime, true);
     if (rule.count < Infinity) {
       recurrence.RecurrenceRange.__type = "NumberedRecurrence:#Exchange";
       recurrence.RecurrenceRange.NumberOfOccurrences = rule.count;
@@ -347,7 +348,15 @@ export class OWAEvent extends Event {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-      await this.calendar.callOWA(request);
+      try {
+        await this.calendar.callOWA(request);
+      } catch (ex) {
+        if (ex.type == "ErrorItemNotFound") {
+          // already done
+        } else {
+          throw ex;
+        }
+      }
     } else if (this.parentEvent) {
       await this.calendar.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
@@ -404,8 +413,8 @@ export class OWAEvent extends Event {
 
 function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: string }, ResponseType: string }[], participants: Participant[], organizer?: string) {
   for (let attendee of attendees) {
-    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
-    if (emailAddress != organizer) {
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress, null);
+    if (emailAddress != organizer && emailAddress) {
       participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }

@@ -16,11 +16,9 @@
 <Route path="meet">
   <SetupMeetAccount />
 </Route>
-<!--
-<Route path="file">
-  <SetupFilesAccount />
+<Route path="files">
+  <SetupFiles />
 </Route>
--->
 <Route path="/">
   <SetupAnyAccountTypeDialog />
 </Route>
@@ -33,5 +31,6 @@
   import SetupContacts from "./Contacts/SetupContacts.svelte";
   import SetupCalendar from "./Calendar/SetupCalendar.svelte";
   import SetupMeetAccount from "./Meet/SetupMeetAccount.svelte";
+  import SetupFiles from "./Files/SetupFiles.svelte";
   import { Route } from "svelte-navigator";
 </script>

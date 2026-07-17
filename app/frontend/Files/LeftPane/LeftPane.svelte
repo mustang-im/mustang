@@ -7,7 +7,7 @@
   </hbox>
 
   {#if activeTab == FilesView.Recent}
-    <RecentList bind:viewFile />
+    <RecentList />
   {:else if activeTab == FilesView.Person}
     <PersonsPane bind:listFiles bind:listDirs />
   {:else if activeTab == FilesView.Project}
@@ -24,7 +24,6 @@
   import { Directory } from "../../../logic/Files/Directory";
   import { selectedFolder } from "../selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
-  import { production } from "../../../logic/build";
   import FolderPane from "../FolderLeftPane/FolderPane.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
   import RecentList from "./RecentList.svelte";
@@ -36,8 +35,6 @@
    * in/out only */
   export let listFiles: Collection<File>;
   export let listDirs: Collection<Directory>;
-  /** out only */
-  export let viewFile: File | null = null;
   export let activeTab: FilesView;
 
   $: if (!!$globalSearchTerm) openSearchPane();

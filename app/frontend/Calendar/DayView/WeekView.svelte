@@ -4,13 +4,13 @@
     <hbox flex />
     <slot name="top-center">
       <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
-      <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
+      <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} onClick={goToToday} iconSize="16px" plain iconOnly />
     </slot>
     <slot name="top-center" />
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour}
+  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay}
     on:celldblclick={(param) => addEvent(param.detail.start)} />
 </vbox>
 
@@ -18,7 +18,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar } from "../selected";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
   import { getToday } from "../../Util/date";
@@ -36,6 +36,7 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
+  export let enlargeSelectedDay = false;
 
   function goToToday() {
     start = getToday();
@@ -46,7 +47,7 @@
     assert($selectedCalendar, $t`Please set up a calendar first`);
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, true, start);
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 

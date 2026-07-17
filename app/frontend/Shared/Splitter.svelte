@@ -2,20 +2,32 @@
   <hbox class="splitter" bind:clientWidth={containerWidth}
     class:mobile={appGlobal.isMobile}>
     <hbox class="left" bind:clientWidth={currentLeftWidth}>
-      <slot name="left" />
+      <ErrorBoundary>
+        <slot name="left" />
+      </ErrorBoundary>
     </hbox>
     <hbox class="splitter-bar"
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
-    <hbox class="right" style="flex: {rightRatio} 0 0;">
-      <slot name="right" />
+    <hbox class="right" style={
+      rightFixedWidth
+      ? `width: ${rightFixedWidth};`
+      : `flex: ${rightRatio} 0 0;`
+      }>
+      <ErrorBoundary>
+        <slot name="right" />
+      </ErrorBoundary>
     </hbox>
   </hbox>
 {:else if hasLeft}
-  <slot name="left" />
+  <ErrorBoundary>
+    <slot name="left" />
+  </ErrorBoundary>
 {:else if hasRight}
-  <slot name="right" />
+  <ErrorBoundary>
+    <slot name="right" />
+  </ErrorBoundary>
 {:else}
   <vbox class="splitter" />
 {/if}
@@ -28,6 +40,7 @@
 <script lang="ts">
 	import { appGlobal } from "../../logic/app";
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+  import ErrorBoundary from "./ErrorBoundary.svelte";
 
   /** Left pane cannot be made smaller than this
    * in px */
@@ -41,6 +54,10 @@
   export let hasLeft = true;
   /** If false, will hide the right part and remove the splitter */
   export let hasRight = true;
+  /** Override right width
+   * Make the right bar exactly this width, not changable
+   * null = normal mode */
+  export let rightFixedWidth: number | null = null;
   /** If set, will save the ratio in localStorage as preference and restore it */
   export let name: string = null;
 
@@ -77,6 +94,9 @@
   }
 
   function onMouseDown(event: PointerEvent){
+    if (rightFixedWidth) {
+      return;
+    }
     previousLeftWidth = currentLeftWidth;
     previousMousePosX = event.clientX;
     isMouseDown = true;

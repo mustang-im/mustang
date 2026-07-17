@@ -12,11 +12,7 @@ export class HarddriveAccount extends FileSharingAccount {
   }
 
   newDirectory(name: string): HarddriveDirectory {
-    let dir = new HarddriveDirectory();
-    dir.name = name;
-    dir.account = this;
-    dir.parent = null;
-    return dir;
+    return super.newDirectory(name, new HarddriveDirectory()) as HarddriveDirectory;
   }
 
   async sync() {

@@ -86,7 +86,7 @@ export class CreateMIME {
     }
     let att = email.attachments.find(att => att.mimeType == "application/ld+json");
     if (!att) {
-      att = new Attachment();
+      att = email.newAttachment();
       att.filename = "SML.json";
       att.mimeType = "application/ld+json";
       att.disposition = ContentDisposition.inline;

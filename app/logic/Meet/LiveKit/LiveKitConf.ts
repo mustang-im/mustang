@@ -8,6 +8,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
+import { fetchJSON } from "../../util/netUtil";
 import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 import type { Room, RemoteParticipant, RpcInvocationData } from "livekit-client";
 
@@ -19,7 +20,7 @@ export class LiveKitConf extends VideoConfMeeting {
   webSocketURL: URLString;
   room: Room | null = null;
   invitationURL: URLString;
-  myOrganizerToken: string;
+  myParticipantToken: string;
   encryptionKey: string | null = null;
   mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
@@ -74,7 +75,7 @@ export class LiveKitConf extends VideoConfMeeting {
     if (this.encryptionKey) {
       anchor.set("key", this.encryptionKey);
     }
-    if (this.encryptionKey) {
+    if (forName) {
       anchor.set("name", forName);
     } else {
       anchor.delete("name");
@@ -114,25 +115,28 @@ export class LiveKitConf extends VideoConfMeeting {
     this.invitationURL = url;
     let anchor = new URLSearchParams(new URL(url).hash?.substring(1));
     let invitationToken = sanitize.alphanumdash(anchor.get("invitation"));
-    let myName = sanitize.label(anchor.get("name"), null) ?? appGlobal.me.name;
-    appGlobal.me.name ??= myName;
 
-    let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + new URLSearchParams({
+    let params = new URLSearchParams({
       roomName: this.id,
-      myName,
       invitationToken,
     });
-    let response = await fetch(tokenURL);
-    let json = await response.json();
+    if (this.account.realname) {
+      params.set("myName", this.account.realname);
+    }
+    let tokenURL = this.account.apiURL + "meeting/join-from-invitation?" + params;
+    let json;
+    try {
+      json = await fetchJSON(tokenURL);
+    } catch (ex) {
+      throw new Error(gt`Could not join the meeting` + ` (${ex.message})`);
+    }
     console.log("invitation code result", json);
     this.webSocketURL = sanitize.url(json.webSocketURL, undefined, ["wss"]);
-    let joinToken = sanitize.nonemptystring(json.joinToken);
-    await this.joinAfterStart(joinToken);
+    this.myParticipantToken = sanitize.nonemptystring(json.joinToken);
   }
 
   /** @returns participant token */
   protected async createMyParticipant(): Promise<string> {
-    let myName = appGlobal.me.name;
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
         "Content-Type": "application/json",
@@ -141,7 +145,7 @@ export class LiveKitConf extends VideoConfMeeting {
       result: "json",
     });
     let json = await ky.post(this.account.apiURL + "meeting?" + new URLSearchParams({
-      myName,
+      myName: this.account.realname,
     }), {
       headers: {
         "X-AuthToken": btoa(JSON.stringify(getSavedTicket())),
@@ -155,9 +159,9 @@ export class LiveKitConf extends VideoConfMeeting {
   }
 
   /** For testing only: LiveKit Cloud Sandbox
-   * @returns participant token */
+   * @returns participant token *
   protected async createMyParticipantInLiveKitCloudSandbox(): Promise<string> {
-    let myName = appGlobal.me.name;
+    let myName = this.account.realname;
     assert(this.account.webFrontendBaseURL, "Need web frontend base URL");
     let ky = await appGlobal.remoteApp.kyCreate({
       headers: {
@@ -172,16 +176,21 @@ export class LiveKitConf extends VideoConfMeeting {
       participantName: myName,
     }));
     this.webSocketURL = sanitize.url(response.serverUrl);
-    this.myOrganizerToken = sanitize.nonemptystring(response.participantToken);
+    this.myParticipantToken = sanitize.nonemptystring(response.participantToken);
     // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(participantToken)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
-    return this.myOrganizerToken;
-  }
+    return this.myParticipantToken;
+  }*/
 
   async start() {
     assert(this.id, "Need to create the conference first");
+    // Hack for MeetWeb/Join.svelte
+    if (this.state == MeetingState.Init && this.invitationURL) {
+      await this.join(this.invitationURL);
+    }
+
     await super.start();
-    this.myOrganizerToken ??= await this.createMyParticipant();
-    await this.joinAfterStart(this.myOrganizerToken);
+    this.myParticipantToken ??= await this.createMyParticipant();
+    await this.joinAfterStart(this.myParticipantToken);
   }
 
   protected async joinAfterStart(participantToken: string) {
@@ -193,7 +202,7 @@ export class LiveKitConf extends VideoConfMeeting {
 
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.room.localParticipant.sid;
-    this.myParticipant.name = this.room.localParticipant.name || appGlobal.me.name;
+    this.myParticipant.name = this.room.localParticipant.name;
     this.myParticipant.role = ParticipantRole.User;
     this.myParticipant.subscribe((_obj, propName) => catchErrors(() => this.myUserChanged(propName), this.errorCallback));
     this.state = MeetingState.Ongoing;

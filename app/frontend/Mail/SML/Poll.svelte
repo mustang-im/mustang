@@ -3,7 +3,7 @@
     <legend class="question font-normal">{poll.name}</legend>
     {#each ensureArray(poll.options) as option}
       <label class="option">
-        <input type="radio" name="poll" value={option} on:change={() => onSelect(option)}>
+        <input type="radio" value={option} bind:group={myReaction.object}>
         <vbox>
           <hbox class="title">{option.name}</hbox>
           {#if option.description}
@@ -24,10 +24,6 @@
   export let myReaction: TSMLAction;
 
   $: poll = $sml.sml as any as TSMLSimplePoll<TSMLThing>;
-
-  function onSelect(option: TSMLThing) {
-    myReaction.object = option;
-  }
 </script>
 
 <style>

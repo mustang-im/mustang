@@ -1,36 +1,38 @@
-<vbox class="directory box"
-  class:selected={dir == $selectedFile}
-  on:click={() => catchErrors(toggleOpen)}
-  >
-  <vbox class="tile">
-    <button class="icon">
-      {#if open}
-        <FolderOpenIcon size="48" />
-      {:else}
-        <FolderClosedIcon size="48" />
-      {/if}
-    </button>
-  </vbox>
-  <vbox class="info">
-    <hbox class="name">
-      {dir?.name}
-    </hbox>
-    <hbox class="second">
-      <hbox flex />
-      <hbox class="time font-smallest">
-        {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
+<Clickable onClick={toggleOpen}>
+  <vbox class="directory box"
+    class:selected={dir == $selectedFile}>
+    <vbox class="tile">
+      <button class="icon">
+        {#if open}
+          📁
+          <!--📂-->
+        {:else}
+          📁
+        {/if}
+      </button>
+    </vbox>
+    <vbox class="info">
+      <hbox class="name">
+        {$dir?.name}
       </hbox>
-    </hbox>
-  </vbox>
-</vbox>
+      <hbox class="second">
+        <hbox flex />
+        <hbox class="time font-smallest">
+          {$dir?.lastMod ? getDateTimeString($dir.lastMod) : ""}
+        </hbox>
+      </hbox>
+    </vbox>
+  </vbox>`
+
+</Clickable>
 
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
   import { selectedFolder, selectedFile } from "../selected";
+  import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { getDateTimeString } from "../../Util/date";
-  import { catchErrors } from "../../Util/error";
 
   export let dir: Directory;
 
@@ -56,6 +58,7 @@
     align-self: center;
     opacity: 60%;
     border: none;
+    font-size: 5vw;
     background-color: transparent;
     padding-inline-start: 16px;
     padding-inline-end: 0px;

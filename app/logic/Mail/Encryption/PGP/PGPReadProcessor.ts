@@ -1,10 +1,11 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
-import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
-import type { PersonUID } from "../../../Abstract/PersonUID";
+import { readAutoCryptKeys } from "./AutoCrypt";
 import { parseMIMEDirectSubparts, parseHeaderParameters, toCRLF } from "../MIME";
+import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
+import type { PersonUID } from "../../../Abstract/PersonUID";
 import { k1HourMS } from "../../../../frontend/Util/date";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -33,7 +34,7 @@ export class PGPReadProcessor extends EMailProcessor {
     let openPGP = await import("openpgp");
     if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;
-    let senderPublicKeys = await this.getPublicKeysForEmailAddress(email.from, email.sent, openPGP);
+    let senderPublicKeys = await this.getPublicKeysForEmailAddress(email.from, email.sent, email);
     let senderOpenPGPKeys: OpenPGP.PublicKey[] = [];
     for (let publicKey of senderPublicKeys) {
       senderOpenPGPKeys.push(await publicKey.openPGPPublicKey(openPGP));
@@ -42,7 +43,7 @@ export class PGPReadProcessor extends EMailProcessor {
       let privateKeys = new ArrayColl<OpenPGP.PrivateKey>();
       for (let recipient of email.allRecipients()) {
         let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
-        privateKeys.addAll(await this.getPrivateKeysForIdentity(identity, openPGP));
+        privateKeys.addAll(await this.getPrivateKeysForIdentity(identity));
       }
       assert(privateKeys.hasItems, "Did not find private keys");
       let armored = await encrypted.text();
@@ -75,7 +76,7 @@ export class PGPReadProcessor extends EMailProcessor {
         signature,
         verificationKeys: senderOpenPGPKeys,
         format: "binary",
-        date: email.sent, // TODO plus a few minutes
+        // date: email.sent, // TODO plus a few minutes. Getting "Signature creation time is in the future"
       });
       let signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent, openPGP);
       email.signed = signedWithKey?.id ?? null;
@@ -117,6 +118,7 @@ export class PGPReadProcessor extends EMailProcessor {
   async updateMIME(email: EMail, content: Uint8Array, outerFrom: string) {
     if (email.from.emailAddress.toLowerCase() != outerFrom.toLowerCase()) {
       // Treat as phishing
+      console.warn("PGP signature ignored, because inner signed From: is", email.from.emailAddress, "but outer header From: is", outerFrom);
       email.signed = null;
     }
     email.downloadComplete = false;
@@ -126,7 +128,7 @@ export class PGPReadProcessor extends EMailProcessor {
     await email.saveCompleteMessage();
   }
 
-  async getPrivateKeysForIdentity(identity: MailIdentity, openPGP: OpenPGPModule): Promise<Collection<OpenPGP.PrivateKey>> {
+  async getPrivateKeysForIdentity(identity: MailIdentity): Promise<Collection<OpenPGP.PrivateKey>> {
     let result = new ArrayColl<OpenPGP.PrivateKey>();
     for (let privateKey of identity.encryptionPrivateKeys.each) {
       if (!(privateKey instanceof PGPPrivateKey)) {
@@ -137,11 +139,11 @@ export class PGPReadProcessor extends EMailProcessor {
     return result;
   }
 
-  async getPublicKeysForEmailAddress(personUID: PersonUID, date: Date, openPGP: OpenPGPModule): Promise<Collection<PGPPublicKey>> {
+  async getPublicKeysForEmailAddress(personUID: PersonUID, date: Date, email?: EMail): Promise<Collection<PGPPublicKey>> {
     let keys = new ArrayColl<PGPPublicKey>();
-    let contact = personUID.findPerson();
-    if (contact) {
-      for (let publicKey of contact.encryptionPublicKeys.each) {
+    let person = personUID.findPerson();
+    if (person) {
+      for (let publicKey of person.encryptionPublicKeys.each) {
         if (!(publicKey instanceof PGPPublicKey && publicKey.publicKeyArmored)) {
           continue;
         }
@@ -155,6 +157,11 @@ export class PGPReadProcessor extends EMailProcessor {
           continue;
         }
         keys.add(privateKey);
+      }
+    } else if (email && keys.isEmpty) {
+      let publicKey = await readAutoCryptKeys(email);
+      if (publicKey) {
+        keys.add(publicKey);
       }
     }
     return keys;

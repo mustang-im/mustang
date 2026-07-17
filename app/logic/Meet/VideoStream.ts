@@ -1,15 +1,18 @@
+import { Observable, notifyChangedProperty } from "../util/Observable";
 import { NotReached } from "../util/util";
 import type { MeetingParticipant } from "./Participant";
 
 /** One incoming or outgoing video in a video conference */
-export class VideoStream {
+export class VideoStream extends Observable {
   readonly stream: MediaStream;
+  @notifyChangedProperty
   hasVideo = false;
   isScreenShare = false;
   isMe = false;
   readonly participant: MeetingParticipant | null = null;
 
   constructor(stream: MediaStream, participant?: MeetingParticipant) {
+    super();
     this.stream = stream;
     this.participant = participant ?? null;
   }

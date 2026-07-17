@@ -4,15 +4,24 @@
 
 <script lang="ts">
   import { VideoStream } from "../../../../logic/Meet/VideoStream";
+  import { catchErrors } from "../../../Util/error";
   import { onDestroy } from "svelte";
 
   export let audioOnly: VideoStream;
 
   let audioEl: HTMLAudioElement;
-  $: audioEl && audioOnly.stream ? startAudio() : stopAudio();
-  function startAudio() {
+  $: audioEl && catchErrors(audioOnly.stream ? startAudio : stopAudio);
+  async function startAudio() {
     audioEl.srcObject = audioOnly.stream;
-    audioEl.play();
+    try {
+      await audioEl.play();
+    } catch (ex) {
+      if (ex?.name == "AbortError" || ex?.message?.includes("https://goo.gl/LdLk22")) {
+        // Element was torn down (e.g. stream moved to the video list) before play() resolved
+      } else {
+        throw ex;
+      }
+    }
   }
   function stopAudio() {
     if (!audioEl) {

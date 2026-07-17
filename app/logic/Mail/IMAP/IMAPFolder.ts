@@ -17,9 +17,9 @@ export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
   declare readonly messages: EMailCollection<IMAPEMail>;
   declare readonly subFolders: ArrayColl<IMAPFolder>;
+  declare readonly deletions: Set<number>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<number>();
 
   constructor(account: IMAPAccount) {
     super(account);
@@ -162,9 +162,10 @@ export class IMAPFolder extends Folder {
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
+    await this.readFolder();
     let lock = await this.listMessagesLock.lock();
     try {
-      let { newMessages } = await this.fetchMessageList({ all: true }, {});
+      let { newMessages } = await this.fetchMessageList({ all: true }, { uid: true });
       this.messages.addAll(newMessages);
       await this.storage.saveFolderProperties(this);
       await this.saveNewMsgs(newMessages);
@@ -178,6 +179,7 @@ export class IMAPFolder extends Folder {
    * Works only with CONDSTORE server capability. */
   protected async listChangedMessages(): Promise<ArrayColl<IMAPEMail>> {
     let { newMessages } = await this.fetchMessageList({ all: true }, {
+      uid: true,
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
     this.messages.addAll(newMessages);
@@ -195,7 +197,7 @@ export class IMAPFolder extends Folder {
       if (this.countTotal === 0) {
         return new ArrayColl();
       }
-      let fromUID = this.getHighestUID() ?? "1";
+      let fromUID = this.getHighestUID() ?? 1;
       let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
@@ -218,7 +220,7 @@ export class IMAPFolder extends Folder {
         envelope: true,
         flags: true,
       };
-      this.account.log(this, conn, "fetchMessageList", range);
+      this.account.log(this, conn, "fetchMessageList", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       let modseq: bigint;
       for await (let msgInfo of msgsAsyncIterator) {
@@ -249,7 +251,7 @@ export class IMAPFolder extends Folder {
         flags: true,
         //threadId: true,
       };
-      this.account.log(this, conn, "fetchFlags", range);
+      this.account.log(this, conn, "fetchFlags", range, options);
       let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.flags || this.deletions.has(msgInfo.uid)) {
@@ -402,7 +404,7 @@ export class IMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject && email.dbID) {
-          await this.storage.saveMessageWritableProps(email);
+          await email.saveWritablePropsLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -469,11 +471,11 @@ export class IMAPFolder extends Folder {
 
   /** We received an event from the server that the
    * number of emails in the folder changed */
-  async countChanged(newCount: number, oldCount: number, connection: ImapFlow): Promise<void> {
+  async countChanged(newCount: number, oldCount: number): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
     if (hasChanged) {
-      this.account.log(this, connection, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
+      this.account.log(this, null, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
       await this.getNewMessages();
     }
   }
@@ -636,11 +638,16 @@ export class IMAPFolder extends Folder {
     if (!await this.account.hasCapability("ACL")) {
       return undefined;
     }
-    let conn = await this.account.connection();
     let attributes: Array<{ type: string, value: string }>;
     let persons = new ArrayColl<PersonUID>();
-    let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
-    await response.next();
+    let conn = await this.account.connection();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('GETACL', [{ type: 'ATOM', value: this.path }], { untagged: { async ACL(untagged) { attributes = untagged.attributes; } } });
+      await response.next();
+    } finally {
+      lock.release();
+    }
     for (let i = 1; i < attributes.length; i += 2) {
       let name = sanitize.nonemptystring(attributes[i].value);
       if (name == this.account.username) {
@@ -654,14 +661,24 @@ export class IMAPFolder extends Folder {
 
   async addPermission(permission: PersonUID, rights: string) {
     let conn = await this.account.connection();
-    let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
-    await response.next();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('SETACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }, { type: 'ATOM', value: "+" + rights }]);
+      await response.next();
+    } finally {
+      lock.release();
+    }
   }
 
   async removePermission(permission: PersonUID) {
     let conn = await this.account.connection();
-    let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
-    await response.next();
+    let lock = await this.account.connectionLock.get(conn).lock();
+    try {
+      let response = await conn.exec('DELETEACL', [{ type: 'ATOM', value: this.path }, { type: 'ATOM', value: permission.name }]);
+      await response.next();
+    } finally {
+      lock.release();
+    }
   }
 
   fromExtraJSON(json: any) {

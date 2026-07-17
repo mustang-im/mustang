@@ -5,8 +5,10 @@ import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { TJMAPAddressbook } from "./TJMAPAddressbook";
 import type { TJMAPContact } from "./TJSContact";
 import type { TJMAPChangeResponse, TJMAPGetResponse, TID } from "../../Mail/JMAP/TJMAPGeneric";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 export class JMAPAddressbook extends Addressbook {
@@ -23,6 +25,7 @@ export class JMAPAddressbook extends Addressbook {
   shouldShow = true;
 
   get account(): JMAPAccount {
+    assert(this.mainAccount, gt`Address book ${this.name} lost the connection to its account`);
     return this.mainAccount as JMAPAccount;
   }
 
@@ -35,13 +38,6 @@ export class JMAPAddressbook extends Addressbook {
 
   get isLoggedIn(): boolean {
     return this.account.isLoggedIn;
-  }
-
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
-    }
-    await this.account.login(interactive);
   }
 
   fromJMAP(jmap: TJMAPAddressbook) {
@@ -67,19 +63,25 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
+    let state: string;
     let hasMore = true;
     let allNewPersons = new ArrayColl<JMAPPerson>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, updatedPersons } = await this.fetchPersons(i, batchSize + 1);
+      let { newPersons, updatedPersons, syncState } = await retryOnTransientError(() =>
+        this.fetchPersons(i, batchSize + 1));
+      state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
       hasMore = newPersons.length + updatedPersons.length > batchSize;
     }
+    if (state) {
+      this.account.syncState.set("ContactCard", state);
+    }
     return allNewPersons;
   }
 
-  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson>> {
+  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPContact>;
     let lock = await this.account.stateLock.lock();
@@ -113,9 +115,10 @@ export class JMAPAddressbook extends Addressbook {
       ]);
       listResponse = response["persons"] as TJMAPGetResponse<TJMAPContact>;
 
-      let result = this.parsePersonsList(listResponse.list);
-      this.account.syncState.set("ContactCard", listResponse.state);
-      return result;
+      return {
+        ...this.parsePersonsList(listResponse.list),
+        syncState: listResponse.state,
+      };
     } finally {
       lock.release();
     }
@@ -139,10 +142,6 @@ export class JMAPAddressbook extends Addressbook {
     assert(this.account.syncState.has("ContactCard"), "No sync state");
     let lock = await this.account.stateLock.lock();
     try {
-      if (lock.wasWaiting && false) { // TODO always true
-        console.log("JMAP fetch changes for addressbook", this.name, "already in progress");
-        return new ArrayColl();
-      }
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
         [
@@ -189,15 +188,19 @@ export class JMAPAddressbook extends Addressbook {
       let allAddressbooks = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       for (let addressbook of allAddressbooks) {
         await addressbook.readContactsFromDB();
+        if (addressbook.persons.isEmpty) {
+          continue; // Adding persons here would stop listAllPersons() from ever running
+        }
         let removed = this.findMovedAway(changedResponse.list, addressbook);
-        let addedThisAB = addedByAB.get(addressbook.id);
-        let changedThisAB = changedByAB.get(addressbook.id);
+        let addedThisAB = addedByAB.get(addressbook.jmapID);
+        let changedThisAB = changedByAB.get(addressbook.jmapID);
         if (!(addedThisAB || changedThisAB ||
               removed.hasItems || changes.destroyed?.length)) {
               continue;
         }
         removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed));
-        let addedResult = addressbook.parsePersonsList(addedThisAB ?? [], false);
+        // A new item created locally comes back in `created`, so need dup checks
+        let addedResult = addressbook.parsePersonsList(addedThisAB ?? []);
         let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);
         addedResult.newPersons.addAll(changedResult.newPersons);
 
@@ -255,18 +258,22 @@ export class JMAPAddressbook extends Addressbook {
     let newPersons = new ArrayColl<JMAPPerson>();
     let updatedPersons = new ArrayColl<JMAPPerson>();
     for (let json of persons) {
-      let id = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(id)) {
-        continue;
-      }
-      let person = checkUpdates && this.getPersonByJMAPID(id);
-      if (person) {
-        person.fromJMAP(json);
-        updatedPersons.add(person);
-      } else {
-        person = this.newPerson();
-        person.fromJMAP(json);
-        newPersons.add(person);
+      try {
+        let id = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(id)) {
+          continue;
+        }
+        let person = checkUpdates && this.getPersonByJMAPID(id);
+        if (person) {
+          person.fromJMAP(json);
+          updatedPersons.add(person);
+        } else {
+          person = this.newPerson();
+          person.fromJMAP(json);
+          newPersons.add(person);
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
       }
     }
     return { newPersons, updatedPersons };
@@ -274,7 +281,7 @@ export class JMAPAddressbook extends Addressbook {
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
     for (let person of persons) {
-      await person.save();
+      await person.saveLocally();
     }
   }
 

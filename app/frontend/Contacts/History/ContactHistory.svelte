@@ -1,5 +1,5 @@
 {#if $messages.hasItems}
-  <vbox class="history" flex>
+  <vbox class="history" class:colorInherit flex>
     <GroupBox headerName={$t`Contact history *=> The log of previous interactions with this person`}>
       <vbox class="log" flex slot="content">
         <FastList items={messages} columns="12px 5em 48px 1fr">
@@ -37,6 +37,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let person: Person;
+  /** true = GroupBox colors. false = Use background colors of parent*/
+  export let colorInherit = false;
 
   const kDefaultLimit = 200;
   const kAddMore = 1000;
@@ -66,5 +68,9 @@
   }
   .count {
     margin-inline-end: 8px;
+  }
+  .colorInherit :global(.group .content) {
+    background-color: inherit;
+    color: inherit;
   }
 </style>

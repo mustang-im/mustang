@@ -1,63 +1,101 @@
 <FileDropTarget
-  on:add-files={onAddAttachment}
-  on:inline-files={onAddInline}
-  allowInline={true}>
-  <hbox flex class="msg-editor">
-    <vbox flex class="editor-wrapper">
-      <HTMLEditorToolbar {editor} />
-      <vbox flex class="editor-scroll-wrapper">
-        <Scroll>
-          <vbox flex class="editor">
-            <HTMLEditor bind:html={to.draftMessage} bind:editor />
-          </vbox>
-        </Scroll>
-      </vbox>
-    </vbox>
-    {#if $attachments.hasItems}
-      <AttachmentsPane {attachments} />
+  on:add-files={onAddAttachment}>
+  <!--on:inline-files={onAddInline}
+  allowInline={true}>-->
+  <vbox flex class="msg-editor">
+    {#if showEmojis}
+      <hbox>
+        <vbox class="emojis">
+          <GraphicSelector
+            on:select={onEmoji}
+            on:backspace={() => catchErrors(onEmojiBackspace)}
+            bind:isOpen={showEmojis}
+            />
+        </vbox>
+        <vbox class="emoji-empty" flex />
+      </hbox>
     {/if}
-    <vbox class="send-buttons">
-      <RoundButton classes="send-button"
-        onClick={send}
-        icon={SendIcon}
-        iconSize="24px"
-        padding="6px"
-        border={false}
-        disabled={!to.draftMessage}
-        />
-    </vbox>
-  </hbox>
+    {#if $attachments.hasItems}
+      <vbox class="attachments">
+        <AttachmentsPane message={to.draftMessage} />
+      </vbox>
+    {/if}
+    <hbox flex>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <vbox flex class="editor-wrapper" on:keydown|capture={ev => isEnterSend && onKeyEnter(ev, () => catchErrors(send))}>
+        <HTMLEditorToolbar {editor}>
+          <Button classes="emoji-toggle"
+            onClick={() => showEmojis = !showEmojis}
+            icon={EmojiIcon}
+            iconSize="16px"
+            selected={showEmojis}
+            slot="start"
+            />
+          <Button classes="enter-toggle"
+            onClick={() => isEnterSend = !isEnterSend}
+            icon={EnterKeyIcon}
+            iconSize="16px"
+            selected={!isEnterSend}
+            slot="last"
+            />
+        </HTMLEditorToolbar>
+        <vbox flex class="editor-scroll-wrapper">
+          <Scroll>
+            <vbox flex class="editor">
+              <HTMLEditor bind:html={to.draftMessage.rawHTMLDangerous} bind:editor />
+            </vbox>
+          </Scroll>
+        </vbox>
+      </vbox>
+      <vbox class="send-buttons">
+        <RoundButton classes="send-button"
+          onClick={send}
+          icon={SendIcon}
+          iconSize="24px"
+          padding="6px"
+          border={false}
+          disabled={!to.draftMessage.hasHTML && $attachments.isEmpty}
+          />
+      </vbox>
+    </hbox>
+  </vbox>
 </FileDropTarget>
 
 <script lang="ts">
   import type { ChatRoom } from "../../logic/Chat/ChatRoom";
-  import { UserChatMessage } from "../../logic/Chat/Message";
-  import { Attachment } from "../../logic/Abstract/Attachment";
   import { insertImage } from "../Shared/Editor/InsertImage";
+  import { selectedDraft, selectedEditor } from "./selected";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
   import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
-  import RoundButton from "../Shared/RoundButton.svelte";
+  import GraphicSelector from "./Emoji/GraphicSelector.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import SendIcon from "lucide-svelte/icons/send";
+  import EnterKeyIcon from "lucide-svelte/icons/corner-down-left";
+  import EmojiIcon from "lucide-svelte/icons/smile";
+  import { onKeyEnter } from "../Util/util";
+  import { catchErrors } from "../Util/error";
+  import { assert } from "../../logic/util/util";
   import type { Editor } from '@tiptap/core';
-  import { ArrayColl } from "svelte-collections";
 
   export let to: ChatRoom;
 
   let editor: Editor;
 
-  let attachments = new ArrayColl<Attachment>();
-  $: to && attachments.clear(); // TODO save as draft
+  let isEnterSend = true;
+  $: to.draftMessage ??= to.newMessage();
+  $: attachments = $to.draftMessage.attachments;
+  $: $selectedDraft = $to.draftMessage;
+  $: $selectedEditor = editor;
+  let showEmojis = false;
 
   async function send() {
-    if (!to.draftMessage) {
-      return;
-    }
-    let msg = new UserChatMessage(to);
+    assert(to.draftMessage.hasHTML || to.draftMessage.attachments.hasItems, "Message is empty");
+    let msg = to.draftMessage;
     msg.outgoing = true;
-    msg.html = to.draftMessage;
     msg.text; // Generate to keep in sync
     msg.contact = to.contact;
     msg.sent = new Date();
@@ -66,21 +104,36 @@
   }
 
   function reset() {
-    to.draftMessage = "";
+    to.draftMessage = to.newMessage();
     editor.commands.setContent(""); // TODO fix HTMLEditor to listen to `html`
-    attachments.clear();
   }
 
   function onAddAttachment(event: CustomEvent) {
     let files = event.detail.files as File[];
-    attachments.addAll(files.map(file => Attachment.fromFile(file)));
+    for (let file of files) {
+      let att = to.draftMessage.newAttachment();
+      att.fromFile(file);
+      attachments.add(att);
+    }
   }
 
   function onAddInline(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      insertImage(editor, file, attachments);
+      insertImage(editor, file, to.draftMessage);
     }
+  }
+
+  function onEmoji(ev: CustomEvent) {
+    let emoji = ev.detail.emoji;
+    if (emoji) {
+      editor.commands.insertContent(emoji);
+    }
+  }
+
+  function onEmojiBackspace() {
+    editor.view.focus();
+    document.execCommand("delete");
   }
 </script>
 
@@ -90,8 +143,27 @@
     color: var(--leftbar-fg);
     padding: 4px 4px 10px 10px;
   }
+  .emojis {
+    height: 300px;
+    width: 600px;
+  }
+  .attachments {
+    height: 112px;
+  }
+  .attachments :global(.attachments-pane .inside) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: start;
+  }
+  .attachments :global(.attachments-pane .attachment) {
+    min-width: 200px;
+  }
+  .attachments :global(.attachments-pane .buttons) {
+    margin-inline-start: 12px;
+  }
   .editor-wrapper {
     flex: 3 0 0;
+    height: 112px;
   }
   .editor-scroll-wrapper {
     background-color: var(--main-bg);

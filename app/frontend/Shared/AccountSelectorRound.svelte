@@ -1,44 +1,45 @@
 <hbox class="accounts" class:large>
   {#if showAllOption}
-    <vbox class="account" title={$t`All`}
-      on:click={() => onSelect(null)}
-      >
-      <hbox>
-        <RoundButton
-          label={$t`All`}
-          selected={selectedAccount == null}
-          onClick={() => onSelect(null)}
-          icon={iconDefault}
-          border={false}
-        />
-      </hbox>
-      <div class="name font-smallest">{$t`All`}</div>
-    </vbox>
+    <Clickable onClick={() => onSelect(null)}>
+      <vbox class="account" title={$t`All`}>
+        <hbox>
+          <RoundButton
+            label={$t`All`}
+            selected={selectedAccount == null}
+            onClick={() => onSelect(null)}
+            icon={iconDefault}
+            border={false}
+          />
+        </hbox>
+        <div class="name font-smallest">{$t`All`}</div>
+      </vbox>
+    </Clickable>
   {/if}
   {#each $accounts.each as acc}
-    <vbox class="account" title={acc.name}
-      on:click={() => onSelect(acc)}
-      style="--account-color: {acc.color}"
-      >
-      <hbox>
-        <RoundButton
-          label={acc.name}
-          selected={acc == selectedAccount}
-          onClick={() => onSelect(acc)}
-          icon={acc.icon ?? iconDefault}
-          classes={acc.icon ? "has-logo" : "default-icon"}
-          {iconSize}
-          border={false}
-        />
-      </hbox>
-      <div class="name font-smallest" title={acc.name}>{acc.name}</div>
-    </vbox>
+    <Clickable onClick={() => onSelect(acc)}>
+      <vbox class="account" title={acc.name}
+        style="--account-color: {acc.color}">
+        <hbox>
+          <RoundButton
+            label={acc.name}
+            selected={acc == selectedAccount}
+            onClick={() => onSelect(acc)}
+            icon={acc.icon ?? iconDefault}
+            classes={acc.icon ? "has-logo" : "default-icon"}
+            {iconSize}
+            border={false}
+          />
+        </hbox>
+        <div class="name font-smallest" title={acc.name}>{acc.name}</div>
+      </vbox>
+    </Clickable>
   {/each}
 </hbox>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import RoundButton from "./RoundButton.svelte";
+  import Clickable from "../Shared/Clickable.svelte";
   import type { Collection } from "svelte-collections";
   import type { ConstructorOfATypedSvelteComponent } from "svelte";
   import { t } from "../../l10n/l10n";

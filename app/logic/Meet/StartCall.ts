@@ -1,6 +1,9 @@
 import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { MeetingParticipant } from "./Participant";
-import type { Person, ContactEntry } from "../Abstract/Person";
+import type { MeetAccount } from "./MeetAccount";
+import { WhatsAppMeetAccount } from "./WhatsApp/WhatsAppMeetAccount";
+import { JID } from "../Chat/WhatsApp/Binary/JID";
+import { Person } from "../Abstract/Person";
 import type { Group } from "../Abstract/Group";
 /*
 import { Person, ContactEntry } from "../Abstract/Person";
@@ -15,11 +18,17 @@ import { UserError, type URLString, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
 export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeting> {
+  let whatsAppCall = startWhatsAppCall(to, true);
+  if (whatsAppCall) {
+    return whatsAppCall;
+  }
   // TODO test code
   let call = new VideoConfMeeting();
   let callee = new MeetingParticipant();
   callee.name = to.name;
-  callee.picture = to.picture;
+  if (to instanceof Person) {
+    callee.person = to; // picture etc. come from the linked Person
+  }
   call.participants.add(callee);
   call.state = MeetingState.OutgoingCallConfirm;
   appGlobal.meetings.add(call);
@@ -120,7 +129,28 @@ function entryIsMatrix(contact: ContactEntry) {
 */
 
 export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {
+  let whatsAppCall = startWhatsAppCall(to, false);
+  if (whatsAppCall) {
+    return whatsAppCall;
+  }
   throw new Error("Not yet implemented. Try a video call.");
+}
+
+/** If the contact has a WhatsApp ID and a WhatsApp Meet account exists, starts a
+ * WhatsApp call to them. Returns null otherwise (so callers fall back). */
+function startWhatsAppCall(to: Person | Group, video: boolean): VideoConfMeeting | null {
+  let account = appGlobal.meetAccounts.find(acc => acc instanceof WhatsAppMeetAccount) as WhatsAppMeetAccount | undefined;
+  if (!account || !(to instanceof Person)) {
+    return null;
+  }
+  let entry = to.chatAccounts.find(e => e.protocol == "whatsapp");
+  if (!entry) {
+    return null;
+  }
+  let call = account.newMeeting();
+  call.prepareOutgoing(JID.parse(entry.value), video);
+  appGlobal.meetings.add(call);
+  return call;
 }
 
 /**
@@ -131,7 +161,7 @@ export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeti
  *   `meeting.join()` was already called. You still need to `meeting.start()`.
  * @throws if the URL is not supported
  */
-export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
+export async function joinConferenceByURL(url: URLString, account?: MeetAccount): Promise<VideoConfMeeting> {
   assert(url, "Need URL");
   let urlParsed: URL;
   try {
@@ -139,7 +169,7 @@ export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeet
   } catch (ex) {
     throw new UserError(gt`This is not a meeting URL`);
   }
-  let account = appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
+  account ??= appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
   if (!account) {
     // TODO Open `url` in embedded browser window, as fallback
     throw new UserError(gt`This meeting URL is not supported`);

@@ -29,23 +29,26 @@ export function getSettingsCategoryForApp(app: MustangApp) {
   return getAllSettingsCategories().find(cat => cat.forApp == app);
 }
 
-export function openSettingsCategoryByID(id: string) {
-  let cat = getSettingsCategoryByID(id);
-  selectedCategory.set(cat);
-  openApp(settingsMustangApp, {});
-}
-
 export function openSettingsCategoryForApp(app: MustangApp) {
-  let cat = getSettingsCategoryForApp(app);
+  openSettingsCategory(getSettingsCategoryForApp(app));
+}
+
+export function openSettingsCategoryByID(id: string) {
+  openSettingsCategory(getSettingsCategoryByID(id));
+}
+
+export function openSettingsCategory(cat: SettingsCategory) {
   selectedCategory.set(cat);
-  // openApp(settingsMustangApp, { category: cat });
   openApp(settingsMustangApp, {});
 }
 
-export function openSettingsCategoryForAccount(account: Account, category = "main") {
-  // let mainCat = getAllSettingsCategories().find(cat => cat.accounts.contains(account));
-  let cat = accountSettings.find(cat => account instanceof cat.type &&
-    cat.id == category || category == "main" && cat.isMain);
+export function getSettingsCategoryForAccount(account: Account, categoryID = "main") {
+  return accountSettings.find(cat => account instanceof cat.type &&
+    cat.id == categoryID || categoryID == "main" && cat.isMain);
+}
+
+export function openSettingsCategoryForAccount(account: Account, categoryID = "main") {
+  let cat = getSettingsCategoryForAccount(account, categoryID);
   assert(cat, "Account not found in settings");
   selectedAccount.set(account);
   selectedCategory.set(cat);

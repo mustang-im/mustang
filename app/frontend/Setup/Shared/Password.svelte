@@ -11,7 +11,7 @@
   <hbox class="buttons">
     <Button classes="cleartext"
       label={cleartext ? $t`Hide password` : $t`Show password`}
-      on:click={() => cleartext = !cleartext}
+      onClick={() => cleartext = !cleartext}
       icon={cleartext ? EyeIcon : EyeOffIcon}
       iconOnly
       plain

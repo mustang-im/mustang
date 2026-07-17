@@ -1,5 +1,3 @@
-import { assert } from "../util";
-
 /**
  * Allows a function to ensure that it will never run in parallel
  * with another instance of the same function.
@@ -53,15 +51,13 @@ export class Lock {
   protected waiting: Array<Locked> = [];
 
   async lock(): Promise<Locked> {
-    let locked = new Locked();
-    locked.wasWaiting = this.haveWaiting;
+    let locked = new Locked(this);
     let lastWaiting = this.waiting[this.waiting.length - 1];
+    locked.wasWaiting = !!lastWaiting;
     this.waiting.push(locked);
-    if (locked.wasWaiting) {
+    if (lastWaiting) {
       // `resolve()` in `Locked.release()`
       await lastWaiting._promise; // wait for `release()` to be called on the other lock
-      let removed = this.waiting.shift(); // remove next
-      assert(removed == lastWaiting, "Lock implementation logic error: I am not the currently waiting lock");
       // now, we can run
     }
     return locked;
@@ -70,20 +66,33 @@ export class Lock {
   get haveWaiting(): boolean {
     return this.waiting.length > 0;
   }
+
+  /** internal, for `Locked.release()` */
+  _remove(locked: Locked): void {
+    let pos = this.waiting.indexOf(locked);
+    if (pos >= 0) {
+      this.waiting.splice(pos, 1);
+    }
+  }
 }
 
 export class Locked {
   wasWaiting: boolean;
+  protected _lock: Lock;
   _promise: Promise<null>;
   _resolve: (value: null) => void;
 
-  constructor() {
+  constructor(lock: Lock) {
+    this._lock = lock;
     this._promise = new Promise(resolve => {
       this._resolve = resolve;
     });
   }
 
   release(): void {
+    // Remove self: if we left this to the next waiter, then with no next
+    // waiter, the entry would stay, and `wasWaiting` would be true forever.
+    this._lock._remove(this);
     this._resolve(null);
   };
 }

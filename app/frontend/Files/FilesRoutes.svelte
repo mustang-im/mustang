@@ -16,7 +16,8 @@
   </Route>
 {:else}
   <Route path="file">
-    <FilesAppD viewFile={params?.file ?? requiredParam()} />
+    {$viewFile = params?.file ?? requiredParam()}
+    <FilesAppD />
   </Route>
   <Route path="/">
     <FilesAppD />
@@ -25,6 +26,7 @@
 
 <script lang="ts">
   import { selectedPerson } from "../Contacts/Person/Selected";
+  import { viewFile } from "./selected";
   import { appGlobal } from "../../logic/app";
   import FilesAppD from "./FilesAppD.svelte";
   import FileViewer from "./FileViewer.svelte";

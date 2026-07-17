@@ -1,7 +1,7 @@
 <vbox flex />
 <vbox class="settings">
   <HeaderGroupBox>
-    <hbox slot="header">{$t`Import / Export`}</hbox>
+    <hbox slot="header">{$t`Import / Export *=> Data from or to another application`}</hbox>
     <hbox class="buttons">
       <Button
         label={$t`Import from iCal .ics file…`}
@@ -36,10 +36,14 @@
       return;
     }
     let fileContents = await file.text();
-    let events = convertICalToEvents(fileContents, () => account.newEvent());
+    let events = convertICalToEvents(fileContents, () => account.newEvent(), ex => account.errorCallback(ex));
     account.events.addAll(events);
     for (let event of events) {
-      await event.save();
+      try {
+        await event.save();
+      } catch (ex) {
+        account.errorCallback(ex);
+      }
     }
     await account.save();
   }

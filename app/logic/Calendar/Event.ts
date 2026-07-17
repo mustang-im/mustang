@@ -343,19 +343,17 @@ export class Event extends Observable {
   newRecurrenceRule(frequency: Frequency, interval = 1, week = 0, weekdays?: number[]): void {
     let init: RecurrenceInit = {
       masterDuration: this.duration,
+      timezone: this.timezone,
       seriesStartTime: this.startTime,
       frequency,
       interval,
     };
     if (frequency == Frequency.Weekly) {
-      init.weekdays = weekdays?.includes(this.startTime.getDay()) ? weekdays : [...weekdays?.length > 1 ? weekdays : [], this.startTime.getDay()]; // e.g. Monday and Thursday
+      init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
-      if (week) {
-        init.week = week == 5 && isLastWeekOfMonth(this.startTime) ? 5 : Math.ceil(this.startTime.getDate() / 7);
-        init.weekdays = [this.startTime.getDay()]; // e.g. 3rd Wednesday of month
-      }
+      init.week = week;
     }
-    this.recurrenceRule = new RecurrenceRule(init);
+    this.recurrenceRule = new RecurrenceRule(init, true);
   }
 
   /** Create a new instance of the same event.
@@ -367,9 +365,11 @@ export class Event extends Observable {
     this.recurrenceStartTime = original.recurrenceStartTime;
     this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
-    this.instances.replaceAll(original.instances);
-    this.exceptions.replaceAll(original.exceptions);
-    this.exclusions.replaceAll(original.exclusions);
+    if (this.recurrenceRule) {
+      this.instances.replaceAll(original.instances);
+      this.exceptions.replaceAll(original.exceptions);
+      this.exclusions.replaceAll(original.exclusions);
+    }
     this.parentEvent = original.parentEvent;
   }
 
@@ -495,6 +495,10 @@ export class Event extends Observable {
 
   get isNew(): boolean {
     return !this.dbID;
+  }
+
+  get isEditable(): boolean {
+    return !this.isIncomingMeeting;
   }
 
   get isIncomingMeeting(): boolean {
@@ -746,14 +750,15 @@ export class Event extends Observable {
    *
    * TODO Call this when the user scrolls further than the default fill date.
    */
-  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
+  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems || // cached
         !this.calendar) { // Not for pseudo events in messages
       // TODO Fill more, if seriesEndTime >> last.startTime
-      return this.instances;
+      return;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(seriesEndTime);
+    let instances = [];
     for (let occurrence of occurrences) {
       if (this.exceptions.some(exception => exception.recurrenceStartTime.getTime() == occurrence.getTime())) {
         continue;
@@ -769,9 +774,9 @@ export class Event extends Observable {
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
-      this.instances.add(instance);
+      instances.push(instance);
     }
-    return this.instances;
+    this.instances.addAll(instances);
   }
 
   /**
@@ -795,8 +800,9 @@ export class Event extends Observable {
    */
   async setRecurrenceCount(count: number) {
     assert(this.recurrenceRule, "Need to have a rule to set its count");
-    let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
-    this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first });
+    let seriesStartTime = this.startTime;
+    let { masterDuration, timezone, frequency, interval, weekdays, week, first } = this.recurrenceRule;
+    this.recurrenceRule = new RecurrenceRule({ masterDuration, timezone, seriesStartTime, count, frequency, interval, weekdays, week, first });
     await this.trimExceptionsAndExclusions(this.recurrenceRule.getOccurrenceByIndex(count - 1));
   }
 
@@ -805,8 +811,9 @@ export class Event extends Observable {
    */
   async setRecurrenceEndTime(seriesEndTime: Date) {
     assert(this.recurrenceRule, "Need to have a rule to set its end time");
-    let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = this.recurrenceRule;
-    this.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, frequency, interval, weekdays, week, first });
+    let seriesStartTime = this.startTime;
+    let { masterDuration, timezone, frequency, interval, weekdays, week, first } = this.recurrenceRule;
+    this.recurrenceRule = new RecurrenceRule({ masterDuration, timezone, seriesStartTime, seriesEndTime, frequency, interval, weekdays, week, first });
     await this.trimExceptionsAndExclusions(seriesEndTime);
   }
 
@@ -865,10 +872,4 @@ export enum RecurrenceCase {
    * Like an instance, but at a different time or with modified properties.
    * Overrides a specific instance. */
   Exception = "exception",
-}
-
-function isLastWeekOfMonth(date: Date) {
-  date = new Date(date);
-  date.setDate(date.getDate() + 7);
-  return date.getDate() < 8;
 }

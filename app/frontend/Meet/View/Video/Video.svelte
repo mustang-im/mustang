@@ -1,10 +1,12 @@
 <!-- svelte-ignore a11y-media-has-caption -->
 <video bind:this={videoEl}
   {muted}
+  playsinline
   {width} {height}
   class={classes} />
 
 <script lang="ts">
+  import { sleep } from "../../../../logic/util/util";
   import { catchErrors } from "../../../Util/error";
   import { onDestroy } from "svelte";
 
@@ -14,15 +16,28 @@
   export let height: number = undefined;
   export let classes: string | undefined = undefined;
 
+  let isFirefox = /firefox/i.test(navigator.userAgent);
+  let isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
   let videoEl: HTMLVideoElement;
   $: videoEl && stream ? catchErrors(startVideo) : catchErrors(stopVideo);
   async function startVideo() {
     videoEl.srcObject = stream;
+    if (isFirefox || isSafari) {
+      /* Firefox has a timing issue and doesn't actually attach the video
+       * unless `srcObject` is assigned out-of-band, otherwise it shows only a
+       * frozen first frame.
+       * Safari 15 sometimes renders black until the src is reset. */
+      await sleep(0);
+      if (!videoEl || videoEl.srcObject != stream) {
+        return; // torn down or replaced while we waited
+      }
+      videoEl.srcObject = stream;
+    }
     try {
       await videoEl.play();
     } catch (ex) {
-      if (ex?.message?.includes("https://goo.gl/LdLk22")) {
-        console.error(ex);
+      if (ex?.name == "AbortError" || ex?.message?.includes("https://goo.gl/LdLk22")) {
         // ignore
       } else {
         throw ex;

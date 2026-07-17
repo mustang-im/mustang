@@ -1,36 +1,40 @@
-<vbox flex class="events"
-  on:dblclick={onDoubleClick}
-  on:pointerenter={() => hovering = true}
-  on:pointerleave={() => hovering = false}
-  >
-  {#if $displayEvents?.hasItems}
-    {#each $displayEvents.each as event (event.id)}
-      <EventContainer {event} {start} {end} {conflicts}>
-        <EventContent {event} {start} {end} forceShowText={conflicts.length > 1} />
-      </EventContainer>
-    {/each}
-  {/if}
+<Clickable {onDoubleClick}>
+  <vbox flex class="events"
+    style="--selected-calendar-color: {$selectedCalendar?.color ?? "black"}"
+    on:pointerenter={() => hovering = true}
+    on:pointerleave={() => hovering = false}
+    >
+    {#if $displayEvents?.hasItems}
+      {#each $displayEvents.each as event (event.id)}
+        <EventContainer {event} {start} {end} {conflicts}>
+          <EventContent {event} {start} {end} forceShowText={conflicts.length > 1} />
+        </EventContainer>
+      {/each}
+    {/if}
 
-  {#if $displayOverlayEvents.hasItems}
-    {#each $displayOverlayEvents.each as event}
-      <EventContainer {event} {start} {end} {conflicts}>
-        <slot name="event-overlay" start={event.startTime} {end} {event} events={displayEvents} />
-      </EventContainer>
-    {/each}
-  {/if}
+    {#if $displayOverlayEvents.hasItems}
+      {#each $displayOverlayEvents.each as event}
+        <EventContainer {event} {start} {end} {conflicts}>
+          <slot name="event-overlay" start={event.startTime} {end} {event} events={displayEvents} />
+        </EventContainer>
+      {/each}
+    {/if}
 
-  {#if hovering}
-    <slot name="event-hover"
-      {start} {end}
-      empty={!$displayEvents?.hasItems && !$displayOverlayEvents.hasItems}
-      events={displayEvents}
-      />
-  {/if}
-</vbox>
+    {#if hovering}
+      <slot name="event-hover"
+        {start} {end}
+        empty={!$displayEvents?.hasItems && !$displayOverlayEvents.hasItems}
+        events={displayEvents}
+        />
+    {/if}
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { selectedCalendar } from "../selected";
   import EventContainer from "./EventContainer.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import { ArrayColl, Collection } from "svelte-collections";
   import EventContent from "./EventContent.svelte";
   import { createEventDispatcher } from 'svelte';
@@ -75,6 +79,10 @@
     background-position: bottom;
     background-size: 3px 1px;
     background-repeat: repeat-x;
+  }
+  .events:hover {
+    background-color: color-mix(in srgb, var(--selected-calendar-color) 10%, transparent);
+    color: white;
   }
   .events :global(.event) {
     z-index: 1;

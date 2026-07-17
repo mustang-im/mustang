@@ -1,10 +1,31 @@
 <hbox class="top">
   <hbox class="buttons">
     <RoundButton
+      label={$t`Start a new meeting`}
+      onClick={startAdHocMeeting}
+      errorCallback={showError}
+      icon={PlusIcon}
+      iconSize="24px"
+      border={false}
+      classes="plain primary create" />
+    <RoundButton
       label={$t`Plan a meeting`}
-      icon={AddToCalendarIcon}
       onClick={addToCalendar}
-      classes="plain primary" border={false} iconSize="24px" />
+      errorCallback={showError}
+      icon={AddToCalendarIcon}
+      iconSize="24px"
+      border={false}
+      classes="plain primary" />
+    {#if havePhoneAccount}
+      <RoundButton
+        label={isPhoneDial ? $t`Video conference` : $t`Make a phone call`}
+        onClick={() => isPhoneDial = !isPhoneDial}
+        errorCallback={showError}
+        icon={isPhoneDial ? VideoConfIcon : PhoneCallIcon}
+        iconSize="24px"
+        border={false}
+        classes="plain primary" />
+    {/if}
   </hbox>
   <hbox flex />
   <vbox class="payment-bar-container">
@@ -15,7 +36,7 @@
   </vbox>
   <hbox flex />
   <AccountDropDown
-    accounts={appGlobal.meetAccounts}
+    accounts={appGlobal.meetAccounts.filterObservable(acc => !(acc instanceof PhoneAccount))}
     bind:selectedAccount
     filterByWorkspace={true} />
 </hbox>
@@ -29,7 +50,7 @@
       {/if}
       <Button
         label={$t`Start a new meeting`}
-        icon={AddIcon}
+        icon={PlusIcon}
         onClick={startAdHocMeeting}
         errorCallback={showError}
         classes="primary filled" />
@@ -71,7 +92,7 @@
       <vbox flex class="previous">
         <hbox class="title font-small">{$t`Previous meetings`}</hbox>
         <MeetingList meetings={previousMeetings}
-          onClick={openEventFromOtherApp}>
+          onClick={openEvent}>
           <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings`}</div>
         </MeetingList>
       </vbox>
@@ -95,12 +116,13 @@
 
 <script lang="ts">
   import { startAdHocMeeting, callSelected, joinByURL, startFakeMeeting, testIncoming, createMustangMeetAccountIfPossible } from "./start";
+  import { PhoneAccount } from "../../../logic/Meet/PhoneAccount";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { meetMustangApp } from "../MeetMustangApp";
   import { selectedApp } from "../../AppsBar/selectedApp";
   import { Event } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
-  import { openEventFromOtherApp } from "../../Calendar/open";
+  import { openEvent } from "../../Calendar/open";
   import { setNewEventTime } from "../../Calendar/event";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
@@ -113,13 +135,17 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
-  import AddIcon from 'lucide-svelte/icons/plus';
+  import PlusIcon from 'lucide-svelte/icons/plus';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import { t } from "../../../l10n/l10n";
+  import PhoneCallIcon from "lucide-svelte/icons/phone";
+  import VideoConfIcon from "lucide-svelte/icons/video";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
   import { assert, sleep } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
   import { onMount } from "svelte";
+
+  export let isPhoneDial = false;
 
   const now = new Date();
   const maxUpcoming = new Date();
@@ -149,7 +175,7 @@
     assert(calendar, $t`Please set up a calendar first`);
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEventFromOtherApp(event);
+    openEvent(event);
   }
 
   let errorMsg: string | null = null;
@@ -160,6 +186,8 @@
   }
 
   $selectedApp = meetMustangApp;
+  let meetAccounts = appGlobal.meetAccounts;
+  $: havePhoneAccount = $meetAccounts.some(acc => acc instanceof PhoneAccount);
 
   onMount(() => catchErrors(createMustangMeetAccountIfPossible));
 </script>
@@ -167,6 +195,11 @@
 <style>
   .top {
     margin: 12px;
+  }
+  .buttons {
+    column-gap: 12px;
+    margin-inline-start: 8px;
+    margin-block-start: 4px;
   }
   .actions-container {
     align-items: center;
@@ -191,9 +224,8 @@
   }
   .test .buttons {
     margin-block-end: 12px;
-  }
-  .test .buttons :global(> *) {
-    margin-block-end: 12px;
+    margin-inline-end: 12px;
+    row-gap: 8px;
   }
   .meeting-link {
     margin-inline-end: 4px;

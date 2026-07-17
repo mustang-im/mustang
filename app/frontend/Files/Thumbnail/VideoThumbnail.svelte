@@ -1,11 +1,11 @@
 <!-- svelte-ignore a11y-media-has-caption -->
 <video
-  src={file.url}
+  src={$file.url}
   preload="meta"
   bind:this={videoE}
   muted
-  width={size} height={size}
-  title={file.name}
+  title={$file.name}
+  class:preview
   on:mouseenter={() => catchErrors(startPlaying)}
   on:mouseleave={() => catchErrors(stopPlaying)}
   />
@@ -16,7 +16,7 @@
   import { catchErrors } from "../../Util/error";
 
   export let file: File;
-  export let size = 16;
+  export let preview: boolean;
 
   let videoE: HTMLVideoElement;
   async function startPlaying() {
@@ -27,3 +27,18 @@
     videoE.pause();
   }
 </script>
+
+<script lang="ts" context="module">
+  export const kSupportedExt = ["mpg", "mpeg", "mp4v", "mp4", "mp2", "m2v", "mpg4", "m1v", "mpe"];
+</script>
+
+<style>
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  video.preview {
+    object-fit: cover;
+  }
+</style>

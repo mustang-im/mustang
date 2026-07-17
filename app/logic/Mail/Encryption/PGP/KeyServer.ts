@@ -1,7 +1,7 @@
 import { PersonUID } from "../../../Abstract/PersonUID";
 import type { Person } from "../../../Abstract/Person";
 import { PGPPublicKey } from "./PGPPublicKey";
-import { TrustLevel } from "../PublicKey";
+import { TrustLevel } from "../enums";
 import { addArmorHeader, addPublicKeyToPersonUID } from "../KeyUtils";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../util/netUtil";
 import { PriorityAbortable } from "../../../util/flow/Abortable";

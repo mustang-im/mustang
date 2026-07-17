@@ -1,6 +1,9 @@
 <button on:click on:dblclick on:click={myOnClick}
-  title={tooltip ?? label} class="button {classes}" class:filled class:border
-  {disabled} class:disabled class:selected
+  title={typeof(disabled) == "string" ? disabled : tooltip ?? label}
+  class="button {classes}"
+  class:filled class:border
+  class:selected
+  disabled={!!disabled} class:disabled
   {tabindex}
   style="--padding: {padding}"
   >
@@ -46,7 +49,7 @@
     "8px";
   export let filled = classes?.includes("create");
   export let border = true;
-  export let disabled = false;
+  export let disabled: string | boolean = false;
   export let selected = false;
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
@@ -58,6 +61,8 @@
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
+    event.stopPropagation();
+    event.preventDefault();
     let previousDisabled = disabled;
     disabled = true;
     let loadTimeout = setTimeout(() => {

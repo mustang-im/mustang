@@ -1,4 +1,5 @@
-import { Event, RecurrenceCase } from "../Event";
+import { ExchangeEvent } from "./ExchangeEvent";
+import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -37,7 +38,7 @@ const RecurrenceType: Record<string, Frequency> = {
   DailyRecurrence: Frequency.Daily,
 };
 
-export class EWSEvent extends Event {
+export class EWSEvent extends ExchangeEvent {
   declare calendar: EWSCalendar;
   declare parentEvent: EWSEvent;
   declare readonly exceptions: ArrayColl<EWSEvent>;
@@ -124,6 +125,7 @@ export class EWSEvent extends Event {
 
   protected newRecurrenceRuleFromXML(xmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
+    let timezone = this.timezone;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
@@ -144,7 +146,7 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(sanitize.nonemptystring(pattern.DaysOfWeek, null));
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, timezone, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
@@ -269,7 +271,7 @@ export class EWSEvent extends Event {
       pattern.t$Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       pattern.t$DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -279,26 +281,26 @@ export class EWSEvent extends Event {
       pattern.t$DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      pattern.t$DayOfMonth = rule.seriesStartTime.getDate();
+      pattern.t$DayOfMonth = rule.seriesStartTime.getUTCDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      pattern.t$Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
+      pattern.t$Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long", timeZone: "UTC" });
     }
     let recurrence: any = {};
     recurrence[`t$${recurrenceType}Recurrence`] = pattern;
     if (rule.count < Infinity) {
       recurrence.t$NumberedRecurrence = {
-        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$StartDate: this.dateString(this.startTime, true),
         t$NumberOfOccurrences: rule.count,
       };
     } else if (rule.seriesEndTime) {
       recurrence.t$EndDateRecurrence = {
-        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$StartDate: this.dateString(this.startTime, true),
         t$EndDate: this.dateString(rule.seriesEndTime, true),
       };
     } else {
       recurrence.t$NoEndRecurrence = {
-        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$StartDate: this.dateString(this.startTime, true),
       };
     }
     return recurrence;
@@ -308,7 +310,15 @@ export class EWSEvent extends Event {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-      await this.calendar.account.callEWS(request);
+      try {
+        await this.calendar.account.callEWS(request);
+      } catch (ex) {
+        if (ex.type == "ErrorItemNotFound") {
+          // already done
+        } else {
+          throw ex;
+        }
+      }
     } else if (this.parentEvent) {
       // Create an exclusion.
       let request = {
@@ -433,8 +443,8 @@ export class EWSEvent extends Event {
 
 function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: string }, ResponseType: string }[], participants: Participant[], organizer?: string) {
   for (let attendee of ensureArray(attendees)) {
-    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
-    if (emailAddress != organizer) {
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress, null);
+    if (emailAddress != organizer && emailAddress) {
       participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType as keyof typeof InvitationResponse], InvitationResponse.Unknown)));
     }
   }

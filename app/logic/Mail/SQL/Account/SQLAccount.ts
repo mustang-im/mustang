@@ -24,14 +24,14 @@ export class SQLAccount {
         INSERT INTO account (
           idStr, type, protocol, mainAccountIDStr, json
         ) VALUES (
-          ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id},
+          ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id ?? acc._mainAccountID},
           ${jsonStr}
         )`);
     } else {
       assert(existing.protocol == acc.protocol, "Protocol in accounts DB does not match");
       await (await getDatabase()).run(sql`
         UPDATE account SET
-          mainAccountIDStr = ${acc.mainAccount?.id},
+          mainAccountIDStr = ${acc.mainAccount?.id ?? acc._mainAccountID},
           json = ${jsonStr}
         WHERE idStr = ${acc.id}
         `);
@@ -81,6 +81,7 @@ export enum AccountType {
   Files = 5,
   Apps = 6,
   Meet = 7,
+  Topic = 8,
 }
 
 export type AccountDBRow = {

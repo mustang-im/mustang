@@ -1,8 +1,11 @@
 import { type Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type iCalMethod } from "./InvitationStatus";
-import { type MailIdentity, findIdentityForEMailAddress } from "../../Mail/MailIdentity";
+import { findIdentityForEMailAddress, type MailIdentity} from "../../Mail/MailIdentity";
+import { getICal } from "../ICal/ICalGenerator";
 import type { EMail } from "../../Mail/EMail";
+import type { Calendar } from "../Calendar";
+import { MailAccount } from "../../Mail/MailAccount";
 import { appGlobal } from "../../app";
 import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -19,14 +22,9 @@ export class OutgoingInvitation {
     assert(this.event.participants.isEmpty, "This is already a meeting");
     assert(!this.event.isIncomingMeeting, "This is a meeting you have been invitated to. You cannot be the organizer.");
     this.event.myParticipation = InvitationResponse.Organizer;
-    let identity = this.identity;
+    let identity = this.event.calendar.inviteAs;
+    assert(identity, gt`No suitable email identity to organise this meeting`);
     this.event.participants.add(new Participant(identity.emailAddress, identity.realname, InvitationResponse.Organizer));
-  }
-
-  get identity(): MailIdentity {
-    let account = appGlobal.emailAccounts.find(account => account.canSendInvitations);
-    assert(account, gt`No suitable email identity to organise this meeting`);
-    return account.identities.first;
   }
 
   async sendInvitationsTo(participants: Collection<Participant>) {
@@ -78,7 +76,9 @@ export class OutgoingInvitation {
   }
 
   protected async send(method: iCalMethod, participants: Collection<Participant>) {
-    let email = this.newEMailFrom();
+    let email = this.event.calendar.inviteAs.newEMailFrom();
+    let organizer = this.event.participants.find(participant => participant.response == InvitationResponse.Organizer);
+    assert(email.from.emailAddress == organizer.emailAddress, `Organizer ${organizer.emailAddress} does not match the mail identity for this calendar ${email.from.emailAddress}`);
     email.to.addAll(participants);
     email.iCalMethod = method;
     email.event = this.event;
@@ -96,14 +96,6 @@ export class OutgoingInvitation {
       email.html = this.event.descriptionHTML;
     }
     await email.folder.account.send(email);
-  }
-
-  protected newEMailFrom(): EMail {
-    let organizer = this.event.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    let identity = findIdentityForEMailAddress(organizer.emailAddress);
-    let email = identity.account.newEMailFrom();
-    email.from = organizer;
-    return email;
   }
 
   /**
@@ -127,4 +119,36 @@ export class OutgoingInvitation {
       event.recurrenceRule != unedited.recurrenceRule
     );
   }
+
+  /**
+   * Forwards an event to another person by email.
+   *
+   * - This is typically used on an event from incoming invitation.
+   * - If it was an outgoing invitation, that means you're the organizer, and
+   *   you'd simply add participants to the event.
+   * - If it was an event without participants, you'd simply add participants.
+   */
+  static forwardEventByMail(event: Event): EMail {
+    let identity = identityForCalendar(event.calendar);
+    let mail = identity.newEMailFrom();
+    mail.subject = "Fwd: " + event.title; // Do NOT translate "Fwd: "
+    mail.event = event;
+    // `mail.event` already sends the event, but it's not visible in the composer, so add it a third time
+    let icalStr = new TextEncoder().encode(getICal(event));
+    let file = new File([icalStr], "forwarded.ics", { type: "text/calendar" });
+    let attachment = mail.newAttachment();
+    attachment.fromFile(file);
+    mail.attachments.add(attachment);
+    return mail;
+  }
+}
+
+export function identityForCalendar(calendar: Calendar): MailIdentity {
+  if (calendar?.mainAccount instanceof MailAccount) {
+    return calendar.mainAccount.identities.first;
+  }
+  let identity = findIdentityForEMailAddress(calendar?.username);
+  identity ??= appGlobal.emailAccounts.first?.identities.first;
+  assert(identity, "Please set up an email account first");
+  return identity;
 }

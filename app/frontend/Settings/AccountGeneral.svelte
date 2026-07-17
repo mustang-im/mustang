@@ -33,7 +33,7 @@
         {/if}
 
         <label for="workspace">{$t`Workspace`}</label>
-        <select bind:value={account.workspace} name="workspace">
+        <select bind:value={account.workspace} name="workspace" on:change={onChange}>
           {#each appGlobal.workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>
           {/each}
@@ -69,9 +69,8 @@
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import { accountSettings, settingsCategories } from "./SettingsCategory";
-  import { selectedCategory } from "./Window/selected";
   import { selectedAccount as selectedMailAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
-  import { openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
+  import { openSettingsCategory, openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -107,13 +106,13 @@
     if (account.mainAccount) {
       openSettingsCategoryForAccount(account.mainAccount);
     } else {
-      $selectedCategory = settingsCategories.first;
+      openSettingsCategory(settingsCategories.first);
     }
     if ($selectedMailAccount == account) {
       $selectedMailAccount = appGlobal.emailAccounts.first;
       $selectedFolder = $selectedMailAccount?.inbox;
       $selectedMessage = null;
-      $selectedMessages.clear();
+      $selectedMessages?.clear();
     }
   }
 </script>

@@ -1,5 +1,5 @@
 import { ChatRoom } from "../../../logic/Chat/ChatRoom";
-import type { UserChatMessage } from "../../../logic/Chat/Message";
+import type { ChatMessage } from "../../../logic/Chat/ChatMessage";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -15,7 +15,7 @@ export class MailChatRoom extends ChatRoom {
     this.messages.addAll(messages);
     this.lastMessage = messages.last;
   }
-  async sendMessage(message: UserChatMessage): Promise<void> {
+  async sendMessage(message: ChatMessage): Promise<void> {
     await this.account.send(message);
   }
 }

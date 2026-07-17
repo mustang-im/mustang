@@ -1,4 +1,4 @@
-import sql from "../../../../lib/rs-sqlite/index";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 
 export const chatDatabaseSchema = sql`
   CREATE TABLE "message" (
@@ -15,7 +15,8 @@ export const chatDatabaseSchema = sql`
     -- true = our user sent this; false = incoming = our user received it
     "outgoing" BOOLEAN default false,
     -- If outgoing: First To: ; if incoming: (First) From:
-    "fromPersonID" INTEGER not null,
+    -- if null, the json must contain "senderID" and "senderName" properties
+    "fromPersonID" INTEGER null,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
@@ -29,7 +30,7 @@ export const chatDatabaseSchema = sql`
     -- Additional data
     "json" TEXT default null,
     FOREIGN KEY (chatID)
-      REFERENCES chat (ID)
+      REFERENCES chatRoom (id)
       ON DELETE CASCADE
   );
 
@@ -53,16 +54,38 @@ export const chatDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
+  -- A member/participant in a chat room
+  -- For 1:1 chat rooms, that's only one person. Not including our own user.
+  -- Deliberately not in the contacts DB to not pollute the user addressbooks.
+  CREATE TABLE "chatContact" (
+    "id" INTEGER PRIMARY KEY,
+    -- Protocol-specific user ID, e.g. the JID
+    "idStr" TEXT not null,
+    "chatRoomID" INTEGER not null,
+    -- User-visible name of person
+    "name" TEXT not null,
+    -- From addressbook, to link with the other apps. May be null.
+    "personID" INTEGER null,
+    -- Picture URL
+    "avatarURL" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
+    UNIQUE("chatRoomID", "idStr"),
+    FOREIGN KEY (chatRoomID)
+      REFERENCES chatRoom (id)
+      ON DELETE CASCADE
+  );
+
   -- A chat room, either 1:1 or with many participants
-  CREATE TABLE "chat" (
+  CREATE TABLE "chatRoom" (
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null,
     "accountID" INTEGER not null,
     -- User-visible name
     "name" TEXT not null,
     -- Person or Group that this chat room is talking with
-    -- Person ID or Group ID
-    "contactID" INTEGER not null,
+    -- Person ID or Group ID. May be null.
+    "personID" INTEGER null,
     -- Last update from server we for this folder.
     "syncState" TEXT default null,
     -- Additional data

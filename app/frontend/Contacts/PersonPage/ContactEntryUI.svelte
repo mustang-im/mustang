@@ -30,32 +30,27 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions edit">
-    {#if !appGlobal.isMobile}
-      <Button
-        on:click={stopEditing}
-        icon={OKIcon}
-        iconOnly plain iconSize="14px"
-        label={$t`Finish editing and save`} />
-    {/if}
     <Button
-      on:click={remove}
+      onClick={remove}
       icon={DeleteIcon}
       iconOnly plain iconSize="14px"
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  {#if protocolLabels}
-    <hbox class="protocol display" on:click={startEditing}>
-      {displayProtocol(entry.protocol)}
+  <Clickable onClick={startEditing}>
+    {#if protocolLabels}
+      <hbox class="protocol display">
+        {displayProtocol(entry.protocol)}
+      </hbox>
+    {:else}
+      <hbox class="purpose display">
+        {displayPurpose(entry.purpose)}
+      </hbox>
+    {/if}
+    <hbox class="value">
+      <slot name="display" />
     </hbox>
-  {:else}
-    <hbox class="purpose display" on:click={startEditing}>
-      {displayPurpose(entry.purpose)}
-    </hbox>
-  {/if}
-  <hbox class="value" on:click={startEditing}>
-    <slot name="display" />
-  </hbox>
+  </Clickable>
   <hbox class="actions contact-entry">
     {#if !appGlobal.isMobile}
       {#if copied}
@@ -63,15 +58,10 @@
       {/if}
       <slot name="actions display" />
       <Button
-        on:click={copyValue}
+        onClick={() => { copyValue(); /* Do not `await` */ }}
         icon={CopyIcon}
         iconOnly plain iconSize="14px"
         label={$t`Copy info to clipboard`} />
-      <Button
-        on:click={startEditing}
-        icon={PencilIcon}
-        iconOnly plain iconSize="14px"
-        label={$t`Edit`} />
     <!-- else mobile: Keep the <hbox>, so that the <grid> doesn't break -->
     {/if}
   </hbox>
@@ -83,9 +73,8 @@
   import { selectedContactEntry } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
-  import PencilIcon from "lucide-svelte/icons/pencil";
+  import Clickable from "../../Shared/Clickable.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
-  import OKIcon from "lucide-svelte/icons/check";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter } from "../../Util/util";
   import { sleep } from "../../../logic/util/util";
@@ -190,11 +179,12 @@
     align-items: center;
     justify-content: end;
     margin-inline-start: 16px;
+    margin-inline-end: -8px; /* align with [+] above */
+    gap: 8px;
   }
   .actions > :global(button) {
     min-width: 20px;
     height: 24px;
-    margin-right: 8px;
   }
   :global(.desktop) :global(.group:not(:hover)) .actions {
     visibility: hidden;

@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
+    "strict": false,
     "target": "ESNext",
     "useDefineForClassFields": false,
     "emitDecoratorMetadata": true,

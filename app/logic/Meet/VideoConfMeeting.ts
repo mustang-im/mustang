@@ -22,6 +22,8 @@ export class VideoConfMeeting extends Observable {
   ended: Date;
   @notifyChangedProperty
   title: string;
+  /** People how are in the meeting.
+   * TODO Includes `myParticipant` or not? I think not. */
   readonly participants = new SetColl<Participant>();
   readonly videos = new SetColl<VideoStream>();
   /** People who were asked to join, but are not yet connected */
@@ -40,6 +42,7 @@ export class VideoConfMeeting extends Observable {
    * `listenStreamChanges()` after.
    * Usually `LocalMediaDeviceStreams` or a protocol-specific impl. */
   mediaDeviceStreams: MediaDeviceStreams;
+  hasVideo = true;
 
   /** Subclass constructor must set `this.mediaDeviceStreams` and then call this function. */
   protected listenStreamChanges() {

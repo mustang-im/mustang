@@ -59,4 +59,7 @@
   .demo :global(.icon svg) {
     color: var(--icon-primary);
   }
+  .demo :global(.app-button.selected) {
+    background: linear-gradient(to right, #FFF160 30%, #FFF160C0 80%) !important;
+  }
 </style>

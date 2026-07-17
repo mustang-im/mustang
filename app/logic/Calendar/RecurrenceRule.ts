@@ -36,8 +36,15 @@ export enum iCalWeekday {
   SA = 6,
 }
 
+/**
+ * Used to initialise a RecurrenceRule.
+ * The `Date`s in a RecurrenceInit use actual time.
+ * The rule itself holds seriesStartTime in a different format,
+ * so that it can easily extract the local time fields.
+ */
 export interface RecurrenceInit {
   masterDuration: number;
+  timezone?: string;
   seriesStartTime: Date;
   seriesEndTime?: Date;
   count?: number;
@@ -46,6 +53,18 @@ export interface RecurrenceInit {
   weekdays?: Weekday[];
   week?: number;
   first?: Weekday;
+}
+
+interface ZonedDate {
+  getTime(): number;
+  getUTCDay(): number;
+  getUTCFullYear(): number;
+  getUTCMonth(): number;
+  getUTCDate(): number;
+  getUTCHours(): number;
+  getUTCMinutes(): number;
+  getUTCSeconds(): number;
+  toLocaleDateString(locale: string, options: Intl.DateTimeFormatOptions): string;
 }
 
 /**
@@ -57,21 +76,29 @@ export interface RecurrenceInit {
  * The Outlook Web Access UI does allow a daily recurrence on specific weekdays,
  * but this is just a weekly recurrence with an interval of 1.
  */
-export class RecurrenceRule implements Readonly<RecurrenceInit> {
+export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStartTime">> {
   /**
    * The duration of the master event.
    *
    * Used by `timesMatch()` to see whether the time changes.
-   * Given that master.startTime == seriesStartTime and
+   * Given that master.startTime ~ seriesStartTime and
    * the master.endTime == masterStartTime + masterDuration,
    * we can detect changes in the master start and end time.
    */
-  masterDuration: number;
+  readonly masterDuration: number;
   /**
-   * The time of the first occurrence in the series.
-   * The same as the master event date.
+   * The time zone of the master event.
+   * Used to ensure that events recur on the correct day of the week.
+   * Defaults to the user's time zone.
    */
-  readonly seriesStartTime!: Date;
+  readonly timezone: string | undefined;
+  /**
+   * A date object whose UTC fields give the local time of
+   * the first occurrence in the series. This allows callers to
+   * easily determine the local date parts without needing a
+   * Temporal.ZonedDateTime object.
+   */
+  readonly seriesStartTime!: ZonedDate;
   /**
    * The date beyond which the recurrence stops.
    * If you also provide the count, the earlier is used.
@@ -120,19 +147,41 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   minutes: number;
   seconds: number;
 
-  constructor(data: RecurrenceInit) {
+  constructor(data: RecurrenceInit, additionalChecks?: boolean) {
     Object.assign(this, data);
+    // Callers like to pass in null but toLocaleString wants undefined
+    this.timezone ??= undefined;
     // EditEvent mutates the start time, so clone it to be safe.
-    let start = this.seriesStartTime = new Date(this.seriesStartTime);
-    this.occurrences.push(start);
-    this.weekday = start.getDay();
-    this.year = start.getFullYear();
-    this.month = start.getMonth();
-    this.day = start.getDate();
-    this.hours = start.getHours();
-    this.minutes = start.getMinutes();
-    this.seconds = start.getSeconds();
+    this.occurrences.push(new Date(data.seriesStartTime));
+    // Convert from the given time zone to get the right date parts.
+    let start = this.seriesStartTime = new Date(data.seriesStartTime.toLocaleString("lt", { timeZone: this.timezone }).replace(" ", "T") + "Z");
+    this.weekday = start.getUTCDay();
+    this.year = start.getUTCFullYear();
+    this.month = start.getUTCMonth();
+    this.day = start.getUTCDate();
+    this.hours = start.getUTCHours();
+    this.minutes = start.getUTCMinutes();
+    this.seconds = start.getUTCSeconds();
     // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
+    if (additionalChecks) {
+      if (this.frequency == Frequency.Weekly) {
+        if (!this.weekdays?.includes(this.weekday)) {
+          if (!(this.weekdays?.length > 1)) {
+            this.weekdays = [];
+          }
+          this.weekdays.push(this.weekday);
+        }
+      } else if (this.frequency == Frequency.Monthly || this.frequency == Frequency.Yearly) {
+        if (this.week) {
+          let nextWeek = new Date(start);
+          nextWeek.setUTCDate(this.day + 7);
+          if (nextWeek.getUTCDate() > 7 || this.week < 5) {
+            this.week = Math.ceil(this.day / 7);
+          }
+          this.weekdays = [this.weekday]; // e.g. 3rd Wednesday of month
+        }
+      }
+    }
   }
 
   static ensureFrequency(frequency: string): asserts frequency is Frequency {
@@ -141,13 +190,13 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     }
   }
 
-  static fromCalString(masterDuration: number, seriesStartTime: Date, calString: string): RecurrenceRule {
+  static fromCalString(masterDuration: number, timezone: string, seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
     let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("="))) as Record<string, string>;
     this.ensureFrequency(frequency);
-    let data: RecurrenceInit = { masterDuration, seriesStartTime, frequency };
+    let data: RecurrenceInit = { masterDuration, timezone, seriesStartTime, frequency };
     if (seriesEndTime) {
       data.seriesEndTime = sanitizeCalDate(seriesEndTime);
       if (data.seriesEndTime < data.seriesStartTime) {
@@ -214,6 +263,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     let thisWeekdays = this.weekdays || kAllWeekdays;
     let ruleWeekdays = rule.weekdays || kAllWeekdays;
     return rule.masterDuration == this.masterDuration &&
+      rule.timezone == this.timezone &&
       rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
@@ -317,28 +367,35 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         }
         break;
       }
-      let occurrence = new Date(this.year, this.month, this.day, this.hours, this.minutes, this.seconds);
-      if (this.week == 5 && occurrence.getDate() != this.day) {
+      let utc = new Date(Date.UTC(this.year, this.month, this.day, this.hours, this.minutes, this.seconds));
+      if (this.week == 5 && utc.getUTCDate() != this.day) {
         // Month ran out of days. Advance to the next month/year.
         if (this.frequency == Frequency.Yearly) {
           this.year += this.interval;
         } else {
           this.month += this.interval;
         }
-        occurrence.setFullYear(this.year);
-        occurrence.setMonth(this.month);
+        utc.setUTCFullYear(this.year);
+        utc.setUTCMonth(this.month);
         // Temporarily advance to the next month.
-        occurrence.setDate(32);
+        utc.setUTCDate(32);
         // Rewind to the last week of the month.
-        occurrence.setDate(-6);
-        this.day = occurrence.getDate();
+        utc.setUTCDate(-6);
+        this.day = utc.getUTCDate();
       }
-      if (this.weekdays && !this.weekdays.includes(occurrence.getDay())) {
+      if (this.weekdays && !this.weekdays.includes(utc.getUTCDay())) {
         continue;
       }
-      if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && occurrence.getDate() != this.day) {
+      if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && utc.getUTCDate() != this.day) {
         // Ran out of days in the month, so rewind to the last day in the month.
-        occurrence.setDate(0);
+        utc.setUTCDate(0);
+      }
+      // Now convert the occurrence to the given time zone.
+      let offset = new Date(utc.toLocaleString("lt", { timeZone: this.timezone }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+      let occurrence = new Date(utc.getTime() - offset);
+      offset = new Date(occurrence.toLocaleString("lt", { timeZone: this.timezone }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+      if (offset) {
+        occurrence = new Date(occurrence.getTime() - offset);
       }
       // Don't allow more occurrences than the series wants
       if (this.seriesEndTime && occurrence > this.seriesEndTime) {
@@ -362,7 +419,7 @@ function sanitizeCalDate(dateStr: string) {
  * @returns A human-readable, translated description of the recurrence.
  * E.g. "Every month, on the third Wednesday of the month"
  */
-export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
+export function ruleAsLabel(r: RecurrenceRule): string {
   let label = "";
   if (r.frequency == Frequency.Daily) {
     label += r.interval == 1
@@ -382,9 +439,9 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
       : gt`Every ${r.interval} months`;
     label += `, `;
     if (r.week) {
-      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} *=> as in: on the third Wednesday of the month`;
+      label += gt`on the ${weekName(r.week)} ${r.seriesStartTime.toLocaleDateString(getDateTimeLocale(), { weekday: "long", timeZone: "UTC" })} *=> as in: on the third Wednesday of the month`;
     } else {
-      label += gt`on the ${startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}th *=> as in: on the 5th of the month`;
+      label += gt`on the ${r.seriesStartTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", timeZone: "UTC" })}th *=> as in: on the 5th of the month`;
     }
   } else if (r.frequency == Frequency.Yearly) {
     label += r.interval == 1
@@ -392,9 +449,9 @@ export function ruleAsLabel(r: RecurrenceRule, startTime: Date): string {
       : gt`Every ${r.interval} years`;
     label += `, `;
     if (r.week) {
-      label += gt`on the ${weekName(r.week)} ${weekdayLabel(r.weekday, "long")} in ${startTime.toLocaleDateString(getDateTimeLocale(), { month: "long" })} *=> as in: on the third Wednesday in September`;
+      label += gt`on the ${weekName(r.week)} ${r.seriesStartTime.toLocaleDateString(getDateTimeLocale(), { weekday: "long", timeZone: "UTC" })} in ${r.seriesStartTime.toLocaleDateString(getDateTimeLocale(), { month: "long", timeZone: "UTC" })} *=> as in: on the third Wednesday in September`;
     } else {
-      label += gt`on ${startTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", month: "long" })} *=> as in: on the 5th July`;
+      label += gt`on ${r.seriesStartTime.toLocaleDateString(getDateTimeLocale(), { day: "numeric", month: "long", timeZone: "UTC" })} *=> as in: on the 5th July`;
     }
   }
   return label;

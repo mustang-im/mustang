@@ -1,4 +1,6 @@
-{#if meetGalleryViews.includes(selectedView) || isSidebar}
+{#if selectedView == MeetVideoView.Phone}
+  <Phone {showParticipant} {meeting} />
+{:else if meetGalleryViews.includes(selectedView) || isSidebar}
   <Gallery {videos} view={selectedView} {showSelf} />
 {:else if selectedView == MeetVideoView.Thumbnails}
   <Thumbnails {videos} {showParticipant} {me} {showSelf} />
@@ -9,20 +11,24 @@
 <script lang="ts">
   import { VideoStream } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { PhoneCall } from "../../../logic/Meet/PhoneCall";
   import { meetGalleryViews, MeetVideoView } from "./ViewSelectorPopup.svelte";
   import Gallery from "./Gallery.svelte";
   import Thumbnails from "./Thumbnails.svelte";
   import SpeakerOnly from "./SpeakerOnly.svelte";
+  import Phone from "./Phone/Phone.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { Collection } from "svelte-collections";
 
   export let videos: Collection<VideoStream>;
   export let me: MeetingParticipant;
   export let showParticipant: MeetingParticipant;
+  export let meeting: VideoConfMeeting;
   export let isSidebar = false;
 
   let viewSetting = getLocalStorage("meet.videoView", MeetVideoView.GalleryAutoView);
-  $: selectedView = $viewSetting.value;
+  $: selectedView = meeting instanceof PhoneCall ? MeetVideoView.Phone : $viewSetting.value;
   let showSelfSetting = getLocalStorage("meet.showSelf", true);
   $: showSelf = $showSelfSetting.value;
 </script>

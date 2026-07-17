@@ -1,27 +1,26 @@
-import { Calendar, type CalendarShareCombinedPermissions } from "../Calendar";
+import { ExchangeCalendar } from "./ExchangeCalendar";
+import type { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
-import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/EWSFolder";
+import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
+import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
-export class EWSCalendar extends Calendar {
+export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
   readonly protocol: string = "calendar-ews";
   declare readonly events: ArrayColl<EWSEvent>;
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
-  /** Exchange's calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
-  /** Is this the default calendar that handles incoming invitations */
-  useForInvitations: boolean = false;
 
   get account(): EWSAccount {
+    assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
     return this.mainAccount as EWSAccount;
   }
 
@@ -33,18 +32,22 @@ export class EWSCalendar extends Calendar {
     return this.account.isLoggedIn;
   }
 
-  async login(interactive: boolean) {
-    if (this.isLoggedIn) {
-      return;
+  async disconnect(): Promise<void> {
+    await this.account.unsubscribeNotifications(this);
+  }
+
+  async startup(): Promise<void> {
+    await super.startup();
+    if (this.username != this.account.username) {
+      await this.account.subscribeToNotificationsForSubaccount(this);
     }
-    await this.account.login(interactive);
   }
 
   getIncomingInvitationForEMail(message: EWSEMail) {
     return new EWSIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let request = {
       m$GetUserAvailabilityRequest: {
         m$MailboxDataArray: {
@@ -67,7 +70,7 @@ export class EWSCalendar extends Calendar {
     let results = await this.account.callEWS(request);
     return participants.map((participant, i) => ({
       participant,
-      availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
+      availability: results[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
         from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
         to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
         free: event.BusyType == "Free",
@@ -342,12 +345,10 @@ export class EWSCalendar extends Calendar {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.folderID = sanitize.string(json.folderID, null);
-    this.useForInvitations = sanitize.boolean(json.useForInvitations, false);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.folderID = this.folderID;
-    json.useForInvitations = this.useForInvitations;
     return json;
   }
 }

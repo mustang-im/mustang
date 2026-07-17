@@ -2,7 +2,7 @@ import { MediaDeviceStreams } from "./MediaDeviceStreams";
 import { appGlobal } from "../app";
 import { notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
-import { assert } from "../util/util";
+import { assert, exMessage } from "../util/util";
 import { webMail } from "../build";
 import { gt } from "../../l10n/l10n";
 
@@ -28,6 +28,14 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
   @notifyChangedAccessor
   get screenShareOn(): boolean {
     return !!this.screenStream;
+  }
+
+  /** Camera actually in use. May differ from selected, e.g. after a fallback. */
+  get cameraDevice(): string {
+    return this._cameraDevice;
+  }
+  get micDevice(): string {
+    return this._micDevice;
   }
 
   async setCameraOn(on: boolean, device: string = this._cameraDevice) {
@@ -88,28 +96,82 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
       lock.release();
     }
   }
-  protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
-    let setup = {
+  protected streamParams(cameraOn: boolean): MediaStreamConstraints {
+    return {
       video: cameraOn ? {
-        deviceId: cameraDevice,
         facingMode: "user",
       } : false,
-      audio: { // Mic always on, to avoid camera flicker on mute/unmute
-        deviceId: micDevice,
+      audio: {
+        // Mic always on, to avoid camera flicker on mute/unmute
         echoCancellation: "system" as any as boolean, // (wrong TypeScript declaration)
         noiseSuppression: true,
         autoGainControl: true,
       },
     };
-    this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
+  }
+  protected async startCameraMicStream(cameraOn: boolean, micOn: boolean, cameraDevice: string, micDevice: string): Promise<void> {
+    let setup = this.streamParams(cameraOn);
+    if (setup.video && cameraDevice) {
+      // Chrome ignores the `ideal` deviceId and only uses `exact` (Bug)
+      (setup.video as MediaTrackConstraints).deviceId = { exact: cameraDevice };
+    }
+    if (setup.audio && micDevice) {
+      (setup.audio as MediaTrackConstraints).deviceId = { exact: micDevice };
+    }
+    try {
+      this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
+    } catch (ex) {
+      // If the selected device is gone or busy, then re-try with other device.
+      // Without this, on Firefox, we cannot even list devices and the user cannot choose another.
+      if (!(this.isDeviceStartError(ex) && (cameraDevice || micDevice))) {
+        throw await this.getDeviceStartErrorMessage(ex, cameraOn);
+      }
+      let anyDevice = this.streamParams(cameraOn);
+      let retries = [
+        { video: setup.video, audio: anyDevice.audio }, // mic broken, keep camera
+        { video: anyDevice.video, audio: setup.audio }, // camera broken, keep mic
+        { video: anyDevice.video, audio: anyDevice.audio }, // both broken
+      ] as MediaStreamConstraints[];
+      for (let retry of retries) {
+        try {
+          this.cameraMicStream = await navigator.mediaDevices.getUserMedia(retry);
+          break;
+        } catch (ex2) {
+          // try the next variation
+        }
+      }
+      if (!this.cameraMicStream) {
+        throw await this.getDeviceStartErrorMessage(ex, cameraOn);
+      }
+    }
     assert(this.cameraMicStream, gt`Unable to start your camera/mic`);
-    this._cameraDevice = cameraDevice;
-    this._micDevice = micDevice;
+    // Save the actual device used, e.g. after a fallback above
+    this._cameraDevice = this.cameraMicStream.getVideoTracks()[0]?.getSettings()?.deviceId ?? cameraDevice;
+    this._micDevice = this.cameraMicStream.getAudioTracks()[0]?.getSettings()?.deviceId ?? micDevice;
     this._cameraOn = cameraOn;
     this._micOn = true; // We started the mic unconditionally
     if (!micOn) {
       this.enableAudio(false); // mute
     }
+  }
+  protected isDeviceStartError(ex: Error): boolean {
+    return ex?.name == "NotReadableError" || ex?.name == "AbortError" || ex?.name == "OverconstrainedError";
+  }
+  protected async getDeviceStartErrorMessage(ex: Error, cameraOn: boolean): Promise<Error> {
+    if (ex?.name == "OverconstrainedError") {
+      return exMessage(ex, gt`The selected camera or microphone is disconnected. Please chose another device.`);
+    }
+    if (ex?.name == "NotReadableError" || ex?.name == "AbortError") {
+      if (!cameraOn) {
+        return exMessage(ex, gt`Your microphone is in use. Please stop the other application.`);
+      }
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      let cameras = devices?.filter(d => d.kind == "videoinput")?.length ?? 0;
+      return exMessage(ex, cameras == 1
+        ? gt`Your camera is in use. Please stop the other video application.`
+        : gt`Your camera is in use. Please stop the other video application, or select another camera.`);
+    }
+    return ex;
   }
   /** mute/unmute
    * @param on

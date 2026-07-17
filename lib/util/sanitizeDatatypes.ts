@@ -213,6 +213,20 @@ class Sanitize {
     return filename;
   }
 
+  /** Removes potentially dangerous parts of the directory name,
+   * including "//" and ".."
+   * @param allowRoot if true, allow the path to start with "/", otherwise strip it
+   */
+  dirname(unchecked: string | null | undefined, allowRoot = false, fallback: string | null | Symbol = throwErrors): string {
+    let dirname = this.filename(unchecked.replaceAll("/", "𓆏"), fallback).replaceAll("𓆏", "/");
+    dirname = dirname.replaceAll("..", ".-.");
+    dirname = dirname.replaceAll("//", "/");
+    if (!allowRoot && dirname.startsWith("/")) {
+      dirname = dirname.substring(1);
+    }
+    return dirname;
+  }
+
   /**
    * A value which should be shown to the user in the UI as label
    */

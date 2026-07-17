@@ -1,15 +1,16 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs } from '../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
 import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
-import electronUpdater from 'electron-updater';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
-const { autoUpdater } = electronUpdater;
+import { installSignalServiceCATrust } from './signalServiceCA'
 
 function createWindow(): void {
   try {
-    startupBackend();
+    let jpcSecret = createJPCSecret();
+    startupBackend(jpcSecret)
+      .catch(console.error);
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -30,9 +31,18 @@ function createWindow(): void {
     })
     setMainWindow(mainWindow);
 
-    mainWindow.on('ready-to-show', () => {
-      mainWindow.show()
-    })
+    if (process.platform == "linux" && app.commandLine.getSwitchValue("ozone-platform") == "wayland") {
+      // The "ready-to-show" event doesn't always fire on Wayland.
+      // "did-finish-load" works and is close enough.
+      // https://github.com/electron/electron/issues/48859
+      mainWindow.webContents.on("did-finish-load", () => {
+        mainWindow.show();
+      });
+    } else {
+      mainWindow.on("ready-to-show", () => {
+        mainWindow.show();
+      });
+    }
 
     mainWindow.on('closed', shutdownBackend);
 
@@ -76,11 +86,11 @@ function createWindow(): void {
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (is.dev && true) {
-      mainWindow.loadURL('http://localhost:5454');
+      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret);
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#jpcSecret=' + jpcSecret)
     } else {
-      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+      mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'jpcSecret=' + jpcSecret })
     }
   } catch (ex) {
     console.error(ex);
@@ -133,13 +143,7 @@ async function whenReady() {
   handleCommandline(process.argv.splice(1));
 
   allowCrossDomainRequestsFromFrontend();
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
+  installSignalServiceCATrust(); // renderer's HTTPS REST to *.signal.org (the wss socket runs in the backend with its own CA)
 
   createMenu();
   createWindow();
@@ -151,11 +155,15 @@ async function whenReady() {
   })
 
   try {
-    await autoUpdater.checkForUpdatesAndNotify();
+    await checkForUpdateAndNotify();
     setInterval(async () => {
       try {
+        if (updateState.haveUpdate) {
+          console.log(`Already have update waiting.`);
+          return; // `checkForUpdates()` downloads the update on every call
+        }
         console.log("Routinely checking for app updates...");
-        await autoUpdater.checkForUpdatesAndNotify();
+        await checkForUpdateAndNotify();
       } catch (ex) {
         console.error(ex);
       }
@@ -165,18 +173,38 @@ async function whenReady() {
   }
 }
 
+app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webContents));
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+  if (process.platform == 'darwin') {
+    updateAndRestartNowIfNeeded();
+  } else {
+    app.quit();
   }
-})
+});
+
+async function updateAndRestartNowIfNeeded() {
+  if (await updateState.updateDownloaded()) {
+    await installUpdate();
+    // TODO restart after install, but open only a background window
+  } // else do nothing
+}
 
 // macOS: Capture URL during launch
 app.on("open-url", (_event, url) => {
   startupArgs.url = url;
+  startupArgs.notifyObservers();
+
+  if (BrowserWindow.getAllWindows().length == 0 && app.isReady()) {
+    createWindow();
+  }
+});
+// macOS: Capture file open during launch
+app.on("open-file", (_event, file) => {
+  startupArgs.file = file;
   startupArgs.notifyObservers();
 
   if (BrowserWindow.getAllWindows().length == 0 && app.isReady()) {
@@ -199,6 +227,9 @@ function handleCommandline(args: string[]) {
       let urlObj = new URL(lastArg); // Check syntax
       startupArgs.url = urlObj.href;
     }
+    if (lastArg?.startsWith("/") && lastArg.includes(".")) {
+      startupArgs.file = lastArg;
+    }
     startupArgs.notifyObservers();
   } catch (ex) {
     console.error(ex);
@@ -215,6 +246,11 @@ function allowCrossDomainRequestsFromFrontend() {
         switch (name.toLowerCase()) {
         case "origin":
         case "referer":
+          delete requestHeaders[name];
+          break;
+        case "cookie-bypass":
+          // Fake out the Cookie on all ActiveSync requests, because Hotmail.
+          requestHeaders.Cookie = requestHeaders[name];
           delete requestHeaders[name];
           break;
         case "user-agent":
@@ -250,6 +286,12 @@ function allowCrossDomainRequestsFromFrontend() {
       callback({ responseHeaders, statusLine });
     }
   );
+}
+
+function setWindowOpenHandler(webContents: WebContents) {
+  webContents.setWindowOpenHandler((details) => {
+    return { action: 'deny' };
+  });
 }
 
 // In this file you can include the rest of your app"s specific main process

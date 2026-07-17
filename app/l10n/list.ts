@@ -39,6 +39,14 @@ import ko from './locales/ko/messages.json';
 import sk from './locales/sk/messages.json';
 import th from './locales/th/messages.json';
 import tr from './locales/tr/messages.json';
+import la from './locales/la/messages.json';
+import tlh from './locales/tlh/messages.json';
+
+import bn from './locales/bn/messages.json';
+import paArab from './locales/pa-Arab/messages.json';
+import ta from './locales/ta/messages.json';
+import ur from './locales/ur/messages.json';
+import vi from './locales/vi/messages.json';
 
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
@@ -82,6 +90,13 @@ export const languageMessages: Record<string, Record<string, string>> = {
   sk: sk,
   th: th,
   tr: tr,
+  la: la,
+  tlh: tlh,
+  bn: bn,
+  "pa-Arab": paArab,
+  ta: ta,
+  ur: ur,
+  vi: vi,
 };
 
 export const sourceLocale = 'en';
@@ -91,52 +106,56 @@ export const sourceLocale = 'en';
  * (Otherwise, if you do cannot read Chinese, you cannot find German anymore.)
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
 export const localeNames = {
+  //'sq': "Albanian / Shqip",
   'ar': "Arabic / اَلْعَرَبِيَّةُ",
   'az': "Azerbaijani / Azərbaycan dili",
+  'bn': "Bengali / বাংলা",
   'bg': "Bulgarian / Български",
-  //'bn': "Bengali / বাংলা",
+  'zh': "Chinese (Simplified, China) / 简体中文",
+  'zh-Hant': "Chinese (Traditional) / 繁體中文",
   'cs': "Czech / Čeština",
   'da': "Danish / Dansk",
-  'de': "German / Deutsch",
-  'el': "Greek / Ελληνικά",
+  'nl': "Dutch / Nederlands",
   'en': "English",
   'en-GB': "English (British)",
   'eo': "Esperanto",
-  'es': "Spanish / Español",
   'et': "Estonian / Eesti keel",
-  'fa': "Persian / فارسی",
   'fi': "Finnish / Suomi",
   'fr': "French / Français",
-  'ga': "Irish / Gaeilge",
+  'de': "German / Deutsch",
+  'el': "Greek / Ελληνικά",
   'he': "Hebrew / עברית",
   'hi': "Hindi / हिन्दी",
   'hu': "Hungarian / Magyar nyelv",
   'id': "Indonesian / bahasa Indonesia",
+  'ga': "Irish / Gaeilge",
   'it': "Italian / Italiano",
   'ja': "Japanese / 日本語",
+  'tlh': "Klingon / tlhIngan Hol",
   'ko': "Korean / 한국어",
-  'lt': "Lithuanian / Lietuviškai",
+  'la': "Latin / Latina",
   'lv': "Latvian / Latviski",
+  'lt': "Lithuanian / Lietuviškai",
   //'ms': "Malay / بهاس ملايو",
   'nb': "Norwegian / Norsk", // Bokmål
-  'nl': "Dutch / Nederlands",
   //'no': "Norwegian / Norsk",
+  'fa': "Persian / فارسی",
   'pl': "Polish / Polski",
   'pt': "Portuguese / Português",
+  'pa-Arab': "Punjabi (Pakistan) / پنجابی",
   'ro': "Romanian / Românește",
   'ru': "Russian / Русский язык",
   'sk': "Slovak / Slovenčina",
   'sl': "Slovenian / Slovenščina",
-  //'sq': "Albanian / Shqip",
+  'es': "Spanish / Español",
   'sv': "Swedish / Svenska",
-  'th': "Thai / ภาษาไทย",
   //'tl': "Tagalog / Wikang Tagalog",
+  'ta': "Tamil / தமிழ்",
+  'th': "Thai / ภาษาไทย",
   'tr': "Turkish / Türkçe",
   'uk': "Ukranian / Українська",
-  //'ur': "Urdu / اُردُو",
-  //'vi': "Vietnamese / tiếng Việt",
-  'zh': "Chinese (Simplified, China) / 简体中文",
-  'zh-Hant': "Chinese (Traditional) / 繁體中文",
+  'ur': "Urdu / اُردُو",
+  'vi': "Vietnamese / tiếng Việt",
 };
 
 /** key: locale code from navigator.language, in lower case
@@ -157,4 +176,4 @@ export const localeMapping: Record<string, string> = {
  * the imports in ./l10n.ts. */
 export const locales = Object.keys(localeNames);
 
-export const rtlLocales = [ 'ar', 'fa', 'he', 'ur' ];
+export const rtlLocales = [ 'ar', 'fa', 'he', 'pa-Arab', 'ur' ];

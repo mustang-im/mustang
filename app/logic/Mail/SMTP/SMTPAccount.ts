@@ -4,6 +4,7 @@ import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { CreateMIME } from "./CreateMIME";
 import { appGlobal } from "../../app";
+import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 
 export class SMTPAccount extends MailAccount {
@@ -14,9 +15,18 @@ export class SMTPAccount extends MailAccount {
   }
   set mainAccount(imap: MailAccount) {
     super.mainAccount = imap;
+    if (!imap) {
+      logError(new Error(`SMTP account ${this.hostname} lost its IMAP account`));
+      super.mainAccount = null;
+      return;
+    }
     if (imap.outgoing != this) {
       imap.outgoing = this;
     }
+  }
+
+  // Should not be called, but do nothing, just in case.
+  async startup() {
   }
 
   protected getTransportOptions() {

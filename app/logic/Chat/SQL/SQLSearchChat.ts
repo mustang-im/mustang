@@ -1,5 +1,5 @@
 import { SearchChat } from "../SearchChat";
-import { ChatMessage } from "../Message";
+import { ChatMessage } from "../ChatMessage";
 import { SQLChatMessage } from "./SQLChatMessage";
 import { getDatabase } from "./SQLDatabase";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -17,9 +17,9 @@ export class SQLSearchChat extends SearchChat {
         message.id as id
       FROM message
       $${this.hasAttachment === true || this.hasAttachment === false ? sql` LEFT JOIN chatAttachment ON (message.id = chatAttachment.messageID) ` : sql``}
-      $${this.account ? sql` LEFT JOIN chat ON (message.chatID = chat.id) ` : sql``}
+      $${this.account ? sql` LEFT JOIN chatRoom ON (message.chatID = chatRoom.id) ` : sql``}
       WHERE 1=1
-        $${this.account?.dbID ? sql` AND chat.accountID = ${this.account.dbID} ` : sql``}
+        $${this.account?.dbID ? sql` AND chatRoom.accountID = ${this.account.dbID} ` : sql``}
         $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing ? 1 : 0} ` : sql``}
         $${typeof (this.messageID) == "string" ? sql` AND id = ${this.messageID} ` : sql``}
         $${this.includesPerson ? sql` AND fromPersonID = ${this.includesPerson.dbID} ` : sql``}

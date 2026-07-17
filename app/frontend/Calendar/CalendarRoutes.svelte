@@ -11,7 +11,6 @@
   <SearchM searchTerm={params?.searchTerm} />
 </Route>
 <Route path="/">
-  {params?.event ? $selectedEvent = params.event : null, ""}
   <CalendarApp />
 </Route>
 
@@ -29,4 +28,13 @@
 
   $: location = useLocation();
   $: params = getParams($location.state);
+  // Set only when params.event changes, not when $selectedEvent changes
+  $: params, setEvent()
+  let lastEvent = null;
+  function setEvent() {
+    if (params.event && params.event != lastEvent) {
+      $selectedEvent = params.event;
+      lastEvent = params.event;
+    }
+  }
 </script>

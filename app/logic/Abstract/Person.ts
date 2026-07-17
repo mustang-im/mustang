@@ -62,6 +62,9 @@ export class Person extends ContactBase {
    * Saves the contact locally to the database.
     */
   async saveLocally() {
+    if (!this.addressbook.persons.contains(this)) {
+      this.addressbook.persons.add(this);
+    }
     await this.addressbook.storage.savePerson(this);
   }
 
@@ -151,10 +154,14 @@ export class Person extends ContactBase {
     await other.deleteIt();
   }
 
-  /** Person class needs to match account class, so need to clone. */
-  async moveToAddressbook(newAddressbook: Addressbook): Promise<void> {
+  /** Person class needs to match account class, so need to clone.
+   * @returns reference to the new person created or the existing
+   * person if it was already in the new addressbook or the
+   * same addressbook type
+   */
+  async moveToAddressbook(newAddressbook: Addressbook): Promise<Person> {
     if (this.addressbook == newAddressbook || !newAddressbook) {
-      return;
+      return this;
     }
     let newPerson = newAddressbook.newPerson();
     if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newPerson)) {
@@ -162,7 +169,7 @@ export class Person extends ContactBase {
       this.addressbook = newAddressbook;
       newAddressbook.persons.add(this);
       await this.save();
-      return;
+      return this;
     }
     newPerson.copyFrom(this);
     newPerson.addressbook = newAddressbook;
@@ -170,6 +177,7 @@ export class Person extends ContactBase {
     newAddressbook.persons.add(newPerson);
     await this.deleteIt();
     await newPerson.save();
+    return newPerson;
   }
 
   async copyToAddressbook(newAddressbook: Addressbook): Promise<void> {
@@ -198,8 +206,20 @@ export class Person extends ContactBase {
     this.custom.addAll(other.custom.map(ce => ce.clone()));
   }
 
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.company = this.company;
+    json.department = this.department;
+    json.position = this.position;
+    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
+    return json;
+  }
+
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
+    this.company = sanitize.string(json.company, null);
+    this.department = sanitize.string(json.department, null);
+    this.position = sanitize.string(json.position, null);
     this.encryptionPublicKeys.clear();
     for (let keyJSON of sanitize.array(json.encryptionPublicKeys, [])) {
       try {
@@ -209,11 +229,6 @@ export class Person extends ContactBase {
         this.addressbook?.errorCallback(ex);
       }
     }
-  }
-  toExtraJSON(): any {
-    let json = super.toExtraJSON();
-    json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
-    return json;
   }
 }
 

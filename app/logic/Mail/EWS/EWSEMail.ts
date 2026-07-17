@@ -1,18 +1,15 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "./ExchangeEMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
-import { type Tag, getTagByName } from "../../Abstract/Tag";
-import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
+import { getTagByName } from "../../Abstract/Tag";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
-import type { Calendar } from "../../Calendar/Calendar";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
@@ -22,7 +19,7 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-export class EWSEMail extends EMail {
+export class EWSEMail extends ExchangeEMail {
   declare folder: EWSFolder;
 
   get itemID(): string | null {
@@ -105,7 +102,7 @@ export class EWSEMail extends EMail {
     if (xmljs.Attachments?.FileAttachment) {
       let attachments = ensureArray(xmljs.Attachments.FileAttachment);
       this.attachments.replaceAll(attachments.map(a => {
-        let attachment = new Attachment();
+        let attachment = this.newAttachment();
         attachment.filename = sanitize.filename(a.Name);
         attachment.mimeType = sanitize.nonemptystring(a.ContentType);
         attachment.disposition = a.IsInline == "true" ? ContentDisposition.inline : ContentDisposition.attachment;
@@ -183,16 +180,13 @@ export class EWSEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
-    await this.folder.account.callEWS(request);
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
+    try {
+      this.folder.deletions.add(this.itemID);
+      let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      await this.folder.account.callEWS(request);
+    } finally {
+      this.folder.deletions.delete(this.itemID);
+    }
   }
 
   async updateTags() {
@@ -203,15 +197,6 @@ export class EWSEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.hasItems ? { t$String: this.tags.contents.map(tag => tag.name) } : null, "item:Categories");
     await this.folder.account.callEWS(request);
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // EWS always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as EWSCalendar).useForInvitations);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** EWS only provides event data for invitations,
@@ -294,7 +279,7 @@ export function getEmailAddressOrX400(emailAddress: string): string {
   if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
-  return sanitize.emailAddress(emailAddress);
+  return sanitize.emailAddress(emailAddress, null);
 }
 
 /**
@@ -337,7 +322,7 @@ export function convertX400ToEmailAddress(x400: string): string {
       username = ensureAlphaNum(part);
     }
   }
-  return sanitize.emailAddress(username + "@" + domain, kDummyPerson.emailAddress);
+  return sanitize.emailAddress(username + "@" + domain, null);
 }
 
 function ensureAlphaNum(str: string): string {

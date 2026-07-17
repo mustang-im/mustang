@@ -1,21 +1,18 @@
-import { EMail } from "../EMail";
+import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
-import { Tag, getTagByName } from "../../Abstract/Tag";
+import { getTagByName } from "../../Abstract/Tag";
 import { OWADeleteItemRequest } from "./Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
-import type { Calendar } from "../../Calendar/Calendar";
-import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { Collection, ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
-export class OWAEMail extends EMail {
+export class OWAEMail extends ExchangeEMail {
   declare folder: OWAFolder;
 
   get itemID(): string | null {
@@ -121,16 +118,13 @@ export class OWAEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
-    await this.folder.account.callOWA(request);
-  }
-
-  async addTagOnServer(tag: Tag) {
-    await this.updateTags();
-  }
-
-  async removeTagOnServer(tag: Tag) {
-    await this.updateTags();
+    try {
+      this.folder.deletions.add(this.itemID);
+      let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      await this.folder.account.callOWA(request);
+    } finally {
+      this.folder.deletions.delete(this.itemID);
+    }
   }
 
   async updateTags() {
@@ -141,15 +135,6 @@ export class OWAEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.contents.map(tag => tag.name), "Categories");
     await this.folder.account.callOWA(request);
-  }
-
-  getUpdateCalendars(): Collection<Calendar> {
-    assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.invitationMessage == InvitationMessage.Invitation) {
-      // OWA always puts invitations in the default calendar.
-      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && (calendar as OWACalendar).useForInvitations);
-    }
-    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** OWA only provides event data for invitations,

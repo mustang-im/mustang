@@ -1,4 +1,4 @@
-import { Group } from '../../Abstract/Group';
+import { ExchangeGroup } from './ExchangeGroup';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
@@ -10,7 +10,7 @@ import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class EWSGroup extends Group {
+export class EWSGroup extends ExchangeGroup {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {

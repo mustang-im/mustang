@@ -2,7 +2,7 @@
   <hbox class="actions top">
     {#if $showingWebApp}
       <Button
-        on:click={closeApp}
+        onClick={closeApp}
         icon={CloseIcon}
         iconSize="24px"
         iconOnly
@@ -20,11 +20,14 @@
   {#each $apps.each as app}
     <AppLaunchButton {app} />
   {/each}
+  {#each $othersRunning.each as app}
+    <AppLaunchButton {app} />
+  {/each}
 
   <hbox flex />
   <hbox class="actions bottom">
     <Button
-      on:click={startStore}
+      onClick={startStore}
       icon={AddIcon}
       iconSize="32px"
       iconOnly
@@ -48,6 +51,8 @@
 
   export let apps: Collection<WebAppListed>;
   export let showStore = false; /* in/out */
+
+  let othersRunning = webAppsRunning.filterObservable(app => !apps.includes(app));
 
   $: $showingWebApp && closeStore()
   function closeStore() {

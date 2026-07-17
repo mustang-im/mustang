@@ -1,36 +1,43 @@
 import { ChatRoom } from "../ChatRoom";
 import type { MatrixAccount } from "./MatrixAccount";
+import { MatrixChatMessage } from "./MatrixChatMessage";
+import { MatrixRoomEvent } from "./MatrixRoomEvent";
 import { MatrixPerson } from "./MatrixPerson";
-import { ChatMessage, DeliveryStatus, UserChatMessage } from "../Message";
-import { Group } from "../../Abstract/Group";
-import { ChatRoomEvent, Invite, JoinLeave } from "../RoomEvent";
-import { assert } from "../../util/util";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import type { Group } from "../../Abstract/Group";
+import { type RoomMessage, ChatMessage, DeliveryStatus } from "../ChatMessage";
+import { ChatRoomEvent, JoinLeave, RoomEventKind } from "../RoomEvent";
 import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
+import type { ArrayColl } from "svelte-collections";
 import type { MatrixEvent } from "matrix-js-sdk";
 
 export class MatrixRoom extends ChatRoom {
   declare account: MatrixAccount;
+  declare readonly members: ArrayColl<MatrixPerson>;
+  declare contact: MatrixPerson | Group;
+
   constructor(account: MatrixAccount) {
     super(account);
   }
 
   async listMembers(): Promise<void> {
+    await this.listMembers1to1();
   }
-
   async listMessages(): Promise<void> {
     let init = await this.account.client.roomInitialSync(this.id, 3000);
   }
 
-  async getEvent(event): Promise<ChatMessage | null> {
+  async getEvent(event): Promise<RoomMessage | null> {
     let type = event.getType();
     if (type == "m.room.message") {
       return this.getUserMessage(event);
     } else if (type == "m.room.redaction") {
-      this.redactMessage(event);
+      await this.redactedMessage(event);
       return null;
     } else if (type == "m.reaction") {
-      this.getReaction(event);
+      await this.getReaction(event);
       return null;
     } else if (type == "m.room.encrypted") {
       return await this.getEncryptedUserMessage(event);
@@ -49,7 +56,10 @@ export class MatrixRoom extends ChatRoom {
           : convertTextToHTML(sanitize.nonemptystring(event.topic));
       await this.save();
       return null;
-    } else if (type == "m.room.power_levels" ||
+    } else if (type == "m.room.power_levels") {
+      this.updateAdminFromPowerLevels(event);
+      return null;
+    } else if (
       type == "m.room.encryption" ||
       type == "m.room.avatar" || // TODO Handle `{ url: "mxc://matrix.org/5646" }`
       type == "m.room.join_rules" ||
@@ -62,25 +72,25 @@ export class MatrixRoom extends ChatRoom {
       return this.getShowRawEvent(event);
     }
   }
-  fillMessage(event, msg: ChatMessage): void {
+  fillMessage(event, msg: RoomMessage): void {
     msg.id = event.event?.event_id;
     msg.sent = msg.received = new Date(event.getTs());
     let senderUserID = event.getSender();
-    msg.contact = this.account.getExistingPerson(senderUserID);
+    msg.contact = this.account.getPersonUID(senderUserID);
     msg.outgoing = senderUserID == this.account.globalUserID;
   }
 
-  getUserMessage(event): ChatMessage | null {
+  async getUserMessage(event): Promise<ChatMessage | null> {
     let relation = event.getRelation();
     if (relation?.rel_type == "m.replace") {
       // <https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/2676-message-editing.md>
       let orgID = sanitize.nonemptystring(relation.event_id);
       let orgMessage = this.messages.find(m => m.id == orgID);
       if (orgMessage) { // In case we're live and received the original - TODO untested
-        console.log("replacement message", event.getContent());
         let content = event.getContent()["m.new_content"];
         orgMessage.text = content.body;
         orgMessage.rawHTMLDangerous = content.formatted_body;
+        await orgMessage.save();
       }
       return null;
     }
@@ -88,15 +98,23 @@ export class MatrixRoom extends ChatRoom {
     if (replacedBy) {
       event = replacedBy;
     }
-    let msg = new UserChatMessage(this);
+    let msg = this.newMessage();
     this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent();
     if (replacedBy) {
       content = content["m.new_content"];
     }
-    msg.text = content.body;
-    msg.rawHTMLDangerous = content.formatted_body;
+    if (MatrixChatMessage.isMedia(content)) {
+      // `m.image`/`m.file`/… — `content.body` is the filename, not text for user,
+      // so turn it into an attachment, download and store it.
+      // This runs in the fetch loop, so download in the background.
+      msg.addMedia(content)
+        .catch(ex => this.account.errorCallback);
+    } else {
+      msg.text = content.body;
+      msg.rawHTMLDangerous = content.formatted_body;
+    }
     return msg;
   }
 
@@ -119,15 +137,33 @@ export class MatrixRoom extends ChatRoom {
     return this.getUserMessage(event);
   }
 
-  redactMessage(event): void {
-    // TODO
+  /** Someone redacted (deleted for everyone) a message. Show the target as
+   * deleted, the receive side of {@link MatrixChatMessage.sendRetractionToOthers}. */
+  async redactedMessage(event): Promise<void> {
+    // The SDK normalizes the redaction target (top-level `redacts`, or `content.redacts`
+    // in room v11) to `getAssociatedId()`, so we don't read either wire location ourselves.
+    let targetID = sanitize.nonemptystring(event.getAssociatedId(), null);
+    let target = this.messages.find(m => m.id == targetID);
+    if (target instanceof ChatMessage) {
+      target.text = gt`This message was deleted`;
+      await target.save();
+    }
   }
 
-  getReaction(event): void {
+  /** Tracks whether our user may redact other people's messages: our power level
+   * meets the room's `redact` threshold (`m.room.power_levels`). */
+  protected updateAdminFromPowerLevels(event): void {
+    let content = event.getContent();
+    let myLevel = content.users?.[this.account.globalUserID] ?? content.users_default ?? 0;
+    let needed = content.redact ?? content.state_default ?? 50;
+    this.isAdmin = myLevel >= needed;
+  }
+
+  async getReaction(event): Promise<void> {
     let orgID = event.event.TODO;
     this.messages.find(m => m.id == orgID);
     let senderUserID = event.getSender();
-    let person = this.account.getExistingPerson(senderUserID);
+    let person = this.account.getPersonUID(senderUserID);
     assert(person, "Reaction: Sender not found: " + senderUserID);
     let data = event.event?.content["m.relates_to"];
     assert(data?.rel_type == "m.annotation", "Unknown reaction type " + data?.rel_type);
@@ -137,31 +173,29 @@ export class MatrixRoom extends ChatRoom {
       // might be reacting to an older message which is not in our history
       return;
     }
-    assert(reactTo instanceof UserChatMessage, "Reacting to something that is not a message");
+    assert(reactTo instanceof ChatMessage, "Reacting to something that is not a message");
     reactTo.reactions.set(person, emoji);
+    await reactTo.save();
   }
 
-  getJoinLeaveInviteEvent(event): ChatMessage {
+  getJoinLeaveInviteEvent(event): ChatRoomEvent {
     let data = event.event.content;
     let senderUserID = event.getSender();
-    let person = this.account.getExistingPerson(senderUserID);
+    let person = this.account.getPersonUID(senderUserID);
     if (!person) {
       person = new MatrixPerson(senderUserID, event.displayname);
       person.picture = event.avatar_url; // may be null
     }
 
     if (data.membership == "join" || data.membership == "leave") {
-      let msg = new JoinLeave(this);
+      let msg = this.newRoomEvent(RoomEventKind.JoinLeave) as JoinLeave;
       msg.join = data.membership == "join";
-      let group = this.contact;
-      if (group instanceof Group) {
-        if (msg.join) {
-          group.participants.add(person);
-        } else {
-          group.participants.remove(person);
+      if (msg.join) {
+        if (!this.members.includes(person)) {
+          this.members.add(person);
         }
       } else {
-        // TODO change to group
+        this.members.remove(person);
       }
       this.fillMessage(event, msg);
       msg.text = (msg.join ? "%person% joined" : "%person% left the room")
@@ -172,7 +206,7 @@ export class MatrixRoom extends ChatRoom {
         `</span>`;
       return msg;
     } else if (data.membership == "invite") {
-      let msg = new Invite(this);
+      let msg = this.newRoomEvent(RoomEventKind.Invite);
       this.fillMessage(event, msg);
       msg.text = "%person% is invited to this room"
         .replace("%person%", person.name);
@@ -186,8 +220,8 @@ export class MatrixRoom extends ChatRoom {
     }
   }
 
-  getShowRawEvent(event): ChatMessage {
-    let msg = new ChatRoomEvent(this);
+  getShowRawEvent(event): ChatRoomEvent {
+    let msg = this.newRoomEvent();
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);
     msg.text = json.substring(2, json.length - 2);
@@ -201,14 +235,59 @@ export class MatrixRoom extends ChatRoom {
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */
-  async sendMessage(message: UserChatMessage) {
+  async sendMessage(message: MatrixChatMessage) {
+    if (message.isEdit) {
+      await message.sendEdit();
+      return;
+    }
     message.deliveryStatus = DeliveryStatus.Sending;
+    assert(!message.attachments.some(att => !att.content), gt`Attachment is empty`);
     this.messages.add(message);
-    //console.log("Sending", message.text, "to", this.name);
-    //this.account.client.encryptAndSendToDevices();
-    let response = await this.account.client.sendHtmlMessage(this.id, message.text, message.html);
-    message.id = response.event_id;
+    // Upload each attachment by its `content` blob (never by filename) to the
+    // media repo, then send it as its own message event (m.image/m.file/...).
+    for (let attachment of message.attachments) {
+      let upload = await this.account.client.uploadContent(attachment.content, {
+        name: attachment.filename,
+        type: attachment.mimeType,
+      });
+      await this.account.client.sendMessage(this.id, {
+        msgtype: mediaMsgType(attachment.mimeType),
+        body: attachment.filename,
+        url: upload.content_uri,
+        info: {
+          mimetype: attachment.mimeType,
+          size: attachment.size,
+        },
+      } as any); // any, because SDK content type is a strict XOR union, but our msgtype is dynamic
+    }
+    if (message.text) {
+      let response = await this.account.client.sendHtmlMessage(this.id, message.text, message.html);
+      message.id = response.event_id;
+    }
     // By the time send() returns async, the server already sent us the message to the room
     this.messages.remove(message);
   }
+
+  newMessage(): MatrixChatMessage {
+    return new MatrixChatMessage(this);
+  }
+
+  newRoomEvent(kind?: RoomEventKind): ChatRoomEvent {
+    if (kind && kind != RoomEventKind.Generic) {
+      return super.newRoomEvent(kind);
+    }
+    return new MatrixRoomEvent(this);
+  }
+}
+
+/** The `m.room.message` msgtype for a file, based on its MIME type. */
+function mediaMsgType(mimeType: string): string {
+  if (mimeType?.startsWith("image/")) {
+    return "m.image";
+  } else if (mimeType?.startsWith("video/")) {
+    return "m.video";
+  } else if (mimeType?.startsWith("audio/")) {
+    return "m.audio";
+  }
+  return "m.file";
 }

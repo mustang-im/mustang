@@ -1,7 +1,7 @@
 import type { Person } from "../../Abstract/Person";
 import { Message } from "../../Abstract/Message";
 import type { EMail } from "../../Mail/EMail";
-import type { ChatMessage } from "../../Chat/Message";
+import type { ChatMessage } from "../../Chat/ChatMessage";
 import { VideoConfMeeting } from "../../Meet/VideoConfMeeting";
 import { Event, RecurrenceCase } from "../../Calendar/Event";
 import { File } from "../../Files/File";
@@ -14,6 +14,9 @@ import { appGlobal } from "../../app";
 export type LogEntry = Message | File | Event | VideoConfMeeting; // & { time: Date }
 
 export function searchLog(person: Person, limit: number): Collection<LogEntry> {
+  if (!person) {
+    return new ArrayColl();
+  }
   let colls = new ArrayColl<Collection<LogEntry>>();
   addColl(colls, getEMails(person, limit));
   // addColl(colls, getChatMessages(person, limit));

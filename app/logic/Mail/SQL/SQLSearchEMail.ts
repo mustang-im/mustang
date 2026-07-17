@@ -8,6 +8,7 @@ import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
 import sql, { type Query } from "../../../../lib/rs-sqlite";
+import { gt } from "../../../l10n/l10n";
 
 export class SQLSearchEMail extends SearchEMail {
   /** Start a database search based on the critera set on this object */
@@ -79,8 +80,9 @@ export class SQLSearchEMail extends SearchEMail {
       return cachedFolders.get(dbID) ?? null;
     }
     let randomFolder = this.folder ??
-      this.account?.getSpecialFolder(SpecialFolder.Inbox) ??
-      appGlobal.emailAccounts.first?.getSpecialFolder(SpecialFolder.Inbox);
+      this.account?.inbox ??
+      appGlobal.emailAccounts.first?.inbox;
+    assert(randomFolder, gt`Please set up a mail account first`);
     let emails = new ArrayColl<EMail>();
     for (let row of rows) {
       let folder = findFolder(row.folderID);

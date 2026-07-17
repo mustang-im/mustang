@@ -1,15 +1,13 @@
 {#if accounts?.hasItems}
   {#if activeTab == FilesView.CloudStorage}
-  <AccountList {accounts} bind:selectedAccount />
+    <AccountList {accounts} bind:selectedAccount />
   {/if}
   <FolderList folders={rootDirs} bind:selectedFolder bind:selectedFolders />
   {#if selectedFolder}
-  <TagsList folder={selectedFolder} bind:searchFiles />
+    <TagsList folder={selectedFolder} bind:searchFiles />
   {/if}
 {:else}
-  <hbox class="warn">
-    {$t`No file sharing accounts configured` }
-  </hbox>
+  <NoAccounts />
 {/if}
 
 <script lang="ts">
@@ -23,10 +21,10 @@
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
   import TagsList from "./TagsList.svelte";
+  import NoAccounts from "./NoAccounts.svelte";
   import { FilesView } from "../LeftPane/PaneViewSwitcher.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
   import { catchErrors } from "../../Util/error";
-  import { t } from "../../../l10n/l10n";
 
   /** The list of files and folders to show on the right pane
    * in/out only */
@@ -46,14 +44,14 @@
 
   $: selectedFolder, catchErrors(changeDir)
   async function changeDir() {
-    listDirs = null;
-    listFiles = null;
     if (!selectedFolder) {
+      listDirs = null;
+      listFiles = null;
       return;
     }
-    await selectedFolder.listContents();
     listDirs = selectedFolder.subDirs;
     listFiles = selectedFolder.files;
+    await selectedFolder.listContents();
   }
 
   $: $selectedFile instanceof Directory && changeToDir($selectedFile)

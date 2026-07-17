@@ -80,9 +80,10 @@
 </Menu>
 
 <script lang="ts">
-  import { PublicKey, TrustLevel } from "../../../../logic/Mail/Encryption/PublicKey";
+  import { PublicKey } from "../../../../logic/Mail/Encryption/PublicKey";
   import { PGPPrivateKey } from "../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
   import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+  import { TrustLevel } from "../../../../logic/Mail/Encryption/enums";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import { importPrivateKey } from "../../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
@@ -177,8 +178,8 @@
 
 <style>
   .key-import {
-    background-color: var(--main-pattern-bg);
-    color: var(--main-pattern-fg);
+    background-color: var(--offset-bg);
+    color: var(--offset-fg);
     border-radius: 2px;
     box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 15%);
     margin: 4px 0px;

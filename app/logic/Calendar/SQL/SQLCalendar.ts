@@ -3,7 +3,8 @@ import { AccountType, SQLAccount, type AccountDBRow } from "../../Mail/SQL/Accou
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { SQLCalendarStorage } from "./SQLCalendarStorage";
-import { backgroundError } from "../../../frontend/Util/error";
+import { logError } from "../../../frontend/Util/error";
+import { exMessage } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
@@ -71,7 +72,7 @@ export class SQLCalendar {
         await SQLCalendar.read(row, calendar);
         calendars.add(calendar);
       } catch (ex) {
-        backgroundError(ex);
+        logError(exMessage(ex, `Failed to load ${row.protocol} account (ID ${row.idStr}): ${ex.message}`));
       }
     }
     return calendars;

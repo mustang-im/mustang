@@ -10,17 +10,22 @@
   import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
-  import { BoldStar, ItalicSlash } from './StdConventions';
+  import { BoldStar, ItalicSlash, StrikeDoubleTidle } from './StdConventions';
   import { ParagraphNewLine } from './ParagraphNewLine';
+  import { TabIndent } from './TabIndent';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: string }>();
 
   /** in/out */
   export let html: string;
   /** out only */
   export let editor: Editor;
   export let tabindex = null;
+  /** Additional TipTap extensions to include alongside the defaults */
+  export let extraExtensions: any[] = [];
 
   let rootEl: HTMLDivElement;
   let lastHTML: string = null;
@@ -36,7 +41,13 @@
     editor = new Editor({
       element: rootEl,
       extensions: [
-        StarterKit,
+        // Disable some extensions because you cannot override the default
+        // input/mark rules
+        StarterKit.configure({
+          bold: false,
+          italic: false,
+          strike: false,
+        }),
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
@@ -50,10 +61,13 @@
         }),
         BoldStar,
         ItalicSlash,
+        StrikeDoubleTidle,
         ParagraphNewLine,
+        TabIndent,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
+        ...extraExtensions,
       ],
       content: html,
       onTransaction: () => {
@@ -62,6 +76,7 @@
       },
       onUpdate: ({ editor }) => {
         html = lastHTML = editor.getHTML();
+        dispatchEvent("change", html);
       },
     });
     lastHTML = html;

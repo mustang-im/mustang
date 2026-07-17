@@ -5,6 +5,7 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { type TGraphFolder, type TGraphEMail, TGraphEMailHeaderProperties } from "./TGraphMail";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, type URLString } from "../../util/util";
@@ -18,7 +19,7 @@ export class GraphFolder extends Folder {
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
   protected poller: ReturnType<typeof setInterval>;
-  readonly deletions = new Set<string>();
+  declare readonly deletions: Set<string>;
   protected readonly syncLock = new Lock(); /** Protects syncState */
 
   constructor(account: GraphAccount) {
@@ -48,9 +49,14 @@ export class GraphFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<GraphEMail>> {
     await this.readFolder();
-    return this.messages.isEmpty
-      ? await this.listAllMessages()
-      : await this.listChangedMessages();
+    let lock = await this.listMessagesLock.lock();
+    try {
+      return this.messages.isEmpty
+        ? await this.listAllMessages()
+        : await this.listChangedMessages();
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder.
@@ -164,18 +170,22 @@ export class GraphFolder extends Folder {
     let newMessages = new ArrayColl<GraphEMail>();
     let updatedMessages = new ArrayColl<GraphEMail>();
     for (let json of msgs) {
-      let pID = sanitize.nonemptystring(json.id);
-      if (this.deletions.has(pID)) {
-        continue;
-      }
-      let msg = checkUpdates && this.getEMailByPID(pID);
-      if (msg) {
-        msg.fromGraph(json);
-        updatedMessages.add(msg);
-      } else {
-        msg = this.newEMail();
-        msg.fromGraph(json);
-        newMessages.add(msg);
+      try {
+        let pID = sanitize.nonemptystring(json.id);
+        if (this.deletions.has(pID)) {
+          continue;
+        }
+        let msg = checkUpdates && this.getEMailByPID(pID);
+        if (msg) {
+          msg.fromGraph(json);
+          updatedMessages.add(msg);
+        } else {
+          msg = this.newEMail();
+          msg.fromGraph(json);
+          newMessages.add(msg);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return { newMessages, updatedMessages };
@@ -205,7 +215,7 @@ export class GraphFolder extends Folder {
   async getAllMessages(): Promise<ArrayColl<GraphEMail>> {
     let newMsgs = await this.listAllMessages();
     await this.downloadMessages(newMsgs);
-    let updateNew = await this.getAllMessages();
+    let updateNew = await this.getNewMessages();
     newMsgs.addAll(updateNew);
     return newMsgs;
   }
@@ -219,22 +229,25 @@ export class GraphFolder extends Folder {
     let downloadedMsgs = new ArrayColl<GraphEMail>();
     const kMaxParallelCount = 5;
     let semaphore = new Semaphore(kMaxParallelCount);
+    let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
       if (msg.downloadRunOnce.running) {
         continue;
       }
       let lock = await semaphore.lock();
-      (async () => {
+      downloads.add((async () => {
         try {
           await msg.download();
+          downloadedMsgs.add(msg);
         } catch (ex) {
           this.account.errorCallback(ex);
         } finally {
           lock.release();
         }
-      })().catch(this.account.errorCallback);
+      })());
     }
+    await downloads.wait();
     return downloadedMsgs;
   }
 
@@ -247,7 +260,7 @@ export class GraphFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessage(email);
+          await email.saveMetadataLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -261,7 +274,7 @@ export class GraphFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await this.storage.saveMessageWritableProps(email);
+          await email.saveWritablePropsLocally();
         }
       } catch (ex) {
         this.account.errorCallback(ex);

@@ -43,15 +43,34 @@ linux:
     - AppImage
     # - snap
     - deb
+    - pacman
     - rpm
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Network
   icon: build/icon.icns
+  mimeTypes:
+    - message/rfc822
 appImage:
   artifactName: ${name}-${version}.${ext}
 deb:
   packageName: mustang-mail
+pacman:
+  depends:
+    # Only way to remove http-parser (unnecessary and non-existing). electron-builder bug <https://github.com/electron-userland/electron-builder/issues/9429>
+    - c-ares
+    - ffmpeg
+    - gtk3
+    - libevent
+    - libvpx
+    - libxslt
+    - libxss
+    - minizip
+    - nss
+    - re2
+    - snappy
+    - libnotify
+    - libappindicator-gtk3
 protocols:
   name: Send mail
   schemes:
@@ -67,3 +86,10 @@ publish:
 extraMetadata:
   # <https://github.com/electron-userland/electron-builder/issues/6714#issuecomment-2150777424>
   productName: Mustang
+fileAssociations:
+  ext: eml
+  name: E-Mail Message
+  description: RFC 822 email message
+  role: Viewer
+  rank: Default
+  mimeType: message/rfc822

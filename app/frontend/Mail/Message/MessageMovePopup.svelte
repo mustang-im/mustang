@@ -6,10 +6,10 @@
       icon={DeleteIcon}
       />
     <Button plain
-      label={$t`Spam`}
-      tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-      onClick={onSpam}
-      icon={SpamIcon}
+      label={$messages.first.isSpam ? $t`Not spam` : $t`Spam`}
+      tooltip={$messages.first.isSpam ? $t`Treat this email as *not* spam` : $t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+      onClick={toggleSpam}
+      icon={$messages.first.isSpam ? NotSpamIcon : SpamIcon}
       />
     <Button plain
       label={$t`Archive`}
@@ -93,6 +93,7 @@
   import Button from "../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import ArchiveIcon from "lucide-svelte/icons/archive";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import CopyIcon from "lucide-svelte/icons/mails";
@@ -128,10 +129,11 @@
     }
     goToNextMessage();
   }
-  async function onSpam() {
+  async function toggleSpam() {
+    let spam = !messages.first.isSpam;
     onClose();
     for (let message of messages) {
-      await message.treatSpam();
+      await message.treatSpam(spam);
     }
     goToNextMessage();
   }

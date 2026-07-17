@@ -3,8 +3,6 @@
 </Route>
 {#if appGlobal.isMobile}
   <Route path="folder/:accountID/:folderID/message-list">
-    {$selectedFolder = params.folder ?? $selectedFolder,
-     $selectedAccount = params.account ?? $selectedAccount, ""}
     <MsgListM
       messages={searchMessages ?? params?.messages ?? $selectedFolder?.messages ?? requiredParam()}
       bind:searchMessages
@@ -22,8 +20,6 @@
     <SearchM />
   </Route>
   <Route path="/">
-    {params?.account ? $selectedAccount = params.account : null,
-     params?.folder ? $selectedFolder = params.folder : null, ""}
     <AccountsM
       {accounts}
       {folders}
@@ -60,6 +56,20 @@
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: location = useLocation();
   $: params = getParams($location.state);
+  $: params, setFolder()
+  // Set only when params.foo changes, not when $selectedFoo changes
+  let lastAccount = null;
+  let lastFolder = null;
+  function setFolder() {
+    if (params.account && params.account != lastAccount) {
+      $selectedAccount = params.account;
+      lastAccount = params.account;
+    }
+    if (params.folder && params.folder != lastFolder) {
+      $selectedFolder = params.folder;
+      lastFolder = params.folder;
+    }
+  }
 
   let searchMessages: ArrayColl<EMail> | null;
 

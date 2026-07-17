@@ -8,7 +8,7 @@
         tooltip={signDisabledReason ?? encryptDisabledReason ?? mail.shouldEncrypt ? $t`Encrypt and sign` : mail.signed ? $t`Sign digitally` : $t`Sign or encrypt`}
         icon={mail.shouldEncrypt ? EncryptIcon : mail.signed ? SignIcon : NoEncryptIcon}
         selected={!!mail.signed || mail.shouldEncrypt}
-        onClick={event => { isMenuOpen = !isMenuOpen; event.stopPropagation(); }}
+        onClick={() => isMenuOpen = !isMenuOpen}
         disabled={mail.mustEncrypt || !!signDisabledReason && !!encryptDisabledReason}
         classes="plain"
         border={false}
@@ -56,7 +56,8 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { trustColor, trustColorFG, TrustLevel, trustOrder, type PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
+  import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
+  import { TrustLevel, trustColor, trustColorFG, trustOrder } from "../../../logic/Mail/Encryption/enums";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";

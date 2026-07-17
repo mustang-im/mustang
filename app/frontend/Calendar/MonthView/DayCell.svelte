@@ -1,28 +1,32 @@
-<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if $displayEvents?.hasItems}
-    <Scroll>
-      {#each $displayEvents.each as event (event.id)}
-        {#if event.startTime && event.endTime}
-          <EventContainer {event} {start} />
-        {/if}
-      {/each}
-    </Scroll>
-  {/if}
-  {#if withMonthOnFirst && start.getDate() == 1 ||
-    withMonthOnMonday && start.getDay() == 1 }
-    <hbox class="month-name font-normal">
-      {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
-    </hbox>
-  {/if}
-</vbox>
+<Clickable onClick={selectDay} onDoubleClick={addEvent}>
+  <vbox flex class="events"
+    style="--selected-calendar-color: {$selectedCalendar?.color ?? "black"}">
+    {#if $displayEvents?.hasItems}
+      <Scroll>
+        {#each $displayEvents.each as event (event.id)}
+          {#if event.startTime && event.endTime}
+            <EventContainer {event} {start} />
+          {/if}
+        {/each}
+      </Scroll>
+    {/if}
+    {#if withMonthOnFirst && start.getDate() == 1 ||
+      withMonthOnMonday && start.getDay() == 1 }
+      <hbox class="month-name font-normal">
+        {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
+      </hbox>
+    {/if}
+  </vbox>
+</Clickable>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
   import { selectedCalendar, selectedDate } from "../selected";
-  import { openEventFromOtherApp } from "../open";
+  import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import EventContainer from "./EventContainer.svelte";
+  import Clickable from "../../Shared/Clickable.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
   import { assert } from "../../../logic/util/util";
@@ -54,7 +58,7 @@
     let event = $selectedCalendar.newEvent();
     let startTime = new Date(start.getTime() + 10 * k1HourMS);
     setNewEventTime(event, true, startTime);
-    openEventFromOtherApp(event, true);
+    openEvent(event, true);
   }
 </script>
 
@@ -63,6 +67,10 @@
     position: relative;
     border-left: 1px dotted var(--border);
     border-bottom: 1px dotted var(--border);
+  }
+  .events:hover {
+    background-color: color-mix(in srgb, var(--selected-calendar-color) 10%, transparent);
+    color: white;
   }
   .month-name {
     position: absolute;

@@ -8,7 +8,6 @@ import { Collection } from "svelte-collections";
 
 export class JSONEvent {
   static save(event: Event): any {
-    assert(event.calendar?.id, "Need calendar ID to save the event");
     let json: any = {};
     json.id = event.id;
     json.title = event.title;
@@ -22,7 +21,7 @@ export class JSONEvent {
     json.onlineMeetingURL = event.onlineMeetingURL;
     json.calUID = event.calUID;
     json.pID = event.pID;
-    json.calendarID = event.calendar.id;
+    json.calendarID = event.calendar?.id;
     json.recurrenceRule = event.recurrenceRule?.getCalString();
     json.recurrenceMasterEventID = event.parentEvent?.pID;
     json.recurrenceStartTime = event.recurrenceStartTime?.toISOString();

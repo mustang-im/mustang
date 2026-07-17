@@ -3,18 +3,16 @@
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
       {#each $workspaces.each as workspace}
-        <hbox class="workspace"
-          on:click={event => onChange(workspace, event)}
+        <label class="workspace"
           style="background-color: {workspace.color}"
           >
           <input type="radio"
             checked={workspace == selectedWorkspace}
             value={workspace}
-            name="workspace"
-            on:change={event => onChange(workspace, event)}
+            bind:group={selectedWorkspace}
             />
-          <label for="workspace" class="name">{workspace.name}</label>
-        </hbox>
+          {workspace.name}
+        </label>
       {/each}
     </vbox>
   </vbox>

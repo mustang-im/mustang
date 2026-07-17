@@ -1,4 +1,5 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { ExchangePerson } from "./ExchangePerson";
+import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
@@ -7,7 +8,7 @@ import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemReques
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 
-export class EWSPerson extends Person {
+export class EWSPerson extends ExchangePerson {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {
@@ -23,7 +24,10 @@ export class EWSPerson extends Person {
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.emailAddress(entry.Value), "work", "mailto")));
+      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry)
+        .filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP"))
+        .map(entry => new ContactEntry(sanitize.emailAddress(entry.Value, null), "work", "mailto"))
+        .filter(ce => ce.value));
     }
     if (xmljs.PhoneNumbers?.Entry) {
       for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {

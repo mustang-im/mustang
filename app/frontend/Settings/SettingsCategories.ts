@@ -38,10 +38,14 @@ import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
 // #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
+import { WhatsAppAccount } from "../../logic/Chat/WhatsApp/WhatsAppAccount";
+import WhatsAppImportBackup from "./Chat/WhatsAppImportBackup.svelte";
 import { Addressbook } from "../../logic/Contacts/Addressbook";
 import { Calendar } from "../../logic/Calendar/Calendar";
 import { CardDAVAddressbook } from "../../logic/Contacts/CardDAV/CardDAVAddressbook";
 import { CalDAVCalendar } from "../../logic/Calendar/CalDAV/CalDAVCalendar";
+import MailConnectedAccounts from "./Mail/ConnectedAccounts.svelte";
+import CalendarConnectedAccounts from "./Calendar/ConnectedAccounts.svelte";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
 // #if [PROPRIETARY]
@@ -52,6 +56,7 @@ import { SIPAccount } from "../../logic/Meet/SIP/SIPAccount";
 import SIP from "./Meet/SIP.svelte";
 // #endif
 import { gt } from "../../l10n/l10n";
+import { WebDAVAccount } from "../../logic/Files/WebDAV/WebDAVAccount";
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 accountSettings.add(new AccSetting(Account, "acc-sub", gt`Sub-Accounts`, AccountSubAccounts, true));
@@ -79,6 +84,7 @@ mailSettings.newAccountURL = "/setup/mail";
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
 
+accountSettings.add(new AccSetting(MailAccount, "mail-connected", gt`Connected accounts`, MailConnectedAccounts, true));
 // #if [!WEBMAIL]
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
 // #endif
@@ -100,6 +106,7 @@ settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
 accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
+accountSettings.add(new AccSetting(WhatsAppAccount, "whatsapp-import", gt`Import backup`, WhatsAppImportBackup, true));
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
 // #endif
@@ -113,6 +120,8 @@ calendarSettings.newAccountURL = "/setup/calendar";
 // #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
+
+accountSettings.add(new AccSetting(Calendar, "calendar-connected", gt`Connected accounts`, CalendarConnectedAccounts, true));
 accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
 accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 
@@ -147,15 +156,14 @@ settingsCategories.add(meetSettings);
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 
-// #if [DEV]
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
 filesSettings.subCategories.addAll([
 ]);
 filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
 filesSettings.newAccountURL = "/setup/files";
 filesSettings.forApp = filesMustangApp;
+accountSettings.add(new AccSetting(WebDAVAccount, "webdav-server", gt`Server`, AccountURLServer));
 settingsCategories.add(filesSettings);
-// #endif
 
 // #if [!WEBMAIL]
 const appSettings = new SettingsCategory("app", gt`App integration`, null, true);

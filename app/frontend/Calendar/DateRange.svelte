@@ -1,7 +1,7 @@
 <hbox class="date-range-header">
   <hbox class="date-range">{@html htmlMonthYear(date)}</hbox>
-  <Button classes="previous-button" label={$t`Previous ${dateInterval} days`} icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
-  <Button classes="next-button" label={$t`Next ${dateInterval} days`} icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
+  <Button classes="previous-button" label={$t`Previous ${dateInterval} days`} icon={ChevronLeftIcon} onClick={pagePrevious} iconSize="16px" plain iconOnly />
+  <Button classes="next-button" label={$t`Next ${dateInterval} days`} icon={ChevronRightIcon} onClick={pageNext} iconSize="16px" plain iconOnly />
 </hbox>
 
 <script lang="ts">

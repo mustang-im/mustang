@@ -1,5 +1,5 @@
 import type { Event } from "../../logic/Calendar/Event";
-import { openEventFromOtherApp } from "./open";
+import { openEvent } from "./open";
 import { bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
 import { getLocalStorage } from "../Util/LocalStorage";
@@ -109,7 +109,7 @@ export async function showReminder() {
         console.log("notification", notification);
         notification.show();
 
-        notification.on("click", event => openEvent(event));
+        notification.on("click", event => openEventInApp(event));
       } catch (ex) {
         backgroundError(ex);
       }
@@ -132,9 +132,9 @@ export async function showReminder() {
   }
 }
 
-async function openEvent(event: Event) {
+async function openEventInApp(event: Event) {
   try {
-    openEventFromOtherApp(event);
+    openEvent(event);
     bringAppToFront();
   } catch (ex) {
     console.error(ex);

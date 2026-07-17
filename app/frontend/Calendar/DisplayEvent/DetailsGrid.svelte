@@ -6,7 +6,7 @@
 
   {#if $event.recurrenceCase == RecurrenceCase.Master}
     <hbox />
-    <hbox class="recurrence">{ruleAsLabel($event.recurrenceRule, $event.startTime)}</hbox>
+    <hbox class="recurrence">{ruleAsLabel($event.recurrenceRule)}</hbox>
   {/if}
 
   {#if $participants?.hasItems}
@@ -14,7 +14,7 @@
     <ParticipantsDisplay {event} />
   {/if}
 
-  {#if event.location}
+  {#if $event.location}
     <LocationIcon size="16px" />
     <value class="location font-normal">
       {$event.location}
