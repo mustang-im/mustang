@@ -9,12 +9,9 @@ import { appGlobal } from "../../app";
 export class OWAGroup extends ExchangeGroup {
   declare addressbook: OWAAddressbook | null;
 
-  get personaID() {
-    return this.id;
-  }
-  set personaID(val) {
-    this.id = val;
-  }
+  /** The Exchange PersonaId,
+   * or the empty string if the item has not been saved to the server. */
+  personaID = "";
 
   fromJSON(json: any): OWAGroup {
     this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
@@ -35,6 +32,18 @@ export class OWAGroup extends ExchangeGroup {
     await this.addressbook.callOWA(request);
     //await super.deleteIt();
     */
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    // Old existing contacts saved the personaID in the id
+    this.personaID = sanitize.string(json.serverID, this.id);
+  }
+
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.personaID = this.personaID;
+    return json;
   }
 }
 

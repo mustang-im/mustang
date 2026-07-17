@@ -9,12 +9,9 @@ import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 export class ActiveSyncPerson extends ExchangePerson {
   declare addressbook: ActiveSyncAddressbook | null;
 
-  get serverID() {
-    return this.id;
-  }
-  set serverID(val) {
-    this.id = val;
-  }
+  /** The ActiveSync ServerId,
+   * or the empty string if the item has not been saved to the server. */
+  serverID = "";
 
   fromWBXML(wbxmljs: any) {
     this.firstName = sanitize.nonemptystring(wbxmljs.FirstName, "");
@@ -128,6 +125,18 @@ export class ActiveSyncPerson extends ExchangePerson {
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.addressbook);
     }
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    // Old existing contacts saved the serverID in the id
+    this.serverID = sanitize.string(json.serverID, this.id);
+  }
+
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.serverID = this.serverID;
+    return json;
   }
 }
 
