@@ -19,6 +19,7 @@ import net from "node:net";
 import { WebSocket as NodeWebSocket } from "ws";
 import zlib from "node:zlib";
 import path from "node:path";
+import tls from "node:tls";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
@@ -96,6 +97,7 @@ async function createSharedAppObject() {
     newTCPSocket,
     newWebSocket,
     gunzip,
+    getCACertificates,
     readFile,
     writeFile,
     deleteFile,
@@ -272,6 +274,14 @@ function newWebSocket(url: string, options?: { headers?: Record<string, string>,
  * blob, which the renderer's DecompressionStream handles unreliably. */
 function gunzip(data: Uint8Array): Uint8Array {
   return zlib.unzipSync(Buffer.from(data));
+}
+
+function getCACertificates(type: string) {
+  if (tls.getCACertificates) {
+    return tls.getCACertificates(type);
+  }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */

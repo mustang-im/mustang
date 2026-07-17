@@ -57,9 +57,14 @@
     </hbox>
     <hbox class="create buttons">
       <Button
-        label={$t`Create new`}
+        label={$t`Create new PGP key`}
         icon={PlusIcon}
-        onClick={onCreateNew}
+        onClick={onCreateNewPGP}
+        />
+      <Button
+        label={$t`Create new S/MIME key`}
+        icon={PlusIcon}
+        onClick={onCreateNewSMIME}
         />
     </hbox>
   {/if}
@@ -96,6 +101,7 @@
   export let identity: MailIdentity;
   /** in/out */
   export let isOpen: boolean;
+  export let showObsolete: boolean;
 
   let showPassword = false;
   let passphrase: string;
@@ -105,7 +111,7 @@
   }
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", "text/plain" ];
+  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", ".key", "text/plain" ];
   async function onImportFile(passphrase: string) {
     let file = await fileSelector.selectFile();
     if (!file) {
@@ -114,6 +120,9 @@
     let fileContent = await file.text();
     let key = await importPrivateKey(fileContent, passphrase);
     identity.encryptionPrivateKeys.add(key);
+    if (key.obsolete) {
+      showObsolete = true;
+    }
     isOpen = false;
     await identity.account.save();
   }
@@ -136,13 +145,21 @@
     isOpen = false;
   }
 
-  async function onCreateNew() {
+  async function onCreateNewPGP() {
     assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
     let key = await PGPPrivateKey.createNewPrivateKey({
       realname: identity.realname,
       emailAddress: identity.emailAddress,
     });
     identity.encryptionPrivateKeys.add(key);
+    isOpen = false;
+    await identity.account.save();
+  }
+
+  async function onCreateNewSMIME() {
+    let key = await SMIMEPrivateKey.createNewPrivateKey();
+    identity.encryptionPrivateKeys.add(key);
+    showObsolete = true;
     isOpen = false;
     await identity.account.save();
   }
