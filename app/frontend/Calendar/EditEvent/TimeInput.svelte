@@ -62,12 +62,12 @@
         if (parts[5]) {
           hour += 12;
         }
-      } else if (hour > 23) {
+      } else if (hour >= 24) {
         throw new Error($t`Hour moust be less than 24`);
       }
       let minute = Number(parts[3] || 0);
-      if (minute > 59) {
-        throw new Error($t`Minute must be less than 59`);
+      if (minute >= 60) {
+        throw new Error($t`Minute must be less than 60`);
       }
 
       let newTime = new Date(time); // force refresh
