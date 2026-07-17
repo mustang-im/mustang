@@ -173,7 +173,7 @@ export class JMAPAccount extends MailAccount {
         await this.login(false);
       }
     }
-    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
+    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
     if (this.haveContacts) {
       using.push("urn:ietf:params:jmap:contacts");
     }
