@@ -40,6 +40,7 @@ import sk from './locales/sk/messages.json';
 import th from './locales/th/messages.json';
 import tr from './locales/tr/messages.json';
 import la from './locales/la/messages.json';
+import tlh from './locales/tlh/messages.json';
 
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
@@ -84,6 +85,7 @@ export const languageMessages: Record<string, Record<string, string>> = {
   th: th,
   tr: tr,
   la: la,
+  tlh: tlh,
 };
 
 export const sourceLocale = 'en';
@@ -133,6 +135,7 @@ export const localeNames = {
   //'sq': "Albanian / Shqip",
   'sv': "Swedish / Svenska",
   'th': "Thai / ภาษาไทย",
+  'tlh': "Klingon / tlhIngan Hol",
   //'tl': "Tagalog / Wikang Tagalog",
   'tr': "Turkish / Türkçe",
   'uk': "Ukranian / Українська",
