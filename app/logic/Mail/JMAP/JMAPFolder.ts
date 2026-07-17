@@ -146,7 +146,7 @@ export class JMAPFolder extends Folder {
     try {
       //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
-      let response = await this.account.makeCombinedCall([
+      let response = await retryOnTransientError(() => this.account.makeCombinedCall([
         [
           "Email/changes", {
             accountId: this.account.accountID,
@@ -175,7 +175,7 @@ export class JMAPFolder extends Folder {
           },
           "changed",
         ],
-      ]);
+      ]));
       //console.log("sync response", response);
 
       let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
