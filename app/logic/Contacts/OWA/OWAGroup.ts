@@ -10,10 +10,10 @@ export class OWAGroup extends ExchangeGroup {
   declare addressbook: OWAAddressbook | null;
 
   get personaID() {
-    return this.id;
+    return this.pID;
   }
   set personaID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromJSON(json: any): OWAGroup {

@@ -14,10 +14,10 @@ export class CardDAVPerson extends Person {
   originalVCard: string;
 
   get itemID(): string | null {
-    return this.id;
+    return this.pID;
   }
   set itemID(val: string | null) {
-    this.id = val;
+    this.pID = val;
   }
   get etag(): string | null {
     return this.syncState as string;

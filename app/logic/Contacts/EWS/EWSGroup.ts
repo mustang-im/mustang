@@ -14,10 +14,10 @@ export class EWSGroup extends ExchangeGroup {
   declare addressbook: EWSAddressbook | null;
 
   get itemID() {
-    return this.id;
+    return this.pID;
   }
   set itemID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromXML(xmljs: any) {
@@ -29,7 +29,7 @@ export class EWSGroup extends ExchangeGroup {
 
   async saveToServer() {
     // XXX untested due to no UI yet
-    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
+    let request = this.existsOnServer ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
     request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
     let participants = this.participants.contents.filter(entry => entry.emailAddresses.first?.value);

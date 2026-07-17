@@ -10,10 +10,10 @@ export class ActiveSyncPerson extends ExchangePerson {
   declare addressbook: ActiveSyncAddressbook | null;
 
   get serverID() {
-    return this.id;
+    return this.pID;
   }
   set serverID(val) {
-    this.id = val;
+    this.pID = val;
   }
 
   fromWBXML(wbxmljs: any) {
@@ -74,7 +74,7 @@ export class ActiveSyncPerson extends ExchangePerson {
         ActiveSyncPerson.streetAddressToActiveSync(entry.value, entry.purpose, fields);
       }
     }
-    let data = this.serverID ? {
+    let data = this.existsOnServer ? {
       GetChanges: "0",
       Commands: {
         Change: {

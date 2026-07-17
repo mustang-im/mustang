@@ -11,6 +11,9 @@ export type Contact = Person | Group;
 export class ContactBase extends Observable {
   id: string;
   dbID: number;
+  /** Protocol-specific ID for this person.
+   * null = new contact that has not been saved to the server yet. */
+  pID: string | null = null;
   addressbook: Addressbook | null;
   @notifyChangedProperty
   name: string;
@@ -24,6 +27,14 @@ export class ContactBase extends Observable {
     super();
     this.id = randomID();
     this.addressbook = addressbook;
+  }
+
+  get isNew(): boolean {
+    return !this.dbID;
+  }
+
+  get existsOnServer(): boolean {
+    return !!this.pID;
   }
 
   async save() {
