@@ -23,6 +23,15 @@ export class ExchangePermission {
     return this.emailAddress?.toLowerCase() == emailAddress.toLowerCase();
   }
 
+  /** Whether `emailAddress` may create items, e.g. save a sent copy, per this permission set.
+   * The user may have access via the Default entry or a group membership,
+   * in which case there's no entry with his email address. */
+  static mayCreateItems(permissions: ExchangePermission[], emailAddress: string): boolean {
+    let permission = permissions.find(permission => permission.matchesEMailAddress(emailAddress))
+      ?? permissions.find(permission => permission.distinguishedUser == "Default");
+    return permission?.exchangePermissions?.CanCreateItems ?? false;
+  }
+
   toEWSFolderPermission() {
     return Object.assign({
       t$UserId: this.distinguishedUser

@@ -161,12 +161,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
     if (folder.account.mainAccount) {
       let mainAccount = folder.account.mainAccount as EWSAccount;
-      let permissions = await folder.getPermissions();
-      // The user may have access via the Default entry or a group membership,
-      // in which case there's no entry with his email address.
-      let permission = permissions.find(permission => permission.matchesEMailAddress(mainAccount.emailAddress))
-        ?? permissions.find(permission => permission.distinguishedUser == "Default");
-      if (!permission?.exchangePermissions?.CanCreateItems) {
+      if (!await folder.mayCreateItems(mainAccount.emailAddress)) {
         folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as EWSFolder;
       }
     }
