@@ -216,6 +216,7 @@
     margin-inline-start: 8px;
     margin-block-start: 18px; /** TODO align properly */
     margin-block-end: 4px;
+    overflow: hidden;
   }
   .account-icon-dummy {
     height: 24px;
