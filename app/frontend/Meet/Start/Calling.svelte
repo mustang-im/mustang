@@ -29,7 +29,9 @@
               {#if $participants.length == 1}
                 <hbox class="who-id">
                   <!-- Phone number -->
-                  {participants.first.emailAddress}
+                  {#if participants.first.emailAddress != kDummyPerson.emailAddress}
+                    {participants.first.emailAddress}
+                  {/if}
                 </hbox>
               {/if}
               <hbox class="who-count">
@@ -177,6 +179,7 @@
   import { t } from "../../../l10n/l10n";
   import { onKeyEnter } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
+  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
 
   export let meeting: VideoConfMeeting;
 
