@@ -1,6 +1,6 @@
 {
   "name": "mustang",
-  "version": "0.9.34",
+  "version": "0.9.35-dev",
   "description": "Mustang - Video conference, chat, mail, calendar, files, contacts",
   "main": "./out/main/index.js",
   "type": "module",
