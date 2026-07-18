@@ -48,14 +48,24 @@ export class OWACalendar extends ExchangeCalendar {
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
-    return participants.map((participant, i) => ({
-      participant,
-      availability: results.Responses[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
-        from: new Date(event.Start + "Z"),
-        to: new Date(event.End + "Z"),
-        free: event.FreeBusyType == "Free",
-      })),
-    }));
+    let availabilities = [];
+    for (let [i, participant] of participants.entries()) {
+      let result = results.Responses[i];
+      if (result.ResponseMessage.ResponseClass == "Error" || result.FreeBusyViewType == "None") {
+        // Don't report unknown as Free
+        availabilities.push({ participant, availability: undefined });
+        continue;
+      }
+      availabilities.push({
+        participant,
+        availability: ensureArray(result.CalendarView.Items).map(event => ({
+          from: new Date(event.Start + "Z"),
+          to: new Date(event.End + "Z"),
+          free: event.FreeBusyType == "Free",
+        })),
+      });
+    }
+    return availabilities;
   }
 
   protected getEventByItemID(id: string): OWAEvent | undefined {

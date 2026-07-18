@@ -68,14 +68,24 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       },
     };
     let results = await this.account.callEWS(request);
-    return participants.map((participant, i) => ({
-      participant,
-      availability: results[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
-        from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
-        to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
-        free: event.BusyType == "Free",
-      })),
-    }));
+    let availabilities = [];
+    for (let [i, participant] of participants.entries()) {
+      let result = results[i];
+      if (result.ResponseMessage.ResponseClass == "Error" || !result.FreeBusyView || result.FreeBusyView.FreeBusyViewType == "None") {
+        // Don't report unknown as Free
+        availabilities.push({ participant, availability: undefined });
+        continue;
+      }
+      availabilities.push({
+        participant,
+        availability: ensureArray(result.FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
+          from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
+          to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
+          free: event.BusyType == "Free",
+        })),
+      });
+    }
+    return availabilities;
   }
 
   async listEvents() {
