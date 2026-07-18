@@ -39,15 +39,7 @@
   import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
 
-  $: cals = appGlobal.calendars;
-  $: if ($cals.length > 1 &&
-          cals.first.protocol == "calendar-local" &&
-          cals.get(1).protocol != "calendar-local" &&
-          cals.first.events.isEmpty) {
-        cals.remove(cals.first);
-        // but don't delete it in DB, so that it re-appears after the last cal was deleted (and an app restart)
-      }
-  $: if (!$selectedCalendar) { $selectedCalendar = cals.first; }
+  $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 </script>
 
 <style>
