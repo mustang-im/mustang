@@ -64,6 +64,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     let organizer = repliedEvent.participants.find(participant => participant.response == InvitationResponse.Organizer);
     assert(organizer, "Invitation should have an organizer");
     let email = account.newEMailFrom();
+    email.identity = account.findIdentityForEMailAddress(myParticipant.emailAddress) ?? account.identities.first;
     email.from.emailAddress = myParticipant.emailAddress;
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);

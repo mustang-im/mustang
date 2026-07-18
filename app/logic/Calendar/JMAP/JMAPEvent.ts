@@ -85,6 +85,8 @@ export class JMAPEvent extends Event {
       this.jmapID = this.original.id = sanitize.alphanumdash(results.created[this.id].id);
       await this.saveLocally();
     }
+
+    await this.sendInvitationsDirectly(); // server doesn't send
   }
 
   async deleteFromServer() {

@@ -66,6 +66,7 @@ export class MailIdentity extends Observable {
 
   newEMailFrom(): EMail {
     let email = this.account.newEMailFrom();
+    email.identity = this;
     email.from.name = this.name;
     email.from.emailAddress = this.emailAddress;
     return email;
