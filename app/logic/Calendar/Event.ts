@@ -521,6 +521,29 @@ export class Event extends Observable {
     this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
   }
 
+  /** For backends that have only a single location field and no dedicated field
+   * for the online meeting URL (Exchange, ActiveSync): put the URL in the
+   * location, like other clients do and like we do in iCal for backwards compat.
+   * Otherwise the server-generated invitation wouldn't contain the URL at all.
+   * @see getICal() @see setLocationFromServer() the inverse */
+  get locationForServer(): string {
+    return this.location || this.isOnline && this.onlineMeetingURL || "";
+  }
+
+  /** Inverse of `locationForServer`: If the location that the server gave us is
+   * actually the online meeting URL, move it to `onlineMeetingURL`.
+   * @see ICalToEvent, which does the same for other clients */
+  setLocationFromServer(location: string | null): void {
+    this.location = location || "";
+    if (!this.onlineMeetingURL && this.location.startsWith("https://")) {
+      this.isOnline = true;
+      this.onlineMeetingURL = sanitize.url(this.location, null);
+    }
+    if (this.location == this.onlineMeetingURL) {
+      this.location = "";
+    }
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");

@@ -100,7 +100,7 @@ export class EWSEvent extends ExchangeEvent {
     } else {
       this.alarm = null;
     }
-    this.location = sanitize.nonemptystring(xmljs.Location, "");
+    this.setLocationFromServer(sanitize.nonemptystring(xmljs.Location, ""));
     this.isCancelled = sanitize.boolean(xmljs.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
@@ -192,7 +192,7 @@ export class EWSEvent extends ExchangeEvent {
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", this.location, "calendar:Location");
+    request.addField("CalendarItem", "Location", this.locationForServer, "calendar:Location");
     request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? {
       t$Attendee: this.participants.contents.map(entry => ({
         t$Mailbox: {
