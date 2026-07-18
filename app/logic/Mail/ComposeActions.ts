@@ -8,9 +8,10 @@ import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { importAutoCryptKeys } from "./Encryption/PGP/AutoCrypt";
+import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { UserError, assert, type URLString, ensureArray } from "../util/util";
+import { UserError, assert, dataURLToBlob, type URLString, ensureArray } from "../util/util";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -199,13 +200,13 @@ export class ComposeActions {
     return clone;
   }
 
-  convertInlineAttachmentsURLs() {
+  async convertInlineAttachmentsURLs() {
     let changed = false;
     let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous ?? "", "text/html");
     for (let node of html.querySelectorAll("img[src]")) {
       let img = node as HTMLImageElement;
       // img.src = this.convertBlobURLToCIDURL(img.src);
-      img.src = this.convertDataURLToCIDURL(img.src);
+      img.src = await this.convertDataURLToCIDURL(img.src);
       changed = true;
     }
     if (changed) {
@@ -213,20 +214,29 @@ export class ComposeActions {
     }
   }
 
-  protected convertDataURLToCIDURL(url: URLString): URLString {
+  protected async convertDataURLToCIDURL(url: URLString): Promise<URLString> {
     if (!url?.startsWith("data:")) {
       return url;
     }
-    let attachment = this.email.attachments.find(a => a.dataURL == url);
-    if (!attachment) {
-      /*let blob = await dataURLToBlob(url);
-      attachment = Attachment.fromFile(new File([blob], "image"));*/
-      console.warn(attachment, "Attachment for data URL not found", url.substring(0, 20));
-      return url;
-    }
-
+    // Images dragged into the mail composer are already made attachments
+    let attachment = this.email.attachments.find(a => a.dataURL == url) ??
+      // For image pastes, the editor creates only a `img src="data:…"` URL, so build an attachment
+      await this.createInlineAttachment(url);
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
+  }
+
+  protected async createInlineAttachment(dataURL: URLString): Promise<Attachment> {
+    let blob = await dataURLToBlob(dataURL);
+    let ext = fileExtensionForMIMEType(blob.type);
+    let filename = `image-${this.email.attachments.length}.${ext}`;
+    let attachment = this.email.newAttachment();
+    attachment.fromFile(new File([blob], filename, { type: blob.type }));
+    attachment.disposition = ContentDisposition.inline;
+    attachment.related = true;
+    attachment.dataURL = dataURL;
+    this.email.attachments.add(attachment);
+    return attachment;
   }
 
   protected convertBlobURLToCIDURL(url: URLString): URLString {
@@ -300,7 +310,7 @@ export class ComposeActions {
     }
     let account = fromIdentity.account;
 
-    this.convertInlineAttachmentsURLs();
+    await this.convertInlineAttachmentsURLs();
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
