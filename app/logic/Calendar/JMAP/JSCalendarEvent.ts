@@ -5,6 +5,7 @@ import { InvitationResponse } from "../Invitation/InvitationStatus";
 import { Participant } from "../Participant";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 
 export class JSCalendarEvent {
   static toEvent(jmap: TJMAPCalendarEvent, event: Event) {
@@ -79,6 +80,7 @@ export class JSCalendarEvent {
     // Meeting with other participants
     event.isCancelled = jmap.status == "cancelled";
     if (jmap.participants) {
+      let participants = new ArrayColl<Participant>();
       for (let id in jmap.participants) {
         let participant = jmap.participants[id];
         let response =
@@ -89,8 +91,9 @@ export class JSCalendarEvent {
                   participant.participationStatus == "tentative" ? InvitationResponse.Tentative :
                     InvitationResponse.Unknown;
         let p = new Participant(participant.email, participant.name, response);
-        event.participants.add(p);
+        participants.add(p);
       }
+      event.participants.replaceAll(participants);
     }
 
     event.color = sanitize.nonemptystring(jmap.color, null);
