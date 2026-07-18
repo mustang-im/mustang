@@ -185,7 +185,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
             t$Name: attachment.filename,
             t$ContentType: attachment.mimeType,
-            t$ContentID: attachment.contentID,
+            t$ContentId: attachment.contentID,
             t$Size: attachment.size,
             t$IsInline: attachment.disposition == ContentDisposition.inline,
             t$Content: await blobToBase64(attachment.content),
