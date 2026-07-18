@@ -22,8 +22,8 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
   }
-  if (event.locationForServer) {
-    lines.push(["LOCATION", event.locationForServer]);
+  if (event.getLocationForServer()) {
+    lines.push(["LOCATION", event.getLocationForServer()]);
   }
   if (event.isOnline && event.onlineMeetingURL) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>

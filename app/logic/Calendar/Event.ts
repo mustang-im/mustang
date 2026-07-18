@@ -522,24 +522,22 @@ export class Event extends Observable {
   }
 
   /** For backends that have only a single location field and no dedicated field
-   * for the online meeting URL (Exchange, ActiveSync): put the URL in the
-   * location, like other clients do and like we do in iCal for backwards compat.
-   * Otherwise the server-generated invitation wouldn't contain the URL at all.
-   * @see getICal() @see setLocationFromServer() the inverse */
-  get locationForServer(): string {
+   * for the online meeting URL, put the URL in the location, like other clients do.
+   * @see setLocationFromServer() the inverse */
+  getLocationForServer(): string {
     return this.location || this.isOnline && this.onlineMeetingURL || "";
   }
 
-  /** Inverse of `locationForServer`: If the location that the server gave us is
-   * actually the online meeting URL, move it to `onlineMeetingURL`.
-   * @see ICalToEvent, which does the same for other clients */
+  /** If the location is actually the online meeting URL,
+   * move it to `onlineMeetingURL`.
+   * @see getLocationForServer() for the inverse */
   setLocationFromServer(location: string | null): void {
     this.location = location || "";
     if (!this.onlineMeetingURL && this.location.startsWith("https://")) {
       this.isOnline = true;
       this.onlineMeetingURL = sanitize.url(this.location, null);
     }
-    if (this.location == this.onlineMeetingURL) {
+    if (this.location == this.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
       this.location = "";
     }
   }
