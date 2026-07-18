@@ -571,6 +571,12 @@ export class Event extends Observable {
     if (this.exclusions.some(date => date.getTime() == recurrenceStartTime.getTime())) {
       return; // already excluded
     }
+    if (this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime) == -1) {
+      // Server deleted an occurrence outside our computed recurrence (faulty
+      // data, or past the series end). Our rule generates no instance there,
+      // so there's nothing to exclude. #1186
+      return;
+    }
     this.getOccurrenceByDate(recurrenceStartTime).deleteLocally().catch(this.calendar.errorCallback);
   }
 
