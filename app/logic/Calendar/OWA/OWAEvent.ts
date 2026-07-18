@@ -95,9 +95,9 @@ export class OWAEvent extends ExchangeEvent {
     } else {
       this.alarm = null;
     }
-    this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
     this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
     this.isOnline = sanitize.boolean(json.IsOnlineMeeting, false);
+    this.setLocationFromServer(sanitize.nonemptystring(json.Location?.DisplayName, ""));
     this.isCancelled = sanitize.boolean(json.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
@@ -204,7 +204,7 @@ export class OWAEvent extends ExchangeEvent {
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.location || "", PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
+    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.getLocationForServer(), PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
     request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? this.participants.contents.map(entry => ({
       __type: "AttendeeType:#Exchange",
       Mailbox: {

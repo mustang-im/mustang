@@ -86,10 +86,10 @@ export class ActiveSyncEvent extends ExchangeEvent {
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     if (wbxmljs.EnhancedLocation != undefined) {
-      this.location = sanitize.nonemptystring(wbxmljs.EnhancedLocation.DisplayName, "");
+      this.setLocationFromServer(sanitize.nonemptystring(wbxmljs.EnhancedLocation.DisplayName, ""));
     }
     if (wbxmljs.Location != undefined) {
-      this.location = sanitize.nonemptystring(wbxmljs.Location, "");
+      this.setLocationFromServer(sanitize.nonemptystring(wbxmljs.Location, ""));
     }
     if (wbxmljs.MeetingStatus) {
       this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
@@ -146,7 +146,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       // Attendee is guaranteed in ActiveSync 16.1 and Timezone is in 14.x.
       AllDayEvent: this.allDay ? "1" : "0",
       EndTime: toCompact(this.endTime, version16_1 && this.allDay),
-      Location: version16_1 ? [] : this.location || {}, // Allows exception to have no location
+      Location: version16_1 ? [] : this.getLocationForServer() || {}, // Allows exception to have no location
       Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : version16_1 ? {} : [],
       StartTime: toCompact(this.startTime, version16_1 && this.allDay),
       UID: !version16_1 && !this.parentEvent && this.calUID || [],
@@ -164,7 +164,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       Subject: this.title,
       // These fields are in code page 17.
       Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
-      EnhancedLocation: version16_1 ? { DisplayName: this.location || [] } : [],
+      EnhancedLocation: version16_1 ? { DisplayName: this.getLocationForServer() || [] } : [],
     };
   }
 

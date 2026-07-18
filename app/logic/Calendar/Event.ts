@@ -521,6 +521,27 @@ export class Event extends Observable {
     this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
   }
 
+  /** For backends that have only a single location field and no dedicated field
+   * for the online meeting URL, put the URL in the location, like other clients do.
+   * @see setLocationFromServer() the inverse */
+  getLocationForServer(): string {
+    return this.location || this.isOnline && this.onlineMeetingURL || "";
+  }
+
+  /** If the location is actually the online meeting URL,
+   * move it to `onlineMeetingURL`.
+   * @see getLocationForServer() for the inverse */
+  setLocationFromServer(location: string | null): void {
+    this.location = location || "";
+    if (!this.onlineMeetingURL && this.location.startsWith("https://")) {
+      this.isOnline = true;
+      this.onlineMeetingURL = sanitize.url(this.location, null);
+    }
+    if (this.location == this.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
+      this.location = "";
+    }
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
