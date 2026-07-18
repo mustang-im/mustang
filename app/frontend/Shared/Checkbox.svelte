@@ -34,7 +34,7 @@
     {/if}
   {/if}
 
-  {#if !toggle && allowIndetermined}
+  {#if !toggle || allowIndetermined}
     <hbox class="state-icon-wrapper">
       {#if checked === true}
         <CheckIcon strokeWidth={5} size={12} />
