@@ -92,4 +92,8 @@
       transform: translateY(-3px);
     }
   }
+  .get-mail :global(.loader) {
+    /* Override Spinner.svelte margin: -4px, which makes the button move */
+    margin: 0px;
+  }
 </style>

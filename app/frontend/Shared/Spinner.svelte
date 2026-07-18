@@ -8,7 +8,7 @@
     aspect-ratio: 1;
     display: grid;
     border: 4px solid white;
-    margin: -4px;
+    margin: -4px; /* TODO remove? */
     border-radius: 50%;
     border-right-color: #20AE9E;
     animation: l15 1s infinite linear;
