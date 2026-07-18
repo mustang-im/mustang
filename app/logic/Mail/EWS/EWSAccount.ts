@@ -349,10 +349,15 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     } finally {
       lock.release();
     }
-    response.responseXML = this.parseXML(await response.text());
+    try {
+      response.responseText = await response.text();
+    } catch (ex) {
+      response.responseText = "";
+    }
     this.fatalError = null;
     if (response.status == 200) {
       try {
+        response.responseXML = this.parseXML(response.responseText);
         return this.checkResponse(response, aRequest);
       } catch (ex) {
         if (this.isThrottleError(ex)) {
@@ -397,6 +402,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
     } else {
       this.throttle.waitForSecond(1);
+      response.responseXML = this.parseXML(response.responseText);
       throw new EWSError(response, aRequest);
     }
   }
