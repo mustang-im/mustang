@@ -7,6 +7,7 @@ import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemReques
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSPerson extends ExchangePerson {
   declare addressbook: EWSAddressbook | null;
@@ -27,31 +28,33 @@ export class EWSPerson extends ExchangePerson {
         .filter(ce => ce.value));
     }
     if (xmljs.PhoneNumbers?.Entry) {
+      let phoneNumbers = new ArrayColl<ContactEntry>();
       for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {
         let value = sanitize.nonemptystring(entry.Value, null);
         switch (value && entry.Key) { // Key may have other unsupported values
         case "HomePhone":
         case "HomePhone2":
-          this.phoneNumbers.add(new ContactEntry(value, "home", "tel"));
+          phoneNumbers.add(new ContactEntry(value, "home", "tel"));
           break;
         case "BusinessPhone":
         case "BusinessPhone2":
-          this.phoneNumbers.add(new ContactEntry(value, "work", "tel"));
+          phoneNumbers.add(new ContactEntry(value, "work", "tel"));
           break;
         case "HomeFax":
-          this.phoneNumbers.add(new ContactEntry(value, "home", "fax"));
+          phoneNumbers.add(new ContactEntry(value, "home", "fax"));
           break;
         case "BusinessFax":
-          this.phoneNumbers.add(new ContactEntry(value, "work", "fax"));
+          phoneNumbers.add(new ContactEntry(value, "work", "fax"));
           break;
         case "OtherFax":
-          this.phoneNumbers.add(new ContactEntry(value, "other", "fax"));
+          phoneNumbers.add(new ContactEntry(value, "other", "fax"));
           break;
         case "MobilePhone":
-          this.phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
+          phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
           break;
         }
       }
+      this.phoneNumbers.replaceAll(phoneNumbers);
     }
     if (xmljs.ImAddresses?.Entry) {
       this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
