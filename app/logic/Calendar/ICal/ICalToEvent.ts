@@ -113,14 +113,8 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
     event.onlineMeetingURL = vevent.entries.conference[0].value;
   }
   if (vevent.entries.location) {
-    event.location = vevent.entries.location[0].value;
-    if (!event.onlineMeetingURL && event.location.startsWith("https://")) { // other clients may send online meeting URL in `LOCATION`
-      event.isOnline = true;
-      event.onlineMeetingURL = sanitize.url(event.location, null);
-    }
-    if (event.location == event.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
-      event.location = null;
-    }
+    // Some clients send the online meeting URL in `LOCATION` (see `CONFERENCE` above)
+    event.setLocationFromServer(vevent.entries.location[0].value);
   }
   if (vevent.entries.status?.[0].value == "CANCELLED") {
     event.isCancelled = true;
