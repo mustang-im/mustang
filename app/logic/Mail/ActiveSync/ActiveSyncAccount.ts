@@ -404,8 +404,10 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       // The SyncKey must be the first element of the request.
       request = Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request);
       let response = await this.callEAS(command, request);
-      await callback?.(response);
-      this.setStorageItem("sync_key", response.SyncKey);
+      if (response) { // null means an empty response body: nothing changed
+        await callback?.(response);
+        this.setStorageItem("sync_key", response.SyncKey);
+      }
       return response;
     } catch (ex) {
       if (callback && ex.code == kFolderSyncKeyError) {
@@ -497,7 +499,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
           this.errorCallback(ex);
         }
       }
-      for (let deletion of ensureArray(response.Changes.Delete)) {
+      for (let deletion of ensureArray(response.Changes?.Delete)) {
         try {
           let folder = this.findFolderById(sanitize.nonemptystring(deletion.ServerId));
           if (folder) {
