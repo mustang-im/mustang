@@ -43,14 +43,16 @@ export class CalDAVEvent extends Event {
   }
 
   /** Modified occurrences of a recurring event are additional `VEVENT`s
-   * with a `RECURRENCE-ID` in the same ics file. Attach them to this master.
+   * with a `RECURRENCE-ID`, and deleted occurrences are `EXDATE`s of the
+   * master, in the same ics file. Attach them to this master.
    * Call after `fromDAVObject()` and `saveLocally()`. */
   async updateExceptions() {
     if (!this.recurrenceRule || !this.originalICal) {
       return;
     }
     let parsed = new ICalParser(this.originalICal);
-    for (let vevent of ensureArray(parsed.containers.vevent)) {
+    let vevents = ensureArray(parsed.containers.vevent);
+    for (let vevent of vevents) {
       let recurrenceID = vevent.entries.recurrenceid?.[0];
       if (!recurrenceID) {
         continue; // the master itself
@@ -68,6 +70,15 @@ export class CalDAVEvent extends Event {
         await occurrence.saveLocally();
       } catch (ex) {
         this.calendar.errorCallback(ex);
+      }
+    }
+    let master = vevents.find(v => !v.entries.recurrenceid);
+    for (let entry of ensureArray(master?.entries.exdate)) {
+      for (let value of entry.value.split(",")) { // one EXDATE line can hold multiple dates
+        let [exclusionTime] = parseDate({ value, properties: entry.properties });
+        if (exclusionTime) {
+          this.makeExclusionLocally(exclusionTime);
+        }
       }
     }
   }
