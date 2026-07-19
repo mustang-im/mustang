@@ -63,7 +63,7 @@ export class JMAPPerson extends Person {
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
     this.uid = sanitize.nonemptystring(json.uid, null);
-    this.original = sanitize.json(json.original, {}); // as object, not string
+    this.original = sanitize.json(json.original, null); // as object, not string. null = never saved to the server
     this.jmapID = sanitize.alphanumdash(json.jmapID, null);
     this.propertyFieldIDs = {};
     for (let propName in sanitize.object(json.propertyFieldIDs, {})) {
