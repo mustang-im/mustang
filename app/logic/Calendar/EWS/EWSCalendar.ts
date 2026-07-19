@@ -264,8 +264,11 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
           } else {
             event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
             event.fromXML(item);
+            // For a modified occurrence, this already adds the event to `this.events`
             await event.saveLocally();
-            events.push(event);
+            if (!this.events.contains(event)) {
+              events.push(event);
+            }
           }
           if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
             await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
