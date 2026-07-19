@@ -20,6 +20,8 @@ export class CalDAVCalendar extends Calendar {
   calendarURL: URLString;
   ctag: string | null = null;
   client: DAVClient;
+  /** The OAuth2 access token that `client` authenticates with */
+  protected clientAccessToken: string | null = null;
   protected readonly syncLock = new Lock();
   protected readonly loginRunOnce = new RunOnce();
 
@@ -56,6 +58,9 @@ export class CalDAVCalendar extends Calendar {
         }
       }
       assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      if (this.client && (!useOAuth2 || this.clientAccessToken == oAuth2.accessToken)) {
+        return; // already logged in. The client caches the auth headers, so re-create it once the access token changed.
+      }
       let options = {
         serverUrl: this.url,
         authMethod: useOAuth2 ? "Bearer" : "Basic",
@@ -67,6 +72,7 @@ export class CalDAVCalendar extends Calendar {
         },
         defaultAccountType: "caldav",
       };
+      this.clientAccessToken = useOAuth2 ? oAuth2.accessToken : null;
       this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
@@ -86,6 +92,7 @@ export class CalDAVCalendar extends Calendar {
   }
 
   async listCalendars(): Promise<Collection<DAVCalendar>> {
+    await this.login(false);
     let lock = await this.syncLock.lock();
     try {
       return new ArrayColl(await this.client.fetchCalendars());
@@ -116,9 +123,7 @@ export class CalDAVCalendar extends Calendar {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
-      if (!this.client) {
-        await this.login(false);
-      }
+      await this.login(false);
       /* For multiple calendars:
       let { created, updated, deleted } = await this.client.syncCalendars({
         oldCalendars: [this.davCalendar],
