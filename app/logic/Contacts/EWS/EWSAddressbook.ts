@@ -104,7 +104,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
-            await group.deleteIt();
+            await group.deleteLocally();
           }
         }
       }
