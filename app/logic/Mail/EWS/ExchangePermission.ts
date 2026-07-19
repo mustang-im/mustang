@@ -32,12 +32,13 @@ export class ExchangePermission {
     return permission?.exchangePermissions?.CanCreateItems ?? false;
   }
 
+  // Exchange requires the elements in schema order, with the permission level last.
   toEWSFolderPermission() {
     return Object.assign({
       t$UserId: this.distinguishedUser
       ? { t$DistinguishedUser: this.distinguishedUser, }
       : { t$PrimarySmtpAddress: this.emailAddress, },
-    }, { t$PermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+    }, this.exchangePermissions.toEWS(), { t$PermissionLevel: "Custom" });
   }
 
   toEWSCalendarPermission() {
@@ -45,7 +46,7 @@ export class ExchangePermission {
       t$UserId: this.distinguishedUser
       ? { t$DistinguishedUser: this.distinguishedUser, }
       : { t$PrimarySmtpAddress: this.emailAddress, },
-    }, { t$CalendarPermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+    }, this.exchangePermissions.toEWS(), { t$CalendarPermissionLevel: "Custom" });
   }
 
   toOWAFolderPermission() {
@@ -130,24 +131,26 @@ export async function setExchangePermissions(target: { getPermissions(): Promise
   await target.setPermissions(targetPermissions);
 }
 
+/** Field order matters: `toEWS()` emits the fields in this order,
+ * which must be the EWS schema order. */
 class ExchangePermissions {
   CanCreateItems: boolean;
   CanCreateSubFolders: boolean;
-  DeleteItems: "None" | "Owned" | "All";
-  EditItems: "None" | "Owned" | "All";
-  IsFolderContact: boolean;
   IsFolderOwner: boolean;
   IsFolderVisible: boolean;
+  IsFolderContact: boolean;
+  EditItems: "None" | "Owned" | "All";
+  DeleteItems: "None" | "Owned" | "All";
   ReadItems: "None" | "TimeOnly" | "TimeAndSubjectAndLocation" | "FullDetails";
 
   constructor(permissions: Partial<ExchangePermissions> = {}) {
     this.CanCreateItems = sanitize.boolean(permissions.CanCreateItems, false);
     this.CanCreateSubFolders = sanitize.boolean(permissions.CanCreateSubFolders, false);
-    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
-    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
-    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
     this.IsFolderOwner = sanitize.boolean(permissions.IsFolderOwner, false);
     this.IsFolderVisible = sanitize.boolean(permissions.IsFolderVisible, true);
+    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
+    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
+    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
     this.ReadItems = sanitize.enum(permissions.ReadItems, ["None", "TimeOnly", "TimeAndSubjectAndLocation", "FullDetails"], "None");
   }
 
