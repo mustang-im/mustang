@@ -129,9 +129,7 @@ export class IMAPEMail extends EMail {
     if (message.isRead) {
       flags.push("\\Seen");
     }
-    if (message.isNewArrived) {
-      flags.push("\\Recent");
-    }
+    // Not \Recent: it is set by the server only, and servers reject it in APPEND
     if (message.isStarred) {
       flags.push("\\Flagged");
     }
