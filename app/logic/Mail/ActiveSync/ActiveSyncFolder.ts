@@ -253,11 +253,12 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       })),
     };
     let result = await this.account.callEAS("MoveItems", request);
-    // Just reporting to the console for now.
+    // The messages will be deleted locally after this returns,
+    // so ensure that none of them failed on the server.
     for (let response of ensureArray(result.Response)) {
       // "3" is success for a Move operation... go figure.
       if (response.Status != "3") {
-        console.error(`ActiveSync MoveItems status ${response.Status}`);
+        throw new ActiveSyncError("MoveItems", response.Status, this.account);
       }
     }
   }
