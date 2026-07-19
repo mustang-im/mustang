@@ -1,4 +1,5 @@
 import { ExchangeEvent } from "../EWS/ExchangeEvent";
+import { kSpecialWeekdays, relativeWeekdayString } from "../EWS/EWSEvent";
 import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
@@ -319,7 +320,10 @@ export class OWAEvent extends ExchangeEvent {
     if (rule.frequency != Frequency.Yearly) {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
-    if (/^Relative|^Weekly/.test(recurrenceType)) {
+    if (/^Relative/.test(recurrenceType)) {
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
+      recurrence.RecurrencePattern.DaysOfWeek = relativeWeekdayString(weekdays);
+    } else if (/^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       recurrence.RecurrencePattern.DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
@@ -423,7 +427,7 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").flatMap((day: keyof typeof Weekday) => kSpecialWeekdays[day] ?? sanitize.integer(Weekday[day])) : null;
 }
 
 function fromWindowsZone(zone: string | null): string | null {

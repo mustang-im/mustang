@@ -271,7 +271,10 @@ export class EWSEvent extends ExchangeEvent {
     if (rule.frequency != Frequency.Yearly) {
       pattern.t$Interval = rule.interval;
     }
-    if (/^Relative|^Weekly/.test(recurrenceType)) {
+    if (/^Relative/.test(recurrenceType)) {
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
+      pattern.t$DaysOfWeek = relativeWeekdayString(weekdays);
+    } else if (/^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       pattern.t$DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
@@ -451,8 +454,24 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
   }
 }
 
+/** Sets of weekdays for the special `DaysOfWeek` values
+ * used by relative monthly/yearly patterns, e.g. "first weekday of the month" */
+export const kSpecialWeekdays: Record<string, Weekday[]> = {
+  Day: [0, 1, 2, 3, 4, 5, 6],
+  Weekday: [1, 2, 3, 4, 5],
+  WeekendDay: [0, 6],
+};
+
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").flatMap((day: keyof typeof Weekday) => kSpecialWeekdays[day] ?? sanitize.integer(Weekday[day])) : null;
+}
+
+/** The single `DaysOfWeek` value for a relative monthly/yearly pattern,
+ * which may be one of the special values */
+export function relativeWeekdayString(weekdays: Weekday[]): string {
+  return Object.keys(kSpecialWeekdays).find(day =>
+    kSpecialWeekdays[day].length == weekdays.length && kSpecialWeekdays[day].every(d => weekdays.includes(d)))
+    ?? weekdays.map(day => Weekday[day]).join(" ");
 }
 
 class EWSUpdateOccurrenceRequest {
