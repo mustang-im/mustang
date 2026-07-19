@@ -146,7 +146,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
           // Exceptions must be handled after the master event has been saved.
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
-              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime));
+              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), event.allDay && this.account.protocolVersion == "16.1");
               let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
               if (existing) {
                 existing.fromWBXML(exception);
