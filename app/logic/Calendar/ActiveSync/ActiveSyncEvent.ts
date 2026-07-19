@@ -52,7 +52,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       this.lastUpdateTime = fromCompact(sanitize.nonemptystring(wbxmljs.DtStamp));
     }
     if (wbxmljs.ExceptionId) { // for ActiveSync 16.1
-      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionId);
+      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionId, this.allDay && this.calendar.account.protocolVersion == "16.1");
       // In case it's not otherwise provided to us.
       this.startTime = new Date(this.recurrenceStartTime);
     }
@@ -78,7 +78,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime)));
+          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), this.allDay && this.calendar.account.protocolVersion == "16.1"));
         }
       }
     } else {
