@@ -5,6 +5,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { OWAError } from "../../Mail/OWA/OWAError";
 import { owaGetPermissionsRequest, owaSetCalendarPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { OWAGetUserAvailabilityRequest } from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
@@ -118,13 +119,13 @@ export class OWACalendar extends ExchangeCalendar {
       return;
     }
     let results = await this.callOWA(owaGetEventsRequest(eventIDs));
-    let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+    let items = results.ResponseMessages ? this.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
     let online = items.filter(item => item.IsOnlineMeeting);
     if (online.length) {
       let results = await this.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items?.[0]) : results.Items;
       for (let i = 0; i < items.length; i++) {
-        online[i].OnlineMeetingJoinUrl = items[i].OnlineMeetingJoinUrl;
+        online[i].OnlineMeetingJoinUrl = items[i]?.OnlineMeetingJoinUrl;
       }
     }
     for (let item of items) {
@@ -140,6 +141,20 @@ export class OWACalendar extends ExchangeCalendar {
         this.account.errorCallback(ex);
       }
     }
+  }
+
+  /** Skips and reports failed items, e.g. broken or inaccessible events,
+   * so that one broken event does not abort the entire sync. */
+  protected itemsFromResponses(responses: any[]): any[] {
+    let items = [];
+    for (let response of responses) {
+      if (response.ResponseClass == "Error") {
+        this.account.errorCallback(new OWAError({ json: response }));
+      } else {
+        items.push(response.Items[0]);
+      }
+    }
+    return items;
   }
 
   async createOrUpdateEventFromServerByID(itemID: string) {
