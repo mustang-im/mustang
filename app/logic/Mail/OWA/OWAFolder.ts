@@ -136,17 +136,21 @@ export class OWAFolder extends ExchangeFolder {
   async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
     let newMsgs = new ArrayColl<OWAEMail>();
     if (newMessageIDs.length) {
-      let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
-      for (let item of items) {
-        try {
-          let email = this.newEMail();
-          email.fromJSON(item);
-          await email.saveMetadataLocally();
-          newMsgs.add(email);
-        } catch (ex) {
-          this.account.errorCallback(ex);
+      try {
+        let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
+        let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
+        for (let item of items) {
+          try {
+            let email = this.newEMail();
+            email.fromJSON(item);
+            await email.saveMetadataLocally();
+            newMsgs.add(email);
+          } catch (ex) {
+            this.account.errorCallback(ex);
+          }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return newMsgs;
@@ -158,21 +162,25 @@ export class OWAFolder extends ExchangeFolder {
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
-      let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
-      for (let item of items) {
-        let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
-        if (email && !email.downloadComplete) {
-          try {
-            let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
-            email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-            await email.parseMIME();
-            await email.saveCompleteMessage();
-            downloadedEmail.add(email);
-          } catch (ex) {
-            this.account.errorCallback(ex);
+      try {
+        let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
+        let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
+        for (let item of items) {
+          let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
+          if (email && !email.downloadComplete) {
+            try {
+              let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
+              email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+              await email.parseMIME();
+              await email.saveCompleteMessage();
+              downloadedEmail.add(email);
+            } catch (ex) {
+              this.account.errorCallback(ex);
+            }
           }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
 

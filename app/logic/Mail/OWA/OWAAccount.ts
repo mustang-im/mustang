@@ -438,6 +438,21 @@ export class OWAAccount extends ExchangeMailAccount {
     return result;
   }
 
+  /** Skips and reports failed items in a batch response,
+   * e.g. broken or inaccessible items,
+   * so that one broken item does not abort the entire sync. */
+  itemsFromResponses(responses: any[]): any[] {
+    let items = [];
+    for (let response of responses) {
+      if (response.ResponseClass == "Error") {
+        this.errorCallback(new OWAError({ json: response }));
+      } else {
+        items.push(response.Items[0]);
+      }
+    }
+    return items;
+  }
+
   async listFolders(): Promise<void> {
     await this.throttle.throttle();
     let result = await this.callOWA(owaFindFoldersRequest(true, this.sharedFolderRoot, this.username));
