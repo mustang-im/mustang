@@ -21,51 +21,45 @@ export class EWSPerson extends ExchangePerson {
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
-    if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry)
-        .filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP"))
-        .map(entry => new ContactEntry(sanitize.emailAddress(entry.Value, null), "work", "mailto"))
-        .filter(ce => ce.value));
-    }
-    if (xmljs.PhoneNumbers?.Entry) {
-      let phoneNumbers = new ArrayColl<ContactEntry>();
-      for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {
-        let value = sanitize.nonemptystring(entry.Value, null);
-        switch (value && entry.Key) { // Key may have other unsupported values
-        case "HomePhone":
-        case "HomePhone2":
-          phoneNumbers.add(new ContactEntry(value, "home", "tel"));
-          break;
-        case "BusinessPhone":
-        case "BusinessPhone2":
-          phoneNumbers.add(new ContactEntry(value, "work", "tel"));
-          break;
-        case "HomeFax":
-          phoneNumbers.add(new ContactEntry(value, "home", "fax"));
-          break;
-        case "BusinessFax":
-          phoneNumbers.add(new ContactEntry(value, "work", "fax"));
-          break;
-        case "OtherFax":
-          phoneNumbers.add(new ContactEntry(value, "other", "fax"));
-          break;
-        case "MobilePhone":
-          phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
-          break;
-        case "OtherTelephone":
-          phoneNumbers.add(new ContactEntry(value, "other", "tel"));
-          break;
-        }
+    // When the last entry was deleted, the whole dictionary is missing,
+    // so clear our values in that case, too.
+    this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses?.Entry)
+      .filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP"))
+      .map(entry => new ContactEntry(sanitize.emailAddress(entry.Value, null), "work", "mailto"))
+      .filter(ce => ce.value));
+    let phoneNumbers = new ArrayColl<ContactEntry>();
+    for (let entry of ensureArray(xmljs.PhoneNumbers?.Entry)) {
+      let value = sanitize.nonemptystring(entry.Value, null);
+      switch (value && entry.Key) { // Key may have other unsupported values
+      case "HomePhone":
+      case "HomePhone2":
+        phoneNumbers.add(new ContactEntry(value, "home", "tel"));
+        break;
+      case "BusinessPhone":
+      case "BusinessPhone2":
+        phoneNumbers.add(new ContactEntry(value, "work", "tel"));
+        break;
+      case "HomeFax":
+        phoneNumbers.add(new ContactEntry(value, "home", "fax"));
+        break;
+      case "BusinessFax":
+        phoneNumbers.add(new ContactEntry(value, "work", "fax"));
+        break;
+      case "OtherFax":
+        phoneNumbers.add(new ContactEntry(value, "other", "fax"));
+        break;
+      case "MobilePhone":
+        phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
+        break;
+      case "OtherTelephone":
+        phoneNumbers.add(new ContactEntry(value, "other", "tel"));
+        break;
       }
-      this.phoneNumbers.replaceAll(phoneNumbers);
     }
-    if (xmljs.ImAddresses?.Entry) {
-      this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
-    }
-    if (xmljs.PhysicalAddresses?.Entry) {
-      this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry =>
-        new ContactEntry(EWSPerson.ewsToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
-    }
+    this.phoneNumbers.replaceAll(phoneNumbers);
+    this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses?.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
+    this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses?.Entry).map(entry =>
+      new ContactEntry(EWSPerson.ewsToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
     this.notes = sanitize.nonemptystring(xmljs.Body?.Value, "");
     this.company = sanitize.nonemptystring(xmljs.CompanyName, "");
     this.department = sanitize.nonemptystring(xmljs.Department, "");
