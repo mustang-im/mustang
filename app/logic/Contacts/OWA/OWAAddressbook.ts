@@ -75,7 +75,7 @@ export class OWAAddressbook extends ExchangeAddressbook {
   }
 
   async listPersons(persons: any[]) {
-    for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
+    for (let person of this.persons.contents.filter(person => person.personaID && !persons.some(result => result.PersonaId.Id == person.personaID))) {
       this.persons.remove(person);
       await person.deleteLocally();
     }
@@ -103,7 +103,7 @@ export class OWAAddressbook extends ExchangeAddressbook {
   }
 
   async listGroups(groups: any[]) {
-    for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
+    for (let group of this.groups.contents.filter(group => group.personaID && !groups.some(result => result.PersonaId.Id == group.personaID))) {
       this.groups.remove(group);
       // The server deleted the list, so delete it only locally.
       await group.deleteLocally();
