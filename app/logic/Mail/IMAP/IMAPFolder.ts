@@ -576,7 +576,7 @@ export class IMAPFolder extends Folder {
 
   async rename(newName: string): Promise<void> {
     await super.rename(newName);
-    let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
+    let parentPath = this.getPathComponents().slice(0, -1);
     await this.runCommand(async (conn) => {
       await conn.mailboxRename(this.path, [...parentPath, newName]);
     });
