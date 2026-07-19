@@ -3,7 +3,9 @@ import type { CalDAVCalendar } from "./CalDAVCalendar";
 import { convertICalToEvent } from "../ICal/ICalToEvent";
 import { getICal } from "../ICal/ICalGenerator";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assertHTTPResponseOK } from "../../util/netUtil";
 import type { URLString } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { DAVObject } from "tsdav";
 import type { ArrayColl } from "svelte-collections";
 
@@ -55,17 +57,19 @@ export class CalDAVEvent extends Event {
     if (this.url) {
       // TODO take `originalICal` and update only the properties we know about
       console.log("updating", this, this.url, "with ICS", iCal);
-      await this.calendar.client.updateCalendarObject({
+      let response = await this.calendar.client.updateCalendarObject({
         calendarObject: this.getDAVObject(iCal),
       });
+      await assertHTTPResponseOK(response, gt`Saving the event failed`);
     } else {
       console.log("creating", this, "with ICS", iCal);
       let filename = this.calUID + ".ics";
-      await this.calendar.client.createCalendarObject({
+      let response = await this.calendar.client.createCalendarObject({
         calendar: this.calendar.davCalendar,
         iCalString: iCal,
         filename,
       });
+      await assertHTTPResponseOK(response, gt`Saving the event failed`);
       this.url = new URL(filename, this.calendar.calendarURL).href;
       this.originalICal = iCal;
     }
@@ -95,8 +99,11 @@ export class CalDAVEvent extends Event {
       return;
     }
     await this.calendar.login(false);
-    await this.calendar.client.deleteCalendarObject({
+    let response = await this.calendar.client.deleteCalendarObject({
       calendarObject: this.getDAVObject(),
     });
+    if (await response.status != 404) { // 404 = already deleted on the server
+      await assertHTTPResponseOK(response, gt`Deleting the event failed`);
+    }
   }
 }

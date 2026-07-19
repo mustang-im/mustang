@@ -116,6 +116,17 @@ export class HTTPError extends Error {
   }
 }
 
+/** Checks a `Response` for HTTP errors, for callers of libraries that
+ * don't check it themselves, e.g. tsdav.
+ * Also works for a `Response` that came over JPC, where all properties are async.
+ * @throws an Error starting with `message`, if the response status is not 2xx */
+export async function assertHTTPResponseOK(response: Response, message: string): Promise<void> {
+  if (await response.ok) {
+    return;
+  }
+  throw new Error(`${message}: HTTP ${await response.status} ${await response.statusText}`);
+}
+
 /** Like `fetch()`, but returns the parsed JSON body.
  * @throws HTTPError if the response status is not 2xx */
 export async function fetchJSON(url: RequestInfo | URL, options?: FetchOptions): Promise<any> {
