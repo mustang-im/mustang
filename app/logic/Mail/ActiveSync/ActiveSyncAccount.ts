@@ -297,6 +297,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       }
       // The Ping command has its own status codes for some reason.
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
+        this.retries = 0;
         return wbxmljs;
       }
       if (this.isThrottleError(wbxmljs.Status)) {
