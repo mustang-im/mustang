@@ -270,11 +270,14 @@ export class IMAPFolder extends Folder {
 
   /** @returns UIDs within the requested range */
   protected async fetchUIDList(range: any, connection?: ImapFlow): Promise<ArrayColl<number>> {
-    let ids: number[];
+    let ids: number[] | false;
     await this.runCommand(async (conn) => {
       this.account.log(this, conn, "fetchUIDList", range);
       ids = await conn.search(range, { uid: true });
     }, ConnectionPurpose.Fetch, connection);
+    // ImapFlow returns `false` on server error. An empty result would
+    // make callers believe that all messages were deleted on the server.
+    assert(ids, "IMAP: Search for messages failed");
     return new ArrayColl(ids);
   }
 
