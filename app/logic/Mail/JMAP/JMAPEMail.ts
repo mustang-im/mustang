@@ -36,11 +36,11 @@ export class JMAPEMail extends EMail {
     if (this.downloadComplete) {
       return;
     }
-    this.id = sanitize.nonemptystring(json.messageId, this.jmapID);
+    this.id = sanitize.nonemptystring(json.messageId?.[0], this.jmapID);
     this.subject = sanitize.string(json.subject, null);
     this.received = sanitize.date(json.receivedAt, this.received ?? new Date());
     this.sent = sanitize.date(json.sentAt, this.received);
-    this.inReplyTo = sanitize.string(json.inReplyTo, null);
+    this.inReplyTo = sanitize.string(json.inReplyTo?.[0], null);
     this.threadID = sanitize.string(json.threadId, null);
     this.from = getPersonUID(json.from?.[0] ?? {} as TJMAPPerson);
     setPersons(this.to, json.to);

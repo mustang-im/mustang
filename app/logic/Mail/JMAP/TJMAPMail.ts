@@ -28,11 +28,11 @@ export interface TJMAPFolderRights {
 /** <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1> */
 export interface TJMAPEMailHeaders {
   id: string,
-  messageId: string,
+  messageId: string[] | null,
   blobId: string,
   mailboxIds: Record<string, boolean>,
   subject: string,
-  inReplyTo: string,
+  inReplyTo: string[] | null,
   threadId: string,
 
   sender: string,
