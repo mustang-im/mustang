@@ -2,6 +2,7 @@ import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { OAuth2 } from "../../Auth/OAuth2";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -232,11 +233,16 @@ export class CalDAVCalendar extends Calendar {
     super.fromConfigJSON(json);
     this.calendarURL = sanitize.url(json.calendarURL);
     this.ctag = sanitize.string(json.ctag, null);
+    if (json.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+    }
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.calendarURL = this.calendarURL;
     json.ctag = this.ctag;
+    json.oAuth2 = this.oAuth2?.toConfigJSON();
     return json;
   }
 }

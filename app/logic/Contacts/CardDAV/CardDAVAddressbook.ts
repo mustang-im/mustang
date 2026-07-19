@@ -2,6 +2,7 @@ import { Addressbook } from "../Addressbook";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { OAuth2 } from "../../Auth/OAuth2";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -223,11 +224,16 @@ export class CardDAVAddressbook extends Addressbook {
     super.fromConfigJSON(json);
     this.addressbookURL = sanitize.url(json.addressbookURL);
     this.ctag = sanitize.string(json.ctag, null);
+    if (json.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+    }
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.addressbookURL = this.addressbookURL;
     json.ctag = this.ctag;
+    json.oAuth2 = this.oAuth2?.toConfigJSON();
     return json;
   }
 }

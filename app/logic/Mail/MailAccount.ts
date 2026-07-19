@@ -238,7 +238,7 @@ export class MailAccount extends TCPAccount {
     let json = super.toConfigJSON();
     json.identities = this.identities.contents.map(id => id.toConfigJSON());
     json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
-    json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
+    json.oAuth2 = this.oAuth2?.toConfigJSON();
     json.emailAddress = this.emailAddress;
     json.calendarID = this.calendarID;
     return json;
