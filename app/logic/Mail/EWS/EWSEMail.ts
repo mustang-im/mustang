@@ -1,5 +1,7 @@
 import { ExchangeEMail } from "./ExchangeEMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import { SpecialFolder } from "../Folder";
+import { DeleteStrategy } from "../MailAccount";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { getTagByName } from "../../Abstract/Tag";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -179,10 +181,15 @@ export class EWSEMail extends ExchangeEMail {
     await this.folder.account.callEWS(request);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.itemID);
-      let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
+        [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
+      let request = new EWSDeleteItemRequest(this.itemID, {
+        DeleteType: hardDelete ? "HardDelete" : "MoveToDeletedItems",
+        SuppressReadReceipts: true,
+      });
       await this.folder.account.callEWS(request);
     } finally {
       this.folder.deletions.delete(this.itemID);

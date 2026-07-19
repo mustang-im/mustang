@@ -1,4 +1,4 @@
-import { MailAccount } from "../MailAccount";
+import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { Calendar } from "../../Calendar/Calendar";
 import { ExchangeCalendar } from "../../Calendar/EWS/ExchangeCalendar";
@@ -9,6 +9,7 @@ export class ExchangeMailAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly canSendOutgoingInvitations: boolean = false;
+  deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
 
   get calendarsAvailable(): Collection<Calendar> {
     let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof ExchangeCalendar && acc.useForInvitations) as ArrayColl<Calendar>;

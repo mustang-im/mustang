@@ -1,5 +1,7 @@
 import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { OWAFolder } from "./OWAFolder";
+import { SpecialFolder } from "../Folder";
+import { DeleteStrategy } from "../MailAccount";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { getTagByName } from "../../Abstract/Tag";
 import { OWADeleteItemRequest } from "./Request/OWADeleteItemRequest";
@@ -117,10 +119,15 @@ export class OWAEMail extends ExchangeEMail {
     await this.folder.account.callOWA(request);
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.itemID);
-      let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
+      let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
+        [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
+      let request = new OWADeleteItemRequest(this.itemID, {
+        DeleteType: hardDelete ? "HardDelete" : "MoveToDeletedItems",
+        SuppressReadReceipts: true,
+      });
       await this.folder.account.callOWA(request);
     } finally {
       this.folder.deletions.delete(this.itemID);

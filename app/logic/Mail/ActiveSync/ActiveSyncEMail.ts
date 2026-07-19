@@ -1,5 +1,7 @@
 import { ExchangeEMail } from "../EWS/ExchangeEMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
+import { SpecialFolder } from "../Folder";
+import { DeleteStrategy } from "../MailAccount";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { getTagByName } from "../../Abstract/Tag";
@@ -137,11 +139,13 @@ export class ActiveSyncEMail extends ExchangeEMail {
     // And only drafts.
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.serverID);
+      let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
+        [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
       let data = {
-        DeletesAsMoves: "1",
+        DeletesAsMoves: hardDelete ? "0" : "1",
         GetChanges: "0",
         Commands: {
           Delete: {

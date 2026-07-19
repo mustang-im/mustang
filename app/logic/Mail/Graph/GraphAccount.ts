@@ -1,5 +1,4 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
-import { DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { GraphFolder } from "./GraphFolder";
 import type { TGraphFolder } from "./TGraphMail";
@@ -25,7 +24,6 @@ export class GraphAccount extends ExchangeMailAccount {
   accountID: string;
   userID: UUID;
   protected allFolders = new MapColl<string, GraphFolder>();
-  deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
