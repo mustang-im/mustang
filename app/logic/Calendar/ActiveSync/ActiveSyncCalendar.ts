@@ -154,8 +154,8 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
               } else {
                 let instance = event.getOccurrenceByDate(exceptionTime) as ActiveSyncEvent;
                 instance.fromWBXML(exception);
+                // This adds the exception to `this.events`
                 await instance.saveLocally();
-                this.events.add(event);
               }
             }
           }
