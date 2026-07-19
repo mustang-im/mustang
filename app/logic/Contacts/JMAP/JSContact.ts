@@ -21,16 +21,17 @@ export class JSContact {
 
     JSContact.toContactEntries(person.emailAddresses, jscontact.emails, e => new ContactEntry(
       sanitize.emailAddress(e.address),
-      "mailto"));
+      null, "mailto"));
     JSContact.toContactEntries(person.phoneNumbers, jscontact.phones, e => new ContactEntry(
       sanitize.nonemptystring(e.number),
-      JSContact.fromPhoneFeatureToProtocol(e.features)));
+      null, JSContact.fromPhoneFeatureToProtocol(e.features)));
     JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
       sanitize.nonemptystring(e.uri, sanitize.nonemptystring(e.user)),
-      e.service));
-    JSContact.toContactEntries(person.urls, jscontact.links, e => new ContactEntry(
-      sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]), // ["*"] ?
-      new URL(e.uri).protocol));
+      null, e.service));
+    JSContact.toContactEntries(person.urls, jscontact.links, e => {
+      let url = sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
+      return new ContactEntry(url, null, url ? new URL(url).protocol.slice(0, -1) : null);
+    });
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
