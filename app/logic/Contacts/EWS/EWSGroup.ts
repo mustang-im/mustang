@@ -44,6 +44,9 @@ export class EWSGroup extends ExchangeGroup {
   }
 
   async deleteFromServer() {
+    if (!this.itemID) {
+      return;
+    }
     let request = new EWSDeleteItemRequest(this.itemID);
     await this.addressbook.account.callEWS(request);
   }
