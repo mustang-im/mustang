@@ -214,15 +214,18 @@ export class JMAPEMail extends EMail {
    */
   async setFlagServer(name: string, set: boolean) {
     this.flagsChanging = true;
-    await this.folder.account.makeSingleCall("Email/set", {
-      accountId: this.folder.account.accountID,
-      update: {
-        [this.jmapID]: {
-          [`keywords/${name}`]: set ? true : null,
+    try {
+      await this.folder.account.makeSingleCall("Email/set", {
+        accountId: this.folder.account.accountID,
+        update: {
+          [this.jmapID]: {
+            [`keywords/${name}`]: set ? true : null,
+          },
         },
-      },
-    });
-    this.flagsChanging = false;
+      });
+    } finally {
+      this.flagsChanging = false;
+    }
   }
 
   async addTagOnServer(tag: Tag) {
