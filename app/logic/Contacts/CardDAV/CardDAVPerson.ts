@@ -2,7 +2,9 @@ import { Person } from '../../Abstract/Person';
 import type { CardDAVAddressbook } from './CardDAVAddressbook';
 import { personToVCard, convertVCardToPerson, getUpdatedVCard, parseContact } from '../VCard/VCard';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assertHTTPResponseOK } from "../../util/netUtil";
 import type { URLString } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import type { DAVObject } from "tsdav";
 
 export class CardDAVPerson extends Person {
@@ -42,23 +44,26 @@ export class CardDAVPerson extends Person {
   }
 
   async saveToServer() {
+    await this.addressbook.login(false);
     this.id ??= crypto.randomUUID();
     if (this.url) {
       let vCard = getUpdatedVCard(this, parseContact(this.originalVCard));
       // TODO Update doesn't work, if the contact was deleted on the server
       console.log("updating", this.url, "with vCard", vCard);
-      await this.addressbook.client.updateVCard({
+      let response = await this.addressbook.client.updateVCard({
         vCard: this.getDAVObject(vCard),
       });
+      await assertHTTPResponseOK(response, gt`Saving the contact failed`);
     } else {
       let vCard = personToVCard(this);
       console.log("creating with vCard", vCard);
       let filename = this.id + ".vcf";
-      await this.addressbook.client.createVCard({
+      let response = await this.addressbook.client.createVCard({
         addressBook: this.addressbook.davAddressbook,
         vCardString: vCard,
         filename,
       });
+      await assertHTTPResponseOK(response, gt`Saving the contact failed`);
       this.url = new URL(filename, this.addressbook.addressbookURL).href;
       this.originalVCard = vCard;
     }
@@ -87,8 +92,12 @@ export class CardDAVPerson extends Person {
     if (!this.url) {
       return;
     }
-    await this.addressbook.client.deleteVCard({
+    await this.addressbook.login(false);
+    let response = await this.addressbook.client.deleteVCard({
       vCard: this.getDAVObject(),
     });
+    if (await response.status != 404) { // 404 = already deleted on the server
+      await assertHTTPResponseOK(response, gt`Deleting the contact failed`);
+    }
   }
 }

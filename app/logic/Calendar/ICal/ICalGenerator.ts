@@ -16,6 +16,15 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
+  addVEvent(lines, event);
+  for (let exception of event.exceptions) {
+    addVEvent(lines, exception);
+  }
+  lines.push(["END", "VCALENDAR"]);
+  return lines.map(line2ical).join("");
+}
+
+function addVEvent(lines: (string | string[])[], event: Event): void {
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
@@ -79,6 +88,16 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   }
   if (event.recurrenceRule) {
     lines.push(event.recurrenceRule.getCalString(event.allDay) + "\r\n");
+    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    for (let exclusion of event.exclusions) {
+      if (event.allDay) {
+        lines.push(["EXDATE", "VALUE", "DATE", date2ical(exclusion)]);
+      } else if (timezone == "UTC") {
+        lines.push(["EXDATE", "VALUE", "DATE-TIME", utc2ical(exclusion)]);
+      } else {
+        lines.push(["EXDATE", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(exclusion, timezone)]);
+      }
+    }
   }
   for (let participant of event.participants) {
     switch (participant.response) {
@@ -96,8 +115,6 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
     }
   }
   lines.push(["END", "VEVENT"]);
-  lines.push(["END", "VCALENDAR"]);
-  return lines.map(line2ical).join("");
 }
 
 /**
