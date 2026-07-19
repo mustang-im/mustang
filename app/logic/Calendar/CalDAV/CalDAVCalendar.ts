@@ -149,18 +149,26 @@ export class CalDAVCalendar extends Calendar {
         await this.addEvent(iCalEntry);
       }
       for (let iCalEntry of updated) {
-        let existing = this.getEventByURL(iCalEntry.url);
-        if (existing) {
-          existing.fromDAVObject(iCalEntry);
-          await existing.saveLocally();
-        } else {
-          await this.addEvent(iCalEntry);
+        try {
+          let existing = this.getEventByURL(iCalEntry.url);
+          if (existing) {
+            existing.fromDAVObject(iCalEntry);
+            await existing.saveLocally();
+          } else {
+            await this.addEvent(iCalEntry);
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
       for (let iCalEntry of deleted) {
-        let existing = this.getEventByURL(iCalEntry.url);
-        if (existing) {
-          await existing.deleteLocally();
+        try {
+          let existing = this.getEventByURL(iCalEntry.url);
+          if (existing) {
+            await existing.deleteLocally();
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
 
@@ -181,7 +189,7 @@ export class CalDAVCalendar extends Calendar {
       this.events.add(event);
       await event.saveLocally();
     } catch (ex) {
-      console.warn(ex);
+      this.errorCallback(ex);
     }
   }
 

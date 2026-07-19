@@ -143,18 +143,26 @@ export class CardDAVAddressbook extends Addressbook {
         await this.addPerson(vCardEntry);
       }
       for (let vCardEntry of updated) {
-        let existing = this.getPersonByURL(vCardEntry.url);
-        if (existing) {
-          existing.fromDAVObject(vCardEntry);
-          await existing.saveLocally();
-        } else {
-          await this.addPerson(vCardEntry);
+        try {
+          let existing = this.getPersonByURL(vCardEntry.url);
+          if (existing) {
+            existing.fromDAVObject(vCardEntry);
+            await existing.saveLocally();
+          } else {
+            await this.addPerson(vCardEntry);
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
       for (let vCardEntry of deleted) {
-        let existing = this.getPersonByURL(vCardEntry.url);
-        if (existing) {
-          await existing.deleteLocally();
+        try {
+          let existing = this.getPersonByURL(vCardEntry.url);
+          if (existing) {
+            await existing.deleteLocally();
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
 
@@ -172,7 +180,7 @@ export class CardDAVAddressbook extends Addressbook {
       this.persons.add(person);
       await person.saveLocally();
     } catch (ex) {
-      console.warn(ex);
+      this.errorCallback(ex);
     }
   }
 
