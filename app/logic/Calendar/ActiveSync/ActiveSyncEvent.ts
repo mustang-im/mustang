@@ -192,11 +192,14 @@ export class ActiveSyncEvent extends ExchangeEvent {
   }
 
   async saveFields(fields: any): Promise<void> {
-    let data = this.serverID ? {
+    // An exception has no own server ID; it is addressed
+    // by the server ID of the master plus the ExceptionId.
+    let serverID = this.parentEvent ? this.parentEvent.serverID : this.serverID;
+    let data = serverID ? {
       GetChanges: "0",
       Commands: {
         Change: {
-          ServerId: this.serverID,
+          ServerId: serverID,
           ExceptionId: this.parentEvent ? toCompact(this.recurrenceStartTime, this.allDay) : [],
           ApplicationData: fields,
         },
