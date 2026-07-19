@@ -40,6 +40,7 @@ export class JMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
+  protected pushAbort: AbortController | null = null;
   logging = true;
 
   constructor() {
@@ -407,6 +408,7 @@ export class JMAPAccount extends MailAccount {
 
   async disconnect(): Promise<void> {
     this.stopPolling();
+    this.pushAbort?.abort();
     this.session = null;
   }
 
@@ -525,10 +527,12 @@ export class JMAPAccount extends MailAccount {
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
       try {
+        this.pushAbort = new AbortController();
         let stream = await fetch(url, {
           headers: {
             Authorization: this.authorizationHeader(),
-          }
+          },
+          signal: this.pushAbort.signal,
         });
         if (!stream.ok) {
           throw new HTTPError(stream);
@@ -554,6 +558,9 @@ export class JMAPAccount extends MailAccount {
           }
         }
       } catch (ex) {
+        if (ex.name == "AbortError") { // disconnect()
+          return;
+        }
         if (isNetworkError(ex)) {
           this.errorCallback(ex);
           await waitUntilOnline(); // Computer sleep drops the network
