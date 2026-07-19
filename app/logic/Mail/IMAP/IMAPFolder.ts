@@ -557,9 +557,12 @@ export class IMAPFolder extends Folder {
     await folder.deleteIt();
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */
+    let newPath: string;
     await this.runCommand(async (conn) => {
-      await conn.mailboxRename(folder.path, [this.path, folder.getPathComponents().pop()]);
+      let renamed = await conn.mailboxRename(folder.path, [this.path, folder.getPathComponents().pop()]);
+      newPath = renamed.newPath;
     });
+    await folder.updatePath(newPath);
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
@@ -577,10 +580,25 @@ export class IMAPFolder extends Folder {
   async rename(newName: string): Promise<void> {
     await super.rename(newName);
     let parentPath = this.getPathComponents().slice(0, -1);
+    let newPath: string;
     await this.runCommand(async (conn) => {
-      await conn.mailboxRename(this.path, [...parentPath, newName]);
+      let renamed = await conn.mailboxRename(this.path, [...parentPath, newName]);
+      newPath = renamed.newPath;
     });
-    console.log("renamed", this.path, "to parent", parentPath, [...parentPath, newName]);
+    await this.updatePath(newPath);
+    console.log("IMAP folder renamed to", this.path);
+  }
+
+  /** After a rename or move on the server, update our folder path
+   * and those of all subfolders, and save them. */
+  protected async updatePath(newPath: string): Promise<void> {
+    assert(newPath, "Need the new folder path");
+    let oldPath = this.path;
+    this.path = newPath;
+    await this.save();
+    for (let subFolder of this.subFolders) {
+      await subFolder.updatePath(newPath + subFolder.path.slice(oldPath.length));
+    }
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
