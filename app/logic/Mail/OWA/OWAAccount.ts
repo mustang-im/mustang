@@ -290,7 +290,7 @@ export class OWAAccount extends ExchangeMailAccount {
         addRecipients(request, "ReplyTo", [email.replyTo]);
       }
       addRecipients(request, "ToRecipients", email.to.contents);
-      addRecipients(request, "CcReipients", email.cc.contents);
+      addRecipients(request, "CcRecipients", email.cc.contents);
     }
     addRecipients(request, "BccRecipients", email.bcc.contents);
     request.addField("Message", "From", { Mailbox: { Name: email.from.name, EmailAddress: email.from.emailAddress } }, "message:From");

@@ -203,7 +203,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       // Older versions of Exchange require a specific order of parameters
       addRecipients(request, "ToRecipients", email.to.contents);
-      addRecipients(request, "CcReipients", email.cc.contents);
+      addRecipients(request, "CcRecipients", email.cc.contents);
     }
     addRecipients(request, "BccRecipients", email.bcc.contents);
     addRecipients(request, "From", [email.from]);
