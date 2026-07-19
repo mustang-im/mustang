@@ -470,18 +470,21 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       this.notificationAbort[emailAddress].abort("Disconnect requested");
     }
     this.notificationAbort = {};
-    let unsubscribe = {
-      m$Unsubscribe: {
-        m$SubscriptionId: [this, ...this.dependentAccounts()].map(account => (account as EWSSubscribable).subscriptionID).filter(Boolean),
-      },
-    };
-    try {
-      await this.callEWS(unsubscribe);
-    } catch (ex) {
-      this.errorCallback(ex);
-    }
-    this.subscriptionID = undefined;
-    for (let account of this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)) {
+    // Unsubscribe accepts only a single subscription ID per call
+    for (let account of [this as EWSSubscribable, ...this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)]) {
+      if (!account.subscriptionID) {
+        continue;
+      }
+      let unsubscribe = {
+        m$Unsubscribe: {
+          m$SubscriptionId: account.subscriptionID,
+        },
+      };
+      try {
+        await this.callEWS(unsubscribe);
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
       account.subscriptionID = undefined;
     }
   }
