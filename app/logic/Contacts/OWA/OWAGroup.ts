@@ -35,7 +35,7 @@ export class OWAGroup extends ExchangeGroup {
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
     // Old existing contacts saved the personaID in the id
-    this.personaID = sanitize.string(json.serverID, this.id);
+    this.personaID = sanitize.string(json.personaID, this.id);
   }
 
   toExtraJSON(): any {
