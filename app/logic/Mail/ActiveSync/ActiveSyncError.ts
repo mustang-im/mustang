@@ -167,13 +167,13 @@ const messages: Record<string, Record<number, string>> = {
   },
   Search: {
     2: "Invalid parameters",
-    3: "Tenporary server error",
+    3: "Temporary server error",
     10: "Request timed out",
     11: "Folder hierarchy resync required",
   },
   Settings: {
     2: "Protocol error",
-    3: "Access is deined",
+    3: "Access is denied",
     4: "Server unavailable",
     5: "Invalid parameters",
     6: "Conflicting parameters",
