@@ -119,6 +119,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   if (vevent.entries.status?.[0].value == "CANCELLED") {
     event.isCancelled = true;
   }
+  event.participants.clear(); // in case we're updating an existing event
   let organizer: Participant | undefined;
   if (vevent.entries.organizer) {
     let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
