@@ -48,6 +48,7 @@ export class CalDAVEvent extends Event {
   }
 
   async saveToServer() {
+    await this.prepareSaveToServer(); // creates the online meeting, so its URL must be in the ics
     this.calUID ??= crypto.randomUUID();
     let iCal = getICal(this);
     if (this.url) {
@@ -67,7 +68,7 @@ export class CalDAVEvent extends Event {
       this.url = new URL(filename, this.calendar.calendarURL).href;
       this.originalICal = iCal;
     }
-    await super.saveToServer();
+    await this.sendInvitationsDirectly();
   }
 
   async saveTask() {
