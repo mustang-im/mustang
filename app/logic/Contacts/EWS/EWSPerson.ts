@@ -15,6 +15,9 @@ export class EWSPerson extends ExchangePerson {
   /** The Exchange ItemId,
    * or the empty string if the item has not been saved to the server. */
   itemID = "";
+  /** EmailAddress slots which hold X.500 addresses (RoutingType "EX", e.g. contacts from the GAL).
+   * We cannot display them, but we must not delete them from the server either. */
+  protected exchangeEmailKeys = new Set<string>();
 
   fromXML(xmljs: any) {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId?.Id, "");
@@ -23,6 +26,9 @@ export class EWSPerson extends ExchangePerson {
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     // When the last entry was deleted, the whole dictionary is missing,
     // so clear our values in that case, too.
+    this.exchangeEmailKeys = new Set(ensureArray(xmljs.EmailAddresses?.Entry)
+      .filter(entry => entry.RoutingType && entry.RoutingType != "SMTP")
+      .map(entry => entry.Key));
     this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses?.Entry)
       .filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP"))
       .map(entry => new ContactEntry(sanitize.emailAddress(entry.Value, null), "work", "mailto"))
@@ -82,8 +88,12 @@ export class EWSPerson extends ExchangePerson {
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
     request.addField("Contact", "CompanyName", this.company, "contacts:CompanyName");
+    let emailEntries = this.emailAddresses.contents.slice();
     for (let i = 1; i <= 3; i++) {
-      let entry = this.emailAddresses.getIndex(i - 1);
+      if (this.exchangeEmailKeys.has("EmailAddress" + i)) {
+        continue;
+      }
+      let entry = emailEntries.shift();
       request.addField("Contact", "EmailAddresses", entry && {
         t$Entry: {
           Key: "EmailAddress" + i,
