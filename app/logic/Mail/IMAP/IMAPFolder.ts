@@ -319,8 +319,11 @@ export class IMAPFolder extends Folder {
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
       let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount);
-      downloadingMsgs = downloadingMsgs.filter((msg) => !msg.downloadRunOnce.running);
       needMsgs.removeAll(downloadingMsgs);
+      downloadingMsgs = downloadingMsgs.filter((msg) => !msg.downloadRunOnce.running);
+      if (!downloadingMsgs.length) {
+        continue;
+      }
       let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
         this.account.log(this, conn, "downloadMessages", emails.contents.map(e => e.id).join(", "));
