@@ -78,7 +78,7 @@ export class OWAEvent extends ExchangeEvent {
     if (json.DueDate) {
       this.endTime = sanitize.date(json.DueDate);
     }
-    this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
+    this.timezone = fromWindowsZone(sanitize.nonemptystring(json.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
     this.fixupExchangeAllDayEvent();
     if (json.Recurrence) {
