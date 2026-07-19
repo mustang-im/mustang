@@ -1,10 +1,11 @@
 import { Event } from "../Event";
 import type { CalDAVCalendar } from "./CalDAVCalendar";
-import { convertICalToEvent } from "../ICal/ICalToEvent";
+import { convertICalToEvent, convertICalContainerToEvent, parseDate } from "../ICal/ICalToEvent";
+import { ICalParser } from "../ICal/ICalParser";
 import { getICal } from "../ICal/ICalGenerator";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assertHTTPResponseOK } from "../../util/netUtil";
-import type { URLString } from "../../util/util";
+import { ensureArray, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { DAVObject } from "tsdav";
 import type { ArrayColl } from "svelte-collections";
@@ -39,6 +40,36 @@ export class CalDAVEvent extends Event {
     this.url = new URL(entry.url, this.calendar.calendarURL).href;
     this.etag = entry.etag;
     return true;
+  }
+
+  /** Modified occurrences of a recurring event are additional `VEVENT`s
+   * with a `RECURRENCE-ID` in the same ics file. Attach them to this master.
+   * Call after `fromDAVObject()` and `saveLocally()`. */
+  async updateExceptions() {
+    if (!this.recurrenceRule || !this.originalICal) {
+      return;
+    }
+    let parsed = new ICalParser(this.originalICal);
+    for (let vevent of ensureArray(parsed.containers.vevent)) {
+      let recurrenceID = vevent.entries.recurrenceid?.[0];
+      if (!recurrenceID) {
+        continue; // the master itself
+      }
+      try {
+        let [recurrenceStartTime] = parseDate(recurrenceID);
+        if (!recurrenceStartTime) {
+          continue;
+        }
+        let occurrence = this.getOccurrenceByDate(recurrenceStartTime, false) as CalDAVEvent | null;
+        if (!occurrence) {
+          continue;
+        }
+        convertICalContainerToEvent(vevent, occurrence);
+        await occurrence.saveLocally();
+      } catch (ex) {
+        this.calendar.errorCallback(ex);
+      }
+    }
   }
 
   getDAVObject(iCal?: string): DAVObject {

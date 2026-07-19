@@ -16,11 +16,14 @@ import type { ArrayColl } from "svelte-collections";
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
   let parsed = new ICalParser(ics);
-  let vevent = parsed.containers.vevent?.[0];
-  if (!vevent) {
+  let vevents = parsed.containers.vevent;
+  if (!vevents?.length) {
     return false;
   }
-  convertICalContainerToEvent(vevent, event);
+  // A recurring event with modified occurrences has multiple VEVENTs:
+  // the master, and one per modified occurrence, marked with RECURRENCE-ID.
+  let master = vevents.find(v => !v.entries.recurrenceid) ?? vevents[0];
+  convertICalContainerToEvent(master, event);
   return true;
 }
 
@@ -145,7 +148,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
 
-function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
+export function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
   let value = icalDate.value;
   let tzid = icalDate.properties.tzid || null;
   if (value.length == 8) {
