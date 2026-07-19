@@ -51,7 +51,7 @@ export class ActiveSyncPerson extends ExchangePerson {
   }
 
   async saveToServer() {
-    let fields: Record<string, string | { Type: string, Data: string | {} }> = {
+    let fields: Record<string, any> = {
       FirstName: this.firstName,
       LastName: this.lastName,
       Body: {
@@ -62,15 +62,22 @@ export class ActiveSyncPerson extends ExchangePerson {
       Department: this.department || "",
       CompanyName: this.company || "",
     }
-    this.emailAddresses.contents.slice(0, 3).forEach((entry, i) => fields[`Email${i+1}Address`] = entry.value);
-    for (let [purpose, protocol, count] of PhoneMapping) {
-      this.phoneNumbers.contents.filter(entry => entry.purpose == purpose && (entry.protocol || "tel") == protocol).slice(0, count).forEach((entry, i) => fields[`${ContactElements[purpose]}${"2".slice(0, i)}${ContactElements[protocol]}Number`] = entry.value);
+    // Always send every slot. An empty element deletes the value,
+    // whereas in ActiveSync 16.x, an omitted element would keep it.
+    for (let i = 0; i < 3; i++) {
+      fields[`Email${i + 1}Address`] = this.emailAddresses.getIndex(i)?.value || {};
     }
-    this.chatAccounts.contents.slice(0, 3).forEach((entry, i) => fields[`IMAddress${i ? i + 1 : ""}`] = entry.value);
-    for (let entry of this.streetAddresses) {
-      if (entry.purpose in ContactElements && entry.value) {
-        ActiveSyncPerson.streetAddressToActiveSync(entry.value, entry.purpose, fields);
+    for (let [purpose, protocol, count] of PhoneMapping) {
+      let values = this.phoneNumbers.contents.filter(entry => entry.purpose == purpose && (entry.protocol || "tel") == protocol).map(entry => entry.value);
+      for (let i = 0; i < count; i++) {
+        fields[`${ContactElements[purpose]}${"2".slice(0, i)}${ContactElements[protocol]}Number`] = values[i] || {};
       }
+    }
+    for (let i = 0; i < 3; i++) {
+      fields[`IMAddress${i ? i + 1 : ""}`] = this.chatAccounts.getIndex(i)?.value || {};
+    }
+    for (let purpose of ["home", "work", "other"]) {
+      ActiveSyncPerson.streetAddressToActiveSync(this.streetAddresses.find(entry => entry.purpose == purpose)?.value, purpose, fields);
     }
     let data = this.serverID ? {
       GetChanges: "0",
@@ -103,12 +110,11 @@ export class ActiveSyncPerson extends ExchangePerson {
     }
   }
 
-  protected static streetAddressToActiveSync(str: string, purpose: string, fields: Record<string, any>) {
+  protected static streetAddressToActiveSync(str: string | undefined, purpose: string, fields: Record<string, any>) {
     let address = new StreetAddress(str);
     for (let ourProp in PhysicalAddressElements) {
       let asProp = PhysicalAddressElements[ourProp];
-      let value = address[ourProp];
-      fields[`${ContactElements[purpose]}Address${asProp}`] = value;
+      fields[`${ContactElements[purpose]}Address${asProp}`] = address[ourProp] || {};
     }
   }
 
