@@ -131,13 +131,13 @@ export class EWSEvent extends ExchangeEvent {
     let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
       // These dates don't have a time, but they do have a time zone suffixed.
+      // Parse them as machine-local time, like the iCal path does,
+      // because `dateString()` writes them back using machine-local date fields.
       if (!seriesStartTime) {
-        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
+        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10) + "T00:00:00");
       }
-      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
-      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
+      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10) + "T23:59:59");
     }
     let count = sanitize.integer(xmljs.NumberedRecurrence?.NumberOfOccurrences, Infinity);
     let key = Object.keys(RecurrenceType).find(key => key in xmljs);
