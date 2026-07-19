@@ -253,7 +253,10 @@ export class ActiveSyncEvent extends ExchangeEvent {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
-    await super.deleteFromServer();
+    // ActiveSync 16.1 automatically sends cancellations and responses.
+    if (this.calendar.account.protocolVersion != "16.1") {
+      await super.deleteFromServer();
+    }
   }
 
   /** Returns a copy of the event as read from the server */
