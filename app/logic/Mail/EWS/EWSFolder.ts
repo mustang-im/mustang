@@ -403,7 +403,14 @@ export class EWSFolder extends ExchangeFolder {
         m$ReturnNewItemIds: false,
       },
     };
-    await this.account.callEWS(request);
+    // The messages will be deleted locally after this returns,
+    // so ensure that none of them failed on the server.
+    let results = ensureArray(await this.account.callEWS(request));
+    for (let result of results) {
+      if (result.ResponseClass == "Error") {
+        throw new EWSItemError(result, request);
+      }
+    }
   }
 
   async addMessage(message: EMail) {
