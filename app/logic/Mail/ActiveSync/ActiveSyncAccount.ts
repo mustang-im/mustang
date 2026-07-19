@@ -117,6 +117,8 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
   }
 
   async disconnect() {
+    // Ends the Ping loop after the current long poll returns
+    this.pingsMRU.clear();
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
