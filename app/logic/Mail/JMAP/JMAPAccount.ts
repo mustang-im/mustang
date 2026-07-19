@@ -199,10 +199,7 @@ export class JMAPAccount extends MailAccount {
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
       if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
-        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
-        let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
-        ex.message = errorJSON?.detail ?? ex.message;
-        ex.code = errorJSON?.type;
+        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with", ex?.message ?? ex, "while", ...log);
         throw ex;
       }
       console.error("Error", ex?.message ?? ex, ...log);
