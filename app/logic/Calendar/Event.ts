@@ -555,9 +555,15 @@ export class Event extends Observable {
     this.fillRecurrences(endDate);
   }
 
-  getOccurrenceByDate(recurrenceStartTime: Date): Event {
+  /** @param mustExist
+   *   When the occurrence was excluded or isn't in the recurrence,
+   *   throw (default), or return null. */
+  getOccurrenceByDate(recurrenceStartTime: Date, mustExist = true): Event | null {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
-    assert(!this.exclusions.find(date => date.getTime() == recurrenceStartTime.getTime()), "occurrence was already excluded");
+    if (this.exclusions.find(date => date.getTime() == recurrenceStartTime.getTime())) {
+      assert(!mustExist, "occurrence was already excluded");
+      return null;
+    }
     let event = this.exceptions.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
     if (event) {
       return event;
@@ -566,8 +572,10 @@ export class Event extends Observable {
     if (event) {
       return event;
     }
-    let index = this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime);
-    assert(index != -1, "occurrence date not in recurrence");
+    if (this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime) == -1) {
+      assert(!mustExist, "occurrence date not in recurrence");
+      return null;
+    }
     this.generateRecurringInstances(recurrenceStartTime);
     return this.instances.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
   }
