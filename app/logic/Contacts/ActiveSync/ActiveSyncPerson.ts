@@ -19,7 +19,8 @@ export class ActiveSyncPerson extends ExchangePerson {
     if (wbxmljs.DisplayName) { // only for GAL search results
       this.name = sanitize.nonemptylabel(wbxmljs.DisplayName);
     } else {
-      this.name = sanitize.nonemptylabel(this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName);
+      this.name = sanitize.nonemptylabel(this.firstName ? this.lastName ? `${this.firstName} ${this.lastName}` : this.firstName : this.lastName, null) ??
+        sanitize.nonemptystring(wbxmljs.FileAs, ""); // e.g. company-only contact
     }
     this.emailAddresses.replaceAll([wbxmljs.Email1Address, wbxmljs.Email2Address, wbxmljs.Email3Address]
       .filter(Boolean)
