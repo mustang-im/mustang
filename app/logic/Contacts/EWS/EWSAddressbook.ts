@@ -270,7 +270,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, this.account.emailAddress);
+    return getSharedPersons(ensureArray(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission), this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
@@ -300,7 +300,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       },
     };
     let result = await this.account.callEWS(request);
-    return sanitize.array(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, []).map(permission => new ExchangePermission(permission));
+    return ensureArray(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission).map(permission => new ExchangePermission(permission));
   }
 
   async setPermissions(permissions: ExchangePermission[]) {

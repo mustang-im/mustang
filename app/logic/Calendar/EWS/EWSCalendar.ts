@@ -290,7 +290,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission, this.account.emailAddress);
+    return getSharedPersons(ensureArray(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission), this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
@@ -320,7 +320,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       },
     };
     let result = await this.account.callEWS(request);
-    return sanitize.array(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission, []).map(permission => new ExchangePermission(permission));
+    return ensureArray(result.Folders.CalendarFolder.PermissionSet.CalendarPermissions.CalendarPermission).map(permission => new ExchangePermission(permission));
   }
 
   async setPermissions(permissions: ExchangePermission[]) {
