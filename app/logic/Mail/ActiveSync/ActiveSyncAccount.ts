@@ -541,7 +541,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     this.pingsMRU.add(pingable);
     if (!this.listening) {
       this.listenForPings()
-        .catch(this.errorCallback); // TODO restart on error (with throttle)?
+        .catch(this.errorCallback);
     }
   }
 
@@ -558,35 +558,52 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
   async listenForPings() {
     try {
       this.listening = true;
+      let lastAttempt = 0;
       while (this.pingsMRU.hasItems) {
-        let request = {
-          HeartbeatInterval: String(this.heartbeat),
-          Folders: {
-            Folder: this.pingsMRU.contents.map(pingable => ({ Id: pingable.serverID, Class: pingable.folderClass })),
-          },
-        };
-        let response = await this.callEAS("Ping", request, { heartbeat: this.heartbeat });
-        switch (response.Status) {
-        case "1":
-          continue;
-        case "2":
-          for (let serverID of ensureArray(response.Folders.Folder)) {
-            let pingable = this.pingsMRU.find(pingable => pingable.serverID == serverID);
-            await pingable?.ping();
+        try {
+          lastAttempt = Date.now();
+          let request = {
+            HeartbeatInterval: String(this.heartbeat),
+            Folders: {
+              Folder: this.pingsMRU.contents.map(pingable => ({ Id: pingable.serverID, Class: pingable.folderClass })),
+            },
+          };
+          let response = await this.callEAS("Ping", request, { heartbeat: this.heartbeat });
+          if (!response) { // empty response body, nothing changed
+            continue;
           }
-          continue;
-        case "5":
-          this.heartbeat = sanitize.integer(response.HeartbeatInterval);
-          continue;
-        case "6":
-          this.maxPings = sanitize.integer(response.MaxFolders);
-          this.trimPings();
-          continue;
-        case "7":
-          await this.listFolders();
-          continue;
-        default:
-          throw new ActiveSyncError("Ping", response.Status, this);
+          switch (response.Status) {
+          case "1":
+            continue;
+          case "2":
+            for (let serverID of ensureArray(response.Folders.Folder)) {
+              let pingable = this.pingsMRU.find(pingable => pingable.serverID == serverID);
+              await pingable?.ping();
+            }
+            continue;
+          case "5":
+            this.heartbeat = sanitize.integer(response.HeartbeatInterval);
+            continue;
+          case "6":
+            this.maxPings = sanitize.integer(response.MaxFolders);
+            this.trimPings();
+            continue;
+          case "7":
+            await this.listFolders();
+            continue;
+          case "8": // Temporary server error
+            this.throttle.waitForSecond(5);
+            continue;
+          default:
+            throw new ActiveSyncError("Ping", response.Status, this);
+          }
+        } catch (ex) {
+          if (Date.now() - lastAttempt < 10 * 1000) {
+            // Failed right away: give up, to avoid hammering the server
+            throw ex;
+          }
+          // The connection was up for a while, e.g. a network interruption
+          // after a long poll: retry
         }
       }
     } catch (ex) {
