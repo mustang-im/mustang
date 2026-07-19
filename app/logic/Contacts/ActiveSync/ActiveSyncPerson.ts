@@ -112,6 +112,10 @@ export class ActiveSyncPerson extends ExchangePerson {
   }
 
   async deleteFromServer() {
+    if (!this.serverID) {
+      // Not saved to the server, e.g. because the save failed
+      return;
+    }
     let data = {
       DeletesAsMoves: "1",
       GetChanges: "0",

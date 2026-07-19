@@ -108,6 +108,10 @@ export class OWAPerson extends ExchangePerson {
   }
 
   async deleteFromServer() {
+    if (!this.personaID) {
+      // Not saved to the server, e.g. because the save failed
+      return;
+    }
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.callOWA(request);
     this.addressbook.persons.remove(this);
