@@ -600,24 +600,24 @@ export class JMAPFolder extends Folder {
   }
 
   disableDelete(): string | false {
-    return super.disableDelete() ??
-      this.myRights.mayDelete
-      ? gt`You cannot delete this folder, because the server forbids it.`
-      : null;
+    return super.disableDelete() ||
+      (this.myRights.mayDelete
+        ? false
+        : gt`You cannot delete this folder, because the server forbids it.`);
   }
 
   disableRename(): string | false {
-    return super.disableRename() ??
-      this.myRights.mayRename
-      ? gt`You cannot rename this folder, because the server forbids it.`
-      : null;
+    return super.disableRename() ||
+      (this.myRights.mayRename
+        ? false
+        : gt`You cannot rename this folder, because the server forbids it.`);
   }
 
   disableSubfolders(): string | false {
-    return super.disableSubfolders() ??
-      this.myRights.mayCreateChild
-      ? gt`You cannot create subfolders of this folder, because the server forbids it.`
-      : null;
+    return super.disableSubfolders() ||
+      (this.myRights.mayCreateChild
+        ? false
+        : gt`You cannot create subfolders of this folder, because the server forbids it.`);
   }
 
   newEMail(): JMAPEMail {
