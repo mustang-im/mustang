@@ -28,7 +28,7 @@ export class JSCalendarEvent {
 
     // Time
     event.startTime = this.toDate(jmap.start, jmap);
-    event.endTime = getEndTimeFromDuration(event.startTime, sanitize.nonemptystring(jmap.duration));
+    event.endTime = getEndTimeFromDuration(event.startTime, sanitize.nonemptystring(jmap.duration, "PT0S"));
     event.timezone = jmap.timeZone ?? null;
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
 
