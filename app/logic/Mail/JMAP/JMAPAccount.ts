@@ -301,13 +301,12 @@ export class JMAPAccount extends MailAccount {
   /** @throws an appropriate exception (always throws) */
   protected async httpError(ex: Error) {
     if (ex.name == "HTTPError") {
+      // HTTPFetchError from backend.ts, which has only scalar properties, not the HTTP response body
       let ext = ex as any;
-      let json = await ext.response.json();
-      let msg = json.title + ": " + json.detail;
-      if (ext.status == 401) {
-        throw new LoginError(ex, msg);
+      if (ext.httpCode == 401) {
+        throw new LoginError(ex, null);
       } else {
-        throw new ConnectError(ex, msg);
+        throw new ConnectError(ex, null);
       }
     }
     throw ex;
