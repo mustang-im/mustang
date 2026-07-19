@@ -16,11 +16,17 @@ export class OWAExchangeNotifications extends OWANotifications {
       if (!stream.ok) {
         throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
       }
+      const endScript = "</script>";
+      let data = "";
       for await (let chunk of stream.body) {
         // Avoid racing with ourselves, if we caused the notification.
         await new Promise(resolve => setTimeout(resolve, 100));
-        let matches = chunk.match(/<script>.*?<\/script>/g);
+        // A notification can be split across chunks,
+        // so keep the incomplete tail for the next chunk.
+        data += chunk;
+        let matches = data.match(/<script>.*?<\/script>/g);
         if (matches) {
+          data = data.slice(data.lastIndexOf(endScript) + endScript.length);
           let messages: any[] = [];
           for (let match of matches) {
             let script = match.slice(8, -9);
