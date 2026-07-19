@@ -52,6 +52,9 @@ export class EWSPerson extends ExchangePerson {
         case "MobilePhone":
           phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
           break;
+        case "OtherTelephone":
+          phoneNumbers.add(new ContactEntry(value, "other", "tel"));
+          break;
         }
       }
       this.phoneNumbers.replaceAll(phoneNumbers);
@@ -172,5 +175,6 @@ const PhoneMapping: [string, string, number, string][] = [
   ["home", "fax", 1, "HomeFax"],
   ["work", "fax", 1, "BusinessFax"],
   ["other", "fax", 1, "OtherFax"],
+  ["other", "tel", 1, "OtherTelephone"],
   ["mobile", "tel", 1, "MobilePhone"],
 ];
