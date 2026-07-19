@@ -43,7 +43,12 @@ export class JMAPEvent extends Event {
         this.makeExclusionLocally(recurrenceStartTime);
       } else {
         let instance = this.getOccurrenceByDate(recurrenceStartTime);
-        JSCalendarEvent.toEvent(ro[override], instance);
+        // The override contains only the changed properties, so overlay them on the master event
+        let json = { ...this.original, start: override, ...ro[override] } as TJMAPCalendarEvent;
+        delete json.recurrenceRule;
+        delete json.recurrenceOverrides;
+        JSCalendarEvent.toEvent(json, instance);
+        instance.original = ro[override];
         exceptions.add(instance);
       }
     }
