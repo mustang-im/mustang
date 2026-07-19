@@ -159,6 +159,7 @@ export class CalDAVCalendar extends Calendar {
           if (existing) {
             existing.fromDAVObject(iCalEntry);
             await existing.saveLocally();
+            await existing.updateExceptions();
           } else {
             await this.addEvent(iCalEntry);
           }
@@ -193,6 +194,7 @@ export class CalDAVCalendar extends Calendar {
       }
       this.events.add(event);
       await event.saveLocally();
+      await event.updateExceptions();
     } catch (ex) {
       this.errorCallback(ex);
     }
