@@ -5,7 +5,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount"
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { assert, ensureArray, NotImplemented, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -361,6 +361,24 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async markAllRead() {
-    throw new NotImplemented();
+    let unread = this.messages.contents.filter(msg => !msg.isRead && msg.serverID);
+    for (let i = 0; i < unread.length; i += kMaxCount) {
+      let data = {
+        GetChanges: "0",
+        Commands: {
+          Change: unread.slice(i, i + kMaxCount).map(msg => ({
+            ServerId: msg.serverID,
+            ApplicationData: {
+              Read: "1",
+            },
+          })),
+        },
+      };
+      let response = await this.makeSyncRequest(data);
+      if (response.Responses) {
+        throw new ActiveSyncError("Sync", ensureArray(response.Responses.Change)[0].Status, this.account);
+      }
+    }
+    await super.markAllRead();
   }
 }
