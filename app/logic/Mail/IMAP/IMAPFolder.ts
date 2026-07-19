@@ -178,13 +178,14 @@ export class IMAPFolder extends Folder {
   /** Lists all messages in this folder that are new or updated since the last fetch.
    * Works only with CONDSTORE server capability. */
   protected async listChangedMessages(): Promise<ArrayColl<IMAPEMail>> {
-    let { newMessages } = await this.fetchMessageList({ all: true }, {
+    let { newMessages, updatedMessages } = await this.fetchMessageList({ all: true }, {
       uid: true,
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
     this.messages.addAll(newMessages);
     await this.storage.saveFolderProperties(this);
     await this.saveNewMsgs(newMessages);
+    await this.saveMsgUpdates(updatedMessages);
     return newMessages;
   }
 
