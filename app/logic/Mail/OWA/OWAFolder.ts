@@ -4,6 +4,7 @@ import type { EMail } from "../EMail";
 import { getSharedPersons, ExchangePermission } from "../EWS/ExchangePermission";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
+import { OWAError } from "./OWAError";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import {
   owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
@@ -16,7 +17,7 @@ import {
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
+import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -223,7 +224,14 @@ export class OWAFolder extends ExchangeFolder {
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<OWAEMail>) {
     let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" }) as "Move" | "Copy";
     // This function must be called using the source account
-    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
+    let results = await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
+    // The messages will be deleted locally after this returns,
+    // so ensure that none of them failed on the server.
+    for (let result of ensureArray(results.ResponseMessages?.Items)) {
+      if (result.ResponseClass == "Error") {
+        throw new OWAError({ json: result });
+      }
+    }
   }
 
   async addMessage(message: EMail) {
