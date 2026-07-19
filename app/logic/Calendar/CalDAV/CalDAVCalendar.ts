@@ -43,22 +43,23 @@ export class CalDAVCalendar extends Calendar {
     await this.loginRunOnce.runOnce(async () => {
       let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
       let usePassword = this.authMethod == AuthMethod.Password;
+      let oAuth2 = this.oAuth2 ?? this.mainAccount?.oAuth2;
       if (useOAuth2) {
         if (this.isDependentAccount) {
           await this.mainAccount.login(interactive);
         } else {
-          assert(this.oAuth2, gt`Need OAuth2 configuration`);
-          if (!this.oAuth2.isLoggedIn) {
-            await this.oAuth2.login(interactive);
+          assert(oAuth2, gt`Need OAuth2 configuration`);
+          if (!oAuth2.isLoggedIn) {
+            await oAuth2.login(interactive);
           }
         }
       }
       assert(usePassword || useOAuth2, gt`Unknown authentication method`);
       let options = {
         serverUrl: this.url,
-        authType: useOAuth2 ? "Oauth" : "Basic",
+        authMethod: useOAuth2 ? "Bearer" : "Basic",
         credentials: useOAuth2 ? {
-          access_token: this.oAuth2.accessToken,
+          accessToken: oAuth2.accessToken,
         } : {
           username: this.username,
           password: usePassword ? this.password : undefined,
