@@ -8,6 +8,7 @@ import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExc
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
+import { Lock } from "../../util/flow/Lock";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -51,68 +52,75 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
     return this.updateChangedContacts();
   }
 
+  protected readonly listContactsLock = new Lock();
+
   // Uses the sync state to get just the contats that changed since last time.
   protected async updateChangedContacts() {
-    let sync = {
-      m$SyncFolderItems: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-        },
-        m$SyncFolderId: {
-          t$FolderId: {
-            Id: this.folderID,
+    let lock = await this.listContactsLock.lock();
+    try {
+      let sync = {
+        m$SyncFolderItems: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
           },
-        },
-        m$SyncState: this.syncState,
-        m$MaxChangesReturned: kMaxCount,
-      }
-    };
-    let persons: any[] = [];
-    let groups: any[] = [];
-    let result: any = { IncludesLastItemInRange: "false" };
-    while (result.IncludesLastItemInRange === "false") {
-      try {
-        result = await this.account.callEWS(sync);
-      } catch (ex) {
-        if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
-          throw ex;
+          m$SyncFolderId: {
+            t$FolderId: {
+              Id: this.folderID,
+            },
+          },
+          m$SyncState: this.syncState,
+          m$MaxChangesReturned: kMaxCount,
         }
-        this.syncState = null;
-        await this.save();
-        sync.m$SyncFolderItems.m$SyncState = null;
-        result = await this.account.callEWS(sync);
-      }
-      for (let changes of [result.Changes.Update, result.Changes.Create]) {
-        if (changes) {
-          for (let change of ensureArray(changes)) {
-            if (change.Contact) {
-              persons.push(change.Contact);
+      };
+      let persons: any[] = [];
+      let groups: any[] = [];
+      let result: any = { IncludesLastItemInRange: "false" };
+      while (result.IncludesLastItemInRange === "false") {
+        try {
+          result = await this.account.callEWS(sync);
+        } catch (ex) {
+          if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
+            throw ex;
+          }
+          this.syncState = null;
+          await this.save();
+          sync.m$SyncFolderItems.m$SyncState = null;
+          result = await this.account.callEWS(sync);
+        }
+        for (let changes of [result.Changes.Update, result.Changes.Create]) {
+          if (changes) {
+            for (let change of ensureArray(changes)) {
+              if (change.Contact) {
+                persons.push(change.Contact);
+              }
+              if (change.DistributionList) {
+                groups.push(change.DistributionList);
+              }
             }
-            if (change.DistributionList) {
-              groups.push(change.DistributionList);
+          }
+        }
+        if (result.Changes.Delete) {
+          for (let deletion of ensureArray(result.Changes.Delete)) {
+            let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+            if (person) {
+              this.persons.remove(person);
+              await person.deleteLocally();
+            }
+            let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+            if (group) {
+              this.groups.remove(group);
+              await group.deleteLocally();
             }
           }
         }
+        this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       }
-      if (result.Changes.Delete) {
-        for (let deletion of ensureArray(result.Changes.Delete)) {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
-          if (person) {
-            this.persons.remove(person);
-            await person.deleteLocally();
-          }
-          let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
-          if (group) {
-            this.groups.remove(group);
-            await group.deleteLocally();
-          }
-        }
-      }
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      await this.listPersons(persons);
+      await this.listGroups(groups);
+      await this.save();
+    } finally {
+      lock.release();
     }
-    await this.listPersons(persons);
-    await this.listGroups(groups);
-    await this.save();
   }
 
   // Lists all contacts and adds them to the persons and groups.
