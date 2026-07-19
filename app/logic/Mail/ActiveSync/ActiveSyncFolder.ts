@@ -347,6 +347,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async deleteIt() {
+    for (let folder of this.getInclusiveDescendants()) {
+      this.account.removePingable(folder as ActiveSyncFolder);
+    }
     await this.storage.deleteFolder(this);
     this.removeFromParent();
     let request = {

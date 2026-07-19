@@ -521,6 +521,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     });
     // Iterate from deepest to shallowest
     for (let folder of missingFolders.reverse()) {
+      this.removePingable(folder as ActiveSyncFolder);
       await folder.deleteItLocally();
     }
   }
