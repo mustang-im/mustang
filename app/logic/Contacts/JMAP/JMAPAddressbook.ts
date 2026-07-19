@@ -198,7 +198,7 @@ export class JMAPAddressbook extends Addressbook {
               removed.hasItems || changes.destroyed?.length)) {
               continue;
         }
-        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed));
+        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed ?? []));
         // A new item created locally comes back in `created`, so need dup checks
         let addedResult = addressbook.parsePersonsList(addedThisAB ?? []);
         let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);

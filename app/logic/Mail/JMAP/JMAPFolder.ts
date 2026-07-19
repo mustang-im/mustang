@@ -209,7 +209,7 @@ export class JMAPFolder extends Folder {
           continue; // Adding messages here would stop listAllMessages() from ever running
         }
         removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
-        removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
+        removed.addAll(await folder.parseRemovedMessages(changes.destroyed ?? []));
         // A draft or email uploaded from here comes back in `created`, so need dup checks
         let addedResult = folder.parseMessageList(addedThisFolder ?? []);
         let changedResult = folder.parseMessageList(changedThisFolder ?? []);

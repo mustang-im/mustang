@@ -206,7 +206,7 @@ export class JMAPCalendar extends Calendar {
           removed.hasItems || changes.destroyed?.length)) {
           continue;
         }
-        removed.addAll(await calendar.parseRemovedEvents(changes.destroyed));
+        removed.addAll(await calendar.parseRemovedEvents(changes.destroyed ?? []));
         // A new created locally comes back in `created`, so need dup checks
         let addedResult = calendar.parseEventsList(addedThisCal ?? []);
         let changedResult = calendar.parseEventsList(changedThisCal ?? []);
