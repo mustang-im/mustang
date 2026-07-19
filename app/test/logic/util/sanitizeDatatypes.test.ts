@@ -10,6 +10,11 @@ test("Check Latin email addresses", () => {
   sanitize.emailAddress("dh+g@example.im");
   sanitize.emailAddress("dh.g@example.im");
   sanitize.emailAddress("dh-g@example.im");
+  // DMARC rewriting on mailing lists, SRS, VERP
+  sanitize.emailAddress("foo=40example.com@dmarc.ietf.org");
+  sanitize.emailAddress("srs0=hhh=t4=example.com=foo@forwarder.example.net");
+  sanitize.emailAddress("o'brien@example.com");
+  expect(sanitize.emailAddress(" dh@example.com ")).toBe("dh@example.com");
   expect(() => {
     sanitize.emailAddress("d@com");
   }).toThrow();
@@ -22,8 +27,12 @@ test("Check Latin email addresses", () => {
   expect(() => {
     sanitize.emailAddress("d@example.com-");
   }).toThrow();
+  // RFC 5322 atext specials, deliberately rejected as defense in depth
   expect(() => {
     sanitize.emailAddress("d#h@example.com");
+  }).toThrow();
+  expect(() => {
+    sanitize.emailAddress("d&h@example.com");
   }).toThrow();
   expect(() => {
     sanitize.emailAddress("d h@example.com");
@@ -51,6 +60,7 @@ test("Check Latin email addresses", () => {
 test("Check EAI email addresses", () => {
   sanitize.emailAddress("ндрис@уайлддк.орг");
   sanitize.emailAddress("ндрис@уайлддк.xn--4dn5");
+  sanitize.emailAddress("ндрис@уайлддк.XN--4DN5");
   sanitize.emailAddress("нд1²³рис@уай1²³лддк.орг");
   sanitize.emailAddress("äüößéáúàèù@äüößéáúàèù.com");
   // Chinese
