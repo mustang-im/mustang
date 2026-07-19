@@ -243,6 +243,27 @@ export class JSCalendarEvent {
           // JMAP status that we don't support. Keep it as-is.
         } // else `InvitationResponse` not yet listed here -> keep as-is
       }
+      // Add the participants that are not in the JSCalendar event yet
+      for (let p of event.participants) {
+        let existing = Object.values(jmap.participants).find(participant => participant.email
+          ? participant.email == p.emailAddress
+          : participant.name == p.name);
+        if (existing) {
+          continue;
+        }
+        jmap.participants[crypto.randomUUID()] = {
+          "@type": "Participant",
+          name: p.name,
+          email: p.emailAddress,
+          sendTo: p.emailAddress ? { imip: "mailto:" + p.emailAddress } : undefined,
+          roles: p.response == InvitationResponse.Organizer ? { owner: true } : { attendee: true },
+          participationStatus:
+            p.response == InvitationResponse.Accept ? "accepted" :
+            p.response == InvitationResponse.Decline ? "declined" :
+            p.response == InvitationResponse.Tentative ? "tentative" :
+            "needs-action",
+        };
+      }
     } else if (jmap.participants) {
       delete jmap.participants;
     }
