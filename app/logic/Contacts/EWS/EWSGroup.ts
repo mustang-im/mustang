@@ -27,7 +27,8 @@ export class EWSGroup extends ExchangeGroup {
   async saveToServer() {
     // XXX untested due to no UI yet
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
-    request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
+    // `null`, not `""`, so that an empty description results in a field deletion, not an invalid empty <t:Body/>
+    request.addField("DistributionList", "Body", this.description ? { BodyType: "Text", _TextContent_: this.description } : null, "item:Body");
     request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
     let participants = this.participants.contents.filter(entry => entry.emailAddresses.first?.value);
     request.addField("DistributionList", "Members", participants.length ? {
