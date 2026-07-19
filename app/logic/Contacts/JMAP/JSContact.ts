@@ -141,13 +141,17 @@ export class JSContact {
         company.units ??= [];
         company.units[0] ??= {} as TOrgUnit;
         company.units[0].name = person.department;
-      } else {
-        if (company.units?.length) {
-          delete company.units[0];
+      } else if (company.units?.length) {
+        company.units.shift();
+        if (!company.units.length) {
+          delete company.units;
         }
       }
     }
-    setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry) => entry = company);
+    setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry: TOrganization) => {
+      entry.name = company.name;
+      entry.units = company.units;
+    });
   }
 
   protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
