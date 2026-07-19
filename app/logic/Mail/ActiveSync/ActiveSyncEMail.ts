@@ -80,14 +80,20 @@ export class ActiveSyncEMail extends ExchangeEMail {
     */
   }
 
+  /** A server-side Change contains only the changed properties,
+   * so leave omitted properties unchanged. */
   setFlags(wbxmljs: any) {
-    this.isRead = wbxmljs.Read != "0";
-    this.isStarred = wbxmljs.Flag?.Status == "2";
-    if (this.folder.account.protocolVersion == "16.1") {
+    if (wbxmljs.Read != undefined) {
+      this.isRead = wbxmljs.Read != "0";
+    }
+    if (wbxmljs.Flag != undefined) {
+      this.isStarred = wbxmljs.Flag?.Status == "2";
+    }
+    if (this.folder.account.protocolVersion == "16.1" && wbxmljs.IsDraft != undefined) {
       this.isDraft = wbxmljs.IsDraft != "0";
     }
-    this.tags.clear();
-    if (wbxmljs.Categories) {
+    if (wbxmljs.Categories != undefined) {
+      this.tags.clear();
       this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(sanitize.string(name))));
     }
   }
