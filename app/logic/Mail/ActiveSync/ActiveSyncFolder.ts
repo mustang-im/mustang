@@ -207,17 +207,21 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
           },
         })),
       };
-      let results = await this.account.callEAS("ItemOperations", request);
-      for (let result of ensureArray(results.Response.Fetch)) try {
-        if (result.Status != "1") {
-          throw new ActiveSyncError("ItemOperations", result.Status, this.account);
-        }
-        let email = emailsToDownload.find(email => email.serverID == result.ServerId);
-        if (email && !email.downloadComplete) {
-          email.mime = result.Properties.Body.RawData;
-          await email.parseMIME();
-          await email.saveCompleteMessage();
-          downloadedEmail.add(email);
+      try {
+        let results = await this.account.callEAS("ItemOperations", request);
+        for (let result of ensureArray(results.Response.Fetch)) try {
+          if (result.Status != "1") {
+            throw new ActiveSyncError("ItemOperations", result.Status, this.account);
+          }
+          let email = emailsToDownload.find(email => email.serverID == result.ServerId);
+          if (email && !email.downloadComplete) {
+            email.mime = result.Properties.Body.RawData;
+            await email.parseMIME();
+            await email.saveCompleteMessage();
+            downloadedEmail.add(email);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
       } catch (ex) {
         this.account.errorCallback(ex);
