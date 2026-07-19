@@ -105,7 +105,8 @@ export class OWAAddressbook extends ExchangeAddressbook {
   async listGroups(groups: any[]) {
     for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
       this.groups.remove(group);
-      await group.deleteIt();
+      // The server deleted the list, so delete it only locally.
+      await group.deleteLocally();
     }
     for (let result of groups) {
       try {
