@@ -1,10 +1,8 @@
 import { ExchangeGroup } from '../EWS/ExchangeGroup';
-import { Person, ContactEntry } from '../../Abstract/Person';
-import { findPerson } from '../../Abstract/PersonUID';
+import { findOrCreatePerson } from '../../Abstract/PersonUID';
 import type { OWAAddressbook } from './OWAAddressbook';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';
-import { appGlobal } from "../../app";
 
 export class OWAGroup extends ExchangeGroup {
   declare addressbook: OWAAddressbook | null;
@@ -45,15 +43,4 @@ export class OWAGroup extends ExchangeGroup {
     json.personaID = this.personaID;
     return json;
   }
-}
-
-function findOrCreatePerson(emailAddress: string, name:string): Person {
-  let person = findPerson(emailAddress);
-  if (person) {
-    return person;
-  }
-  person = appGlobal.collectedAddressbook.newPerson();
-  person.name = name;
-  person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
-  return person;
 }

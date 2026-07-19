@@ -114,6 +114,19 @@ export function findPerson(emailAddress: string): Person | undefined {
   return undefined;
 }
 
+export function findOrCreatePerson(emailAddress: string, name: string): Person {
+  let person = findPerson(emailAddress);
+  if (person) {
+    return person;
+  }
+  person = appGlobal.collectedAddressbook.newPerson();
+  person.name = name;
+  person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
+  // Add it, so that the next call finds it, instead of creating a duplicate
+  appGlobal.collectedAddressbook.persons.add(person);
+  return person;
+}
+
 export function findPersonsWithName(name: string): ArrayColl<Person> {
   if (!name) {
     return undefined;

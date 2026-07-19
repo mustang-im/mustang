@@ -1,12 +1,10 @@
 import { ExchangeGroup } from './ExchangeGroup';
-import { Person, ContactEntry } from '../../Abstract/Person';
-import { findPerson } from '../../Abstract/PersonUID';
+import { findOrCreatePerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { getEmailAddressOrX400 } from '../../Mail/EWS/EWSEMail';
-import { appGlobal } from "../../app";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
@@ -62,15 +60,4 @@ export class EWSGroup extends ExchangeGroup {
     json.itemID = this.itemID;
     return json;
   }
-}
-
-function findOrCreatePerson(emailAddress: string, name:string): Person {
-  let person = findPerson(emailAddress);
-  if (person) {
-    return person;
-  }
-  person = appGlobal.collectedAddressbook.newPerson();
-  person.name = name;
-  person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
-  return person;
 }
