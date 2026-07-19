@@ -6,6 +6,7 @@ import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
+import { EWSItemError } from "../../Mail/EWS/EWSError";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -247,27 +248,34 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
         },
       },
     };
-    let results = ensureArray(await this.account.callEWS(request));
-    for (let result of results) {
-      let item = result.Items.CalendarItem || result.Items.Task;
-      try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
-        if (event) {
-          event.parentEvent = parentEvent; // should already be correct
-          event.fromXML(item);
-          await event.saveLocally();
-        } else {
-          event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
-          event.fromXML(item);
-          await event.saveLocally();
-          events.push(event);
+    try {
+      let results = ensureArray(await this.account.callEWS(request));
+      for (let result of results) {
+        try {
+          if (result.ResponseClass == "Error") {
+            throw new EWSItemError(result, request);
+          }
+          let item = result.Items.CalendarItem || result.Items.Task;
+          let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
+          if (event) {
+            event.parentEvent = parentEvent; // should already be correct
+            event.fromXML(item);
+            await event.saveLocally();
+          } else {
+            event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
+            event.fromXML(item);
+            await event.saveLocally();
+            events.push(event);
+          }
+          if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
+            await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
-        if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
-          await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
-        }
-      } catch (ex) {
-        this.account.errorCallback(ex);
       }
+    } catch (ex) {
+      this.account.errorCallback(ex);
     }
   }
 
