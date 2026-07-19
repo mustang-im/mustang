@@ -192,7 +192,7 @@ export class EWSEMail extends ExchangeEMail {
   async updateTags() {
     let request = new EWSUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
-      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
     request.addField("Message", "Categories", this.tags.hasItems ? { t$String: this.tags.contents.map(tag => tag.name) } : null, "item:Categories");
