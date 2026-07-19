@@ -275,5 +275,8 @@ function getOneValue<TValueObject, TValue>(personGeneric: Person, jscontact: JSC
     return null;
   }
   let id = person.propertyFieldIDs[propName] ??= firstID;
+  if (!jscontactEntries[id]) { // our entry was deleted on the server
+    id = person.propertyFieldIDs[propName] = firstID;
+  }
   return getter(jscontactEntries[id]);
 }
