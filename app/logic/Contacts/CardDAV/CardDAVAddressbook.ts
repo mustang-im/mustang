@@ -22,6 +22,8 @@ export class CardDAVAddressbook extends Addressbook {
   addressbookURL: URLString;
   ctag: string | null = null;
   client: DAVClient;
+  /** The OAuth2 access token that `client` authenticates with */
+  protected clientAccessToken: string | null = null;
   protected readonly syncLock = new Lock();
   protected readonly loginRunOnce = new RunOnce();
 
@@ -61,6 +63,9 @@ export class CardDAVAddressbook extends Addressbook {
         }
       }
       assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      if (this.client && (!useOAuth2 || this.clientAccessToken == oAuth2.accessToken)) {
+        return; // already logged in. The client caches the auth headers, so re-create it once the access token changed.
+      }
       let options = {
         serverUrl: this.url,
         authMethod: useOAuth2 ? "Bearer" : "Basic",
@@ -72,12 +77,14 @@ export class CardDAVAddressbook extends Addressbook {
         },
         defaultAccountType: "carddav",
       };
+      this.clientAccessToken = useOAuth2 ? oAuth2.accessToken : null;
       this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
   }
 
   async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
+    await this.login(false);
     let lock = await this.syncLock.lock();
     try {
       return new ArrayColl(await this.client.fetchAddressBooks());
@@ -118,9 +125,7 @@ export class CardDAVAddressbook extends Addressbook {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
-      if (!this.client) {
-        await this.login(false);
-      }
+      await this.login(false);
       let localObjects = this.persons.contents.map(e => ({
         url: e.url,
         etag: e.etag,

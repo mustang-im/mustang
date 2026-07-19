@@ -42,6 +42,7 @@ export class CardDAVPerson extends Person {
   }
 
   async saveToServer() {
+    await this.addressbook.login(false);
     this.id ??= crypto.randomUUID();
     if (this.url) {
       let vCard = getUpdatedVCard(this, parseContact(this.originalVCard));
@@ -87,6 +88,7 @@ export class CardDAVPerson extends Person {
     if (!this.url) {
       return;
     }
+    await this.addressbook.login(false);
     await this.addressbook.client.deleteVCard({
       vCard: this.getDAVObject(),
     });

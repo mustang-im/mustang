@@ -51,6 +51,7 @@ export class CalDAVEvent extends Event {
     await this.prepareSaveToServer(); // creates the online meeting, so its URL must be in the ics
     this.calUID ??= crypto.randomUUID();
     let iCal = getICal(this);
+    await this.calendar.login(false);
     if (this.url) {
       // TODO take `originalICal` and update only the properties we know about
       console.log("updating", this, this.url, "with ICS", iCal);
@@ -93,6 +94,7 @@ export class CalDAVEvent extends Event {
     if (!this.url) {
       return;
     }
+    await this.calendar.login(false);
     await this.calendar.client.deleteCalendarObject({
       calendarObject: this.getDAVObject(),
     });
