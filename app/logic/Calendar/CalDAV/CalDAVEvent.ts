@@ -93,6 +93,13 @@ export class CalDAVEvent extends Event {
 
   async saveToServer() {
     await this.prepareSaveToServer(); // creates the online meeting, so its URL must be in the ics
+    if (this.parentEvent) {
+      // Exceptions are stored in the master's ics file.
+      // `saveLocally()` already attached this event to the master.
+      await this.parentEvent.saveToServer();
+      return;
+    }
+    await this.calendar.login(false);
     this.calUID ??= crypto.randomUUID();
     let iCal = getICal(this);
     await this.calendar.login(false);
@@ -137,6 +144,12 @@ export class CalDAVEvent extends Event {
     console.log("Delete event", this, this.url, {
       calendarObject: this.getDAVObject(),
     });
+    if (this.parentEvent) {
+      // Occurrences are stored in the master's ics file.
+      // `deleteLocally()` already added the exclusion to the master.
+      await this.parentEvent.saveToServer();
+      return;
+    }
     if (!this.url) {
       return;
     }
