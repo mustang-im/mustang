@@ -308,9 +308,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   async moveFolderHere(folder: ActiveSyncFolder) {
     await super.moveFolderHere(folder);
     let request = {
-      ServerId: this.id,
-      ParentId: folder.id,
-      DisplayName: this.name,
+      ServerId: folder.id,
+      ParentId: this.id,
+      DisplayName: folder.name,
     };
     await this.account.queuedRequest("FolderUpdate", request);
     // We're required to sync which should be a no-op at this point.
