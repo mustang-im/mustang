@@ -69,7 +69,9 @@ export class ExchangePermission {
 
 export function getSharedPersons(permissions: ExchangeUser[], thisUser: string): ArrayColl<PersonUID> {
   return new ArrayColl(permissions
-    .filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress.toLowerCase() != thisUser.toLowerCase())
+    // (Null check: Permission entries of users deleted from the directory have only a SID, no email address)
+    .filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress &&
+      permission.UserId.PrimarySmtpAddress.toLowerCase() != thisUser.toLowerCase())
     .map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
 }
 
