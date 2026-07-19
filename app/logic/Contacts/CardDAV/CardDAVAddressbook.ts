@@ -204,7 +204,6 @@ export class CardDAVAddressbook extends Addressbook {
     let newAccounts = new ArrayColl<CardDAVAddressbook>();
     let i = 0;
     for (let newAB of newAddressbooks) {
-      i++;
       let account = newAddressbookForProtocol(this.protocol) as CardDAVAddressbook; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.addressbookURL = sanitize.url(newAB.url);

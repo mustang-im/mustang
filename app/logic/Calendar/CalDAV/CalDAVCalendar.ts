@@ -213,7 +213,6 @@ export class CalDAVCalendar extends Calendar {
     let newAccounts = new ArrayColl<CalDAVCalendar>();
     let i = 0;
     for (let newCal of newCalendars) {
-      i++;
       let account = newCalendarForProtocol(this.protocol) as CalDAVCalendar; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.calendarURL = sanitize.url(newCal.url);
