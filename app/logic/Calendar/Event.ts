@@ -348,6 +348,12 @@ export class Event extends Observable {
       frequency,
       interval,
     };
+    // The UI cannot edit the end of the series, so keep any existing end,
+    // instead of making the series endless
+    if (this.recurrenceRule) {
+      init.seriesEndTime = this.recurrenceRule.seriesEndTime;
+      init.count = this.recurrenceRule.count;
+    }
     if (frequency == Frequency.Weekly) {
       init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
