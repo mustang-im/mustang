@@ -150,6 +150,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       },
     };
     await this.makeSyncRequest(data, async response => {
+      let newMsgsInPage = new ArrayColl<ActiveSyncEMail>();
       let addedOrChanged = ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change));
       for (let item of addedOrChanged) {
         try {
@@ -166,7 +167,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
             email.serverID = serverID;
             email.fromWBXML(item.ApplicationData);
             await email.saveMetadataLocally();
-            newMsgs.add(email);
+            newMsgsInPage.add(email);
           }
         } catch (ex) {
           this.account.errorCallback(ex);
@@ -182,8 +183,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
           this.account.errorCallback(ex);
         }
       }
+      newMsgs.addAll(newMsgsInPage);
+      this.messages.addAll(newMsgsInPage);
     });
-    this.messages.addAll(newMsgs);
     this.account.addPingable(this);
     return newMsgs;
   }
