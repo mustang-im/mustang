@@ -338,20 +338,27 @@ export class EWSFolder extends ExchangeFolder {
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
-      for (let result of results) {
-        let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
-        if (email && !email.downloadComplete) {
+      try {
+        let results = ensureArray(await this.account.callEWS(request));
+        for (let result of results) {
           try {
-            let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-            email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-            await email.parseMIME();
-            await email.saveCompleteMessage();
-            downloadedEmail.add(email);
+            if (result.ResponseClass == "Error") {
+              throw new EWSItemError(result, request);
+            }
+            let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
+            if (email && !email.downloadComplete) {
+              let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+              email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+              await email.parseMIME();
+              await email.saveCompleteMessage();
+              downloadedEmail.add(email);
+            }
           } catch (ex) {
             this.account.errorCallback(ex);
           }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
 
