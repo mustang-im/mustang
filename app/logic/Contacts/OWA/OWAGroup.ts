@@ -15,7 +15,9 @@ export class OWAGroup extends ExchangeGroup {
     this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.description = sanitize.nonemptystring(json.Notes, "");
-    this.participants.replaceAll((json.Members || []).map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
+    this.participants.replaceAll((json.Members || [])
+      .filter(member => sanitize.emailAddress(member.EmailAddress?.EmailAddress, null))
+      .map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
     return this;
   }
 

@@ -23,8 +23,8 @@ export class OWAPerson extends ExchangePerson {
     this.emailAddresses.replaceAll(json.EmailAddresses
       ?.filter(address => !address.RoutingType || address.RoutingType == "SMTP")
       .map(address =>
-        new ContactEntry(sanitize.emailAddress(address.EmailAddress), "work", "mailto")
-      ) || []);
+        new ContactEntry(sanitize.emailAddress(address.EmailAddress, null), "work", "mailto")
+      ).filter(ce => ce.value) || []);
     this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, ...keys]) =>
       keys.map(key => json[key + "Array"]?.[0]?.Value?.Number)
       .filter(Boolean).map(number =>
