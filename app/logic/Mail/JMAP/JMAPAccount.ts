@@ -565,7 +565,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listAddressbooks() {
-    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:contacts"]);
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:contacts"], null);
     if (!primaryID) {
       return;
     }
@@ -587,7 +587,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listCalendars() {
-    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:calendars"]);
+    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:calendars"], null);
     if (!primaryID) {
       return;
     }
