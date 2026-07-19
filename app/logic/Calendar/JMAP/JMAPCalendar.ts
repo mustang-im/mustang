@@ -100,11 +100,11 @@ export class JMAPCalendar extends Calendar {
             accountId: this.account.accountID,
             filter: {
               inCalendar: this.jmapID,
+              after: after.toISOString().substring(0, 19) + "Z",
             },
             sort: [
               { property: "start" }
             ],
-            after: after.toISOString().substring(0, 19),
             position: start,
             limit: limit,
           },
