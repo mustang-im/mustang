@@ -26,7 +26,7 @@ export class JSContact {
       sanitize.nonemptystring(e.number),
       null, JSContact.fromPhoneFeatureToProtocol(e.features)));
     JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
-      sanitize.nonemptystring(e.uri, sanitize.nonemptystring(e.user)),
+      sanitize.nonemptystring(e.uri ?? e.user),
       null, e.service));
     JSContact.toContactEntries(person.urls, jscontact.links, e => {
       let url = sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
@@ -58,8 +58,8 @@ export class JSContact {
         : { [purpose]: true };
   }
 
-  protected static fromPhoneFeatureToProtocol(features: TPhoneFeature): string | null {
-    let first = Object.keys(features)[0];
+  protected static fromPhoneFeatureToProtocol(features: TPhoneFeature | undefined): string | null {
+    let first = Object.keys(features ?? {})[0];
     return first == "voice" ? "tel" : first;
   }
 
