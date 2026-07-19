@@ -154,7 +154,7 @@ export class CardDAVAddressbook extends Addressbook {
       for (let vCardEntry of deleted) {
         let existing = this.getPersonByURL(vCardEntry.url);
         if (existing) {
-          await existing.deleteIt();
+          await existing.deleteLocally();
         }
       }
 
