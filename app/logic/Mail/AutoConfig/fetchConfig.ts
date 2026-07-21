@@ -7,6 +7,7 @@ import { getBaseDomainFromHost } from "../../util/netUtil";
 import { URLPart } from "../../../frontend/Util/util";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 
 /** Implements the Autoconfig protocol
  * <https://www.ietf.org/archive/id/draft-ietf-mailmaint-autoconfig-04.html> */
@@ -79,28 +80,39 @@ async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayCo
 /**
  * Queries the DNS MX for the domain
  *
- * @param domain {String}
- * @returns hostname of the first MX server
- */
-async function getMX_node(domain: string, abort: AbortController): Promise<string> {
-  let results = []; // await dns.resolveMx(domain);
-  let result = results[0];
-  assert(result, `No MX found for domain ${domain}`);
-  return sanitize.hostname(result.exchange);
-}
-
-/**
- * Queries the DNS MX for the domain
- *
- * TODO Use DoH?
- * TODO Cache result
- * TODO Query both web service and local DNS, and
+ * Queries both web service and local DNS, and
  * use the result only when they match.
  *
  * @param domain {String}
  * @returns hostname of the first MX server
  */
 export async function getMX(domain: string, abort: AbortController): Promise<string> {
+  let promise = new PromiseAllDone();
+
+  assert(mx, `No MX found for domain ${domain}`);
+  return sanitize.hostname(mx);
+}
+
+/**
+ * Queries the DNS MX for the domain, using the local system DNS resolver
+ *
+ * @param domain {String}
+ * @returns hostname of the first MX server
+ */
+async function getMXNode(domain: string, abort: AbortController): Promise<string> {
+  let results = dns.resolveMx(domain);
+  let result = results[0];
+  assert(result, `No MX found for domain ${domain}`);
+  return sanitize.hostname(result.exchange);
+}
+
+/**
+ * Queries the DNS MX for the domain, using DoH DNS over HTTPS
+ *
+ * @param domain {String}
+ * @returns hostname of the first MX server
+ */
+export async function getMXDoH(domain: string, abort: AbortController): Promise<string> {
   // `curl -H "Accept: application/dns-json" "https://1.1.1.1/dns-query?name=knipp.de&type=MX" | json_pp`
   let params = new URLSearchParams();
   params.set("name", domain);
