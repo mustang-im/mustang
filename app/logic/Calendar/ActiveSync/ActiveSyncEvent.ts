@@ -291,6 +291,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
         [exceptionField]: toCompact(event.recurrenceStartTime, this.calendar.account.protocolVersion == "16.1" && this.allDay),
       },
     }))));
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
