@@ -66,6 +66,17 @@ export class EWSPerson extends ExchangePerson {
     this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses?.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
     this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses?.Entry).map(entry =>
       new ContactEntry(EWSPerson.ewsToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
+    for (let property of ensureArray(xmljs.ExtendedProperty).filter(property => ["BusinessInstructions", "HomeInstructions", "OtherInstructions"].includes(property.ExtendedFieldURI.PropertyName) && property.Value)) {
+      let key = property.ExtendedFieldURI.PropertyName.replace("Instructions", "");
+      let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
+      if (!entry) {
+        entry = new ContactEntry(new StreetAddress().toString(), PhysicalAddressPurposes[key]);
+        this.streetAddresses.add(entry);
+      }
+      let streetAddress = new StreetAddress(entry.value);
+      streetAddress.instructions = sanitize.nonemptystring(property.Value);
+      entry.value = streetAddress.toString();
+    }
     this.notes = sanitize.nonemptystring(xmljs.Body?.Value, "");
     this.company = sanitize.nonemptystring(xmljs.CompanyName, "");
     this.department = sanitize.nonemptystring(xmljs.Department, "");
@@ -85,6 +96,20 @@ export class EWSPerson extends ExchangePerson {
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     // `null`, not `""`, so that empty notes result in a field deletion, not an invalid empty <t:Body/>
     request.addField("Contact", "Body", this.notes ? { BodyType: "Text", _TextContent_: this.notes } : null, "item:Body");
+    // ExtendedProperty comes next in the schema.
+    for (let key in PhysicalAddressPurposes) {
+      let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
+      let streetAddress = new StreetAddress(entry?.value);
+      let value = streetAddress.instructions || "";
+      request.addField("Contact", "ExtendedProperty", {
+        t$ExtendedFieldURI: {
+          DistinguishedPropertySetId: "PublicStrings",
+          PropertyName: key + "Instructions",
+          PropertyType: "String",
+        },
+        t$Value: value,
+      });
+    }
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
     request.addField("Contact", "CompanyName", this.company, "contacts:CompanyName");

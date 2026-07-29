@@ -182,6 +182,19 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
               }, {
                 FieldURI: "item:Body", // contact:Notes doesn't work
               }],
+              t$ExtendedFieldURI: [{
+                DistinguishedPropertySetId: "PublicStrings",
+                PropertyName: "BusinessInstructions",
+                PropertyType: "String",
+              }, {
+                DistinguishedPropertySetId: "PublicStrings",
+                PropertyName: "HomeInstructions",
+                PropertyType: "String",
+              }, {
+                DistinguishedPropertySetId: "PublicStrings",
+                PropertyName: "OtherInstructions",
+                PropertyType: "String",
+              }],
             },
           },
           m$ItemIds: {

@@ -21,12 +21,14 @@ export class EWSUpdateItemRequest {
     return this.m$UpdateItem.m$ItemChanges.t$ItemChange;
   }
 
-  addField(type: string, key: string, value: any, FieldURI: string, FieldIndex?: string) {
+  addField(type: string, key: string, value: any, FieldURI?: string, FieldIndex?: string) {
     let field = {} as any;
     if (FieldIndex) {
       field.t$IndexedFieldURI = { FieldURI, FieldIndex };
-    } else {
+    } else if (FieldURI) {
       field.t$FieldURI = { FieldURI };
+    } else {
+      field.t$ExtendedFieldURI = value.t$ExtendedFieldURI;
     }
     if (value == null) {
       this.itemChange.t$Updates.t$DeleteItemField.unshift(field);

@@ -19,7 +19,7 @@ export class EWSCreateItemRequest {
           array.push(value.t$Entry);
         }
       } else {
-        item["t$" + key] = value;
+        (item["t$" + key] ??= []).push(value);
       }
     }
   }
