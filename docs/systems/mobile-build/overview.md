@@ -12,27 +12,34 @@ The mobile build system consists of the following components:
 
 ## How does it work?
 
-1. Build the Node.js Mobile binary using the Node.js Mobile toolkit.
-2. The binary is then placed in the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
+1. Build the Node.js Mobile library using the Node.js Mobile toolkit.
+2. The library is then placed in the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
 3. Build the HTML, CSS, JS with Vite as you would for the desktop app.
 4. Rebuild the Node.js Native Modules for mobile use using prebuild-for-nodejs-mobile. The commands in this project go directly into the `node_modules/[package_name]` directory.
 5. Capacitor packages the app for mobile distribution.
 6. When you start the app, Capacitor provides the frontend runtime and starts the Node.js Mobile runtime.
 
-### Android
+### Building for Android
 
 1. Find compatible version of Android SDK and NDK.
-2. Build the Node.js Mobile binary for Android using the Node.js Mobile toolkit and compatible versions of the SDK and NDK.
-3. Package the binary into the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
+2. Build the Node.js Mobile library for Android using the Node.js Mobile toolkit and compatible versions of the SDK and NDK.
+3. Package the library into the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
 4. Build the HTML, CSS, JS with Vite as you would for the desktop app.
 5. Rebuild the Node.js Native Modules for mobile use using prebuild-for-nodejs-mobile.
 6. Copy the `.node` files to `mobile/android/app/src/main/assets/public/nodejs/node_modules/[package_name]`.
 
-### iOS
+### Starting the Android App
+
+1. Capacitor starts the Webview and loads the files specified in the `webDir` property of the `capacitor.config.json` file.
+2. Capacitor starts loading the Capacitor plugins.
+3. After plugins are loaded, the Capacitor-NodeJS plugin copies the `backend` files to a directory outside of the APK.
+4. Capacitor-NodeJS plugin starts the Node.js Mobile from the new location.
+
+### Building for iOS
 
 1. Find compatible version of Xcode.
-2. Build the Node.js Mobile binary for iOS using the Node.js Mobile toolkit and compatible versions of Xcode.
-3. Package the binary into the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
+2. Build the Node.js Mobile library for iOS using the Node.js Mobile toolkit and compatible versions of Xcode.
+3. Package the library into the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
 4. Build the HTML, CSS, JS with Vite as you would for the desktop app.
 5. Rebuild the Node.js Native Modules for mobile use using prebuild-for-nodejs-mobile.
 6. Copy the `.node` files to `mobile/ios/app/src/main/assets/public/nodejs/node_modules/[package_name]`.
@@ -46,10 +53,20 @@ The mobile build system consists of the following components:
 14. Fills in the `Info.plist` from the `mobile/ios/build/plisttemplate.xml` template.
 15. Generates a file path mapping JSON file because the path before build is in the `node_modules` directory and as a `.node` file. However, iOS requires a `.framework` file and the `.node` is wrapped in a `.framework` file. Furthermore, Node.js Mobile expects a `.node` file and `.framework` files are placed in the `Frameworks` directory instead of `public/` directory of the iOS app bundle.
 
+### Starting the iOS App
+
+1. Capacitor starts the Webview and loads the files specified in the `webDir` property of the `capacitor.config.json` file.
+2. `mobile/ios/App/App/NodeRunner.swift` runs and checks if Node.js Mobile is loaded yet.
+3. Capacitor starts loading the Capacitor plugins. This is placed in this order because of the timing.
+4. `mobile/ios/App/App/NodeRunner.swift` checks if `override-dlopen-paths-preload.js` is present.
+5. Starts Node.js Mobile with `override-dlopen-paths-preload.js` as the preload script.
+6. The preload script is executed before the main backend script starts.
+7. The preload script overrides the `dlopen` paths to load from paths from the `override-dlopen-paths-data.json` file. `override-dlopen-paths-data.json` is generated JSON file that maps `.node` files to `.framework` files. This is because of the code signing requirements and packaging requirements to upload to TestFlight otherwise it works locally without mapping and with `.node` files directly.
+
 ## Dependencies
 
 ### [Node.js Mobile](https://github.com/nodejs-mobile/nodejs-mobile)
-The toolkit for building Node.js binaries for mobile use.
+The toolkit for building Node.js libraries for mobile use.
 
 ### [Capacitor-NodeJS](https://github.com/hampoelz/Capacitor-NodeJS)
 A capacitor plugin that provides a wrapper around Node.js Mobile for use with Capacitor.js.
@@ -58,10 +75,11 @@ A capacitor plugin that provides a wrapper around Node.js Mobile for use with Ca
 A tool for rebuilding Node.js Native Modules for mobile use.
 
 ### Android SDK, NDK and CMake
-The Android SDK, NDK and CMake are required for building Node.js Mobile binaries and the Node Native modules for Android. Android Studio makes it easier to debug.
+
+The Android SDK, NDK and CMake are required for building the Node.js Mobile library and the Node Native modules for Android. Android Studio makes it easier to debug.
 
 ### Xcode
-The Xcode is required for building Node.js Mobile binaries and the Node Native modules for iOS.
+The Xcode is required for building the Node.js Mobile library and the Node Native modules for iOS.
 
 ### CocoaPods
 
