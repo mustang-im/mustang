@@ -15,7 +15,7 @@ This plugin is a wrapper around Node.js Mobile that starts Node.js Mobile librar
 
 #### Why did we fork this?
 
-- It includes Node.js Mobile v18 which has reached its end-of-life. We added the feature to use any version of Node.js Mobile based on setting the `androidLibNode` property in `capacitor.config.json` by just adding the URL of the shared library or a local path. `architecture` was also added to remove the files of the unused architecture.
+- Upstream includes Node.js Mobile v18 which has reached its end-of-life. We added the feature to use any version of Node.js Mobile based on setting the `androidLibNode` property in `capacitor.config.json` by just adding the URL of the shared library or a local path. `architecture` was also added to remove the files of the unused architecture.
 
 ## How does it work?
 
