@@ -74,12 +74,17 @@ A capacitor plugin that provides a wrapper around Node.js Mobile for use with Ca
 ### [prebuild-for-nodejs-mobile](https://github.com/nodejs-mobile/prebuild-for-nodejs-mobile)
 A tool for rebuilding Node.js Native Modules for mobile use.
 
-### Android SDK, NDK and CMake
+### Android Studio, SDK, NDK and CMake
 
-The Android SDK, NDK and CMake are required for building the Node.js Mobile library and the Node Native modules for Android. Android Studio makes it easier to debug.
+The Android SDK, NDK and CMake are required for building the Node.js Mobile library and the Node Native modules for Android. Android Studio makes it easier to debug and it generates the code signing key.
 
 ### Xcode
-The Xcode is required for building the Node.js Mobile library and the Node Native modules for iOS.
+
+Xcode is required for building the Node.js Mobile library and the Node Native modules for iOS. Xcode is also used for creating the code signing certificates.
+
+### [TestFlight](https://developer.apple.com/testflight/)
+
+Submitting builds to TestFlight is the only way to test the app on real iOS devices.
 
 ### CocoaPods
 
@@ -95,9 +100,42 @@ CocoaPods is used for managing the native dependencies of the Capacitor plugins.
 3. Go to `SDK Platforms` for Android SDKs.
 4. Go to `SDK Tools` and scroll down for Android NDKs and CMake.
 
+### Creating the code signing key for Android
+
+1. Open Android Studio with a project opened.
+2. In the menu bar, click Build -> Generate Signed Bundle/APK.
+3. In the Generate Signed Bundle or APK dialog, select Android App Bundle or APK and click Next.
+4. Below the field for Key store path, click Create new.
+5. On the New Key Store window, provide the following information for your keystore and key
+6. Keystore
+  6.1 Key store path: Select the location where your keystore should be created. Also, a file name should be added to the end of the location path with the `.jks extension.
+  6.2 Password: Create and confirm a secure password for your keystore.
+7. Key
+  7.1 Alias: Enter an identifying name for your key.
+  7.2 Password: Create and confirm a secure password for your key. This should be the same as your keystore password. (Please refer to the known issue for more information)
+  7.3 Validity (years): Set the length of time in years that your key will be valid. Your key should be valid for at least 25 years, so you can sign app updates with the same key through the lifespan of your app.
+  7.4 Certificate: Enter some information about yourself for your certificate. This information is not displayed in your app, but is included in your certificate as part of the APK.
+8. Once you complete the form, click OK.
+
+See [Android Studio documentation](https://developer.android.com/studio/publish/app-signing#generate-key) for any updates to the process.
+
+### Configuring CI for Android
+
+1. Locate the `.jks` file
+2. Do `base64 -i <file> -o _` and get the value
+3. Go to the repository
+4. Go to the setting tab
+5. Go Secrets and variables > Actions
+6. Go to Repository secrets
+7. Click New repository secret
+8. Create a secret with the value from step 2. and the name `KEYSTORE`
+9. Create a secret with `KEYSTORE_PASS` with the keystore password
+10. Create a secret with `KEYSTORE_ALIAS` with the keystore alias
+11. Create a secret with `KEYSTORE_ALIAS_PASS` with the keystore alias password
+
 ### Debugging Android startup crashes
 
-#### Node.js Mobile binary incompatible with Android SDK and NDK
+#### Node.js Mobile library incompatible with Android SDK and NDK
 
 1. Go to the Node.js Mobile repository and find the version you are using.
 2. Check which version of the Android SDK and NDK it was build with.
@@ -109,7 +147,7 @@ CocoaPods is used for managing the native dependencies of the Capacitor plugins.
 2. When you do `yarn prebuild-for-nodejs-mobile android-arm64 --sdk28`, make sure the SDK version matches the Node.js Mobile version.
 3. Verify the SDK version is supported by Capacitor also.
 
-### Debug for Android
+### Debug build for Android
 
 1. Go to `app/build`.
 2. Run `./mustang-brand.sh`. Because there's no assets for `@capacitor/assets` in `mobile/` not even default assets for it to generate icons and splash screens and it will throw an error preventing the app from building. `@capacitor/assets` generates icons and splash screens from `mobile/assets`.
@@ -129,6 +167,72 @@ CocoaPods is used for managing the native dependencies of the Capacitor plugins.
 16. Check if there's `/lib/[arch]/libnode.so` in the APK.
 17. Check that in `/assets/public/` all frontend, backend and Node Native module files are present.
 18. On the Alignment column, check that there no files with alignment errors.
+
+We don't use `yarn cap build android` because it builds an unsigned APK then signs it. However, Android requires the libraries to be signed individually so that's why we build the APK using Android Studio or `./gradlew`.
+
+### Configuring the Xcode project for TestFlight submission
+
+1. Open Xcode.
+2. Set `App Uses Non-Exempt Encryption` to `NO`.  This prevents the app from being withheld for review. We don't use any custom encryption hence we can set this to `NO`.
+  2.1 On the left side, select the Folder Icon to see the project files.
+  2.2 Select the `App`.
+  2.3 Inside the right side, on the left navigation column, select TARGETS -> `App`. If there's no column, click the square icon with a vertical rectangle inside to open the navigation column. The icon is located on the top left of the right side.
+  2.4 Go to the `Info` tab.
+  2.5 On any property click to reveal a dropdown.
+  2.6 Select `App Uses Non-Exempt Encryption` and set its value to `NO`.
+
+### Creating the code signing certificates and provisioning profiles for iOS
+
+1. Open Xcode.
+2. Creating a code signing certificate. See [Create a new code signing identity](https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Create-a-new-code-signing-identity) for any changes to the steps.
+  2.1 Choose Xcode -> Settings.
+  2.2 In the toolbar, click Accounts.
+  2.3 Select your Apple Account from the list of accounts.
+  2.4 Select the team to create the code signing identity for from the list of your Apple Account teams.
+  2.5 Click Manage Certificates.
+  2.6 In the lower-left corner of the signing certificates sheet, click the Add button (+) and choose the certificate type from the pop-up menu.
+  2.7 Click Done.
+3. Exporting the code signing certificate. See [Export a code signing identity](https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Export-your-signing-identity-to-share-with-a-team-member) for any changes to the steps.
+  3.1 Choose Xcode -> Settings.
+  3.2 In the toolbar, click Accounts.
+  3.3 Select your Apple Account from the list of accounts.
+  3.4 Select the team from the list of your Apple Account teams.
+  3.5 Click Manage Certificates.
+  3.6 In the signing certificates sheet, Control-click the certificate corresponding to the signing identity that you want to export and choose Export Certificate from the pop-up menu.
+  3.7 In the sheet that appears, choose the location to save the PKCS#12 file.
+  3.8 Enter a file name, and a password to protect the identity's private key.
+  3.9 Click Save.
+4. Create and download the provisioning profile for the app. The provisioning profile provides the identity for submitting to TestFlight. See [Create an App Store Connect provisioning profile](https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile) for any changes to the steps.
+  4.1 Go to the [App Store Connect](https://appstoreconnect.apple.com/login) website and log in.
+  4.2 In Certificates, Identifiers & Profiles, click Profiles in the sidebar, then click the add button (+) on the top left.
+  4.3 Under Distribution, select the App Store Connect profile, then click Continue.
+  4.4 Choose the App ID you used for development (the App ID that matches your bundle ID) from the App ID pop-up menu, then click Continue.
+  4.5 Select your distribution certificate, then click Continue. An App Store provisioning profile contains a single distribution certificate.
+  4.6 Enter a profile name, then click Generate.
+  4.7 Click Download.
+
+### Configuring CI for iOS
+
+1. Go to the repository
+2. Go to the setting tab
+3. Go Secrets and variables -> Actions
+4. Go to Repository secrets
+5. Click New repository secret
+6. Configuring the code signing certificate on CI
+  6.1 Do `base64 -i <file.p12> -o _` for the code signing certificate and get the value
+  6.2 Create a secret with the value from step 6.1 and the name `IOS_CERTIFICATE`
+  6.3 Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created
+  6.4 Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
+7. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
+8. Configuring the App Store Connect API key
+  8.1 Go to App Store Connect > Users and Access > Keys https://appstoreconnect.apple.com/
+  8.2 Create a new API key with "App Manager" or "Developer" role
+  8.3 Download the .p8 key file
+  8.4 Create a secret with the value from step 8.3 and the name `IOS_APPSTORE_API_KEY`
+  8.5 Create a secret with the key ID from step 8.2 and the name `IOS_APPSTORE_API_KEY_ID`
+  8.6 Create a secret with the issuer ID from step 8.1 and the name `IOS_APPSTORE_API_ISSUER`
+
+For CI build errors always check the [Apple Developer Dashboard](https://developer.apple.com/login/) for any agreements to accept before debugging CI builds.
 
 ### Debugging iOS startup crashes
 
