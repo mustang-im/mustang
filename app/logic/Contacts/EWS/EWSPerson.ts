@@ -67,7 +67,7 @@ export class EWSPerson extends ExchangePerson {
     this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses?.Entry).map(entry =>
       new ContactEntry(EWSPerson.ewsToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
     for (let property of ensureArray(xmljs.ExtendedProperty).filter(property => ["BusinessInstructions", "HomeInstructions", "OtherInstructions"].includes(property.ExtendedFieldURI.PropertyName) && property.Value)) {
-      let key = property.ExtendedFieldURI.PropertyName.replace("Instructions", "");
+      let key: "Business" | "Home" | "Other" = property.ExtendedFieldURI.PropertyName.replace("Instructions", "");
       let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
       if (!entry) {
         entry = new ContactEntry(new StreetAddress().toString(), PhysicalAddressPurposes[key]);
