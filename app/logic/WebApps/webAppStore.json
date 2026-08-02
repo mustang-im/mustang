@@ -167,14 +167,14 @@
         "recommended"
       ],
       "name": {
-        "en": "Parula Word"
+        "en": "Parula Paper"
       },
       "description": {
         "en": "Open word processor with ODT and Word compatibility, real-time collaboration and change merges",
         "de": "Offene Textverarbeitung mit ODT- und Word-Kompatibilität, Zusammenarbeit in Echtzeit, und Zusammenführen von Änderungen"
       },
-      "homepage": "https://www.parula.app/features/",
-      "start": "https://office.parula.app/word/",
+      "homepage": "https://docs.parula.app/paper/",
+      "start": "https://office.parula.app/paper/",
       "icon": "https://parula.beonex.com/assets/images/parula_white.png"
     },
     {
@@ -190,7 +190,7 @@
         "en": "Open word processor with ODT and Word compatibility, real-time collaboration and change merges",
         "de": "Offene Textverarbeitung mit ODT- und Word-Kompatibilität, Zusammenarbeit in Echtzeit, und Zusammenführen von Änderungen"
       },
-      "homepage": "https://www.parula.app/features/",
+      "homepage": "https://docs.parula.app/sheets/",
       "start": "https://office.parula.app/sheets/",
       "icon": "https://parula.beonex.com/assets/images/parula_white.png"
     },
