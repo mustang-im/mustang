@@ -34,7 +34,9 @@ jobs:
       with:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node-version: 24.x
-    - run: sudo apt-get -y install libarchive-tools
+    - run: |
+        sudo apt-get update
+        sudo apt-get -y install libarchive-tools
 
     - run: cd app/build; bash fix-installer-filenames.sh
     - run: cd app/build; sh mustang-brand.sh
