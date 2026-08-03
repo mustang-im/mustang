@@ -72,7 +72,7 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
     return;
   }
   assert(emailAddress, `${config.name}: Need email address`);
-  config.realname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
+  config.realname ??= appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
   config.emailAddress = emailAddress;
   config.password = password;
   config.username = config.username ? replaceVar(config.username, emailAddress) : emailAddress;

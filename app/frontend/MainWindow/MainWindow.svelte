@@ -55,6 +55,7 @@
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
+  import { predefinedConfig } from "../../logic/Mail/AutoConfig/predefinedConfig";
   // #else
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
@@ -110,7 +111,7 @@
   async function startup() {
     await getStartObjects();
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
-      setup();
+      await setup();
     } else {
       await loginOnStartup(console.error);
       // Setting $selectedApp late would overwrite commandline/URL handlers
@@ -119,9 +120,14 @@
     }
   }
 
-  function setup() {
+  async function setup() {
     // #if [!WEBMAIL]
-    goTo("/setup/initial", {});
+    let account = await predefinedConfig();
+    if (account) {
+      goTo("/setup/predefined", { account });
+    } else {
+      goTo("/setup/initial", {});
+    }
     // #endif
   }
 

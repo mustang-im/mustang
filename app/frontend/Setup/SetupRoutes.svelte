@@ -1,6 +1,9 @@
 <Route path="initial">
   <InitialSetup />
 </Route>
+<Route path="predefined">
+  <SetupPredefinedMail account={params.account} />
+</Route>
 <Route path="mail">
   <SetupMail />
 </Route>
@@ -27,10 +30,15 @@
   import InitialSetup from "./Import/InitialSetup.svelte";
   import SetupAnyAccountTypeDialog from "./SetupAnyAccountTypeDialog.svelte";
   import SetupMail from "./Mail/SetupMail.svelte";
+  import SetupPredefinedMail from "./Mail/SetupPredefinedMail.svelte";
   import SetupChat from "./Chat/SetupChat.svelte";
   import SetupContacts from "./Contacts/SetupContacts.svelte";
   import SetupCalendar from "./Calendar/SetupCalendar.svelte";
   import SetupMeetAccount from "./Meet/SetupMeetAccount.svelte";
   import SetupFiles from "./Files/SetupFiles.svelte";
-  import { Route } from "svelte-navigator";
+  import { Route, useLocation } from "svelte-navigator";
+  import { getParams } from "../AppsBar/selectedApp";
+
+  $: location = useLocation();
+  $: params = getParams($location.state);
 </script>
