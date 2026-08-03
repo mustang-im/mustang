@@ -61,3 +61,4 @@ jobs:
         name: Installers Mac
         path: |
           desktop/dist/*.dmg
+          desktop/dist/*.pkg

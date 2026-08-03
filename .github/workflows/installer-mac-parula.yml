@@ -63,3 +63,4 @@ jobs:
         name: Parula Installers Mac
         path: |
           desktop/dist/*.dmg
+          desktop/dist/*.pkg
