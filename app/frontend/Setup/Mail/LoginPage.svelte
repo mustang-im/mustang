@@ -57,7 +57,7 @@
     margin-inline-end: 24px;
   }
   .password-row :global(input) {
-    min-width: 30em;
+    min-width: 20em;
   }
   .spacer1,
   .spacer2 {

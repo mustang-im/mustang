@@ -13,6 +13,11 @@ export class EWSError extends Error {
   readonly responseText: string | undefined;
   constructor(aResponse: any, aRequest: JsonRequest) {
     let message = aResponse.statusText;
+    if (!message) {
+      if (aResponse.status == 401 || aResponse.status == 440) {
+        message = gt`Login error`;
+      }
+    }
     let type = 'HTTP ' + aResponse.status;
     let XML;
     let error;

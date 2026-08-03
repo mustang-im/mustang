@@ -41,6 +41,7 @@
     onClose();
   }
   function onCheckFailed(ex: Error) {
+    isLoginStep = true;
     error = ex;
   }
   function onClose() {
