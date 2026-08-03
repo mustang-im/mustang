@@ -696,7 +696,7 @@ let filesDirCreated = false;
  *
  * TODO Change it
  * Linux: /home/USER/.mustang/
- * Windows: C:\Users\USER\AppData\Mustang\
+ * Windows: C:\Users\USER\AppData\Roaming\Mustang\
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
