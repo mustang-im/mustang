@@ -23,6 +23,7 @@ export class SMIMESend {
   static async encryptAndSign(mail: EMail): Promise<EMail> {
     let privateKey = getMyPrivateKey(mail.identity, SMIMEPrivateKey);
     assert(privateKey, gt`Please first set up S/MIME encryption for yourself, in Settings | Mail | Identity | Encryption`);
+    assert(privateKey.certificate, gt`Your S/MIME key does not have a certificate yet. Please add it, in Settings | Mail | Identity | Encryption`);
     let rawKey = await privateKey.decryptKey();
     let result = SendEncrypted.cloneEMail(mail);
     let mime = await CreateMIME.getMIME(mail);
