@@ -47,7 +47,7 @@
   import { selectedAccount } from "../Window/selected";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { appGlobal } from "../../../logic/app";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { goTo, mustangApps } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../Util/util";
   import CategoryBarM from "./CategoryBarM.svelte";
   import RowButton from "./RowButton.svelte";
@@ -60,7 +60,7 @@
 
   $: subCategories = category
     ? category.subCategories
-    : settingsCategories.filterObservable(cat => cat.isMain);
+    : settingsCategories.filterObservable(cat => cat.isMain && (!cat.forApp || mustangApps.includes(cat.forApp)));
 
   function goToCategory(category: SettingsCategory) {
     goTo(URLPart`/settings/category/${category.id}`, { category });

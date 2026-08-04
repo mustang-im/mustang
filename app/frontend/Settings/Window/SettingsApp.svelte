@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import { settingsCategories } from "../SettingsCategory";
-  import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
+  import { globalSearchTerm, mustangApps, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import { openSettingsCategory } from "./CategoriesUtils";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
@@ -33,7 +33,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
-  let categories = settingsCategories;
+  let categories = settingsCategories.filterObservable(cat => !cat.forApp || mustangApps.includes(cat.forApp));
 
   $: onSearch($globalSearchTerm)
   function onSearch(searchTerm: string) {
