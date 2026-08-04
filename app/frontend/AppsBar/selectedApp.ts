@@ -11,6 +11,8 @@ export const selectedApp: Writable<MustangApp> = writable(null);
 export const sidebarApp: Writable<MustangApp> = writable(null);
 export const mustangApps = new ArrayColl<MustangApp>;
 
+export const showDemoToggle: Writable<boolean> = writable(true);
+
 /** Search bar in the window title, applies to all apps */
 export const globalSearchTerm: Writable<string> = writable(null);
 
@@ -66,10 +68,10 @@ export function bringAppToFront() {
  * So, store the object here, generate an ID for it, and then store the ID on the history stack. */
 const historyParams = new MapColl<number, any>();
 let lastID = 1;
-export type HistoryIDObj = { id: number };
+type HistoryIDObj = { id: number };
 
 /** @returns ID. Put this as `state` on the history stack. */
-export function addParams(params: PageParams): HistoryIDObj {
+function addParams(params: PageParams): HistoryIDObj {
   let id = lastID++;
   historyParams.set(id, params);
   return { id };

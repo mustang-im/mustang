@@ -63,7 +63,7 @@
   import { notifications } from "./Notification";
   import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { loadMustangApps } from "../AppsBar/loadMustangApps";
+  import { loadMustangApps, disableAppsBasedOnFeaturesXML } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { categoriesLoaded } from "../Settings/SettingsCategories";
@@ -106,6 +106,7 @@
     // #endif
     await startup();
     changeTheme($themeSetting.value);
+    await disableAppsBasedOnFeaturesXML();
   }
 
   async function startup() {

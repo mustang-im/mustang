@@ -29,12 +29,6 @@
    * Note: Has to be after `openMeet()`, so that sets the correct state first */
   $: meetMustangApp.showSidebar = $meetings.hasItems && $selectedApp != meetMustangApp && !window.location.pathname.startsWith("/meet");
 
-  // HACK to use Phone until we have Meet officially enabled
-  $: meetAccounts = appGlobal.meetAccounts;
-  $: if ($meetAccounts.find(acc => acc instanceof PhoneAccount) && !$mustangApps.contains(meetMustangApp)) {
-    mustangApps.splice(2, 0, meetMustangApp);
-  }
-
   async function onMeetingURL(event: Event, url: string) {
     let urlParsed = new URL(url);
     let acc = appGlobal.meetAccounts.find(acc => acc.isMeetingURL(urlParsed));
