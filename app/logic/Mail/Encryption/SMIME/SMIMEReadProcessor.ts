@@ -2,7 +2,7 @@ import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { DigestAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo } from "./SMIMEASN1";
+import { DigestAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt } from "./SMIMERSAES";
 import { parseMIMEDirectSubparts } from "../MIME";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -35,7 +35,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
           for (let privateKey of identity.encryptionPrivateKeys) {
             if (privateKey instanceof SMIMEPrivateKey) {
               let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
-              let subject = cert.tbsCertificate.subject;
+              let issuer = cert.tbsCertificate.issuer;
               for (let recipientInfo of envelopedData.content.recipientInfos) {
                 if (recipientInfo.type != "ktri" ||
                     recipientInfo.value.keyEncryptionAlgorithm.algorithm != "rsaEncryption" ||
@@ -45,10 +45,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
                 }
                 let rid = recipientInfo.value.rid.value;
                 if (rid.serialNumber != cert.tbsCertificate.serialNumber ||
-                    rid.issuer.length != subject.length) {
-                  continue;
-                }
-                if (!rid.issuer.every((attr, i) => attr.type == subject[i].type && attr.value.value == subject[i].value.value)) {
+                    !sameName(rid.issuer, issuer)) {
                   continue;
                 }
                 let rawKey = await privateKey.decryptKey();
@@ -125,4 +122,10 @@ export class SMIMEReadProcessor extends EMailProcessor {
       }
     }
   }
+}
+
+/** Compares two X.501 names, e.g. certificate issuer and subject */
+function sameName(a: TBSCertificate["issuer"], b: TBSCertificate["issuer"]): boolean {
+  return a.length == b.length &&
+    a.every((attr, i) => attr.type == b[i].type && attr.value.value == b[i].value.value);
 }
