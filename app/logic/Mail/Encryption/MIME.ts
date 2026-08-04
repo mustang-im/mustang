@@ -35,7 +35,6 @@ export function parseHeaderParameters(headerValue: string): Record<string, strin
     value = value.replace(/\r?\n[ \t]*/g, ""); // Remove newlines and indention (entirely, without space)
     params[name] = value;
   }
-  console.log("header params", params)
   return params;
 }
 
