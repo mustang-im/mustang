@@ -76,13 +76,21 @@ export class SMIMEReadProcessor extends EMailProcessor {
           console.log("signed data has no certificate and/or signature");
           return;
         }
+        let signerInfo = signedData.content.signerInfos[0];
         let cert = signedData.content.certificates[0];
+        if (signerInfo.sid?.type == "issuerAndSerialNumber") {
+          let sid = signerInfo.sid.value;
+          // Fall back to the first certificate, for messages that we signed
+          // before, when the sid held the subject instead of the issuer.
+          cert = signedData.content.certificates.find(cert =>
+            cert.tbsCertificate.serialNumber == sid.serialNumber &&
+            sameName(sid.issuer, cert.tbsCertificate.issuer)) ?? cert;
+        }
         let publicKey = cert.tbsCertificate.publicKey;
         if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
           console.log("certificate does not contain an RSA public key");
           return;
         }
-        let signerInfo = signedData.content.signerInfos[0];
         if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption") {
           console.log("signature was not signed with RSA");
           return;
