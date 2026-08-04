@@ -95,7 +95,7 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
 export function addPublicKeyToPersonUID(uid: PersonUID, key: PublicKey) {
   let person = uid.createPerson(appGlobal.collectedAddressbook);
   assert(person, "Need person");
-  if (person.encryptionPublicKeys.find(key => key.id == key.id)) {
+  if (person.encryptionPublicKeys.find(existing => existing.id == key.id)) {
     return;
   }
   person.encryptionPublicKeys.add(key);
