@@ -54,7 +54,8 @@ export class SMIMEPublicKey extends PublicKey {
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
     try {
       let san = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "subjectAlternativeName");
-      this.name = SubjectAlternativeName.decode(san.extnValue)[0].value;
+      // Throws if there is none, and the catch falls back to the subject
+      this.name = SubjectAlternativeName.decode(san.extnValue).find(entry => entry.type == "rfc822Name").value;
     } catch (ex) {
       let email = cert.tbsCertificate.subject.find(attr => attr.type == "E");
       if (email) {
