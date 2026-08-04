@@ -2,7 +2,7 @@ import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { DigestAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, type TBSCertificate } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt } from "./SMIMERSAES";
 import { parseMIMEDirectSubpartsBytes } from "../MIME";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -97,7 +97,12 @@ export class SMIMEReadProcessor extends EMailProcessor {
           console.log("certificate does not contain an RSA public key");
           return;
         }
-        if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption") {
+        let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
+        // RFC 5652 section 10.1.2: signers write rsaEncryption, but verifiers
+        // should also accept e.g. sha256WithRSAEncryption, which some clients
+        // write instead. Its hash must match the digest algorithm.
+        if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption" &&
+            SignatureAlgorithm[signerInfo.signatureAlgorithm.algorithm] != digestAlgorithm) {
           console.log("signature was not signed with RSA");
           return;
         }
