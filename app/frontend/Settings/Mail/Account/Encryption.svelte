@@ -6,7 +6,7 @@
       <RoundButton
         label={$t`Import or Create new…`}
         icon={PlusIcon}
-        onClick={() => showCreate = true}
+        onClick={() => showCreateOverride = true}
         border={false}
         classes="plain"
         />
