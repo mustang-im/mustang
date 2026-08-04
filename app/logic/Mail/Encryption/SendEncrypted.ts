@@ -64,6 +64,7 @@ export class SendEncrypted {
     result.replyTo = mail.replyTo;
     result.to.replaceAll(mail.to);
     result.cc.replaceAll(mail.cc);
+    result.bcc.replaceAll(mail.bcc);
     result.tags.replaceAll(mail.tags);
     result.isDraft = mail.isDraft;
     // </copied>
