@@ -38,16 +38,19 @@ export class SMIMESend {
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
       mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
       let messageDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mimeAsText)));
+      // DER SET OF requires the elements sorted by their encoding (X.690
+      // section 11.6). With these fixed value sizes, that is the order below:
+      // the encodings differ first in their length byte.
       let signedAttributes = [{
         attrType: "contentType",
         attrValue: [Oid.encode("data")],
       }, {
-        attrType: "messageDigest",
-        attrValue: [OctetString.encode(messageDigest)],
-      }, {
         attrType: "signingTime",
         // RFC 5652 section 11.3: MUST be UTCTime for dates through 2049
         attrValue: [UTCTime.encode(Date.now())],
+      }, {
+        attrType: "messageDigest",
+        attrValue: [OctetString.encode(messageDigest)],
       }];
       let encodedAttrs = Attributes.encode(signedAttributes);
       let attributesDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", encodedAttrs));
