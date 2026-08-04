@@ -24,14 +24,17 @@ export class EWSIncomingInvitation extends IncomingInvitation {
     await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }
 
+  async updateInvitation() {
+    await this.updateFromInvitationMessage();
+  }
   async updateCancelled() {
-    await this.updateFromOtherInvitationMessage();
+    await this.updateFromInvitationMessage();
   }
   async updateParticipantReply() {
-    await this.updateFromOtherInvitationMessage();
+    await this.updateFromInvitationMessage();
   }
   /** Exchange server auto-processes these */
-  async updateFromOtherInvitationMessage() {
+  async updateFromInvitationMessage() {
     await this.calendar.listEvents();
   }
 }

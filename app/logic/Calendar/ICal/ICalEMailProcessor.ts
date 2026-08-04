@@ -27,13 +27,10 @@ export class ICalEMailProcessor extends EMailProcessor {
     }
     email.event = event;
 
-    if (email.invitationMessage == InvitationMessage.ParticipantReply ||
-        email.invitationMessage == InvitationMessage.CancelledEvent) {
-      let foundEventInCalendars = email.folder.account.calendarsAvailable.filterOnce(cal => cal.hasMatchingEvent(event));
-      for (let calendar of foundEventInCalendars) {
-        let incomingInvitation = calendar.getIncomingInvitationForEMail(email);
-        await incomingInvitation.updateFromOtherInvitationMessage();
-      }
+    let foundEventInCalendars = email.folder.account.calendarsAvailable.filterOnce(cal => cal.hasMatchingEvent(event));
+    for (let calendar of foundEventInCalendars) {
+      let incomingInvitation = calendar.getIncomingInvitationForEMail(email);
+      await incomingInvitation.updateFromInvitationMessage();
     }
   }
 }

@@ -12,13 +12,16 @@ export class JMAPIncomingInvitation extends IncomingInvitation {
     await this.calendar.listEvents(); // Check what the server did
   }
 
+  async updateInvitation() {
+    // Auto-processed by server?
+  }
   async updateCancelled() {
     // Auto-processed by server?
   }
   async updateParticipantReply() {
     // Auto-processed by server?
   }
-  async updateFromOtherInvitationMessage() {
+  async updateFromInvitationMessage() {
     // ??
   }
 }
