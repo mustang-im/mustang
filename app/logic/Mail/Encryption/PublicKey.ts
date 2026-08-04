@@ -57,7 +57,9 @@ export class PublicKey extends Observable {
   }
 
   get obsolete(): boolean {
-    return this._obsolete;
+    // Derive expiry live: the stored flag was set when the key was imported,
+    // but keys expire while sitting in the store.
+    return this._obsolete || !!this.expires && this.expires.getTime() < Date.now();
   }
   set obsolete(val: boolean) {
     this._obsolete = val;
