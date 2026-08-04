@@ -53,10 +53,16 @@ export class SMIMEReadProcessor extends EMailProcessor {
                 let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
                 let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
                 let mimeAsText = new TextDecoder().decode(email.mime);
-                let otherHeaders = mimeAsText.slice(0, mimeAsText.indexOf("\r\n\r\n")).split("\r\n").filter(header => !/Content-/i.test(header)).join("\r\n");
+                // Split on CRLF, but keep folded continuation lines (those starting with
+                // whitespace) attached to their header.
+                let otherHeaders = mimeAsText.slice(0, mimeAsText.indexOf("\r\n\r\n")).split(/\r\n(?![ \t])/).filter(header => !/^Content-/i.test(header)).join("\r\n");
                 email.wasEncrypted = true;
                 email.downloadComplete = false;
-                email.mime = new TextEncoder().encode(otherHeaders + "\r\n" + new TextDecoder().decode(decryptedContent));
+                let headerBytes = new TextEncoder().encode(otherHeaders + "\r\n");
+                let mime = new Uint8Array(headerBytes.length + decryptedContent.byteLength);
+                mime.set(headerBytes);
+                mime.set(new Uint8Array(decryptedContent), headerBytes.length);
+                email.mime = mime;
                 await email.parseMIME(); // checks signature recursively
                 await email.saveCompleteMessage();
                 return;
