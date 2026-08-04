@@ -77,7 +77,8 @@ export function parseMIMEDirectSubpartsBytes(mime: Uint8Array, contentType: stri
     pos = indexOfBytes(mime, delimiter, start);
     if (pos < 0) { // Content after the last part
       let end = mime.subarray(start);
-      assert(end[0] == 0x2D && end[1] == 0x2D && end[2] == 0x0D && end[3] == 0x0A, "End boundary not found"); // "--\r\n"
+      // "--", followed by an optional CRLF and epilogue (RFC 2046 section 5.1.1)
+      assert(end[0] == 0x2D && end[1] == 0x2D, "End boundary not found");
       break;
     }
     parts.push(mime.subarray(start, pos));
