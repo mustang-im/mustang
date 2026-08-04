@@ -126,6 +126,10 @@ export const GeneralTime = define<number>("GeneralTime", function() {
   this.gentime();
 });
 
+export const UTCTime = define<number>("UTCTime", function() {
+  this.utctime();
+});
+
 /** An algorithm */
 export interface AlgorithmIdentifier {
   algorithm: string | number[];
