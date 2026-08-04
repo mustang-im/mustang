@@ -373,7 +373,11 @@ export class EMail extends Message {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      await processor.process(this, mail);
+      try {
+        await processor.process(this, mail);
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
     }
     return mail;
   }
