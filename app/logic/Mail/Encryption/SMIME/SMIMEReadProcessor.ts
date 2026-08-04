@@ -4,7 +4,7 @@ import { MailIdentity } from "../../MailIdentity";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { DigestAlgorithm, EnvelopedData, Certificate, OctetString, SignedData, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt } from "./SMIMERSAES";
-import { parseMIMEDirectSubparts } from "../MIME";
+import { parseMIMEDirectSubpartsBytes } from "../MIME";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -68,10 +68,10 @@ export class SMIMEReadProcessor extends EMailProcessor {
     } else if (contentType == "multipart/signed") {
       let signed = email.attachments.last;
       if (signed.mimeType.toLowerCase() == "application/pkcs7-signature") {
-        let parts = parseMIMEDirectSubparts(email.mime, contentTypeHeader);
+        let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
         assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
         let [clearText, signature] = parts;
-        let signedData = SignedData.decodeBase64(signature.split("\r\n\r\n")[1]);
+        let signedData = SignedData.decodeBase64(new TextDecoder().decode(signature).split("\r\n\r\n")[1]);
         if (!signedData.content.certificates.length || !signedData.content.signerInfos.length) {
           console.log("signed data has no certificate and/or signature");
           return;
@@ -95,8 +95,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
           console.log("signature was not signed with RSA");
           return;
         }
-        let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
-        let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, new TextEncoder().encode(clearText)));
+        let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, clearText as BufferSource));
         let digestAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "messageDigest");
         if (!digestAttribute) {
           console.log("signature did not contain a message digest");

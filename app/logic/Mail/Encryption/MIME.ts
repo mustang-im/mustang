@@ -54,18 +54,49 @@ export function parseHeaderParameters(headerValue: string): Record<string, strin
  *   You still need to split lines.
  */
 export function parseMIMEDirectSubparts(mime: Uint8Array, contentType: string): string[] {
+  return parseMIMEDirectSubpartsBytes(mime, contentType).map(part => new TextDecoder().decode(part));
+}
+
+/**
+ * Same as `parseMIMEDirectSubparts()`, but returns the raw bytes of each part.
+ * Needed wherever the exact bytes matter, e.g. for digesting signed content:
+ * a UTF-8 decode/encode round-trip mangles 8-bit content like ISO-8859-1.
+ */
+export function parseMIMEDirectSubpartsBytes(mime: Uint8Array, contentType: string): Uint8Array[] {
   assert(mime && mime instanceof Uint8Array, "Need MIME");
   let parameters = parseHeaderParameters(contentType);
   assert(parameters.$main.startsWith("multipart/"), "Need multipart/* Content-Type, but got " + contentType);
   let boundary = parameters.boundary;
   assert(boundary, "No boundary found in Content-Type header " + contentType);
-  let completeMail = new TextDecoder().decode(mime);
-  let parts = completeMail.split("\r\n--" + boundary);
-  let end = parts.pop(); // Remove content after the last part
-  assert(end.startsWith("--\r\n"), "End boundary not found");
-  parts.shift(); // Remove content before the first part
-  parts = parts.map(part => part.replace(/^\r\n/, "")); // Remove newline after boundary
-  return parts;
+  let delimiter = Uint8Array.from("\r\n--" + boundary, c => c.charCodeAt(0));
+  let parts: Uint8Array[] = [];
+  let pos = indexOfBytes(mime, delimiter, 0); // Skip content before the first part
+  assert(pos >= 0, "Start boundary not found");
+  while (true) {
+    let start = pos + delimiter.length;
+    pos = indexOfBytes(mime, delimiter, start);
+    if (pos < 0) { // Content after the last part
+      let end = mime.subarray(start);
+      assert(end[0] == 0x2D && end[1] == 0x2D && end[2] == 0x0D && end[3] == 0x0A, "End boundary not found"); // "--\r\n"
+      break;
+    }
+    parts.push(mime.subarray(start, pos));
+  }
+  // Remove newline after boundary
+  return parts.map(part => part[0] == 0x0D && part[1] == 0x0A ? part.subarray(2) : part);
+}
+
+function indexOfBytes(haystack: Uint8Array, needle: Uint8Array, from: number): number {
+  outer:
+  for (let i = from; i <= haystack.length - needle.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] != needle[j]) {
+        continue outer;
+      }
+    }
+    return i;
+  }
+  return -1;
 }
 
 export function toCRLF(content: string): string {
