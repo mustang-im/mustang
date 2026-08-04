@@ -54,7 +54,7 @@
         Footer,
         ImageResize.configure({
           allowBase64: true,
-          inline: true,
+          inline: false,
           HTMLAttributes: {
             style: "max-width: 90%; height: auto; margin: 10px;"
           },
