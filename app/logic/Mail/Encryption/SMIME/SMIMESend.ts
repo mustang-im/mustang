@@ -64,7 +64,7 @@ export class SMIMESend {
         sid: {
           type: "issuerAndSerialNumber",
           value: {
-            issuer: myCertificate.tbsCertificate.subject,
+            issuer: myCertificate.tbsCertificate.issuer,
             serialNumber: myCertificate.tbsCertificate.serialNumber,
           },
         },
