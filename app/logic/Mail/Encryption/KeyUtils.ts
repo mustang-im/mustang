@@ -43,7 +43,10 @@ export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Pro
     }
   }
   if (email) {
-    return await readAutoCryptKeys(email);
+    let key = await readAutoCryptKeys(email);
+    if (key?.id == id) {
+      return key;
+    }
   }
   return null;
 }
