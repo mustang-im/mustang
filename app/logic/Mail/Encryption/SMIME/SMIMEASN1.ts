@@ -393,8 +393,7 @@ export const EnvelopedData = define("EnvelopedData", function() {
       this.key("encryptedContentInfo").seq().obj(
         this.key("contentType").objid(oids),
         this.key("contentEncryptionAlgorithm").use(AlgorithmIdentifier),
-        // RFC5652 says this is implicit?
-        this.key("encryptedContent").explicit(0).optional().octstr(),
+        this.key("encryptedContent").implicit(0).optional().octstr(),
       ),
       this.key("unprotectedAttrs").implicit(1).optional().use(Attributes),
     ),
