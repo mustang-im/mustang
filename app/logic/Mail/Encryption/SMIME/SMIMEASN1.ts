@@ -353,7 +353,7 @@ const RecipientInfo = define("RecipientInfo", function() {
           this.key("issuer").seqof(AttributeValue),
           this.key("serialNumber").int(),
         ),
-        subjectKeyIdentifier: this.explicit(0).octstr(), // TODO
+        subjectKeyIdentifier: this.implicit(0).octstr(), // TODO
       }),
       this.key("keyEncryptionAlgorithm").use(AlgorithmIdentifier),
       this.key("encryptedKey").octstr(),
@@ -415,7 +415,7 @@ export const SignerInfo = define("SignerInfo", function() {
         this.key("issuer").seqof(AttributeValue),
         this.key("serialNumber").int(),
       ),
-      subjectKeyIdentifier: this.explicit(0).octstr(), // TODO
+      subjectKeyIdentifier: this.implicit(0).octstr(), // TODO
     }),
     this.key("digestAlgorithm").use(AlgorithmIdentifier),
     this.key("signedAttrs").implicit(0).optional().use(Attributes),
