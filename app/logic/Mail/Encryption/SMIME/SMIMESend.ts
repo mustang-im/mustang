@@ -4,7 +4,7 @@ import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { Oid, GeneralTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData } from "./SMIMEASN1";
+import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
 import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
@@ -46,7 +46,8 @@ export class SMIMESend {
         attrValue: [OctetString.encode(messageDigest)],
       }, {
         attrType: "signingTime",
-        attrValue: [GeneralTime.encode(Date.now())],
+        // RFC 5652 section 11.3: MUST be UTCTime for dates through 2049
+        attrValue: [UTCTime.encode(Date.now())],
       }];
       let encodedAttrs = Attributes.encode(signedAttributes);
       let attributesDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", encodedAttrs));
