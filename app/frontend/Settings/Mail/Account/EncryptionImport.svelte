@@ -119,7 +119,13 @@
     }
     let fileContent = await file.text();
     let key = await importPrivateKey(fileContent, passphrase);
-    identity.encryptionPrivateKeys.add(key);
+    let existing = identity.encryptionPrivateKeys.find(existing => existing.id == key.id);
+    if (!existing) {
+      identity.encryptionPrivateKeys.add(key);
+    } else if (existing instanceof SMIMEPrivateKey) {
+      // Re-import of the same key, possibly with new certificates in the file
+      await existing.addCertificates(fileContent);
+    }
     if (key.obsolete) {
       showObsolete = true;
     }
