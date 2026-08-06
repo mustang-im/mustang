@@ -198,6 +198,7 @@ const kHiddenMIMETypes = [
   "text/vcard", // vCard
   "text/calendar", // vCard
   "application/pkcs7-signature", // S/MIME signature
+  "application/x-pkcs7-signature", // S/MIME signature, legacy type name
   "application/pgp-signature", // PGP signature
   "application/pgp-keys", // Sender announcing his PGP keys
   // "application/pkcs7-mime", // S/MIME encrypted
