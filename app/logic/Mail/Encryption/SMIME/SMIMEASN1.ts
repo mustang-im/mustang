@@ -384,6 +384,15 @@ export const Attributes = define("Attributes", function() {
   this.setof(Attribute);
 });
 
+/** Identifies only the kind of CMS blob, e.g. signedData or envelopedData.
+ * Decode the full structure with `SignedData` or `EnvelopedData`. */
+export const ContentInfo = define("ContentInfo", function() {
+  this.seq().obj(
+    this.key("contentType").objid(oids),
+    this.key("content").explicit(0).optional().any(),
+  );
+});
+
 export const EnvelopedData = define("EnvelopedData", function() {
   this.seq().obj(
     this.key("contentType").objid(oids),
