@@ -35,6 +35,9 @@ mac:
     - target: dmg
       arch:
         - universal
+    - target: zip
+      arch:
+        - universal
     # Requires CSC_INSTALLER_LINK and CSC_INSTALLER_KEY_PASSWORD secrets on GitHub CI
     # pkg is intentionally arm only
     - target: pkg
