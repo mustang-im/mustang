@@ -41,13 +41,12 @@ export class PEMDecoder extends DERDecoder {
   }
 
   decodeBase64(base64: string, options?: object): any {
-    const input = Uint8Array.fromBase64?.(base64) ?? fromBase64(base64);
-    return this.decode(input, options);
+    return this.decode(base64ToBytes(base64), options);
   }
 }
 
-function fromBase64(base64): Uint8Array {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+export function base64ToBytes(base64: string): Uint8Array {
+  return Uint8Array.fromBase64?.(base64) ?? Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 }
 
 declare global {
