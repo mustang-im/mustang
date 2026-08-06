@@ -21,7 +21,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
     // let's fish the header out of the PostalEmail object...
     let contentTypeHeader = postal.headers.find(header => header.key == "content-type")?.value ?? "";
     let contentType = contentTypeHeader.split(";")[0].trim().toLowerCase();
-    if (contentType == "application/pkcs7-mime") {
+    if (contentType == "application/pkcs7-mime" ||
+        contentType == "application/x-pkcs7-mime") { // legacy type name, used by Outlook
       // The whole message is a CMS blob. It's the only body part, but fsr
       // this is an attachment.
       let blob = berToDER(new Uint8Array(await email.attachments.first.content.arrayBuffer()));
@@ -105,7 +106,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
    * (`multipart/signed`). */
   protected async readClearSigned(email: EMail, contentTypeHeader: string) {
     let signatureMimeType = email.attachments.last?.mimeType.toLowerCase();
-    if (signatureMimeType != "application/pkcs7-signature") {
+    if (signatureMimeType != "application/pkcs7-signature" &&
+        signatureMimeType != "application/x-pkcs7-signature") { // legacy type name
       return;
     }
     let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
