@@ -4,6 +4,7 @@
 
 - The Node Native Modules are built for two architectures: `x64` and `arm64` because we're building for universal.
 - There are some conflicts for packages that don't add the architecture to the `.node` file. That's why the `x64ArchFiles` field was used in the `electron-builder.yml`.
+- The `npmRebuild` field in the `electron-builder.yml` is set to `true` to rebuild the node native modules for x64 and arm64.
 
 ## Code signing
 
@@ -73,6 +74,7 @@ See [Creating API Keys for App Store Connect API](https://developer.apple.com/do
 
 - Auto-update only works for the DMG target but the ZIP target is what is downloaded by the auto-updater.
 - ZIP target must be set explicitly now because adding the PKG target removes the default ZIP target.
+- `electron-updater` downloads the file specified in the `.yml` file to `~/Library/Caches/[appID].ShipIt`.
 
 ## Debugging
 
