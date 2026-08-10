@@ -37,7 +37,7 @@ The node dependencies are externalized because they contain Node Native Modules 
 
 ### Vite
 
-Vite is used to build the individual processes (main, preload, renderer) in the Electron application. Vite can be upgraded by running `yarn add vite@latest`.
+Vite is used to build the individual processes (main, preload, renderer) in the Electron application.
 
 ## Debugging
 

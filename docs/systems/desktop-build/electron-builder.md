@@ -5,13 +5,14 @@ Electron Builder is a tool that builds and packages your Electron app for distri
 ## Why did we choose this?
 
 - It includes an easy to use auto-update.
-- It packages the app for distribution with a single command `electron-builder build`.
+- It packages the app for distribution, on all OSes and various installers per OS, with a single command `electron-builder build`.
 - It publishes the app to GitHub releases.
 - It does code signing for Windows and macOS, and notarization for macOS.
 
 ## How does it work?
 
-1. After the HTML, CSS and JS bundles are built by `electron-vite`, Electron Builder packages the app for distribution.
+1. `electron-vite` builds the HTML, CSS and JS bundles
+2. Electron Builder packages the app for distribution.
 
 ## Auto-update
 
