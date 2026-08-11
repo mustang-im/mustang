@@ -269,16 +269,18 @@ class DERNode extends Node {
 
     // Indefinite length... find END tag
     const state = buffer.save();
-    const res = this._skipUntilEnd(
+    let skip = this._skipUntilEnd(
       buffer,
       'Failed to skip indefinite length body: "' + tag + '"');
-    if (buffer.isError(res)) {
-      return res;
+    if (buffer.isError(skip)) {
+      return skip;
     }
 
     len = buffer.offset - state.offset;
     buffer.restore(state);
-    return buffer.skip(len, 'Failed to match body of: "' + tag + '"');
+    let res = buffer.skip(len - 2, 'Failed to match body of: "' + tag + '"');
+    buffer.skip(2);
+    return res;
   }
 
   _skipUntilEnd(buffer: DecoderBuffer, fail: string): ReporterError | undefined {
@@ -301,7 +303,7 @@ class DERNode extends Node {
       if (buffer.isError(res)) {
         return res;
       }
-      if (tag.tagStr === 'end') {
+      if (tag.tagStr === 'end' && len === 0) {
         return undefined;
       }
     }
