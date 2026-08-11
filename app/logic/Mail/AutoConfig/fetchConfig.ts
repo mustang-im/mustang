@@ -63,7 +63,7 @@ async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayCo
   let longDomain = mx.split(".").slice(1).join("."); // everything after host, e.g. "olc.foo.com" for "mx1.olc.foo.com"
   console.log("AutoConfig MX for", domain, "->", baseDomain, baseDomain != longDomain ? longDomain : "");
   let requests = [
-    // fetchConfigFromISP(longDomain, null, abort), // without emailAddress
+    fetchConfigFromISP(longDomain, null, abort), // without emailAddress
     fetchConfigFromISPDB(longDomain, abort),
   ];
   if (baseDomain.length < longDomain.length) {
