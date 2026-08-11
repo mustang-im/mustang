@@ -129,6 +129,7 @@ export class IMAPAccount extends MailAccount {
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
         },
         disableAutoIdle: purpose != ConnectionPurpose.Main,
+        autoIdleDelay: 2000,
         maxIdleTime: kIDLERenewalSeconds * 1000, // renew IDLE, so that server and NAT don't drop us as stale
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
