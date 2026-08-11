@@ -42,7 +42,7 @@ The mobile build system consists of the following components:
 3. Package the library into the Capacitor-NodeJS plugin and prebuild-for-nodejs-mobile.
 4. Build the HTML, CSS, JS with Vite as you would for the desktop app.
 5. Rebuild the Node.js Native Modules for mobile use using prebuild-for-nodejs-mobile.
-6. Copy the `.node` files to `mobile/ios/app/src/main/assets/public/nodejs/node_modules/[package_name]`.
+6. Copy the `.node` files to `mobile/ios/App/App/nodejs-project/[build/prebuilds]`.
 7. Install an Apple certificate and mobile provisioning profile.
 8. `yarn cap sync ios` to copy the HTML, CSS, JS assets to the iOS app and install the Capacitor plugin CocoaPods.
 9. Start the iOS app build process using Xcode in the CLI.

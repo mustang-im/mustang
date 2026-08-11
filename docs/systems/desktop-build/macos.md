@@ -80,7 +80,7 @@ See [Creating API Keys for App Store Connect API](https://developer.apple.com/do
 
 ### Debugging the build outputs on CI
 
-1. Set `mac.indentity` to `null` in `electron-builder.yml`
+1. Set `mac.identity` to `null` in `electron-builder.yml`
 2. `export CSC_IDENTITY_AUTO_DISCOVERY=false`
 3. Set `mac.notarize` to `false` in `electron-builder.yml`
 4. Run `yarn build:mac`
