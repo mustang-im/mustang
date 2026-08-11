@@ -12,6 +12,7 @@ import type { ArrayColl } from "svelte-collections";
  * <https://www.ietf.org/archive/id/draft-ietf-mailmaint-autoconfig-04.html> */
 export async function fetchConfig(domain: string, emailAddress: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
+  console.log("AutoConfig for", domain);
 
   let priorityOrder = new PriorityAbortable(abort, [
     fetchConfigFromISPDB(domain, abort),
@@ -60,6 +61,7 @@ async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayCo
   let mx = await getMX(domain, abort);
   let baseDomain = getBaseDomainFromHost(mx); // e.g. "foo.com" for "mx1.olc.foo.com"
   let longDomain = mx.split(".").slice(1).join("."); // everything after host, e.g. "olc.foo.com" for "mx1.olc.foo.com"
+  console.log("AutoConfig MX for", domain, "->", baseDomain, baseDomain != longDomain ? longDomain : "");
   let requests = [
     // fetchConfigFromISP(longDomain, null, abort), // without emailAddress
     fetchConfigFromISPDB(longDomain, abort),
@@ -121,6 +123,7 @@ async function fetchText(url: URLString, abort: AbortController): Promise<string
       timeout: 3000,
     });
   }
+  console.log("AutoConfig", url);
   let text = await makeAbortable(ky.get(url, {
     result: "text",
     retry: 0,
