@@ -3,15 +3,16 @@ import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Debounce } from "../../util/flow/Debounce";
 import type { Locked } from "../../util/flow/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow, MailboxLockObject } from "../../../../desktop/backend/node_modules/imapflow";
-import { PersonUID } from "../../Abstract/PersonUID";
 
 export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
@@ -20,6 +21,7 @@ export class IMAPFolder extends Folder {
   declare readonly deletions: Set<number>;
   uidvalidity: number = 0;
   protected poller: ReturnType<typeof setInterval>;
+  protected returnToInboxDebounce = new Debounce(2);
 
   constructor(account: IMAPAccount) {
     super(account);
@@ -59,8 +61,9 @@ export class IMAPFolder extends Folder {
   async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null): Promise<T> {
     let lockMailbox: MailboxLockObject;
     let lock: Locked;
+    let conn = connection;
     try {
-      let conn = connection ?? await this.account.connection(false, purpose);
+      conn ??= await this.account.connection(false, purpose);
       try {
         this.account.log(this, conn, "open mailbox");
         lock = await this.account.connectionLock.get(conn).lock();
@@ -93,6 +96,18 @@ export class IMAPFolder extends Folder {
       lock?.release();
       lockMailbox?.release();
       this.account.log(this, null, "released lock");
+      this.startIDLEonINBOX(conn)
+        .catch(this.account.errorCallback);
+    }
+  }
+
+  /** IDLE on the INBOX, not the last-selected folder, so that we get new mail. */
+  protected async startIDLEonINBOX(conn: ImapFlow) {
+    if (this != this.account.inbox &&
+        this.account.getConnectionPurpose(conn) == ConnectionPurpose.Main) {
+      this.returnToInboxDebounce.debounce(async () => {
+        await this.account.startIDLE(conn)
+      });
     }
   }
 
@@ -480,9 +495,9 @@ export class IMAPFolder extends Folder {
    * number of emails in the folder changed */
   async countChanged(newCount: number, oldCount: number): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
-    this.countTotal = newCount;
     if (hasChanged) {
       this.account.log(this, null, "notify: new message count:", newCount, "server old:", oldCount, "our old:", this.countTotal);
+      this.countTotal = newCount;
       await this.getNewMessages();
     }
   }

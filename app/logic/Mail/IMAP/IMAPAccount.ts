@@ -54,6 +54,11 @@ export class IMAPAccount extends MailAccount {
     return !!this.connections.get(ConnectionPurpose.Main);
   }
 
+  /** @returns The purpose that the given connection currently serves */
+  getConnectionPurpose(connection: ImapFlow): ConnectionPurpose | null {
+    return this.connections.getKeyForValue(connection) ?? null;
+  }
+
   async login(interactive: boolean): Promise<void> {
     await super.login(interactive);
     if (!this.dbID) {
@@ -266,12 +271,20 @@ export class IMAPAccount extends MailAccount {
   }
 
   /** ImapFlow starts IDLE only once a folder is open */
-  protected async startIDLE(connection: ImapFlow): Promise<void> {
+  async startIDLE(connection: ImapFlow): Promise<void> {
     let inbox = this.inbox as IMAPFolder;
     if (!inbox?.path) {
       return;
     }
-    await connection.mailboxOpen(inbox.path);
+    let lock = await this.connectionLock.get(connection)?.lock();
+    try {
+      if (connection != this.connections.get(ConnectionPurpose.Main)) {
+        return; // reconnected meanwhile; reconnect() re-selects the inbox
+      }
+      await connection.mailboxOpen(inbox.path);
+    } finally {
+      lock?.release();
+    }
   }
 
   dropConnection(connection: ImapFlow): void {
