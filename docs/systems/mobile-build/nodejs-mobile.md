@@ -14,11 +14,11 @@ To update the version of node.js used in this project, carefully follow these st
 2. Locally clone the Node.js repository
 3. `cd` into the Node.js repository
 4. Create a single commit that squashes all changes from git tag `vA.b.c` to `vX.y.z`
-    4.1. `git checkout vX.y.z` to go to the newer version
-    4.2. Delete the branch `nodejs-mobile-update` if it exists
-    4.3. `git checkout -b nodejs-mobile-update` to create a branch at the newer version
-    4.4. `git reset --soft vA.b.c` to reset the branch all the way to the older version
-    4.5. `git commit -m "Update node.js to vX.y.z"` to create a single commit with all changes
+    1. `git checkout vX.y.z` to go to the newer version
+    2. Delete the branch `nodejs-mobile-update` if it exists
+    3. `git checkout -b nodejs-mobile-update` to create a branch at the newer version
+    4. `git reset --soft vA.b.c` to reset the branch all the way to the older version
+    5. `git commit -m "Update node.js to vX.y.z"` to create a single commit with all changes
 5. `git format-patch -1 HEAD -o ../` which will create a patch file in the parent directory
 6. `cd` into the nodejs-mobile repository
 7. Apply the patch file with `git am --3way --ignore-space-change ../0001-Node.js-vA.b.c.patch` (sometimes it may be useful to use the flag `--reject`)
@@ -44,3 +44,9 @@ Steps maybe updated based on upstream steps [here](https://github.com/nodejs-mob
 3. Runs `./configure`. Make changes here for configuring features needed for the build. E.g. Including the Intl module.
 4. Runs `make` in the root directory to build the Node.js Mobile library. Make uses the Xcode to compile the library.
 5. After the library is built it wraps the library into a `.framework` bundle.
+
+## Future Improvements
+
+### Maintained Fork
+
+See [gmaclennan/nodejs-mobile](https://github.com/gmaclennan/nodejs-mobile) for a maintained fork.

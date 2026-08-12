@@ -108,13 +108,13 @@ CocoaPods is used for managing the native dependencies of the Capacitor plugins.
 4. Below the field for Key store path, click Create new.
 5. On the New Key Store window, provide the following information for your keystore and key
 6. Keystore
-  6.1 Key store path: Select the location where your keystore should be created. Also, a file name should be added to the end of the location path with the `.jks extension.
-  6.2 Password: Create and confirm a secure password for your keystore.
+    1. Key store path: Select the location where your keystore should be created. Also, a file name should be added to the end of the location path with the `.jks extension.
+    2. Password: Create and confirm a secure password for your keystore.
 7. Key
-  7.1 Alias: Enter an identifying name for your key.
-  7.2 Password: Create and confirm a secure password for your key. This should be the same as your keystore password. (Please refer to the known issue for more information)
-  7.3 Validity (years): Set the length of time in years that your key will be valid. Your key should be valid for at least 25 years, so you can sign app updates with the same key through the lifespan of your app.
-  7.4 Certificate: Enter some information about yourself for your certificate. This information is not displayed in your app, but is included in your certificate as part of the APK.
+    1. Alias: Enter an identifying name for your key.
+    2. Password: Create and confirm a secure password for your key. This should be the same as your keystore password. (Please refer to the known issue for more information)
+    3. Validity (years): Set the length of time in years that your key will be valid. Your key should be valid for at least 25 years, so you can sign app updates with the same key through the lifespan of your app.
+    4. Certificate: Enter some information about yourself for your certificate. This information is not displayed in your app, but is included in your certificate as part of the APK.
 8. Once you complete the form, click OK.
 
 See [Android Studio documentation](https://developer.android.com/studio/publish/app-signing#generate-key) for any updates to the process.
@@ -174,42 +174,42 @@ We don't use `yarn cap build android` because it builds an unsigned APK then sig
 
 1. Open Xcode.
 2. Set `App Uses Non-Exempt Encryption` to `NO`.  This prevents the app from being withheld for review. We don't use any custom encryption hence we can set this to `NO`.
-  2.1 On the left side, select the Folder Icon to see the project files.
-  2.2 Select the `App`.
-  2.3 Inside the right side, on the left navigation column, select TARGETS -> `App`. If there's no column, click the square icon with a vertical rectangle inside to open the navigation column. The icon is located on the top left of the right side.
-  2.4 Go to the `Info` tab.
-  2.5 On any property click to reveal a dropdown.
-  2.6 Select `App Uses Non-Exempt Encryption` and set its value to `NO`.
+    1. On the left side, select the Folder Icon to see the project files.
+    2. Select the `App`.
+    3. Inside the right side, on the left navigation column, select TARGETS -> `App`. If there's no column, click the square icon with a vertical rectangle inside to open the navigation column. The icon is located on the top left of the right side.
+    4. Go to the `Info` tab.
+    5. On any property click to reveal a dropdown.
+    6. Select `App Uses Non-Exempt Encryption` and set its value to `NO`.
 
 ### Creating the code signing certificates and provisioning profiles for iOS
 
 1. Open Xcode.
 2. Creating a code signing certificate. See [Create a new code signing identity](https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Create-a-new-code-signing-identity) for any changes to the steps.
-  2.1 Choose Xcode -> Settings.
-  2.2 In the toolbar, click Accounts.
-  2.3 Select your Apple Account from the list of accounts.
-  2.4 Select the team to create the code signing identity for from the list of your Apple Account teams.
-  2.5 Click Manage Certificates.
-  2.6 In the lower-left corner of the signing certificates sheet, click the Add button (+) and choose the certificate type from the pop-up menu.
-  2.7 Click Done.
+    1. Choose Xcode -> Settings.
+    2. In the toolbar, click Accounts.
+    3. Select your Apple Account from the list of accounts.
+    4. Select the team to create the code signing identity for from the list of your Apple Account teams.
+    5. Click Manage Certificates.
+    6. In the lower-left corner of the signing certificates sheet, click the Add button (+) and choose the certificate type from the pop-up menu.
+    7. Click Done.
 3. Exporting the code signing certificate. See [Export a code signing identity](https://developer.apple.com/documentation/Xcode/sharing-your-teams-signing-certificates#Export-your-signing-identity-to-share-with-a-team-member) for any changes to the steps.
-  3.1 Choose Xcode -> Settings.
-  3.2 In the toolbar, click Accounts.
-  3.3 Select your Apple Account from the list of accounts.
-  3.4 Select the team from the list of your Apple Account teams.
-  3.5 Click Manage Certificates.
-  3.6 In the signing certificates sheet, Control-click the certificate corresponding to the signing identity that you want to export and choose Export Certificate from the pop-up menu.
-  3.7 In the sheet that appears, choose the location to save the PKCS#12 file.
-  3.8 Enter a file name, and a password to protect the identity's private key.
-  3.9 Click Save.
+    1. Choose Xcode -> Settings.
+    2. In the toolbar, click Accounts.
+    3. Select your Apple Account from the list of accounts.
+    4. Select the team from the list of your Apple Account teams.
+    5. Click Manage Certificates.
+    6. In the signing certificates sheet, Control-click the certificate corresponding to the signing identity that you want to export and choose Export Certificate from the pop-up menu.
+    7. In the sheet that appears, choose the location to save the PKCS#12 file.
+    8. Enter a file name, and a password to protect the identity's private key.
+    9. Click Save.
 4. Create and download the provisioning profile for the app. The provisioning profile provides the identity for submitting to TestFlight. See [Create an App Store Connect provisioning profile](https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile) for any changes to the steps.
-  4.1 Go to the [App Store Connect](https://appstoreconnect.apple.com/login) website and log in.
-  4.2 In Certificates, Identifiers & Profiles, click Profiles in the sidebar, then click the add button (+) on the top left.
-  4.3 Under Distribution, select the App Store Connect profile, then click Continue.
-  4.4 Choose the App ID you used for development (the App ID that matches your bundle ID) from the App ID pop-up menu, then click Continue.
-  4.5 Select your distribution certificate, then click Continue. An App Store provisioning profile contains a single distribution certificate.
-  4.6 Enter a profile name, then click Generate.
-  4.7 Click Download.
+    1. Go to the [App Store Connect](https://appstoreconnect.apple.com/login) website and log in.
+    2. In Certificates, Identifiers & Profiles, click Profiles in the sidebar, then click the add button (+) on the top left.
+    3. Under Distribution, select the App Store Connect profile, then click Continue.
+    4. Choose the App ID you used for development (the App ID that matches your bundle ID) from the App ID pop-up menu, then click Continue.
+    5. Select your distribution certificate, then click Continue. An App Store provisioning profile contains a single distribution certificate.
+    6. Enter a profile name, then click Generate.
+    7. Click Download.
 
 ### Configuring CI for iOS
 
@@ -219,18 +219,18 @@ We don't use `yarn cap build android` because it builds an unsigned APK then sig
 4. Go to Repository secrets
 5. Click New repository secret
 6. Configuring the code signing certificate on CI
-  6.1 Do `base64 -i <file.p12> -o _` for the code signing certificate and get the value
-  6.2 Create a secret with the value from step 6.1 and the name `IOS_CERTIFICATE`
-  6.3 Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created
-  6.4 Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
+    1. Do `base64 -i <file.p12> -o _` for the code signing certificate and get the value
+    2. Create a secret with the value from step 1 and the name `IOS_CERTIFICATE`
+    3. Create a secret with `IOS_CERTIFICATE_OWNER_NAME` with the name of the certificate you created
+    4. Create a secret with `IOS_CERTIFICATE_PASSWORD` with the password you used when exporting the certificate
 7. Copy the iOS provisioning profile to mobile/ios/build/apple-dist.mobileprovision (if changed)
 8. Configuring the App Store Connect API key
-  8.1 Go to App Store Connect > Users and Access > Keys https://appstoreconnect.apple.com/
-  8.2 Create a new API key with "App Manager" or "Developer" role
-  8.3 Download the .p8 key file
-  8.4 Create a secret with the value from step 8.3 and the name `IOS_APPSTORE_API_KEY`
-  8.5 Create a secret with the key ID from step 8.2 and the name `IOS_APPSTORE_API_KEY_ID`
-  8.6 Create a secret with the issuer ID from step 8.1 and the name `IOS_APPSTORE_API_ISSUER`
+    1. Go to App Store Connect > Users and Access > Keys https://appstoreconnect.apple.com/
+    2. Create a new API key with "App Manager" or "Developer" role
+    3. Download the .p8 key file
+    4. Create a secret with the value from step 3 and the name `IOS_APPSTORE_API_KEY`
+    5. Create a secret with the key ID from step 2 and the name `IOS_APPSTORE_API_KEY_ID`
+    6. Create a secret with the issuer ID from step 1 and the name `IOS_APPSTORE_API_ISSUER`
 
 For CI build errors always check the [Apple Developer Dashboard](https://developer.apple.com/login/) for any agreements to accept before debugging CI builds.
 
