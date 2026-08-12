@@ -256,17 +256,13 @@ A3wcgtodjMMasKVm9sOX9Ja48mkCD8sA5L1PfFLbWa2x1VUEEGgMGxrugKYvwiROWMyLUkcAAAAAAAAA
 `;
 
 describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
-  function fixture(base64: string): Uint8Array {
-    return berToDER(base64ToBytes(base64));
-  }
-
   function signerModulusTail(): string {
     let cert = Certificate.decodePEM(kSignerCert, { label: "CERTIFICATE" });
     return RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data).n.toString(16).slice(-16);
   }
 
   async function readOpaque(base64: string): Promise<{ content: Uint8Array, signer: string | null }> {
-    let signedData = SignedData.decode(fixture(base64));
+    let signedData = SignedData.decodeBase64(base64, { berToDER: true });
     expect(signedData.content.contentInfo.contentType).toBe("data");
     let content = OctetString.decode(signedData.content.contentInfo.content);
     let signer = await verifySignedData(signedData, content);
@@ -286,8 +282,8 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   });
 
   test("ContentInfo identifies the kind of CMS blob", () => {
-    expect(ContentInfo.decode(fixture(kOpaqueSignedDER)).contentType).toBe("signedData");
-    expect(ContentInfo.decode(fixture(kEncryptedStreaming)).contentType).toBe("envelopedData");
+    expect(ContentInfo.decodeBase64(kOpaqueSignedDER, { berToDER: true }).contentType).toBe("signedData");
+    expect(ContentInfo.decodeBase64(kEncryptedStreaming, { berToDER: true }).contentType).toBe("envelopedData");
   });
 
   test("reads and verifies an opaque-signed message (DER)", async () => {
@@ -308,13 +304,13 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   });
 
   test("rejects a signature over other content", async () => {
-    let signedData = SignedData.decode(fixture(kOpaqueSignedStreaming));
+    let signedData = SignedData.decodeBase64(kOpaqueSignedStreaming, { berToDER: true });
     let tampered = new TextEncoder().encode(kOpaqueContent.replace("Hello", "Evil!"));
     expect(await verifySignedData(signedData, tampered)).toBeNull();
   });
 
   test("decrypts a streaming BER encrypted message (chunked encryptedContent)", async () => {
-    let envelopedData = EnvelopedData.decode(fixture(kEncryptedStreaming));
+    let envelopedData = EnvelopedData.decodeBase64(kEncryptedStreaming, { berToDER: true });
     let info = envelopedData.content.encryptedContentInfo;
     expect(info.contentEncryptionAlgorithm.algorithm).toBe("aes256cbc");
     let recipientInfo = envelopedData.content.recipientInfos[0];
