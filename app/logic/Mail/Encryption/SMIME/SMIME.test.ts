@@ -57,7 +57,7 @@ describe("ASN.1 DER round-trip", () => {
     expect(Array.from(decoded.digest)).toEqual(Array.from(digest));
   });
 
-  test("encodeBase64 handles large buffers without overflowing the stack", () => {
+  test("encodeToBase64 handles large buffers without overflowing the stack", () => {
     let big = new Uint8Array(500_000); // spreading this into fromCharCode would throw
     for (let i = 0; i < big.length; i++) {
       big[i] = i & 0xff;
@@ -67,7 +67,7 @@ describe("ASN.1 DER round-trip", () => {
     let native = Uint8Array.prototype.toBase64;
     delete (Uint8Array.prototype as any).toBase64;
     try {
-      let decoded = OctetString.decodeBase64(OctetString.encodeBase64(big));
+      let decoded = OctetString.decodeFromBase64(OctetString.encodeToBase64(big));
       expect(Array.from(decoded)).toEqual(Array.from(big));
     } finally {
       if (native) {
@@ -262,7 +262,7 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   }
 
   async function readOpaque(base64: string): Promise<{ content: Uint8Array, signer: string | null }> {
-    let signedData = SignedData.decodeBase64(base64, { berToDER: true });
+    let signedData = SignedData.decodeFromBase64(base64, { berToDER: true });
     expect(signedData.content.contentInfo.contentType).toBe("data");
     let content = OctetString.decode(signedData.content.contentInfo.content);
     let signer = await verifySignedData(signedData, content);
@@ -282,8 +282,8 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   });
 
   test("ContentInfo identifies the kind of CMS blob", () => {
-    expect(ContentInfo.decodeBase64(kOpaqueSignedDER, { berToDER: true }).contentType).toBe("signedData");
-    expect(ContentInfo.decodeBase64(kEncryptedStreaming, { berToDER: true }).contentType).toBe("envelopedData");
+    expect(ContentInfo.decodeFromBase64(kOpaqueSignedDER, { berToDER: true }).contentType).toBe("signedData");
+    expect(ContentInfo.decodeFromBase64(kEncryptedStreaming, { berToDER: true }).contentType).toBe("envelopedData");
   });
 
   test("reads and verifies an opaque-signed message (DER)", async () => {
@@ -304,13 +304,13 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   });
 
   test("rejects a signature over other content", async () => {
-    let signedData = SignedData.decodeBase64(kOpaqueSignedStreaming, { berToDER: true });
+    let signedData = SignedData.decodeFromBase64(kOpaqueSignedStreaming, { berToDER: true });
     let tampered = new TextEncoder().encode(kOpaqueContent.replace("Hello", "Evil!"));
     expect(await verifySignedData(signedData, tampered)).toBeNull();
   });
 
   test("decrypts a streaming BER encrypted message (chunked encryptedContent)", async () => {
-    let envelopedData = EnvelopedData.decodeBase64(kEncryptedStreaming, { berToDER: true });
+    let envelopedData = EnvelopedData.decodeFromBase64(kEncryptedStreaming, { berToDER: true });
     let info = envelopedData.content.encryptedContentInfo;
     expect(info.contentEncryptionAlgorithm.algorithm).toBe("aes256cbc");
     let recipientInfo = envelopedData.content.recipientInfos[0];

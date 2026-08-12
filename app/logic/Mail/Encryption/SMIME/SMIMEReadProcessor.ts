@@ -112,7 +112,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
     let signatureBase64 = new TextDecoder().decode(signature).split("\r\n\r\n")[1];
-    let signedData = SignedData.decodeBase64(signatureBase64, { berToDER: true });
+    let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
     let signer = await verifySignedData(signedData, clearText);
     if (signer) {
       email.signed = signer;

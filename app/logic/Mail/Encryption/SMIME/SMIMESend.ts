@@ -114,7 +114,7 @@ export class SMIMESend {
         'Content-Disposition: attachment; filename="smime.p7s"',
         '',
         //...btoa(der.getBytes()).match(/.{1,76}/g),
-        ... SignedData.encodeBase64(signedData).match(/.{1,76}/g),
+        ... SignedData.encodeToBase64(signedData).match(/.{1,76}/g),
         `--${boundary}--`,
         '',
       ].join("\r\n");
