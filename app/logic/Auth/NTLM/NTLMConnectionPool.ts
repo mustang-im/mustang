@@ -1,5 +1,6 @@
 import { NTLMConnection, CookieJar, type NTLMServer, type NTLMRequestOptions, type NTLMResponse } from "./NTLMConnection";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { arrayRemove } from "../../util/util";
 
 /**
  * Runs parallel requests to an NTLM server over a set of `NTLMConnection`s.
@@ -8,18 +9,20 @@ import { Semaphore } from "../../util/flow/Semaphore";
  * correctness never depends on the pool: Any request may run on any
  * connection. The pool size only tunes parallelism.
  *
- * All connections share one cookie jar, so load-balancer affinity cookies
- * behave like in a browser.
+ * All connections use a specific cookie jar, so if a load-balancer adds cookies
+ * for recording the server affinity, they behave like in a browser.
+ * The caller controls which cookie jar is used, so we can separate accounts.
  */
 export class NTLMConnectionPool {
   protected readonly account: NTLMServer;
-  readonly cookies = new CookieJar();
+  readonly cookies: CookieJar;
   protected readonly free: NTLMConnection[] = [];
   protected readonly all: NTLMConnection[] = [];
   protected readonly semaphore: Semaphore;
 
-  constructor(account: NTLMServer, maxConnections = 6) {
+  constructor(account: NTLMServer, cookies = new CookieJar(), maxConnections = 6) {
     this.account = account;
+    this.cookies = cookies;
     this.semaphore = new Semaphore(maxConnections);
   }
 
@@ -57,10 +60,7 @@ export class NTLMConnectionPool {
 
   protected remove(conn: NTLMConnection): void {
     conn.close();
-    let pos = this.all.indexOf(conn);
-    if (pos >= 0) {
-      this.all.splice(pos, 1);
-    }
+    arrayRemove(this.all, conn);
   }
 
   /** Closes all TCP connections, e.g. on logout.
