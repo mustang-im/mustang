@@ -215,6 +215,8 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
             }, {
               FieldURI: "item:TextBody",
             }, {
+              FieldURI: "item:Attachments",
+            }, {
               FieldURI: "calendar:StartTimeZoneId",
             }, {
               FieldURI: "calendar:IsAllDayEvent",

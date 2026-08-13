@@ -49,7 +49,7 @@
   }
 
   async function exportICal() {
-    let file = eventsToICalFile(account.events, account.name);
+    let file = await eventsToICalFile(account.events, account.name);
     await saveBlobAsFile(file);
   }
 </script>

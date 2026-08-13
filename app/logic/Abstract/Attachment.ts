@@ -1,12 +1,13 @@
 import { File as FileEntry } from "../Files/File";
 import { Message } from "./Message";
+import type { Event } from "../Calendar/Event";
 import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { NotImplemented, type URLString } from "../util/util";
-import type { Collection } from "svelte-collections";
+import type { ArrayColl, Collection } from "svelte-collections";
 import { RunOnce } from "../util/flow/RunOnce";
 
 export class Attachment extends Observable {
@@ -29,6 +30,10 @@ export class Attachment extends Observable {
   related: boolean;
   @notifyChangedProperty
   contentID: string;
+  /** Protocol-specific ID of this attachment on the server, e.g. the EWS `AttachmentId`.
+   * null, if the attachment isn't on the server yet. */
+  @notifyChangedProperty
+  pID: string | null = null;
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
@@ -39,7 +44,10 @@ export class Attachment extends Observable {
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
+  /** The email or chat message that this attachment is part of. @see event */
   message: Message;
+  /** The calendar event that this attachment is part of. @see message */
+  event: Event;
   storage: Collection<AttachmentStorage>;
   storageRunOnce = new RunOnce<void>();
 
@@ -98,8 +106,13 @@ export class Attachment extends Observable {
   }
 
   async load() {
-    if (!this.content && this.message instanceof EMail) {
+    if (this.content) {
+      return;
+    }
+    if (this.message instanceof EMail) {
       await this.message.loadAttachments();
+    } else if (this.event) {
+      await this.event.loadAttachments();
     }
   }
 
@@ -203,6 +216,22 @@ const kHiddenMIMETypes = [
   // "application/pkcs7-mime", // S/MIME encrypted
   // "application/pgp-encrypted", // PGP encrypted
 ];
+
+/** An email, chat message or calendar event that can have attachments */
+export interface AttachmentOwner {
+  dbID: number | string;
+  readonly attachments: ArrayColl<Attachment>;
+  newAttachment(): Attachment;
+}
+
+/** Attaches files that the user picked or dropped */
+export function addFilesAsAttachments(owner: AttachmentOwner, files: File[]): void {
+  for (let file of files) {
+    let attachment = owner.newAttachment();
+    attachment.fromFile(file);
+    owner.attachments.add(attachment);
+  }
+}
 
 export interface AttachmentStorage {
   /** Whether this class can save and read attachment content at all */

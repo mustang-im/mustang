@@ -35,17 +35,16 @@
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
-  export let message: EMail;
+  /** Optional. Only for emails, to download the contents on demand. */
+  export let message: EMail = null;
 
   async function onOpen() {
     if (canOpenFileInternally(attachment.mimeType)) {
-      if (!attachment.content) {
-        await message.loadAttachments();
-      }
+      await attachment.load();
       await openFileInternallyFromFile(attachment.content);
     } else {
-      if (!message.downloadComplete) {
-        await message.loadAttachments();
+      if (!message?.downloadComplete) {
+        await attachment.load();
       }
       await attachment.openOSApp();
     }

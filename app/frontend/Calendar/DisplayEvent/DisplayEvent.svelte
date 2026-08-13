@@ -8,6 +8,11 @@
   <vbox class="details-grid">
     <DetailsGrid {event} />
   </vbox>
+  {#if $attachments.hasItems}
+    <vbox class="attachments">
+      <Attachments {attachments} />
+    </vbox>
+  {/if}
   {#if $event.hasDescription}
     <Paper>
       <WebView html={$event.descriptionHTML} title="" {headHTML} />
@@ -21,10 +26,13 @@
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import DialogHeader from "./DialogHeader.svelte";
   import DetailsGrid from "./DetailsGrid.svelte";
+  import Attachments from "../../Mail/Message/AttachmentsUI.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import WebView from "../../Shared/WebView.svelte";
 
   export let event: Event;
+
+  $: attachments = $event.attachments;
 
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>
@@ -44,5 +52,8 @@
   }
   .details-grid {
     margin: 20px 16px;
+  }
+  .attachments {
+    margin: 0px 12px 12px 12px;
   }
 </style>

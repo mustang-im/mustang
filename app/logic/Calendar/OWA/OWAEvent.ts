@@ -14,11 +14,12 @@ import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice36
 import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { owaCreateAttachmentRequest, owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaDeleteAttachmentRequest, owaGetAttachmentRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -120,6 +121,57 @@ export class OWAEvent extends ExchangeEvent {
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
+    this.attachmentsFromJSON(json);
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer() */
+  protected attachmentsFromJSON(json: any) {
+    this.attachments.replaceAll(ensureArray(json.Attachments).map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.AttachmentId.Id);
+      attachment.filename = sanitize.filename(a.Name, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.Size, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.callOWA(owaGetAttachmentRequest(attachment.pID));
+      let content = sanitize.nonemptystring(response.Attachments[0].Content);
+      attachment.content = new File([await base64ToArrayBuffer(content, attachment.mimeType)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
+    }
+  }
+
+  /** Exchange cannot save attachments as part of the event,
+   * but needs separate calls, after the event exists on the server. */
+  protected async saveAttachmentsToServer(): Promise<void> {
+    for (let removed of this.removedAttachments) {
+      await this.calendar.callOWA(owaDeleteAttachmentRequest(removed.pID));
+    }
+    for (let attachment of this.attachments) {
+      if (attachment.pID) {
+        continue; // already on the server
+      }
+      await attachment.load();
+      let request = owaCreateAttachmentRequest(this.itemID, attachment);
+      let response;
+      if (this.calendar.account.authorizationHeader) {
+        response = await this.calendar.callOWAWithOffice365Attachment(request, attachment);
+      } else {
+        request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
+        response = await this.calendar.callOWA(request);
+      }
+      attachment.pID = sanitize.nonemptystring(response.Attachments[0].AttachmentId.Id);
+    }
   }
 
   protected newRecurrenceRuleFromJSON(json: any): RecurrenceRule {
@@ -163,6 +215,7 @@ export class OWAEvent extends ExchangeEvent {
       await this.saveTask();
     }
     */
+    await this.saveAttachmentsToServer();
   }
 
   protected getExchangeSaveRequest() {

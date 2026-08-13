@@ -13,7 +13,9 @@
   import { Directory } from "../../../logic/Files/Directory";
   import { Person } from "../../../logic/Abstract/Person";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
+  import { appGlobal } from "../../../logic/app";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
@@ -48,6 +50,12 @@
         uids.set(email.contact.emailAddress, email.contact);
       }
     }
+    for (let event of eventsWithAttachments()) {
+      let person = event.organizer?.findPerson();
+      if (person) {
+        persons.add(person);
+      }
+    }
     for (let uid of uids.contents) {
       let person = uid.findPerson();
       if (!person) {
@@ -56,6 +64,12 @@
       persons.add(person);
     }
     return persons;
+  }
+
+  /** Meeting attachments are sorted by the organizer of the meeting */
+  function eventsWithAttachments(): Collection<Event> {
+    return appGlobal.calendars.flatMap(calendar => calendar.events)
+      .filterOnce(event => event.attachments.hasItems);
   }
 
   // $: personFolders = appGlobal.files.filter(file => file.sentToFrom == $selectedPerson);
@@ -84,6 +98,14 @@
         if (attachment.hidden) {
           continue;
         }
+        listFiles.add(attachment.asFileEntry());
+      }
+    }
+    for (let event of eventsWithAttachments()) {
+      if (event.organizer?.findPerson() != person) {
+        continue;
+      }
+      for (let attachment of event.attachments) {
         listFiles.add(attachment.asFileEntry());
       }
     }

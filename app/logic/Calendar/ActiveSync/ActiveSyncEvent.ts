@@ -6,9 +6,10 @@ import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTim
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import { ActiveSyncOutgoingInvitation } from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, base64ToArrayBuffer, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kSyncStatusItemNotFound = "8";
@@ -114,6 +115,43 @@ export class ActiveSyncEvent extends ExchangeEvent {
     this.participants.replaceAll(attendees.map(attendee => new Participant(attendee.Email, sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
     if (wbxmljs.ResponseType) {
       this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    }
+    if (wbxmljs.Attachments != undefined) {
+      this.attachmentsFromWBXML(wbxmljs.Attachments);
+    }
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer()
+   * ActiveSync 16.0 and later. Read-only: ActiveSync has no command to add or
+   * remove attachments of a calendar item, so `toFields()` cannot write them. */
+  protected attachmentsFromWBXML(wbxmljs: Record<string, any>) {
+    this.attachments.replaceAll(ensureArray(wbxmljs.Attachment).map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.FileReference);
+      attachment.filename = sanitize.filename(a.DisplayName, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.EstimatedDataSize, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.account.callEAS("ItemOperations", {
+        Fetch: {
+          Store: "Mailbox",
+          FileReference: attachment.pID,
+        },
+      });
+      let content = sanitize.nonemptystring(response.Response?.Fetch?.Properties?.Data);
+      attachment.content = new File([await base64ToArrayBuffer(content, attachment.mimeType)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
     }
   }
 

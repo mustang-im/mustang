@@ -10,9 +10,10 @@ import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemReques
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -122,6 +123,81 @@ export class EWSEvent extends ExchangeEvent {
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
     }
+    this.attachmentsFromXML(xmljs);
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer() */
+  protected attachmentsFromXML(xmljs: Record<string, any>) {
+    let attachments = ensureArray(xmljs.Attachments?.FileAttachment);
+    this.attachments.replaceAll(attachments.map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.AttachmentId.Id);
+      attachment.filename = sanitize.filename(a.Name, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.Size, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.account.callEWS({
+        m$GetAttachment: {
+          m$AttachmentShape: {},
+          m$AttachmentIds: {
+            t$AttachmentId: {
+              Id: attachment.pID,
+            },
+          },
+        },
+      });
+      let content = sanitize.nonemptystring(response.Attachments.FileAttachment.Content);
+      attachment.content = new File([await base64ToArrayBuffer(content, attachment.mimeType)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
+    }
+  }
+
+  /** Exchange cannot save attachments as part of the event,
+   * but needs separate calls, after the event exists on the server. */
+  protected async saveAttachmentsToServer(): Promise<void> {
+    for (let removed of this.removedAttachments) {
+      await this.calendar.account.callEWS({
+        m$DeleteAttachment: {
+          m$AttachmentIds: {
+            t$AttachmentId: {
+              Id: removed.pID,
+            },
+          },
+        },
+      });
+    }
+    for (let attachment of this.attachments) {
+      if (attachment.pID) {
+        continue; // already on the server
+      }
+      await attachment.load();
+      let response = await this.calendar.account.callEWS({
+        m$CreateAttachment: {
+          m$ParentItemId: {
+            Id: this.itemID,
+          },
+          m$Attachments: {
+            t$FileAttachment: {
+              t$Name: attachment.filename,
+              t$ContentType: attachment.mimeType,
+              t$Content: await blobToBase64(attachment.content),
+            },
+          },
+        },
+      });
+      attachment.pID = sanitize.nonemptystring(response.Attachments.FileAttachment.AttachmentId.Id);
+    }
   }
 
   protected newRecurrenceRuleFromXML(xmljs: any): RecurrenceRule {
@@ -166,6 +242,7 @@ export class EWSEvent extends ExchangeEvent {
       await this.saveTask();
     }
     */
+    await this.saveAttachmentsToServer();
   }
 
   async saveCalendarItemToServer() {
@@ -360,6 +437,8 @@ export class EWSEvent extends ExchangeEvent {
               FieldURI: "item:LastModifiedTime",
             }, {
               FieldURI: "item:TextBody",
+            }, {
+              FieldURI: "item:Attachments",
             }, {
               FieldURI: "calendar:StartTimeZoneId",
             }, {

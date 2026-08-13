@@ -5,7 +5,7 @@
   tabindex={0}
   >
   <MessageHeader bind:message />
-  <MessageAttachments {message} />
+  <MessageAttachments attachments={message.attachments} {message} />
   <SMLDisplayKinds {message} sml={message.sml} />
   <vbox class="body" flex>
     <Paper>

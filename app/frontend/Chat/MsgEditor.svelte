@@ -17,7 +17,7 @@
     {/if}
     {#if $attachments.hasItems}
       <vbox class="attachments">
-        <AttachmentsPane message={to.draftMessage} />
+        <AttachmentsPane owner={to.draftMessage} />
       </vbox>
     {/if}
     <hbox flex>

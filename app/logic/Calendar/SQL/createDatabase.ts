@@ -1,5 +1,31 @@
 import sql from "../../../../lib/rs-sqlite/index";
 
+/** Separate from the schema below, so that the migration for
+ * pre-existing databases can create the same table. */
+export const eventAttachmentSchema = sql`
+  --- Files that the organizer attached to the event
+  CREATE TABLE "eventAttachment" (
+    "id" INTEGER PRIMARY KEY,
+    "eventID" INTEGER not null,
+    -- filename with extension, as given by the organizer
+    "filename" TEXT not null,
+    -- filename and path where the attachment is stored on the user's local disk, after download
+    -- path is relative to app root directory
+    "filepathLocal" TEXT default null,
+    "mimeType" TEXT not null,
+    -- file size in bytes. null, if not yet downloaded
+    "size" INTEGER default null,
+    -- Protocol-specific ID of the attachment on the server, e.g. the EWS AttachmentId
+    "pID" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
+    UNIQUE("eventID", "filename"),
+    FOREIGN KEY (eventID)
+      REFERENCES event (ID)
+      ON DELETE CASCADE
+  );
+`;
+
 export const calendarDatabaseSchema = sql`
   CREATE TABLE "calendar" (
     "id" INTEGER PRIMARY KEY,
@@ -134,4 +160,6 @@ export const calendarDatabaseSchema = sql`
       ON DELETE CASCADE
   );
   CREATE INDEX index_groupMember_eventID ON eventParticipant (eventID);
+
+  $${eventAttachmentSchema}
 `;
