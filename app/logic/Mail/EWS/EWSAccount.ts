@@ -17,6 +17,7 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
+import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -37,6 +38,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  /** NTLM authenticates TCP connections, not HTTP requests, so it needs
+   * connections that we control. Only for `AuthMethod.NTLM`. */
+  protected ntlmPool: NTLMConnectionPool | null = null;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
    * inbox: if this is an inbox shared with us */
@@ -130,6 +134,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
       await this.unsubscribeAllSubscriptions();
+      this.ntlmPool?.closeAll();
     }
 
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
@@ -286,19 +291,17 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return true;
   }
 
-  /** @returns `Authorization` HTTP request header - usable only for a single call */
-  async loginWithNTLM(): Promise<string> {
+  /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
+  protected get ntlm(): NTLMConnectionPool {
     assert(this.username && this.password, gt`Need username and password`);
-    let response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: await appGlobal.remoteApp.createType1Message() }));
-    assert(/\bNTLM\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.headers.get("WWW-Authenticate"), this.username, this.password);
+    return this.ntlmPool ??= new NTLMConnectionPool(this);
   }
 
-  createRequestOptions({ authorizationHeader, body, signal }: { authorizationHeader?: string, body?: string, signal?: AbortSignal }): any {
+  createRequestOptions({ body, signal }: { body?: string, signal?: AbortSignal } = {}): any {
     let options: any = {
       body,
       headers: {
-        'Content-Type': "text/xml; charset=utf-8",
+        'Content-Type': kContentType,
       },
       method: "POST",
       signal,
@@ -309,9 +312,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else if (this.authMethod == AuthMethod.NTLM) {
-      if (authorizationHeader) {
-        options.headers.Authorization = authorizationHeader;
-      }
+      throw new NotReached("NTLM requests go through the NTLMConnectionPool");
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     } else if (this.authMethod == AuthMethod.Unknown) {
@@ -340,7 +341,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
     let response: any;
     try {
-      response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
+      response = this.authMethod == AuthMethod.NTLM
+        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kContentType } })
+        : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
     }
@@ -376,8 +379,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        let authorizationHeader = await this.loginWithNTLM();
-        return repeat({ authorizationHeader });
+        // `NTLMConnectionPool` already re-authenticated the TCP connection
+        // and retried, so this 401 means that the server rejects the login.
+        let ex = new EWSError(response, aRequest);
+        throw new LoginError(ex, gt`Login failed`);
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
@@ -411,16 +416,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
-        let response = await fetch(this.url, this.createRequestOptions({ body, signal }));
-        if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
-          let authorizationHeader = await this.loginWithNTLM();
-          response = await fetch(this.url, this.createRequestOptions({ authorizationHeader, body, signal })); // Repeat the call
-        }
-        if (!response.ok) {
-          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
-          return;
-        }
-        for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
+        const processChunk = async (chunk: string) => {
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -447,6 +443,29 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               this.errorCallback(ex);
             }
           }
+        };
+        let response: any;
+        if (this.authMethod == AuthMethod.NTLM) {
+          // The stream runs for up to 29 minutes, so give it its own
+          // TCP connection, outside of the pool.
+          let conn = this.ntlm.newDedicatedConnection();
+          try {
+            // Streams via `processChunk`. Resolves once the stream ended.
+            response = await conn.request(body, { headers: { 'Content-Type': kContentType }, signal, onChunk: processChunk });
+          } finally {
+            conn.close();
+          }
+        } else {
+          response = await fetch(this.url, this.createRequestOptions({ body, signal }));
+        }
+        if (!response.ok) {
+          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
+          return;
+        }
+        if (response.body) { // `fetch()`. The NTLM path streamed via `processChunk` above.
+          for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
+            await processChunk(chunk);
+          }
         }
       } catch (ex) {
         if (signal.aborted) {
@@ -454,7 +473,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           console.log(signal.reason);
           break;
         }
-        if (ex?.message == "terminated") {
+        if (ex?.message == "terminated" || // `fetch()`
+            ex?.code == "ECONNRESET" || ex?.code == "EPIPE") { // NTLM connection
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           continue;
@@ -1104,6 +1124,8 @@ export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | E
 
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
+
+const kContentType = "text/xml; charset=utf-8";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {
