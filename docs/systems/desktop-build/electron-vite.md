@@ -31,7 +31,7 @@ Electron Vite is a build tool that uses Vite to build the HTML, CSS, and JavaScr
 
 ### Node Native Modules
 
-The node dependencies are externalized because they contain Node Native Modules which cannot be minified and bundled. Rebuilding the Node Native Modules is done by Electron Builder.
+The node dependencies are externalized because they contain Node Native Modules which cannot be minified and bundled. Rebuilding the Node Native Modules is done by Electron Builder. See `electron-builder.md` for more information about rebuilding Node Native Modules.
 
 ## Dependencies
 
