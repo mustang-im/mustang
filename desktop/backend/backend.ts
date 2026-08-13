@@ -1,5 +1,6 @@
 import { HTTPServer } from './HTTPServer';
 import { HTTPConnection, type HTTPConnectionOptions } from './HTTPConnection';
+import { netRequest, closeNetConnections } from './netRequest';
 import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
@@ -96,6 +97,8 @@ async function createSharedAppObject() {
     newAdmZIP,
     newHTTPServer,
     newHTTPConnection,
+    netRequest,
+    closeNetConnections,
     newTCPSocket,
     newWebSocket,
     gunzip,

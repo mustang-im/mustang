@@ -1,4 +1,5 @@
-import { NTLMConnection, CookieJar, type NTLMServer, type NTLMRequestOptions, type NTLMResponse } from "./NTLMConnection";
+import { NTLMConnection, CookieJar } from "./NTLMConnection";
+import type { NTLMServer, NTLMRequestOptions, NTLMResponse } from "./NTLMTransport";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { arrayRemove } from "../../util/util";
 

@@ -17,7 +17,7 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
-import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
+import { newNTLMTransport, type NTLMTransport } from "../../Auth/NTLM/NTLMTransport";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -40,7 +40,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   protected startupRunOnce = new RunOnce();
   /** NTLM authenticates TCP connections, not HTTP requests, so it needs
    * connections that we control. Only for `AuthMethod.NTLM`. */
-  protected ntlmPool: NTLMConnectionPool | null = null;
+  protected ntlmTransport: NTLMTransport | null = null;
+  protected _useOwnNTLM = false;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
    * inbox: if this is an inbox shared with us */
@@ -134,7 +135,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
       await this.unsubscribeAllSubscriptions();
-      this.ntlmPool?.closeAll();
+      this.ntlmTransport?.closeAll();
     }
 
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
@@ -291,10 +292,26 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return true;
   }
 
+  /** User setting: Use our own NTLM implementation
+   * instead of the Chromium network stack */
+  get useOwnNTLM(): boolean {
+    return this._useOwnNTLM;
+  }
+  set useOwnNTLM(val: boolean) {
+    if (val == this._useOwnNTLM) {
+      return;
+    }
+    this._useOwnNTLM = val;
+    // Use the other implementation from now on
+    this.ntlmTransport?.closeAll();
+    this.ntlmTransport = null;
+    this.notifyObservers();
+  }
+
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
-  protected get ntlm(): NTLMConnectionPool {
+  protected get ntlm(): NTLMTransport {
     assert(this.username && this.password, gt`Need username and password`);
-    return this.ntlmPool ??= new NTLMConnectionPool(this);
+    return this.ntlmTransport ??= newNTLMTransport(this);
   }
 
   createRequestOptions({ body, signal }: { body?: string, signal?: AbortSignal } = {}): any {
@@ -312,7 +329,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else if (this.authMethod == AuthMethod.NTLM) {
-      throw new NotReached("NTLM requests go through the NTLMConnectionPool");
+      throw new NotReached("NTLM requests go through the NTLM transport");
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     } else if (this.authMethod == AuthMethod.Unknown) {
@@ -379,8 +396,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        // `NTLMConnectionPool` already re-authenticated the TCP connection
-        // and retried, so this 401 means that the server rejects the login.
+        if (!options?.isRepeating) {
+          // The login can fail transiently, e.g. when the server closed the
+          // TCP connection in the middle of the login handshake.
+          // Repeat once, and the NTLM transport logs in again,
+          // like a browser asking for the password again.
+          return repeat();
+        }
         let ex = new EWSError(response, aRequest);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.authMethod == AuthMethod.Password) {
@@ -407,7 +429,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
   }
 
-  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>) {
+  /** @param streamID stable per stream, e.g. the streamed account's username */
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, streamID = "") {
     let lastAttempt: number;
     let signal = abort.signal;
     do {
@@ -448,7 +471,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         if (this.authMethod == AuthMethod.NTLM) {
           // The stream runs for up to 29 minutes, so give it its own
           // TCP connection, outside of the pool.
-          let conn = this.ntlm.newDedicatedConnection();
+          let conn = this.ntlm.newDedicatedConnection(streamID);
           try {
             // Streams via `processChunk`. Resolves once the stream ended.
             response = await conn.request(body, { headers: { 'Content-Type': kContentType }, signal, onChunk: processChunk });
@@ -474,7 +497,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           break;
         }
         if (ex?.message == "terminated" || // `fetch()`
-            ex?.code == "ECONNRESET" || ex?.code == "EPIPE") { // NTLM connection
+            ex?.code == "ECONNRESET" || ex?.code == "EPIPE" || // own NTLM connection
+            ex?.message?.includes("net::ERR_CONNECTION") || // Chromium
+            ex?.message?.includes("net::ERR_EMPTY_RESPONSE")) {
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           continue;
@@ -608,7 +633,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
-    }).catch(this.errorCallback);
+    }, username).catch(this.errorCallback);
   }
 
   async processNotification(notification: Record<string, any>) {
@@ -1104,11 +1129,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
+    this.useOwnNTLM = sanitize.boolean(json.useOwnNTLM, false);
   }
 
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.sharedFolderRoot = this.sharedFolderRoot;
+    json.useOwnNTLM = this.useOwnNTLM;
     return json;
   }
 }

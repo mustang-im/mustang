@@ -1,3 +1,4 @@
+import { NTLMResponse, joinHeader, type NTLMRequestOptions, type NTLMServer } from "./NTLMTransport";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Lock } from "../../util/flow/Lock";
@@ -166,47 +167,6 @@ export class NTLMConnection {
   }
 }
 
-/** The subset of `Account` that the NTLM login needs. Read live, so that
- * a changed password is picked up on the next handshake. */
-export interface NTLMServer {
-  url: string;
-  username: string;
-  password: string;
-  acceptBrokenTLSCerts: boolean;
-}
-
-export interface NTLMRequestOptions {
-  headers?: Record<string, string>;
-  signal?: AbortSignal;
-  onChunk?: (chunk: string) => Promise<void>;
-}
-
-/** Duck-typed like a `fetch()` `Response`, as far as `EWSAccount` needs it */
-export class NTLMResponse {
-  readonly status: number;
-  readonly statusText: string;
-  readonly ok: boolean;
-  readonly socketID: number;
-  readonly headers: { get: (name: string) => string | null };
-  protected readonly bodyText: string;
-
-  constructor(response: any) {
-    this.status = response.status;
-    this.statusText = response.statusText;
-    this.ok = response.ok;
-    this.socketID = response.socketID;
-    this.bodyText = response.body;
-    let rawHeaders = response.headers;
-    this.headers = {
-      get: (name: string) => joinHeader(rawHeaders[name.toLowerCase()]) || null,
-    };
-  }
-
-  async text(): Promise<string> {
-    return this.bodyText;
-  }
-}
-
 /**
  * Remembers the cookies that the server set, and sends them back.
  * Exchange and load balancers in front of it use cookies for routing
@@ -238,8 +198,3 @@ export class CookieJar {
 
 /** Errors where the server closed the connection without answering */
 const kConnectionDropCodes = ["ECONNRESET", "EPIPE"];
-
-/** node gives repeated HTTP headers as an array */
-function joinHeader(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? value.join(", ") : value ?? "";
-}
