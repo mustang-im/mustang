@@ -1,7 +1,3 @@
-import { NTLMConnectionPool } from "./NTLMConnectionPool";
-import { NTLMChromiumSession } from "./NTLMChromium";
-import { appGlobal } from "../../app";
-
 /**
  * The common contract of our two alternative NTLM implementations:
  * - `NTLMChromiumSession`: Chromium's network stack does the NTLM login
@@ -71,16 +67,4 @@ export class NTLMResponse {
 /** node gives repeated HTTP headers as an array */
 export function joinHeader(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value.join(", ") : value ?? "";
-}
-
-/**
- * Creates the right NTLM implementation for the account:
- * Chromium's network stack handles NTLM per TCP connection natively.
- * Where the Chromium `net` API is not available (e.g. mobile), or if the
- * user asked for it, use our own implementation.
- */
-export function newNTLMTransport(account: NTLMServer): NTLMTransport {
-  return appGlobal.remoteApp.netRequest && !account.useOwnNTLM
-    ? new NTLMChromiumSession(account)
-    : new NTLMConnectionPool(account);
 }

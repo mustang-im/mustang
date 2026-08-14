@@ -17,7 +17,9 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
-import { newNTLMTransport, type NTLMTransport } from "../../Auth/NTLM/NTLMTransport";
+import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
+import { NTLMChromiumSession } from "../../Auth/NTLM/NTLMChromiumSession";
+import type { NTLMTransport } from "../../Auth/NTLM/NTLMTransport";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -311,7 +313,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
   protected get ntlm(): NTLMTransport {
     assert(this.username && this.password, gt`Need username and password`);
-    return this.ntlmTransport ??= newNTLMTransport(this);
+    return this.ntlmTransport ??= appGlobal.remoteApp.netRequest && !this.useOwnNTLM
+      ? new NTLMChromiumSession(this)
+      : new NTLMConnectionPool(this);
   }
 
   createRequestOptions({ body, signal }: { body?: string, signal?: AbortSignal } = {}): any {
