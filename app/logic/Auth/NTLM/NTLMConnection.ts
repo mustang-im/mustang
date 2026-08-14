@@ -1,4 +1,4 @@
-import { NTLMResponse, joinHeader, type NTLMRequestOptions } from "./NTLMTransport";
+import { NTLMResponse, joinHeader, type NTLMRequestOptions } from "./NTLMResponse";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";

@@ -1,14 +1,3 @@
-import type { NTLMChromiumSession } from "./NTLMChromiumSession";
-import type { NTLMConnectionPool } from "./NTLMConnectionPool";
-
-/**
- * Our two alternative NTLM implementations:
- * - `NTLMChromiumSession`: Chromium's network stack does the NTLM login
- * - `NTLMConnectionPool`: our own NTLM implementation, over `HTTPConnection`
- * `EWSAccount` picks one, based on platform and user setting.
- */
-export type NTLMTransport = NTLMChromiumSession | NTLMConnectionPool;
-
 export interface NTLMRequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;

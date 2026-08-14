@@ -1,5 +1,5 @@
 import type { NTLMChromiumSession } from "./NTLMChromiumSession";
-import { NTLMResponse, type NTLMRequestOptions } from "./NTLMTransport";
+import { NTLMResponse, type NTLMRequestOptions } from "./NTLMResponse";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 

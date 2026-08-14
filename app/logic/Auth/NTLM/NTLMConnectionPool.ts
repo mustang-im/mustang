@@ -1,5 +1,5 @@
 import { NTLMConnection, CookieJar } from "./NTLMConnection";
-import type { NTLMRequestOptions, NTLMResponse } from "./NTLMTransport";
+import type { NTLMRequestOptions, NTLMResponse } from "./NTLMResponse";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { arrayRemove } from "../../util/util";

@@ -1,4 +1,4 @@
-import { NTLMResponse, type NTLMRequestOptions } from "./NTLMTransport";
+import { NTLMResponse, type NTLMRequestOptions } from "./NTLMResponse";
 import { NTLMChromiumStream } from "./NTLMChromiumStream";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { appGlobal } from "../../app";

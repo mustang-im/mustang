@@ -19,7 +19,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
 import { NTLMChromiumSession } from "../../Auth/NTLM/NTLMChromiumSession";
-import type { NTLMTransport } from "../../Auth/NTLM/NTLMTransport";
+import type { NTLMTransport } from "../../Auth/NTLM/NTLMResponse";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -42,7 +42,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   protected startupRunOnce = new RunOnce();
   /** NTLM authenticates TCP connections, not HTTP requests, so it needs
    * connections that we control. Only for `AuthMethod.NTLM`. */
-  protected ntlmTransport: NTLMTransport | null = null;
+  protected ntlmTransport: NTLMChromiumSession | NTLMConnectionPool | null = null;
   protected _useOwnNTLM = false;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
@@ -311,7 +311,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
-  protected get ntlm(): NTLMTransport {
+  protected get ntlm(): NTLMChromiumSession | NTLMConnectionPool {
     assert(this.username && this.password, gt`Need username and password`);
     return this.ntlmTransport ??= appGlobal.remoteApp.netRequest && !this.useOwnNTLM
       ? new NTLMChromiumSession(this)
