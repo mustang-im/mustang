@@ -1,5 +1,6 @@
-import { NTLMResponse, type NTLMRequestOptions, type NTLMServer } from "./NTLMTransport";
+import { NTLMResponse, type NTLMRequestOptions } from "./NTLMTransport";
 import { NTLMChromiumStream } from "./NTLMChromiumStream";
+import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { appGlobal } from "../../app";
 
 /**
@@ -15,9 +16,9 @@ import { appGlobal } from "../../app";
  * used on platforms without the Chromium `net` API, e.g. mobile.
  */
 export class NTLMChromiumSession {
-  protected readonly account: NTLMServer;
+  protected readonly account: EWSAccount;
 
-  constructor(account: NTLMServer) {
+  constructor(account: EWSAccount) {
     this.account = account;
   }
 

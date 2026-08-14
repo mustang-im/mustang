@@ -1,36 +1,13 @@
+import type { NTLMChromiumSession } from "./NTLMChromiumSession";
+import type { NTLMConnectionPool } from "./NTLMConnectionPool";
+
 /**
- * The common contract of our two alternative NTLM implementations:
+ * Our two alternative NTLM implementations:
  * - `NTLMChromiumSession`: Chromium's network stack does the NTLM login
  * - `NTLMConnectionPool`: our own NTLM implementation, over `HTTPConnection`
+ * `EWSAccount` picks one, based on platform and user setting.
  */
-export interface NTLMTransport {
-  request(body: string, options?: NTLMRequestOptions): Promise<NTLMResponse>;
-  /** For a long-running notification stream, outside of the pool.
-   * @param streamID stable per stream, e.g. the streamed account's username */
-  newDedicatedConnection(streamID?: string): NTLMTransportConnection;
-  /** Closes all TCP connections, e.g. on logout.
-   * The transport can still be used afterwards and would reconnect. */
-  closeAll(): void;
-}
-
-export interface NTLMTransportConnection {
-  request(body: string, options?: NTLMRequestOptions): Promise<NTLMResponse>;
-  close(): void;
-}
-
-/** The subset of `Account` that the NTLM login needs. Read live, so that
- * a changed password is picked up on the next login. */
-export interface NTLMServer {
-  url: string;
-  username: string;
-  password: string;
-  acceptBrokenTLSCerts: boolean;
-  /** Isolates the accounts from each other. @see `NTLMChromiumSession` */
-  webSessionID: string | null;
-  /** User setting: Use our own NTLM implementation (`NTLMConnectionPool`)
-   * even where Chromium's network stack is available */
-  useOwnNTLM: boolean;
-}
+export type NTLMTransport = NTLMChromiumSession | NTLMConnectionPool;
 
 export interface NTLMRequestOptions {
   headers?: Record<string, string>;

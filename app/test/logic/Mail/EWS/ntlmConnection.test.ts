@@ -2,7 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { NTLMConnection } from "../../../../logic/Auth/NTLM/NTLMConnection";
 import { NTLMConnectionPool } from "../../../../logic/Auth/NTLM/NTLMConnectionPool";
-import type { NTLMServer } from "../../../../logic/Auth/NTLM/NTLMTransport";
+import type { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import { LoginError } from "../../../../logic/Abstract/Account";
 import { NTLMTestServer, sleep } from "./ntlmTestServer";
 // The node.js backend parts, in-process instead of via JPC
@@ -13,19 +13,19 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("NTLM per-TCP-connection authentication", () => {
   let server: NTLMTestServer;
-  let account: NTLMServer;
+  let account: EWSAccount;
 
   beforeEach(async () => {
     server = new NTLMTestServer();
     await server.start();
-    account = {
+    account = { // just the fields that the NTLM login reads
       url: server.url,
       username: "testuser",
       password: server.password,
       acceptBrokenTLSCerts: false,
       webSessionID: "test-account",
       useOwnNTLM: true,
-    };
+    } as EWSAccount;
     appGlobal.remoteApp = {
       newHTTPConnection: async (url: string, options: any) => jpcLike(new HTTPConnection(url, options)),
       createType1Message: async () => createType1Message(),

@@ -1,4 +1,5 @@
-import { NTLMResponse, joinHeader, type NTLMRequestOptions, type NTLMServer } from "./NTLMTransport";
+import { NTLMResponse, joinHeader, type NTLMRequestOptions } from "./NTLMTransport";
+import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Lock } from "../../util/flow/Lock";
@@ -28,7 +29,7 @@ import { gt } from "../../../l10n/l10n";
  * multiple connections, see `NTLMConnectionPool`.
  */
 export class NTLMConnection {
-  protected readonly account: NTLMServer;
+  protected readonly account: EWSAccount;
   protected readonly cookies: CookieJar;
   /** Backend `HTTPConnection` (via JPC) */
   protected conn: any = null;
@@ -36,7 +37,7 @@ export class NTLMConnection {
   protected authenticatedSocketID = 0;
   protected readonly lock = new Lock();
 
-  constructor(account: NTLMServer, cookies?: CookieJar) {
+  constructor(account: EWSAccount, cookies?: CookieJar) {
     this.account = account;
     this.cookies = cookies ?? new CookieJar();
   }

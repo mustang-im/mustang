@@ -1,5 +1,6 @@
 import { NTLMConnection, CookieJar } from "./NTLMConnection";
-import type { NTLMServer, NTLMRequestOptions, NTLMResponse } from "./NTLMTransport";
+import type { NTLMRequestOptions, NTLMResponse } from "./NTLMTransport";
+import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { arrayRemove } from "../../util/util";
 
@@ -15,13 +16,13 @@ import { arrayRemove } from "../../util/util";
  * The caller controls which cookie jar is used, so we can separate accounts.
  */
 export class NTLMConnectionPool {
-  protected readonly account: NTLMServer;
+  protected readonly account: EWSAccount;
   readonly cookies: CookieJar;
   protected readonly free: NTLMConnection[] = [];
   protected readonly all: NTLMConnection[] = [];
   protected readonly semaphore: Semaphore;
 
-  constructor(account: NTLMServer, cookies = new CookieJar(), maxConnections = 6) {
+  constructor(account: EWSAccount, cookies = new CookieJar(), maxConnections = 6) {
     this.account = account;
     this.cookies = cookies;
     this.semaphore = new Semaphore(maxConnections);
@@ -54,8 +55,9 @@ export class NTLMConnectionPool {
    * A connection outside of the pool, e.g. for a long-running
    * notification stream, which would otherwise hog a pool slot.
    * `close()` it when done. It shares the pool's cookie jar.
+   * @param _streamID only `NTLMChromiumSession` needs it
    */
-  newDedicatedConnection(): NTLMConnection {
+  newDedicatedConnection(_streamID = ""): NTLMConnection {
     return new NTLMConnection(this.account, this.cookies);
   }
 
