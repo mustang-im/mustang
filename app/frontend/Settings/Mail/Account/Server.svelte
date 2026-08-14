@@ -7,7 +7,7 @@
   {#if account instanceof IMAPAccount}
     <ServerIMAPAdvanced {account} />
   {/if}
-  {#if account instanceof EWSAccount && account.authMethod == AuthMethod.NTLM}
+  {#if account instanceof EWSAccount && $account.authMethod == AuthMethod.NTLM}
     <ServerEWSAdvanced {account} />
   {/if}
 </vbox>

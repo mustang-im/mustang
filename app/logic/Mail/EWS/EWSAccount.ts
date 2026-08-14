@@ -19,7 +19,6 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
 import { NTLMChromiumSession } from "../../Auth/NTLM/NTLMChromiumSession";
-import type { NTLMTransport } from "../../Auth/NTLM/NTLMResponse";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -28,6 +27,7 @@ import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
+import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -43,6 +43,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   /** NTLM authenticates TCP connections, not HTTP requests, so it needs
    * connections that we control. Only for `AuthMethod.NTLM`. */
   protected ntlmTransport: NTLMChromiumSession | NTLMConnectionPool | null = null;
+  @notifyChangedProperty
   protected _useOwnNTLM = false;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
@@ -138,6 +139,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     } else {
       await this.unsubscribeAllSubscriptions();
       this.ntlmTransport?.closeAll();
+      this.ntlmTransport = null;
     }
 
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
@@ -303,11 +305,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (val == this._useOwnNTLM) {
       return;
     }
-    this._useOwnNTLM = val;
     // Use the other implementation from now on
     this.ntlmTransport?.closeAll();
     this.ntlmTransport = null;
-    this.notifyObservers();
+    this._useOwnNTLM = val;
   }
 
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
@@ -322,7 +323,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let options: any = {
       body,
       headers: {
-        'Content-Type': kContentType,
+        'Content-Type': kXMLContentType,
       },
       method: "POST",
       signal,
@@ -363,7 +364,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let response: any;
     try {
       response = this.authMethod == AuthMethod.NTLM
-        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kContentType } })
+        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kXMLContentType } })
         : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
@@ -400,15 +401,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        if (!options?.isRepeating) {
-          // The login can fail transiently, e.g. when the server closed the
-          // TCP connection in the middle of the login handshake.
-          // Repeat once, and the NTLM transport logs in again,
-          // like a browser asking for the password again.
-          return repeat();
-        }
-        let ex = new EWSError(response, aRequest);
-        throw new LoginError(ex, gt`Login failed`);
+        // Login can fail transiently, e.g. when the connection closed during the login handshake
+        return repeat();
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
@@ -478,7 +472,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           let conn = this.ntlm.newDedicatedConnection(streamID);
           try {
             // Streams via `processChunk`. Resolves once the stream ended.
-            response = await conn.request(body, { headers: { 'Content-Type': kContentType }, signal, onChunk: processChunk });
+            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, signal, onChunk: processChunk });
           } finally {
             conn.close();
           }
@@ -1153,10 +1147,10 @@ export interface EWSSubscribable extends Account {
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
+const kXMLContentType = "text/xml; charset=utf-8";
+
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
-
-const kContentType = "text/xml; charset=utf-8";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {
