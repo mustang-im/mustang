@@ -8,7 +8,8 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences, powerMonitor } from "electron";
+import { net as Net, shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences, powerMonitor } from "electron";
+import { Readable } from "stream";
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
@@ -55,6 +56,7 @@ export function createJPCSecret(): string {
 async function createSharedAppObject() {
   return {
     kyCreate,
+    netRequest,
     OWA,
     newOSNotification,
     isOSNotificationSupported,
@@ -248,6 +250,45 @@ export class HTTPFetchError extends Error {
       }
     }
   }
+}
+
+function netRequest(url, options, partition, username, password) {
+  let triedAuth = false;
+  let body = options.body;
+  delete options.body;
+  options.url = url;
+  options.partition = partition;
+  options.credentials = 'include';
+  return new Promise((resolve, reject) => {
+    let request = Net.request(options);
+    request.on('response', message => {
+      if ([101, 204, 205, 304].includes(message.statusCode)) {
+        resolve({
+          ok: (message.statusCode >= 200 && message.statusCode <= 299),
+          status: message.statusCode,
+          statusText: message.statusMessage,
+          responseText: '',
+        });
+      } else {
+        new Response(Readable.toWeb(message)).text().then(text => resolve({
+          ok: (message.statusCode >= 200 && message.statusCode <= 299),
+          status: message.statusCode,
+          statusText: message.statusMessage,
+          responseText: text,
+        })).catch(reject);
+      }
+    });
+    request.on('login', (authInfo, callback) => {
+      if (triedAuth || authInfo.isProxy) {
+        callback();
+      } else {
+        triedAuth = true;
+        callback(username, password);
+      }
+    });
+    request.on('error', reject);
+    request.end(body);
+  });
 }
 
 function newHTTPServer() {

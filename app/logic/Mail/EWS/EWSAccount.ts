@@ -340,12 +340,16 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
     let response: any;
     try {
-      response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
+      if (this.authMethod == AuthMethod.NTLM) {
+        response = await appGlobal.remoteApp.netRequest(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }), this.webSessionID, this.username, this.password);
+      } else {
+        response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
+      }
     } finally {
       lock.release();
     }
     try {
-      response.responseText = await response.text();
+      response.responseText ??= await response.text();
     } catch (ex) {
       response.responseText = "";
     }
@@ -368,16 +372,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         options.isRepeating = true;
         return await this.callEWS(aRequest, options); // repeat the call
       }
-      if (options?.isRepeating) {
+      if (options?.isRepeating || this.authMethod == AuthMethod.NTLM) {
         let ex = new EWSError(response, aRequest);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (this.authMethod == AuthMethod.NTLM) {
-        let authorizationHeader = await this.loginWithNTLM();
-        return repeat({ authorizationHeader });
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
@@ -413,6 +414,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         let data = "";
         let response = await fetch(this.url, this.createRequestOptions({ body, signal }));
         if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
+          console.log("(two initial 401s expected during callStream's NTLM login)");
           let authorizationHeader = await this.loginWithNTLM();
           response = await fetch(this.url, this.createRequestOptions({ authorizationHeader, body, signal })); // Repeat the call
         }
