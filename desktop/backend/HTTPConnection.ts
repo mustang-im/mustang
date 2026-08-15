@@ -57,6 +57,8 @@ export class HTTPConnection {
    *   awaited for each chunk, `body` stays empty, and the returned promise
    *   resolves only once the stream ended. Non-2xx responses are returned
    *   whole, so that the caller can handle auth challenges before streaming.
+   * @throws Network errors carry `reusedSocket` and `responseStarted`, so that
+   *   the caller can tell whether the server already processed the request.
    */
   async request(options: {
     method?: string,
@@ -84,6 +86,13 @@ export class HTTPConnection {
       return await new Promise((resolve, reject) => {
         let socketID = 0;
         let reusedSocket = false;
+        let responseStarted = false;
+        // Own properties, so they survive the JPC serialization, like `code`
+        let fail = (ex: any) => {
+          ex.reusedSocket = reusedSocket;
+          ex.responseStarted = responseStarted;
+          reject(ex);
+        };
         req.on("socket", socket => {
           let id = this.socketIDs.get(socket);
           if (!id) {
@@ -93,14 +102,11 @@ export class HTTPConnection {
           socketID = id;
           reusedSocket = req.reusedSocket;
         });
-        req.on("error", ex => {
-          // Own property, so it survives the JPC serialization, like `code`
-          (ex as any).reusedSocket = reusedSocket;
-          reject(ex);
-        });
+        req.on("error", fail);
         req.on("response", res => {
+          responseStarted = true;
           this.readResponse(req, res, socketID, reusedSocket, onChunk)
-            .then(resolve, reject);
+            .then(resolve, fail);
         });
         req.end(body);
       });
@@ -194,8 +200,9 @@ export interface HTTPConnectionResponse {
    * Changes whenever the connection had to be re-established. */
   socketID: number;
   /** Whether the request went out on a kept-alive connection.
-   * If such a request fails without a response, the server closed the
-   * connection while the request was on the wire, and it is safe to retry. */
+   * If such a request fails before any response byte arrived (`responseStarted`
+   * on the error), the server closed the connection while the request was on
+   * the wire, and it is safe to retry. */
   reusedSocket: boolean;
 }
 

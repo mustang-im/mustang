@@ -112,6 +112,35 @@ describe("NTLM per-TCP-connection authentication", () => {
     pool.closeAll();
   });
 
+  it("does not repeat a request that the server already started to answer", async () => {
+    server.killWhileResponding = true; // RST in the middle of the 200 response
+    let pool = new NTLMConnectionPool(account);
+    await expect(pool.request("<request>send mail</request>")).rejects.toThrow();
+    // The server processed it. Repeating it would have sent the mail twice.
+    expect(server.requestBodies).toEqual(["<request>send mail</request>"]);
+    pool.closeAll();
+  });
+
+  it("does not restart a stream that already delivered data", async () => {
+    server.streamChunks = ["<Envelope>1</Envelope>", "<Envelope>2</Envelope>"];
+    server.killWhileResponding = true; // RST after the first chunk
+    let pool = new NTLMConnectionPool(account);
+    let conn = pool.newDedicatedConnection();
+    let received: string[] = [];
+    await expect(conn.request("<request>stream</request>", {
+      onChunk: async chunk => {
+        received.push(chunk);
+      },
+    })).rejects.toThrow();
+    expect(received.join("")).toBe("<Envelope>1</Envelope>");
+    // Restarting the stream would deliver the same envelopes again, and the
+    // partial envelope of the first attempt would corrupt the next one
+    expect(server.requestBodies).toEqual(["<request>stream</request>"]);
+    expect(server.handshakesCompleted).toBe(1);
+    conn.close();
+    pool.closeAll();
+  });
+
   it("re-authenticates when the server drops the auth state, e.g. a load balancer", async () => {
     let pool = new NTLMConnectionPool(account);
     let response = await pool.request("<request>1</request>");

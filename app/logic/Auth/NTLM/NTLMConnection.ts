@@ -110,10 +110,13 @@ export class NTLMConnection {
       }
       return response;
     } catch (ex) {
-      if (ex?.reusedSocket && kConnectionDropCodes.includes(ex.code) &&
+      if (ex?.reusedSocket && !ex.responseStarted && kConnectionDropCodes.includes(ex.code) &&
           mayRetry && !options.signal?.aborted) {
         // Keep-alive race: The server closed the connection at the moment
         // our request went out on it, so it never received the request.
+        // Only then may we repeat it. Once the server started to answer, it
+        // processed the request, and repeating it would run it a second time,
+        // e.g. send the same mail twice.
         this.authenticatedSocketID = 0;
         return null;
       }
