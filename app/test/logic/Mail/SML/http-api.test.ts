@@ -27,7 +27,7 @@ let acc: SMLHTTPAccount;
  * @warning Waits for email, so often takes minutes or hangs entirely. Do not `await` it.
  */
 async function registerSMLHTTP(identity: MailIdentity) {
-  acc = SMLHTTPAccount.getOrCreateAccount(identity.emailAddress, identity.realname);
+  acc = await SMLHTTPAccount.getOrCreateAccount(identity);
   if (!acc.isLoggedIn) {
     acc.mailAccount = identity.account;
     await acc.login(); // waits for email, so often takes minutes or hangs entirely
