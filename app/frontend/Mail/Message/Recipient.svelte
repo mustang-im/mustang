@@ -85,12 +85,12 @@
     recipient.person = otherPerson;
   }
 
-  function copyToClipboard() {
+  async function copyToClipboard() {
     let text = recipient.emailAddress;
     if (recipient.name) {
       text = recipient.name + " <" + recipient.emailAddress + ">";
     }
-    navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(text);
   }
 </script>
 

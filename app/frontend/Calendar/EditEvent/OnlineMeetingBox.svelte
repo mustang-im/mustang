@@ -65,8 +65,8 @@
     event.createOnlineMeetingWithAccount ??= event.calendar.meetAccount;
   }
 
-  function onCopyMeetingURL() {
-    navigator.clipboard.writeText(event.onlineMeetingURL);
+  async function onCopyMeetingURL() {
+    await navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 
   function onOpenMeetingURL() {

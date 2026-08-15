@@ -127,7 +127,7 @@
 
   async function showCopyURL(loginURL: URLString) {
     url = loginURL;
-    navigator.clipboard.writeText(loginURL);
+    await navigator.clipboard.writeText(loginURL);
     confirmCopied()
       .catch(console.error);
   }

@@ -47,7 +47,7 @@ export class WebMailBackend {
   async maximizeMainWindow() {
   }
   async writeTextToClipboard(text: string) {
-    navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(text);
   }
   async openExternalURL(url: string) {
     window.open(url, "_blank", "noopener, noreferrer");

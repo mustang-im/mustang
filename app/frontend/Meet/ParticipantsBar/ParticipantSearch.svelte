@@ -78,7 +78,7 @@
   async function copyInvitationLink() {
     assert(meeting.account.canCreateURL, gt`I cannot invite using a link to this kind of meeting`);
     let invitationURL = await meeting.createInvitationURL();
-    navigator.clipboard.writeText(invitationURL);
+    await navigator.clipboard.writeText(invitationURL);
   }
 
   $: $participants, removeJoinedParticipant()

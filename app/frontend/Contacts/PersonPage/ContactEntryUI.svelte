@@ -117,7 +117,7 @@
   }
 
   async function copyValue() {
-    navigator.clipboard.writeText(entry.value);
+    await navigator.clipboard.writeText(entry.value);
     copied = true;
     await sleep(2);
     copied = false;
