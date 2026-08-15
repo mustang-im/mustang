@@ -16,7 +16,7 @@
   <hbox class="option new">
     <input type="radio" name="poll" disabled>
     <vbox>
-      <input type="text" class="title" bind:value={newLine} on:input={onNewLine} />
+      <input type="text" class="title" bind:value={newLine} on:input={() => catchErrors(onNewLine)} />
     </vbox>
   </hbox>
 </vbox>
@@ -25,6 +25,7 @@
   import { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
   import { onKeyEnter } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";
 

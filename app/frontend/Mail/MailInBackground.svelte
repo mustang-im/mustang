@@ -1,4 +1,4 @@
-<svelte:window on:url-mailto|capture={(event) => onMailto(event.url)} />
+<svelte:window on:url-mailto|capture={(event) => catchErrors(() => onMailto(event.url))} />
 
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
