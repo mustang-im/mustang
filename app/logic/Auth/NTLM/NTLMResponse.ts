@@ -4,29 +4,25 @@ export interface NTLMRequestOptions {
   onChunk?: (chunk: string) => Promise<void>;
 }
 
-/** Duck-typed like a `fetch()` `Response`, as far as `EWSAccount` needs it */
-export class NTLMResponse {
-  readonly status: number;
-  readonly statusText: string;
-  readonly ok: boolean;
+/** A `fetch()` `Response`, plus the TCP connection that it came in on */
+export class NTLMResponse extends Response {
+  /** Which TCP connection served this response. Only our own NTLM
+   * implementation knows it, and only it needs it. @see `HTTPConnection` */
   readonly socketID: number;
-  readonly headers: { get: (name: string) => string | null };
-  protected readonly bodyText: string;
 
+  /** @param response as the backend returned it over JPC */
   constructor(response: any) {
-    this.status = response.status;
-    this.statusText = response.statusText;
-    this.ok = response.ok;
+    let headers = new Headers();
+    for (let name in response.headers) {
+      headers.set(name, joinHeader(response.headers[name]));
+    }
+    // An empty body must be `null`: `Response` forbids a body for 204 etc.
+    super(response.body || null, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
     this.socketID = response.socketID;
-    this.bodyText = response.body;
-    let rawHeaders = response.headers;
-    this.headers = {
-      get: (name: string) => joinHeader(rawHeaders[name.toLowerCase()]) || null,
-    };
-  }
-
-  async text(): Promise<string> {
-    return this.bodyText;
   }
 }
 

@@ -194,6 +194,7 @@ describe("NTLM per-TCP-connection authentication", () => {
       },
     });
     expect(response.ok).toBe(true);
+    expect(response.body).toBeNull(); // `callStream()` reads this as "already streamed"
     expect(received.join("")).toBe(server.streamChunks.join(""));
     expect(received.length).toBeGreaterThan(1); // actually streamed, not buffered
     expect(server.handshakesCompleted).toBe(1);
