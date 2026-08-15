@@ -1,5 +1,5 @@
 /**
- * Tests `netRequest()` — the NTLM login through Chromium's network stack —
+ * Tests `NetSession` — the NTLM login through Chromium's network stack —
  * against the same strict mock server as our own NTLM implementation.
  *
  * Runs under Electron (`Net.request` needs it), started by
@@ -7,7 +7,7 @@
  * Exit code 0 = all checks passed.
  */
 import { app } from "electron";
-import { netRequest, closeNetConnections } from "../../../../../desktop/backend/netRequest";
+import { NetSession } from "../../../../../desktop/backend/NetSession";
 import { NTLMTestServer, sleep } from "./ntlmTestServer";
 
 const kUser = "testuser";
@@ -31,11 +31,11 @@ function expectAtMost(actual: number, max: number, label: string) {
 }
 
 let partitionCounter = 0;
-async function withServer(label: string, fn: (server: NTLMTestServer, partition: string) => Promise<void>) {
+async function withServer(label: string, fn: (server: NTLMTestServer, net: NetSession) => Promise<void>) {
   let server = new NTLMTestServer();
   await server.start();
   try {
-    await fn(server, `ntlm-test-${++partitionCounter}`);
+    await fn(server, new NetSession(server.url, `ntlm-test-${++partitionCounter}`, kUser, server.password));
   } catch (ex) {
     failures++;
     console.error(`FAIL: ${label}:`, ex);
@@ -54,13 +54,13 @@ function options(body: string) {
 }
 
 async function testBasicAndReuse() {
-  await withServer("authenticates the TCP connections, then reuses them", async (server, partition) => {
-    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
+  await withServer("authenticates the TCP connections, then reuses them", async (server, net) => {
+    let response = await net.request(options("<request>1</request>"));
     expectEq(response.status, 200, "status");
     expectEq(response.body, "<response><request>1</request></response>", "body");
     expectEq(server.handshakesCompleted, 1, "one handshake");
     let requestsBefore = server.requests;
-    response = await netRequest(server.url, options("<request>2</request>"), partition, kUser, server.password);
+    response = await net.request(options("<request>2</request>"));
     expectEq(response.body, "<response><request>2</request></response>", "reuse body");
     expectEq(server.handshakesCompleted, 1, "no re-handshake on the authenticated connection");
     expectEq(server.requests - requestsBefore, 1, "no extra round trips on the authenticated connection");
@@ -69,10 +69,10 @@ async function testBasicAndReuse() {
 }
 
 async function testParallelStorm() {
-  await withServer("runs a parallel request storm correctly", async (server, partition) => {
+  await withServer("runs a parallel request storm correctly", async (server, net) => {
     let requests = [];
     for (let i = 0; i < 40; i++) {
-      requests.push(netRequest(server.url, options(`<request>${i}</request>`), partition, kUser, server.password)
+      requests.push(net.request(options(`<request>${i}</request>`))
         .then(response => {
           // Each response must belong to its request: no cross-connection mixups
           expectEq(response.status, 200, `storm ${i} status`);
@@ -90,15 +90,15 @@ async function testParallelStorm() {
 }
 
 async function testServerClosesConnections() {
-  await withServer("re-authenticates when the server closes connections", async (server, partition) => {
+  await withServer("re-authenticates when the server closes connections", async (server, net) => {
     server.closeAfterResponses = 2;
     for (let i = 0; i < 8; i++) {
-      let response = await netRequest(server.url, options(`<request>${i}</request>`), partition, kUser, server.password);
+      let response = await net.request(options(`<request>${i}</request>`));
       if (response.status == 401) {
         /* The connection died in the middle of the login handshake, and
          * Chromium surfaces the 401 instead of restarting the handshake on a
          * new connection. `callEWS()` repeats such calls once, like this: */
-        response = await netRequest(server.url, options(`<request>${i}</request>`), partition, kUser, server.password);
+        response = await net.request(options(`<request>${i}</request>`));
       }
       expectEq(response.status, 200, `close ${i} status`);
       expectEq(response.body, `<response><request>${i}</request></response>`, `close ${i} body`);
@@ -108,30 +108,31 @@ async function testServerClosesConnections() {
 }
 
 async function testKilledConnection() {
-  await withServer("recovers when the connection is killed mid-request", async (server, partition) => {
-    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
+  await withServer("recovers when the connection is killed mid-request", async (server, net) => {
+    let response = await net.request(options("<request>1</request>"));
     expectEq(response.status, 200, "before kill");
     server.killNextRequest = true;
-    response = await netRequest(server.url, options("<request>2</request>"), partition, kUser, server.password);
+    response = await net.request(options("<request>2</request>"));
     expectEq(response.status, 200, "after kill");
     expectEq(response.body, "<response><request>2</request></response>", "after kill body");
   });
 }
 
 async function testDroppedAuthState() {
-  await withServer("re-authenticates when the server drops the auth state", async (server, partition) => {
-    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
+  await withServer("re-authenticates when the server drops the auth state", async (server, net) => {
+    let response = await net.request(options("<request>1</request>"));
     expectEq(response.status, 200, "before drop");
     server.dropAuthState();
-    response = await netRequest(server.url, options("<request>2</request>"), partition, kUser, server.password);
+    response = await net.request(options("<request>2</request>"));
     expectEq(response.status, 200, "after drop");
     expectEq(response.body, "<response><request>2</request></response>", "after drop body");
   });
 }
 
 async function testWrongPassword() {
-  await withServer("wrong password surfaces the 401, bounded", async (server, partition) => {
-    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, "wrong password");
+  await withServer("wrong password surfaces the 401, bounded", async server => {
+    let net = new NetSession(server.url, "ntlm-test-wrong-password", kUser, "wrong password");
+    let response = await net.request(options("<request>1</request>"));
     expectEq(response.status, 401, "wrong password status");
     // The `login` handler supplies the credentials at most once per request,
     // to protect against Windows account lockout
@@ -140,10 +141,10 @@ async function testWrongPassword() {
 }
 
 async function testStreaming() {
-  await withServer("streams a chunked response after authenticating", async (server, partition) => {
+  await withServer("streams a chunked response after authenticating", async (server, net) => {
     server.streamChunks = ["<Envelope>1</Envelope>", "<Envelope>2</Envelope>", "<Envelope>3</Envelope>"];
     let received: string[] = [];
-    let response = await netRequest(server.url, options("<request>stream</request>"), partition, kUser, server.password,
+    let response = await net.request(options("<request>stream</request>"),
       async chunk => {
         received.push(chunk);
       });
@@ -155,18 +156,18 @@ async function testStreaming() {
 }
 
 async function testAbortStream() {
-  await withServer("closing the partition connections aborts the stream", async (server, partition) => {
+  await withServer("closing the session aborts the stream", async (server, net) => {
     server.streamChunks = ["<Envelope>1</Envelope>"];
     server.keepStreamOpen = true;
     let received: string[] = [];
-    let promise = netRequest(server.url, options("<request>stream</request>"), partition, kUser, server.password,
+    let promise = net.request(options("<request>stream</request>"),
       async chunk => {
         received.push(chunk);
       });
     while (!received.length) {
       await sleep(10);
     }
-    await closeNetConnections(partition);
+    await net.close();
     let rejected = false;
     await promise.catch(() => rejected = true);
     expectEq(rejected, true, "stream request rejected after abort");
@@ -174,19 +175,19 @@ async function testAbortStream() {
 }
 
 async function testNoContent() {
-  await withServer("returns a response that has no body, without hanging", async (server, partition) => {
+  await withServer("returns a response that has no body, without hanging", async (server, net) => {
     server.noContent = true;
-    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
+    let response = await net.request(options("<request>1</request>"));
     expectEq(response.status, 204, "204 status");
     expectEq(response.body, "", "204 body");
   });
 }
 
 async function testCookies() {
-  await withServer("keeps cookies, like load balancer affinity cookies", async (server, partition) => {
+  await withServer("keeps cookies, like load balancer affinity cookies", async (server, net) => {
     server.setCookie = "X-BackEndCookie=abc123";
-    await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
-    await netRequest(server.url, options("<request>2</request>"), partition, kUser, server.password);
+    await net.request(options("<request>1</request>"));
+    await net.request(options("<request>2</request>"));
     expectEq(server.cookieLog[server.cookieLog.length - 1], "X-BackEndCookie=abc123", "cookie sent back");
   });
 }

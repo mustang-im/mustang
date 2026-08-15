@@ -315,7 +315,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
   protected get ntlm(): NTLMChromiumSession | NTLMConnectionPool {
     assert(this.username && this.password, gt`Need username and password`);
-    return this.ntlmTransport ??= appGlobal.remoteApp.netRequest && !this.useOwnNTLM
+    return this.ntlmTransport ??= appGlobal.remoteApp.newNetSession && !this.useOwnNTLM
       ? new NTLMChromiumSession(this)
       : new NTLMConnectionPool(this);
   }

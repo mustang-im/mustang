@@ -1,6 +1,6 @@
 import { HTTPServer } from './HTTPServer';
 import { HTTPConnection, type HTTPConnectionOptions } from './HTTPConnection';
-import { netRequest, closeNetConnections } from './netRequest';
+import { NetSession } from './NetSession';
 import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
@@ -97,8 +97,7 @@ async function createSharedAppObject() {
     newAdmZIP,
     newHTTPServer,
     newHTTPConnection,
-    netRequest,
-    closeNetConnections,
+    newNetSession,
     newTCPSocket,
     newWebSocket,
     gunzip,
@@ -263,6 +262,12 @@ function newHTTPServer() {
  * for connection-based authentication like NTLM. @see `HTTPConnection` */
 function newHTTPConnection(url: string, options?: HTTPConnectionOptions): HTTPConnection {
   return new HTTPConnection(url, options);
+}
+
+/** A HTTP client that uses Chromium's network stack, which performs
+ * connection-based logins like NTLM natively. @see `NetSession` */
+function newNetSession(url: string, partition: string, username: string, password: string): NetSession {
+  return new NetSession(url, partition, username, password);
 }
 
 /** A new raw TCP socket, from the node net module.

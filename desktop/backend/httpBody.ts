@@ -1,6 +1,6 @@
 /**
  * Reads a HTTP response body as UTF-8 text.
- * Shared by our HTTP clients `HTTPConnection` and `netRequest()`.
+ * Shared by our HTTP clients `HTTPConnection` and `NetSession`.
  *
  * @param onChunk If given, the text is not returned, but passed to `onChunk`
  *   in chunks, as they arrive from the network. Each call is awaited, which

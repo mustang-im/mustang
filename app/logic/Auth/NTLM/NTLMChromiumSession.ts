@@ -9,7 +9,7 @@ import { appGlobal } from "../../app";
  * connection, for every connection of its pool, and re-sends the request
  * after logging in. So, unlike with `fetch()`, no request surfaces a 401
  * on a connection that Chromium could authenticate first. We only supply
- * the credentials, in backend `netRequest()`.
+ * the credentials, in backend `NetSession`.
  *
  * Counterpart of `NTLMConnectionPool`, our own implementation, which is
  * used on platforms without the Chromium `net` API, e.g. mobile.
@@ -18,6 +18,8 @@ export class NTLMChromiumSession {
   protected readonly account: EWSAccount;
   /** Only for a dedicated connection @see `newDedicatedConnection()` */
   protected readonly streamID: string | null;
+  /** Backend `NetSession` (via JPC) */
+  protected conn: any = null;
 
   constructor(account: EWSAccount, streamID: string | null = null) {
     this.account = account;
@@ -34,10 +36,9 @@ export class NTLMChromiumSession {
   }
 
   async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
-    let response = await appGlobal.remoteApp.netRequest(this.account.url,
-      { headers: options.headers, body },
-      this.partition, this.account.username, this.account.password,
-      options.onChunk);
+    this.conn ??= await appGlobal.remoteApp.newNetSession(this.account.url,
+      this.partition, this.account.username, this.account.password);
+    let response = await this.conn.request({ headers: options.headers, body }, options.onChunk);
     return new NTLMResponse(response);
   }
 
@@ -55,6 +56,7 @@ export class NTLMChromiumSession {
   /** Closes the TCP connections, which aborts the requests running on them.
    * More requests would open new connections. */
   close(): void {
-    appGlobal.remoteApp.closeNetConnections(this.partition).catch(console.error);
+    this.conn?.close().catch(console.error);
+    this.conn = null;
   }
 }

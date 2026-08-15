@@ -23,7 +23,7 @@ interface SocketState {
  * a login is only ever valid for the TCP connection it happened on.
  *
  * Used to test both of our NTLM implementations, `NTLMConnectionPool`
- * (under vitest) and Chromium's (`netRequest()`, run under Electron).
+ * (under vitest) and Chromium's (`NetSession`, run under Electron).
  */
 export class NTLMTestServer {
   readonly password = "P@ssw0rd of tésts";
