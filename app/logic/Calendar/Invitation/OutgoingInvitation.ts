@@ -28,9 +28,7 @@ export class OutgoingInvitation {
   }
 
   async sendInvitationsTo(participants: Collection<Participant>) {
-    for (let participant of participants) {
-      participant.response ||= InvitationResponse.NoResponseReceived;
-    }
+    this.markInvitationsNeeded();
     let sendTo = participants.filterOnce(participant => participant.isInvitee);
     if (sendTo.isEmpty) {
       return;
@@ -56,10 +54,7 @@ export class OutgoingInvitation {
     let removed = unedited.participants.subtract(event.participants);
     // Use the original event when sending cancellations
     await unedited.outgoingInvitation.sendCancellationsTo(removed);
-    let notify = this.changesNeedToNotify()
-      ? event.participants
-      : event.participants.subtract(unedited.participants);
-    await this.sendInvitationsTo(notify);
+    await this.sendInvitationsTo(this.participantsToNotify());
   }
 
   async sendCancellations() {
@@ -96,6 +91,27 @@ export class OutgoingInvitation {
       email.html = this.event.descriptionHTML;
     }
     await email.folder.account.send(email);
+  }
+
+  /**
+   * Mark anyone we're notifying as no response recieved.
+   * This always applies for new recipients.
+   */
+  markInvitationsNeeded() {
+    for (let participant of this.participantsToNotify()) {
+      participant.response = InvitationResponse.NoResponseReceived;
+    }
+  }
+
+  /**
+   * Get the participants we need to notify about this change.
+   * Always includes newly added participnts.
+   */
+  participantsToNotify(): Collection<Participant> {
+    let participants = this.event.participants;
+    return this.changesNeedToNotify()
+      ? participants.filterOnce(participant => participant.response != InvitationResponse.Organizer) // all invitees
+      : participants.subtract(this.event.unedited.participants); // newly added participants
   }
 
   /**
