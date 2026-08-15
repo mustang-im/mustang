@@ -43,6 +43,9 @@ export class NTLMTestServer {
   authWhileAuthenticated = 0;
   /** `Cookie` header of each request, in order */
   cookieLog: string[] = [];
+  /** Body of each request that had one, in order. The Type 1 probe of the
+   * handshake has none, so this is what the server actually processed. */
+  requestBodies: string[] = [];
 
   // Behavior
   requireAuth = true;
@@ -52,6 +55,9 @@ export class NTLMTestServer {
   closeAfterResponses = 0;
   /** Destroy the TCP connection as soon as the next request arrives on it */
   killNextRequest = false;
+  /** Answer the next request only partially, then reset the TCP connection.
+   * The server processed the request, so the client must not repeat it. */
+  killWhileResponding = false;
   /** Send the response in these chunks, with pauses in between */
   streamChunks: string[] | null = null;
   /** After `streamChunks`, keep the response open, like a notification stream */
@@ -102,6 +108,9 @@ export class NTLMTestServer {
     let body = "";
     for await (let chunk of req) {
       body += chunk;
+    }
+    if (body) {
+      this.requestBodies.push(body);
     }
     let state = this.states.get(req.socket);
     if (!state) {
@@ -157,6 +166,11 @@ export class NTLMTestServer {
       headers["Content-Encoding"] = "gzip";
     }
     res.writeHead(200, headers);
+    if (this.killWhileResponding) {
+      res.write(body.slice(0, 5));
+      this.killConnection(res).catch(console.error);
+      return;
+    }
     this.finishResponse(res, state);
     res.end(body);
   }
@@ -164,11 +178,23 @@ export class NTLMTestServer {
   protected async streamResponse(res: http.ServerResponse): Promise<void> {
     for (let chunk of this.streamChunks) {
       res.write(chunk);
+      if (this.killWhileResponding) {
+        await this.killConnection(res);
+        return;
+      }
       await sleep(30);
     }
     if (!this.keepStreamOpen) {
       res.end();
     }
+  }
+
+  /** Resets the TCP connection, after giving the client time to receive
+   * what we already sent of the response */
+  protected async killConnection(res: http.ServerResponse): Promise<void> {
+    let socket = res.socket;
+    await sleep(30);
+    socket?.resetAndDestroy(); // RST, not FIN
   }
 
   protected respond401(res: http.ServerResponse, state: SocketState, wwwAuthenticate: string): void {
