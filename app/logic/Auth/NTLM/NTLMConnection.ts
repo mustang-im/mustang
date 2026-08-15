@@ -58,7 +58,7 @@ export class NTLMConnection {
       assert(!options.signal?.aborted, "Request was aborted");
       this.conn ??= await appGlobal.remoteApp.newHTTPConnection(this.account.url,
         { acceptBrokenTLSCerts: this.account.acceptBrokenTLSCerts });
-      const kMaxAttempts = 3;
+      const kMaxAttempts = 2;
       for (let attempt = 1; attempt <= kMaxAttempts; attempt++) {
         let response = await this.requestOnce(body, options, attempt < kMaxAttempts);
         if (response) {
