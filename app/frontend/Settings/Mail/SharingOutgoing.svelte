@@ -172,6 +172,7 @@
   import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
+  import { catchErrors } from "../../Util/error";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import StatusMessage from "../../Setup/Shared/StatusMessage.svelte";
@@ -186,7 +187,10 @@
 
   export let account: MailAccount;
   let sharedWith = new ArrayColl<PersonUID>();
-  $: (async() => { sharedWith = new ArrayColl<PersonUID>(); findSharedPersons(account); })();
+  $: account, catchErrors(async () => {
+    sharedWith = new ArrayColl<PersonUID>();
+    await findSharedPersons(account);
+  });
 
   async function findSharedPersons(account: MailAccount) {
     await mergePersons(await account.getSharedPersons());

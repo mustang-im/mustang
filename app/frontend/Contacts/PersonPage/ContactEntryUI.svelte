@@ -77,6 +77,7 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, tick } from 'svelte';
   import { t } from "../../../l10n/l10n";
@@ -106,7 +107,7 @@
     stopEditing();
   }
 
-  $: $selectedContactEntry == entry && focus()
+  $: $selectedContactEntry == entry && catchErrors(focus)
   async function focus() {
     await tick();
     let inputE = inputWrapperEl.querySelector("input")

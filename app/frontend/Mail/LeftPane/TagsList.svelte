@@ -27,7 +27,7 @@
   export let searchMessages: ArrayColl<EMail> | null = null;
   export let showStaticLabel = true;
 
-  $: folder, onSelect();
+  $: folder, catchErrors(onSelect);
 
   async function onSelect() {
     if (selectedTags.hasItems) {

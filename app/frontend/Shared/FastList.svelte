@@ -53,6 +53,7 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
+  import { catchErrors } from "../Util/error";
   import throttle from "lodash/throttle";
   import { onMount, tick } from "svelte";
   import { createEventDispatcher } from 'svelte';
@@ -146,7 +147,7 @@
    */
   $: heightY = $items.length * rowHeight + headerHeight || 100;
 
-  $: $items.hasItems && listE && updateSize();
+  $: $items.hasItems && listE && catchErrors(updateSize);
 
   //$: console.log("items", $items.length, "header height", headerHeight, "rowHeight", rowHeight, "heightY", heightY, "startPosY", startPosY, "startPos", startPos);
 

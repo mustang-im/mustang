@@ -50,6 +50,7 @@
   import { ArrayColl } from "svelte-collections";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
+  import { catchErrors } from "../Util/error";
   import { Route, useLocation } from "svelte-navigator";
 
   $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // ?? acc == allAccountsAccount
@@ -73,7 +74,7 @@
 
   let searchMessages: ArrayColl<EMail> | null;
 
-  $: loadFolder($selectedFolder);
+  $: $selectedFolder, catchErrors(() => loadFolder($selectedFolder));
   async function loadFolder(folder: Folder) {
     if (!folder) {
       return;
