@@ -72,6 +72,7 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -253,6 +254,13 @@ async function streamHTTP(url: string, data: any, config: any) {
 async function newHTTPServer() {
   const { HTTPServer } = await import("../../desktop/backend/HTTPServer");
   return new HTTPServer();
+}
+
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+async function newHTTPConnection(url: string, options?: any) {
+  const { HTTPConnection } = await import("../../desktop/backend/HTTPConnection");
+  return new HTTPConnection(url, options);
 }
 
 function newTrayIcon(imgDataURL: string): null {

@@ -1,4 +1,6 @@
 import { HTTPServer } from './HTTPServer';
+import { HTTPConnection, type HTTPConnectionOptions } from './HTTPConnection';
+import { netRequest, closeNetConnections } from './netRequest';
 import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
@@ -94,6 +96,9 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
+    netRequest,
+    closeNetConnections,
     newTCPSocket,
     newWebSocket,
     gunzip,
@@ -252,6 +257,12 @@ export class HTTPFetchError extends Error {
 
 function newHTTPServer() {
   return new HTTPServer();
+}
+
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+function newHTTPConnection(url: string, options?: HTTPConnectionOptions): HTTPConnection {
+  return new HTTPConnection(url, options);
 }
 
 /** A new raw TCP socket, from the node net module.
