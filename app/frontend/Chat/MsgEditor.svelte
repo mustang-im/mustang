@@ -117,10 +117,10 @@
     }
   }
 
-  function onAddInline(event: CustomEvent) {
+  async function onAddInline(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      insertImage(editor, file, to.draftMessage);
+      await insertImage(editor, file, to.draftMessage); // sequential, to keep the image order
     }
   }
 

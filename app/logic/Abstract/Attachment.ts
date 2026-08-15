@@ -114,7 +114,7 @@ export class Attachment extends Observable {
   }
   async saveFile() {
     await this.load();
-    saveBlobAsFile(this.content);
+    await saveBlobAsFile(this.content);
   }
   async deleteFile() {
     await this.storageRunOnce.runOnce(async () => {

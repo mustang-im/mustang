@@ -19,7 +19,7 @@
   export let message: EMail;
 
   async function onOpen() {
-    openEMailMessage(message, SearchView.Person);
+    await openEMailMessage(message, SearchView.Person);
   }
 </script>
 

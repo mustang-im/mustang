@@ -136,9 +136,8 @@
 
     // #if [!WEBMAIL]
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
-    webviewE.addEventListener("context-menu", event => catchErrors(() => {
-      onContextMenu((event as any).params);
-    }));
+    webviewE.addEventListener("context-menu", event =>
+      catchErrors(() => onContextMenu((event as any).params)));
     // #endif
   }
 

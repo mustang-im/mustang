@@ -189,9 +189,9 @@
   $: (async() => { sharedWith = new ArrayColl<PersonUID>(); findSharedPersons(account); })();
 
   async function findSharedPersons(account: MailAccount) {
-    mergePersons(await account.getSharedPersons());
-    mergePersons(await calendars.first?.getSharedPersons());
-    mergePersons(await addressbooks.first?.getSharedPersons());
+    await mergePersons(await account.getSharedPersons());
+    await mergePersons(await calendars.first?.getSharedPersons());
+    await mergePersons(await addressbooks.first?.getSharedPersons());
   }
 
   async function mergePersons(persons?: ArrayColl<PersonUID>) {

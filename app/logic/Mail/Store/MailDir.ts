@@ -49,7 +49,7 @@ export class MailDir implements MailContentStorage {
 
   async deleteIt(email: EMail): Promise<void> {
     let dir = await this.getFilePath(email);
-    MailDir.rmdirWithFiles(dir);
+    await MailDir.rmdirWithFiles(dir);
   }
 
   supportsAttachments = true;

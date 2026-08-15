@@ -35,13 +35,13 @@ export async function openFileInCloudApp(file: File, viewer: WebAppListed | null
 export async function openFileInDefaultApp(file: File) {
   assert(file instanceof File, "Need file");
   if (["text/html", "application/pdf", "text/plain"].includes(file.mimetype) || kImageExt.includes(file.ext)) {
-    openPreview(file);
+    await openPreview(file);
     return;
   }
   // Open web app from cloud provider
   let editor = await file.preferredOnlineEditor();
   if (editor) {
-    openFileInCloudApp(file, editor);
+    await openFileInCloudApp(file, editor);
     return;
   }
   // Open native desktop app

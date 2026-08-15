@@ -151,7 +151,7 @@
     let content = message.mime as Uint8Array<ArrayBuffer>;
     let filename = sanitize.filename(message.subject, "email") + ".eml";
     let file = new File([content], filename, { type: "message/rfc822" });
-    saveBlobAsFile(file);
+    await saveBlobAsFile(file);
   }
 
   async function print() {

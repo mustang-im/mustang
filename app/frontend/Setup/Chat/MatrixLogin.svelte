@@ -61,7 +61,7 @@
     try {
       error = null;
       config.password = password;
-      config.deleteAllKeys();
+      await config.deleteAllKeys();
 
       //await config.loginOnly(true);
       //showPage = MatrixVerify;
@@ -72,7 +72,7 @@
       appGlobal.chatAccounts.add(config);
       showPage = null;
     } catch (ex) {
-      config.deleteAllKeys();
+      await config.deleteAllKeys();
       error = ex;
     }
   }
