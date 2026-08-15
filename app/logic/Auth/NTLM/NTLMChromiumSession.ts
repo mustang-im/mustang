@@ -1,5 +1,4 @@
 import { NTLMResponse, type NTLMRequestOptions } from "./NTLMResponse";
-import { NTLMChromiumStream } from "./NTLMChromiumStream";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { appGlobal } from "../../app";
 
@@ -17,41 +16,45 @@ import { appGlobal } from "../../app";
  */
 export class NTLMChromiumSession {
   protected readonly account: EWSAccount;
+  /** Only for a dedicated connection @see `newDedicatedConnection()` */
+  protected readonly streamID: string | null;
 
-  constructor(account: EWSAccount) {
+  constructor(account: EWSAccount, streamID: string | null = null) {
     this.account = account;
+    this.streamID = streamID;
   }
 
   /** Cookies, HTTP auth state, and the pool of 6 TCP connections are
-   * per partition, which isolates the accounts from each other. */
+   * per partition, which isolates the accounts and streams from each other. */
   protected get partition(): string {
-    return this.account.webSessionID ?? "ntlm-setup";
+    let accountPartition = this.account.webSessionID ?? "ntlm-setup";
+    return this.streamID == null
+      ? accountPartition
+      : `${accountPartition}:stream:${this.streamID}`;
   }
 
-  async request(body: string, options?: NTLMRequestOptions): Promise<NTLMResponse> {
-    return await this.requestOnPartition(this.partition, body, options ?? {});
-  }
-
-  /** Internal, also for `NTLMChromiumStream` */
-  async requestOnPartition(partition: string, body: string, options: NTLMRequestOptions): Promise<NTLMResponse> {
+  async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
     let response = await appGlobal.remoteApp.netRequest(this.account.url,
-      { method: "POST", headers: options.headers, body },
-      partition, this.account.username, this.account.password,
+      { headers: options.headers, body },
+      this.partition, this.account.username, this.account.password,
       options.onChunk);
     return new NTLMResponse(response);
   }
 
   /**
-   * For a long-running notification stream: It runs on its own partition,
-   * so that it does not occupy one of the 6 pooled connections of the
-   * account partition, and so that `close()` aborts exactly this stream.
+   * A connection outside of the pool, e.g. for a long-running notification
+   * stream: It runs on its own partition, so that it does not occupy one of
+   * the 6 pooled connections of the account, and so that `close()` aborts
+   * exactly this stream.
    * @param streamID stable per stream, e.g. the streamed account's username
    */
-  newDedicatedConnection(streamID = ""): NTLMChromiumStream {
-    return new NTLMChromiumStream(this, `${this.partition}:stream:${streamID}`);
+  newDedicatedConnection(streamID = ""): NTLMChromiumSession {
+    return new NTLMChromiumSession(this.account, streamID);
   }
 
-  closeAll(): void {
+  /** Closes the TCP connections, which aborts the requests running on them.
+   * More requests would open new connections. */
+  close(): void {
     appGlobal.remoteApp.closeNetConnections(this.partition).catch(console.error);
   }
 }

@@ -1,6 +1,5 @@
 export interface NTLMRequestOptions {
   headers?: Record<string, string>;
-  signal?: AbortSignal;
   onChunk?: (chunk: string) => Promise<void>;
 }
 

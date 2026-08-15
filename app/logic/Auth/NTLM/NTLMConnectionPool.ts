@@ -57,7 +57,7 @@ export class NTLMConnectionPool {
    * `close()` it when done. It shares the pool's cookie jar.
    * @param _streamID only `NTLMChromiumSession` needs it
    */
-  newDedicatedConnection(_streamID = ""): NTLMConnection {
+  newDedicatedConnection(_streamID?: string): NTLMConnection {
     return new NTLMConnection(this.account, this.cookies);
   }
 
@@ -68,7 +68,7 @@ export class NTLMConnectionPool {
 
   /** Closes all TCP connections, e.g. on logout.
    * The pool can still be used afterwards and would reconnect. */
-  closeAll(): void {
+  close(): void {
     for (let conn of this.all) {
       conn.close();
     }

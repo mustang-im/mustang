@@ -84,7 +84,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     // No request ever hit the server on a connection that wasn't authenticated
     expect(server.rejectedRequests).toBe(0);
     expect(server.authWhileAuthenticated).toBe(0);
-    pool.closeAll();
+    pool.close();
   });
 
   it("re-authenticates when the server closes connections between requests", async () => {
@@ -97,7 +97,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     }
     expect(server.handshakesCompleted).toBe(10); // one per connection
     expect(server.rejectedRequests).toBe(0); // client saw each dead connection and re-authenticated pro-actively
-    pool.closeAll();
+    pool.close();
   });
 
   it("recovers from the keep-alive race: connection killed while the request is on the wire", async () => {
@@ -109,7 +109,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("<response><request>2</request></response>");
     expect(server.handshakesCompleted).toBe(2); // re-authenticated the replacement connection
-    pool.closeAll();
+    pool.close();
   });
 
   it("does not repeat a request that the server already started to answer", async () => {
@@ -118,7 +118,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     await expect(pool.request("<request>send mail</request>")).rejects.toThrow();
     // The server processed it. Repeating it would have sent the mail twice.
     expect(server.requestBodies).toEqual(["<request>send mail</request>"]);
-    pool.closeAll();
+    pool.close();
   });
 
   it("does not restart a stream that already delivered data", async () => {
@@ -138,7 +138,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     expect(server.requestBodies).toEqual(["<request>stream</request>"]);
     expect(server.handshakesCompleted).toBe(1);
     conn.close();
-    pool.closeAll();
+    pool.close();
   });
 
   it("re-authenticates when the server drops the auth state, e.g. a load balancer", async () => {
@@ -151,7 +151,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     expect(await response.text()).toBe("<response><request>2</request></response>");
     expect(server.handshakesCompleted).toBe(2);
     expect(server.rejectedRequests).toBe(1); // the one that discovered the dropped state
-    pool.closeAll();
+    pool.close();
   });
 
   it("rejects a wrong password with LoginError, without endless retries", async () => {
@@ -165,13 +165,21 @@ describe("NTLM per-TCP-connection authentication", () => {
     }
     expect(ex).toBeInstanceOf(LoginError);
     expect(server.requests).toBeLessThanOrEqual(8); // a few handshake attempts, but no endless loop
-    pool.closeAll();
+    pool.close();
   });
 
   it("errors when the server offers only Basic authentication", async () => {
     server.authScheme = "Basic";
     let conn = new NTLMConnection(account);
     await expect(conn.request("<request>1</request>")).rejects.toThrowError(/does not support/);
+    conn.close();
+  });
+
+  it("returns a response that has no body, without hanging", async () => {
+    server.noContent = true;
+    let conn = new NTLMConnection(account);
+    let response = await conn.request("<request>1</request>");
+    expect(response.status).toBe(204);
     conn.close();
   });
 
@@ -201,15 +209,13 @@ describe("NTLM per-TCP-connection authentication", () => {
     conn.close();
   });
 
-  it("aborting a stream closes the connection", async () => {
+  it("closing the connection aborts a running stream", async () => {
     server.streamChunks = ["<Envelope>1</Envelope>"];
     server.keepStreamOpen = true;
     let pool = new NTLMConnectionPool(account);
     let conn = pool.newDedicatedConnection();
-    let abort = new AbortController();
     let received: string[] = [];
     let promise = conn.request("<request>stream</request>", {
-      signal: abort.signal,
       onChunk: async chunk => {
         received.push(chunk);
       },
@@ -217,9 +223,9 @@ describe("NTLM per-TCP-connection authentication", () => {
     while (!received.length) {
       await sleep(10);
     }
-    abort.abort("test ended");
+    conn.close(); // `callStream()` does this when its `AbortSignal` fires
     await expect(promise).rejects.toThrow();
-    conn.close();
+    pool.close();
   });
 
   it("keeps cookies per account, like load balancer affinity cookies", async () => {
@@ -237,7 +243,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     for (let cookie of requestsAfterCookieWasSet) {
       expect(cookie).toBe("X-BackEndCookie=abc123");
     }
-    pool.closeAll();
+    pool.close();
   });
 });
 

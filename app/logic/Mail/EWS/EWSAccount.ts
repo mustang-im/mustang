@@ -28,6 +28,7 @@ import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
+import { isNetworkError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -138,7 +139,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
       await this.unsubscribeAllSubscriptions();
-      this.ntlmTransport?.closeAll();
+      this.ntlmTransport?.close();
       this.ntlmTransport = null;
     }
 
@@ -306,7 +307,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return;
     }
     // Use the other implementation from now on
-    this.ntlmTransport?.closeAll();
+    this.ntlmTransport?.close();
     this.ntlmTransport = null;
     this._useOwnNTLM = val;
   }
@@ -470,10 +471,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           // The stream runs for up to 29 minutes, so give it its own
           // TCP connection, outside of the pool.
           let conn = this.ntlm.newDedicatedConnection(streamID);
+          let onAbort = () => conn.close(); // the only way to abort the stream
+          signal.addEventListener("abort", onAbort);
           try {
+            assert(!signal.aborted, "Stream was aborted");
             // Streams via `processChunk`. Resolves once the stream ended.
-            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, signal, onChunk: processChunk });
+            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk: processChunk });
           } finally {
+            signal.removeEventListener("abort", onAbort);
             conn.close();
           }
         } else {
@@ -494,10 +499,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           console.log(signal.reason);
           break;
         }
-        if (ex?.message == "terminated" || // `fetch()`
-            ex?.code == "ECONNRESET" || ex?.code == "EPIPE" || // own NTLM connection
-            ex?.message?.includes("net::ERR_CONNECTION") || // Chromium
-            ex?.message?.includes("net::ERR_EMPTY_RESPONSE")) {
+        if (isNetworkError(ex) || ex?.message == "terminated") { // `fetch()` says "terminated"
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           continue;
