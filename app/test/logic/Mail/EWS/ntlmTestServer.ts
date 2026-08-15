@@ -58,6 +58,8 @@ export class NTLMTestServer {
   /** Answer the next request only partially, then reset the TCP connection.
    * The server processed the request, so the client must not repeat it. */
   killWhileResponding = false;
+  /** Answer with `204 No Content`, which has no response body, by spec */
+  noContent = false;
   /** Send the response in these chunks, with pauses in between */
   streamChunks: string[] | null = null;
   /** After `streamChunks`, keep the response open, like a notification stream */
@@ -154,6 +156,12 @@ export class NTLMTestServer {
   }
 
   protected respondOK(res: http.ServerResponse, state: SocketState, requestBody: string): void {
+    if (this.noContent) {
+      res.writeHead(204);
+      this.finishResponse(res, state);
+      res.end();
+      return;
+    }
     if (this.streamChunks) {
       res.writeHead(200, { "Content-Type": "text/xml" });
       this.streamResponse(res).catch(console.error);

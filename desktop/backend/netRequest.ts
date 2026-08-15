@@ -1,3 +1,4 @@
+import { readBodyText } from "./httpBody";
 import { session as Session, net as Net } from "electron";
 import type { Readable } from "node:stream";
 
@@ -25,20 +26,25 @@ type IncomingBody = Electron.IncomingMessage & Readable;
 export async function netRequest(url: string, options: any, partition: string,
     username: string, password: string,
     onChunk?: (chunk: string) => Promise<void>): Promise<NetResponse> {
-  let tracked = {} as TrackedRequest;
-  let partitionRequests = inFlight.get(partition) ?? new Set();
+  let request = Net.request({
+    url,
+    method: options?.method ?? "POST",
+    headers: options?.headers,
+    partition,
+    credentials: "include", // send cookies, and engage the HTTP auth stack
+  });
+  /** The response body, once it started to arrive, so that `abort()` ends it */
+  let responseStream: IncomingBody | null = null;
+  let abort = () => {
+    // Ends the body stream, so that a running `readBodyText()` finishes
+    responseStream?.destroy(new Error(kAborted));
+    request.abort();
+  };
+  let partitionRequests = inFlight.get(partition) ?? new Set<() => void>();
   inFlight.set(partition, partitionRequests);
-  partitionRequests.add(tracked);
+  partitionRequests.add(abort);
   try {
-    let message: IncomingBody = await new Promise((resolve, reject) => {
-      let request = Net.request({
-        url,
-        method: options?.method ?? "POST",
-        headers: options?.headers,
-        partition,
-        credentials: "include", // send cookies, and engage the HTTP auth stack
-      });
-      tracked.request = request;
+    let message = await new Promise<IncomingBody>((resolve, reject) => {
       let loginAttempted = false;
       request.on("login", (authInfo, callback) => {
         if (authInfo.isProxy || loginAttempted) {
@@ -51,72 +57,42 @@ export async function netRequest(url: string, options: any, partition: string,
           callback(username, password);
         }
       });
-      request.on("response", message => resolve(message as IncomingBody));
-      request.on("abort", () => reject(new Error("net::ERR_ABORTED by closeNetConnections()")));
+      request.on("response", response => {
+        responseStream = response as IncomingBody;
+        resolve(responseStream);
+      });
+      request.on("abort", () => reject(new Error(kAborted)));
       request.on("error", reject);
       request.end(options?.body ?? "");
     });
-    tracked.message = message;
-    return await readResponse(message, onChunk);
+    let status = message.statusCode;
+    let ok = status >= 200 && status <= 299;
+    return {
+      status,
+      statusText: message.statusMessage,
+      ok,
+      headers: message.headers,
+      // Non-2xx responses are returned whole, e.g. an auth challenge
+      body: await readBodyText(message, ok ? onChunk : undefined),
+    };
   } finally {
-    partitionRequests.delete(tracked);
+    partitionRequests.delete(abort);
   }
-}
-
-interface TrackedRequest {
-  request: Electron.ClientRequest;
-  message?: IncomingBody;
-}
-
-/** In-flight requests per partition, so that `closeNetConnections()`
- * can abort them, e.g. a 29-minutes notification stream */
-const inFlight = new Map<string, Set<TrackedRequest>>();
-
-async function readResponse(message: IncomingBody,
-    onChunk?: (chunk: string) => Promise<void>): Promise<NetResponse> {
-  let status = message.statusCode;
-  let response: NetResponse = {
-    status,
-    statusText: message.statusMessage,
-    ok: status >= 200 && status <= 299,
-    headers: message.headers,
-    body: "",
-  };
-  if ([204, 205, 304].includes(status)) { // no response body, by spec
-    return response;
-  }
-  let decoder = new TextDecoder(); // Exchange and friends are always UTF-8
-  if (onChunk && response.ok) {
-    for await (let chunk of message) {
-      let text = decoder.decode(chunk as Buffer, { stream: true });
-      if (text) {
-        await onChunk(text); // await = backpressure: process in order
-      }
-    }
-    let tail = decoder.decode(); // flush a split multi-byte char, if any
-    if (tail) {
-      await onChunk(tail);
-    }
-  } else {
-    let chunks: Buffer[] = [];
-    for await (let chunk of message) {
-      chunks.push(chunk as Buffer);
-    }
-    response.body = decoder.decode(Buffer.concat(chunks));
-  }
-  return response;
 }
 
 /** Aborts all running `netRequest()`s of the given partition, e.g. a
  * notification stream, and closes all of its TCP connections. */
 export async function closeNetConnections(partition: string): Promise<void> {
-  for (let tracked of inFlight.get(partition) ?? []) {
-    // Ends the body stream, so that a running `readResponse()` finishes
-    tracked.message?.destroy(new Error("net::ERR_ABORTED by closeNetConnections()"));
-    tracked.request?.abort();
+  for (let abort of inFlight.get(partition) ?? []) {
+    abort();
   }
   await Session.fromPartition(partition).closeAllConnections();
 }
+
+/** Aborts the in-flight requests of a partition, @see `closeNetConnections()` */
+const inFlight = new Map<string, Set<() => void>>();
+
+const kAborted = "net::ERR_ABORTED by closeNetConnections()";
 
 export interface NetResponse {
   status: number;

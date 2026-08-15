@@ -173,6 +173,15 @@ async function testAbortStream() {
   });
 }
 
+async function testNoContent() {
+  await withServer("returns a response that has no body, without hanging", async (server, partition) => {
+    server.noContent = true;
+    let response = await netRequest(server.url, options("<request>1</request>"), partition, kUser, server.password);
+    expectEq(response.status, 204, "204 status");
+    expectEq(response.body, "", "204 body");
+  });
+}
+
 async function testCookies() {
   await withServer("keeps cookies, like load balancer affinity cookies", async (server, partition) => {
     server.setCookie = "X-BackEndCookie=abc123";
@@ -192,6 +201,7 @@ app.whenReady().then(async () => {
     await testWrongPassword();
     await testStreaming();
     await testAbortStream();
+    await testNoContent();
     await testCookies();
   } catch (ex) {
     failures++;

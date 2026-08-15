@@ -1,3 +1,4 @@
+import { readBodyText } from "./httpBody";
 import http from "node:http";
 import https from "node:https";
 import tls from "node:tls";
@@ -41,7 +42,6 @@ export class HTTPConnection {
     let agentOptions: https.AgentOptions = {
       keepAlive: true,
       maxSockets: 1, // the whole point of this class
-      maxFreeSockets: 1,
     };
     if (secure) {
       agentOptions.ca = getCACertificates();
@@ -49,7 +49,7 @@ export class HTTPConnection {
         agentOptions.rejectUnauthorized = false;
       }
     }
-    this.agent = new (secure ? https : http).Agent(agentOptions);
+    this.agent = new this.protocolModule.Agent(agentOptions);
   }
 
   /**
@@ -105,7 +105,7 @@ export class HTTPConnection {
         req.on("error", fail);
         req.on("response", res => {
           responseStarted = true;
-          this.readResponse(req, res, socketID, reusedSocket, onChunk)
+          this.readResponse(res, socketID, reusedSocket, onChunk)
             .then(resolve, fail);
         });
         req.end(body);
@@ -115,7 +115,7 @@ export class HTTPConnection {
     }
   }
 
-  protected async readResponse(req: http.ClientRequest, res: http.IncomingMessage,
+  protected async readResponse(res: http.IncomingMessage,
       socketID: number, reusedSocket: boolean,
       onChunk?: (chunk: string) => Promise<void>): Promise<HTTPConnectionResponse> {
     let response: HTTPConnectionResponse = {
@@ -134,25 +134,7 @@ export class HTTPConnection {
       res.on("error", ex => unzip.destroy(ex));
       stream = res.pipe(unzip);
     }
-    let decoder = new TextDecoder(); // EWS and friends are always UTF-8
-    if (onChunk && response.ok) {
-      for await (let chunk of stream) {
-        let text = decoder.decode(chunk as Buffer, { stream: true });
-        if (text) {
-          await onChunk(text); // await = backpressure: process in order
-        }
-      }
-      let tail = decoder.decode(); // flush a split multi-byte char, if any
-      if (tail) {
-        await onChunk(tail);
-      }
-    } else {
-      let chunks: Buffer[] = [];
-      for await (let chunk of stream) {
-        chunks.push(chunk as Buffer);
-      }
-      response.body = decoder.decode(Buffer.concat(chunks));
-    }
+    response.body = await readBodyText(stream, response.ok ? onChunk : undefined);
     return response;
   }
 
