@@ -59,6 +59,7 @@
   import { ArrayColl } from "svelte-collections";
   import Button from "../Shared/Button.svelte";
   import { UserError, sleep } from "../../logic/util/util";
+  import { catchErrors } from "../Util/error";
   type DesktopCapturerSource = any; // import type { DesktopCapturerSource } from "electron";
 
   export async function openSelector(onError: (ex: Error) => void) {
@@ -140,7 +141,7 @@
       isListening = false;
     }
   }
-  onDestroy(onClose);
+  onDestroy(() => catchErrors(onClose));
 </script>
 
 <style>

@@ -124,7 +124,7 @@
         dispatch("webview", webviewE);
         // #if [!WEBMAIL]
         if (autoSize) {
-          webviewE.addEventListener("did-finish-load", onLoadResize);
+          webviewE.addEventListener("did-finish-load", () => catchErrors(onLoadResize));
         }
         await addInputListener();
         await addLinkListener();

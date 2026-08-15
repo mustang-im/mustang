@@ -26,6 +26,7 @@
   import CategoryPage from "./CategoryPage.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import XIcon from "lucide-svelte/icons/x";
+  import { catchErrors } from "../../Util/error";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -38,11 +39,11 @@
 
   let topLevelCategories = $categories.filter(cat => !cat.parentID);
 
-  onMount(async () => {
+  onMount(() => catchErrors(async () => {
     await appStore.load();
     let catID = appStore.myApps.hasItems ? "selectedApps" : "recommended";
     selectedCategory = categories.find(cat => cat.fullID == catID);
-  });
+  }));
 
   function closeStore() {
     showStore = false;

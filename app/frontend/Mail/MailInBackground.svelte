@@ -12,9 +12,7 @@
   import { t } from "../../l10n/l10n";
   import { onMount } from "svelte";
 
-  onMount(() => {
-    newMailListener();
-  });
+  onMount(() => catchErrors(newMailListener));
 
   $: emailAccounts = appGlobal.emailAccounts;
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;

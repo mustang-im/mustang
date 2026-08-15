@@ -18,6 +18,7 @@
   import Browser from "../Browser.svelte";
   import { autoFillLoginPage } from "../../../logic/Auth/LoginAutoFill";
   import { UserCancelled, UserError, type URLString, sleep } from "../../../logic/util/util";
+  import { catchErrors } from "../../Util/error";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -35,7 +36,7 @@
     dialog.failed(new UserCancelled($t`Login dialog was closed`));
   }
 
-  onMount(async () => {
+  onMount(() => catchErrors(async () => {
     dialog.subscribe(() => {
       if (!startURL && dialog.startURL) {
         startURL = dialog.startURL;
@@ -44,7 +45,7 @@
     await sleep(15 * 60); // 15 mins
     // Not `UserCancelled`, because we want to show that error msg to the user
     dialog.failed(new UserError($t`Login dialog was closed due to inaction`));
-  });
+  }));
 </script>
 
 <style>
