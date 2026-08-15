@@ -9,7 +9,7 @@
       <input type="radio" name="poll" disabled>
       <vbox>
         <input type="text" class="title" bind:value={option.name}
-          on:keydown={(event) => onKeyEnter(event, onNewLine)} />
+          on:keydown={(event) => catchErrors(() => onKeyEnter(event, onNewLine))} />
       </vbox>
     </hbox>
   {/each}
