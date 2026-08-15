@@ -69,8 +69,8 @@
     await navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 
-  function onOpenMeetingURL() {
-    openExternalURL(event.onlineMeetingURL);
+  async function onOpenMeetingURL() {
+    await openExternalURL(event.onlineMeetingURL);
   }
 
   function onAdd() {

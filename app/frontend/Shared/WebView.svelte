@@ -29,7 +29,7 @@
   // #endif
   import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
-  import { backgroundError, catchErrors } from "../Util/error";
+  import { backgroundError, catchErrors, showError } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
@@ -151,7 +151,8 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(newElectronKeyboardEvent(event));
+        onKeyOnMessage(newElectronKeyboardEvent(event))
+          .catch(showError);
       }
     });
   }

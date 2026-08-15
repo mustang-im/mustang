@@ -95,9 +95,9 @@
     }
   }
 
-  function cancel(event: Event) {
+  async function cancel(event: Event) {
     sas?.cancel();
-    verification.cancel();
+    await verification.cancel();
     onCancel(event);
   }
 </script>

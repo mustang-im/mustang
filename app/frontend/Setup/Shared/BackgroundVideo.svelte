@@ -17,13 +17,13 @@
 
   let paused = false;
   let videoEl: HTMLVideoElement;
-  function pause() {
+  async function pause() {
     paused = !paused;
     // bind:paused only works the second time
     if (paused) {
       videoEl.pause();
     } else {
-      videoEl.play();
+      await videoEl.play();
     }
   }
 
