@@ -44,7 +44,7 @@ function createWindow(): void {
       });
     }
 
-    mainWindow.on('closed', shutdownBackend);
+    mainWindow.on('closed', () => shutdownBackend().catch(console.error));
 
     /** Ensure that new web windows are opened in the browser, not inside our app.
      *
@@ -66,6 +66,7 @@ function createWindow(): void {
       }
       // Open the URL in the system web browser
       shell.openExternal(details.url)
+        .catch(console.error); // must return the action synchronously
       // ... and do not open a new Electron window
       return { action: 'deny' }
     })
@@ -85,12 +86,16 @@ function createWindow(): void {
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
+    // The `try` above cannot catch these, because they fail asynchronously
     if (is.dev && true) {
-      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret);
+      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret)
+        .catch(console.error);
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#jpcSecret=' + jpcSecret)
+        .catch(console.error);
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'jpcSecret=' + jpcSecret })
+        .catch(console.error);
     }
   } catch (ex) {
     console.error(ex);
@@ -124,7 +129,8 @@ function createMenu() {
 const gotLock = app.requestSingleInstanceLock();
 if (gotLock) {
   app.whenReady()
-    .then(whenReady);
+    .then(whenReady)
+    .catch(console.error);
 } else {
   // This is a second instance
   app.quit();
@@ -180,7 +186,8 @@ app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webC
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform == 'darwin') {
-    updateAndRestartNowIfNeeded();
+    updateAndRestartNowIfNeeded()
+      .catch(console.error);
   } else {
     app.quit();
   }

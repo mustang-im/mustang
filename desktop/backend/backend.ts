@@ -349,12 +349,12 @@ function setTheme(theme: "system" | "light" | "dark") {
   nativeTheme.themeSource = theme;
 }
 
-function openExternalURL(url: string) {
-  shell.openExternal(url);
+async function openExternalURL(url: string) {
+  await shell.openExternal(url);
 }
 
-function openFileInNativeApp(filePath: string) {
-  shell.openPath(filePath);
+async function openFileInNativeApp(filePath: string) {
+  await shell.openPath(filePath);
 }
 
 class StartupArgs extends Observable {
@@ -440,7 +440,7 @@ function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], erro
         if (!(ex instanceof Error)) {
           ex = new Error(ex + "");
         }
-        onSelect([], ex as Error);
+        await onSelect([], ex as Error);
       }
     },
     // If true, use the system picker if available.
