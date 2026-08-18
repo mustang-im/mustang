@@ -1,3 +1,5 @@
+import { text as textFromStream } from 'node:stream/consumers';
+
 /**
  * Reads a HTTP response body as UTF-8 text.
  * Shared by our HTTP clients `HTTPConnection` and `NetSession`.
@@ -9,14 +11,10 @@
  */
 export async function readBodyText(stream: AsyncIterable<any>,
     onChunk?: (chunk: string) => Promise<void>): Promise<string> {
-  let decoder = new TextDecoder(); // EWS and friends are always UTF-8
   if (!onChunk) {
-    let chunks: Buffer[] = [];
-    for await (let chunk of stream) {
-      chunks.push(chunk);
-    }
-    return decoder.decode(Buffer.concat(chunks));
+    return await textFromStream(stream); // EWS and friends are always UTF-8
   }
+  let decoder = new TextDecoder(); // EWS and friends are always UTF-8
   for await (let chunk of stream) {
     let text = decoder.decode(chunk, { stream: true });
     if (text) {
