@@ -41,6 +41,10 @@ export class Addressbook extends Account {
     await this.readContactsFromDB();
   }
 
+  async readFromDB(): Promise<void> {
+    await this.readContactsFromDB();
+  }
+
   async readContactsFromDB() {
     await this.readDBRunOnce.runOnce(async () => {
       if (!this.dbID) {

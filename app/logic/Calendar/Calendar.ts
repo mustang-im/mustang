@@ -81,6 +81,10 @@ export class Calendar extends Account {
     await this.readEventsFromDB();
   }
 
+  async readFromDB(): Promise<void> {
+    await this.readEventsFromDB();
+  }
+
   async readEventsFromDB() {
     await this.readDBRunOnce.runOnce(async () => {
       if (!this.dbID) {
