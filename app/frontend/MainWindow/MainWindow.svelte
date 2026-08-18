@@ -62,7 +62,7 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "./Notification";
-  import { selectedAccount, selectedFolder } from "../Mail/Selected";
+  import { selectedAccount } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps, disableAppsBasedOnFeaturesXML } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
@@ -119,7 +119,7 @@
       await loginOnStartup(console.error);
       // Setting $selectedApp late would overwrite commandline/URL handlers
       $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount?.inbox;
+      // `MailApp` selects the inbox, once we read the folders
     }
   }
 

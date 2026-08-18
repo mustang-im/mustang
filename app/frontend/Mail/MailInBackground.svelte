@@ -50,6 +50,8 @@
     }
   }
 
+  /** `AllFolders.newEMail()` needs the Sent folder of an account,
+   * so wait until we read the folders. `$selectedFolder` tells us that we have them. */
   async function waitForStartup(): Promise<boolean> {
     if ($selectedFolder) {
       return false;
