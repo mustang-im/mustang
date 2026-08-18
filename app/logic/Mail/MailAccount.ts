@@ -14,6 +14,7 @@ import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { AbstractFunction, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
+import { RunOnce } from "../util/flow/RunOnce";
 import { Collection, ArrayColl } from 'svelte-collections';
 import { gt } from "../../l10n/l10n";
 
@@ -43,12 +44,19 @@ export class MailAccount extends TCPAccount {
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
+  readDBRunOnce = new RunOnce();
 
   async startup() {
     await super.startup();
     await this.listFolders();
     assert(this.inbox, gt`Inbox not found`);
     await this.inbox.getNewMessages();
+  }
+
+  async readFromDB(): Promise<void> {
+    await this.readDBRunOnce.runOnce(async () => {
+      await this.storage.readFolderHierarchy(this);
+    });
   }
 
   async listFolders(): Promise<void> {

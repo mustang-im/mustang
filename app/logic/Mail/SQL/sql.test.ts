@@ -107,6 +107,7 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
 
 test.skip("Search mails in SQL database", { timeout: 1000 }, async () => {
   let accounts = await readMailAccounts();
+  await accounts.first.readFromDB();
   let folder = accounts.first.getSpecialFolder(SpecialFolder.Inbox);
   let search = new SQLSearchEMail();
   search.folder = folder;

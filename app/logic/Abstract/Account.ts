@@ -71,6 +71,16 @@ export class Account extends Observable {
   }
 
   /**
+   * Load all the data that we stored locally in our database,
+   * e.g. the mail folders, the calendar events, or the contacts.
+   * Called at app start, before the login, so that the user sees the data
+   * even when the login fails, e.g. when we're offline.
+   * May be called again later, and must then not add the data a second time.
+   */
+  async readFromDB(): Promise<void> {
+  }
+
+  /**
    * Convenience method for accounts to use to start up dependent accounts.
    * This should be called after the account has finished its own startup.
    */

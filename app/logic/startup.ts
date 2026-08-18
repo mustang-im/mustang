@@ -86,12 +86,13 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
   }
   for (let account of allAccounts) {
-    if (account.loginOnStartup && !account.isDependentAccount) {
-      (async () => {
+    (async () => {
+      await account.readFromDB();
+      if (account.loginOnStartup && !account.isDependentAccount) {
         await account.login(false);
         await account.startup();
-      })().catch(errorWithAccountName(account, startupErrorCallback));
-    }
+      }
+    })().catch(errorWithAccountName(account, startupErrorCallback));
   }
 
   checkWakeUp();

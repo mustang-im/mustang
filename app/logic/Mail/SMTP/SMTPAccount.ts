@@ -29,6 +29,10 @@ export class SMTPAccount extends MailAccount {
   async startup() {
   }
 
+  // We have no folders
+  async readFromDB(): Promise<void> {
+  }
+
   protected getTransportOptions() {
     // Auth method
     let usePassword = [
