@@ -278,11 +278,13 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
 /**
  * Converts X.400 into pseudo email addresses.
  * Alternative to sanitize.emailAddress()
- * @param emailAddress email address or X.400 address
- * @returns email address
- * @throws when not valid
+ * @param emailAddress email address or X.400 address.
+ *   May be missing, e.g. for a distribution list member that the server
+ *   returns with a `Name`, but no `EmailAddress`.
+ * @returns email address, or `null` when missing or not valid
  */
-export function getEmailAddressOrX400(emailAddress: string): string {
+export function getEmailAddressOrX400(emailAddress: string | null | undefined): string | null {
+  emailAddress = sanitize.string(emailAddress, "");
   if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
