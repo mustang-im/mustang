@@ -1,5 +1,6 @@
 import { NTLMResponse, type NTLMRequestOptions } from "./NTLMResponse";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { appGlobal } from "../../app";
 
 /**
@@ -16,28 +17,29 @@ import { appGlobal } from "../../app";
  */
 export class NTLMChromiumSession {
   protected readonly account: EWSAccount;
-  /** Only for a dedicated connection @see `newDedicatedConnection()` */
-  protected readonly streamID: string | null;
+  /** Cookies, HTTP auth state, and the pool of 6 TCP connections are per
+   * partition, which isolates the accounts and streams from each other. */
+  protected partition: string;
   /** Backend `NetSession` (via JPC) */
   protected conn: any = null;
+  /** Protect the initialisation of `conn` */
+  protected connRunOnce = new RunOnce();
 
   constructor(account: EWSAccount, streamID: string | null = null) {
     this.account = account;
-    this.streamID = streamID;
-  }
-
-  /** Cookies, HTTP auth state, and the pool of 6 TCP connections are
-   * per partition, which isolates the accounts and streams from each other. */
-  protected get partition(): string {
-    let accountPartition = this.account.webSessionID ?? "ntlm-setup";
-    return this.streamID == null
-      ? accountPartition
-      : `${accountPartition}:stream:${this.streamID}`;
+    this.partition = this.account.webSessionID ?? "ntlm-setup";
+    if (streamID) {
+      this.partition = `${this.partition}:stream:${streamID}`;
+    }
   }
 
   async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
-    this.conn ??= await appGlobal.remoteApp.newNetSession(this.account.url,
-      this.partition, this.account.username, this.account.password);
+    if (!this.conn) {
+      await this.connRunOnce.runOnce(async () => {
+        this.conn = await appGlobal.remoteApp.newNetSession(this.account.url,
+          this.partition, this.account.username, this.account.password);
+      });
+    }
     let response = await this.conn.request({ headers: options.headers, body }, options.onChunk);
     return new NTLMResponse(response);
   }
