@@ -4,9 +4,7 @@ import { JMAPEvent } from "./JMAPEvent";
 import type { TJMAPCalendar } from "./TJMAPCalendar";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
-import type { JMAPEMail } from "../../Mail/JMAP/JMAPEMail";
 import type { TID, TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
-import { JMAPIncomingInvitation } from "./JMAPIncomingInvitation";
 import type { Participant } from "../Participant";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -43,10 +41,6 @@ export class JMAPCalendar extends Calendar {
     if (!this.name || !this.isDefault) { // Default calendar name = account name, as set by `initFromMainAccount()`
       this.name = sanitize.nonemptystring(jmap.name);
     }
-  }
-
-  getIncomingInvitationForEMail(message: JMAPEMail) {
-    return new JMAPIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {

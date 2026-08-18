@@ -3,7 +3,6 @@ import { JSCalendarEvent } from "./JSCalendarEvent";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { TID, TJMAPChangeResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { JMAPCalendar } from "./JMAPCalendar";
-import type { InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { JMAPOutgoingInvitation } from "./JMAPOutgoingInvitation";
 import { checkChangeError } from "../../Mail/JMAP/JMAPError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -116,12 +115,6 @@ export class JMAPEvent extends Event {
 
   async makeExclusions(exclusions: JMAPEvent[]) {
     await super.makeExclusions(exclusions);
-  }
-
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.isIncomingMeeting, "Only invitations can be responded to");
-    // ...
-    await this.calendar.listEvents(); // Sync whatever the server decides to do
   }
 
   fromExtraJSON(json: any) {
