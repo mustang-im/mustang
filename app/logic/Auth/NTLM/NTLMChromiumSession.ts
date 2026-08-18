@@ -1,5 +1,6 @@
 import { NTLMResponse, type NTLMRequestOptions } from "./NTLMResponse";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { appGlobal } from "../../app";
 
 /**
@@ -16,24 +17,30 @@ import { appGlobal } from "../../app";
  */
 export class NTLMChromiumSession {
   protected readonly account: EWSAccount;
-  /** Backend `NetSession` (via JPC).
-   * Keep the Promise here to avoid race conditions initialising it. */
-  protected conn: Promise<any>;
+  /** Cookies, HTTP auth state, and the pool of 6 TCP connections are per
+   * partition, which isolates the accounts and streams from each other. */
+  protected partition: string;
+  /** Backend `NetSession` (via JPC) */
+  protected conn: any = null;
+  /** Protect the initialisation of `conn` */
+  protected connRunOnce = new RunOnce();
 
   constructor(account: EWSAccount, streamID: string | null = null) {
     this.account = account;
-    /** Cookies, HTTP auth state, and the pool of 6 TCP connections are per
-     * partition, which isolates the accounts and streams from each other. */
-    let partition = this.account.webSessionID ?? "ntlm-setup";
+    this.partition = this.account.webSessionID ?? "ntlm-setup";
     if (streamID) {
-      partition = `${partition}:stream:${streamID}`;
+      this.partition = `${this.partition}:stream:${streamID}`;
     }
-    this.conn = appGlobal.remoteApp.newNetSession(this.account.url,
-      partition, this.account.username, this.account.password);
   }
 
   async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
-    let response = await (await this.conn).request({ headers: options.headers, body }, options.onChunk);
+    if (!this.conn) {
+      await this.connRunOnce.runOnce(async () => {
+        this.conn = await appGlobal.remoteApp.newNetSession(this.account.url,
+          this.partition, this.account.username, this.account.password);
+      });
+    }
+    let response = await this.conn.request({ headers: options.headers, body }, options.onChunk);
     return new NTLMResponse(response);
   }
 
