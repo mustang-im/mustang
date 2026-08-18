@@ -1,5 +1,5 @@
-import { session as Session, BrowserWindow, net as Net } from "electron";
-import { Readable } from 'stream';
+import { session as Session, net as Net } from "electron";
+import { text } from 'node:stream/consumers';
 
 const kCanaryName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
@@ -118,7 +118,7 @@ export async function fetchText(partition: string, url: string, data?: Dict<stri
           url: url,
         });
       } else {
-        new Response(Readable.toWeb(message)).text().then(text => resolve({
+        text(message).then(text => resolve({
           ok: (message.statusCode >= 200 && message.statusCode <= 299),
           status: message.statusCode,
           statusText: message.statusMessage,
