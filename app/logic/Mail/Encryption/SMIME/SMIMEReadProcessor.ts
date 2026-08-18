@@ -46,6 +46,20 @@ export class SMIMEReadProcessor extends EMailProcessor {
     }
     let vector = OctetString.decode(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.parameters);
     let encryptedContent = envelopedData.content.encryptedContentInfo.encryptedContent;
+    let symmetricKey = await this.decryptSymmetricKey(email, envelopedData.content.recipientInfos);
+    if (!symmetricKey) {
+      return;
+    }
+    let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
+    let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
+    email.wasEncrypted = true;
+    await this.unwrapMIME(email, new Uint8Array(decryptedContent));
+  }
+
+  /** Finds the private key of one of our identities that this message was
+   * encrypted to, and decrypts the symmetric content key with it.
+   * @returns null, if the message was not encrypted to any of our keys */
+  protected async decryptSymmetricKey(email: EMail, recipientInfos: any[]): Promise<Uint8Array | null> {
     // XXX what if you were BCC'd?
     for (let recipient of email.allRecipients()) {
       let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
@@ -54,7 +68,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
           if (privateKey instanceof SMIMEPrivateKey) {
             let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
             let issuer = cert.tbsCertificate.issuer;
-            for (let recipientInfo of envelopedData.content.recipientInfos) {
+            for (let recipientInfo of recipientInfos) {
               if (recipientInfo.type != "ktri" ||
                   recipientInfo.value.keyEncryptionAlgorithm.algorithm != "rsaEncryption" ||
                   recipientInfo.value.rid.type != "issuerAndSerialNumber") {
@@ -67,17 +81,13 @@ export class SMIMEReadProcessor extends EMailProcessor {
                 continue;
               }
               let rawKey = await privateKey.decryptKey();
-              let symmetricKey = unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
-              let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
-              let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
-              email.wasEncrypted = true;
-              await this.unwrapMIME(email, new Uint8Array(decryptedContent));
-              return;
+              return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
             }
           }
         }
       }
     }
+    return null;
   }
 
   /** Reads an opaque-signed message (used by Outlook), where the whole
