@@ -31,6 +31,23 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     }
   }
 
+  async updateInvitation() {
+    assert(this.invitationMessage == InvitationMessage.Invitation, "Not an invitation");
+    let event = this.calEvent();
+    if (!event) {
+      // Event is not yet in the user's calendar, nothing to do.
+      return;
+    }
+    let { myParticipant } = ICalIncomingInvitation.participantMe(event, this.message.folder.account);
+    let timestamp = this.event.lastUpdateTime;
+    if (myParticipant &&
+      (!myParticipant.lastUpdateTime || myParticipant.lastUpdateTime < timestamp)) {
+      this.myParticipation = myParticipant.response = InvitationResponse.NoResponseReceived;
+      myParticipant.lastUpdateTime = timestamp;
+      await event.save();
+    }
+  }
+
   static async respondToInvitationFromCalEvent(calEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
     let { identity, myParticipant } = this.participantMe(calEvent, mailAccount);
     let hasChanged = myParticipant.response != response;

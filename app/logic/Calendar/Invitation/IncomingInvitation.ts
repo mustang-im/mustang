@@ -46,6 +46,11 @@ export class IncomingInvitation {
     throw new AbstractFunction();
   }
 
+  /** InvitationEvent: the organiser invited you to a meeting */
+  async updateInvitation() {
+    throw new AbstractFunction();
+  }
+
   /** CancelledEvent: the organiser cancelled an incoming meeting */
   async updateCancelled() {
     assert(this.invitationMessage == InvitationMessage.CancelledEvent, "Not a cancellation");
@@ -79,9 +84,11 @@ export class IncomingInvitation {
     }
   }
 
-  /** Handle CancelledEvent and ParticpantReply */
-  async updateFromOtherInvitationMessage() {
-    if (this.invitationMessage == InvitationMessage.CancelledEvent) {
+  /** Automatic processing when we receive an invitation message */
+  async updateFromInvitationMessage() {
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      await this.updateInvitation();
+    } else if (this.invitationMessage == InvitationMessage.CancelledEvent) {
       await this.updateCancelled();
     } else if (this.invitationMessage == InvitationMessage.ParticipantReply) {
       await this.updateParticipantReply();
