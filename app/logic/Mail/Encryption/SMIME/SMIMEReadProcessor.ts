@@ -1,6 +1,7 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
+import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { ContentInfo, EnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
@@ -38,6 +39,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
   /** Decrypts an encrypted (enveloped-data) message and replaces the
    * message content with the decrypted content. */
   protected async readEncrypted(email: EMail, blob: Uint8Array) {
+    email.system = EncryptionSystem.SMIME;
     let envelopedData = EnvelopedData.decode(blob, { berToDER: true });
     if (!["aes128cbc", "aes192cbc", "aes256cbc"].includes(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm)) {
       return;
@@ -84,6 +86,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
    * Extracts the wrapped message, so that it displays, and verifies the
    * signature over it. */
   protected async readOpaqueSigned(email: EMail, blob: Uint8Array) {
+    email.system = EncryptionSystem.SMIME;
     let signedData = SignedData.decode(blob, { berToDER: true });
     let contentInfo = signedData.content.contentInfo;
     if (contentInfo.contentType != "data" || !contentInfo.content) {
@@ -108,6 +111,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
         signatureMimeType != "application/x-pkcs7-signature") { // legacy type name
       return;
     }
+    email.system = EncryptionSystem.SMIME;
     let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;

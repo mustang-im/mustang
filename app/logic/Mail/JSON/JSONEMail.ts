@@ -5,6 +5,7 @@ import { getTagByName } from "../../Abstract/Tag";
 import { getFilesDir } from "../../../logic/util/backend-wrapper";
 import { EMailProcessorList } from "../EMailProcessor";
 import { SMLData } from "../SML/SMLData";
+import { EncryptionSystem } from "../Encryption/enums";
 import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
@@ -74,6 +75,7 @@ export class JSONEMail {
 
     if (email.signed || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
       let e = json.encryption = {} as any;
+      e.system = email.system;
       e.signedPublicKeyID = email.signed;
       e.wasEncrypted = email.wasEncrypted;
       e.mustEncrypt = email.mustEncrypt;
@@ -221,6 +223,7 @@ export class JSONEMail {
 
     let e = json.encryption;
     if (e) {
+      email.system = sanitize.enum<EncryptionSystem>(e.system, Object.values(EncryptionSystem), null);
       email.signed = sanitize.alphanumdash(e.signedPublicKeyID, null);
       email.wasEncrypted = sanitize.boolean(e.wasEncrypted, false);
       email.shouldEncrypt = sanitize.boolean(e.shouldEncrypt, false);

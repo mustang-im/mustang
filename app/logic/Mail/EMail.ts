@@ -626,6 +626,7 @@ export class EMail extends Message {
     other.shouldEncrypt = this.shouldEncrypt;
     other.wasEncrypted = this.wasEncrypted;
     other.signed = this.signed;
+    other.system = this.system;
   }
 
   /**

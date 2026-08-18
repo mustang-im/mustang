@@ -7,6 +7,7 @@ import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
 import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
 import { readAutoCryptKeys } from "./PGP/AutoCrypt";
+import { EncryptionSystem } from "./enums";
 import type { EMail } from "../EMail";
 import { findAllIdentities, type MailIdentity } from "../MailIdentity";
 import { appGlobal } from "../../app";
@@ -42,7 +43,7 @@ export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Pro
       }
     }
   }
-  if (email) {
+  if (email && email.system != EncryptionSystem.SMIME) {
     let key = await readAutoCryptKeys(email);
     if (key?.id == id) {
       return key;
