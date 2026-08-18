@@ -45,10 +45,14 @@ export class NetSession {
     headers?: Record<string, string>,
     body?: string,
   }, onChunk?: (chunk: string) => Promise<void>): Promise<NetResponse> {
+    let headers = onChunk
+      // Compressing a stream delays the chunks in the compressor
+      ? { ...options.headers, "Accept-Encoding": "identity" }
+      : options.headers;
     let request = Net.request({
       url: this.url,
       method: options.method ?? "POST",
-      headers: options.headers,
+      headers,
       session: this.session,
       credentials: "include", // send cookies, and engage the HTTP auth stack
     });
