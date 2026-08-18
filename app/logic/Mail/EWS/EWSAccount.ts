@@ -611,11 +611,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   async streamNotifications(username: string) {
     this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
     this.notificationAbort[username] = new AbortController();
-    let subscriptions = username != this.username
-      ? this.dependentAccounts().contents.filter(
+    let subscriptions = username == this.username
+      ? [this.subscriptionID]
+      : this.dependentAccounts().contents.filter(
           (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
-        ).map(account => account.subscriptionID)
-      : [this.subscriptionID];
+        ).map(account => account.subscriptionID);
     if (!subscriptions.length) {
       return;
     }
