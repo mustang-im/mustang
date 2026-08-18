@@ -55,7 +55,7 @@ export class SMIMEPublicKey extends PublicKey {
     this.userIDs.replaceAll(certificateEMailAddresses(cert));
     // Do not overwrite the name that the user gave the key
     this.name ||= this.defaultName;
-    let hash = new Uint8Array(await window.crypto.subtle.digest("SHA-256", Certificate.encode(cert)));
+    let hash = new Uint8Array(await crypto.subtle.digest("SHA-256", Certificate.encode(cert)));
     this.fingerprint = Uint8ArrayToHex(hash);
     let { notBefore, notAfter } = cert.tbsCertificate.validity;
     this.created = new Date(notBefore.value);

@@ -231,7 +231,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       return deviceID;
     }
     let array = new Uint32Array(4);
-    window.crypto.getRandomValues(array);
+    crypto.getRandomValues(array);
     deviceID = Array.from(array, value => value.toString(16).padStart(8, "0")).join("");
     localStorage.setItem("active_sync.device_id", deviceID);
     return deviceID;
