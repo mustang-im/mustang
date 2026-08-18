@@ -25,7 +25,6 @@
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
-  import type { EMail } from "../../../logic/Mail/EMail";
   import { fileSize } from "../../Files/file";
   import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
   import { assert } from "../../../logic/util/util";
@@ -35,15 +34,13 @@
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
-  /** Optional. Only for emails, to download the contents on demand. */
-  export let message: EMail = null;
 
   async function onOpen() {
     if (canOpenFileInternally(attachment.mimeType)) {
       await attachment.load();
       await openFileInternallyFromFile(attachment.content);
     } else {
-      if (!message?.downloadComplete) {
+      if (!attachment.filepathLocal) {
         await attachment.load();
       }
       await attachment.openOSApp();

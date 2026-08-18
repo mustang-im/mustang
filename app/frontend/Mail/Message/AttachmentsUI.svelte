@@ -2,7 +2,7 @@
   <vbox class="attachments">
     <hbox class="attachments-list">
       {#each $visible.each as attachment}
-        <MessageAttachment {message} {attachment} />
+        <MessageAttachment {attachment} />
       {/each}
     </hbox>
   </vbox>
@@ -10,13 +10,10 @@
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
-  import type { EMail } from "../../../logic/Mail/EMail";
   import MessageAttachment from "./AttachmentUI.svelte";
   import type { Collection } from "svelte-collections";
 
   export let attachments: Collection<Attachment>;
-  /** Optional. Only for emails, to download the contents on demand. */
-  export let message: EMail = null;
 
   $: visible = attachments.filterObservable(a => !a.hidden);
 </script>
