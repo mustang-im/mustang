@@ -185,32 +185,34 @@ export class OWAAccount extends ExchangeMailAccount {
 
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
-      // `listFolders()` will subscribe to new user-added calendars
-      await super.startup();
+      try {
+        // `listFolders()` will subscribe to new user-added calendars
+        await super.startup();
 
-      // Create primary addressbook automatically
-      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
-      if (!haveAddressbook) {
-        let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-        let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
-        let addressbook = this.createAddressbookAccount(folder, true);
-        appGlobal.addressbooks.add(addressbook);
-        await addressbook.save();
+        // Create primary addressbook automatically
+        let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
+        if (!haveAddressbook) {
+          let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+          let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+          let addressbook = this.createAddressbookAccount(folder, true);
+          appGlobal.addressbooks.add(addressbook);
+          await addressbook.save();
+        }
+
+        if (!this.isDependentAccount) {
+          appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+        }
+
+        await this.callOWA(new OWASubscribeToNotificationRequest());
+
+        this.notifications = this.isOffice365()
+          ? new OWAOffice365Notifications(this)
+          : new OWAExchangeNotifications(this);
+        this.notifications.start()
+          .catch(this.errorCallback);
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
-      }
-
-      await this.callOWA(new OWASubscribeToNotificationRequest());
-
-      this.notifications = this.isOffice365()
-        ? new OWAOffice365Notifications(this)
-        : new OWAExchangeNotifications(this);
-      this.notifications.start()
-        .catch(this.errorCallback);
-
-      await this.startupDependentAccounts();
     });
   }
 

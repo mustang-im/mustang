@@ -120,17 +120,19 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
-      if (this.isDependentAccount) {
-        await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
-        return;
+      try {
+        await super.startup();
+        if (this.isDependentAccount) {
+          await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
+          return;
+        }
+        appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+        // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
+        await this.subscribeToNotifications();
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-      await this.startupDependentAccounts();
-
-      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-      await this.subscribeToNotifications();
     });
   }
 
