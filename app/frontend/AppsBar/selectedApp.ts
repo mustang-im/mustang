@@ -81,7 +81,7 @@ export function getParams(id: HistoryIDObj | AnyObject): PageParams {
   if (!id?.id) {
     return {};
   }
-  return historyParams.get(id.id);
+  return historyParams.get(id.id) ?? {};
 }
 /** TODO call this
  * a) when the user goes back in history and then forward, remove the orphaned entries, or
