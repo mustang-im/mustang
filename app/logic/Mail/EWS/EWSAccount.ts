@@ -45,7 +45,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
    * connections that we control. Only for `AuthMethod.NTLM`. */
   protected ntlmTransport: NTLMChromiumSession | NTLMConnectionPool | null = null;
   @notifyChangedProperty
-  protected _useOwnNTLM = false;
+  protected _useChromiumNTLM = false;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
    * inbox: if this is an inbox shared with us */
@@ -297,25 +297,26 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return true;
   }
 
-  /** User setting: Use our own NTLM implementation
-   * instead of the Chromium network stack */
-  get useOwnNTLM(): boolean {
-    return this._useOwnNTLM;
+  /** User setting: Use the Chromium network stack (HTTP and NTLM)
+   * instead of our own NTLM implementation.
+   * Honored only if the authentication is NTLM. */
+  get useChromiumNTLM(): boolean {
+    return this._useChromiumNTLM;
   }
-  set useOwnNTLM(val: boolean) {
-    if (val == this._useOwnNTLM) {
+  set useChromiumNTLM(val: boolean) {
+    if (val == this._useChromiumNTLM) {
       return;
     }
     // Use the other implementation from now on
     this.ntlmTransport?.close();
     this.ntlmTransport = null;
-    this._useOwnNTLM = val;
+    this._useChromiumNTLM = val;
   }
 
   /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
   protected get ntlm(): NTLMChromiumSession | NTLMConnectionPool {
     assert(this.username && this.password, gt`Need username and password`);
-    return this.ntlmTransport ??= appGlobal.remoteApp.newNetSession && !this.useOwnNTLM
+    return this.ntlmTransport ??= appGlobal.remoteApp.newNetSession && this.useChromiumNTLM
       ? new NTLMChromiumSession(this)
       : new NTLMConnectionPool(this);
   }
@@ -1129,13 +1130,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
-    this.useOwnNTLM = sanitize.boolean(json.useOwnNTLM, false);
+    this.useChromiumNTLM = sanitize.boolean(json.useChromiumNTLM, false);
   }
 
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.sharedFolderRoot = this.sharedFolderRoot;
-    json.useOwnNTLM = this.useOwnNTLM;
+    json.useChromiumNTLM = this.useChromiumNTLM;
     return json;
   }
 }

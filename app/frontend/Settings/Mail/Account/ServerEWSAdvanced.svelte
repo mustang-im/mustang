@@ -1,9 +1,9 @@
 <HeaderGroupBox>
   <hbox slot="header">Exchange - {$t`Advanced`}</hbox>
 
-  <Checkbox bind:checked={account.useOwnNTLM} allowIndetermined={false}
-    label={$t`Use own NTLM login implementation`}
-    tooltip={$t`Normally, the browser network stack performs the NTLM login. Turn this on to use our own NTLM implementation instead, e.g. if the login to your Exchange server is unreliable.`} />
+  <Checkbox bind:checked={account.useChromiumNTLM} allowIndetermined={false}
+    label={$t`Use the browser HTTP and NTLM implementation`}
+    tooltip={$t`Use the Chromium network stack to perform the NTLM login and HTTP requests. Try this if the login to your Exchange server is unreliable, or you want to use the Windows SSO.`} />
 </HeaderGroupBox>
 
 <script lang="ts">
