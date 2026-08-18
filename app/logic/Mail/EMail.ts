@@ -391,7 +391,7 @@ export class EMail extends Message {
     for (let header of mail.headers) {
       try {
         let name = sanitize.nonemptystring(header.key).toLowerCase();
-        let value = sanitize.nonemptystring(header.value);
+        let value = sanitize.string(header.value, "");
         this.headers.set(name, value);
       } catch (ex) {
         this.folder.account.errorCallback(ex);
