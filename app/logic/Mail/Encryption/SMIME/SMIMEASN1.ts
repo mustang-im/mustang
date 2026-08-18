@@ -52,6 +52,7 @@ const oids = {
   "1.2.840.113549.1.9.4": "messageDigest",
   "1.2.840.113549.1.9.5": "signingTime",
   "1.2.840.113549.1.9.15": "smimeCapabilities",
+  "1.2.840.113549.1.9.16.1.23": "authEnvelopedData",
   "1.2.840.113549.2.7": "hmacWithSHA1",
   "1.2.840.113549.2.9": "hmacWithSHA256",
   "1.2.840.113549.2.10": "hmacWithSHA384",
@@ -73,8 +74,11 @@ const oids = {
   "2.5.29.35": "authorityKeyIdentifier",
   "2.5.29.37": "extKeyUsage",
   "2.16.840.1.101.3.4.1.2": "aes128cbc",
+  "2.16.840.1.101.3.4.1.6": "aes128gcm",
   "2.16.840.1.101.3.4.1.22": "aes192cbc",
+  "2.16.840.1.101.3.4.1.26": "aes192gcm",
   "2.16.840.1.101.3.4.1.42": "aes256cbc",
+  "2.16.840.1.101.3.4.1.46": "aes256gcm",
   "2.16.840.1.101.3.4.2.1": "sha256",
   "2.16.840.1.101.3.4.2.2": "sha384",
   "2.16.840.1.101.3.4.2.3": "sha512",
@@ -425,6 +429,40 @@ export const EnvelopedData = define("EnvelopedData", function() {
         this.key("encryptedContent").implicit(0).optional().octstr(),
       ),
       this.key("unprotectedAttrs").implicit(1).optional().use(Attributes),
+    ),
+  );
+});
+
+/** The parameters of the AES-GCM ciphers. RFC 5084 section 3.2. */
+export const GCMParameters = define("GCMParameters", function() {
+  this.seq().obj(
+    this.key("nonce").octstr(),
+    /** Length of the authentication tag, in bytes */
+    this.key("icvLen").int().def(12n),
+  );
+});
+
+/** Encrypted with a cipher that authenticates the content as well, i.e.
+ * AES-GCM. Unlike `EnvelopedData`, the authentication tag is not appended to
+ * the content, but sent separately, in `mac`. RFC 5083 section 2. */
+export const AuthEnvelopedData = define("AuthEnvelopedData", function() {
+  this.seq().obj(
+    this.key("contentType").objid(oids),
+    this.key("content").explicit(0).seq().obj(
+      this.key("version").int(),
+      this.key("originatorInfo").implicit(0).optional().seq().obj( // Not supported
+        this.key("certs").implicit(0).optional().setof(Any),
+        this.key("crls").implicit(1).optional().setof(Any),
+      ),
+      this.key("recipientInfos").setof(RecipientInfo),
+      this.key("authEncryptedContentInfo").seq().obj(
+        this.key("contentType").objid(oids),
+        this.key("contentEncryptionAlgorithm").use(AlgorithmIdentifier),
+        this.key("encryptedContent").implicit(0).optional().octstr(),
+      ),
+      this.key("authAttrs").implicit(1).optional().use(Attributes),
+      this.key("mac").octstr(),
+      this.key("unauthAttrs").implicit(2).optional().use(Attributes),
     ),
   );
 });

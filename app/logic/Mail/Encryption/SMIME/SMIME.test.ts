@@ -1,5 +1,6 @@
 import { expect, test, describe } from "vitest";
-import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "./SMIMEASN1";
+import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, AuthEnvelopedData, GCMParameters, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "./SMIMEASN1";
+import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { kOurCapabilities } from "./SMIMESend";
 import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "./SMIMERSAES";
 import { verifySignedData } from "./SMIMEVerify";
@@ -346,9 +347,10 @@ describe("Signed attributes", () => {
 
   test("We announce the ciphers that we can actually decrypt", () => {
     let capabilities = SMIMECapabilities.decode(SMIMECapabilities.encode(kOurCapabilities));
-    // Best first, so that the recipient picks the strongest that we both have
+    // Best first, so that the recipient picks the strongest that we both have.
+    // The authenticating GCM ciphers come before the CBC ones.
     expect(capabilities.map(capability => capability.capabilityID))
-      .toEqual(["aes256cbc", "aes192cbc", "aes128cbc"]);
+      .toEqual(["aes256gcm", "aes192gcm", "aes128gcm", "aes256cbc", "aes192cbc", "aes128cbc"]);
   });
 
   test("The signed attributes are in canonical DER SET OF order", () => {
@@ -382,3 +384,60 @@ function splitSetOf(encoded: Uint8Array): Uint8Array[] {
   }
   return elements;
 }
+
+/* Encrypted with AES-GCM, which CMS wraps in authenticated-enveloped-data
+ * (RFC 5083) instead of enveloped-data, generated with:
+ * openssl cms -encrypt -in content.txt -aes-256-gcm -recip cert.pem -outform DER
+ */
+const kEncryptedGCM = `
+  MIIB/AYLKoZIhvcNAQkQARegggHrMIIB5wIBADGCAW0wggFpAgEAMFEwOTEUMBIGA1UE
+  AwwLVGVzdCBTaWduZXIxITAfBgkqhkiG9w0BCQEWEnNpZ25lckBleGFtcGxlLmNvbQIU
+  AQW15cvskbzwNvhVJXyq52QDxaEwDQYJKoZIhvcNAQEBBQAEggEAD2lp/aQhP5c99Xvk
+  Tb+54Dvn2/QwveznzLJqX5XmT5jPibZy8jAnHslh/2POfpvWoDwjIE0uUZzPz4nDYHvq
+  Mw5bC7J6PZw8EQzlNtZpXu23cM4Gv60wPPr9HMVn5xJF62SmihCPTCxJYWRLAp6hGBPJ
+  aj7LGAyRpXsGZDj4mcSVu5oLXVz3JTBkAQHIRlPND0kWjc/EgS2HkqiBAbIQik5zQA86
+  P+vxvh1f6yhJ6tGGk70tJt33YM2rdNc3BYcsRSuma5f40HbqbQYvwRPe+FMqal88clkX
+  htj0u+aKn5RgNdwT5yEM677aOR+AgdxSAWSS7KMuPRZVT+JhaWRgUDBfBgkqhkiG9w0B
+  BwEwHgYJYIZIAWUDBAEuMBEEDAfDsHhS8yvWH9bOVwIBEIAyb58DT/Mlayhva4vEVR+M
+  Q8XmWXY3k4zj3nQ7lxuoH3Zu/iKxnZpEEle3NAxPVhdZvm0EEIGSe7Th4kzHYD4dT7m+
+  KfY=
+`;
+
+describe("AES-GCM (authenticated-enveloped-data)", () => {
+  /** Unwraps the content encryption key the same way `SMIMEReadProcessor` does */
+  function symmetricKey(authEnvelopedData: any): Uint8Array {
+    let privateKeyInfo = PrivateKeyInfo.decodePEM(kSignerKey, { label: "PRIVATE KEY" });
+    let privateKey = RSAPrivateKey.decode(privateKeyInfo.privateKey);
+    let recipientInfo = authEnvelopedData.recipientInfos[0];
+    expect(recipientInfo.type).toBe("ktri");
+    return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, privateKey), BlockType.Encrypted);
+  }
+
+  test("recognises the content type", () => {
+    expect(ContentInfo.decodeFromBase64(kEncryptedGCM).contentType).toBe("authEnvelopedData");
+  });
+
+  test("reads the cipher and its parameters", () => {
+    let content = AuthEnvelopedData.decodeFromBase64(kEncryptedGCM).content;
+    let algorithm = content.authEncryptedContentInfo.contentEncryptionAlgorithm;
+    expect(algorithm.algorithm).toBe("aes256gcm");
+    let { nonce, icvLen } = GCMParameters.decode(algorithm.parameters);
+    expect(nonce.length).toBe(12);
+    // OpenSSL sends the full 16 bytes, rather than relying on the default of 12
+    expect(Number(icvLen)).toBe(16);
+    expect(content.mac.length).toBe(16);
+  });
+
+  test("decrypts the message", async () => {
+    let content = AuthEnvelopedData.decodeFromBase64(kEncryptedGCM).content;
+    let decrypted = await decryptAuthEnveloped(content, symmetricKey(content));
+    expect(new TextDecoder().decode(decrypted)).toBe(kOpaqueContent);
+  });
+
+  test("rejects a tampered message", async () => {
+    let content = AuthEnvelopedData.decodeFromBase64(kEncryptedGCM).content;
+    let key = symmetricKey(content);
+    content.authEncryptedContentInfo.encryptedContent[0] ^= 0xFF;
+    await expect(decryptAuthEnveloped(content, key)).rejects.toThrow();
+  });
+});

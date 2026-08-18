@@ -3,7 +3,8 @@ import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { ContentInfo, EnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
+import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
+import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes } from "../MIME";
@@ -30,6 +31,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
         await this.readOpaqueSigned(email, blob);
       } else if (type == "envelopedData") {
         await this.readEncrypted(email, blob);
+      } else if (type == "authEnvelopedData") {
+        await this.readAuthEncrypted(email, blob);
       }
     } else if (contentType == "multipart/signed") {
       await this.readClearSigned(email, contentTypeHeader);
@@ -54,6 +57,25 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
     email.wasEncrypted = true;
     await this.unwrapMIME(email, new Uint8Array(decryptedContent));
+  }
+
+  /** Decrypts a message that was encrypted with an authenticating cipher,
+   * i.e. AES-GCM, and replaces the message content with the decrypted content.
+   * RFC 8551 requires AES-GCM, and CMS uses it with its own content type,
+   * not with the `EnvelopedData` that the AES-CBC ciphers use. */
+  protected async readAuthEncrypted(email: EMail, blob: Uint8Array) {
+    email.system = EncryptionSystem.SMIME;
+    let authEnvelopedData = AuthEnvelopedData.decode(blob, { berToDER: true }).content;
+    if (!["aes128gcm", "aes192gcm", "aes256gcm"].includes(
+        authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm)) {
+      return;
+    }
+    let symmetricKey = await this.decryptSymmetricKey(email, authEnvelopedData.recipientInfos);
+    if (!symmetricKey) {
+      return;
+    }
+    email.wasEncrypted = true;
+    await this.unwrapMIME(email, await decryptAuthEnveloped(authEnvelopedData, symmetricKey));
   }
 
   /** Finds the private key of one of our identities that this message was

@@ -13,6 +13,9 @@ import { gt } from "../../../../l10n/l10n";
  * them, so that they encrypt to us with a cipher that we actually support.
  * Without this, Outlook before build 16.0.8518 falls back to 3DES. */
 export const kOurCapabilities = [
+  { capabilityID: "aes256gcm" },
+  { capabilityID: "aes192gcm" },
+  { capabilityID: "aes128gcm" },
   { capabilityID: "aes256cbc" },
   { capabilityID: "aes192cbc" },
   { capabilityID: "aes128cbc" },
