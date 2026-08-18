@@ -15,7 +15,7 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import { addFilesAsAttachments, type AttachmentOwner } from "../../../../logic/Abstract/Attachment";
+  import { addFilesAsAttachments, type MessageWithAttachments } from "../../../../logic/Abstract/Attachment";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
@@ -24,8 +24,8 @@
   import { t } from "../../../../l10n/l10n";
 
   /** The email, chat message or calendar event to attach the files to */
-  export let owner: AttachmentOwner;
-  $: attachments = owner.attachments;
+  export let message: MessageWithAttachments;
+  $: attachments = message.attachments;
 
   let fileSelector: FileSelector;
   export async function onAdd() {
@@ -34,7 +34,7 @@
       console.log("no file selected");
       return;
     }
-    addFilesAsAttachments(owner, [file]);
+    addFilesAsAttachments(message, [file]);
   }
 </script>
 

@@ -5,7 +5,7 @@ import { ParticipationStatus, InvitationResponse } from "../Invitation/Invitatio
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ICalContainer, ICalParser } from "./ICalParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
-import { fileExtensionForMIMEType } from "../../util/util";
+import { base64ToUint8Array, fileExtensionForMIMEType } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
 import { gt } from "../../../l10n/l10n";
@@ -163,7 +163,7 @@ function readAttachments(vevent: ICalContainer, event: Event): void {
     attachment.filename = sanitize.filename(
       entry.properties.filename ?? entry.properties["x-filename"] ?? entry.properties["x-apple-filename"],
       "attachment-" + ++fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
-    attachment.content = new File([Uint8Array.from(atob(entry.value), c => c.charCodeAt(0))], attachment.filename, { type: attachment.mimeType });
+    attachment.content = new File([base64ToUint8Array(entry.value)], attachment.filename, { type: attachment.mimeType });
     attachment.size = attachment.content.size;
     attachment.disposition = ContentDisposition.attachment;
     event.attachments.add(attachment);

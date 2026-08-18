@@ -1,5 +1,5 @@
 import type { MailContentStorage } from "../MailAccount";
-import type { Attachment, AttachmentOwner } from "../../Abstract/Attachment";
+import type { Attachment, MessageWithAttachments } from "../../Abstract/Attachment";
 import type { Message } from "../../Abstract/Message";
 import { EMail } from "../EMail";
 import { ChatMessage } from "../../Chat/ChatMessage";
@@ -50,8 +50,8 @@ export class RawFilesAttachment implements MailContentStorage {
 
   /** Writes the attachment contents into a new file on disk.
    * @returns the file path where it was written */
-  protected async writeFile(attachment: Attachment, owner: AttachmentOwner): Promise<string> {
-    let filepath = await this.getFilePath(attachment, owner);
+  protected async writeFile(attachment: Attachment, message: MessageWithAttachments): Promise<string> {
+    let filepath = await this.getFilePath(attachment, message);
     let contents = new Uint8Array(await attachment.content.arrayBuffer());
     // Permissions: Only user can read the file, but not modify
     await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
@@ -115,20 +115,19 @@ export class RawFilesAttachment implements MailContentStorage {
     }
   }
 
-  async getFilePath(attachment: Attachment, owner: AttachmentOwner): Promise<string> {
-    let dir = await this.getDirPath(owner);
+  async getFilePath(attachment: Attachment, message: MessageWithAttachments): Promise<string> {
+    let dir = await this.getDirPath(message);
     // Permissions: Only user can read and write the dir. Permissions later changed in `messageFinished()`
     await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
-    let id = owner.attachments.getKeyForValue(attachment) ?? Math.floor(Math.random() * 100) + 100;
+    let id = message.attachments.getKeyForValue(attachment) ?? Math.floor(Math.random() * 100) + 100;
     let fileparts = attachment.filename.split(".");
     let ext = fileparts.length > 1 ? fileparts.pop() : fileExtensionForMIMEType(attachment.mimeType);
     let filename = fileparts.join(".").substring(0, 40) + "-" + id + "." + ext;
     return `${dir}/${sanitize.filename(filename, "unknownAttachment")}`;
   }
 
-  async getDirPath(owner: AttachmentOwner): Promise<string> {
+  async getDirPath(message: MessageWithAttachments): Promise<string> {
     filesDir ??= await getFilesDir();
-    let message = owner as Message;
     if (message instanceof EMail) {
       return `${filesDir}/files/email/${sanitize.filename(message.from?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson")}/${message.dbID}-${sanitize.filename(message.baseSubject.substring(0, 30), "unknownSubject")}`;
     } else if (message instanceof ChatMessage) {

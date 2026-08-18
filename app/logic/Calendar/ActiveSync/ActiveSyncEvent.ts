@@ -9,7 +9,7 @@ import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToArrayBuffer, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kSyncStatusItemNotFound = "8";
@@ -123,8 +123,9 @@ export class ActiveSyncEvent extends ExchangeEvent {
 
   /** Only the meta-data. The contents are fetched later,
    * @see downloadAttachmentsFromServer()
-   * ActiveSync 16.0 and later. Read-only: ActiveSync has no command to add or
-   * remove attachments of a calendar item, so `toFields()` cannot write them. */
+   * ActiveSync 16.0 and later. Read-only for now: Writing them would need the
+   * `Add` and `Delete` elements of MS-ASAIRS 2.2.2.2 and 2.2.2.21,
+   * which `toFields()` does not implement. */
   protected attachmentsFromWBXML(wbxmljs: Record<string, any>) {
     this.attachments.replaceAll(ensureArray(wbxmljs.Attachment).map(a => {
       let attachment = this.newAttachment();
@@ -149,7 +150,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
         },
       });
       let content = sanitize.nonemptystring(response.Response?.Fetch?.Properties?.Data);
-      attachment.content = new File([await base64ToArrayBuffer(content, attachment.mimeType)],
+      attachment.content = new File([base64ToUint8Array(content)],
         attachment.filename, { type: attachment.mimeType });
       attachment.size = attachment.content.size;
     }
@@ -405,7 +406,7 @@ function fromActiveSyncZone(zone: string | null): string | null {
   if (!zone) {
     return null;
   }
-  let buffer = Uint8Array.from(atob(zone), c => c.charCodeAt(0)).buffer;
+  let buffer = base64ToUint8Array(zone).buffer;
   zone = String.fromCharCode(...new Uint16Array(buffer, 4, 32)).replace(/\0+$/, "") || String.fromCharCode(...new Uint16Array(buffer, 88, 32)).replace(/\0+$/, "");
   return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }

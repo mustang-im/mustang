@@ -66,7 +66,7 @@
         </vbox>
         {#if showAttachments}
           <vbox class="column3 attachments">
-            <AttachmentsPane owner={event} />
+            <AttachmentsPane message={event} />
           </vbox>
         {/if}
       </vbox>

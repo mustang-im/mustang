@@ -1,6 +1,4 @@
 import { File as FileEntry } from "../Files/File";
-import { Message } from "./Message";
-import type { Event } from "../Calendar/Event";
 import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -44,10 +42,8 @@ export class Attachment extends Observable {
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
-  /** The email or chat message that this attachment is part of. @see event */
-  message: Message;
-  /** The calendar event that this attachment is part of. @see message */
-  event: Event;
+  /** The email, chat message or calendar event that this attachment is part of */
+  message: MessageWithAttachments;
   storage: Collection<AttachmentStorage>;
   storageRunOnce = new RunOnce<void>();
 
@@ -80,7 +76,7 @@ export class Attachment extends Observable {
     this.disposition = ContentDisposition.attachment;
   }
 
-  cloneTo(to: Message): Attachment {
+  cloneTo(to: MessageWithAttachments): Attachment {
     let clone = to.newAttachment();
     Object.assign(clone, this);
     if (this.content) {
@@ -109,11 +105,7 @@ export class Attachment extends Observable {
     if (this.content) {
       return;
     }
-    if (this.message instanceof EMail) {
-      await this.message.loadAttachments();
-    } else if (this.event) {
-      await this.event.loadAttachments();
-    }
+    await this.message.loadAttachments?.();
   }
 
   /** Open the native desktop app with this file */
@@ -218,18 +210,20 @@ const kHiddenMIMETypes = [
 ];
 
 /** An email, chat message or calendar event that can have attachments */
-export interface AttachmentOwner {
+export interface MessageWithAttachments {
   dbID: number | string;
   readonly attachments: ArrayColl<Attachment>;
   newAttachment(): Attachment;
+  /** Fetches the attachment contents, for messages that don't have them in memory */
+  loadAttachments?(): Promise<void>;
 }
 
 /** Attaches files that the user picked or dropped */
-export function addFilesAsAttachments(owner: AttachmentOwner, files: File[]): void {
+export function addFilesAsAttachments(message: MessageWithAttachments, files: File[]): void {
   for (let file of files) {
-    let attachment = owner.newAttachment();
+    let attachment = message.newAttachment();
     attachment.fromFile(file);
-    owner.attachments.add(attachment);
+    message.attachments.add(attachment);
   }
 }
 

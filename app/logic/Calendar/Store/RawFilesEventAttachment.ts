@@ -1,6 +1,6 @@
 import type { Event } from "../Event";
 import { SQLEvent } from "../SQL/SQLEvent";
-import type { Attachment, AttachmentOwner } from "../../Abstract/Attachment";
+import type { Attachment, MessageWithAttachments } from "../../Abstract/Attachment";
 import { RawFilesAttachment } from "../../Mail/Store/RawFilesAttachment";
 import { getFilesDir } from "../../util/backend-wrapper";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -10,7 +10,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
  * sorted by the organizer of the meeting. */
 export class RawFilesEventAttachment extends RawFilesAttachment {
   async saveAttachment(attachment: Attachment) {
-    let event = attachment.event;
+    let event = attachment.message as Event;
     if (!attachment.content || attachment.filepathLocal || !event.dbID) {
       return;
     }
@@ -19,8 +19,8 @@ export class RawFilesEventAttachment extends RawFilesAttachment {
     await SQLEvent.saveAttachmentFilename(event, attachment);
   }
 
-  async getDirPath(owner: AttachmentOwner): Promise<string> {
-    let event = owner as Event;
+  async getDirPath(message: MessageWithAttachments): Promise<string> {
+    let event = message as Event;
     let filesDir = await getFilesDir();
     let organizer = sanitize.filename(event.organizer?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson");
     let title = sanitize.filename(event.title?.substring(0, 30), "unknownEvent");

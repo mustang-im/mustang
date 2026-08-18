@@ -29,6 +29,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "item:Body",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Attachments",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "item:ReminderIsSet",
       }, {
         __type: "PropertyUri:#Exchange",
@@ -39,9 +42,6 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:TextBody",
-      }, {
-        __type: "PropertyUri:#Exchange",
-        FieldURI: "item:Attachments",
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:StartTimeZoneId",
@@ -225,13 +225,13 @@ export function owaCreateAttachmentRequest(eventID: string, attachment: Attachme
   });
 }
 
-export function owaDeleteAttachmentRequest(attachmentID: string): OWARequest {
+export function owaDeleteAttachmentsRequest(attachmentIDs: string[]): OWARequest {
   return new OWARequest("DeleteAttachment", {
     __type: "DeleteAttachmentRequest:#Exchange",
-    AttachmentIds: [{
+    AttachmentIds: attachmentIDs.map(attachmentID => ({
       __type: "RequestAttachmentId:#Exchange",
       Id: attachmentID,
-    }],
+    })),
   });
 }
 

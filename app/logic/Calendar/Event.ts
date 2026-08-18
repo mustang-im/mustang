@@ -11,7 +11,7 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/conv
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, randomID } from "../util/util";
+import { assert, NotReached, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -515,7 +515,7 @@ export class Event extends Observable {
 
   newAttachment(): Attachment {
     let attachment = new Attachment();
-    attachment.event = this;
+    attachment.message = this;
     let storage = this.calendar?.storage;
     attachment.storage = new ArrayColl(storage ? [storage] : []);
     return attachment;
@@ -527,7 +527,8 @@ export class Event extends Observable {
     for (let attachment of this.attachments) {
       await attachment.read();
     }
-    if (this.attachments.every(attachment => attachment.content)) {
+    // Only those that are on the server can be downloaded from there.
+    if (this.attachments.every(attachment => attachment.content || !attachment.pID)) {
       return;
     }
     await this.downloadAttachmentsFromServer();
@@ -538,8 +539,10 @@ export class Event extends Observable {
 
   /** Fetches the attachment contents from the server.
    * Only needed for protocols that send the attachment metadata,
-   * but not the contents, together with the event. */
+   * but not the contents, together with the event. Only those set
+   * `Attachment.pID`, and only for those is this function called. */
   protected async downloadAttachmentsFromServer(): Promise<void> {
+    throw new NotReached();
   }
 
   /** Attachments that are still on the server, but that the user

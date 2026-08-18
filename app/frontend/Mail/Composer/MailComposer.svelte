@@ -158,7 +158,7 @@
       </vbox>
       {#if showAttachments}
         <vbox class="attachments">
-          <AttachmentsPane owner={mail} />
+          <AttachmentsPane message={mail} />
         </vbox>
       {/if}
     </hbox>

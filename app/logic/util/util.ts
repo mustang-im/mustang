@@ -64,6 +64,14 @@ export async function base64ToArrayBuffer(base64: string, mimetype: string): Pro
   return await res.arrayBuffer();
 }
 
+/** Decodes base64. Unlike `base64ToArrayBuffer()`, this is synchronous. */
+export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
+  // The cast is needed only because `fromBase64()` is declared to return a
+  // `Uint8Array` over any buffer type. It never returns a `SharedArrayBuffer`.
+  return (Uint8Array.fromBase64?.(base64) ?? // node doesn't have it yet, unlike Electron
+    Uint8Array.from(atob(base64), char => char.charCodeAt(0))) as Uint8Array<ArrayBuffer>;
+}
+
 export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {
   let res = await fetch(dataURL);
   return await res.blob();

@@ -13,7 +13,7 @@ import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -148,7 +148,6 @@ export class EWSEvent extends ExchangeEvent {
       }
       let response = await this.calendar.account.callEWS({
         m$GetAttachment: {
-          m$AttachmentShape: {},
           m$AttachmentIds: {
             t$AttachmentId: {
               Id: attachment.pID,
@@ -157,7 +156,7 @@ export class EWSEvent extends ExchangeEvent {
         },
       });
       let content = sanitize.nonemptystring(response.Attachments.FileAttachment.Content);
-      attachment.content = new File([await base64ToArrayBuffer(content, attachment.mimeType)],
+      attachment.content = new File([base64ToUint8Array(content)],
         attachment.filename, { type: attachment.mimeType });
       attachment.size = attachment.content.size;
     }
@@ -166,13 +165,14 @@ export class EWSEvent extends ExchangeEvent {
   /** Exchange cannot save attachments as part of the event,
    * but needs separate calls, after the event exists on the server. */
   protected async saveAttachmentsToServer(): Promise<void> {
-    for (let removed of this.removedAttachments) {
+    let removed = this.removedAttachments;
+    if (removed.length) {
       await this.calendar.account.callEWS({
         m$DeleteAttachment: {
           m$AttachmentIds: {
-            t$AttachmentId: {
-              Id: removed.pID,
-            },
+            t$AttachmentId: removed.map(attachment => ({
+              Id: attachment.pID,
+            })),
           },
         },
       });
@@ -233,24 +233,38 @@ export class EWSEvent extends ExchangeEvent {
   async saveToServer() {
     await this.prepareSaveToServer();
 
+    /* Exchange saves the attachments separately from the event, and sends the
+     * invitations while saving the event. So, when creating a meeting that has
+     * attachments, create it without the attendees first, which sends no
+     * invitation, and add the attendees only after the attachments.
+     * Otherwise, the attendees would get 2 invitations,
+     * and the first one without the attachments. */
+    let inviteAfterAttachments = !this.itemID && !this.parentEvent &&
+      this.participants.hasItems && this.attachments.hasItems;
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
-      await this.saveCalendarItemToServer();
+      await this.saveCalendarItemToServer(inviteAfterAttachments);
     /* Disabling tasks for now.
     } else {
       await this.saveTask();
     }
     */
     await this.saveAttachmentsToServer();
+    if (inviteAfterAttachments) {
+      await this.saveCalendarItemToServer();
+    }
   }
 
-  async saveCalendarItemToServer() {
+  /** @param withoutAttendees Save the event as an appointment without
+   *   attendees, so that the server sends no invitations yet. @see saveToServer() */
+  async saveCalendarItemToServer(withoutAttendees = false) {
     let request: any = this.itemID ?
       new EWSUpdateItemRequest(this.itemID, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
       new EWSUpdateOccurrenceRequest(this, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
-      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
+      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: withoutAttendees ? "SendToNone" : "SendToAllAndSaveCopy" });
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -270,7 +284,7 @@ export class EWSEvent extends ExchangeEvent {
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
     request.addField("CalendarItem", "Location", this.getLocationForServer(), "calendar:Location");
-    request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? {
+    request.addField("CalendarItem", "RequiredAttendees", !withoutAttendees && this.participants.hasItems ? {
       t$Attendee: this.participants.contents.map(entry => ({
         t$Mailbox: {
           t$EmailAddress: entry.emailAddress,
@@ -430,6 +444,8 @@ export class EWSEvent extends ExchangeEvent {
             t$FieldURI: [{
               FieldURI: "item:Body",
             }, {
+              FieldURI: "item:Attachments",
+            }, {
               FieldURI: "item:ReminderIsSet",
             }, {
               FieldURI: "item:ReminderMinutesBeforeStart",
@@ -437,8 +453,6 @@ export class EWSEvent extends ExchangeEvent {
               FieldURI: "item:LastModifiedTime",
             }, {
               FieldURI: "item:TextBody",
-            }, {
-              FieldURI: "item:Attachments",
             }, {
               FieldURI: "calendar:StartTimeZoneId",
             }, {
