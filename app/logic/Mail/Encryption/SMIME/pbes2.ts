@@ -1,10 +1,11 @@
 import { EncryptedPrivateKeyInfo, KeyDerivationAlgorithm, Null, OctetString, PBES2Params, PBKDF2Params } from "./SMIMEASN1";
+import { tripleDESDecrypt } from "./legacyCiphers";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
  * Decrypts data that is protected with a passphrase, using PBES2, RFC 8018.
  * The passphrase is stretched with PBKDF2, and the result is used as the
- * key for AES in CBC mode.
+ * key for AES or Triple DES in CBC mode.
  * @param parameters the parameters of the `pkcs5PBES2` algorithm identifier
  */
 export async function decryptPBES2(data: Uint8Array, parameters: Uint8Array, passphrase: string): Promise<Uint8Array> {
@@ -20,8 +21,13 @@ export async function decryptPBES2(data: Uint8Array, parameters: Uint8Array, pas
   // Cap the iterations, otherwise a malicious key file would freeze the app
   let iterations = sanitize.integerRange(Number(pbkdf2.iterationCount), 1, 10000000);
   let derivation = { name: "PBKDF2", salt: pbkdf2.salt.value, iterations, hash };
-  let passphraseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+  let passphraseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveBits", "deriveKey"]);
   let iv = OctetString.decode(pbes2.encryptionScheme.parameters);
+  if (pbes2.encryptionScheme.algorithm == "desEDE3CBC") {
+    // WebCrypto does not implement Triple DES
+    let key = new Uint8Array(await crypto.subtle.deriveBits(derivation, passphraseKey, 24 * 8));
+    return tripleDESDecrypt(data, key, iv);
+  }
   let length = sanitize.translate(pbes2.encryptionScheme.algorithm, { aes128cbc: 128, aes192cbc: 192, aes256cbc: 256 });
   let key = await crypto.subtle.deriveKey(derivation, passphraseKey, { name: "AES-CBC", length }, false, ["decrypt"]);
   return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv }, key, data));
