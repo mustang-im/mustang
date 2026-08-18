@@ -16,29 +16,24 @@ import { appGlobal } from "../../app";
  */
 export class NTLMChromiumSession {
   protected readonly account: EWSAccount;
-  /** Only for a dedicated connection @see `newDedicatedConnection()` */
-  protected readonly streamID: string | null;
-  /** Backend `NetSession` (via JPC) */
-  protected conn: any = null;
+  /** Backend `NetSession` (via JPC).
+   * Keep the Promise here to avoid race conditions initialising it. */
+  protected conn: Promise<any>;
 
   constructor(account: EWSAccount, streamID: string | null = null) {
     this.account = account;
-    this.streamID = streamID;
-  }
-
-  /** Cookies, HTTP auth state, and the pool of 6 TCP connections are
-   * per partition, which isolates the accounts and streams from each other. */
-  protected get partition(): string {
-    let accountPartition = this.account.webSessionID ?? "ntlm-setup";
-    return this.streamID == null
-      ? accountPartition
-      : `${accountPartition}:stream:${this.streamID}`;
+    /** Cookies, HTTP auth state, and the pool of 6 TCP connections are per
+     * partition, which isolates the accounts and streams from each other. */
+    let partition = this.account.webSessionID ?? "ntlm-setup";
+    if (streamID) {
+      partition = `${partition}:stream:${streamID}`;
+    }
+    this.conn = appGlobal.remoteApp.newNetSession(this.account.url,
+      partition, this.account.username, this.account.password);
   }
 
   async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
-    this.conn ??= await appGlobal.remoteApp.newNetSession(this.account.url,
-      this.partition, this.account.username, this.account.password);
-    let response = await this.conn.request({ headers: options.headers, body }, options.onChunk);
+    let response = await (await this.conn).request({ headers: options.headers, body }, options.onChunk);
     return new NTLMResponse(response);
   }
 
