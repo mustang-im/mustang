@@ -8,6 +8,7 @@
  */
 import { app } from "electron";
 import { NetSession } from "../../../../../desktop/backend/NetSession";
+import { isNetworkError } from "../../../../logic/util/netUtil";
 import { NTLMTestServer, sleep } from "./ntlmTestServer";
 
 const kUser = "testuser";
@@ -174,6 +175,30 @@ async function testAbortStream() {
   });
 }
 
+async function testTruncatedResponse() {
+  await withServer("reports a truncated response as a network error", async (server, net) => {
+    server.endWhileResponding = true; // FIN in the middle of the response
+    let ex: any;
+    await net.request(options("<request>1</request>")).catch(caught => ex = caught);
+    // `callStream()` re-opens the stream only for network errors
+    expectEq(isNetworkError(ex), true, `truncated response: ${ex?.message}`);
+  });
+}
+
+async function testTruncatedStream() {
+  await withServer("reports a truncated stream as a network error", async (server, net) => {
+    server.streamChunks = ["<Envelope>1</Envelope>", "<Envelope>2</Envelope>"];
+    server.endWhileResponding = true; // FIN after the first chunk
+    let received: string[] = [];
+    let ex: any;
+    await net.request(options("<request>stream</request>"), async chunk => {
+      received.push(chunk);
+    }).catch(caught => ex = caught);
+    expectEq(received.join(""), "<Envelope>1</Envelope>", "chunks before the close");
+    expectEq(isNetworkError(ex), true, `truncated stream: ${ex?.message}`);
+  });
+}
+
 async function testNoContent() {
   await withServer("returns a response that has no body, without hanging", async (server, net) => {
     server.noContent = true;
@@ -202,6 +227,8 @@ app.whenReady().then(async () => {
     await testWrongPassword();
     await testStreaming();
     await testAbortStream();
+    await testTruncatedResponse();
+    await testTruncatedStream();
     await testNoContent();
     await testCookies();
   } catch (ex) {

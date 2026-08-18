@@ -58,6 +58,9 @@ export class NTLMTestServer {
   /** Answer the next request only partially, then reset the TCP connection.
    * The server processed the request, so the client must not repeat it. */
   killWhileResponding = false;
+  /** Answer only partially, then close the TCP connection gracefully (FIN),
+   * like a proxy that times out a long-running response */
+  endWhileResponding = false;
   /** Answer with `204 No Content`, which has no response body, by spec */
   noContent = false;
   /** Send the response in these chunks, with pauses in between */
@@ -174,7 +177,7 @@ export class NTLMTestServer {
       headers["Content-Encoding"] = "gzip";
     }
     res.writeHead(200, headers);
-    if (this.killWhileResponding) {
+    if (this.killWhileResponding || this.endWhileResponding) {
       res.write(body.slice(0, 5));
       this.killConnection(res).catch(console.error);
       return;
@@ -186,7 +189,7 @@ export class NTLMTestServer {
   protected async streamResponse(res: http.ServerResponse): Promise<void> {
     for (let chunk of this.streamChunks) {
       res.write(chunk);
-      if (this.killWhileResponding) {
+      if (this.killWhileResponding || this.endWhileResponding) {
         await this.killConnection(res);
         return;
       }
@@ -197,12 +200,16 @@ export class NTLMTestServer {
     }
   }
 
-  /** Resets the TCP connection, after giving the client time to receive
-   * what we already sent of the response */
+  /** Ends the connection in the middle of the response, after giving the
+   * client time to receive what we already sent of it */
   protected async killConnection(res: http.ServerResponse): Promise<void> {
     let socket = res.socket;
     await sleep(30);
-    socket?.resetAndDestroy(); // RST, not FIN
+    if (this.endWhileResponding) {
+      socket?.end(); // FIN
+    } else {
+      socket?.resetAndDestroy(); // RST, not FIN
+    }
   }
 
   protected respond401(res: http.ServerResponse, state: SocketState, wwwAuthenticate: string): void {
