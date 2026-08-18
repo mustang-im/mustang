@@ -430,7 +430,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   /** @param streamID stable per stream, e.g. the streamed account's username */
-  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, streamID = "") {
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, streamID: string) {
     let lastAttempt: number;
     let signal = abort.signal;
     do {
@@ -578,7 +578,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let response = await this.callEWS(subscribe);
     assert(!this.subscriptionID, "stream notification started twice");
     this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications();
+    await this.streamNotifications(this.username);
   }
 
   async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
@@ -608,10 +608,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     await this.streamNotifications(account.username);
   }
 
-  async streamNotifications(username = "") {
+  async streamNotifications(username: string) {
     this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
     this.notificationAbort[username] = new AbortController();
-    let subscriptions = username
+    let subscriptions = username != this.username
       ? this.dependentAccounts().contents.filter(
           (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
         ).map(account => account.subscriptionID)
