@@ -1,5 +1,6 @@
 import { expect, test, describe } from "vitest";
-import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, Certificate } from "./SMIMEASN1";
+import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "./SMIMEASN1";
+import { kOurCapabilities } from "./SMIMESend";
 import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "./SMIMERSAES";
 import { verifySignedData } from "./SMIMEVerify";
 import { berToDER } from "../../../../../lib/asn1/ber";
@@ -324,3 +325,60 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
     expect(new TextDecoder().decode(decrypted)).toBe(kOpaqueContent);
   });
 });
+
+describe("Signed attributes", () => {
+  /** The attributes that `SMIMESend` signs, with values of realistic size */
+  function signedAttributes(): any[] {
+    return [{
+      attrType: "contentType",
+      attrValue: [Oid.encode("data")],
+    }, {
+      attrType: "signingTime",
+      attrValue: [UTCTime.encode(Date.parse("2026-08-18T15:00:00Z"))],
+    }, {
+      attrType: "messageDigest",
+      attrValue: [OctetString.encode(new Uint8Array(32))],
+    }, {
+      attrType: "smimeCapabilities",
+      attrValue: [SMIMECapabilities.encode(kOurCapabilities)],
+    }];
+  }
+
+  test("We announce the ciphers that we can actually decrypt", () => {
+    let capabilities = SMIMECapabilities.decode(SMIMECapabilities.encode(kOurCapabilities));
+    // Best first, so that the recipient picks the strongest that we both have
+    expect(capabilities.map(capability => capability.capabilityID))
+      .toEqual(["aes256cbc", "aes192cbc", "aes128cbc"]);
+  });
+
+  test("The signed attributes are in canonical DER SET OF order", () => {
+    // X.690 section 11.6: the elements of a SET OF must be sorted by their
+    // encoding. `SMIMESend` relies on listing them in that order itself,
+    // because our encoder does not sort them.
+    let elements = splitSetOf(Attributes.encode(signedAttributes()));
+    expect(elements.length).toBe(4);
+    for (let i = 1; i < elements.length; i++) {
+      expect(indexedDB.cmp(elements[i - 1], elements[i])).toBe(-1);
+    }
+  });
+
+  test("The attributes survive the round trip", () => {
+    let decoded = Attributes.decode(Attributes.encode(signedAttributes()));
+    expect(decoded.map(attribute => attribute.attrType))
+      .toEqual(["contentType", "signingTime", "messageDigest", "smimeCapabilities"]);
+  });
+});
+
+/** Splits a DER SET OF into the encodings of its elements.
+ * Only handles the lengths that these attributes actually produce. */
+function splitSetOf(encoded: Uint8Array): Uint8Array[] {
+  let pos = encoded[1] & 0x80 ? 2 + (encoded[1] & 0x7F) : 2;
+  let elements: Uint8Array[] = [];
+  while (pos < encoded.length) {
+    let length = encoded[pos + 1];
+    expect(length & 0x80).toBe(0); // otherwise this helper needs to grow
+    elements.push(encoded.subarray(pos, pos + 2 + length));
+    pos += 2 + length;
+  }
+  return elements;
+}

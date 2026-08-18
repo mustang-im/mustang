@@ -51,6 +51,7 @@ const oids = {
   "1.2.840.113549.1.9.3": "contentType",
   "1.2.840.113549.1.9.4": "messageDigest",
   "1.2.840.113549.1.9.5": "signingTime",
+  "1.2.840.113549.1.9.15": "smimeCapabilities",
   "1.2.840.113549.2.7": "hmacWithSHA1",
   "1.2.840.113549.2.9": "hmacWithSHA256",
   "1.2.840.113549.2.10": "hmacWithSHA384",
@@ -382,6 +383,21 @@ const Attribute = define("Attribute", function() {
 
 export const Attributes = define("Attributes", function() {
   this.setof(Attribute);
+});
+
+const SMIMECapability = define("SMIMECapability", function() {
+  this.seq().obj(
+    this.key("capabilityID").objid(oids),
+    // Only ciphers with a variable key length, e.g. RC2, use this
+    this.key("parameters").optional().any(),
+  );
+});
+
+/** The algorithms that an S/MIME agent supports, in the order that it prefers
+ * them. Sent as a signed attribute, so that the recipients know which cipher
+ * to use when they encrypt back. RFC 8551 section 2.5.2. */
+export const SMIMECapabilities = define("SMIMECapabilities", function() {
+  this.seqof(SMIMECapability);
 });
 
 /** Identifies only the kind of CMS blob, e.g. signedData or envelopedData.

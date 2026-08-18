@@ -4,10 +4,19 @@ import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData } from "./SMIMEASN1";
+import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData, SMIMECapabilities } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
 import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
+
+/** The ciphers that we can decrypt, best first. We tell the recipients about
+ * them, so that they encrypt to us with a cipher that we actually support.
+ * Without this, Outlook before build 16.0.8518 falls back to 3DES. */
+export const kOurCapabilities = [
+  { capabilityID: "aes256cbc" },
+  { capabilityID: "aes192cbc" },
+  { capabilityID: "aes128cbc" },
+];
 
 export class SMIMESend {
   /**
@@ -51,6 +60,9 @@ export class SMIMESend {
       }, {
         attrType: "messageDigest",
         attrValue: [OctetString.encode(messageDigest)],
+      }, {
+        attrType: "smimeCapabilities",
+        attrValue: [SMIMECapabilities.encode(kOurCapabilities)],
       }];
       let encodedAttrs = Attributes.encode(signedAttributes);
       let attributesDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", encodedAttrs));
