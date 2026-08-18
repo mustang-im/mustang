@@ -1,5 +1,6 @@
 import type { Entity } from "../api";
 import type { ReporterError } from "../base/reporter";
+import { berToDER } from "../ber";
 import { DecoderBuffer } from "../base/buffer";
 import { assert, Node } from "../base/node";
 import * as der from "../constants/der";
@@ -18,6 +19,9 @@ export class DERDecoder {
 
   decode(data: Uint8Array | DecoderBuffer, options?: Record<string, any>): any {
     if (!DecoderBuffer.isDecoderBuffer(data)) {
+      if (options?.berToDER) {
+        data = berToDER(data);
+      }
       data = new DecoderBuffer(data, options);
     }
 

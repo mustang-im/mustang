@@ -6,8 +6,6 @@ import { ContentInfo, EnvelopedData, Certificate, OctetString, SignedData } from
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes } from "../MIME";
-import { berToDER } from "../../../../../lib/asn1/ber";
-import { base64ToBytes } from "../../../../../lib/asn1/decoders/pem";
 import { assert } from "../../../util/util";
 import { ArrayColl } from "svelte-collections";
 import type { Email as PostalEmail } from "postal-mime";
@@ -25,8 +23,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
         contentType == "application/x-pkcs7-mime") { // legacy type name, used by Outlook
       // The whole message is a CMS blob. It's the only body part, but fsr
       // this is an attachment.
-      let blob = berToDER(new Uint8Array(await email.attachments.first.content.arrayBuffer()));
-      let type = ContentInfo.decode(blob).contentType;
+      let blob = new Uint8Array(await email.attachments.first.content.arrayBuffer());
+      let type = ContentInfo.decode(blob, { berToDER: true }).contentType;
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
       } else if (type == "envelopedData") {
@@ -40,7 +38,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
   /** Decrypts an encrypted (enveloped-data) message and replaces the
    * message content with the decrypted content. */
   protected async readEncrypted(email: EMail, blob: Uint8Array) {
-    let envelopedData = EnvelopedData.decode(blob);
+    let envelopedData = EnvelopedData.decode(blob, { berToDER: true });
     if (!["aes128cbc", "aes192cbc", "aes256cbc"].includes(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm)) {
       return;
     }
@@ -86,7 +84,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
    * Extracts the wrapped message, so that it displays, and verifies the
    * signature over it. */
   protected async readOpaqueSigned(email: EMail, blob: Uint8Array) {
-    let signedData = SignedData.decode(blob);
+    let signedData = SignedData.decode(blob, { berToDER: true });
     let contentInfo = signedData.content.contentInfo;
     if (contentInfo.contentType != "data" || !contentInfo.content) {
       // e.g. a certs-only message, contains no message to show
@@ -114,7 +112,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
     let signatureBase64 = new TextDecoder().decode(signature).split("\r\n\r\n")[1];
-    let signedData = SignedData.decode(berToDER(base64ToBytes(signatureBase64)));
+    let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
     let signer = await verifySignedData(signedData, clearText);
     if (signer) {
       email.signed = signer;
