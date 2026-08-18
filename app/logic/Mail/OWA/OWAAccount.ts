@@ -1,7 +1,6 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
@@ -454,6 +453,8 @@ export class OWAAccount extends ExchangeMailAccount {
   }
 
   async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+
     await this.throttle.throttle();
     let result = await this.callOWA(owaFindFoldersRequest(true, this.sharedFolderRoot, this.username));
     if (this.sharedFolderRoot == "inbox") {
@@ -491,6 +492,9 @@ export class OWAAccount extends ExchangeMailAccount {
       if (!this.folderMap.has(folder.id)) {
         await folder.deleteItLocally();
       }
+    }
+    for (let folder of this.getAllFolders()) {
+      await folder.save();
     }
   }
 

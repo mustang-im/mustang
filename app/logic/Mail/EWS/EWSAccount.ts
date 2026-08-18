@@ -720,6 +720,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+
     let query = {
       m$FindFolder: {
         Traversal: "Deep",
@@ -806,6 +808,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       if (!this.folderMap.has(folder.id)) {
         await folder.deleteItLocally();
       }
+    }
+    for (let folder of this.getAllFolders()) {
+      await folder.save();
     }
     if (this.sharedFolderRoot) {
       return; // Don't automatically add shared addressbook or calendar.
