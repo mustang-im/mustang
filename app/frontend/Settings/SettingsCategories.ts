@@ -26,6 +26,7 @@ import AccountFolders from "./Mail/Account/Folders.svelte";
 import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
+import CalendarNotifications from "./Calendar/Notifications.svelte";
 import About from "./About/About.svelte";
 import License from "./License/Page/License.svelte";
 import OpenSource from "./About/OpenSource.svelte";
@@ -113,6 +114,7 @@ accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, n
 
 const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, true);
 calendarSettings.subCategories.addAll([
+  new SettingsCategory("calendar-notifications", gt`Notifications`, CalendarNotifications),
 ]);
 calendarSettings.accounts = appGlobal.calendars;
 // #if [!WEBMAIL]

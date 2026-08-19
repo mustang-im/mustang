@@ -11,7 +11,7 @@
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { t } from "../../../l10n/l10n";
 
-  let notificationsSetting = getLocalStorage("notifications.chat", ["popup"]);
+  let notificationsSetting = getLocalStorage("notifications.calendar", ["popup", "sound"]);
 </script>
 
 <style>
