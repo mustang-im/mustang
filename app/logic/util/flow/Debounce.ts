@@ -14,7 +14,7 @@ export class Debounce {
     this.seconds = seconds;
   }
 
-  async debounce(func: () => Promise<void>): Promise<void> {
+  async debounce(func: () => Promise<void> | void): Promise<void> {
     let waiting = ++this.waiting;
     await sleep(this.seconds);
     if (waiting != this.waiting) {
