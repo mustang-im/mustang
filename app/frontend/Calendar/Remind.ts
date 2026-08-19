@@ -40,7 +40,7 @@ function waitForNextReminder() {
   }
   console.log("next event", nextEvent.title, nextEvent.alarm.toLocaleString());
   console.log("timeout in", (nextEvent.alarm.getTime() - now) / 1000, "s");
-  setTimeout(showReminder, nextEvent.alarm.getTime() - now);
+  timeout = setTimeout(showReminder, nextEvent.alarm.getTime() - now);
 }
 
 export async function showReminder() {

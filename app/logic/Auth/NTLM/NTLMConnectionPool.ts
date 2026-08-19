@@ -39,7 +39,11 @@ export class NTLMConnectionPool {
     }
     try {
       let response = await conn.request(body, options);
-      this.free.push(conn);
+      if (this.all.includes(conn)) {
+        this.free.push(conn);
+      } else { // the pool was closed while we were running
+        conn.close();
+      }
       return response;
     } catch (ex) {
       // Don't reuse the connection: it may be in an odd state, and
