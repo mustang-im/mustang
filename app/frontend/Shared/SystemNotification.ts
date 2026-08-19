@@ -75,15 +75,22 @@ export class SystemNotification {
       if (await appGlobal.remoteApp.isOSNotificationSupported()) {
         await this.showOSPopup();
       } else {
-        this.showWebPopup();
+        await this.showWebPopup();
       }
     } catch (ex) {
       backgroundError(ex);
     }
   }
 
-  /** The popup of the web platform that our app window runs on */
-  protected showWebPopup() {
+  /** Web API `Notification` */
+  protected async showWebPopup() {
+    if (typeof (Notification) == "undefined") { // e.g. Android WebView
+      return;
+    }
+    if (Notification.permission != "granted" &&
+        await Notification.requestPermission() != "granted") {
+      return;
+    }
     let popup = new Notification(this.title, {
       body: this.body,
       tag: this.id,
