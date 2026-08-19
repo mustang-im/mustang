@@ -82,7 +82,9 @@ export class SystemNotification {
     }
   }
 
-  /** Web API `Notification` */
+  /** Web API `Notification`
+   *
+   * Doesn't work on macOS, because Chromium denies the permission silently. */
   protected async showWebPopup() {
     if (typeof (Notification) == "undefined") { // e.g. Android WebView
       return;
@@ -118,7 +120,6 @@ export class SystemNotification {
       // toastXml: ...,
     });
     console.log("OS notification", popup);
-    popup.show();
 
     if (this.onClick) {
       popup.on("click", event => this.onClick(event));
@@ -126,6 +127,11 @@ export class SystemNotification {
     if (this.onReply) {
       popup.on("reply", async (event, replyText) => this.onReply(replyText));
     }
+    // e.g. macOS refuses when an app is not signed
+    popup.on("failed", (event, error) =>
+      backgroundError(new Error("Failed to show the OS popup notification: " + error)));
+
+    popup.show();
   }
 
   static lastSound = new Date();
