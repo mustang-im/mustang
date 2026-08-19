@@ -13,8 +13,6 @@ export class SystemNotification {
   /** Lets the OS replace an earlier popup of the same kind with this one,
    * instead of stacking them up. Only works for web popups. */
   id: string;
-  /** Passed back to the click handler of the popup */
-  data: any;
   /** Linux and Windows only.
    * Electron defaults to "low", where some desktops show the popup
    * only in the notification center, so we explicitly default to "normal". */
@@ -99,7 +97,6 @@ export class SystemNotification {
       renotify: true,
       // icon: url,
       // image: url,
-      data: this.data,
     });
     if (this.onClick) {
       popup.onclick = event => this.onClick(event);
@@ -168,4 +165,13 @@ export class NotificationKinds {
 function bubbleImageURL(count: number, icon: string) {
   // TODO count
   return "data:image/svg;base64," + btoa(icon);
+}
+
+
+/* Missing in the DOM types of TypeScript */
+declare global {
+  interface NotificationOptions {
+    /** Alert the user again, when this popup replaces an earlier one with the same `tag` */
+    renotify?: boolean;
+  }
 }

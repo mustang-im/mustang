@@ -49,7 +49,6 @@ export async function showNewMail(messages: EMail[]) {
     messages.map(msg => msg.text?.substring(0, 30)).join(", ").substring(0, 160);
 
   let notification = new SystemNotification(kinds, title, body, "New Mail");
-  notification.data = firstMsg;
   notification.count = count;
   notification.icon = MailIcon;
   notification.onClick = () => openMessage(firstMsg);

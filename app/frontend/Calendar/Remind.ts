@@ -60,7 +60,6 @@ export async function showReminder() {
 
   for (let event of events) {
     let notification = new SystemNotification(kinds, event.title, event.descriptionText, gt`Meeting *=> an event in the user's calendar`);
-    notification.data = event;
     notification.icon = CalendarIcon;
     notification.onClick = () => openEventInApp(event);
     await notification.show();
