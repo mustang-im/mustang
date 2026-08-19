@@ -60,7 +60,7 @@ export class SystemNotification {
 
     if (this.kinds.sound) {
       try {
-        this.playNotificationSound();
+        await this.playNotificationSound();
       } catch (ex) {
         backgroundError(ex);
       }
@@ -130,7 +130,7 @@ export class SystemNotification {
 
   static lastSound = new Date();
 
-  playNotificationSound() {
+  async playNotificationSound() {
     // Don't annoy user with successive "bing, bing, bing"
     // Don't bing at startup, implemented by default value of `lastSound`.
     const kMinTimeBetweenSounds = 2; // in seconds
@@ -139,9 +139,8 @@ export class SystemNotification {
     }
     SystemNotification.lastSound = new Date();
 
-    let audioEl = new Audio("/sound/new-message.mp3");
-    audioEl.autoplay = true;
-    // TODO why not `await audioEl.play();` ?
+    let audioEl = new Audio("sound/new-message.mp3");
+    await audioEl.play();
   }
 }
 
@@ -166,7 +165,6 @@ function bubbleImageURL(count: number, icon: string) {
   // TODO count
   return "data:image/svg;base64," + btoa(icon);
 }
-
 
 /* Missing in the DOM types of TypeScript */
 declare global {
