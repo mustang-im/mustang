@@ -9,18 +9,6 @@ import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
 import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 
-/** The ciphers that we can decrypt, best first. We tell the recipients about
- * them, so that they encrypt to us with a cipher that we actually support.
- * Without this, Outlook before build 16.0.8518 falls back to 3DES. */
-export const kOurCapabilities = [
-  { capabilityID: "aes256gcm" },
-  { capabilityID: "aes192gcm" },
-  { capabilityID: "aes128gcm" },
-  { capabilityID: "aes256cbc" },
-  { capabilityID: "aes192cbc" },
-  { capabilityID: "aes128cbc" },
-];
-
 export class SMIMESend {
   /**
    * Called before sending email, if S/MIME is to be used.
@@ -208,6 +196,37 @@ export class SMIMESend {
     return result;
   }
 }
+
+/** The algorithms that we can decrypt and verify. We tell our correspondents
+ * about them, so that they write to us in a way that we actually support.
+ * Without this, Outlook before build 16.0.8518 encrypts with 3DES.
+ *
+ * RFC 8551 section 2.5.2: best first, but grouped by category. The categories
+ * themselves are in the order in which they matter to the correspondent: which
+ * cipher to encrypt the mail with is the decision that we most need to steer.
+ * We deliberately do not offer SHA-1, even though we still verify it, and we
+ * do not list the `parameters` of any of them, which the RFC allows only where
+ * 2 instances of the same algorithm would otherwise be indistinguishable. */
+export const kOurCapabilities = [
+  // Authenticating symmetric ciphers
+  { capabilityID: "aes256gcm" },
+  { capabilityID: "aes192gcm" },
+  { capabilityID: "aes128gcm" },
+  // Symmetric ciphers
+  { capabilityID: "aes256cbc" },
+  { capabilityID: "aes192cbc" },
+  { capabilityID: "aes128cbc" },
+  // Signature algorithms
+  { capabilityID: "sha512WithRSAEncryption" },
+  { capabilityID: "sha384WithRSAEncryption" },
+  { capabilityID: "sha256WithRSAEncryption" },
+  // Digest algorithms
+  { capabilityID: "sha512" },
+  { capabilityID: "sha384" },
+  { capabilityID: "sha256" },
+  // Key encipherment. We support only RSAES-PKCS1-v1_5, not RSAES-OAEP.
+  { capabilityID: "rsaEncryption" },
+];
 
 function toBase64(buf: Uint8Array): string {
   // Chunk, because spreading a large array (enveloped mail with attachments can

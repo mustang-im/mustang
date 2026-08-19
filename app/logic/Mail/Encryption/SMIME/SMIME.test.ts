@@ -347,10 +347,18 @@ describe("Signed attributes", () => {
 
   test("We announce the ciphers that we can actually decrypt", () => {
     let capabilities = SMIMECapabilities.decode(SMIMECapabilities.encode(kOurCapabilities));
-    // Best first, so that the recipient picks the strongest that we both have.
-    // The authenticating GCM ciphers come before the CBC ones.
-    expect(capabilities.map(capability => capability.capabilityID))
-      .toEqual(["aes256gcm", "aes192gcm", "aes128gcm", "aes256cbc", "aes192cbc", "aes128cbc"]);
+    // Best first within each category, so that the correspondent picks the
+    // strongest that we both have. The ciphers first, because that is the
+    // decision that we most need to steer, and the authenticating ones before
+    // the rest. No SHA-1, and no `parameters` on any of them.
+    expect(capabilities.map(capability => capability.capabilityID)).toEqual([
+      "aes256gcm", "aes192gcm", "aes128gcm",
+      "aes256cbc", "aes192cbc", "aes128cbc",
+      "sha512WithRSAEncryption", "sha384WithRSAEncryption", "sha256WithRSAEncryption",
+      "sha512", "sha384", "sha256",
+      "rsaEncryption",
+    ]);
+    expect(capabilities.every(capability => capability.parameters === undefined)).toBe(true);
   });
 
   test("The signed attributes are in canonical DER SET OF order", () => {
@@ -371,18 +379,31 @@ describe("Signed attributes", () => {
   });
 });
 
-/** Splits a DER SET OF into the encodings of its elements.
- * Only handles the lengths that these attributes actually produce. */
+/** Splits a DER SET OF into the encodings of its elements */
 function splitSetOf(encoded: Uint8Array): Uint8Array[] {
-  let pos = encoded[1] & 0x80 ? 2 + (encoded[1] & 0x7F) : 2;
   let elements: Uint8Array[] = [];
+  let pos = 1 + derLength(encoded, 1).size;
   while (pos < encoded.length) {
-    let length = encoded[pos + 1];
-    expect(length & 0x80).toBe(0); // otherwise this helper needs to grow
-    elements.push(encoded.subarray(pos, pos + 2 + length));
-    pos += 2 + length;
+    let { size, length } = derLength(encoded, pos + 1);
+    elements.push(encoded.subarray(pos, pos + 1 + size + length));
+    pos += 1 + size + length;
   }
   return elements;
+}
+
+/** Reads the DER length field at `pos`.
+ * @returns `size`: how many bytes the length field itself takes,
+ *   `length`: the length of the content that follows it */
+function derLength(encoded: Uint8Array, pos: number): { size: number, length: number } {
+  if (!(encoded[pos] & 0x80)) {
+    return { size: 1, length: encoded[pos] };
+  }
+  let size = encoded[pos] & 0x7F;
+  let length = 0;
+  for (let i = 1; i <= size; i++) {
+    length = length << 8 | encoded[pos + i];
+  }
+  return { size: size + 1, length };
 }
 
 /* Encrypted with AES-GCM, which CMS wraps in authenticated-enveloped-data
