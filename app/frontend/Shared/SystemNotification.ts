@@ -24,8 +24,9 @@ export class SystemNotification {
    * TODO implement?
    * TODO makes sense? */
   icon: string;
-  /** The user clicked on the popup */
-  onClick: (event: any) => void;
+  /** The user clicked on the popup or the tray icon.
+   * The tray icon has no `event`. */
+  onClick: (event?: any) => void;
   /** The user typed an answer right into the popup. macOS only. */
   onReply: (text: string) => void;
   replyPlaceholder: string;
@@ -52,7 +53,10 @@ export class SystemNotification {
 
     if (this.kinds.tray) {
       try {
-        await appGlobal.remoteApp.newTrayIcon(await bubbleImageURL(this.count, this.icon ?? logo));
+        await appGlobal.remoteApp.setTrayIcon(
+          await bubbleImageURL(this.count, this.icon ?? logo),
+          this.title,
+          () => this.onClick?.());
       } catch (ex) {
         backgroundError(ex);
       }

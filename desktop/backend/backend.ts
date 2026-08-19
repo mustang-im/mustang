@@ -60,7 +60,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -300,9 +300,31 @@ function getCACertificates(type: string) {
   return type == "bundled" ? tls.rootCertificates : [];
 }
 
-/** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(imgDataURL: string): Tray {
-  return new Tray(nativeImage.createFromDataURL(imgDataURL));
+let trayIcon: Tray | null = null;
+
+/** Shows our icon in the system tray, and replaces the icon that is
+ * already there, if any.
+ * <https://www.electronjs.org/docs/latest/api/tray> */
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  let image = nativeImage.createFromDataURL(imgDataURL);
+  if (os.platform() == "darwin") { // macOS doesn't scale the icon down to its menu bar
+    image = image.resize({ width: 16, height: 16 });
+  }
+  if (trayIcon) {
+    trayIcon.setImage(image);
+    trayIcon.removeAllListeners("click");
+  } else {
+    trayIcon = new Tray(image);
+  }
+  function remove() {
+    trayIcon?.destroy();
+    trayIcon = null;
+  }
+  trayIcon.setToolTip(tooltip);
+  trayIcon.on("click", () => {
+    remove();
+    onClick?.();
+  });
 }
 
 /** <https://www.electronjs.org/docs/latest/api/notification> */

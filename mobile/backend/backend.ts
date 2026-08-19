@@ -44,7 +44,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -263,7 +263,8 @@ async function newHTTPConnection(url: string, options?: any) {
   return new HTTPConnection(url, options);
 }
 
-function newTrayIcon(imgDataURL: string): null {
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  // Mobile OSes have no system tray
 }
 
 function newOSNotification(options: any): Notification {

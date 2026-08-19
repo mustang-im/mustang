@@ -36,7 +36,7 @@ export class WebMailBackend {
   async isOSNotificationSupported(): Promise<boolean> {
     return false;
   }
-  async newTrayIcon() {
+  async setTrayIcon() {
   }
   async setBadgeCount() {
   }
