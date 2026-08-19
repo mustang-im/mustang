@@ -21,7 +21,7 @@ export async function showNewMail(messages: EMail[]) {
   }
 
   // settings
-  const kinds = new NotificationKinds(getLocalStorage("notifications.mail", ["popup", "sound"]).value);
+  const kinds = new NotificationKinds(getLocalStorage("notifications.mail", ["popup"]).value);
   const onlyInAB = getLocalStorage("notifications.mail.only.addressbook", true).value;
 
   const filterConditions: ((msg: EMail) => boolean)[] = [];

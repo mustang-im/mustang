@@ -163,10 +163,18 @@ export class SystemNotification {
 /** In which ways the user wants to be notified about new mails, reminders etc.
  * @see NotificationKinds.svelte */
 export class NotificationKinds {
+  /** Popup on OS-level, outside our app window */
   readonly popup: boolean;
+  /** Bing! */
   readonly sound: boolean;
+  /** In the OS app starter at bottom of the screen, show a bubble on top of the app icon */
   readonly taskbar: boolean;
+  /** Show an icon in the OS notifications area, e.g. top right on mac and bottom right on Windows.
+   * Not yet implemented correctly. */
   readonly tray: boolean;
+  /** In our app bar, in our window, show a bubble on top of the app icon
+   * Not yet implemented. */
+  readonly appbar: boolean;
 
   constructor(kinds: string[]) {
     sanitize.array(kinds);
@@ -174,6 +182,7 @@ export class NotificationKinds {
     this.sound = kinds.includes("sound");
     this.taskbar = kinds.includes("taskbar");
     this.tray = kinds.includes("tray");
+    this.appbar = kinds.includes("appbar");
   }
 }
 
