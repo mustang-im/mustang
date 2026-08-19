@@ -1,6 +1,6 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../logic/app";
-import logo from '../../asset/icon/general/logo.svg?raw';
+import logo from '../asset/icon/general/logo.svg?raw';
 import { backgroundError } from "../Util/error";
 
 /** Tells the user about a new mail, a meeting reminder etc.
@@ -135,7 +135,7 @@ export class SystemNotification {
         this.onReply(replyText);
       });
     }
-    popup.on("closed", onClose);
+    popup.on("close", onClose);
     // e.g. macOS refuses when an app is not signed
     popup.on("failed", (event, error) => {
       onClose();
@@ -150,7 +150,7 @@ export class SystemNotification {
     // Don't annoy user with successive "bing, bing, bing"
     // Don't bing at startup, implemented by default value of `lastSound`.
     const kMinTimeBetweenSounds = 2; // in seconds
-    if (Date.now() - SystemNotification.lastSound.getTime() < kMinTimeBetweenSounds) {
+    if (Date.now() - SystemNotification.lastSound.getTime() < kMinTimeBetweenSounds * 1000) {
       return;
     }
     SystemNotification.lastSound = new Date();
@@ -180,9 +180,6 @@ export class NotificationKinds {
 /** The popups that the user can still react to.
  * Hold a reference, so that they don't get GC. */
 const openOSPopups = new Set<any>();
-function haveReacted(pop) {
-  ;
-}
 
 function bubbleImageURL(count: number, icon: string) {
   // TODO count
