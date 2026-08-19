@@ -101,6 +101,9 @@ export class SystemNotification {
       // image: url,
       data: this.data,
     });
+    if (this.onClick) {
+      popup.onclick = event => this.onClick(event);
+    }
     // shows automatically after creating the object
   }
 
