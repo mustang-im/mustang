@@ -90,8 +90,13 @@ export class PublicKey extends Observable {
     throw new AbstractFunction();
   }
   protected keyAsFile(armored: string, mimetype: string, filenamePrefix: string, fileExt: string): File {
-    let filename = filenamePrefix + "-" + this.userIDs.first + "-" + this.name + "." + fileExt;
-    return new File([armored], filename, { type: mimetype });
+    return new File([armored], this.keyFilename(filenamePrefix, fileExt), { type: mimetype });
+  }
+  /** Filename to save this key, or something that belongs to it, to disk.
+   * @param filenamePrefix What the file contains, e.g. "SecretKey" */
+  keyFilename(filenamePrefix: string, fileExt: string): string {
+    // A key that has no certificate yet has no user ID
+    return [filenamePrefix, this.userIDs.first, this.name].filter(part => part).join("-") + "." + fileExt;
   }
 
   get sortOrder(): number {

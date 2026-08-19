@@ -93,3 +93,9 @@ describe("Certificate", () => {
     expect(key.userIDs.contents).toEqual(["ben@example.com", "ben.bucksch@example.com"]);
   });
 });
+
+test("Key without a certificate has no user ID, and still gets a proper file name", () => {
+  let key = new SMIMEPublicKey();
+  key.name = "A1B2";
+  expect(key.keyFilename("SecretKey", "key")).toBe("SecretKey-A1B2.key");
+});
