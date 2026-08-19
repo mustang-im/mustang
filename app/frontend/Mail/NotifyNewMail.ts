@@ -52,7 +52,7 @@ export async function showNewMail(messages: EMail[]) {
   notification.data = firstMsg;
   notification.count = count;
   notification.icon = MailIcon;
-  notification.onClick = event => openMessage(firstMsg);
+  notification.onClick = () => openMessage(firstMsg);
   notification.onReply = replyText => reply(firstMsg, replyText);
   notification.replyPlaceholder = "Reply…";
   await notification.show();
