@@ -7,34 +7,32 @@ import { getLocalStorage } from "../Util/LocalStorage";
 import CalendarIcon from '../asset/icon/appBar/calendar.svg?raw';
 import { sleep } from "../../logic/util/util";
 import type { Collection } from "svelte-collections";
-import { gt } from "../../l10n/l10n";
 
 let eventsWithAlarms: Collection<Event>;
 
 export async function reminderListener() {
-  return;
+  return; // Causes infinitive loop when editing an event
   await sleep(3);
-  waitForNextAlarm();
+  waitForNextReminder();
 }
 
 let timeout: NodeJS.Timeout;
 let unsubscribe: () => void;
 let isSubscribing = false;
 
-function waitForNextAlarm() {
-  console.log("waitForAlarm");
+function waitForNextReminder() {
   if (isSubscribing) {
     return;
   }
   clearTimeout(timeout);
   unsubscribe?.();
   let now = Date.now();
-  eventsWithAlarms = appGlobal.calendarEvents.filterObservable(event =>
-    event.alarm && event.alarm.getTime() > now)
+  eventsWithAlarms = appGlobal.calendarEvents
+    .filterObservable(event => event.alarm && event.alarm.getTime() > now)
     .sortBy(event => event.alarm);
   console.log("events with alarms", eventsWithAlarms.contents, eventsWithAlarms.contents.map(ev => ev.title + " " + ev.alarm.toLocaleString()).join(", "));
   isSubscribing = true;
-  unsubscribe = eventsWithAlarms.subscribe(() => waitForNextAlarm());
+  unsubscribe = eventsWithAlarms.subscribe(() => waitForNextReminder());
   isSubscribing = false;
   let nextEvent = eventsWithAlarms.first;
   if (!nextEvent) {
@@ -50,7 +48,7 @@ export async function showReminder() {
   let now = Date.now();
   let events = eventsWithAlarms.filterOnce(event => event.alarm.getTime() < now);
   console.log("Show reminders for", events.contents);
-  waitForNextAlarm();
+  waitForNextReminder();
   if (events.isEmpty) {
     return;
   }
@@ -59,7 +57,7 @@ export async function showReminder() {
   const kinds = new NotificationKinds(getLocalStorage("notifications.calendar", ["popup", "sound"]).value);
 
   for (let event of events) {
-    let notification = new SystemNotification(kinds, event.title, event.descriptionText, gt`Meeting *=> an event in the user's calendar`);
+    let notification = new SystemNotification(kinds, event.title, event.descriptionText, event.id);
     notification.icon = CalendarIcon;
     notification.onClick = () => openEventInApp(event);
     await notification.show();
