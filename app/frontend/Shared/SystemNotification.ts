@@ -120,17 +120,27 @@ export class SystemNotification {
       // toastXml: ...,
     });
     console.log("OS notification", popup);
+    openOSPopups.add(popup);
+    const onClose = () => openOSPopups.delete(popup);
 
     if (this.onClick) {
-      popup.on("click", event => this.onClick(event));
+      popup.on("click", event => {
+        onClose();
+        this.onClick(event);
+      });
     }
     if (this.onReply) {
-      popup.on("reply", async (event, replyText) => this.onReply(replyText));
+      popup.on("reply", async (event, replyText) => {
+        onClose();
+        this.onReply(replyText);
+      });
     }
+    popup.on("closed", onClose);
     // e.g. macOS refuses when an app is not signed
-    popup.on("failed", (event, error) =>
-      backgroundError(new Error("Failed to show the OS popup notification: " + error)));
-
+    popup.on("failed", (event, error) => {
+      onClose();
+      backgroundError(new Error("Failed to show the OS popup notification: " + error));
+    });
     popup.show();
   }
 
@@ -165,6 +175,13 @@ export class NotificationKinds {
     this.taskbar = kinds.includes("taskbar");
     this.tray = kinds.includes("tray");
   }
+}
+
+/** The popups that the user can still react to.
+ * Hold a reference, so that they don't get GC. */
+const openOSPopups = new Set<any>();
+function haveReacted(pop) {
+  ;
 }
 
 function bubbleImageURL(count: number, icon: string) {
