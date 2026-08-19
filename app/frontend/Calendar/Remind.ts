@@ -2,11 +2,12 @@ import type { Event } from "../../logic/Calendar/Event";
 import { openEvent } from "./open";
 import { bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
+import { SystemNotification, NotificationKinds } from "../Shared/SystemNotification";
 import { getLocalStorage } from "../Util/LocalStorage";
 import CalendarIcon from '../asset/icon/appBar/calendar.svg?raw';
 import { sleep } from "../../logic/util/util";
-import { backgroundError } from "../Util/error";
 import type { Collection } from "svelte-collections";
+import { gt } from "../../l10n/l10n";
 
 let eventsWithAlarms: Collection<Event>;
 
@@ -55,80 +56,14 @@ export async function showReminder() {
   }
 
   // settings
-  let settings = getLocalStorage("notifications.mail", ["popup", "sound"]).value;
-  const doSound = settings.includes("sound");
-  const doTaskbar = settings.includes("taskbar");
-  const doTray = settings.includes("try");
-  const doWebNotification = settings.includes("popup");
-  const doOSNotification = settings.includes("popup-os");
-  let isOSNotificationSupported: boolean = undefined;
+  const kinds = new NotificationKinds(getLocalStorage("notifications.calendar", ["popup", "sound"]).value);
 
-  if (doOSNotification && isOSNotificationSupported === undefined) {
-    isOSNotificationSupported = await appGlobal.remoteApp.isOSNotificationSupported();
-  }
-
-  if (doSound) {
-    try {
-      let audioEl = new Audio("/sound/new-message.mp3");
-      audioEl.autoplay = true;
-    } catch (ex) {
-      backgroundError(ex);
-    }
-  }
-
-  if (doWebNotification) {
-    for (let event of events) {
-      try {
-        let notification = new Notification(event.title, {
-          body: event.descriptionText,
-          tag: "Meeting",
-          renotify: true,
-          // icon: url,
-          // image: url,
-          data: event,
-        });
-        // shows automatically after creating the object
-      } catch (ex) {
-        backgroundError(ex);
-      }
-    }
-  }
-
-  if (doOSNotification && isOSNotificationSupported) {
-    for (let event of events) {
-      try {
-        let notification = await appGlobal.remoteApp.newOSNotification({
-          title: event.title,
-          body: event.descriptionText,
-          // icon: url,
-          // Linux only
-          urgency: "normal",
-          // Windows
-          // toastXml: ...,
-        });
-        console.log("notification", notification);
-        notification.show();
-
-        notification.on("click", event => openEventInApp(event));
-      } catch (ex) {
-        backgroundError(ex);
-      }
-    }
-  }
-
-  if (doTaskbar) {
-    try {
-    } catch (ex) {
-      backgroundError(ex);
-    }
-  }
-
-  if (doTray) {
-    try {
-      await appGlobal.remoteApp.newTrayIcon(bubbleImageURL(events.length));
-    } catch (ex) {
-      backgroundError(ex);
-    }
+  for (let event of events) {
+    let notification = new SystemNotification(kinds, event.title, event.descriptionText, gt`Meeting *=> an event in the user's calendar`);
+    notification.data = event;
+    notification.icon = CalendarIcon;
+    notification.onClick = event => openEventInApp(event);
+    await notification.show();
   }
 }
 
@@ -139,8 +74,4 @@ async function openEventInApp(event: Event) {
   } catch (ex) {
     console.error(ex);
   }
-}
-
-function bubbleImageURL(count: number) {
-  return "data:image/svg;base64," + btoa(CalendarIcon);
 }
