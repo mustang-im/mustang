@@ -52,7 +52,7 @@ export class SystemNotification {
 
     if (this.kinds.tray) {
       try {
-        await appGlobal.remoteApp.newTrayIcon(bubbleImageURL(this.count, this.icon ?? logo));
+        await appGlobal.remoteApp.newTrayIcon(await bubbleImageURL(this.count, this.icon ?? logo));
       } catch (ex) {
         backgroundError(ex);
       }
@@ -190,9 +190,43 @@ export class NotificationKinds {
  * Hold a reference, so that they don't get GC. */
 const openOSPopups = new Set<any>();
 
-function bubbleImageURL(count: number, icon: string) {
-  // TODO count
-  return "data:image/svg;base64," + btoa(icon);
+/** The size of the icon that we render, in px.
+ * The OS scales it down to the height of its tray. */
+const kTrayIconSize = 64;
+
+/** Draws the `icon` with a bubble showing the `count` on top of it.
+ * @param icon Raw SVG
+ * @returns data: URL of a PNG.
+ *   The OS tray takes only raster images, not SVG. */
+async function bubbleImageURL(count: number, icon: string): Promise<string> {
+  let canvas = document.createElement("canvas");
+  canvas.width = kTrayIconSize;
+  canvas.height = kTrayIconSize;
+  let context = canvas.getContext("2d");
+  let image = new Image(kTrayIconSize, kTrayIconSize); // Our logo has only a `viewBox`, so set a size
+  image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(icon);
+  await image.decode();
+  context.drawImage(image, 0, 0, kTrayIconSize, kTrayIconSize);
+  drawCountBubble(context, count);
+  return canvas.toDataURL("image/png");
+}
+
+function drawCountBubble(context: CanvasRenderingContext2D, count: number) {
+  if (count <= 0) {
+    return;
+  }
+  let radius = kTrayIconSize * 0.3;
+  let x = kTrayIconSize - radius;
+  let y = radius;
+  context.beginPath();
+  context.arc(x, y, radius, 0, 2 * Math.PI);
+  context.fillStyle = "#DD3322";
+  context.fill();
+  context.fillStyle = "#FFFFFF";
+  context.font = `bold ${Math.round(radius * 1.1)}px sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(count < 100 ? String(count) : "99+", x, y);
 }
 
 /* Missing in the DOM types of TypeScript */
