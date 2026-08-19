@@ -327,9 +327,17 @@ function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
   });
 }
 
-/** <https://www.electronjs.org/docs/latest/api/notification> */
+/** <https://www.electronjs.org/docs/latest/api/notification>
+ *
+ * jpc describes only the object itself and its own class, so the frontend
+ * doesn't get the functions that this native Electron class inherits
+ * from `EventEmitter`. Make them properties of the object itself. */
 function newOSNotification(options: any): Notification {
-  return new Notification(options);
+  let popup: any = new Notification(options);
+  for (let name of ["on", "once", "off"]) {
+    popup[name] = popup[name].bind(popup);
+  }
+  return popup;
 }
 
 function isOSNotificationSupported(): boolean {

@@ -123,7 +123,6 @@ export class SystemNotification {
       // Windows
       // toastXml: ...,
     });
-    console.log("OS notification", popup);
     openOSPopups.add(popup);
     const onClose = () => openOSPopups.delete(popup);
 
