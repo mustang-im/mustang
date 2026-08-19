@@ -50,7 +50,6 @@ export async function showNewMail(messages: EMail[]) {
 
   let notification = new SystemNotification(kinds, title, body, "New Mail");
   notification.data = firstMsg;
-  notification.urgency = "low";
   notification.count = count;
   notification.icon = MailIcon;
   notification.onClick = event => openMessage(firstMsg);

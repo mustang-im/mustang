@@ -15,7 +15,9 @@ export class SystemNotification {
   id: string;
   /** Passed back to the click handler of the popup */
   data: any;
-  /** Linux and Windows only */
+  /** Linux and Windows only.
+   * Electron defaults to "low", where some desktops show the popup
+   * only in the notification center, so we explicitly default to "normal". */
   urgency: "normal" | "critical" | "low" = "normal";
   /** How many mails etc. you want to notify about, at once with this notification.
    * TODO implement */
