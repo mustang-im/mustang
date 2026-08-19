@@ -3,7 +3,7 @@ import type { Addressbook } from '../Contacts/Addressbook';
 import { StreetAddress } from '../Contacts/StreetAddress';
 import type { PublicKey } from '../Mail/Encryption/PublicKey';
 import { publicKeyFromJSON } from '../Mail/Encryption/KeyFromJSON';
-import { notifyChangedProperty, Observable } from '../util/Observable';
+import { notifyChangedObservable, notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 import { gt } from '../../l10n/l10n';
@@ -25,6 +25,7 @@ export class Person extends ContactBase {
   /** Custom user-defined fields */
   readonly custom = new ArrayColl<ContactEntry>();
   /** PGP public keys and S/MIME certiticates for this contact */
+  @notifyChangedObservable
   readonly encryptionPublicKeys = new ArrayColl<PublicKey>();
   @notifyChangedProperty
   notes: string | null = "";
@@ -104,6 +105,12 @@ export class Person extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local persons
+  }
+
+  /** Fetches e.g. the S/MIME certificate that the company directory has for
+   * this person. Costs a server round trip. Reports errors, does not throw. */
+  async fetchEncryptionKeys(): Promise<void> {
+    // Most address books return the keys together with the person
   }
 
   /** Adds a PGP key or S/MIME certificate for this contact,

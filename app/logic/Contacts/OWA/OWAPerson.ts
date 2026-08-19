@@ -6,10 +6,11 @@ import type { OWAAddressbook } from './OWAAddressbook';
 import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
 import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";
 import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
-import { owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { owaGetPersonaRequest, owaResolveNamesRequest } from "./Request/OWAPersonRequests";
 import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, dataURLToBlob } from "../../util/util";
+import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
+import { assert, blobToBase64, dataURLToBlob, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class OWAPerson extends ExchangePerson {
@@ -168,6 +169,29 @@ export class OWAPerson extends ExchangePerson {
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.callOWA(request);
     this.addressbook.persons.remove(this);
+  }
+
+  /** The personas that the GAL search returns have no S/MIME certificates,
+   * so we resolve the person once more, which does return them. */
+  async fetchEncryptionKeys() {
+    let emailAddress = this.emailAddresses.first?.value;
+    if (!emailAddress) {
+      return;
+    }
+    try {
+      let response = await this.addressbook.account.callOWA(owaResolveNamesRequest(emailAddress));
+      let resolution = ensureArray(response.ResolutionSet).find(candidate =>
+        candidate.Mailbox?.EmailAddress?.toLowerCase() == emailAddress.toLowerCase());
+      // `UserSMIMECertificate` and `MSExchangeCertificate` are the AD
+      // attributes `userSMIMECertificate` and `userCertificate`, resp.
+      await addDirectoryCertificatesToPerson(this,
+        ensureArray(resolution?.Contact?.UserSMIMECertificate),
+        ensureArray(resolution?.Contact?.MSExchangeCertificate));
+    } catch (ex) {
+      if (ex.type != "ErrorNameResolutionNoResults") { // this error is expected
+        this.addressbook.errorCallback(ex);
+      }
+    }
   }
 
   fromExtraJSON(json: any) {

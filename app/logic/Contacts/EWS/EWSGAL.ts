@@ -1,6 +1,7 @@
 import { SearchOnlyAddressbook } from "../Addressbook";
 import { EWSPerson } from "./EWSPerson";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
 import { ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
@@ -34,6 +35,8 @@ export class EWSGAL extends SearchOnlyAddressbook {
       m$ResolveNames: {
         m$UnresolvedEntry: searchTerm,
         ReturnFullContactData: true,
+        // The S/MIME certificates are not in the default property set
+        ContactDataShape: "AllProperties",
       },
     };
     try {
@@ -50,6 +53,11 @@ export class EWSGAL extends SearchOnlyAddressbook {
             existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
           continue;
         }
+        // `UserSMIMECertificate` and `MSExchangeCertificate` are the AD
+        // attributes `userSMIMECertificate` and `userCertificate`, resp.
+        await addDirectoryCertificatesToPerson(person,
+          ensureArray(resolution.Contact.UserSMIMECertificate?.Base64Binary),
+          ensureArray(resolution.Contact.MSExchangeCertificate?.Base64Binary));
         results.add(person);
       }
     } catch (ex) {

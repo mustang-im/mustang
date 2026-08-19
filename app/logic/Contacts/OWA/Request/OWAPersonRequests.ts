@@ -26,6 +26,18 @@ export function owaFindGALPersonsRequest(searchTerm: string): OWARequest {
   });
 }
 
+/** Resolves `searchTerm` against the Global Address List (GAL).
+ * Unlike `FindPeople`, this returns the S/MIME certificates of the persons. */
+export function owaResolveNamesRequest(searchTerm: string): OWARequest {
+  return new OWARequest("ResolveNames", {
+    __type: "ResolveNamesRequest:#Exchange",
+    UnresolvedEntry: searchTerm,
+    ReturnFullContactData: true,
+    // The S/MIME certificates are not in the default property set
+    ContactDataShape: "AllProperties",
+  });
+}
+
 export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindPeople", {
     __type: "FindPeopleRequest:#Exchange",

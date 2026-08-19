@@ -90,14 +90,30 @@
   $: cc = mail.cc;
   $: bcc = mail.bcc;
   $: allRecipients = $to.concat($cc).concat($bcc);
+  $: recipientKeys = $allRecipients.flatMap(recipient => recipient.findPerson()?.encryptionPublicKeys);
   // TODO Observe `encryptionPublicKeys`
-  $: recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
-  $: $recipientsWithoutKeys.hasItems && catchErrors(autoQueryKeyServer);
+  let recipientsWithoutKeys: Collection<PersonUID>;
+  $: $recipientKeys, recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
+  $: $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
     gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function onQueryKeyServer() {
     await queryKeyServerFor(recipientsWithoutKeys);
+  }
+
+  async function autoFetchMissingKeys() {
+    await Promise.all([autoFetchAddressbookKeys(), autoQueryKeyServer()]);
+  }
+
+  /** Address book searches leave out the keys: 1 more request per keypress */
+  async function autoFetchAddressbookKeys() {
+    let notYetFetched = recipientsWithoutKeys.filterOnce(r => !(r as any)._fetchedAddressbookKeys);
+    for (let recipient of notYetFetched) {
+      (recipient as any)._fetchedAddressbookKeys = true;
+    }
+    await Promise.all(notYetFetched.contents.map(recipient =>
+      recipient.findPerson()?.fetchEncryptionKeys()));
   }
 
   async function autoQueryKeyServer() {
@@ -112,7 +128,6 @@
     recipients.forEach(recipient => (recipient as any)._queriedKeyserver = true);
     await Promise.all(recipients.contents.map(recipient =>
       queryPGPKeyServersForUID(recipient)));
-    allRecipients = allRecipients; // because we don't observe `encryptionPublicKeys`
   }
 
   function onRemoveAll() {

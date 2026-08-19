@@ -16,7 +16,7 @@ export class OWAGAL extends SearchOnlyAddressbook {
   }
 
   newPerson(): OWAPerson {
-    return new OWAPerson();
+    return new OWAPerson(this);
   }
   newGroup(): never {
     throw new NotReached();

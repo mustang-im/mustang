@@ -1,0 +1,27 @@
+/** A self-signed S/MIME certificate for `signer@example.com`, in the form in
+ * which the directory attribute `userCertificate` holds it:
+ * DER-encoded and then base64-encoded.
+ * Generated with:
+ * openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 30 -nodes \
+ *   -subj "/CN=Test Signer/emailAddress=signer@example.com"
+ */
+export const kCertificate = "MIIDUzCCAjugAwIBAgIUAQW15cvskbzwNvhVJXyq52QDxaEwDQYJKoZIhvcNAQELBQAwOTEUMBIGA1UEAwwLVGVzdCBTaWduZXIxITAfBgkqhkiG9w0BCQEWEnNpZ25lckBleGFtcGxlLmNvbTAeFw0yNjA4MDYwNDM5MDhaFw0yNjA5MDUwNDM5MDhaMDkxFDASBgNVBAMMC1Rlc3QgU2lnbmVyMSEwHwYJKoZIhvcNAQkBFhJzaWduZXJAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC4k0cl19gsx4Xl1cHEKDcWQlXKxOSukx61JUWRBOO7xbSe1AtwOMiW1JqkQX3kfa0w8ZmSGVHxkdgrFOlR338FvlFb69kXRvNzUGeItQe74VNtx0tQXnPXqY+Tagu5ADylnmigrOu2rg5c+SBLOJQAoWtMD6mbM6KYCRR19eldVgxcCof7F4Y3G7STtG4qpGKICuVJId7zRnqu3yXNG3xOYxzzTS5zr6e93Hw/yDv1xzRxDI+SbIw0L4ACEBH8s8YfaNaiANdGJJ2Xx1P+efrnkspHatB7q9A7lqciLOlDnyAZCAjjAO2p72ZnpKkFvjudEBr4rHZ/99j9TTnt0SAdAgMBAAGjUzBRMB0GA1UdDgQWBBTujBkKZezwOop+jqJtHfK7RwFrrzAfBgNVHSMEGDAWgBTujBkKZezwOop+jqJtHfK7RwFrrzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBoXOLO6OTXNPAQ5RqtP7mQ28dCu6bkeJSa0a+Aov1GK88Hs0XhoC4JO6EvEAOgvjHpXfCS0UVmN+G87wcJwBUFfi8hRpukkChm9pljV8ae7QXZda9p3BMq17F2dTnPV6UoFhhrh9sFFbqthIL9wHudNHhtmSptuDFSsZBeHGzYLMtQyCqUaEw+29hj3xGC1oa0lpr4lGw6bT4MLo9CUw+Kgmy7+SbwkOVDIQTe2BtjfHHDGT55E95h5IdbModq2XwqVL5Q9IE+AF+pHsaXqNgftU6a6mNHDrYWl4zpoSh99If6kRdiy11N0gE6GKhZEXdjsLWMOugiyXKPnpI80lv9";
+
+/** The email address in the subject of `kCertificate` */
+export const kCertificateEmailAddress = "signer@example.com";
+
+/** A certificate for `smime@example.com` together with the CA that issued it,
+ * in the form in which the directory attribute `userSMIMECertificate` holds it:
+ * a PKCS#7 SignedData without content, DER-encoded and then base64-encoded.
+ * Generated with:
+ * openssl req -x509 -newkey rsa:2048 -keyout ca.key -out ca.pem -days 3650 -nodes \
+ *   -subj "/CN=Test SMIME CA"
+ * openssl req -newkey rsa:2048 -keyout leaf.key -out leaf.csr -nodes \
+ *   -subj "/CN=SMIME User/emailAddress=smime@example.com"
+ * openssl x509 -req -in leaf.csr -CA ca.pem -CAkey ca.key -out leaf.pem -days 3000
+ * openssl crl2pkcs7 -nocrl -certfile leaf.pem -certfile ca.pem -outform DER -out chain.p7b
+ */
+export const kSMIMECertificate = "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";
+
+/** The email address in the subject of the leaf certificate of `kSMIMECertificate` */
+export const kSMIMECertificateEmailAddress = "smime@example.com";
