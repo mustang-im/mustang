@@ -127,13 +127,12 @@ export class SMIMEReadProcessor extends EMailProcessor {
       return;
     }
     let content = OctetString.decode(contentInfo.content);
+    // show the msg, even if the signature is invalid
+    await this.unwrapMIME(email, content);
     let signer = await verifySignedData(signedData, content);
     if (signer) {
       email.signed = signer;
     }
-    // Show the message even if the signature did not verify,
-    // but don't mark it as signed then.
-    await this.unwrapMIME(email, content);
   }
 
   /** Verifies a cleartext message with a detached signature
