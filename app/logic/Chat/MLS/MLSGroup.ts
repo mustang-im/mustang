@@ -22,7 +22,7 @@
  * that loses a race against another member's forks us out of the group. */
 import type { CreatedKeyPackage, MLSClient } from "./MLSClient";
 import { KeySchedule, PreSharedKeyID, TranscriptHash } from "./KeySchedule";
-import { CreatedUpdatePath, RatchetTree } from "./Tree/RatchetTree";
+import { RatchetTree, type CreatedUpdatePath } from "./Tree/RatchetTree";
 import { SecretTree, type MessageKey } from "./Tree/SecretTree";
 import { LeafNode, LeafNodeSource } from "./Tree/LeafNode";
 import { UpdatePath } from "./Tree/UpdatePath";

@@ -19,7 +19,7 @@ export class ParentNode {
   /** Leaf indices, ascending */
   unmergedLeaves: number[];
 
-  constructor(encryptionKey: Uint8Array, parentHash = new Uint8Array(0), unmergedLeaves: number[] = []) {
+  constructor(encryptionKey: Uint8Array, parentHash: Uint8Array = new Uint8Array(0), unmergedLeaves: number[] = []) {
     this.encryptionKey = encryptionKey;
     this.parentHash = parentHash;
     this.unmergedLeaves = unmergedLeaves;
