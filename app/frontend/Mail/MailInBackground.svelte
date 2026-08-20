@@ -1,4 +1,4 @@
-<svelte:window on:url-mailto|capture={(event) => onMailto(event.url)} />
+<svelte:window on:url-mailto|capture={(event) => catchErrors(() => onMailto(event.url))} />
 
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
@@ -12,9 +12,7 @@
   import { t } from "../../l10n/l10n";
   import { onMount } from "svelte";
 
-  onMount(() => {
-    newMailListener();
-  });
+  onMount(() => catchErrors(newMailListener));
 
   $: emailAccounts = appGlobal.emailAccounts;
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;

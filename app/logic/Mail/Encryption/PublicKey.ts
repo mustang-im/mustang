@@ -68,6 +68,11 @@ export class PublicKey extends Observable {
     }
   }
 
+  /** Name to show for a key that the user has not named, e.g. "A1B2" */
+  get defaultName(): string {
+    return this.id.substring(0, 4).toUpperCase();
+  }
+
   /** Formats fingerprint as batches of 4 uppercase chars, separated by spaces.
    * Replace the space at position 25 with a newline. */
   get fingerprintDisplay(): string {
@@ -85,8 +90,13 @@ export class PublicKey extends Observable {
     throw new AbstractFunction();
   }
   protected keyAsFile(armored: string, mimetype: string, filenamePrefix: string, fileExt: string): File {
-    let filename = filenamePrefix + "-" + this.userIDs.first + "-" + this.name + "." + fileExt;
-    return new File([armored], filename, { type: mimetype });
+    return new File([armored], this.keyFilename(filenamePrefix, fileExt), { type: mimetype });
+  }
+  /** Filename to save this key, or something that belongs to it, to disk.
+   * @param filenamePrefix What the file contains, e.g. "SecretKey" */
+  keyFilename(filenamePrefix: string, fileExt: string): string {
+    // A key that has no certificate yet has no user ID
+    return [filenamePrefix, this.userIDs.first, this.name].filter(part => part).join("-") + "." + fileExt;
   }
 
   get sortOrder(): number {
@@ -119,7 +129,7 @@ export class PublicKey extends Observable {
     this.publicKeyArmored = sanitize.nonemptystring(json.publicKeyArmored, null);
     this.system = sanitize.enum<EncryptionSystem>(json.system, Object.values(EncryptionSystem));
     this.id = sanitize.alphanumdash(json.id);
-    this.name = sanitize.label(json.name, this.id.substring(0, 4));
+    this.name = sanitize.label(json.name, this.defaultName);
     this.fingerprint = sanitize.alphanumdash(json.fingerprint);
     this.created = sanitize.date(json.created);
     this.expires = sanitize.date(json.expires, null);

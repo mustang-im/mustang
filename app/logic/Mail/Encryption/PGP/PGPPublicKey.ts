@@ -57,7 +57,7 @@ export class PGPPublicKey extends PublicKey {
       .replaceAll("Legacy", "")
       .toUpperCase();
     this.keyLengthInBits = pgpCipher.bits;
-    this.name = this.id.substring(0, 4).toUpperCase();
+    this.name = this.defaultName;
     this.userIDs.replaceAll(pgp.users.map(u => u.userID.email));
   }
 }

@@ -14,6 +14,7 @@
   import DateSeparator from "./DateSeparator.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";
+  import { catchErrors } from "../../Util/error";
   import { tick } from "svelte";
 
   export let messages: Collection<Message>;
@@ -21,7 +22,7 @@
   $: sortedMessages = messages.sortBy(msg => msg.sent);
 
   let scroller: Scroll;
-  $: $messages && scroller && scrollDown();
+  $: $messages && scroller && catchErrors(scrollDown);
   async function scrollDown() {
     await tick(); // wait for message to be added to HTML
     scroller.scrollDown();

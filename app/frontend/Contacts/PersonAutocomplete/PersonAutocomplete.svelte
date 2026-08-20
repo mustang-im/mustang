@@ -94,7 +94,8 @@
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
-    addPerson(personUID);
+    addPerson(personUID) // must return the UID synchronously
+      .catch(showError);
     return personUID;
   }
 

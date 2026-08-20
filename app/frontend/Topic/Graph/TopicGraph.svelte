@@ -39,7 +39,7 @@
         <g class="gc-node gc-{node.level}"
           transform="translate({Math.round(pos.x)},{Math.round(pos.y)})"
           style="cursor: {node.clickable ? 'pointer' : 'default'}; opacity: {pos.opacity}"
-          on:click={() => node.clickable && onNodeClick(node)}
+          on:click={() => node.clickable && catchErrors(() => onNodeClick(node))}
         >
           <title>{node.topic.name}</title>
           <circle class="gc-fill" r={pos.r} />
@@ -76,6 +76,7 @@
   import { cubicOut } from "svelte/easing";
   import { Topic } from "../../../logic/Topic/Topic";
   import { rootTopic } from "../../../logic/Topic/TopicAccounts";
+  import { catchErrors } from "../../Util/error";
 
   export let selectedTopic: Topic;
 

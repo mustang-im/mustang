@@ -78,7 +78,7 @@
   async function onAdd(tag: Tag) {
     tags.add(tag);
     await saveTagsList();
-    onSelectToggle(tag);
+    await onSelectToggle(tag);
     isAdding = false;
   }
 </script>

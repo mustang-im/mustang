@@ -1,7 +1,6 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
@@ -186,32 +185,34 @@ export class OWAAccount extends ExchangeMailAccount {
 
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
-      // `listFolders()` will subscribe to new user-added calendars
-      await super.startup();
+      try {
+        // `listFolders()` will subscribe to new user-added calendars
+        await super.startup();
 
-      // Create primary addressbook automatically
-      let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
-      if (!haveAddressbook) {
-        let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
-        let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
-        let addressbook = this.createAddressbookAccount(folder, true);
-        appGlobal.addressbooks.add(addressbook);
-        await addressbook.save();
+        // Create primary addressbook automatically
+        let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));
+        if (!haveAddressbook) {
+          let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
+          let folder = response.find(ab => !ab.IsReadOnly && ab.FolderId?.Id); // first one is main addressbook
+          let addressbook = this.createAddressbookAccount(folder, true);
+          appGlobal.addressbooks.add(addressbook);
+          await addressbook.save();
+        }
+
+        if (!this.isDependentAccount) {
+          appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
+        }
+
+        await this.callOWA(new OWASubscribeToNotificationRequest());
+
+        this.notifications = this.isOffice365()
+          ? new OWAOffice365Notifications(this)
+          : new OWAExchangeNotifications(this);
+        this.notifications.start()
+          .catch(this.errorCallback);
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
-      }
-
-      await this.callOWA(new OWASubscribeToNotificationRequest());
-
-      this.notifications = this.isOffice365()
-        ? new OWAOffice365Notifications(this)
-        : new OWAExchangeNotifications(this);
-      this.notifications.start()
-        .catch(this.errorCallback);
-
-      await this.startupDependentAccounts();
     });
   }
 
@@ -454,6 +455,8 @@ export class OWAAccount extends ExchangeMailAccount {
   }
 
   async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+
     await this.throttle.throttle();
     let result = await this.callOWA(owaFindFoldersRequest(true, this.sharedFolderRoot, this.username));
     if (this.sharedFolderRoot == "inbox") {
@@ -491,6 +494,9 @@ export class OWAAccount extends ExchangeMailAccount {
       if (!this.folderMap.has(folder.id)) {
         await folder.deleteItLocally();
       }
+    }
+    for (let folder of this.getAllFolders()) {
+      await folder.save();
     }
   }
 

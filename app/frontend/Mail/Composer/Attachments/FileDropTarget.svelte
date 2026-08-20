@@ -7,15 +7,19 @@
   <hbox class="overlay">
     {#if isImage && allowInline}
       <hbox flex class="drop-target inline" on:drop={event => onDrop(event, true)}>
-        {$t`Insert inline into text`}
+        <hbox class="label font-large">
+          {$t`Insert inline into text`}
+        </hbox>
       </hbox>
     {/if}
     <hbox flex class="drop-target attachment" on:drop={event => onDrop(event, false)}>
-      {$t`Attach file`}
+      <hbox class="label font-large">
+        {$t`Attach file`}
+      </hbox>
     </hbox>
   </hbox>
   {/if}
-  <vbox flex class="content">
+  <vbox flex class="content" class:dragging>
     <slot />
   </vbox>
 </hbox>
@@ -96,7 +100,15 @@
   .drop-target:global(.hover) {
     background-color: #00000065;
   }
+  .label {
+    padding: 6px 18px;
+    background-color: white;
+    border-radius: var(--border-radius);
+  }
   .content {
     z-index: 0;
+  }
+  .content.dragging {
+    opacity: 30%;
   }
 </style>

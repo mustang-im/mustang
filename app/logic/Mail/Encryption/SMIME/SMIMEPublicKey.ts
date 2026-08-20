@@ -52,17 +52,10 @@ export class SMIMEPublicKey extends PublicKey {
       this.keyLengthInBits = id.length * 4;
     }
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
-    try {
-      let san = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "subjectAlternativeName");
-      // Throws if there is none, and the catch falls back to the subject
-      this.name = SubjectAlternativeName.decode(san.extnValue).find(entry => entry.type == "rfc822Name").value;
-    } catch (ex) {
-      let email = cert.tbsCertificate.subject.find(attr => attr.type == "E");
-      if (email) {
-        this.name = email.value.value;
-      }
-    }
-    let hash = new Uint8Array(await window.crypto.subtle.digest("SHA-256", Certificate.encode(cert)));
+    this.userIDs.replaceAll(certificateEMailAddresses(cert));
+    // Do not overwrite the name that the user gave the key
+    this.name ||= this.defaultName;
+    let hash = new Uint8Array(await crypto.subtle.digest("SHA-256", Certificate.encode(cert)));
     this.fingerprint = Uint8ArrayToHex(hash);
     let { notBefore, notAfter } = cert.tbsCertificate.validity;
     this.created = new Date(notBefore.value);
@@ -166,6 +159,28 @@ export class SMIMEPublicKey extends PublicKey {
       this.chain.add(key);
     }
   }
+}
+
+/** The email addresses that the certificate was issued for.
+ * They are in the subjectAlternativeName extension, but older certificates
+ * have them only in the subject. */
+function certificateEMailAddresses(cert: Certificate): string[] {
+  let san = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "subjectAlternativeName");
+  if (san) {
+    try {
+      let emailAddresses = SubjectAlternativeName.decode(san.extnValue)
+        .filter(entry => entry.type == "rfc822Name")
+        .map(entry => entry.value);
+      if (emailAddresses.length) {
+        return emailAddresses;
+      }
+    } catch (ex) {
+      // Entry types that we do not implement, e.g. directoryName, fail to decode
+      console.error(ex);
+    }
+  }
+  let email = cert.tbsCertificate.subject.find(attr => attr.type == "E");
+  return email ? [email.value.value] : [];
 }
 
 async function verifySignature(cert: Certificate, signer: Certificate): Promise<boolean> {

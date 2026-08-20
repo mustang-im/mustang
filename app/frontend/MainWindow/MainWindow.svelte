@@ -47,6 +47,7 @@
 </vbox>
 <MeetBackground />
 <MailInBackground />
+<CalendarInBackground />
 <WebAppsInBackground />
 
 <script lang="ts">
@@ -76,6 +77,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
+  import CalendarInBackground from "../Calendar/CalendarInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
   import { catchErrors } from "../Util/error";

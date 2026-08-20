@@ -29,7 +29,7 @@
   // #endif
   import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
-  import { backgroundError, catchErrors } from "../Util/error";
+  import { backgroundError, catchErrors, showError } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
@@ -77,7 +77,7 @@
   });
 
   let blobURL: URLString;
-  $: html, setURL();
+  $: html, catchErrors(setURL);
   async function setURL() {
     if (url) {
       return;
@@ -124,7 +124,7 @@
         dispatch("webview", webviewE);
         // #if [!WEBMAIL]
         if (autoSize) {
-          webviewE.addEventListener("did-finish-load", onLoadResize);
+          webviewE.addEventListener("did-finish-load", () => catchErrors(onLoadResize));
         }
         await addInputListener();
         await addLinkListener();
@@ -136,9 +136,8 @@
 
     // #if [!WEBMAIL]
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
-    webviewE.addEventListener("context-menu", event => catchErrors(() => {
-      onContextMenu((event as any).params);
-    }));
+    webviewE.addEventListener("context-menu", event =>
+      catchErrors(() => onContextMenu((event as any).params)));
     // #endif
   }
 
@@ -152,7 +151,8 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(newElectronKeyboardEvent(event));
+        onKeyOnMessage(newElectronKeyboardEvent(event))
+          .catch(showError);
       }
     });
   }

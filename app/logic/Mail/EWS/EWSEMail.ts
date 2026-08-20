@@ -278,11 +278,13 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
 /**
  * Converts X.400 into pseudo email addresses.
  * Alternative to sanitize.emailAddress()
- * @param emailAddress email address or X.400 address
- * @returns email address
- * @throws when not valid
+ * @param emailAddress email address or X.400 address.
+ *   May be missing, e.g. for a distribution list member that the server
+ *   returns with a `Name`, but no `EmailAddress`.
+ * @returns email address, or `null` when missing or not valid
  */
-export function getEmailAddressOrX400(emailAddress: string): string {
+export function getEmailAddressOrX400(emailAddress: string | null | undefined): string | null {
+  emailAddress = sanitize.string(emailAddress, "");
   if (emailAddress.startsWith("/o=") || emailAddress.startsWith("/O=")) {
     return convertX400ToEmailAddress(emailAddress);
   }
@@ -306,25 +308,22 @@ export function convertX400ToEmailAddress(x400: string): string {
     if (!part) {
       continue;
     }
-    if (part.startsWith("o=")) {
+    if (part.startsWith("ou=")) { // Must be before `o=`, given they share the prefix
       part = part.substring(3);
-      let company = ensureAlphaNum(part);
-      domain = company + "." + domain;
-    }
-    if (part.startsWith("ou=")) {
-      part = part.substring(3);
-      const prefix = "Exchange Administrative Group (";
+      const prefix = "exchange administrative group (";
       const suffix = ")";
-      if (part.startsWith(prefix)) {
+      if (part.startsWith(prefix) && part.endsWith(suffix)) {
         part = part.substring(prefix.length, part.length - suffix.length);
       }
       let department = ensureAlphaNum(part);
       domain = department + "." + domain;
-    }
-    if (part.startsWith("cn=Recipient")) {
+    } else if (part.startsWith("o=")) {
+      part = part.substring(2);
+      let company = ensureAlphaNum(part);
+      domain = company + "." + domain;
+    } else if (part.startsWith("cn=recipient")) {
       continue;
-    }
-    if (part.startsWith("cn=")) {
+    } else if (part.startsWith("cn=")) {
       part = part.substring(3);
       username = ensureAlphaNum(part);
     }

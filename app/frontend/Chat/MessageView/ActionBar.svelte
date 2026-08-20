@@ -105,7 +105,7 @@
 
   let hasCopied = false;
   async function onCopy() {
-    navigator.clipboard.writeText(message.text);
+    await navigator.clipboard.writeText(message.text);
     hasCopied = true;
     await sleep(1);
     hasCopied = false

@@ -62,6 +62,7 @@
   import QRCode from "../../../Shared/QRCode.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import ExportInstructions from "./ExportInstructions.svelte";
+  import { catchErrors } from "../../../Util/error";
   import { t } from "../../../../l10n/l10n";
   import { onMount, onDestroy } from "svelte";
 
@@ -87,7 +88,7 @@
 
   onMount(() => {
     if (liveEnabled) {
-      startLinking();
+      catchErrors(startLinking);
     }
   });
 

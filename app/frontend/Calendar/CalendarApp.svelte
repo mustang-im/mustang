@@ -26,7 +26,6 @@
     <CalendarViewBarM />
   {/if}
 </vbox>
-<CalendarInBackground />
 
 <script lang="ts">
   import { selectedCalendar, selectedDateInterval, selectedEvent, startDate } from "./selected";
@@ -36,7 +35,6 @@
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
-  import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }

@@ -44,7 +44,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -72,6 +72,7 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -255,7 +256,15 @@ async function newHTTPServer() {
   return new HTTPServer();
 }
 
-function newTrayIcon(imgDataURL: string): null {
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+async function newHTTPConnection(url: string, options?: any) {
+  const { HTTPConnection } = await import("../../desktop/backend/HTTPConnection");
+  return new HTTPConnection(url, options);
+}
+
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  // Mobile OSes have no system tray
 }
 
 function newOSNotification(options: any): Notification {

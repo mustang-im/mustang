@@ -43,7 +43,7 @@
       <vbox class="topic-page" flex>
         <hbox class="title">
           <input type="text" bind:value={topic.name}
-            on:keydown={event => onKeyEnter(event, onTitleEnter)}/>
+            on:keydown={event => catchErrors(() => onKeyEnter(event, onTitleEnter))}/>
         </hbox>
         <vbox class="content" flex>
           <HTMLEditor bind:html={pageHTML} bind:editor {extraExtensions}
@@ -73,6 +73,7 @@
   import ExportIcon from "lucide-svelte/icons/file-down";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter, saveBlobAsFile } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
   import { gt, t } from "../../../l10n/l10n";
   import type { Editor } from "@tiptap/core";
   import { DOMSerializer } from "@tiptap/pm/model";

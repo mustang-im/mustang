@@ -2,133 +2,85 @@ import type { Event } from "../../logic/Calendar/Event";
 import { openEvent } from "./open";
 import { bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
+import { SystemNotification, NotificationKinds } from "../Shared/SystemNotification";
+import { getComputerOn } from "../../logic/util/backend-wrapper";
 import { getLocalStorage } from "../Util/LocalStorage";
+import { catchErrors, backgroundError } from "../Util/error";
+import { k1HourMS } from "../Util/date";
 import CalendarIcon from '../asset/icon/appBar/calendar.svg?raw';
+import { Debounce } from "../../logic/util/flow/Debounce";
 import { sleep } from "../../logic/util/util";
-import { backgroundError } from "../Util/error";
-import type { Collection } from "svelte-collections";
+import { CollectionObserver, type Collection } from "svelte-collections";
 
+/** `setTimeout()` overflows and fires immediately, if the delay is longer than 24 days.
+ * Waking up in-between also lets us catch up when the system clock jumped. */
+const kMaxDelayMS = k1HourMS;
+
+/** All events that have an alarm, including those in the past.
+ *
+ * Created only once: The condition must not depend on the current time, and
+ * creating the collection again while it tells us about a change would
+ * make it tell us about the same change again, endlessly. */
 let eventsWithAlarms: Collection<Event>;
+let isListening = false;
+let timeout: NodeJS.Timeout | null = null;
+/** Alarms before this time have already been shown to the user, or happened before app start */
+let lastRemindTime = Date.now();
 
+/** Notifies the user when the alarm of a calendar event is due. */
 export async function reminderListener() {
-  return;
+  if (isListening) {
+    return;
+  }
+  isListening = true;
   await sleep(3);
-  waitForNextAlarm();
+  const now = Date.now();
+  eventsWithAlarms = appGlobal.calendarEvents.filterObservable(event => event.alarm && event.alarm.getTime() > now);
+  eventsWithAlarms.registerObserver(eventsObserver);
+  eventsObserver.added(eventsWithAlarms.contents);
+  // Timers don't run while the computer sleeps
+  getComputerOn().subscribe(waitForNextReminder);
 }
 
-let timeout: NodeJS.Timeout;
-let unsubscribe: () => void;
-let isSubscribing = false;
+/** Sets the timer for the next alarm that is due. */
+function waitForNextReminder() {
+  /* Attention: Must not create observable collections: We run while the collections
+  tell us about a change. If we add a new observer during the observer run,
+  the new observer would be called for the same change, and we'd loop endlessly. */
 
-function waitForNextAlarm() {
-  console.log("waitForAlarm");
-  if (isSubscribing) {
-    return;
-  }
   clearTimeout(timeout);
-  unsubscribe?.();
-  let now = Date.now();
-  eventsWithAlarms = appGlobal.calendarEvents.filterObservable(event =>
-    event.alarm && event.alarm.getTime() > now)
-    .sortBy(event => event.alarm);
-  console.log("events with alarms", eventsWithAlarms.contents, eventsWithAlarms.contents.map(ev => ev.title + " " + ev.alarm.toLocaleString()).join(", "));
-  isSubscribing = true;
-  unsubscribe = eventsWithAlarms.subscribe(() => waitForNextAlarm());
-  isSubscribing = false;
-  let nextEvent = eventsWithAlarms.first;
-  if (!nextEvent) {
+  let nextAlarm: Date | null = null;
+  for (let event of eventsWithAlarms) {
+    if (event.alarm.getTime() > lastRemindTime && (!nextAlarm || event.alarm < nextAlarm)) {
+      nextAlarm = event.alarm;
+    }
+  }
+  if (!nextAlarm) {
     return;
   }
-  console.log("next event", nextEvent.title, nextEvent.alarm.toLocaleString());
-  console.log("timeout in", (nextEvent.alarm.getTime() - now) / 1000, "s");
-  setTimeout(showReminder, nextEvent.alarm.getTime() - now);
+  let delayMS = Math.max(Math.min(nextAlarm.getTime() - Date.now(), kMaxDelayMS), 0);
+  timeout = setTimeout(() => catchErrors(showReminder, backgroundError), delayMS);
 }
 
-export async function showReminder() {
-  console.log("show reminder");
+async function showReminder() {
   let now = Date.now();
-  let events = eventsWithAlarms.filterOnce(event => event.alarm.getTime() < now);
-  console.log("Show reminders for", events.contents);
-  waitForNextAlarm();
-  if (events.isEmpty) {
+  let dueEvents = eventsWithAlarms.filterOnce(event =>
+    event.alarm.getTime() > lastRemindTime &&
+    event.alarm.getTime() <= now &&
+    // The reminder is pointless once the meeting is over, e.g. after the computer slept
+    (!event.endTime || event.endTime.getTime() > now));
+  lastRemindTime = now;
+  waitForNextReminder();
+  if (dueEvents.isEmpty) {
     return;
   }
 
-  // settings
-  let settings = getLocalStorage("notifications.mail", ["popup", "sound"]).value;
-  const doSound = settings.includes("sound");
-  const doTaskbar = settings.includes("taskbar");
-  const doTray = settings.includes("try");
-  const doWebNotification = settings.includes("popup");
-  const doOSNotification = settings.includes("popup-os");
-  let isOSNotificationSupported: boolean = undefined;
-
-  if (doOSNotification && isOSNotificationSupported === undefined) {
-    isOSNotificationSupported = await appGlobal.remoteApp.isOSNotificationSupported();
-  }
-
-  if (doSound) {
-    try {
-      let audioEl = new Audio("/sound/new-message.mp3");
-      audioEl.autoplay = true;
-    } catch (ex) {
-      backgroundError(ex);
-    }
-  }
-
-  if (doWebNotification) {
-    for (let event of events) {
-      try {
-        let notification = new Notification(event.title, {
-          body: event.descriptionText,
-          tag: "Meeting",
-          renotify: true,
-          // icon: url,
-          // image: url,
-          data: event,
-        });
-        // shows automatically after creating the object
-      } catch (ex) {
-        backgroundError(ex);
-      }
-    }
-  }
-
-  if (doOSNotification && isOSNotificationSupported) {
-    for (let event of events) {
-      try {
-        let notification = await appGlobal.remoteApp.newOSNotification({
-          title: event.title,
-          body: event.descriptionText,
-          // icon: url,
-          // Linux only
-          urgency: "normal",
-          // Windows
-          // toastXml: ...,
-        });
-        console.log("notification", notification);
-        notification.show();
-
-        notification.on("click", event => openEventInApp(event));
-      } catch (ex) {
-        backgroundError(ex);
-      }
-    }
-  }
-
-  if (doTaskbar) {
-    try {
-    } catch (ex) {
-      backgroundError(ex);
-    }
-  }
-
-  if (doTray) {
-    try {
-      await appGlobal.remoteApp.newTrayIcon(bubbleImageURL(events.length));
-    } catch (ex) {
-      backgroundError(ex);
-    }
+  const kinds = new NotificationKinds(getLocalStorage("notifications.calendar", ["popup", "sound"]).value);
+  for (let event of dueEvents) {
+    let notification = new SystemNotification(kinds, event.title, event.descriptionText, event.id);
+    notification.icon = CalendarIcon;
+    notification.onClick = () => openEventInApp(event);
+    await notification.show();
   }
 }
 
@@ -137,10 +89,36 @@ async function openEventInApp(event: Event) {
     openEvent(event);
     bringAppToFront();
   } catch (ex) {
-    console.error(ex);
+    backgroundError(ex);
   }
 }
 
-function bubbleImageURL(count: number) {
-  return "data:image/svg;base64," + btoa(CalendarIcon);
+/** Waits until all the changes of a sync are in, and calculates only once */
+let waitForNextReminderDebounce = new Debounce(1);
+
+/** Watches when an event gets or loses its alarm, and when the alarm time changes */
+class EventsWithAlarmsObserver extends CollectionObserver<Event> {
+  protected unsubscribeEvents = new Map<Event, () => void>();
+
+  added(events: Event[]) {
+    for (let event of events) {
+      // The collection tells us only whether the event has an alarm, not when the alarm time changes
+      this.unsubscribeEvents.set(event, event.subscribe(() => this.changed()));
+    }
+    this.changed();
+  }
+
+  removed(events: Event[]) {
+    for (let event of events) {
+      this.unsubscribeEvents.get(event)?.();
+      this.unsubscribeEvents.delete(event);
+    }
+    this.changed();
+  }
+
+  protected changed() {
+    waitForNextReminderDebounce.debounce(waitForNextReminder)
+      .catch(backgroundError);
+  }
 }
+let eventsObserver = new EventsWithAlarmsObserver();

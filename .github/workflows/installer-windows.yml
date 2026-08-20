@@ -6,7 +6,6 @@ on:
       release_type:
         type: choice
         options:
-          - release
           - prerelease
           - test
         default: 'test'

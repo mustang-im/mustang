@@ -52,7 +52,7 @@
     videoEl.srcObject = null;
   }
 
-  onDestroy(stopVideo);
+  onDestroy(() => catchErrors(stopVideo));
 </script>
 
 <style>

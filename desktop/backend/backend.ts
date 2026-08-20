@@ -1,4 +1,6 @@
 import { HTTPServer } from './HTTPServer';
+import { HTTPConnection, type HTTPConnectionOptions } from './HTTPConnection';
+import { NetSession } from './NetSession';
 import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
@@ -58,7 +60,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -94,6 +96,8 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
+    newNetSession,
     newTCPSocket,
     newWebSocket,
     gunzip,
@@ -254,6 +258,18 @@ function newHTTPServer() {
   return new HTTPServer();
 }
 
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+function newHTTPConnection(url: string, options?: HTTPConnectionOptions): HTTPConnection {
+  return new HTTPConnection(url, options);
+}
+
+/** A HTTP client that uses Chromium's network stack, which performs
+ * connection-based logins like NTLM natively. @see `NetSession` */
+function newNetSession(url: string, partition: string, username: string, password: string): NetSession {
+  return new NetSession(url, partition, username, password);
+}
+
 /** A new raw TCP socket, from the node net module.
  * You can attach `connect`/`error`/`data` listeners and `connect()` */
 function newTCPSocket(): net.Socket {
@@ -284,14 +300,44 @@ function getCACertificates(type: string) {
   return type == "bundled" ? tls.rootCertificates : [];
 }
 
-/** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(imgDataURL: string): Tray {
-  return new Tray(nativeImage.createFromDataURL(imgDataURL));
+let trayIcon: Tray | null = null;
+
+/** Shows our icon in the system tray, and replaces the icon that is
+ * already there, if any.
+ * <https://www.electronjs.org/docs/latest/api/tray> */
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  let image = nativeImage.createFromDataURL(imgDataURL);
+  if (os.platform() == "darwin") { // macOS doesn't scale the icon down to its menu bar
+    image = image.resize({ width: 16, height: 16 });
+  }
+  if (trayIcon) {
+    trayIcon.setImage(image);
+    trayIcon.removeAllListeners("click");
+  } else {
+    trayIcon = new Tray(image);
+  }
+  function remove() {
+    trayIcon?.destroy();
+    trayIcon = null;
+  }
+  trayIcon.setToolTip(tooltip);
+  trayIcon.on("click", () => {
+    remove();
+    onClick?.();
+  });
 }
 
-/** <https://www.electronjs.org/docs/latest/api/notification> */
+/** <https://www.electronjs.org/docs/latest/api/notification>
+ *
+ * jpc describes only the object itself and its own class, so the frontend
+ * doesn't get the functions that this native Electron class inherits
+ * from `EventEmitter`. Make them properties of the object itself. */
 function newOSNotification(options: any): Notification {
-  return new Notification(options);
+  let popup: any = new Notification(options);
+  for (let name of ["on", "once", "off"]) {
+    popup[name] = popup[name].bind(popup);
+  }
+  return popup;
 }
 
 function isOSNotificationSupported(): boolean {
@@ -349,12 +395,12 @@ function setTheme(theme: "system" | "light" | "dark") {
   nativeTheme.themeSource = theme;
 }
 
-function openExternalURL(url: string) {
-  shell.openExternal(url);
+async function openExternalURL(url: string) {
+  await shell.openExternal(url);
 }
 
-function openFileInNativeApp(filePath: string) {
-  shell.openPath(filePath);
+async function openFileInNativeApp(filePath: string) {
+  await shell.openPath(filePath);
 }
 
 class StartupArgs extends Observable {
@@ -440,7 +486,7 @@ function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], erro
         if (!(ex instanceof Error)) {
           ex = new Error(ex + "");
         }
-        onSelect([], ex as Error);
+        await onSelect([], ex as Error);
       }
     },
     // If true, use the system picker if available.

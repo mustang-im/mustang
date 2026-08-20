@@ -25,8 +25,9 @@ export function openApp(app: MustangApp, params: PageParams) {
 }
 
 export function goTo(pageURL: string, params: PageParams) {
-  let replace = pageURL == window.location.hash;
-  console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.hash, "with params", params);
+  let location = window.location.hash.slice(1);
+  let replace = pageURL == location;
+  console.log("Go to", pageURL, replace ? "replace" : "", "from", location, "with params", params);
   history.navigate(pageURL, {
     replace,
     state: addParams(params),
@@ -80,7 +81,7 @@ export function getParams(id: HistoryIDObj | AnyObject): PageParams {
   if (!id?.id) {
     return {};
   }
-  return historyParams.get(id.id);
+  return historyParams.get(id.id) ?? {};
 }
 /** TODO call this
  * a) when the user goes back in history and then forward, remove the orphaned entries, or

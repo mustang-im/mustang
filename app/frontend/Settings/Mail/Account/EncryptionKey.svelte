@@ -329,7 +329,7 @@
     }
   }
   async function onExportPrivatePassphrase() {
-    let passwordFilename = "SecretPassword-" + key.userIDs.first + "-" + key.name + ".txt";
+    let passwordFilename = key.keyFilename("SecretPassword", "txt");
     let passwordFile = new File([key.passphrase + "\n"], passwordFilename, { type: "text/plain" });
     await saveBlobAsFile(passwordFile);
     await onExportPrivateDone();

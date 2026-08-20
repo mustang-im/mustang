@@ -144,7 +144,7 @@
 <svelte:window on:keydown={ev => catchErrors(() => onKeyEnter(ev, accept))} />
 
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
-  <audio src="/sound/ringtone1.mp3" loop autoplay />
+  <audio src="sound/ringtone1.mp3" loop autoplay />
 {/if}
 
 {#if ($meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall) &&

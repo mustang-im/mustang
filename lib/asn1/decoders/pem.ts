@@ -37,17 +37,16 @@ export class PEMDecoder extends DERDecoder {
     }
     const base64 = lines.slice(start + 1, end).join('');
     // Remove excessive symbols
-    return this.decodeBase64(base64.replace(/[^a-z0-9+/=]+/gi, ''));
+    return this.decodeFromBase64(base64.replace(/[^a-z0-9+/=]+/gi, ''));
   }
 
-  decodeBase64(base64: string, options?: object): any {
-    const input = Uint8Array.fromBase64?.(base64) ?? fromBase64(base64);
-    return this.decode(input, options);
+  decodeFromBase64(base64: string, options?: object): any {
+    return this.decode(base64ToBytes(base64), options);
   }
 }
 
-function fromBase64(base64): Uint8Array {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+export function base64ToBytes(base64: string): Uint8Array {
+  return Uint8Array.fromBase64?.(base64) ?? Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 }
 
 declare global {

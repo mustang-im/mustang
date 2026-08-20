@@ -26,8 +26,8 @@ export class Entity<T = any> {
     return this._getDecoder().decode(data, options);
   }
 
-  decodeBase64(data: string, options?: object): T {
-    return this._getDecoder().decodeBase64(data, options);
+  decodeFromBase64(data: string, options?: object): T {
+    return this._getDecoder().decodeFromBase64(data, options);
   }
 
   decodePEM(data: string, options: object & { label: string }): T {
@@ -43,8 +43,8 @@ export class Entity<T = any> {
     return this._getEncoder().encode(data, reporter);
   }
 
-  encodeBase64(data: T): string {
-    return this._getEncoder().encodeBase64(data);
+  encodeToBase64(data: T): string {
+    return this._getEncoder().encodeToBase64(data);
   }
 
   encodePEM(data: T, options: { label: string }): string {

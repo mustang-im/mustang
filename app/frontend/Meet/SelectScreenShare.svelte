@@ -59,9 +59,10 @@
   import { ArrayColl } from "svelte-collections";
   import Button from "../Shared/Button.svelte";
   import { UserError, sleep } from "../../logic/util/util";
+  import { catchErrors } from "../Util/error";
   type DesktopCapturerSource = any; // import type { DesktopCapturerSource } from "electron";
 
-  export async function openSelector(onError: (ex: Error) => void) {
+  export async function openSelector(onError: (ex: Error) => void | Promise<void>) {
     onErrorCallback = onError;
     isOpen = true;
     await onOpen();
@@ -86,7 +87,7 @@
   let screens = new ArrayColl<Screen>();
   let onDone: (screen: DesktopCapturerSource) => void;
   let onReject: (ex: Error) => void;
-  let onErrorCallback: (ex: Error) => void;
+  let onErrorCallback: (ex: Error) => void | Promise<void>;
 
   export async function onOpen() {
     isListening = true;
@@ -96,7 +97,7 @@
 
   async function onScreensListed(aScreens: DesktopCapturerSource[], error?: Error) {
     if (error) {
-      onErrorCallback(error);
+      await onErrorCallback(error);
       return;
     }
     screens.clear();
@@ -120,7 +121,7 @@
 
   async function onError(ex: Error) {
     if (onErrorCallback) {
-      onErrorCallback(ex);
+      await onErrorCallback(ex);
     }
     if (onReject) {
       //onReject(ex);
@@ -140,7 +141,7 @@
       isListening = false;
     }
   }
-  onDestroy(onClose);
+  onDestroy(() => catchErrors(onClose));
 </script>
 
 <style>

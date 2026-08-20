@@ -134,8 +134,9 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   }
 
   /** Generates a new private key from scratch.
+   * @param emailAddress of the identity that the key is for
    * Factory function. */
-  static async createNewPrivateKey(): Promise<SMIMEPrivateKey> {
+  static async createNewPrivateKey(emailAddress: string): Promise<SMIMEPrivateKey> {
     let passphrase = crypto.randomUUID();
     let salt = new Uint8Array(8);
     let iv = new Uint8Array(16);
@@ -154,6 +155,8 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     key.privateKeyArmored = EncryptedPrivateKeyInfo.encodePEM(encryptedKey, { label: "ENCRYPTED PRIVATE KEY" });
     key.passphrase = passphrase;
     key.id = rsaKey.n.toString(16).slice(-16);
+    key.name = key.defaultName;
+    key.userIDs.add(emailAddress);
     key.keyLengthInBits = 4096;
     key.justCreated = true;
     key.created = new Date();
@@ -178,6 +181,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     assert(rawKey.qInv * rawKey.q % rawKey.p == 1n, "inverse does not match primes");
     let id = rawKey.n.toString(16);
     key.id = id.slice(-16);
+    key.name = key.defaultName;
     key.keyLengthInBits = id.length * 4;
     key.justCreated = true;
     key.created = new Date();

@@ -13,7 +13,9 @@ if (production) {
   Sentry.init({
     dsn: "https://7fc67f1156f0ea94c98a4ec5030f24fc@o4507566955757568.ingest.de.sentry.io/4507566958313552",
     release: appName + "@" + appVersion,
-    integrations: [],
+    // An array here would *add* to the default integrations, not replace them.
+    // `BrowserSession` sends a session to the server on every navigation.
+    integrations: defaults => defaults.filter(integration => integration.name != "BrowserSession"),
   });
 }
 

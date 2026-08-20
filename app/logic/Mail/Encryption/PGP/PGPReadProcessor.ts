@@ -3,6 +3,7 @@ import type { EMail } from "../../EMail";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { PGPPublicKey, type OpenPGPModule } from "./PGPPublicKey";
 import { readAutoCryptKeys } from "./AutoCrypt";
+import { EncryptionSystem } from "../enums";
 import { parseMIMEDirectSubparts, parseHeaderParameters, toCRLF } from "../MIME";
 import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import type { PersonUID } from "../../../Abstract/PersonUID";
@@ -31,6 +32,7 @@ export class PGPReadProcessor extends EMailProcessor {
     if (!encrypted && !detachedSignature) {
       return;
     }
+    email.system = EncryptionSystem.PGP;
     let openPGP = await import("openpgp");
     if (isLogging) console.log("MIME", mime, "encrypted", encrypted);
     let outerFrom = email.from.emailAddress;

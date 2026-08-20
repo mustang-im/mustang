@@ -66,20 +66,23 @@ export class JMAPAccount extends MailAccount {
   }
 
   async startup() {
-    await super.startup();
-    this.startPushListener()
-      .catch(this.errorCallback);
-    let inbox = this.inbox as JMAPFolder;
-    assert(inbox, "Inbox not found");
-    inbox.startPolling();
+    try {
+      await super.startup();
+      this.startPushListener()
+        .catch(this.errorCallback);
+      let inbox = this.inbox as JMAPFolder;
+      assert(inbox, "Inbox not found");
+      inbox.startPolling();
 
-    if (this.haveContacts) {
-      await this.listAddressbooks();
+      if (this.haveContacts) {
+        await this.listAddressbooks();
+      }
+      if (this.haveCalendar) {
+        await this.listCalendars();
+      }
+    } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+      await this.startupDependentAccounts();
     }
-    if (this.haveCalendar) {
-      await this.listCalendars();
-    }
-    await this.startupDependentAccounts();
   }
 
   async verifyLogin(): Promise<void> {

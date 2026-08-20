@@ -97,12 +97,12 @@
     gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function onQueryKeyServer() {
-    queryKeyServerFor(recipientsWithoutKeys);
+    await queryKeyServerFor(recipientsWithoutKeys);
   }
 
   async function autoQueryKeyServer() {
     let notYetQueried = recipientsWithoutKeys.filterOnce(r => !(r as any)._queriedKeyserver);
-    queryKeyServerFor(notYetQueried);
+    await queryKeyServerFor(notYetQueried);
   }
 
   async function queryKeyServerFor(recipients: Collection<PersonUID>) {

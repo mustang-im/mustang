@@ -114,8 +114,8 @@ export class OWAAddressbook extends ExchangeAddressbook {
         let response = await this.callOWA(request);
         result.Members = response.Members;
         request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
-        response = await this.account.callOWA(request);
-        result.Notes = response.notes?.BodiesArray[0].Value.Value;
+        response = await this.callOWA(request);
+        result.Notes = response.PersonaWithNotes?.BodiesArray[0].Value.Value;
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);

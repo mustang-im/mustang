@@ -58,12 +58,14 @@ export async function retryOnTransientError<T>(func: () => Promise<T>, attempts 
 export function isNetworkError(ex: any): boolean {
   // Node fetch, via backend `HTTPFetchError`
   const kNetworkErrorCodes = ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT",
-    "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
+    "EPIPE", "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
     "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET",
     // ImapFlow
     "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT"];
   // Error class `instanceof` doesn't survive JPC
   return kNetworkErrorCodes.includes(ex?.code) ||
+    // Chromium `net` module, e.g. `net::ERR_CONNECTION_RESET`
+    /net::ERR_(CONNECTION_|EMPTY_RESPONSE|NETWORK_CHANGED|INTERNET_DISCONNECTED|INCOMPLETE_CHUNKED_ENCODING|CONTENT_LENGTH_MISMATCH)/.test(ex?.message) ||
     // browser fetch
     ex?.name == "TypeError" &&
     /network ?error|failed to fetch|fetch failed|load failed/i.test(ex.message);

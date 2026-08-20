@@ -830,6 +830,7 @@ export class Event extends Observable {
    * This implementation is used by protocols:
    * - Personal calendar
    * - CalDAV
+   * - JMAP, because we prefer to let the user control which events are added to the calendar
    * - ActiveSync, indirectly: `ActiveSyncEvent` overrides this and then calls this.
    * Not used by: EWS, OWA
    *

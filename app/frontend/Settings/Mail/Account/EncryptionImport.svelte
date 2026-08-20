@@ -164,7 +164,7 @@
 
   async function onCreateNewSMIME() {
     assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
-    let key = await SMIMEPrivateKey.createNewPrivateKey();
+    let key = await SMIMEPrivateKey.createNewPrivateKey(identity.emailAddress);
     identity.encryptionPrivateKeys.add(key);
     showObsolete = true;
     isOpen = false;

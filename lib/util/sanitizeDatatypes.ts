@@ -269,7 +269,7 @@ class Sanitize {
     }
   }
 
-  array(unchecked: [] | null | undefined, fallback: [] | null | Symbol = throwErrors): [] | null {
+  array<T>(unchecked: T[] | null | undefined, fallback: T[] | null | Symbol = throwErrors): T[] | null {
     if (unchecked && Array.isArray(unchecked)) {
       return unchecked;
     } else {

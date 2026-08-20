@@ -1,5 +1,6 @@
 import type { Entity } from "../api";
 import type { ReporterError } from "../base/reporter";
+import { berToDER } from "../ber";
 import { DecoderBuffer } from "../base/buffer";
 import { assert, Node } from "../base/node";
 import * as der from "../constants/der";
@@ -18,6 +19,9 @@ export class DERDecoder {
 
   decode(data: Uint8Array | DecoderBuffer, options?: Record<string, any>): any {
     if (!DecoderBuffer.isDecoderBuffer(data)) {
+      if (options?.berToDER) {
+        data = berToDER(data);
+      }
       data = new DecoderBuffer(data, options);
     }
 
@@ -269,16 +273,18 @@ class DERNode extends Node {
 
     // Indefinite length... find END tag
     const state = buffer.save();
-    const res = this._skipUntilEnd(
+    let skip = this._skipUntilEnd(
       buffer,
       'Failed to skip indefinite length body: "' + tag + '"');
-    if (buffer.isError(res)) {
-      return res;
+    if (buffer.isError(skip)) {
+      return skip;
     }
 
     len = buffer.offset - state.offset;
     buffer.restore(state);
-    return buffer.skip(len, 'Failed to match body of: "' + tag + '"');
+    let res = buffer.skip(len - 2, 'Failed to match body of: "' + tag + '"');
+    buffer.skip(2);
+    return res;
   }
 
   _skipUntilEnd(buffer: DecoderBuffer, fail: string): ReporterError | undefined {
@@ -301,7 +307,7 @@ class DERNode extends Node {
       if (buffer.isError(res)) {
         return res;
       }
-      if (tag.tagStr === 'end') {
+      if (tag.tagStr === 'end' && len === 0) {
         return undefined;
       }
     }

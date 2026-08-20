@@ -35,7 +35,7 @@ export async function login(): Promise<MailAccount> {
   }
 
   // replaces placeholders, logs in, fetches, and adds to `appGlobal.emailAccounts`
-  saveAndInitConfig(mail, oAuth2.account.username, null);
+  await saveAndInitConfig(mail, oAuth2.account.username, null);
 
   /*
   appGlobal.addressbooks.add(new JMAPAddressbook());

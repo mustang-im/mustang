@@ -6,8 +6,8 @@
   style="--account-color: {$message.folder.account.color};"
   on:contextmenu={contextMenu.onContextMenu}
   on:click
-  on:swiperight={deleteMessage}
-  on:swipeleft={markAsSpam}
+  on:swiperight={() => catchErrors(deleteMessage)}
+  on:swipeleft={() => catchErrors(markAsSpam)}
   bind:this={popupAnchor}
   >
   <hbox class="top-row">

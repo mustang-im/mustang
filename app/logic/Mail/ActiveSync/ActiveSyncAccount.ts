@@ -98,21 +98,23 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
 
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
+      try {
+        await super.startup();
 
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
+        // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+        if (!this.isDependentAccount) {
+          appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+        }
+
+        // ActiveSync doesn't have streaming notifications, instead it
+        // provides the Ping operation which will tell us when a pingable
+        // has gone out of sync. This only makes sense once the pingable
+        // is in sync, so each pingable registers with the account when
+        // it's ready to be specified in the Ping operation.
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-
-      // ActiveSync doesn't have streaming notifications, instead it
-      // provides the Ping operation which will tell us when a pingable
-      // has gone out of sync. This only makes sense once the pingable
-      // is in sync, so each pingable registers with the account when
-      // it's ready to be specified in the Ping operation.
-
-      await this.startupDependentAccounts();
     });
   }
 
@@ -229,7 +231,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       return deviceID;
     }
     let array = new Uint32Array(4);
-    window.crypto.getRandomValues(array);
+    crypto.getRandomValues(array);
     deviceID = Array.from(array, value => value.toString(16).padStart(8, "0")).join("");
     localStorage.setItem("active_sync.device_id", deviceID);
     return deviceID;

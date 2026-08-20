@@ -105,7 +105,7 @@ export class IMAPFolder extends Folder {
   protected async startIDLEonINBOX(conn: ImapFlow) {
     if (this != this.account.inbox &&
         this.account.getConnectionPurpose(conn) == ConnectionPurpose.Main) {
-      this.returnToInboxDebounce.debounce(async () => {
+      await this.returnToInboxDebounce.debounce(async () => {
         await this.account.startIDLE(conn)
       });
     }

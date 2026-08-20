@@ -58,13 +58,16 @@ export class GraphAccount extends ExchangeMailAccount {
 
   async startup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
-      let inbox = this.inbox as GraphFolder;
-      assert(inbox, "Inbox not found");
-      inbox.startPolling();
+      try {
+        await super.startup();
+        let inbox = this.inbox as GraphFolder;
+        assert(inbox, "Inbox not found");
+        inbox.startPolling();
 
-      await this.createDefaultDependentAccounts();
-      await this.startupDependentAccounts();
+        await this.createDefaultDependentAccounts();
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
+      }
     });
   }
 

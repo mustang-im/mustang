@@ -7,15 +7,26 @@
   {#if account instanceof IMAPAccount}
     <ServerIMAPAdvanced {account} />
   {/if}
+  {#if account instanceof EWSAccount && $account.authMethod == AuthMethod.NTLM}
+    <!-- Mobile has no Chromium network stack, so there is nothing to choose -->
+    // #if [!MOBILE]
+    <ServerEWSAdvanced {account} />
+    // #endif
+  {/if}
 </vbox>
 
 <script lang="ts">
   import type { Account } from "../../../../logic/Abstract/Account";
+  import { AuthMethod } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
+  import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../Manual/ManualConfig.svelte";
   import ServerIMAPAdvanced from "./ServerIMAPAdvanced.svelte";
+  // #if [!MOBILE]
+  import ServerEWSAdvanced from "./ServerEWSAdvanced.svelte";
+  // #endif
   import { t } from "../../../../l10n/l10n";
 
   export let account: Account;

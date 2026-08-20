@@ -79,12 +79,21 @@ export class PersonUID extends Observable {
 }
 
 const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
+/** Drops the cache entry once the `PersonUID` itself is gone.
+ * Otherwise we keep one dead entry per email address that we ever saw.
+ * @see Abstract/Attachment */
+const cachedPersonUIDsFinalizer = new FinalizationRegistry((key: string) => {
+  if (!cachedPersonUIDs.get(key)?.deref()) {
+    cachedPersonUIDs.delete(key);
+  }
+});
 
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
   if (!emailAddress && !realname) {
     return kDummyPerson;
   }
-  let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
+  let key = emailAddress + "|" + realname;
+  let cached = cachedPersonUIDs.get(key)?.deref();
   if (cached) {
     return cached;
   }
@@ -96,7 +105,8 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
   if (existing) {
     uid.person = existing;
   }
-  cachedPersonUIDs.set(emailAddress + "|" + realname, new WeakRef(uid));
+  cachedPersonUIDs.set(key, new WeakRef(uid));
+  cachedPersonUIDsFinalizer.register(uid, key);
   return uid;
 }
 
