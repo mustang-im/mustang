@@ -6,6 +6,7 @@ import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
 import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
+import { PKCS12 } from "./SMIME/PKCS12";
 import { readAutoCryptKeys } from "./PGP/AutoCrypt";
 import { EncryptionSystem } from "./enums";
 import type { EMail } from "../EMail";
@@ -70,6 +71,24 @@ export function getMyPrivateKey<T extends PublicKey & PrivateKey>(identity: Mail
   return (keys.find(key => key.encryptByDefault && key.useToSign) ??
     keys.find(key => key.useToSign) ??
     keys.first) as T | null;
+}
+
+/**
+ * Reads the key file that the user picked.
+ * .p12 files, also called .pfx, are binary and encrypted, so they are
+ * converted here into the PEM that `importPrivateKey()` reads.
+ * @returns the contents of the file, as PEM
+ */
+export async function readKeyFile(file: File, passphrase: string): Promise<string> {
+  let fileContents = new Uint8Array(await file.arrayBuffer());
+  // PEM and ASCII armor start with the "-----BEGIN " line,
+  // whereas a .p12 file starts with the ASN.1 tag for a sequence.
+  if (fileContents[0] != 0x30) {
+    return new TextDecoder().decode(fileContents);
+  }
+  let p12 = new PKCS12(passphrase);
+  await p12.read(fileContents);
+  return await p12.toPEM();
 }
 
 export async function importPrivateKey(fileContent: string, passphrase: string): Promise<PublicKey & PrivateKey> {

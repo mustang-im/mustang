@@ -47,16 +47,31 @@ const oids = {
   "1.2.840.113549.1.7.1": "data",
   "1.2.840.113549.1.7.2": "signedData",
   "1.2.840.113549.1.7.3": "envelopedData",
+  "1.2.840.113549.1.7.6": "encryptedData",
   "1.2.840.113549.1.9.1": "E", // emailAddress
   "1.2.840.113549.1.9.3": "contentType",
   "1.2.840.113549.1.9.4": "messageDigest",
   "1.2.840.113549.1.9.5": "signingTime",
   "1.2.840.113549.1.9.15": "smimeCapabilities",
   "1.2.840.113549.1.9.16.1.23": "authEnvelopedData",
+  "1.2.840.113549.1.9.22.1": "x509Certificate",
+  "1.2.840.113549.1.12.1.1": "pbeWithSHAAnd128BitRC4",
+  "1.2.840.113549.1.12.1.2": "pbeWithSHAAnd40BitRC4",
+  "1.2.840.113549.1.12.1.3": "pbeWithSHAAnd3KeyTripleDESCBC",
+  "1.2.840.113549.1.12.1.4": "pbeWithSHAAnd2KeyTripleDESCBC",
+  "1.2.840.113549.1.12.1.5": "pbeWithSHAAnd128BitRC2CBC",
+  "1.2.840.113549.1.12.1.6": "pbeWithSHAAnd40BitRC2CBC",
+  "1.2.840.113549.1.12.10.1.1": "keyBag",
+  "1.2.840.113549.1.12.10.1.2": "pkcs8ShroudedKeyBag",
+  "1.2.840.113549.1.12.10.1.3": "certBag",
+  "1.2.840.113549.1.12.10.1.4": "crlBag",
+  "1.2.840.113549.1.12.10.1.5": "secretBag",
+  "1.2.840.113549.1.12.10.1.6": "safeContentsBag",
   "1.2.840.113549.2.7": "hmacWithSHA1",
   "1.2.840.113549.2.9": "hmacWithSHA256",
   "1.2.840.113549.2.10": "hmacWithSHA384",
   "1.2.840.113549.2.11": "hmacWithSHA512",
+  "1.2.840.113549.3.7": "desEDE3CBC",
   "1.3.6.1.5.5.7.3.4": "emailProtection",
   //"1.3.6.1.5.5.8.1.2": "hmacWithSHA1",
   "1.3.14.3.2.26": "sha1",
@@ -374,7 +389,8 @@ const RecipientInfo = define("RecipientInfo", function() {
   });
 });
 
-const Any = define("Any", function() {
+/** Raw DER, e.g. to keep bytes that we do not need to look into */
+export const Any = define<Uint8Array>("Any", function() {
   this.any();
 });
 
@@ -523,6 +539,72 @@ export const CertificationRequest = define("CertificationRequest", function() {
     this.key("certificationRequestInfo").use(CertificationRequestInfo),
     this.key("signatureAlgorithm").use(AlgorithmIdentifier),
     this.key("signature").bitstr(),
+  );
+});
+
+/* PKCS#12, RFC 7292 */
+
+/** The contents of a .p12 or .pfx file: private keys and certificates,
+ * protected by a passphrase. `macData` guards against tampering. */
+export const PFX = define("PFX", function() {
+  this.seq().obj(
+    this.key("version").int(),
+    this.key("authSafe").use(ContentInfo),
+    this.key("macData").optional().seq().obj(
+      this.key("mac").use(DigestInfo),
+      this.key("macSalt").octstr(),
+      this.key("iterations").def(1n).int(),
+    ),
+  );
+});
+
+/** The `authSafe` of a `PFX`, grouping the bags by how they are protected:
+ * either `data`, i.e. in the clear, or `encryptedData` */
+export const AuthenticatedSafe = define("AuthenticatedSafe", function() {
+  this.seqof(ContentInfo);
+});
+
+/** Content that is encrypted with a passphrase. RFC 5652 section 8 */
+export const EncryptedData = define("EncryptedData", function() {
+  this.seq().obj(
+    this.key("version").int(),
+    this.key("encryptedContentInfo").seq().obj(
+      this.key("contentType").objid(oids),
+      this.key("contentEncryptionAlgorithm").use(AlgorithmIdentifier),
+      this.key("encryptedContent").implicit(0).optional().octstr(),
+    ),
+  );
+});
+
+/** One private key, certificate or CRL, and how it is stored.
+ * `bagValue` depends on `bagId`, e.g. an `EncryptedPrivateKeyInfo`
+ * for a pkcs8ShroudedKeyBag, or a `CertBag` for a certBag. */
+const SafeBag = define("SafeBag", function() {
+  this.seq().obj(
+    this.key("bagId").objid(oids),
+    this.key("bagValue").explicit(0).any(),
+    // Only names and IDs, which we do not need
+    this.key("bagAttributes").optional().setof(Any),
+  );
+});
+
+export const SafeContents = define("SafeContents", function() {
+  this.seqof(SafeBag);
+});
+
+export const CertBag = define("CertBag", function() {
+  this.seq().obj(
+    this.key("certId").objid(oids),
+    this.key("certValue").explicit(0).octstr(),
+  );
+});
+
+/** Parameters of the password-based encryption algorithms
+ * that are specific to PKCS#12, e.g. pbeWithSHAAnd40BitRC2CBC */
+export const PBEParams = define("PBEParams", function() {
+  this.seq().obj(
+    this.key("salt").octstr(),
+    this.key("iterations").int(),
   );
 });
 
