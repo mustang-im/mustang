@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
-import { Attachment } from "../Abstract/Attachment";
+import { Attachment, type MessageWithAttachments } from "../Abstract/Attachment";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
@@ -535,6 +535,18 @@ export class Event extends Observable {
     for (let attachment of this.attachments) {
       await attachment.save();
     }
+  }
+
+  /** Copies the attachments of the `original` event or invitation email to this
+   * event, e.g. when accepting an invitation or moving the event to another calendar.
+   * `copyFrom()` merely shares the attachment objects, but they still belong
+   * to the `original` event and are saved in its calendar, not in ours. */
+  async adoptAttachmentsFrom(original: MessageWithAttachments) {
+    await original.loadAttachments?.();
+    this.attachments.replaceAll(original.attachments.contents
+      // Not the invitation iCal itself, signatures, or images inlined in the description
+      .filter(attachment => !attachment.hidden && !attachment.related)
+      .map(attachment => attachment.cloneTo(this)));
   }
 
   /** Fetches the attachment contents from the server.

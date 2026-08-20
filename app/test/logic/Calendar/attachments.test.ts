@@ -12,12 +12,16 @@ import { calendarDatabaseSchema } from "../../../logic/Calendar/SQL/createDataba
 import { addEventAttachmentTable } from "../../../logic/Calendar/SQL/SQLEventMigrate";
 import { getICal } from "../../../logic/Calendar/ICal/ICalGenerator";
 import { convertICalToEvent } from "../../../logic/Calendar/ICal/ICalToEvent";
+import { ICalEMailProcessor } from "../../../logic/Calendar/ICal/ICalEMailProcessor";
+import { Attachment } from "../../../logic/Abstract/Attachment";
+import type { EMail } from "../../../logic/Mail/EMail";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { mkdtempSync } from "node:fs";
 import fsPromises from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { beforeAll, expect, test } from "vitest";
+import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 let calendar: Calendar;
@@ -128,6 +132,56 @@ test("Attachments round-trip through iCal as inline BINARY", async () => {
   expect(read.filename).toBe("agenda.pdf");
   expect(read.mimeType).toBe("application/pdf");
   expect(new Uint8Array(await read.content.arrayBuffer())).toEqual(kContent);
+});
+
+/** An invitation email as Exchange sends it: the attachments are MIME parts
+ * of the email, and the iCal has no `ATTACH` at all. */
+async function newInvitationEMail(): Promise<EMail> {
+  let organizerEvent = newTestEvent("Kickoff");
+  organizerEvent.calUID = "kickoff@example.com";
+  organizerEvent.attachments.clear();
+  let ics = await getICal(organizerEvent, "REQUEST");
+
+  let email = { attachments: new ArrayColl<Attachment>(), hasHTML: false } as any as EMail;
+  let invitation = new Attachment();
+  invitation.filename = "invite.ics";
+  invitation.mimeType = "text/calendar";
+  invitation.content = new File([ics], invitation.filename, { type: invitation.mimeType });
+  let agenda = new Attachment();
+  agenda.filename = "agenda.pdf";
+  agenda.mimeType = "application/pdf";
+  agenda.content = new File([kContent as BlobPart], agenda.filename, { type: agenda.mimeType });
+  agenda.size = kContent.length;
+  email.attachments.addAll([invitation, agenda]);
+  return email;
+}
+
+test("Attachments of an invitation email become attachments of the event", async () => {
+  let email = await newInvitationEMail();
+  await new ICalEMailProcessor().process(email);
+
+  expect(email.event.attachments.length).toBe(1); // the .ics itself is not one
+  let attachment = email.event.attachments.first;
+  expect(attachment.filename).toBe("agenda.pdf");
+  expect(attachment.mimeType).toBe("application/pdf");
+  expect(new Uint8Array(await attachment.content.arrayBuffer())).toEqual(kContent);
+});
+
+test("Confirming an invitation saves its attachments in the calendar", async () => {
+  let email = await newInvitationEMail();
+  await new ICalEMailProcessor().process(email);
+
+  // What `ICalIncomingInvitation.respondToInvitationFromMail()` does
+  let event = calendar.newEvent();
+  event.copyFrom(email.event);
+  await event.adoptAttachmentsFrom(email.event);
+  await event.saveLocally();
+
+  expect(event.attachments.length).toBe(1);
+  let attachment = event.attachments.first;
+  expect(attachment.message).toBe(event); // and not the invitation event
+  expect(attachment.filepathLocal).toContain("/files/calendar/alice-example.com/");
+  expect(new Uint8Array(await fsPromises.readFile(attachment.filepathLocal))).toEqual(kContent);
 });
 
 test("Migration adds the attachment table to a pre-existing database", async () => {
