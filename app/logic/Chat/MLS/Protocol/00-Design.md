@@ -69,6 +69,15 @@ Never hand-roll a length prefix.
 | `MLSClient.ts` | our identity: signature key, credential, key packages, the groups |
 | `MLSStorage.ts` | the interface the app implements to persist group state |
 
+### Known gap
+
+RFC 9420 § 8.3 external initialization derives its secret through HPKE's
+**exporter** interface (`context.export("MLS 1.0 external init secret", Nh)`),
+not through `ExpandWithLabel`. `Crypto/HPKE.ts` currently omits the exporter
+secret, so `HPKE` needs `SetupBaseS`/`SetupBaseR` plus `export()` before
+external commits — and therefore group rejoin, which Wire relies on for
+recovery — can work.
+
 ## Module contract
 
 Only the parts that cross module boundaries are fixed here. Anything private is the
@@ -150,7 +159,10 @@ export interface CreatedUpdatePath {
 
 ```ts
 export class SecretTree {
-  constructor(suite: CipherSuite, leafCount: number, encryptionSecret: Uint8Array);
+  constructor(suite: CipherSuite, leafCount: number, encryptionSecret: Uint8Array,
+    senderDataSecret: Uint8Array);
+  /** RFC 9420 § 6.3.2. Samples the first KDF.Nh bytes of the ciphertext itself. */
+  senderDataKey(ciphertext: Uint8Array): MessageKey;
   /** Consumes the ratchet up to `generation`; keys are single use. */
   handshakeKey(leafIndex: number, generation: number): MessageKey;
   applicationKey(leafIndex: number, generation: number): MessageKey;
