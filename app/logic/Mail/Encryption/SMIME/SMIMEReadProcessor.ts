@@ -9,6 +9,7 @@ import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes } from "../MIME";
 import { assert } from "../../../util/util";
+import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import type { Email as PostalEmail } from "postal-mime";
 
@@ -44,7 +45,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let envelopedData = EnvelopedData.decode(blob, { berToDER: true });
-    if (!["aes128cbc", "aes192cbc", "aes256cbc"].includes(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm)) {
+    if (!sanitize.enum(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm, ["aes128cbc", "aes192cbc", "aes256cbc"], null)) {
       return;
     }
     let vector = OctetString.decode(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.parameters);
@@ -66,8 +67,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readAuthEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let authEnvelopedData = AuthEnvelopedData.decode(blob, { berToDER: true }).content;
-    if (!["aes128gcm", "aes192gcm", "aes256gcm"].includes(
-        authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm)) {
+    if (!sanitize.enum(authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm,
+        ["aes128gcm", "aes192gcm", "aes256gcm"], null)) {
       return;
     }
     let symmetricKey = await this.decryptSymmetricKey(email, authEnvelopedData.recipientInfos);

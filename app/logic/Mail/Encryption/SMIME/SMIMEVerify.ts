@@ -12,17 +12,19 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  *   or null, if the signature does not verify
  */
 export async function verifySignedData(signedData: any, content: Uint8Array): Promise<string | null> {
-  if (!signedData.content.certificates.length || !signedData.content.signerInfos.length) {
+  let certificates = sanitize.array(signedData.content.certificates, []);
+  let signerInfos = sanitize.array(signedData.content.signerInfos, []);
+  if (!certificates.length || !signerInfos.length) {
     console.log("signed data has no certificate and/or signature");
     return null;
   }
-  let signerInfo = signedData.content.signerInfos[0];
-  let cert = signedData.content.certificates[0];
+  let signerInfo = signerInfos[0];
+  let cert = certificates[0];
   if (signerInfo.sid?.type == "issuerAndSerialNumber") {
     let sid = signerInfo.sid.value;
     // Fall back to the first certificate, for messages that we signed
     // before, when the sid held the subject instead of the issuer.
-    cert = signedData.content.certificates.find(cert =>
+    cert = certificates.find(cert =>
       cert.tbsCertificate.serialNumber == sid.serialNumber &&
       sameName(sid.issuer, cert.tbsCertificate.issuer)) ?? cert;
   }
@@ -36,7 +38,7 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
   // should also accept e.g. sha256WithRSAEncryption, which some clients
   // write instead. Its hash must match the digest algorithm.
   if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption" &&
-      SignatureAlgorithm[signerInfo.signatureAlgorithm.algorithm] != digestAlgorithm) {
+      sanitize.translate(signerInfo.signatureAlgorithm.algorithm, SignatureAlgorithm, null) != digestAlgorithm) {
     console.log("signature was not signed with RSA");
     return null;
   }
@@ -74,7 +76,7 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     console.log("signature did not match the signed digest");
     return null;
   }
-  return rsa.n.toString(16).slice(-16);
+  return sanitize.bigint(rsa.n).toString(16).slice(-16);
 }
 
 /** Compares two X.501 names, e.g. certificate issuer and subject */
