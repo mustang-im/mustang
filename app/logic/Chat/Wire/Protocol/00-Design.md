@@ -171,6 +171,78 @@ export class WireEventStream {
 }
 ```
 
+## The MLS delivery service
+
+`WireMLSService` is the only place that knows both MLS and Wire. `MLSGroup` and
+`MLSClient` come from `Chat/MLS/` and never learn what a conversation is; the REST
+calls come from `WireAPI` and never learn what an epoch is.
+
+```ts
+export class WireMLSService {
+  constructor(account: WireAccount, api: WireAPI);
+  readonly client: MLSClient;
+
+  /** At login: register our signature key, then top the key packages back up. */
+  async setup(): Promise<void>;
+  /** Uploads new key packages when the server's count dropped below the mark. */
+  async replenishKeyPackages(): Promise<void>;
+
+  /** Creates the group for a conversation the server just minted for us. */
+  async createGroup(room: WireChatRoom, invite: WirePerson[]): Promise<void>;
+  /** Adds or removes members, as one commit, sent as a commit bundle. */
+  async addMembers(room: WireChatRoom, persons: WirePerson[]): Promise<void>;
+  async removeMembers(room: WireChatRoom, persons: WirePerson[]): Promise<void>;
+  /** An `update` commit that rotates our own leaf key. */
+  async rotateOurKey(room: WireChatRoom): Promise<void>;
+
+  async sendMessage(room: WireChatRoom, plaintext: Uint8Array): Promise<void>;
+  /** From a `conversation.mls-message-add` event. */
+  async processMessage(room: WireChatRoom, message: Uint8Array): Promise<ProcessResult>;
+  /** From a `conversation.mls-welcome` event. */
+  async processWelcome(welcome: Uint8Array): Promise<WireChatRoom>;
+  /** Recovery: rejoin a group whose epoch we lost, via GroupInfo + external commit. */
+  async rejoin(room: WireChatRoom): Promise<void>;
+  /** The MLS 1:1 group for a person, creating it if we are the one to create it. */
+  async oneToOneGroup(person: WirePerson): Promise<WireChatRoom>;
+}
+```
+
+Rules that the protocol documents call out and that this class must enforce, because
+getting them wrong fails silently:
+
+- Never merge our own commit before the delivery service answered `201` — a
+  concurrent commit would fork us unrecoverably.
+- Handshake messages go out as `PublicMessage`, application data as
+  `PrivateMessage`. A commit sent as a `PrivateMessage` is silently treated as the
+  bundle's application-message slot and the bundle is then rejected for a missing
+  commit.
+- The backend's removal key goes into `external_senders`, at index 0. Without it
+  server-side removals silently never happen.
+- The `ratchet_tree` extension must be in the GroupInfo, or external commits — and
+  with them all recovery — become impossible.
+- `mls_public_keys` must be registered on our client before any key package upload.
+- `capabilities.credentials` must not be empty, or every key package is rejected.
+- `group_id` is arbitrary bytes: base64 in JSON, length-prefixed inside MLS. Never
+  treat it as text.
+- `cipher_suite` is absent on a fresh conversation until epoch ≥ 1.
+- A stale-epoch or missing-reference error is a signal to rejoin, not to retry.
+
+## The chat object model
+
+| Wire concept | Our class |
+|---|---|
+| conversation, type 0 (group) | `WireGroupChatRoom` with a `Group` contact |
+| conversation, type 2 (1:1) | `Wire1to1ChatRoom` with a `WirePerson` contact |
+| conversation, type 3 (connect request) | `Wire1to1ChatRoom`, shown as a pending invite |
+| user | `WirePerson extends ChatPersonUID`, `chatID` = `<userID>@<domain>` |
+| `GenericMessage` with `text` | `WireChatMessage extends ChatMessage` |
+| `GenericMessage` with `asset` | `WireChatMessage` with an `Attachment` |
+| member join/leave, rename, call | `WireRoomEvent extends ChatRoomEvent` |
+
+The payload layer is shared: a `GenericMessage` is byte-identical whether it
+arrived over MLS or Proteus, so message handling is written once and only the
+transport differs.
+
 ## Persistence
 
 - Account-level state (base URL, API version, user ID, domain, client ID, the
