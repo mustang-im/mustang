@@ -69,15 +69,6 @@ Never hand-roll a length prefix.
 | `MLSClient.ts` | our identity: signature key, credential, key packages, the groups |
 | `MLSStorage.ts` | the interface the app implements to persist group state |
 
-### Known gap
-
-RFC 9420 § 8.3 external initialization derives its secret through HPKE's
-**exporter** interface (`context.export("MLS 1.0 external init secret", Nh)`),
-not through `ExpandWithLabel`. `Crypto/HPKE.ts` currently omits the exporter
-secret, so `HPKE` needs `SetupBaseS`/`SetupBaseR` plus `export()` before
-external commits — and therefore group rejoin, which Wire relies on for
-recovery — can work.
-
 ## Module contract
 
 Only the parts that cross module boundaries are fixed here. Anything private is the

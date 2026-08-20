@@ -6,7 +6,7 @@
  * `DeriveKeyPair` matters beyond HPKE itself: MLS derives every ratchet-tree
  * node key pair from a node secret with it (RFC 9420 § 7.4). */
 import { KDF } from "./KDF";
-import { utf8 } from "../util";
+import { MLSError, utf8 } from "../util";
 import { concatBytes, randomBytes } from "../../Signal/Crypto/primitives";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { p256, p384, p521 } from "@noble/curves/nist.js";
@@ -74,7 +74,10 @@ export abstract class KEM {
   }
 }
 
-/** DHKEM(X25519, HKDF-SHA256), RFC 9180 § 7.1. The KEM of MLS suites 1 and 3. */
+/** DHKEM(X25519, HKDF-SHA256), RFC 9180 § 7.1. The KEM of MLS suites 1 and 3.
+ * Its private key is an opaque byte string that @noble clamps, not a big-endian
+ * integer, so nobody strips its leading zeros and it never arrives short, unlike
+ * the NIST scalars below. */
 export class X25519KEM extends KEM {
   readonly id = 0x0020;
   readonly secretLength = 32;
@@ -145,12 +148,13 @@ export class NISTKEM extends KEM {
   }
 
   publicKeyFor(privateKey: Uint8Array): Uint8Array {
-    return this.curve.getPublicKey(privateKey, false);
+    return this.curve.getPublicKey(fullWidthScalar(privateKey, this.privateKeyLength), false);
   }
 
   /** RFC 9180 § 7.1: the DH output is the x coordinate only. */
   protected diffieHellman(privateKey: Uint8Array, publicKey: Uint8Array): Uint8Array {
-    let point = this.curve.Point.fromBytes(publicKey).multiply(bytesToNumberBE(privateKey));
+    let scalar = bytesToNumberBE(fullWidthScalar(privateKey, this.privateKeyLength));
+    let point = this.curve.Point.fromBytes(publicKey).multiply(scalar);
     return numberToBytesBE(point.toAffine().x, this.privateKeyLength);
   }
 }
@@ -161,3 +165,22 @@ export interface KeyPair {
 }
 
 const kHPKEVersion = utf8("HPKE-v1");
+
+/** MLS carries a private key as an opaque vector and never normalizes its
+ * length, so a peer that drops the leading zero bytes of a scalar sends a short
+ * key — the official P-521 vectors do exactly that — whereas @noble insists on
+ * the full field width. Only the NIST curves are affected: X25519 and Ed25519
+ * private keys are opaque byte strings, not integers.
+ * @param width `Nsk`, the full width of a scalar of that curve
+ * @throws `MLSError` if the key is too long to be one */
+export function fullWidthScalar(privateKey: Uint8Array, width: number): Uint8Array {
+  if (privateKey.length == width) {
+    return privateKey;
+  }
+  if (privateKey.length > width) {
+    throw new MLSError(`Private key of ${privateKey.length} bytes, expected ${width}`);
+  }
+  let padded = new Uint8Array(width);
+  padded.set(privateKey, width - privateKey.length);
+  return padded;
+}

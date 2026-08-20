@@ -6,7 +6,7 @@
  * Encoding follows RFC 8446: EdDSA signatures are R || S, ECDSA signatures are
  * DER. ECDSA here must accept high-S signatures, which other MLS
  * implementations produce and TLS does not forbid. */
-import type { KeyPair } from "./KEM";
+import { fullWidthScalar, type KeyPair } from "./KEM";
 import { p256, p384, p521 } from "@noble/curves/nist.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
 
@@ -22,6 +22,9 @@ export abstract class SignatureScheme {
   abstract verify(publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array): boolean;
 }
 
+/** EdDSA over Curve25519. Its private key is a seed, not a scalar, so no
+ * implementation strips leading zero bytes off it and a key of any other length
+ * is simply invalid — unlike the ECDSA scalars below. */
 export class Ed25519Signature extends SignatureScheme {
   readonly id = 0x0807;
   readonly publicKeyLength = 32;
@@ -54,6 +57,8 @@ export class Ed25519Signature extends SignatureScheme {
 export class ECDSASignature extends SignatureScheme {
   readonly id: number;
   readonly publicKeyLength: number;
+  /** `Nsk`: the full width of the private scalar, = the coordinate length */
+  readonly privateKeyLength: number;
   protected readonly curve: typeof p256;
 
   protected constructor(id: number, curve: typeof p256, coordinateLength: number) {
@@ -61,6 +66,7 @@ export class ECDSASignature extends SignatureScheme {
     this.id = id;
     this.curve = curve;
     this.publicKeyLength = 1 + 2 * coordinateLength;
+    this.privateKeyLength = coordinateLength;
   }
 
   static readonly p256 = new ECDSASignature(0x0403, p256, 32);
@@ -73,11 +79,12 @@ export class ECDSASignature extends SignatureScheme {
   }
 
   publicKeyFor(privateKey: Uint8Array): Uint8Array {
-    return this.curve.getPublicKey(privateKey, false);
+    return this.curve.getPublicKey(fullWidthScalar(privateKey, this.privateKeyLength), false);
   }
 
   sign(privateKey: Uint8Array, message: Uint8Array): Uint8Array {
-    return this.curve.sign(message, privateKey, { format: "der", lowS: false });
+    return this.curve.sign(message, fullWidthScalar(privateKey, this.privateKeyLength),
+      { format: "der", lowS: false });
   }
 
   verify(publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array): boolean {
