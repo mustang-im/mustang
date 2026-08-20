@@ -174,7 +174,7 @@ Worked example (a real-looking id):
 fb880fac-b549-4d8b-9398-4246324c7b85:67f41928e2844b6c@staging.zinfra.io
 ```
 
-62 bytes of ASCII. Serialised inside a Credential this becomes:
+71 bytes of ASCII (36 + 1 + 16 + 1 + 17). Serialised inside a Credential this becomes:
 
 ```
 00 01                                   credential_type = basic (1)
@@ -508,11 +508,11 @@ struct { SignaturePublicKey signature_key; Credential credential; } ExternalSend
 struct { ExternalSender external_senders<V>; } external_senders;   // extension_type 0x0002? NO — see below
 ```
 
-Extension type for `external_senders` is **`0x0004`** in the IANA registry (`ratchet_tree` is
-`0x0002` — confirmed for Wire at
-`wire-server/libs/wire-api/src/Wire/API/MLS/RatchetTree.hs:30-31`). **UNVERIFIED in these repos**:
-neither wire-server nor core-crypto spells the numeric `external_senders` extension id out; both go
-through openmls' `Extension::ExternalSenders`. Use the RFC 9420 value `0x0004`.
+Extension type for `external_senders` is **`0x0005`** (`ratchet_tree` is `0x0002` — confirmed for
+Wire at `wire-server/libs/wire-api/src/Wire/API/MLS/RatchetTree.hs:30-31`). Neither wire-server nor
+core-crypto spells the numeric id out; both go through openmls' `Extension::ExternalSenders`. The
+value is RFC 9420 § 17.3, where `0x0004` is `external_pub` and `0x0005` is `external_senders` — an
+earlier draft of this document said `0x0004`, which is wrong.
 
 The single entry Wire builds is (`core-crypto/crypto/src/mls/external_sender.rs:30-49`):
 
