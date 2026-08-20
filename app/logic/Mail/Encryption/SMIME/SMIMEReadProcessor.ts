@@ -7,7 +7,7 @@ import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString
 import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
-import { parseMIMEDirectSubpartsBytes } from "../MIME";
+import { parseMIMEDirectSubpartsBytes, parseHeaderParameters } from "../MIME";
 import { assert } from "../../../util/util";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -20,13 +20,18 @@ export class SMIMEReadProcessor extends EMailProcessor {
     // itself, but we don't have that here. And to get the headers in the
     // EMail object requires an extra parse, which seems wasteful. So
     // let's fish the header out of the PostalEmail object...
-    let contentTypeHeader = postal.headers.find(header => header.key == "content-type")?.value ?? "";
-    let contentType = contentTypeHeader.split(";")[0].trim().toLowerCase();
+    let contentTypeHeader = sanitize.string(postal.headers.find(header => header.key == "content-type")?.value, "");
+    let contentType = parseHeaderParameters(contentTypeHeader).$main;
     if (contentType == "application/pkcs7-mime" ||
         contentType == "application/x-pkcs7-mime") { // legacy type name, used by Outlook
       // The whole message is a CMS blob. It's the only body part, but fsr
       // this is an attachment.
-      let blob = new Uint8Array(await email.attachments.first.content.arrayBuffer());
+      let cms = email.attachments.first?.content;
+      if (!cms) {
+        console.warn("pkcs7-mime message has no content");
+        return;
+      }
+      let blob = new Uint8Array(await cms.arrayBuffer());
       let type = ContentInfo.decode(blob, { berToDER: true }).contentType;
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
@@ -148,6 +153,10 @@ export class SMIMEReadProcessor extends EMailProcessor {
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
     let signatureBase64 = new TextDecoder().decode(signature).split("\r\n\r\n")[1];
+    if (!signatureBase64) {
+      console.warn("signature part has no content");
+      return;
+    }
     let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
     let signer = await verifySignedData(signedData, clearText);
     if (signer) {
