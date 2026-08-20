@@ -76,11 +76,15 @@ export class Attachment extends Observable {
     this.disposition = ContentDisposition.attachment;
   }
 
+  /** Creates a copy that belongs to the email, chat message or event `to`.
+   * The copy isn't saved yet, so it must not point to the original's
+   * file on disk nor to its attachment on the server. */
   cloneTo(to: MessageWithAttachments): Attachment {
     let clone = to.newAttachment();
-    Object.assign(clone, this);
+    let { message, storage, storageRunOnce } = clone;
+    Object.assign(clone, this, { message, storage, storageRunOnce, filepathLocal: null, pID: null, _blobURL: null });
     if (this.content) {
-      clone.content = new File([this.content], this.content.name);
+      clone.content = new File([this.content], this.filename, { type: this.mimeType });
     }
     return clone;
   }
