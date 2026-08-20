@@ -1,5 +1,6 @@
 import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
+import { StreetAddress } from '../Contacts/StreetAddress';
 import type { PublicKey } from '../Mail/Encryption/PublicKey';
 import { publicKeyFromJSON } from '../Mail/Encryption/KeyFromJSON';
 import { notifyChangedProperty, Observable } from '../util/Observable';
@@ -231,6 +232,30 @@ export class Person extends ContactBase {
       }
     }
   }
+
+  /** The contact information as human-readable text, e.g. for the clipboard.
+   * The notes are left out, because they are private remarks about the person. */
+  toPlaintext(): string {
+    let sections = [
+      [this.name, this.position, this.department, this.company].filter(line => line).join("\n"),
+      this.contactEntriesToPlaintext(gt`Mail`, this.emailAddresses),
+      this.contactEntriesToPlaintext(gt`Chat`, this.chatAccounts),
+      this.contactEntriesToPlaintext(gt`Phone numbers`, this.phoneNumbers),
+      this.contactEntriesToPlaintext(gt`Street address`, this.streetAddresses,
+        value => new StreetAddress(value).toPlaintext()),
+      this.contactEntriesToPlaintext(gt`Website`, this.urls),
+      this.contactEntriesToPlaintext(gt`Groups`, this.groups),
+    ];
+    return sections.filter(section => section).join("\n\n") + "\n";
+  }
+
+  protected contactEntriesToPlaintext(headerName: string, entries: ArrayColl<ContactEntry>, valueToPlaintext = (value: string) => value): string {
+    if (entries.isEmpty) {
+      return "";
+    }
+    let lines = entries.contents.map(entry => entry.toPlaintext(valueToPlaintext(entry.value)));
+    return [headerName, ...lines].join("\n");
+  }
 }
 
 export class ContactEntry extends Observable {
@@ -257,6 +282,16 @@ export class ContactEntry extends Observable {
 
   clone(): ContactEntry {
     return new ContactEntry(this.value, this.purpose, this.protocol, this.preference);
+  }
+
+  /** This entry as human-readable text, e.g. "Work: joe@example.com"
+   * @param value The value as text, in case it needs conversion, e.g. street addresses */
+  toPlaintext(value = this.value): string {
+    if (!this.purpose) {
+      return value;
+    }
+    // Multi-line values, e.g. street addresses, start on their own line
+    return this.purposeLabel + (value.includes("\n") ? ":\n" : ": ") + value;
   }
 
   /** The purpose, translated for the user, e.g. "Work" */

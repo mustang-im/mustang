@@ -33,6 +33,16 @@ export class StreetAddress extends Observable {
     this.fromJSON(JSON.parse(val));
   }
 
+  /** The address as human-readable text, as it would be written on an envelope */
+  toPlaintext(): string {
+    let cityLine = [
+      [this.postalCode, this.city].filter(part => part).join(" "),
+      this.state,
+    ].filter(part => part).join(", ");
+    return [this.instructions, this.street, cityLine, this.country]
+      .filter(line => line).join("\n");
+  }
+
   fromJSON(json: any) {
     this.instructions = sanitize.string(json.instructions, null) ?? null;
     this.street = sanitize.string(json.street, null) ?? null;
