@@ -38,6 +38,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import type { DateInterval } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
@@ -50,7 +51,7 @@
   export let events: Collection<Event>;
   /** UI elements that appear in the event slots. Optional */
   export let overlayEvents: Collection<Event> | null = null;
-  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  export let showDays: DateInterval; // If you add new options, adapt styles below
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
@@ -85,7 +86,7 @@
   let days: Date[] = [];
   let visibleEvents: Collection<Event>;
   let allDayEvents: Collection<Event>;
-  $: start, setDays();
+  $: start, showDays, setDays();
   function setDays() {
     let startTime = new Date(start);
     if (showDays > 3) {
@@ -105,13 +106,14 @@
   }
 
   function onNextDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
+    // Week views snap to Monday, so page whole weeks
+    let pageDays = showDays > 3 ? 7 : 1;
     start.setDate(start.getDate() + pageDays);
     start = start;
   }
 
   function onPreviousDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
+    let pageDays = showDays > 3 ? 7 : 1;
     start.setDate(start.getDate() - pageDays);
     start = start;
   }
@@ -133,11 +135,14 @@
   .week.enlargeSelectedDay[columns="2"] {
     grid-template-columns: max-content 3fr 1fr;
   }
+  .week[columns="5"] {
+    grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr;
+  }
   .week[columns="7"] {
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   }
   .week.enlargeSelectedDay[columns="7"] {
-    /* TODO */
+    /* TODO Show only the selected day a little wider */
   }
   .header {
     position: sticky;

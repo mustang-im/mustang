@@ -7,6 +7,6 @@ export let selectedCalendar = writable<Calendar | null>(null);
 export let selectedEvent: Writable<Event> = writable(null);
 
 export let selectedDate = writable(new Date());
-export type DateInterval = 0 | 1 | 2 | 7 | 31 | 28;
+export type DateInterval = 0 | 1 | 2 | 5 | 7 | 31 | 28;
 export let selectedDateInterval = writable(2 as DateInterval);
 export let startDate = writable(new Date());

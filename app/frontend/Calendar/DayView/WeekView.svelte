@@ -3,7 +3,7 @@
     <slot name="top-left" />
     <hbox flex />
     <slot name="top-center">
-      <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
+      <DateRange bind:date={start} dateInterval={showDays > 3 ? 7 : 1} />
       <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} onClick={goToToday} iconSize="16px" plain iconOnly />
     </slot>
     <slot name="top-center" />
@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { setNewEventTime } from "../event";
-  import { selectedCalendar } from "../selected";
+  import { selectedCalendar, type DateInterval } from "../selected";
   import { openEvent } from "../open";
   import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
@@ -31,7 +31,7 @@
 
   export let start: Date;
   export let events: Collection<Event>;
-  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  export let showDays: DateInterval;
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;

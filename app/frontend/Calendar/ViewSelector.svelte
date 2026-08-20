@@ -16,13 +16,15 @@
   import type { DateInterval } from "./selected";
   import { t } from "../../l10n/l10n";
 
-  export let dateInterval: DateInterval = 7; /* in/out */
+  export let dateInterval: DateInterval; /* in/out */
 
   function dateIntervalLabel(interval: DateInterval) {
     if (interval == 0) {
       return $t`List`;
     } else if (interval == 1) {
       return $t`Day`;
+    } else if (interval == 5) {
+      return $t`Weekdays`;
     } else if (interval == 7) {
       return $t`Week`;
     } else if (interval == 31) {
@@ -40,6 +42,7 @@
   $: dateInterval = parseInt(dateIntervalSelected) as DateInterval;
   const dateIntervalOptions = [
     { value: "1", label: dateIntervalLabel(1) },
+    { value: "5", label: dateIntervalLabel(5) },
     { value: "7", label: dateIntervalLabel(7) },
     { value: "2", label: dateIntervalLabel(2) },
     { value: "28", label: dateIntervalLabel(28) },
