@@ -1,8 +1,20 @@
 <GroupBox classes="person" headerName="">
   <hbox flex class="main-left" slot="content" language={getUILocale()}>
     <hbox flex>
-      {#if person.picture}
-        <PersonPicture {person} size={64} placeholder="empty" />
+      {#if $person.picture}
+        <vbox class="picture">
+          <PersonPicture {person} size={96} placeholder="empty" />
+          {#if isEditing}
+            <hbox class="picture-buttons">
+              <Button
+                label={$t`Delete picture`}
+                onClick={deletePicture}
+                icon={DeleteIcon}
+                iconOnly plain classes="delete-picture" />
+              <SetPictureButton {person} />
+            </hbox>
+          {/if}
+        </vbox>
       {:else}
         <hbox class="no-avatar" />
       {/if}
@@ -16,6 +28,9 @@
         </hbox>
         {#if isEditing}
           <hbox class="two-fields">
+            {#if !$person.picture}
+              <SetPictureButton {person} />
+            {/if}
             <hbox class="names firstname">
               <EditableSimpleText
                 bind:value={person.firstName}
@@ -103,10 +118,13 @@
   import GroupBox from "./GroupBox.svelte";
   import PersonMenu from "./PersonMenu.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
+  import SetPictureButton from "./SetPictureButton.svelte";
   import AddressbookChanger from "../AddressbookChanger.svelte";
+  import Button from "../../Shared/Button.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import SaveIcon from "lucide-svelte/icons/save";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { showError } from "../../Util/error";
   import { getUILocale, t } from "../../../l10n/l10n";
 
@@ -123,6 +141,11 @@
       showError(ex);
     }
   }
+
+  async function deletePicture() {
+    person.picture = null;
+    await person.save();
+  }
 </script>
 
 <style>
@@ -136,8 +159,34 @@
     margin-block-start: 4px;
     margin-block-end: 16px;
   }
+  .picture {
+    align-self: start;
+    align-items: end; /* Below the avatar, at its right */
+    margin-inline-end: 16px;
+  }
+  .picture-buttons {
+    gap: 4px;
+    margin-block-start: 2px;
+  }
+  .picture-buttons :global(button) {
+    min-width: 0px;
+    margin-block-start: 4px;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 1000px;
+    background-color: var(--main-bg);
+  }
   .no-avatar {
-    width: 6px;
+    width: 16px; /* Room for the `SetPictureButton`, also outside of edit mode */
+  }
+  .two-fields :global(button.set-picture) {
+    align-self: center;
+    flex-shrink: 0; /* The name fields next to it are `width: 100%` */
+    min-width: 0px;
+    padding: 0px;
+    margin-block-start: 9px; /* Same as the input, so that both are centered alike */
+    margin-inline-start: -24px; /* Align with the icon of the mail group below */
+    margin-inline-end: 8px;
   }
   .name,
   .name :global(input) {
