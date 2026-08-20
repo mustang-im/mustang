@@ -816,6 +816,7 @@ export class Event extends Observable {
     }
     newEvent.copyFrom(this);
     newEvent.calendar = newCalendar;
+    await newEvent.adoptAttachmentsFrom(this);
 
     // Replace organizer with email matching the new calendar
     let organizer = newEvent.participants.find(p => p.response == InvitationResponse.Organizer);
