@@ -3,6 +3,12 @@
   <vbox class="content">
     <InvitationDisplay {event} />
 
+    {#if $attachments.hasItems}
+      <vbox class="attachments">
+        <Attachments {attachments} />
+      </vbox>
+    {/if}
+
     {#if $event.isCancelled }
       <hbox class="cancelled-text">
         {$t`This meeting has been cancelled by the organizer. You may delete it.`}
@@ -22,6 +28,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import InvitationButtons from "./InvitationButtons.svelte";
+  import Attachments from "../../Mail/Message/AttachmentsUI.svelte";
   import DialogHeader from "../DisplayEvent/DialogHeader.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import Paper from "../../Shared/Paper.svelte";
@@ -30,6 +37,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+
+  $: attachments = $event.attachments;
 
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>
@@ -41,6 +50,9 @@
   .content {
     padding: 24px 32px;
     margin-block-end: 32px;
+  }
+  .attachments {
+    margin-block-end: 16px;
   }
   .cancelled-text {
     flex-wrap: wrap;
