@@ -3,7 +3,7 @@ import { WireAPI } from "../../../../logic/Chat/Wire/WireAPI";
 import { AssetRemoteData } from "../../../../logic/Chat/Wire/Proto/messages";
 import type { Asset } from "../../../../logic/Chat/Wire/Proto/messages";
 import type { TWireUser } from "../../../../logic/Chat/Wire/TWire";
-import { encode } from "../../../../logic/Chat/Signal/Proto/codec";
+import { decode, encode } from "../../../../logic/Chat/Signal/Proto/codec";
 import { Attachment, type MessageWithAttachments } from "../../../../logic/Abstract/Attachment";
 import { aesCBCDecrypt, bytesEqual, randomBytes, sha256 } from "../../../../logic/Chat/Signal/Crypto/primitives";
 import { ArrayColl } from "svelte-collections";
@@ -186,7 +186,7 @@ test("the upload response maps onto RemoteData", async () => {
   expect(bytesEqual(remote.sha256, sha256(assetBytes(transport.body, transport.contentType)))).toBe(true);
   expect(new TextDecoder().decode(transport.body)).toContain('"retention":"eternal-infrequent_access"');
   // A public asset must not emit `asset_token`, field 5
-  expect([...encode(AssetRemoteData, remote)].includes(0x2A)).toBe(false);
+  expect(decode(AssetRemoteData, encode(AssetRemoteData, remote)).assetToken).toBe(undefined);
 
   expect(bytesEqual(await media.download(remote), plaintext)).toBe(true);
   expect(transport.downloads).toEqual([
@@ -200,7 +200,7 @@ test("a token is sent only when the message carried one", async () => {
   let remote = await media.upload(new TextEncoder().encode("secret"), "volatile");
 
   expect(remote.assetToken).toBe("aGVsbG8");
-  expect([...encode(AssetRemoteData, remote)].includes(0x2A)).toBe(true);
+  expect(decode(AssetRemoteData, encode(AssetRemoteData, remote)).assetToken).toBe("aGVsbG8");
   await media.download(remote);
   expect(transport.downloads[0].query).toEqual({ asset_token: "aGVsbG8" });
 });
