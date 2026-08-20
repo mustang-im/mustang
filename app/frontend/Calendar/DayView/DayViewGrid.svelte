@@ -89,7 +89,7 @@
   function setDays() {
     let startTime = new Date(start);
     if (showDays > 3) {
-      startTime.setDate(startTime.getDate() - 1);
+      startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
     }
     startTime.setHours(startHour, 0, 0, 0);
     let filterStart = new Date(startTime);
@@ -137,7 +137,7 @@
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   }
   .week.enlargeSelectedDay[columns="7"] {
-    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
+    /* TODO */
   }
   .header {
     position: sticky;
