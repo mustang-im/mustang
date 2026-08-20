@@ -76,6 +76,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     email.event.copyFrom(repliedEvent);
     // Only myself in reply: RFC 5546 3.2.3
     email.event.participants.replaceAll([myParticipant]);
+    email.event.attachments.clear();
     if (email.event.descriptionText) {
       email.text = email.event.descriptionText;
       email.html = email.event.descriptionHTML;
