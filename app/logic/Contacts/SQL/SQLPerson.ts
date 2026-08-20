@@ -110,7 +110,7 @@ export class SQLPerson {
     person.name = sanitize.label(row.name);
     person.firstName = sanitize.label(row.firstName, null);
     person.lastName = sanitize.string(row.lastName, null);
-    person.picture = sanitize.url(row.picture, null);
+    person.picture = sanitize.url(row.picture, null, ["https", "http", "data"]);
     person.notes = sanitize.string(row.notes, null);
     person.popularity = sanitize.integer(row.popularity, null);
     person.id = sanitize.string(row.pID, randomID());
