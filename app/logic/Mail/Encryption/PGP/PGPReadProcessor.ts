@@ -7,6 +7,7 @@ import { EncryptionSystem } from "../enums";
 import { parseMIMEDirectSubparts, parseHeaderParameters, toCRLF } from "../MIME";
 import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import type { PersonUID } from "../../../Abstract/PersonUID";
+import type { Attachment } from "../../../Abstract/Attachment";
 import { k1HourMS } from "../../../../frontend/Util/date";
 import { assert } from "../../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -25,9 +26,9 @@ const isLogging = true;
 export class PGPReadProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   async process(email: EMail, mime: MIME) {
-    let encrypted = email.attachments.find(a => a.mimeType == "application/pgp-encrypted")?.content &&
-      email.attachments.find(a => a.mimeType == "application/octet-stream")?.content;
-    let detachedSignaturePart = email.attachments.find(a => a.mimeType == "application/pgp-signature");
+    let encrypted = attachmentOfType(email, "application/pgp-encrypted")?.content &&
+      attachmentOfType(email, "application/octet-stream")?.content;
+    let detachedSignaturePart = attachmentOfType(email, "application/pgp-signature");
     let detachedSignature = detachedSignaturePart?.content;
     if (!encrypted && !detachedSignature) {
       return;
@@ -170,12 +171,18 @@ export class PGPReadProcessor extends EMailProcessor {
   }
 }
 
+/** @param mimeType must be lowercase. MIME types are case-insensitive,
+ * RFC 2045 section 5.1 */
+function attachmentOfType(email: EMail, mimeType: string): Attachment | undefined {
+  return email.attachments.find(a => a.mimeType.toLowerCase() == mimeType);
+}
+
 function getSignedCleartext(email: EMail): string {
   assert(email.headers.length > 0, "parseHeaders first");
   let contentType = email.headers.get("content-type");
   let parameters = parseHeaderParameters(contentType);
   assert(parameters.$main == "multipart/signed", "Signature must be the main content of the email, not nested");
-  assert(parameters.protocol == "application/pgp-signature", "PGP signature must be at the top level");
+  assert(parameters.protocol?.toLowerCase() == "application/pgp-signature", "PGP signature must be at the top level");
   let parts = parseMIMEDirectSubparts(email.mime, contentType);
   assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
   return parts[0];

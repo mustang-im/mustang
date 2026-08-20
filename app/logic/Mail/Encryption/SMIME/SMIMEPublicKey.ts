@@ -27,8 +27,7 @@ export class SMIMEPublicKey extends PublicKey {
 
   get commonName(): string {
     let cert = Certificate.decodePEM(this.publicKeyArmored, { label: "Certificate" });
-    let cn = cert.tbsCertificate.subject.find(attr => attr.type == "CN");
-    return cn?.value?.value ?? "";
+    return certificateCommonName(cert) ?? "";
   }
 
   async matches(key: RSAPublicKey, _default: boolean): Promise<boolean> {
@@ -47,7 +46,7 @@ export class SMIMEPublicKey extends PublicKey {
     let cert = Certificate.decodePEM(certificate, { label });
     let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
     if (!this.id) {
-      let id = rsa.n.toString(16);
+      let id = sanitize.bigint(rsa.n).toString(16);
       this.id = id.slice(-16);
       this.keyLengthInBits = id.length * 4;
     }
@@ -58,10 +57,10 @@ export class SMIMEPublicKey extends PublicKey {
     let hash = new Uint8Array(await crypto.subtle.digest("SHA-256", Certificate.encode(cert)));
     this.fingerprint = Uint8ArrayToHex(hash);
     let { notBefore, notAfter } = cert.tbsCertificate.validity;
-    this.created = new Date(notBefore.value);
-    this.expires = new Date(notAfter.value);
+    this.created = sanitize.date(notBefore.value);
+    this.expires = sanitize.date(notAfter.value);
     let now = Date.now();
-    this.obsolete = now < notBefore.value || now > notAfter.value;
+    this.obsolete = now < this.created.getTime() || now > this.expires.getTime();
   }
 
   async addCertificate(certificate: string, label: string) {
@@ -119,8 +118,7 @@ export class SMIMEPublicKey extends PublicKey {
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
           if (trustOrder(this.trustLevel) < trustOrder(caTrust)) {
             this.trustLevel = caTrust;
-            let cn = ca.tbsCertificate.subject.find(attr => attr.type == "CN");
-            this.caName = cn?.value?.value ?? null;
+            this.caName = certificateCommonName(ca);
           }
           return KeyStatus.Valid;
         }
@@ -170,7 +168,8 @@ function certificateEMailAddresses(cert: Certificate): string[] {
     try {
       let emailAddresses = SubjectAlternativeName.decode(san.extnValue)
         .filter(entry => entry.type == "rfc822Name")
-        .map(entry => entry.value);
+        .map(entry => sanitize.emailAddress(entry.value, null))
+        .filter(Boolean);
       if (emailAddresses.length) {
         return emailAddresses;
       }
@@ -180,7 +179,14 @@ function certificateEMailAddresses(cert: Certificate): string[] {
     }
   }
   let email = cert.tbsCertificate.subject.find(attr => attr.type == "E");
-  return email ? [email.value.value] : [];
+  let emailAddress = sanitize.emailAddress(email?.value?.value, null);
+  return emailAddress ? [emailAddress] : [];
+}
+
+/** The name of the person or organisation that the certificate was issued to */
+function certificateCommonName(cert: Certificate): string | null {
+  let cn = cert.tbsCertificate.subject.find(attr => attr.type == "CN");
+  return sanitize.label(cn?.value?.value, null);
 }
 
 async function verifySignature(cert: Certificate, signer: Certificate): Promise<boolean> {

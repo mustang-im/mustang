@@ -36,9 +36,22 @@
       {/if}
     </hbox>
   </hbox>
-  <vbox class="avatar-row" class:has-avatar={person.picture}>
-    {#if person.picture || isEditing}
-      <PersonPicture {person} size={person.picture ? 64 : 32} placeholder="icon" />
+  <vbox class="avatar-row" class:has-avatar={$person.picture}>
+    {#if $person.picture || isEditing}
+      <PersonPicture {person} size={$person.picture ? 64 : 32} placeholder="icon" />
+    {/if}
+    {#if isEditing}
+      <hbox class="picture-buttons">
+        {#if $person.picture}
+          <Button
+            label={$t`Delete picture`}
+            onClick={deletePicture}
+            icon={DeleteIcon}
+            iconSize="20px"
+            iconOnly plain classes="delete-picture" />
+        {/if}
+        <SetPictureButton {person} iconSize="20px" />
+      </hbox>
     {/if}
   </vbox>
   <vbox class="main-info" flex>
@@ -103,6 +116,7 @@
   import CallButtons from "./CallButtons.svelte";
   import EditableSimpleText from "./EditableSimpleText.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
+  import SetPictureButton from "./SetPictureButton.svelte";
   import CompanyBox from "./CompanyBox.svelte";
   import AddressbookChanger from "../AddressbookChanger.svelte";
   import ExpanderButtons from "../../Shared/ExpanderButtons.svelte";
@@ -113,6 +127,7 @@
   import AddressbookIcon from "lucide-svelte/icons/book-user";
   import CompanyIcon from "lucide-svelte/icons/building-2";
   import BackIcon from "lucide-svelte/icons/chevron-left";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { showError } from "../../Util/error";
   import { getUILocale, t } from "../../../l10n/l10n";
   import Button from "../../Shared/Button.svelte";
@@ -141,6 +156,11 @@
     } catch (ex) {
       showError(ex);
     }
+  }
+
+  async function deletePicture() {
+    person.picture = null;
+    await person.save();
   }
 </script>
 
@@ -191,6 +211,16 @@
   }
   .avatar-row.has-avatar {
     margin-block-start: -12px;
+  }
+  .picture-buttons {
+    gap: 12px; /* Far enough apart for fingers */
+    margin-block-start: 8px;
+  }
+  .picture-buttons :global(button) {
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 1000px;
+    background-color: var(--main-bg);
   }
   .main-info {
     justify-content: center;

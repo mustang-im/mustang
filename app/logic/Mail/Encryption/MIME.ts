@@ -8,6 +8,7 @@ import { assert } from "../../util/util";
  * - Quotes are removed
  * - Newlines and indentions are removed without spaces
  * - Spaces within the same line are preserved
+ * - The type and the parameter names are lowercased, the values are not
  *
  * Generic function, unrelated to encryption.
  * postal-mime unfortunately doesn't parse parameters.
@@ -15,19 +16,24 @@ import { assert } from "../../util/util";
  * @param headerValue e.g. `text/plain; name=value; name2="value2"`
  * @returns e.g. { $main: `text/plain`, name: `value``, name2: `value2` }
  */
-export function parseHeaderParameters(headerValue: string): Record<string, string> {
+export function parseHeaderParameters(headerValue: string | null | undefined): Record<string, string> {
   let params: Record<string, string> = {};
    // TODO ignore `;` and `=` within `"` quotes
-  let paramsSplit = headerValue.split(";");
+  let paramsSplit = sanitize.string(headerValue, "").split(";");
+  // The type and the parameter names are case-insensitive, the values are not,
+  // e.g. the multipart boundary. RFC 2045 section 5.1
   params.$main = paramsSplit[0].includes("=")
     ? ""
-    : paramsSplit.shift() ?? "";
+    : paramsSplit.shift()?.trim().toLowerCase() ?? "";
   for (let paramStr of paramsSplit) {
     let pos = paramStr.indexOf("=");
     if (pos == -1) {
       continue;
     }
-    let name = sanitize.nonemptystring(paramStr.substring(0, pos).trim());
+    let name = sanitize.nonemptystring(paramStr.substring(0, pos).trim(), null)?.toLowerCase();
+    if (!name) {
+      continue;
+    }
     let value = sanitize.nonemptystring(paramStr.substring(pos + 1).trim(), "");
     if (value[0] == `"` && value.endsWith(`"`)) {
       value = value.slice(1, -1); // Remove " quotes

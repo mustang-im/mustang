@@ -74,8 +74,10 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
       throw new Error("Unsupported private key derivation salt");
     }
     let hash = sanitize.translate(pbkdf2.prf.algorithm, KeyDerivationAlgorithm);
+    // Cap the iterations, otherwise a malicious key file would freeze the app
+    let iterations = sanitize.integerRange(Number(pbkdf2.iterationCount), 1, 10000000);
     let rawKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(this.passphrase), "PBKDF2", false, ["deriveKey"]);
-    let derivedKey = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: pbkdf2.salt.value, iterations: Number(pbkdf2.iterationCount), hash }, rawKey, { name: "AES-CBC", length }, false, ["unwrapKey"]);
+    let derivedKey = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: pbkdf2.salt.value, iterations, hash }, rawKey, { name: "AES-CBC", length }, false, ["unwrapKey"]);
     return crypto.subtle.unwrapKey("pkcs8", encryptedKey.encryptedData, derivedKey, { name: "AES-CBC", iv: OctetString.decode(pbes2.encryptionScheme.parameters) }, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["sign"]);
   }
 
@@ -179,7 +181,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     assert(rawKey.dP == rawKey.d % (rawKey.p - 1n), "prime 1 exponent does not match private exponent");
     assert(rawKey.dQ == rawKey.d % (rawKey.q - 1n), "prime 2 exponent does not match private exponent");
     assert(rawKey.qInv * rawKey.q % rawKey.p == 1n, "inverse does not match primes");
-    let id = rawKey.n.toString(16);
+    let id = sanitize.bigint(rawKey.n).toString(16);
     key.id = id.slice(-16);
     key.name = key.defaultName;
     key.keyLengthInBits = id.length * 4;

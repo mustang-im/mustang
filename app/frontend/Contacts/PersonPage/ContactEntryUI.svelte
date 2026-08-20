@@ -15,11 +15,11 @@
   {:else}
     <hbox class="purpose edit">
       <select bind:value={entry.purpose}>
-        {#each Object.entries(suggestedPurposes) as p }
+        {#each Object.entries(ContactEntry.purposeLabels) as p }
           <option value={p[0]}>{p[1]}</option>
         {/each}
-        {#if !entry.purpose || !suggestedPurposes[entry.purpose]}
-          <option value={entry.purpose}>{hiddenPurposes[entry.purpose] ?? entry.purpose}</option>
+        {#if !entry.purpose || !ContactEntry.purposeLabels[entry.purpose]}
+          <option value={entry.purpose}>{ContactEntry.hiddenPurposeLabels[entry.purpose] ?? entry.purpose}</option>
         {/if}
       </select>
     </hbox>
@@ -44,7 +44,7 @@
       </hbox>
     {:else}
       <hbox class="purpose display">
-        {displayPurpose(entry.purpose)}
+        {entry.purposeLabel}
       </hbox>
     {/if}
     <hbox class="value">
@@ -69,7 +69,7 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import type { ContactEntry } from "../../../logic/Abstract/Person";
+  import { ContactEntry } from "../../../logic/Abstract/Person";
   import { selectedContactEntry } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
@@ -86,7 +86,7 @@
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
   export let isEditing = !entry.value;
-  /** Same format as `suggestedPurposes`.
+  /** Same format as `ContactEntry.purposeLabels`.
    * Will show a Protocol dropdown instead of a Purpose dropdown. */
   export let protocolLabels: Record<string, string> = null;
 
@@ -128,24 +128,6 @@
     dispatch("save");
   }
 
-  /** Contains the Purpose values that we want to show to the user for him to select from */
-  const suggestedPurposes = {
-    "work": $t`Work *=> Business address or phone number`,
-    "home": $t`Home *=> Private address or phone number`,
-    "mobile": $t`Mobile *=> Cell phone number`,
-    "other": $t`Other *=> Email address or phone number that is not home or work`,
-  }
-
-  /** Contains the Purpose values that the application might set, but we don't want the user to select these. */
-  const hiddenPurposes = {
-    "primary": $t`Primary *=> Most important email address for that person`,
-    "collected": $t`Collected *=> Email address that was automatically added to the contacts`,
-    null: $t`Select *=> Select what this email address is for`,
-  }
-
-  function displayPurpose(purpose: string) {
-    return suggestedPurposes[purpose] ?? hiddenPurposes[purpose] ?? purpose ?? "";
-  }
   function displayProtocol(protocol: string) {
     return protocolLabels[protocol] ?? protocol ?? "";
   }
