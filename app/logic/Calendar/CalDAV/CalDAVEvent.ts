@@ -101,7 +101,7 @@ export class CalDAVEvent extends Event {
     }
     await this.calendar.login(false);
     this.calUID ??= crypto.randomUUID();
-    let iCal = getICal(this);
+    let iCal = await getICal(this);
     if (this.url) {
       // TODO take `originalICal` and update only the properties we know about
       console.log("updating", this, this.url, "with ICS", iCal);

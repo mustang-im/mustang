@@ -1,4 +1,5 @@
 import { Account } from "../Abstract/Account";
+import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
@@ -174,7 +175,7 @@ export class Calendar extends Account {
   }
 }
 
-export interface CalendarStorage {
+export interface CalendarStorage extends AttachmentStorage {
   saveEvent(event: Event): Promise<void>;
   deleteEvent(event: Event): Promise<void>;
   saveCalendar(calendar: Calendar): Promise<void>;

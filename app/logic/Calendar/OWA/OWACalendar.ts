@@ -1,6 +1,7 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
 import type { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
+import type { Attachment } from "../../Abstract/Attachment";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
@@ -36,6 +37,12 @@ export class OWACalendar extends ExchangeCalendar {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
       : this.account.callOWA(aRequest, this.username);
+  }
+
+  callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment) {
+    return this.username == this.account.username
+      ? this.account.callOWAWithOffice365Attachment(aRequest, attachment)
+      : this.account.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
   }
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {

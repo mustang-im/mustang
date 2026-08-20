@@ -142,7 +142,7 @@
     if (invitation instanceof IncomingInvitation) {
       mail = await invitation.message.compose.forward();
     } else if (invitation instanceof Event) {
-      mail = OutgoingInvitation.forwardEventByMail(invitation);
+      mail = await OutgoingInvitation.forwardEventByMail(invitation);
     }
     openComposer(mail);
   }

@@ -15,7 +15,7 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import type { Message } from "../../../../logic/Abstract/Message";
+  import { addFilesAsAttachments, type MessageWithAttachments } from "../../../../logic/Abstract/Attachment";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
@@ -23,7 +23,8 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { t } from "../../../../l10n/l10n";
 
-  export let message: Message;
+  /** The email, chat message or calendar event to attach the files to */
+  export let message: MessageWithAttachments;
   $: attachments = message.attachments;
 
   let fileSelector: FileSelector;
@@ -33,9 +34,7 @@
       console.log("no file selected");
       return;
     }
-    let attachment = message.newAttachment();
-    attachment.fromFile(file);
-    message.attachments.add(attachment);
+    addFilesAsAttachments(message, [file]);
   }
 </script>
 

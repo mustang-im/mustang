@@ -2,13 +2,34 @@ import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import type { Calendar } from "../Calendar";
+import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
+import { getFilesDir } from "../../util/backend-wrapper";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { backgroundError } from "../../../frontend/Util/error";
-import { assert } from "../../util/util";
+import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
+
+let filesDir: string = null;
+
+/** The files dir differs between installations, so save the path relative to it */
+async function relativeFilepath(a: Attachment): Promise<string | null> {
+  if (!a.filepathLocal) {
+    return null;
+  }
+  filesDir ??= await getFilesDir();
+  return a.filepathLocal.replace(filesDir + "/", "");
+}
+
+async function absoluteFilepath(filepath: string | null): Promise<string | null> {
+  if (!filepath) {
+    return null;
+  }
+  filesDir ??= await getFilesDir();
+  return filesDir + "/" + filepath;
+}
 
 export class SQLEvent extends Event {
   static async save(event: Event) {
@@ -61,6 +82,7 @@ export class SQLEvent extends Event {
 
       await this.saveExclusions(event);
       await this.saveParticipants(event);
+      await this.saveAttachments(event);
     } finally {
       lock.release();
     }
@@ -104,6 +126,69 @@ export class SQLEvent extends Event {
         ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response},
         ${JSON.stringify(json, null, 2)}
       )`);
+  }
+
+  /** Updates the existing rows, keeping `filepathLocal`, and deletes only
+   * the rows of attachments that the user removed from the event.
+   * @see SQLEMail.saveAttachments() */
+  protected static async saveAttachments(event: Event) {
+    let db = await getDatabase();
+    let existingRows = await db.all(sql`
+      SELECT
+        id, filename, filepathLocal
+      FROM eventAttachment
+      WHERE eventID = ${event.dbID}
+      `) as any[];
+    for (let attachment of event.attachments) {
+      let row = existingRows.find(row => row.filename == attachment.filename);
+      if (row) {
+        existingRows = existingRows.filter(r => r != row);
+        // A sync replaces the attachment objects, so restore the file we already have
+        attachment.filepathLocal ??= await absoluteFilepath(sanitize.string(row.filepathLocal, null));
+        await this.updateAttachment(attachment, row.id);
+      } else {
+        await this.saveAttachment(event, attachment);
+      }
+    }
+    for (let row of existingRows) {
+      await db.run(sql`
+        DELETE FROM eventAttachment
+        WHERE id = ${row.id}
+        `);
+    }
+  }
+
+  protected static async saveAttachment(event: Event, a: Attachment) {
+    assert(event.dbID, "Need to save event before attachment");
+    await (await getDatabase()).run(sql`
+      INSERT OR IGNORE INTO eventAttachment (
+        eventID, filename, filepathLocal, mimeType, size, pID
+      ) VALUES (
+        ${event.dbID}, ${a.filename}, ${await relativeFilepath(a)}, ${a.mimeType}, ${a.size}, ${a.pID}
+      )`);
+  }
+
+  protected static async updateAttachment(a: Attachment, rowID: number) {
+    await (await getDatabase()).run(sql`
+      UPDATE eventAttachment SET
+        mimeType = ${a.mimeType},
+        size = ${a.size},
+        pID = COALESCE(${a.pID}, pID),
+        filepathLocal = COALESCE(${await relativeFilepath(a)}, filepathLocal)
+      WHERE id = ${rowID}
+      `);
+  }
+
+  /** After downloading and saving the attachment file locally, or moving it on disk,
+   * save its local disk location. */
+  static async saveAttachmentFilename(event: Event, a: Attachment) {
+    assert(event.dbID, "Need to save event before attachment");
+    await (await getDatabase()).run(sql`
+      UPDATE eventAttachment SET
+        filepathLocal = ${await relativeFilepath(a)}
+      WHERE eventID = ${event.dbID}
+        AND filename = ${a.filename}
+      `);
   }
 
   /** Will also delete all event participant entries, but not the persons itself */
@@ -184,6 +269,7 @@ export class SQLEvent extends Event {
     }
 
     await SQLEvent.readParticipants(event);
+    await SQLEvent.readAttachments(event);
     return event;
   }
 
@@ -223,6 +309,31 @@ export class SQLEvent extends Event {
         backgroundError(ex);
       }
     }
+  }
+
+  protected static async readAttachments(event: Event) {
+    let rows = await (await getDatabase()).all(sql`
+      SELECT
+        filename, filepathLocal, mimeType, size, pID
+      FROM eventAttachment
+      WHERE eventID = ${event.dbID}
+      `) as any;
+    let attachments: Attachment[] = [];
+    for (let row of rows) {
+      try {
+        let a = event.newAttachment();
+        a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
+        a.filename = sanitize.nonemptystring(row.filename, "attachment-" + (attachments.length + 1) + "." + fileExtensionForMIMEType(a.mimeType));
+        a.filepathLocal = await absoluteFilepath(sanitize.string(row.filepathLocal, null));
+        a.size = sanitize.integer(row.size, null);
+        a.pID = sanitize.string(row.pID, null);
+        a.disposition = ContentDisposition.attachment;
+        attachments.push(a);
+      } catch (ex) {
+        backgroundError(ex);
+      }
+    }
+    event.attachments.replaceAll(attachments);
   }
 
   /**

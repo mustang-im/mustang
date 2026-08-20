@@ -2,8 +2,10 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { ICalContainer, ICalParser } from "./ICalParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
+import { base64ToUint8Array, fileExtensionForMIMEType } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
 import { gt } from "../../../l10n/l10n";
@@ -143,6 +145,28 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
       }
       event.participants.add(participant);
     }
+  }
+  readAttachments(vevent, event);
+}
+
+/** Inline attachments, RFC 5545 3.8.1.1.
+ * Attachments that are only referenced by URI are not supported. */
+function readAttachments(vevent: ICalContainer, event: Event): void {
+  event.attachments.clear(); // in case we're updating an existing event
+  let fallbackID = 0;
+  for (let entry of vevent.entries.attach ?? []) {
+    if (entry.properties.value?.toUpperCase() != "BINARY") {
+      continue;
+    }
+    let attachment = event.newAttachment();
+    attachment.mimeType = sanitize.nonemptystring(entry.properties.fmttype, "application/octet-stream");
+    attachment.filename = sanitize.filename(
+      entry.properties.filename ?? entry.properties["x-filename"] ?? entry.properties["x-apple-filename"],
+      "attachment-" + ++fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+    attachment.content = new File([base64ToUint8Array(entry.value)], attachment.filename, { type: attachment.mimeType });
+    attachment.size = attachment.content.size;
+    attachment.disposition = ContentDisposition.attachment;
+    event.attachments.add(attachment);
   }
 }
 

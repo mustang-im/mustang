@@ -29,6 +29,7 @@ export class CreateMIME {
       };
     }
     let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    let iCal = email.event ? await getICal(email.event, email.iCalMethod) : null;
     // <https://nodemailer.com/message/>
     return {
       subject: email.subject,
@@ -41,8 +42,8 @@ export class CreateMIME {
       bcc: CreateMIME.getRecipients(email.bcc),
       text: fixNewlines(email.text),
       html: doHTML ? fixNewlines(email.html) : null,
-      icalEvent: email.event ? {
-        content: getICal(email.event, email.iCalMethod),
+      icalEvent: iCal ? {
+        content: iCal,
         method: email.iCalMethod,
       } : undefined,
       attachDataUrls: true,

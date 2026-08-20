@@ -1,21 +1,21 @@
-{#if $attachments.hasItems}
+{#if $visible.hasItems}
   <vbox class="attachments">
     <hbox class="attachments-list">
-      {#each $attachments.each as attachment}
-        <MessageAttachment {message} {attachment} />
+      {#each $visible.each as attachment}
+        <MessageAttachment {attachment} />
       {/each}
     </hbox>
   </vbox>
 {/if}
 
 <script lang="ts">
-  import { ContentDisposition } from "../../../logic/Abstract/Attachment";
-  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { Attachment } from "../../../logic/Abstract/Attachment";
   import MessageAttachment from "./AttachmentUI.svelte";
+  import type { Collection } from "svelte-collections";
 
-  export let message: EMail;
+  export let attachments: Collection<Attachment>;
 
-  $: attachments = message.attachments.filterObservable(a => !a.hidden);
+  $: visible = attachments.filterObservable(a => !a.hidden);
 </script>
 
 <style>

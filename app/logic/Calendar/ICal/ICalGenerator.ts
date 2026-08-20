@@ -2,10 +2,10 @@ import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, blobToBase64 } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
-export function getICal(event: Event, method?: iCalMethod): string | null {
+export async function getICal(event: Event, method?: iCalMethod): Promise<string | null> {
   assert(event, "Need event");
   /* We have to special-case RRULE as it contains ";"s
    * which must not be escaped as normal text values would */
@@ -16,15 +16,15 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
-  addVEvent(lines, event);
+  await addVEvent(lines, event);
   for (let exception of event.exceptions) {
-    addVEvent(lines, exception);
+    await addVEvent(lines, exception);
   }
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
 }
 
-function addVEvent(lines: (string | string[])[], event: Event): void {
+async function addVEvent(lines: (string | string[])[], event: Event): Promise<void> {
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
@@ -114,7 +114,25 @@ function addVEvent(lines: (string | string[])[], event: Event): void {
       break;
     }
   }
+  await addAttachments(lines, event);
   lines.push(["END", "VEVENT"]);
+}
+
+/** Inline attachments, RFC 5545 3.8.1.1.
+ * `FILENAME` is RFC 8607, `X-FILENAME` is what Outlook writes. */
+async function addAttachments(lines: (string | string[])[], event: Event): Promise<void> {
+  if (event.attachments.isEmpty) {
+    return;
+  }
+  await event.loadAttachments();
+  for (let attachment of event.attachments) {
+    if (!attachment.content) {
+      continue; // We can't send what we don't have
+    }
+    lines.push(["ATTACH", "VALUE", "BINARY", "ENCODING", "BASE64",
+      "FMTTYPE", attachment.mimeType, "FILENAME", attachment.filename, "X-FILENAME", attachment.filename,
+      await blobToBase64(attachment.content)]);
+  }
 }
 
 /**
@@ -125,11 +143,11 @@ function addVEvent(lines: (string | string[])[], event: Event): void {
  *    The name will be name filesystem-safe.
  * @returns iCal file contents, as UTF8 text file
  */
-export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
+export async function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): Promise<File> {
   let fileContents = "";
   for (let event of events) {
     // TODO Don't wrap *each* `VEVENT` with `VCALENDAR`, but all with a single one
-    fileContents += getICal(event);
+    fileContents += await getICal(event);
   }
   let filename = sanitize.filename(filenameWithoutExt) + ".ics";
   let file = new File([fileContents], filename, { type: "text/calendar" });

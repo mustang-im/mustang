@@ -1,5 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
+import { Attachment } from "../Abstract/Attachment";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
@@ -10,9 +11,9 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/conv
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, randomID } from "../util/util";
+import { randomID, AbstractFunction, assert } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -204,6 +205,9 @@ export class Event extends Observable {
   createOnlineMeetingWithAccount: MeetAccount | null = null;
   @notifyChangedObservable
   readonly participants = new ArrayColl<Participant>();
+  /** Files that the organizer attached to the event, e.g. the agenda */
+  @notifyChangedObservable
+  readonly attachments = new ArrayColl<Attachment>();
   @notifyChangedProperty
   myParticipation = InvitationResponse.Unknown;
   /** Only for incoming meetings
@@ -408,6 +412,7 @@ export class Event extends Observable {
     this.isOnline = original.isOnline;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
+    this.attachments.replaceAll(original.attachments);
     this.myParticipation = original.myParticipation;
     this.lastUpdateTime = original.lastUpdateTime;
   }
@@ -458,6 +463,9 @@ export class Event extends Observable {
       this.participants.length == other.participants.length &&
       (this.participants.isEmpty || this.participants.contents.every((pThis, i) =>
         pThis.emailAddress == other.participants.get(i).emailAddress)) &&
+      this.attachments.length == other.attachments.length &&
+      (this.attachments.isEmpty || this.attachments.contents.every((aThis, i) =>
+        aThis.filename == other.attachments.get(i).filename)) &&
       !this.recurrenceRule == !other.recurrenceRule &&
       (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
       this.alarm?.getTime() == other.alarm?.getTime()
@@ -497,6 +505,55 @@ export class Event extends Observable {
 
   createMeeting() {
     this.outgoingInvitation.createOrganizer();
+  }
+
+  /** Who invited to this meeting.
+   * null, if this is a private event of our user, without other participants. */
+  get organizer(): Participant | null {
+    return this.participants.find(participant => participant.response == InvitationResponse.Organizer) ?? null;
+  }
+
+  newAttachment(): Attachment {
+    let attachment = new Attachment();
+    attachment.message = this;
+    let storage = this.calendar?.storage;
+    attachment.storage = new ArrayColl(storage ? [storage] : []);
+    return attachment;
+  }
+
+  /** Reads the attachment contents from the local disk and, for those that
+   * aren't saved there yet, downloads them from the server. */
+  async loadAttachments(): Promise<void> {
+    for (let attachment of this.attachments) {
+      await attachment.read();
+    }
+    // Only those that are on the server can be downloaded from there.
+    if (this.attachments.every(attachment => attachment.content || !attachment.pID)) {
+      return;
+    }
+    await this.downloadAttachmentsFromServer();
+    for (let attachment of this.attachments) {
+      await attachment.save();
+    }
+  }
+
+  /** Fetches the attachment contents from the server.
+   * Only needed for protocols that send the attachment metadata,
+   * but not the contents, together with the event. Only those set
+   * `Attachment.pID`, and only for those is this function called. */
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /** Attachments that are still on the server, but that the user
+   * removed from the event during the current editing session.
+   * Call before `finishEditing()`. */
+  get removedAttachments(): Attachment[] {
+    if (!this.unedited) {
+      return [];
+    }
+    return this.unedited.attachments.contents.filter(removed =>
+      removed.pID && !this.attachments.some(attachment => attachment.pID == removed.pID));
   }
 
   get isNew(): boolean {
