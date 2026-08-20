@@ -3,6 +3,8 @@ import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import type { Event } from "../../../../logic/Calendar/Event.ts";
 import type { EMail } from "../../../../logic/Mail/EMail.ts";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
+import { Attachment } from "../../../../logic/Abstract/Attachment";
+import { ArrayColl } from "svelte-collections";
 import * as fs from "node:fs/promises";
 
 // Not using JSONEvent because it's really hard to use
@@ -31,15 +33,12 @@ test.each(testFiles)("Parse %s", async name => {
   const calendar = await fs.readFile(new URL(name + ".ics", dataDir), { encoding: 'utf-8' });
   const [invitationMessage, event] = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir), { encoding: 'utf-8' }));
   const processor = new ICalEMailProcessor();
+  const invitation = new Attachment();
+  invitation.filename = "invite.ics";
+  invitation.mimeType = "text/calendar";
+  invitation.content = new File([calendar], invitation.filename, { type: invitation.mimeType });
   const email: EMail = {
-    attachments: [{
-      mimeType: "text/calendar",
-      content: {
-        text() {
-          return calendar;
-        }
-      }
-    }],
+    attachments: new ArrayColl([invitation]),
   };
   await processor.process(email, null);
   expect(email.invitationMessage).toEqual(invitationMessage);

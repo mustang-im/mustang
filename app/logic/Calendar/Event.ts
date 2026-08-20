@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
-import { Attachment, type MessageWithAttachments } from "../Abstract/Attachment";
+import { Attachment, ContentDisposition, type MessageWithAttachments } from "../Abstract/Attachment";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
@@ -544,8 +544,9 @@ export class Event extends Observable {
   async adoptAttachmentsFrom(original: MessageWithAttachments) {
     await original.loadAttachments?.();
     this.attachments.replaceAll(original.attachments.contents
-      // Not the invitation iCal itself, signatures, or images inlined in the description
-      .filter(attachment => !attachment.hidden && !attachment.related)
+      // Not the invitation iCal itself, signatures, nor inline images
+      // Exchange uses `multipart/related` with `Content-ID`
+      .filter(attachment => !attachment.hidden && attachment.disposition != ContentDisposition.inline)
       .map(attachment => attachment.cloneTo(this)));
   }
 

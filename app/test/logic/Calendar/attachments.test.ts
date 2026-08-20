@@ -13,7 +13,7 @@ import { addEventAttachmentTable } from "../../../logic/Calendar/SQL/SQLEventMig
 import { getICal } from "../../../logic/Calendar/ICal/ICalGenerator";
 import { convertICalToEvent } from "../../../logic/Calendar/ICal/ICalToEvent";
 import { ICalEMailProcessor } from "../../../logic/Calendar/ICal/ICalEMailProcessor";
-import { Attachment } from "../../../logic/Abstract/Attachment";
+import { Attachment, ContentDisposition } from "../../../logic/Abstract/Attachment";
 import type { EMail } from "../../../logic/Mail/EMail";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { mkdtempSync } from "node:fs";
@@ -134,8 +134,21 @@ test("Attachments round-trip through iCal as inline BINARY", async () => {
   expect(new Uint8Array(await read.content.arrayBuffer())).toEqual(kContent);
 });
 
-/** An invitation email as Exchange sends it: the attachments are MIME parts
- * of the email, and the iCal has no `ATTACH` at all. */
+function newEMailAttachment(filename: string, mimeType: string, disposition: ContentDisposition, related: boolean): Attachment {
+  let attachment = new Attachment();
+  attachment.filename = filename;
+  attachment.mimeType = mimeType;
+  attachment.disposition = disposition;
+  attachment.related = related;
+  attachment.content = new File([kContent as BlobPart], filename, { type: mimeType });
+  attachment.size = kContent.length;
+  return attachment;
+}
+
+/** An invitation email as Exchange sends it: the attachments are MIME parts of the
+ * email and the iCal has no `ATTACH` at all. Because the body is HTML, Exchange puts
+ * everything in a `multipart/related` and gives every part a `Content-ID`, so
+ * postal-mime reports `related` for the real attachments too, not only for the logo. */
 async function newInvitationEMail(): Promise<EMail> {
   let organizerEvent = newTestEvent("Kickoff");
   organizerEvent.calUID = "kickoff@example.com";
@@ -147,12 +160,12 @@ async function newInvitationEMail(): Promise<EMail> {
   invitation.filename = "invite.ics";
   invitation.mimeType = "text/calendar";
   invitation.content = new File([ics], invitation.filename, { type: invitation.mimeType });
-  let agenda = new Attachment();
-  agenda.filename = "agenda.pdf";
-  agenda.mimeType = "application/pdf";
-  agenda.content = new File([kContent as BlobPart], agenda.filename, { type: agenda.mimeType });
-  agenda.size = kContent.length;
-  email.attachments.addAll([invitation, agenda]);
+  email.attachments.addAll([
+    invitation,
+    newEMailAttachment("logo.png", "image/png", ContentDisposition.inline, true),
+    newEMailAttachment("agenda.pdf", "application/pdf", ContentDisposition.attachment, true),
+    newEMailAttachment("budget.xls", "application/vnd.ms-excel", ContentDisposition.attachment, true),
+  ]);
   return email;
 }
 
@@ -160,9 +173,9 @@ test("Attachments of an invitation email become attachments of the event", async
   let email = await newInvitationEMail();
   await new ICalEMailProcessor().process(email);
 
-  expect(email.event.attachments.length).toBe(1); // the .ics itself is not one
+  // Neither the .ics itself nor the logo shown in the description
+  expect(email.event.attachments.contents.map(a => a.filename)).toEqual(["agenda.pdf", "budget.xls"]);
   let attachment = email.event.attachments.first;
-  expect(attachment.filename).toBe("agenda.pdf");
   expect(attachment.mimeType).toBe("application/pdf");
   expect(new Uint8Array(await attachment.content.arrayBuffer())).toEqual(kContent);
 });
@@ -177,7 +190,7 @@ test("Confirming an invitation saves its attachments in the calendar", async () 
   await event.adoptAttachmentsFrom(email.event);
   await event.saveLocally();
 
-  expect(event.attachments.length).toBe(1);
+  expect(event.attachments.length).toBe(2);
   let attachment = event.attachments.first;
   expect(attachment.message).toBe(event); // and not the invitation event
   expect(attachment.filepathLocal).toContain("/files/calendar/alice-example.com/");
