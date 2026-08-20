@@ -264,3 +264,55 @@ transport differs.
   Wire's own AVS/SFT. Out of scope.
 - **E2EI / x509 credentials.** Basic credentials only, which is what the cloud
   backend uses unless a team turns E2EI on.
+
+## Status: what is proven, and what is not
+
+### Proven
+- **MLS itself** passes the official interop vectors from
+  <https://github.com/mlswg/mls-implementations> for all five cipher suites we
+  implement — including `passive-client-*`, which drives the whole state machine
+  through scripted epochs and checks the `epoch_authenticator` after every one.
+- **The layers compose.** `endToEnd.test.ts` runs four real `WireAccount`s against
+  an in-process backend with nothing mocked above HTTP and the WebSocket: login,
+  device registration, key packages, an MLS group, Proteus 1:1, attachments, a
+  restart from the saved config, and adding and removing members. The fake
+  enforces the backend's strictness rather than being lenient, and reads MLS
+  membership out of each commit's ratchet tree instead of bookkeeping it.
+
+### Not proven, in rough order of how likely it is to bite
+- **Nothing has ever talked to a real Wire server.** The fake reproduces the JSON
+  in these documents; field-level strictness the documents do not mention is
+  untested.
+- **Proteus has no published test vectors.** The CBOR prekey bundle is pinned
+  against wire-server's own fixture and ChaCha20 against the DJB known-answer
+  test, but the ratchet's HKDF info strings, chain-step bytes, nonce layout and
+  DH ordering are transcribed from `09-Proteus.md`, not verified against a peer.
+  Both ends of our test are our own code, so a wrong constant passes it and fails
+  against a real client. The failure would be total and immediate — the first
+  decrypt throws — so hand-checking one real inbound `Envelope` localises it in
+  one step.
+- **Federation.** The fake is single-domain, so the `failed` / `failed_to_send`
+  buckets and remote removal keys are untested.
+- **SSO and 2FA** are implemented but not exercised end to end.
+- **The `/vN/events` socket is dead code today**: `WireSession` deliberately does
+  not declare the `consumable-notifications` capability, because with the team
+  feature alone the server keeps writing to the legacy stream and the new queue
+  silently stays empty. Turning it on means declaring the capability *and*
+  draining the legacy stream once, in that order.
+- **Proteus `External`** (the >256 KB path) is only implemented for receiving. A
+  very large text message would be refused; attachments are unaffected, since
+  they go through the asset store.
+- **One device per user** is all the tests cover.
+- Untested: subconversations and calls, `resetConversation`, key-package replace
+  and delete, the 30-day rotation timer, x509 / E2EI credentials, guest links,
+  teams and search.
+
+### Known design limits
+- Wire has *two* 1:1 conversations per peer, Proteus and MLS, but
+  `ChatAccount.rooms` is keyed by contact and holds one room per contact. The MLS
+  one wins, and a Proteus message arriving on the abandoned conversation
+  afterwards is dropped. Fixing it properly means letting a contact have more
+  than one room.
+- `ChatMessage.createEdit()` returns a `ChatMessage`, which
+  `WireChatRoom.sendMessage()` will not take without a cast, though it works at
+  runtime.
