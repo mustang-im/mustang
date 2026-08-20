@@ -350,10 +350,15 @@ export class WireChatRoom extends ChatRoom {
     }
     // Wire carries one file per message, so each attachment is its own
     // message: encrypted with its own key, uploaded, and only then announced.
+    // One of them keeps *our* message ID – the text, or the first file where
+    // there is no text – because that is the ID everybody else will name in a
+    // receipt, a reaction, an edit or a deletion for this message.
     let sentAt: Date | null = null;
+    let ourID = message.text ? null : message.id;
     for (let attachment of message.attachments) {
       let asset = await this.account.media.uploadAttachment(attachment);
-      sentAt = await this.sendGenericMessage({ messageID: crypto.randomUUID(), asset });
+      sentAt = await this.sendGenericMessage({ messageID: ourID ?? crypto.randomUUID(), asset });
+      ourID = null;
     }
     if (message.text) {
       sentAt = await this.sendGenericMessage(message.toGenericMessage());

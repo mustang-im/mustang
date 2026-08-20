@@ -476,6 +476,16 @@ export class WireAccount extends ChatAccount {
       room = this.newRoom(isGroup);
       room.id = WirePerson.chatID(json.qualified_id);
       room.contact = isGroup ? newGroupContact(json) : this.peerOf(json);
+      // Wire has 2 one-to-one conversations per peer – the Proteus one that
+      // the contact request created, and the MLS one – but `rooms` holds one
+      // per contact, so one of them displaces the other. The MLS one wins, and
+      // never gives way again, which is the rule `protocolFor()` follows.
+      // Without this, which of the 2 the user sees would depend on the order
+      // in which the server happened to list them.
+      let sameContact = this.rooms.get(room.contact);
+      if (sameContact?.isMLS && json.protocol != "mls") {
+        return sameContact;
+      }
       this.rooms.set(room.contact, room);
     }
     room.fromServer(json);
@@ -521,6 +531,27 @@ export class WireAccount extends ChatAccount {
       (await this.api.createConnection(person.qualifiedID)).qualified_conversation;
     assert(conversationID, gt`Could not open a chat with ${person.name}`);
     return await this.getOrCreateRoom(await this.api.getConversation(conversationID));
+  }
+
+  /** Opens a new conversation with several people, over whichever encryption
+   * our team defaults to.
+   *
+   * MLS takes 2 steps, doc 07 §6.1: the conversation is created *empty*,
+   * because the backend does not know the MLS membership and learns it from
+   * the commit, and only that commit takes the group to epoch 1. Proteus takes
+   * the members straight away. */
+  async createGroupChat(name: string, persons: WirePerson[]): Promise<WireGroupChatRoom> {
+    let userIDs = persons.map(person => person.qualifiedID);
+    let isMLS = this.mlsEnabled && this.defaultProtocol == "mls";
+    let json = isMLS
+      ? await this.api.createMLSConversation({ name: name })
+      : await this.api.createConversation({ name: name, qualified_users: userIDs });
+    let room = await this.getOrCreateRoom(json) as WireGroupChatRoom;
+    if (isMLS) {
+      await this.mls.createGroup(room, userIDs);
+    }
+    await room.listMembers(); // the members and the epoch, as the server has them now
+    return room;
   }
 
   // --- The event stream ---
@@ -715,7 +746,10 @@ export class WireAccount extends ChatAccount {
     if (!target) {
       return null;
     }
-    target.members.addAll(persons.filter(person => !target.members.includes(person)));
+    // The event names us too, when we are the one who was added, but
+    // `room.members` is everybody *else*, as `fromServer()` fills it.
+    let others = persons.filter(person => person != this.getOwnContact());
+    target.members.addAll(others.filter(person => !target.members.includes(person)));
     let roomEvent = target.newRoomEvent();
     roomEvent.wireType = event.type;
     roomEvent.membersChanged(persons, true);
