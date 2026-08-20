@@ -11,9 +11,9 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/conv
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, NotReached, randomID } from "../util/util";
+import { randomID, AbstractFunction, assert } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -542,7 +542,7 @@ export class Event extends Observable {
    * but not the contents, together with the event. Only those set
    * `Attachment.pID`, and only for those is this function called. */
   protected async downloadAttachmentsFromServer(): Promise<void> {
-    throw new NotReached();
+    throw new AbstractFunction();
   }
 
   /** Attachments that are still on the server, but that the user
