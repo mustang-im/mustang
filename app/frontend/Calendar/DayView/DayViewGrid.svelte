@@ -2,7 +2,7 @@
   <Scroll bind:this={scrollE}>
     <grid flex class="week"
       columns={showDays}
-      style="min-height: {scrollHeight}px;"
+      style="min-height: {scrollHeight}px; {columnWidths}"
       class:enlargeSelectedDay
       on:swipeleft={onNextDay}
       on:swiperight={onPreviousDay}
@@ -44,7 +44,7 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { getWeekStart } from "../../Util/date";
+  import { getToday, getWeekStart } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
@@ -103,6 +103,15 @@
     allDayEvents = filtered.filterObservable(ev => ev.allDay);
   }
 
+  let today = getToday();
+  // Update today at midnight
+  $: setTimeout(() => today = getToday(), new Date(today).setDate(today.getDate() + 1) - Date.now());
+
+  // Shows today wider. Sets e.g. `grid-template-columns: max-content 1fr 1fr 1.5fr 1fr 1fr` on the `<grid>`
+  $: columnWidths = showDays > 3 && days.some(day => day.getTime() == today.getTime())
+    ? "grid-template-columns: max-content " + days.map(day => day.getTime() == today.getTime() ? "1.5fr" : "1fr").join(" ")
+    : "";
+
   function onNextDay() {
     // Week views snap to Monday, so page whole weeks
     let pageDays = showDays > 3 ? 7 : 1;
@@ -135,12 +144,11 @@
   }
   .week[columns="5"] {
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr;
+    /* overridden by $: above */
   }
   .week[columns="7"] {
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  }
-  .week.enlargeSelectedDay[columns="7"] {
-    /* TODO Show only the selected day a little wider */
+    /* overridden by $: above */
   }
   .header {
     position: sticky;
