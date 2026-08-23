@@ -277,7 +277,8 @@ export class WireAccount extends ChatAccount {
       await this.save();
     };
     // A Welcome can be the first we hear of a conversation.
-    this.mls.onRoomForConversation = async conversationID => await this.roomForConversation(conversationID);
+    this.mls.onRoomForConversation = async (conversationID, conversation, peerID) =>
+      await this.roomForConversation(conversationID, conversation, peerID);
     await this.mls.setup(prekeys, lastPrekey);
     this.restoreMLSGroups();
     await this.rotateOurKeys();
@@ -322,10 +323,16 @@ export class WireAccount extends ChatAccount {
   }
 
   /** The room of a conversation, fetching it from the server when a Welcome
-   * named one that we have never seen. */
-  async roomForConversation(conversationID: TWireQualifiedID): Promise<WireChatRoom> {
+   * named one that we have never seen.
+   * @param conversation the conversation, where the caller already has it. An
+   *   MLS 1:1 that nobody committed to yet is only in the
+   *   `/one2one-conversations` answer, and fetching it would be a 404.
+   * @param peerID who that 1:1 is with, which it does not say itself while its
+   *   member list is still empty. */
+  async roomForConversation(conversationID: TWireQualifiedID,
+    conversation?: TWireConversation, peerID?: TWireQualifiedID): Promise<WireChatRoom> {
     let room = this.getExistingRoom(WirePerson.chatID(conversationID)) ??
-      await this.getOrCreateRoom(await this.api.getConversation(conversationID));
+      await this.getOrCreateRoom(conversation ?? await this.api.getConversation(conversationID), peerID);
     assert(room, `Wire: The conversation ${conversationID.id} is not a chat room`);
     return room;
   }
@@ -481,7 +488,7 @@ export class WireAccount extends ChatAccount {
   /** The room for a conversation the server described, creating it if it is
    * new to us.
    * @returns null for our own notes, which carry only state sync */
-  async getOrCreateRoom(json: TWireConversation): Promise<WireChatRoom | null> {
+  async getOrCreateRoom(json: TWireConversation, peerID?: TWireQualifiedID): Promise<WireChatRoom | null> {
     if (json.type == kSelfConversationType) {
       return null;
     }
@@ -490,7 +497,8 @@ export class WireAccount extends ChatAccount {
     if (!room) {
       room = this.newRoom(isGroup);
       room.id = WirePerson.chatID(json.qualified_id);
-      room.contact = isGroup ? newGroupContact(json) : this.peerOf(json);
+      room.contact = isGroup ? newGroupContact(json)
+        : peerID ? this.getWirePerson(peerID) : this.peerOf(json);
       // Wire has 2 one-to-one conversations per peer – the Proteus one that
       // the contact request created, and the MLS one – but `rooms` holds one
       // per contact, so one of them displaces the other. The MLS one wins, and

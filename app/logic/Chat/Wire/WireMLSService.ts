@@ -23,7 +23,7 @@
  *   see `WireMLSIdentity`. */
 import type { WireAPI } from "./WireAPI";
 import type { WireSession } from "./WireSession";
-import type { TWireMLSMessageSendingStatus, TWirePrekey, TWireQualifiedID } from "./TWire";
+import type { TWireConversation, TWireMLSMessageSendingStatus, TWirePrekey, TWireQualifiedID } from "./TWire";
 import { MLSClient } from "../MLS/MLSClient";
 import { MLSGroup, type ProcessResult } from "../MLS/MLSGroup";
 import type { MLSStorage } from "../MLS/MLSStorage";
@@ -56,8 +56,14 @@ export class WireMLSService implements MLSStorage {
    * base64. A 1:1 uses the key of the backend that owns it instead. */
   removalKeys: Record<string, string> = {};
   /** A Welcome can be the first we hear of a conversation, so the account has
-   * to be able to make a room for one we do not know yet. */
-  onRoomForConversation: ((conversationID: TWireQualifiedID) => Promise<WireMLSRoom>) | null = null;
+   * to be able to make a room for one we do not know yet.
+   * @param conversation the conversation, where we were handed it already. An
+   *   MLS 1:1 has to be passed in: until its first commit it exists only in
+   *   the `/one2one-conversations` answer, and `GET /conversations` 404s.
+   * @param peerID the other person in a 1:1. That same unestablished 1:1 has
+   *   nobody in its member list yet, so it does not say who it is with. */
+  onRoomForConversation: ((conversationID: TWireQualifiedID,
+    conversation?: TWireConversation, peerID?: TWireQualifiedID) => Promise<WireMLSRoom>) | null = null;
   /** Our signature key or our published key packages changed: persist
    * `toJSON()`. Their private keys are the only copy there is. */
   onClientChanged: (() => Promise<void>) | null = null;
@@ -244,7 +250,7 @@ export class WireMLSService implements MLSStorage {
    * loser joins the winner's group instead of its own. */
   async oneToOneGroup(user: TWireQualifiedID): Promise<WireMLSRoom> {
     let answer = await retryOnTransientError(() => this.api.getMLSOneToOne(user));
-    let room = await this.roomFor(answer.conversation.qualified_id);
+    let room = await this.roomFor(answer.conversation.qualified_id, answer.conversation, user);
     room.groupID = answer.conversation.group_id;
     if (this.groupFor(room)) {
       return room;
@@ -516,9 +522,10 @@ export class WireMLSService implements MLSStorage {
     return this.rooms.get(base64Encode(group.groupID)) ?? null;
   }
 
-  protected async roomFor(conversationID: TWireQualifiedID): Promise<WireMLSRoom> {
+  protected async roomFor(conversationID: TWireQualifiedID,
+    conversation?: TWireConversation, peerID?: TWireQualifiedID): Promise<WireMLSRoom> {
     assert(this.onRoomForConversation, "Wire: Need a way to find the room of a conversation");
-    return await this.onRoomForConversation(conversationID);
+    return await this.onRoomForConversation(conversationID, conversation, peerID);
   }
 }
 
