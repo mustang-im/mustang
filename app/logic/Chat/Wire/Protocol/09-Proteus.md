@@ -170,13 +170,21 @@ is computed over exactly those bytes (`message.rs:315-325`,
 `Envelope::verify` at `:337-340`). Keep the raw bytes around: you must MAC the
 bytes you received, not a re-encoding.
 
-Inside, `Message` is a *2-element sequence*, not a map — a type tag followed by
-the body (`message.rs:149-169`):
+Inside, `Message` is a type tag **followed by** the body, with no container
+around the two: the tag is one CBOR uint and the body is the next CBOR item, one
+after the other in the same byte string. There is no array header
+(`message.rs:149-169`; `wire-webapp`'s `CipherMessage.serialise()` writes
+`encoder.u8(1)` and then the map, and `Envelope.deserialiseMessage()` reads it
+back with a bare `decoder.u8()`):
 
 ```
 Message = 1, CipherMessage   -- "Plain"
         | 2, PreKeyMessage   -- "Keyed"
 ```
+
+Wrapping the two in a CBOR array instead is the obvious misreading, and it fails
+only against a real peer: both ends of a test that uses one implementation agree
+with each other.
 
 ```
 PreKeyMessage = map(4) {

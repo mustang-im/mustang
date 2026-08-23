@@ -619,19 +619,17 @@ export class CipherMessage {
   }
 }
 
-/** A `Message` is a 2-element CBOR *array*, not a map: a type tag and a body. */
+/** A `Message` is a type tag *followed by* a body, with nothing around the two:
+ * no array header, no map. The two CBOR items simply sit next to each other in
+ * the byte string that the envelope carries. */
 export type ProteusMessage = CipherMessage | PreKeyMessage;
 
 function encodeMessage(cbor: CBORWriter, message: ProteusMessage) {
-  cbor.array(2);
   cbor.uint(message instanceof PreKeyMessage ? kMessageTagKeyed : kMessageTagPlain);
   message.encode(cbor);
 }
 
 function decodeMessage(cbor: CBORReader): ProteusMessage {
-  if (cbor.array() != 2) {
-    throw new ProteusError(ProteusErrorCode.InvalidMessage, "A Proteus Message is a 2-element array");
-  }
   let tag = cbor.uint();
   if (tag == kMessageTagPlain) {
     return CipherMessage.decode(cbor);
