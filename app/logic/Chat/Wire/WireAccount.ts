@@ -416,6 +416,9 @@ export class WireAccount extends ChatAccount {
     }
     if (this.teamID) {
       for (let member of await this.api.listTeamMembers(this.teamID)) {
+        if (member.user == this.session.userID) {
+          continue; // we are in our own team, but not our own contact
+        }
         let person = this.getWirePerson({ id: member.user, domain: this.session.domain });
         person.teamID = this.teamID;
         person.legalHold ||= member.legalhold_status == "enabled";
