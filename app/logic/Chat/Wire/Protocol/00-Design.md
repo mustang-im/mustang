@@ -278,22 +278,31 @@ transport differs.
   restart from the saved config, and adding and removing members. The fake
   enforces the backend's strictness rather than being lenient, and reads MLS
   membership out of each commit's ratchet tree instead of bookkeeping it.
+- **It talks to a real wire-server.** `live.test.ts` runs the same story against
+  brig, galley, gundeck, cannon, cargohold and nginz — release 5.34.101, stock
+  configuration. Password login and token refresh, device registration, key
+  packages, an MLS group over the real delivery service, a Proteus 1:1 with a
+  peer whose team has no MLS, an MLS 1:1, an attachment through cargohold, a
+  restart on the stored cookie, and a removed member who stops being able to
+  read. See `test/logic/Chat/Wire/liveBackend.ts` for how to point it at one.
+- **SSO works against real spar**, with a real SAML identity provider that signs
+  its assertions (`liveSSO.test.ts`): the login-code pre-check, the browser
+  round trip through `initiate-login` → provider → `finalize-login`, the
+  `wire-…://` verdict, auto-provisioning, a device registered without a
+  password, and the next start resuming from the cookie alone.
+- **Proteus interoperates with Wire's own implementation.**
+  `proteus/interop.test.ts` replays vectors produced by `@wireapp/proteus` — the
+  library the official clients use — and, when that package is present, runs
+  both implementations against each other in both directions, including
+  out-of-order delivery and repeated ratcheting. A prekey bundle our client
+  uploaded to a real brig was claimed by a third party and used by that library
+  to start a session.
 
 ### Not proven, in rough order of how likely it is to bite
-- **Nothing has ever talked to a real Wire server.** The fake reproduces the JSON
-  in these documents; field-level strictness the documents do not mention is
-  untested.
-- **Proteus has no published test vectors.** The CBOR prekey bundle is pinned
-  against wire-server's own fixture and ChaCha20 against the DJB known-answer
-  test, but the ratchet's HKDF info strings, chain-step bytes, nonce layout and
-  DH ordering are transcribed from `09-Proteus.md`, not verified against a peer.
-  Both ends of our test are our own code, so a wrong constant passes it and fails
-  against a real client. The failure would be total and immediate — the first
-  decrypt throws — so hand-checking one real inbound `Envelope` localises it in
-  one step.
-- **Federation.** The fake is single-domain, so the `failed` / `failed_to_send`
-  buckets and remote removal keys are untested.
-- **SSO and 2FA** are implemented but not exercised end to end.
+- **Federation.** Everything above is single-domain, so the `failed` /
+  `failed_to_send` buckets and remote removal keys are untested.
+- **2FA.** The verification-code round trip is implemented but never exercised:
+  it needs a team with the second factor turned on, and an email.
 - **The `/vN/events` socket is dead code today**: `WireSession` deliberately does
   not declare the `consumable-notifications` capability, because with the team
   feature alone the server keeps writing to the legacy stream and the new queue
@@ -306,6 +315,33 @@ transport differs.
 - Untested: subconversations and calls, `resetConversation`, key-package replace
   and delete, the 30-day rotation timer, x509 / E2EI credentials, guest links,
   teams and search.
+
+### What talking to the real backend changed
+Five things passed against the fake and failed against wire-server. They are
+worth remembering, because each is a place where a second implementation of the
+same document disagreed with ours:
+
+- `Message` inside a Proteus `Envelope` is a tag **followed by** the body, not a
+  2-element CBOR array. Every first contact with a real client would have failed
+  to decrypt. See `09-Proteus.md` §2.
+- Nothing published that we speak MLS. `PUT /self/supported-protocols` has to be
+  called; a peer sees only that, never our team's feature flag, so every 1:1
+  with us would silently have been Proteus.
+- An MLS 1:1 does not exist as a conversation until its first commit:
+  `GET /conversations/…` answers 404, and the stub from
+  `/one2one-conversations/…` has nobody in its member list. Both the
+  conversation and the peer have to come from that answer.
+- We put ourselves in our own contact list, because a team of one lists us as
+  its only member.
+- `HEAD /sso/initiate-login/…` is the one route that answers `text/plain`, and
+  the backend is strict: our usual `Accept: application/json` got a 406.
+
+Two more were the backend's own edges rather than ours, and are worth knowing
+when running one: wire-server's *integration* nginz config only exact-matches
+`/one2one-conversations`, where the production chart routes the whole prefix, so
+the MLS 1:1 GET 404s behind it; and cargohold parses the `Host` that nginz
+passes on as `Z-Host`, so a backend reached by IP address rather than by name
+answers 400 for every asset.
 
 ### Known design limits
 - Wire has *two* 1:1 conversations per peer, Proteus and MLS, but
