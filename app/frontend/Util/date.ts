@@ -128,15 +128,18 @@ export function getToday() {
   return today;
 }
 
+/** @returns The Monday of the week that contains `date`, at 00:00 */
+export function getWeekStart(date: Date): Date {
+  let startTime = new Date(date);
+  // `getDay()` is 0 on Sunday, which still belongs to the Monday before it
+  startTime.setDate(startTime.getDate() - (startTime.getDay() + 6) % 7);
+  startTime.setHours(0, 0, 0, 0);
+  return startTime;
+}
+
 /** @returns Mon-Sun around `start` */
 export function getWeekDays(start: Date): Date[] {
-  let startTime = new Date(start);
-  // Always start with Monday
-  startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
-  startTime.setHours(0);
-  startTime.setMinutes(0);
-  startTime.setSeconds(0);
-  startTime.setMilliseconds(0);
+  let startTime = getWeekStart(start);
   let weekDays = [];
   for (let i = 0; i < 7; i++) {
     weekDays.push(new Date(startTime));

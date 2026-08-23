@@ -48,7 +48,7 @@
   let days: Date[] = [];
   let weekDays: Date[] = [];
   let filteredEvents: Collection<Event>;
-  $: start, setDays();
+  $: start, showDays, setDays();
   function setDays() {
     weekDays = getWeekDays(start);
     if (showDays == 35) {

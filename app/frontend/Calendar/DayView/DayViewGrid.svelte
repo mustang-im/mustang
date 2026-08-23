@@ -44,6 +44,7 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { getWeekStart } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
@@ -88,10 +89,7 @@
   let allDayEvents: Collection<Event>;
   $: start, showDays, setDays();
   function setDays() {
-    let startTime = new Date(start);
-    if (showDays > 3) {
-      startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
-    }
+    let startTime = showDays > 3 ? getWeekStart(start) : new Date(start);
     startTime.setHours(startHour, 0, 0, 0);
     let filterStart = new Date(startTime);
     days = [];
