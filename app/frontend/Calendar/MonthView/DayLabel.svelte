@@ -26,7 +26,9 @@
   export let withMonthOnMonday = true;
   export let withMonthOnFirst = true;
 
-  const today = getToday();
+  let today = getToday();
+  // Update today at midnight
+  $: setTimeout(() => today = getToday(), new Date(today).setDate(today.getDate() + 1) - Date.now());
 
   function selectDay() {
     $selectedDate = day;
