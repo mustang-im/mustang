@@ -229,6 +229,7 @@ export class WireAccount extends ChatAccount {
       // MLS registers the device itself: the backend refuses a key package
       // whose signature key it has not seen on our device before.
       await this.setupMLS(prekeys, lastPrekey);
+      await this.publishSupportedProtocols();
     } else {
       await this.session.ensureClient({}, prekeys, lastPrekey);
     }
@@ -248,6 +249,20 @@ export class WireAccount extends ChatAccount {
     this.proteus.onSendSessionReset = async device => await this.sendSessionReset(device);
     this.proteus.onRemoteIdentityChanged = device => this.errorCallback(
       new Error(gt`A device of ${device.userID} changed its identity key`));
+  }
+
+  /** Tell the backend which protocols we speak, so that a peer starting a 1:1
+   * with us can pick MLS. Nobody sees our team's feature flag; they see only
+   * this, and it defaults to Proteus alone. §6.2 of `04-Users-…`: `mls` may be
+   * added but never taken away, so we only ever add it. */
+  protected async publishSupportedProtocols(): Promise<void> {
+    if (this.session.publishedProtocols.includes("mls") ||
+        !this.supportedProtocols.includes("mls") ||
+        !await this.session.allDevicesHaveMLS()) {
+      return;
+    }
+    await this.api.setSupportedProtocols(this.supportedProtocols);
+    this.session.publishedProtocols = this.supportedProtocols;
   }
 
   /** The MLS stack is large, and only a team that turned MLS on needs it. */

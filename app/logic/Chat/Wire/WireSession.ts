@@ -26,6 +26,9 @@ export class WireSession {
    * user's 32-cookie budget. Per installation, so it is persisted. */
   cookieLabel: string = crypto.randomUUID();
   emailAddress: string | null = null;
+  /** Which protocols the backend currently tells our peers that we speak.
+   * Read from `/self`, and only ever added to: `mls` cannot be taken back. */
+  publishedProtocols: string[] = [];
   /** Asked for when the backend demands a 2FA code. Set by the account. */
   onVerificationCode: (() => Promise<string>) | null = null;
   refreshErrorCallback = (ex: Error) => console.error(ex);
@@ -202,6 +205,14 @@ export class WireSession {
     this.userID = sanitize.nonemptystring(json.qualified_id?.id ?? json.id);
     this.domain = sanitize.hostname(json.qualified_id?.domain ?? this.transport.domain, null);
     this.emailAddress = sanitize.emailAddress(json.email, this.emailAddress);
+    this.publishedProtocols = sanitize.array(json.supported_protocols, []) as string[];
+  }
+
+  /** Whether every device of ours can read MLS. Until they all can, telling
+   * our peers that we speak it would send MLS to a device that cannot. */
+  async allDevicesHaveMLS(): Promise<boolean> {
+    let clients = ensureArray(await this.transport.get("/clients"));
+    return clients.every(client => Object.keys(client?.mls_public_keys ?? {}).length > 0);
   }
 
   /** Whether the device we registered earlier is still listed for our user.
