@@ -133,7 +133,10 @@ export class WireSSO extends WebBasedAuth {
    * looking at a raw JSON error page in a browser. */
   protected async checkCode(): Promise<void> {
     try {
-      await this.session.transport.head(`/sso/initiate-login/${this.idpID}`);
+      /* This is the one route that answers `text/plain`, and the backend is
+       * strict about it: our usual `Accept: application/json` gets a 406. */
+      await this.session.transport.head(`/sso/initiate-login/${this.idpID}`,
+        { headers: { Accept: "text/plain" } });
     } catch (ex) {
       if (ex instanceof WireError && ex.httpCode == 404) {
         throw new UserError(gt`This is not a valid login code`);
