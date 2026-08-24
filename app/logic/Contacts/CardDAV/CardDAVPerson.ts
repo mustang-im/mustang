@@ -10,6 +10,9 @@ import type { DAVObject } from "tsdav";
 export class CardDAVPerson extends Person {
   declare addressbook: CardDAVAddressbook | null;
   url: URLString | null = null;
+  /** The UID in the vCard, which identifies the contact on the server
+   * (because `.id` is the ID in our database) */
+  uid: string;
   /** The vCard that we downloaded from the server.
    * Allows updates of only the properties that we know about,
    * leaving unknown properties as-is. */
@@ -88,11 +91,13 @@ export class CardDAVPerson extends Person {
     super.fromExtraJSON(json);
     this.originalVCard = sanitize.string(json.original, null);
     this.url = sanitize.url(json.url, null);
+    this.uid = sanitize.nonemptystring(json.uid, null);
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();
     json.url = this.url;
     json.original = this.originalVCard;
+    json.uid = this.uid;
     return json;
   }
 
