@@ -21,10 +21,13 @@ export class PKCS12 {
    * Typically the certificate of the key, and the CAs that signed it. */
   certificates: Uint8Array[] = [];
   protected passphrase: string;
+  /** The passphrase in the form that the key derivation needs it */
+  protected passphraseBytes: Uint8Array;
 
   constructor(passphrase: string) {
     assert(typeof passphrase == "string", "Need the passphrase");
     this.passphrase = passphrase;
+    this.passphraseBytes = bmpString(passphrase);
   }
 
   /** Reads the contents of a .p12 file into `keys` and `certificates` */
@@ -66,8 +69,24 @@ export class PKCS12 {
    * This is also where a wrong passphrase shows up. */
   protected verifyMAC(macData: any, authSafe: Uint8Array) {
     let hash = sanitize.translate(macData.mac.digestAlgorithm.algorithm, kHashes);
+    if (this.macMatches(macData, authSafe, hash)) {
+      return;
+    }
+    // An empty passphrase and no passphrase at all are 2 different keys, and
+    // the file does not say which of them the app that wrote it used, so try
+    // the other one as well. This is the only place that can tell them apart.
+    if (!this.passphrase) {
+      this.passphraseBytes = kNoPassphrase;
+      if (this.macMatches(macData, authSafe, hash)) {
+        return;
+      }
+    }
+    throw new Error(gt`Wrong passphrase for this file`);
+  }
+
+  protected macMatches(macData: any, authSafe: Uint8Array, hash: Hash): boolean {
     let key = this.deriveKey(KeyPurpose.MAC, hash.outputLen, macData.macSalt, macData.iterations, hash);
-    assert(!indexedDB.cmp(hmac(hash, key, authSafe), macData.mac.digest), gt`Wrong passphrase for this file`);
+    return !indexedDB.cmp(hmac(hash, key, authSafe), macData.mac.digest);
   }
 
   /** @returns the `SafeContents` of one part of the file, decrypted if needed */
@@ -149,7 +168,7 @@ export class PKCS12 {
     let rounds = sanitize.integerRange(Number(iterations), 1, 10000000);
     let blockLength = hash.blockLen;
     let diversifier = new Uint8Array(blockLength).fill(purpose);
-    let input = concat(repeatToBlocks(salt, blockLength), repeatToBlocks(bmpString(this.passphrase), blockLength));
+    let input = concat(repeatToBlocks(salt, blockLength), repeatToBlocks(this.passphraseBytes, blockLength));
     let derived = new Uint8Array(length);
     for (let pos = 0; pos < length; pos += hash.outputLen) {
       let block = hash(concat(diversifier, input));
@@ -177,6 +196,12 @@ enum KeyPurpose {
 /** The hash functions that a .p12 file may use, by the name of their OID */
 const kHashes = { sha1, sha256, sha384, sha512 };
 type Hash = typeof sha1;
+
+/** Some apps write a file without any passphrase, rather than with an empty
+ * one, and then the passphrase is left out of the key derivation entirely.
+ * That is a different key than the one an empty passphrase gives.
+ * RFC 7292 appendix B.1 */
+const kNoPassphrase = new Uint8Array(0);
 
 /** The passphrase as PKCS#12 uses it: UTF-16, big endian, with a final null.
  * Characters outside the BMP go in as their 2 surrogates,

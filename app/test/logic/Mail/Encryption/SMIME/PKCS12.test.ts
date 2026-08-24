@@ -100,6 +100,11 @@ describe("PKCS#12 import", () => {
     expect(key.userIDs.contents).toEqual([kEmailAddress]);
   });
 
+  test("No passphrase at all, which is a different key than an empty one", async () => {
+    let p12 = await readFixture(kNoPassphraseFixture, "");
+    expectKeyOfCertificate(p12);
+  });
+
   test("A passphrase that the caller never set is a bug, not an empty one", async () => {
     expect(() => new PKCS12(undefined as any)).toThrow(/passphrase/i);
   });
@@ -411,6 +416,49 @@ const kEmptyPassphraseFixture = `
   ceUPbhtKlSTZvCaCOSDrM6WxNGKfoHFzjDElMCMGCSqGSIb3DQEJFTEWBBQpqFSv
   5Vo3CkV4uz/S03tks43T6TBBMDEwDQYJYIZIAWUDBAIBBQAEIEe6U/xHhszXFgAT
   xd4i9ibrK6dOoxmfxqXsDhVfGdPQBAhCa7Fc4FL1RgICCAA=
+`;
+
+/** The same file, but written without any passphrase instead of with an
+ * empty one, so its MAC leaves the passphrase out of the key derivation.
+ * The MAC comes from `openssl kdf PKCS12KDF` with an empty `hexpass`,
+ * and `openssl pkcs12 -passin pass:` reads the file. */
+const kNoPassphraseFixture = `
+  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
 `;
 
 /** AES again, but the passphrase is "Bärchen€" */
