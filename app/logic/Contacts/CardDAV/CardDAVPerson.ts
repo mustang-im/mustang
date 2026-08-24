@@ -62,7 +62,7 @@ export class CardDAVPerson extends Person {
     } else {
       let vCard = personToVCard(this);
       console.log("creating with vCard", vCard);
-      let filename = this.id + ".vcf";
+      let filename = sanitize.filename(this.id) + ".vcf";
       let response = await this.addressbook.client.createVCard({
         addressBook: this.addressbook.davAddressbook,
         vCardString: vCard,
