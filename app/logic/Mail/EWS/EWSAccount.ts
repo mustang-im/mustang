@@ -999,10 +999,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
-    let isPrimary = !dependentAcc && folder.DistinguishedFolderId == "calendar";
-    if (isPrimary) {
-      calendar.useForInvitations = true;
-    } else if (folder.DisplayName) {
+    let isPrimary = folder.DistinguishedFolderId == "calendar";
+    calendar.useForInvitations = isPrimary;
+    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
       calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (dependentAcc) {
@@ -1121,6 +1120,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
     await calendar.startup();
     return calendar;

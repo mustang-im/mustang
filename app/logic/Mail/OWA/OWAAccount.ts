@@ -655,10 +655,9 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
     calendar.initFromMainAccount(this);
-    let isPrimary = !dependentAcc && folder.DistinguishedFolderId == "calendar";
-    if (isPrimary) {
-      calendar.useForInvitations = true;
-    } else if (folder.DisplayName) {
+    let isPrimary = folder.DistinguishedFolderId == "calendar";
+    calendar.useForInvitations = isPrimary;
+    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
       calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
     if (dependentAcc) {
@@ -739,6 +738,7 @@ export class OWAAccount extends ExchangeMailAccount {
     calendar.name = `${person.name} ${folder.DisplayName}`;
     calendar.username = person.emailAddress;
     calendar.folderID = folder.FolderId.Id;
+    calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
     return calendar;

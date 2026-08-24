@@ -12,10 +12,25 @@ export class ExchangeMailAccount extends MailAccount {
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
 
   get calendarsAvailable(): Collection<Calendar> {
-    let dependentCalendars = this.dependentAccounts().filterObservable(acc => acc instanceof ExchangeCalendar && acc.useForInvitations) as ArrayColl<Calendar>;
-    return dependentCalendars?.hasItems
-      ? dependentCalendars
-      : appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
+    let mailboxCalendars = this.calendarsOfMailbox(this.username);
+    if (mailboxCalendars.hasItems) {
+      return mailboxCalendars;
+    }
+    if (this.isDependentAccount) {
+      let delegateCalendars = this.calendarsOfMailbox(this.mainAccount.username);
+      if (delegateCalendars.hasItems) {
+        return delegateCalendars;
+      }
+    }
+    return appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
+  }
+
+  /** A mailbox shared with us and its calendars are siblings, not our dependent accounts. */
+  protected calendarsOfMailbox(username: string): ArrayColl<Calendar> {
+    return (this.mainAccount ?? this).dependentAccounts().filterObservable(acc =>
+      acc instanceof ExchangeCalendar &&
+      acc.useForInvitations &&
+      acc.username == username) as ArrayColl<Calendar>;
   }
 
   async deleteIt(): Promise<void> {
