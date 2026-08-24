@@ -162,9 +162,9 @@ export class SQLEvent extends Event {
     assert(event.dbID, "Need to save event before attachment");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO eventAttachment (
-        eventID, filename, filepathLocal, mimeType, size, pID
+        eventID, filename, filepathLocal, mimeType, size, pID, url
       ) VALUES (
-        ${event.dbID}, ${a.filename}, ${await relativeFilepath(a)}, ${a.mimeType}, ${a.size}, ${a.pID}
+        ${event.dbID}, ${a.filename}, ${await relativeFilepath(a)}, ${a.mimeType}, ${a.size}, ${a.pID}, ${a.url}
       )`);
   }
 
@@ -174,6 +174,7 @@ export class SQLEvent extends Event {
         mimeType = ${a.mimeType},
         size = ${a.size},
         pID = COALESCE(${a.pID}, pID),
+        url = COALESCE(${a.url}, url),
         filepathLocal = COALESCE(${await relativeFilepath(a)}, filepathLocal)
       WHERE id = ${rowID}
       `);
@@ -314,7 +315,7 @@ export class SQLEvent extends Event {
   protected static async readAttachments(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        filename, filepathLocal, mimeType, size, pID
+        filename, filepathLocal, mimeType, size, pID, url
       FROM eventAttachment
       WHERE eventID = ${event.dbID}
       `) as any;
@@ -327,6 +328,7 @@ export class SQLEvent extends Event {
         a.filepathLocal = await absoluteFilepath(sanitize.string(row.filepathLocal, null));
         a.size = sanitize.integer(row.size, null);
         a.pID = sanitize.string(row.pID, null);
+        a.url = sanitize.url(row.url, null);
         a.disposition = ContentDisposition.attachment;
         attachments.push(a);
       } catch (ex) {

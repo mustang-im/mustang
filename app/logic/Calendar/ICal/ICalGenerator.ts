@@ -16,15 +16,15 @@ export async function getICal(event: Event, method?: iCalMethod): Promise<string
   }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
-  await addVEvent(lines, event);
+  await addVEvent(lines, event, method);
   for (let exception of event.exceptions) {
-    await addVEvent(lines, exception);
+    await addVEvent(lines, exception, method);
   }
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
 }
 
-async function addVEvent(lines: (string | string[])[], event: Event): Promise<void> {
+async function addVEvent(lines: (string | string[])[], event: Event, method?: iCalMethod): Promise<void> {
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
@@ -114,18 +114,29 @@ async function addVEvent(lines: (string | string[])[], event: Event): Promise<vo
       break;
     }
   }
-  await addAttachments(lines, event);
+  await addAttachments(lines, event, method);
   lines.push(["END", "VEVENT"]);
 }
 
-/** Inline attachments, RFC 5545 3.8.1.1.
- * `FILENAME` is RFC 8607, `X-FILENAME` is what Outlook writes. */
-async function addAttachments(lines: (string | string[])[], event: Event): Promise<void> {
+/** Attachments, RFC 5545 3.8.1.1.
+ * `SIZE` and `FILENAME` are RFC 8607, `X-FILENAME` is what Outlook writes.
+ * @param method If this iCal goes out as an email invitation, we have to send the
+ *   files themselves, because the invitees have no access to our file storage. */
+async function addAttachments(lines: (string | string[])[], event: Event, method?: iCalMethod): Promise<void> {
   if (event.attachments.isEmpty) {
     return;
   }
-  await event.loadAttachments();
+  if (event.attachments.some(attachment => !attachment.content && (method || !attachment.url))) {
+    await event.loadAttachments(); // we need the file contents of these
+  }
   for (let attachment of event.attachments) {
+    if (attachment.url && !method) {
+      // The server stores the file outside of the event, @see `Attachment.url`
+      let size = attachment.size ?? attachment.content?.size;
+      lines.push(["ATTACH", "FMTTYPE", attachment.mimeType, "FILENAME", attachment.filename,
+        ...(size ? ["SIZE", String(size)] : []), attachment.url]);
+      continue;
+    }
     if (!attachment.content) {
       continue; // We can't send what we don't have
     }
