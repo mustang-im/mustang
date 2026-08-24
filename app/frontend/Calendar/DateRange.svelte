@@ -1,5 +1,5 @@
 <hbox class="date-range-header">
-  <hbox class="date-range">{@html htmlMonthYear(date)}</hbox>
+  <hbox class="date-range">{@html htmlMonthYear(date, showDays)}</hbox>
   <Button classes="previous-button" label={$t`Previous ${dateInterval} days`} icon={ChevronLeftIcon} onClick={pagePrevious} iconSize="16px" plain iconOnly />
   <Button classes="next-button" label={$t`Next ${dateInterval} days`} icon={ChevronRightIcon} onClick={pageNext} iconSize="16px" plain iconOnly />
 </hbox>
@@ -8,10 +8,14 @@
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
+  import { getWeekStart } from "../Util/date";
   import { getDateTimeLocale, t } from "../../l10n/l10n";
 
   export let date = new Date(); /* in/out */
+  /** Days to page forward and back */
   export let dateInterval: number; /* in */
+  /** Days visible in the view. Week views start on Monday, not on `date`. */
+  export let showDays = dateInterval; /* in */
 
   // <copied to="MonthView.svelte">
   function pageNext() {
@@ -28,10 +32,16 @@
   }
   // </copied>
 
-  function monthYear(date): string {
-    // Show the month that covers most of the current date range.
-    date = new Date(date);
-    date.setDate(date.getDate() + (dateInterval >> 1));
+  /** @returns The middle of the visible days, i.e. the month
+   * that covers most of the current date range. */
+  function middleOfRange(date: Date): Date {
+    // Week views start on the Monday of the week, not on `date`
+    let middle = showDays > 3 ? getWeekStart(date) : new Date(date);
+    middle.setDate(middle.getDate() + (showDays >> 1));
+    return middle;
+  }
+
+  function monthYear(date: Date): string {
     return date.toLocaleDateString(getDateTimeLocale(), {
       year: "numeric",
       month: "long",
@@ -39,10 +49,11 @@
     });
   }
 
-  function htmlMonthYear(date): string {
-    let str = monthYear(date);
-    let year = date.getFullYear();
-    return str.replace(year, `&nbsp;<span class="year">${year}</span>&nbsp;`);
+  function htmlMonthYear(date: Date, _showDays: number): string {
+    let middle = middleOfRange(date);
+    let str = monthYear(middle);
+    let year = middle.getFullYear();
+    return str.replace(String(year), `&nbsp;<span class="year">${year}</span>&nbsp;`);
   }
 </script>
 

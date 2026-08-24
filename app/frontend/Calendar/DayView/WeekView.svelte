@@ -3,7 +3,7 @@
     <slot name="top-left" />
     <hbox flex />
     <slot name="top-center">
-      <DateRange bind:date={start} dateInterval={showDays > 3 ? 7 : 1} />
+      <DateRange bind:date={start} dateInterval={showDays > 3 ? 7 : 1} {showDays} />
       <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} onClick={goToToday} iconSize="16px" plain iconOnly />
     </slot>
     <slot name="top-center" />

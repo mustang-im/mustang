@@ -1,7 +1,7 @@
 <!-- <copied from="EditCalendar.svelte"> -->
 <vbox class="calendar">
   <hbox class="range-header">
-    <DateRange bind:date={showDate} dateInterval={1} />
+    <DateRange bind:date={showDate} dateInterval={1} {showDays} />
   </hbox>
   <DayViewGrid
     events={appGlobal.calendarEvents}
