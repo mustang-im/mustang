@@ -5,13 +5,13 @@
     hasRight={!appGlobal.isMobile}
     >
     <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
-      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
+      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$dateIntervalSetting.value}>
         <hbox slot="top-left">
           {#if !$appGlobal.isMobile}
             <TitleBarLeft />
           {/if}
         </hbox>
-        <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
+        <TitleBarRight bind:dateInterval={dateIntervalSetting.value} slot="top-right" />
       </MainView>
     </vbox>
     <vbox flex class="sidebar" slot="right">
@@ -28,7 +28,7 @@
 </vbox>
 
 <script lang="ts">
-  import { selectedCalendar, selectedDateInterval, selectedEvent, startDate } from "./selected";
+  import { selectedCalendar, selectedEvent, startDate, type DateInterval } from "./selected";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
@@ -36,8 +36,11 @@
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { getLocalStorage } from "../Util/LocalStorage";
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
+
+  let dateIntervalSetting = getLocalStorage("calendar.view", 2 as DateInterval);
 </script>
 
 <style>
