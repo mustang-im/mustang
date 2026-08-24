@@ -97,11 +97,10 @@ export class MailAccount extends TCPAccount {
   /** When accepting an incoming invitation, put the meeting in this calendar, by default.
    * The user can still change it in the dropdown. */
   get calendar(): Calendar | null {
-    let cal = appGlobal.calendars.find(cal => cal.id == this.calendarID);
-    if (!cal) {
-      this.calendar = cal = this.calendarsAvailable.first;
-    }
-    return cal;
+    // Don't store the fallback: a calendar picked while the account's own
+    // calendars were not known yet would stay the default forever.
+    let available = this.calendarsAvailable;
+    return available.find(cal => cal.id == this.calendarID) ?? available.first;
   }
   set calendar(cal: Calendar | null) {
     this.calendarID = cal?.id;
