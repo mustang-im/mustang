@@ -21,6 +21,9 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:Flag",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Importance",
         /*}, {
           __type: "PropertyUri:#Exchange",
           ExtendedFieldURI: {
@@ -110,6 +113,9 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
       }, {
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:Flag",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Importance",
         /* Non-MIME
         }, {
           __type: "PropertyUri:#Exchange",

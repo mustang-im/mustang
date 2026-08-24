@@ -99,6 +99,8 @@ export class SQLEMail {
           isRead = ${email.isRead ? 1 : 0},
           isStarred = ${email.isStarred ? 1 : 0},
           isReplied = ${email.isReplied ? 1 : 0},
+          isForwarded = ${email.isForwarded ? 1 : 0},
+          isImportant = ${email.isImportant ? 1 : 0},
           isSpam = ${email.isSpam ? 1 : 0},
           isDraft = ${email.isDraft ? 1 : 0},
           threadID = COALESCE(${email.threadID}, threadID),
@@ -318,7 +320,7 @@ export class SQLEMail {
         outgoing,
         subject, plaintext, html,
         threadID, downloadComplete, json,
-        isRead, isStarred, isReplied, isDraft, isSpam
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
       `) as any;
@@ -368,6 +370,8 @@ export class SQLEMail {
     email.isRead = sanitize.boolean(row.isRead, false);
     email.isStarred = sanitize.boolean(row.isStarred, false);
     email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isForwarded = sanitize.boolean(row.isForwarded, false);
+    email.isImportant = sanitize.boolean(row.isImportant, false);
     email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
@@ -381,7 +385,7 @@ export class SQLEMail {
     if (!row) {
       row = await (await getDatabase()).get(sql`
       SELECT
-        isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete, json
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam, threadID, downloadComplete, json
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
@@ -392,6 +396,8 @@ export class SQLEMail {
     email.isRead = sanitize.boolean(row.isRead, false);
     email.isStarred = sanitize.boolean(row.isStarred, false);
     email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isForwarded = sanitize.boolean(row.isForwarded, false);
+    email.isImportant = sanitize.boolean(row.isImportant, false);
     email.isDraft = sanitize.boolean(row.isDraft, false);
     email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
@@ -534,7 +540,7 @@ export class SQLEMail {
         outgoing,
         subject,
         threadID, downloadComplete, json,
-        isRead, isStarred, isReplied, isDraft, isSpam
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
       ORDER BY dateSent DESC
@@ -602,7 +608,7 @@ export class SQLEMail {
         id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived, outgoing,
         subject, threadID, downloadComplete,
-        isRead, isStarred, isReplied, isSpam,
+        isRead, isStarred, isReplied, isForwarded, isImportant, isSpam,
         (SELECT name
          FROM emailPersonRel
            LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)

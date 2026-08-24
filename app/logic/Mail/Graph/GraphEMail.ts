@@ -49,8 +49,10 @@ export class GraphEMail extends EMail {
   }
 
   setFlagsLocal(json: TGraphEMail) {
-    // isNewArrived, isReplied, isSpam are not supported
+    // isNewArrived, isReplied, isForwarded, isSpam are not supported
     this.isRead = sanitize.boolean(json.isRead, true);
+    // Not `=`: The sender's `Importance:` header is not in the response
+    this.isImportant ||= json.importance == "high";
     this.isDraft = sanitize.boolean(json.isDraft, false);
     this.isStarred = json.flag?.flagStatus && json.flag.flagStatus != "notFlagged";
 
@@ -78,6 +80,9 @@ export class GraphEMail extends EMail {
     }
     if (email.isReplied) {
       flags.push("$answered");
+    }
+    if (email.isForwarded) {
+      flags.push("$forwarded");
     }
 
     for (let tag of email.tags) {
@@ -118,7 +123,7 @@ export class GraphEMail extends EMail {
       sentDateTime: email.sent?.toISOString(),
       receivedDateTime: email.received?.toISOString(),
       categories: GraphEMail.getGraphCategories(email),
-      importance: "normal",
+      importance: email.isImportant ? "high" : "normal",
       parentFolderId: email.folder.id,
       internetMessageHeaders: [] as TGraphEMailHeader[],
       isRead: email.isRead,

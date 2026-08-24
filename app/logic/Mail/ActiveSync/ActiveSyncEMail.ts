@@ -89,6 +89,15 @@ export class ActiveSyncEMail extends ExchangeEMail {
     if (wbxmljs.Flag != undefined) {
       this.isStarred = wbxmljs.Flag?.Status == "2";
     }
+    if (wbxmljs.Importance != undefined) {
+      // Not `=`: The sender's `Importance:` header is not in the sync response
+      this.isImportant ||= wbxmljs.Importance == "2";
+    }
+    if (wbxmljs.LastVerbExecuted != undefined) {
+      // 1 = reply to sender, 2 = reply to all, 3 = forward
+      this.isReplied = ["1", "2"].includes(wbxmljs.LastVerbExecuted);
+      this.isForwarded = wbxmljs.LastVerbExecuted == "3";
+    }
     if (this.folder.account.protocolVersion == "16.1" && wbxmljs.IsDraft != undefined) {
       this.isDraft = wbxmljs.IsDraft != "0";
     }

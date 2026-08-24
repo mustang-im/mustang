@@ -73,6 +73,8 @@ export const mailDatabaseSchema = sql`
     "isRead" BOOLEAN default false,
     "isStarred" BOOLEAN default false,
     "isReplied" BOOLEAN default false,
+    "isForwarded" BOOLEAN default false,
+    "isImportant" BOOLEAN default false,
     "isDraft" BOOLEAN default false,
     "isSpam" BOOLEAN default false,
     -- We have the full MIME source and saved it locally on disk, and parsed it into the DB.

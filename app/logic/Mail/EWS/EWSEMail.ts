@@ -121,6 +121,9 @@ export class EWSEMail extends ExchangeEMail {
     this.isRead = sanitize.boolean(xmljs.IsRead);
     this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
     this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;
+    this.isForwarded = xmljs.ExtendedProperty?.Value == 0x106;
+    // Not `=`: The sender's `Importance:` header is not in the sync response
+    this.isImportant ||= xmljs.Importance == "High";
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft, false);

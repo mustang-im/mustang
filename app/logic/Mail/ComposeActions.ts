@@ -132,11 +132,18 @@ export class ComposeActions {
     }
   }
 
-  async forwardInline(): Promise<EMail> {
-    await this.email.loadAttachments();
+  protected _forward(): EMail {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
+    this.email.markForwarded()
+      .catch(this.email.folder.account.errorCallback);
+    return forward;
+  }
+
+  async forwardInline(): Promise<EMail> {
+    await this.email.loadAttachments();
+    let forward = this._forward();
     forward.html = `<p></p>
     <p></p>
     <p></p>
@@ -166,9 +173,7 @@ export class ComposeActions {
 
   async forwardAsAttachment(): Promise<EMail> {
     await this.email.loadMIME();
-    let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
-    forward.mustEncrypt = this.email.wasEncrypted;
+    let forward = this._forward();
     let a = forward.newAttachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;

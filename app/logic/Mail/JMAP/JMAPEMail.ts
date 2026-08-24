@@ -63,6 +63,9 @@ export class JMAPEMail extends EMail {
     this.isRead = sanitize.boolean(flags["$seen"], true);
     this.isStarred = sanitize.boolean(flags["$flagged"], false);
     this.isReplied = sanitize.boolean(flags["$answered"], false);
+    this.isForwarded = sanitize.boolean(flags["$forwarded"], false);
+    // Not `=`: The sender's `Importance:` header is not on the server
+    this.isImportant ||= sanitize.boolean(flags["$important"], false); // RFC 8457
     this.isDraft = sanitize.boolean(flags["$draft"], false);
     this.isSpam = sanitize.boolean(flags["$junk"], false);
 
@@ -81,6 +84,8 @@ export class JMAPEMail extends EMail {
     flags["$seen"] = email.isRead ? true : undefined;
     flags["$flagged"] = email.isStarred ? true : undefined;
     flags["$answered"] = email.isReplied ? true : undefined;
+    flags["$forwarded"] = email.isForwarded ? true : undefined;
+    flags["$important"] = email.isImportant ? true : undefined;
     flags["$draft"] = email.isDraft ? true : undefined;
     flags["$junk"] = email.isSpam ? true : undefined;
     for (let tag of email.tags) {
@@ -199,6 +204,11 @@ export class JMAPEMail extends EMail {
   async markReplied() {
     await super.markReplied();
     await this.setFlagServer("$answered", true);
+  }
+
+  async markForwarded() {
+    await super.markForwarded();
+    await this.setFlagServer("$forwarded", true);
   }
 
   async markDraft(isDraft = true) {

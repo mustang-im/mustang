@@ -74,6 +74,8 @@ export class EWSFolder extends ExchangeFolder {
                 FieldURI: "item:Categories",
               }, {
                 FieldURI: "item:Flag",
+              }, {
+                FieldURI: "item:Importance",
               }],
               t$ExtendedFieldURI: {
                 PropertyTag: IconIndexPidTag,
@@ -179,6 +181,8 @@ export class EWSFolder extends ExchangeFolder {
                 FieldURI: "item:Categories",
               }, {
                 FieldURI: "item:Flag",
+              }, {
+                FieldURI: "item:Importance",
               }],
               t$ExtendedFieldURI: {
                 PropertyTag: IconIndexPidTag,
@@ -283,6 +287,8 @@ export class EWSFolder extends ExchangeFolder {
                 FieldURI: "item:Categories",
               }, {
                 FieldURI: "item:Flag",
+              }, {
+                FieldURI: "item:Importance",
               /* Non-MIME
               }, {
                 FieldURI: "item:TextBody",

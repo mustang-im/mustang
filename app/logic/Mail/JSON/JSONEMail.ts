@@ -46,6 +46,8 @@ export class JSONEMail {
     json.isRead = email.isRead;
     json.isStarred = email.isStarred;
     json.isReplied = email.isReplied;
+    json.isForwarded = email.isForwarded;
+    json.isImportant = email.isImportant;
     json.isSpam = email.isSpam;
     json.isDraft = email.isDraft;
     json.threadID = email.threadID;
@@ -183,6 +185,8 @@ export class JSONEMail {
     email.isRead = sanitize.boolean(json.isRead, false);
     email.isStarred = sanitize.boolean(json.isStarred, false);
     email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isForwarded = sanitize.boolean(json.isForwarded, false);
+    email.isImportant = sanitize.boolean(json.isImportant, false);
     email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
     email.downloadComplete = sanitize.boolean(json.downloadComplete);
@@ -194,6 +198,8 @@ export class JSONEMail {
     email.isRead = sanitize.boolean(json.isRead, false);
     email.isStarred = sanitize.boolean(json.isStarred, false);
     email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isForwarded = sanitize.boolean(json.isForwarded, false);
+    email.isImportant = sanitize.boolean(json.isImportant, false);
     email.isDraft = sanitize.boolean(json.isDraft, false);
     email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);

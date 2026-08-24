@@ -1,6 +1,6 @@
 import { appGlobal } from "../../app";
 import { mailDatabaseSchema } from "./createDatabase";
-import { createFolderIDDateSentIndex } from "./SQLEMailMigrate";
+import { createFolderIDDateSentIndex, addEMailStatusColumns } from "./SQLEMailMigrate";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { getSQLiteDatabase } from "../../util/backend-wrapper";
 
@@ -13,7 +13,7 @@ export async function getDatabase(): Promise<Database> {
     return mailDatabase;
   }
   mailDatabase = await getSQLiteDatabase("mail.db");
-  await mailDatabase.migrate(mailDatabaseSchema, createFolderIDDateSentIndex);
+  await mailDatabase.migrate(mailDatabaseSchema, createFolderIDDateSentIndex, addEMailStatusColumns);
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = WAL');
   return mailDatabase;

@@ -70,7 +70,9 @@ export class OWAEMail extends ExchangeEMail {
 
   setFlags(json: Record<string, any>) {
     this.isRead = sanitize.boolean(json.IsRead);
-    // don't know how to get new or replied status
+    // don't know how to get new, replied or forwarded status
+    // Not `=`: The sender's `Importance:` header is not in the response
+    this.isImportant ||= json.Importance == "High";
     this.isStarred = json.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(json.IsDraft);
