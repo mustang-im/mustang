@@ -605,18 +605,18 @@ export class OWAAccount extends ExchangeMailAccount {
 
   async listPossibleSubAccounts(): Promise<ArrayColl<Account>> {
     let accounts = await super.listPossibleSubAccounts();
-    if (this.mainAccount) {
+    if (this.isDependentAccount) {
       return accounts;
     }
     let response = await this.callOWA(new OWAGetPeopleFiltersRequest());
     let addressbooks = response.filter(ab => !ab.IsReadOnly && ab.FolderId?.Id);
     let result = await this.callOWA(owaFindFoldersRequest(true));
     let calendars = result.RootFolder.Folders.filter(folder => folder.FolderClass == "IPF.Appointment");
-    for (let account of this.dependentAccounts()) {
-      if (account instanceof OWAAccount) {
-        let result = await this.callOWA(owaSharedFolderRequest(["contacts", "calendar"], account.username));
+    for (let dependentAcc of this.dependentAccounts()) {
+      if (dependentAcc instanceof OWAAccount) {
+        let result = await this.callOWA(owaSharedFolderRequest(["contacts", "calendar"], dependentAcc.username));
         for (let folder of result.ResponseMessages.Items.filter(folder => folder.ResponseClass == "Success").map(folder => folder.Folders[0])) {
-          folder.account = account; // passed to creation functions below
+          folder.dependentAcc = dependentAcc; // passed to creation functions below
           if (folder.DistinguishedFolderId == "contacts") {
             addressbooks.push(folder);
           }
@@ -626,43 +626,43 @@ export class OWAAccount extends ExchangeMailAccount {
         }
       }
     }
-    accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.account)).filter(Boolean));
-    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.account)).filter(Boolean));
+    accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.dependentAcc)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
     return accounts;
   }
 
-  private createAddressbookAccount(folder: any, isMainAddressbook: boolean, account?: OWAAccount): OWAAddressbook | null {
+  private createAddressbookAccount(folder: any, isPrimary: boolean, dependentAcc?: OWAAccount): OWAAddressbook | null {
     assert(!folder.IsReadOnly && folder.FolderId?.Id, "Need writable addressbook");
     if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
     let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
     addressbook.initFromMainAccount(this);
-    if (!isMainAddressbook && folder.DisplayName) {
-      addressbook.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if (!isPrimary && folder.DisplayName) {
+      addressbook.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (account) {
-      addressbook.username = account.username;
+    if (dependentAcc) {
+      addressbook.username = dependentAcc.username;
     }
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, account?: OWAAccount): OWACalendar | null{
+  private createCalendarAccount(folder: any, dependentAcc?: OWAAccount): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
     let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
     calendar.initFromMainAccount(this);
-    let isMainCalendar = !account && folder.DistinguishedFolderId == "calendar";
-    if (isMainCalendar) {
+    let isPrimary = !dependentAcc && folder.DistinguishedFolderId == "calendar";
+    if (isPrimary) {
       calendar.useForInvitations = true;
     } else if (folder.DisplayName) {
-      calendar.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (account) {
-      calendar.username = account.username;
+    if (dependentAcc) {
+      calendar.username = dependentAcc.username;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
