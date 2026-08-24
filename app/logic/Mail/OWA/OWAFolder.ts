@@ -17,7 +17,7 @@ import {
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
+import { base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -171,7 +171,7 @@ export class OWAFolder extends ExchangeFolder {
           if (email && !email.downloadComplete) {
             try {
               let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
-              email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+              email.mime = base64ToUint8Array(mimeBase64);
               await email.parseMIME();
               await email.saveCompleteMessage();
               downloadedEmail.add(email);

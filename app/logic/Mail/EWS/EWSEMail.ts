@@ -10,7 +10,7 @@ import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
+import { base64ToUint8Array, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
@@ -49,7 +49,7 @@ export class EWSEMail extends ExchangeEMail {
       };
       let result = await this.folder.account.callEWS(request);
       let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      this.mime = base64ToUint8Array(mimeBase64);
       await this.parseMIME();
       await this.saveCompleteMessage();
     });

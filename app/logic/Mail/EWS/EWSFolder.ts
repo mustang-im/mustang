@@ -10,7 +10,7 @@ import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, blobToBase64, ensureArray } from "../../util/util";
+import { base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
@@ -348,7 +348,7 @@ export class EWSFolder extends ExchangeFolder {
             let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
             if (email && !email.downloadComplete) {
               let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-              email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+              email.mime = base64ToUint8Array(mimeBase64);
               await email.parseMIME();
               await email.saveCompleteMessage();
               downloadedEmail.add(email);

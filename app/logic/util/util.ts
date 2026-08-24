@@ -59,12 +59,7 @@ export async function blobToDataURL(blob: Blob): Promise<URLString> {
   });
 }
 
-export async function base64ToArrayBuffer(base64: string, mimetype: string): Promise<ArrayBuffer> {
-  let res = await fetch(`data:${mimetype};base64,` + base64);
-  return await res.arrayBuffer();
-}
-
-/** Decodes base64. Unlike `base64ToArrayBuffer()`, this is synchronous. */
+/** Decodes base64. */
 export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   // The cast is needed only because `fromBase64()` is declared to return a
   // `Uint8Array` over any buffer type. It never returns a `SharedArrayBuffer`.

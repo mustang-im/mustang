@@ -10,7 +10,7 @@ import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
+import { base64ToUint8Array, assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -29,7 +29,7 @@ export class OWAEMail extends ExchangeEMail {
     await this.downloadRunOnce.runOnce(async () => {
       let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
       let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
-      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      this.mime = base64ToUint8Array(mimeBase64);
       await this.parseMIME();
       await this.saveCompleteMessage();
     });
