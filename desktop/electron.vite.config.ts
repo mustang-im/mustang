@@ -39,8 +39,9 @@ export default defineConfig({
       nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
       svelte(),
       sentryVitePlugin({
-        org: "mustang-jq",
-        project: "mustang",
+        url: "https://errorlog.parula.app/",
+        org: "bugsink-has-no-orgs",
+        project: "parula",
         authToken: process.env.SENTRY_AUTH_TOKEN,
         disable: !production,
       }),

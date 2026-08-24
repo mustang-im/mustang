@@ -11,7 +11,7 @@ import * as Sentry from "@sentry/svelte";
 
 if (production) {
   Sentry.init({
-    dsn: "https://7fc67f1156f0ea94c98a4ec5030f24fc@o4507566955757568.ingest.de.sentry.io/4507566958313552",
+    dsn: "https://dade72a5be5a4a84a3171531b279181a@errorlog.parula.app/3",
     release: appName + "@" + appVersion,
     // An array here would *add* to the default integrations, not replace them.
     // `BrowserSession` sends a session to the server on every navigation.
