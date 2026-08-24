@@ -268,13 +268,16 @@ type WireBody = {
   contentType?: string;
 };
 
+/** The ky options that carry the body, `{}` when there is none.
+ * Not `undefined`: this crosses JPC, where an argument that is `undefined`
+ * arrives as `null`, and ky accepts no options but not null ones. */
 function kyBody(body: WireBody | null): any {
   if (body?.json != null) {
     return { json: body.json };
   } else if (body?.bytes) {
     return { body: body.bytes };
   }
-  return undefined;
+  return {};
 }
 
 /** MLS needs API v5. Below that, we could only talk Proteus, which we do not implement. */
