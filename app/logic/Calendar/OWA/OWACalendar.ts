@@ -136,7 +136,12 @@ export class OWACalendar extends ExchangeCalendar {
     }
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
+        if (!event && parentEvent) {
+          // `toLocalMidnight()`, because the master converted its own times, too
+          event = parentEvent.getOccurrenceByDate(parentEvent.toLocalMidnight(sanitize.date(item.RecurrenceId))) as OWAEvent;
+        }
+        event ??= this.newEvent();
         event.fromJSON(item);
         await event.saveLocally();
         events.add(event);
