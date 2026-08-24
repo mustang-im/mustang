@@ -87,6 +87,28 @@ describe("NTLM per-TCP-connection authentication", () => {
     pool.close();
   });
 
+  it("runs requests that arrive while other requests are queued", async () => {
+    let pool = new NTLMConnectionPool(account);
+    let responses = 0;
+    // Like a sync loop or a dependent account: The response triggers the next request
+    const chain = async (id: number, left: number) => {
+      let response = await pool.request(`<request>${id}</request>`);
+      expect(await response.text()).toBe(`<response><request>${id}</request></response>`);
+      responses++;
+      if (left > 1) {
+        await chain(id, left - 1);
+      }
+    };
+    let chains = [];
+    for (let i = 0; i < 14; i++) {
+      chains.push(chain(i, 5));
+    }
+    await Promise.all(chains);
+    expect(responses).toBe(14 * 5);
+    expect(server.rejectedRequests).toBe(0);
+    pool.close();
+  });
+
   it("re-authenticates when the server closes connections between requests", async () => {
     server.closeAfterResponses = 2; // each connection dies right after the handshake + first request
     let pool = new NTLMConnectionPool(account);
