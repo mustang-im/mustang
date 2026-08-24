@@ -54,6 +54,8 @@ export class CardDAVPerson extends Person {
         vCard: this.getDAVObject(vCard),
       });
       await assertHTTPResponseOK(response, gt`Saving the contact failed`);
+      this.originalVCard = vCard;
+      await this.readETag(response);
     } else {
       let vCard = personToVCard(this);
       console.log("creating with vCard", vCard);
@@ -66,8 +68,17 @@ export class CardDAVPerson extends Person {
       await assertHTTPResponseOK(response, gt`Saving the contact failed`);
       this.url = new URL(filename, this.addressbook.addressbookURL).href;
       this.originalVCard = vCard;
+      await this.readETag(response);
     }
     await super.saveToServer();
+  }
+
+  /** We must send the current ETag with our next save, otherwise the server gives
+   * `412 Precondition failed`. If the server changed the contact itself,
+   * it sends no ETag, and we have none until the next sync. */
+  protected async readETag(response: Response) {
+    let headers = await response.headers;
+    this.etag = await headers.get("ETag");
   }
 
   async saveTask() {
