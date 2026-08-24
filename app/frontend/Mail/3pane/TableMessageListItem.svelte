@@ -1,5 +1,7 @@
 <!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
-<hbox class="direction" style="--account-color: {$message.folder.account.color}" class:read={$message.isRead}>
+<hbox class="direction" style="--account-color: {$message.folder.account.color}" class:read={$message.isRead}
+  on:contextmenu={contextMenu.onContextMenu}
+  >
   {#if $message.outgoing}
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
@@ -17,7 +19,7 @@
     </hbox>
   {/if}
 </hbox>
-<hbox class="attachment">
+<hbox class="attachment" on:contextmenu={contextMenu.onContextMenu}>
   {#if $message.hasVisibleAttachments}
     <AttachmentIcon size="12px" />
   {/if}
@@ -28,12 +30,11 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{contactName}</hbox>
-<hbox class="subject-tags">
+<hbox class="subject-tags" on:contextmenu={contextMenu.onContextMenu}>
   <hbox class="subject"
     class:unread={!$message.isRead}
     draggable="true"
     on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
-    on:contextmenu={contextMenu.onContextMenu}
     >{$message.subject}</hbox>
   <hbox flex />
   <hbox class="tags" class:tagged={$tags.hasItems}>
@@ -58,7 +59,7 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{getDateTimeString($message.sent)}</hbox>
-<hbox class="buttons hover">
+<hbox class="buttons hover" on:contextmenu={contextMenu.onContextMenu}>
   <hbox class="move button" bind:this={popupAnchor}>
     <Button
       icon={FolderActionsIcon}
