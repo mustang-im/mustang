@@ -247,7 +247,7 @@ function setValue(container: Record<string, string[]>, key: string, value: strin
     delete container[key];
     return;
   }
-  if (typeof value == "string") {
+  if (typeof value == "string" && parameters.value != "uri") {
     value = value.split(";");
   }
   let line = key.toUpperCase();
@@ -256,7 +256,8 @@ function setValue(container: Record<string, string[]>, key: string, value: strin
     line += ";" + parameter.toUpperCase() + "=" + parameters[parameter];
   }
   line += ":";
-  line += value.map(value => escaped(value, false)).join(";");
+  // `;` and `,` are part of a URI, e.g. of a `data:` URL, and must stay unescaped
+  line += typeof value == "string" ? value : value.map(value => escaped(value, false)).join(";");
   container[key.replace("-", "")] = [line];
 }
 

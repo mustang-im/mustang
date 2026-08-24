@@ -9,8 +9,8 @@ const replacement = `BEGIN:VCARD
 VERSION:4.0
 PRODID:-//Beonex//appName//EN
 FN:Joe Bloggs
-PHOTO;VALUE=uri:data:image/gif;base64\\,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAAB
- AAEAAAICTAEAOw==
+PHOTO;VALUE=uri:data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABA
+ AEAAAICTAEAOw==
 N:Bloggs;Joe;;;
 EMAIL;TYPE=WORK,PREF;PREF=1:joe@example.org
 EMAIL;TYPE=WORK:bloggs@example.org
