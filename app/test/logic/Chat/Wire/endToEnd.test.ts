@@ -415,9 +415,17 @@ async function login(user: FakeUser): Promise<WireAccount> {
   return account;
 }
 
-/** Closes the app. What is left is what a restart would find on disk. */
+/** Closes the app. What is left is what a restart would find on disk.
+ *
+ * Through JSON, because that is what `SQLAccount.save()` does with it: anything
+ * in there that JSON cannot carry - a `Uint8Array`, a `Map`, a `Date` - would
+ * come back as something else, and handing the object straight back would hide
+ * that. */
 async function close(account: WireAccount): Promise<SavedAccount> {
-  let saved = { config: account.toConfigJSON(), storage: storages.get(account) };
+  let saved = {
+    config: JSON.parse(JSON.stringify(account.toConfigJSON())),
+    storage: storages.get(account),
+  };
   await account.disconnect();
   return saved;
 }
