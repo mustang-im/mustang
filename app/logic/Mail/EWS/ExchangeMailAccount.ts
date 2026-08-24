@@ -17,4 +17,15 @@ export class ExchangeMailAccount extends MailAccount {
       ? dependentCalendars
       : appGlobal.calendars.filterObservable(cal => cal.canAcceptAnyInvitation);
   }
+
+  async deleteIt(): Promise<void> {
+    if (this.isDependentAccount) {
+      let dependentOfDelegate = this.mainAccount.dependentAccounts()
+        .filterOnce(acc => acc != this && acc.username == this.username);
+      for (let sibling of dependentOfDelegate) {
+        await sibling.deleteIt();
+      }
+    }
+    await super.deleteIt();
+  }
 }
