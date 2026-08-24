@@ -11,6 +11,7 @@ import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
+import { Lock } from "../../util/flow/Lock";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -95,58 +96,67 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     await this.save();
   }
 
+  protected readonly syncFolderLock = new Lock();
+
   protected async syncFolder(): Promise<void> {
-    let sync = {
-      m$SyncFolderItems: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-        },
-        m$SyncFolderId: {
-          t$FolderId: {
-            Id: this.folderID,
+    // A second sync run would start from the same `syncState`
+    // and therefore create the same new events a second time.
+    let lock = await this.syncFolderLock.lock();
+    try {
+      let sync = {
+        m$SyncFolderItems: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
           },
-        },
-        m$SyncState: this.syncState,
-        m$MaxChangesReturned: kMaxCount,
-      }
-    };
-    let events: EWSEvent[] = [];
-    let result: any = { IncludesLastItemInRange: "false" };
-    while (result.IncludesLastItemInRange === "false") {
-      try {
-        result = await this.account.callEWS(sync);
-      } catch (ex) {
-        if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
-          throw ex;
+          m$SyncFolderId: {
+            t$FolderId: {
+              Id: this.folderID,
+            },
+          },
+          m$SyncState: this.syncState,
+          m$MaxChangesReturned: kMaxCount,
         }
-        sync.m$SyncFolderItems.m$SyncState = null;
-        result = await this.account.callEWS(sync);
-      }
-      let eventIDs: any[] = [];
-      for (let changes of [result.Changes.Update, result.Changes.Create]) {
-        if (changes) {
-          for (let change of ensureArray(changes)) {
-            if (change.CalendarItem) {
-              eventIDs.push(change.CalendarItem.ItemId);
-            }
-            if (change.Task) {
-              eventIDs.push(change.Task.ItemId);
+      };
+      let events: EWSEvent[] = [];
+      let result: any = { IncludesLastItemInRange: "false" };
+      while (result.IncludesLastItemInRange === "false") {
+        try {
+          result = await this.account.callEWS(sync);
+        } catch (ex) {
+          if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
+            throw ex;
+          }
+          sync.m$SyncFolderItems.m$SyncState = null;
+          result = await this.account.callEWS(sync);
+        }
+        let eventIDs: any[] = [];
+        for (let changes of [result.Changes.Update, result.Changes.Create]) {
+          if (changes) {
+            for (let change of ensureArray(changes)) {
+              if (change.CalendarItem) {
+                eventIDs.push(change.CalendarItem.ItemId);
+              }
+              if (change.Task) {
+                eventIDs.push(change.Task.ItemId);
+              }
             }
           }
         }
-      }
-      if (result.Changes.Delete) {
-        for (let deletion of ensureArray(result.Changes.Delete)) {
-          let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
-          if (event) {
-            await event.deleteLocally();
+        if (result.Changes.Delete) {
+          for (let deletion of ensureArray(result.Changes.Delete)) {
+            let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+            if (event) {
+              await event.deleteLocally();
+            }
           }
         }
+        await this.getEvents(eventIDs, events);
+        this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       }
-      await this.getEvents(eventIDs, events);
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      this.events.addAll(events);
+    } finally {
+      lock.release();
     }
-    this.events.addAll(events);
   }
 
   getEventByItemID(id: string): EWSEvent | undefined {
