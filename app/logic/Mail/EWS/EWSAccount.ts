@@ -30,7 +30,7 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -203,7 +203,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
             t$ContentId: attachment.contentID,
             t$Size: attachment.size,
             t$IsInline: attachment.disposition == ContentDisposition.inline,
-            t$Content: await blobToBase64(attachment.content),
+            t$Content: await attachment.contentAsBase64(),
           }))),
         }, "item:Attachments");
       }

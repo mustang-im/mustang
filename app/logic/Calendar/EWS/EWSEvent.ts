@@ -13,7 +13,7 @@ import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -191,7 +191,7 @@ export class EWSEvent extends ExchangeEvent {
             t$FileAttachment: {
               t$Name: attachment.filename,
               t$ContentType: attachment.mimeType,
-              t$Content: await blobToBase64(attachment.content),
+              t$Content: await attachment.contentAsBase64(),
             },
           },
         },

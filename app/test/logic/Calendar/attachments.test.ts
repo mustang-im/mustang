@@ -16,6 +16,7 @@ import { ICalEMailProcessor } from "../../../logic/Calendar/ICal/ICalEMailProces
 import { Attachment, ContentDisposition } from "../../../logic/Abstract/Attachment";
 import type { EMail } from "../../../logic/Mail/EMail";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
+import { InMemoryFileReader } from "../util/fileReader";
 import { mkdtempSync } from "node:fs";
 import fsPromises from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -29,16 +30,7 @@ let tempDir: string;
 const kContent = new Uint8Array([1, 2, 3, 4]);
 
 beforeAll(async () => {
-  // node has no `FileReader`, which `blobToBase64()` uses for the iCal attachments
-  globalThis.FileReader ??= class {
-    result: string;
-    onloadend: () => void;
-    async readAsDataURL(blob: Blob) {
-      let base64 = Buffer.from(await blob.arrayBuffer()).toString("base64");
-      this.result = `data:${blob.type};base64,${base64}`;
-      this.onloadend();
-    }
-  } as any;
+  globalThis.FileReader ??= InMemoryFileReader as any; // for the iCal attachments
 
   tempDir = mkdtempSync(path.join(tmpdir(), "calendar-test-"));
   appGlobal.remoteApp = {

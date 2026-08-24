@@ -4,9 +4,10 @@ import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
-import { NotImplemented, type URLString } from "../util/util";
+import { blobToBase64, NotImplemented, UserError, type URLString } from "../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import { RunOnce } from "../util/flow/RunOnce";
+import { gt } from "../../l10n/l10n";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -110,6 +111,15 @@ export class Attachment extends Observable {
       return;
     }
     await this.message.loadAttachments?.();
+  }
+
+  /** The file contents, base64-encoded, to send it to the server */
+  async contentAsBase64(): Promise<string> {
+    try {
+      return await blobToBase64(this.content);
+    } catch (ex) {
+      throw new UserError(gt`Could not read the attachment ${this.filename}. The file may have been moved, deleted or changed on disk.`);
+    }
   }
 
   /** Open the native desktop app with this file */

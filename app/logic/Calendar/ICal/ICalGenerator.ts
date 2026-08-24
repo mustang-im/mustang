@@ -4,7 +4,7 @@ import { VTimezone } from "./VTimezone";
 import { myTimezone } from "../../../frontend/Util/date";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64 } from "../../util/util";
+import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
 export async function getICal(event: Event, method?: iCalMethod): Promise<string | null> {
@@ -154,7 +154,7 @@ async function addAttachments(lines: (string | string[])[], event: Event): Promi
     }
     lines.push(["ATTACH", "VALUE", "BINARY", "ENCODING", "BASE64",
       "FMTTYPE", attachment.mimeType, "FILENAME", attachment.filename, "X-FILENAME", attachment.filename,
-      await blobToBase64(attachment.content)]);
+      await attachment.contentAsBase64()]);
   }
 }
 

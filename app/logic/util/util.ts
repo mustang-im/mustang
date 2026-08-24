@@ -49,12 +49,11 @@ export async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export async function blobToDataURL(blob: Blob): Promise<URLString> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let reader = new FileReader();
-    reader.onloadend = () => {
-      let dataURL = reader.result as string;
-      resolve(dataURL);
-    }
+    reader.onload = () => resolve(reader.result as string);
+    // The file may be gone or changed on disk, since the user picked it
+    reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
 }

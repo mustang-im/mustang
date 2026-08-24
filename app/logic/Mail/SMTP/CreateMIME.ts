@@ -5,7 +5,6 @@ import { getICal } from "../../Calendar/ICal/ICalGenerator";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { fixNewlines } from "../../util/convertHTML";
-import { blobToBase64 } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { default as Mail, Attachment as NMAttachment, Address as NMAddress } from "nodemailer/lib/mailer";
 type NMMail = Mail.Options;
@@ -71,7 +70,7 @@ export class CreateMIME {
   protected static async getAttachment(a: Attachment): Promise<NMAttachment> {
     return {
       filename: a.filename,
-      content: await blobToBase64(a.content),
+      content: await a.contentAsBase64(),
       encoding: "base64",
       contentType: a.mimeType,
       contentDisposition: a.disposition == ContentDisposition.inline ? 'inline' : 'attachment',

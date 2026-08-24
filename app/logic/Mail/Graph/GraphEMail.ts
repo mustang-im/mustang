@@ -9,7 +9,7 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./TGraphMail";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { arrayRemove, assert, blobToBase64, NotReached } from "../../util/util";
+import { arrayRemove, assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -144,7 +144,7 @@ export class GraphEMail extends EMail {
         name: attachment.filename,
         size: attachment.size,
         contentType: attachment.mimeType,
-        contentBytes: await blobToBase64(attachment.content),
+        contentBytes: await attachment.contentAsBase64(),
         contentId: attachment.contentID,
         isInline: attachment.disposition == ContentDisposition.inline,
       });

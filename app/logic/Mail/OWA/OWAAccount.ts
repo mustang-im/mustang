@@ -33,7 +33,7 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, NotSupported, NotReached } from "../../util/util";
+import { assert, NotSupported, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -323,7 +323,7 @@ export class OWAAccount extends ExchangeMailAccount {
       if (this.authorizationHeader) {
         await this.callOWAWithOffice365Attachment(request, attachment);
       } else {
-        request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
+        request.Body.Attachments[0].Content = await attachment.contentAsBase64();
         await this.callOWA(request);
       }
     }

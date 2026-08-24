@@ -20,7 +20,7 @@ import { Provider } from "../../Auth/OAuth2URLs";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -169,7 +169,7 @@ export class OWAEvent extends ExchangeEvent {
       if (this.calendar.account.authorizationHeader) {
         response = await this.calendar.callOWAWithOffice365Attachment(request, attachment);
       } else {
-        request.Body.Attachments[0].Content = await blobToBase64(attachment.content);
+        request.Body.Attachments[0].Content = await attachment.contentAsBase64();
         response = await this.calendar.callOWA(request);
       }
       attachment.pID = sanitize.nonemptystring(response.Attachments[0].AttachmentId.Id);
