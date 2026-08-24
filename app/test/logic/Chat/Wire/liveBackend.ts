@@ -57,6 +57,7 @@ export function installRealNetwork(): void {
       let kyFunc = ky.create(defaultOptions);
       for (let name of ["get", "put", "post", "patch", "delete", "head"]) {
         kyObj[name] = async (input: string, options: any) => {
+          [input, options] = throughJPC([input, options]);
           let kyFetch = (kyFunc as any)[name](input, options);
           let resultType = options?.result ?? defaultOptions?.result;
           if (resultType == "response") {
@@ -90,6 +91,32 @@ export function installRealNetwork(): void {
 function installBrowserGlobals(): void {
   (globalThis as any).window ??= new EventTarget();
   (globalThis as any).document ??= Object.assign(new EventTarget(), { hidden: false });
+}
+
+/**
+ * What JPC does to a call's arguments on the way to the backend.
+ *
+ * In the app this is not a function call but a message over a socket:
+ * `lib/jpc/obj.js` maps the arguments to JSON, carrying `Uint8Array` and `Set`
+ * explicitly and leaving the rest to `JSON.stringify`. That is not a detail a
+ * test may skip. An argument that is `undefined` arrives as `null`, which is
+ * how `kyBody()` returning `undefined` broke every request in the real app
+ * while passing every test here.
+ */
+function throughJPC(args: any[]): any[] {
+  const kBytes = "__uint8array__";
+  let sent = JSON.stringify(args, function (key, value) {
+    let raw = this[key]; // `value` has already been through any `toJSON()`
+    if (raw instanceof Uint8Array) {
+      return { [kBytes]: [...raw] };
+    }
+    if (raw instanceof Set) {
+      return [...raw];
+    }
+    return value;
+  });
+  return JSON.parse(sent, (key, value) =>
+    value && Array.isArray(value[kBytes]) ? new Uint8Array(value[kBytes]) : value);
 }
 
 /** @see `httpResponse()` in `desktop/backend/backend.ts` */
