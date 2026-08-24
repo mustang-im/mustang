@@ -270,7 +270,11 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
             event.fromXML(item);
             await event.saveLocally();
           } else {
-            event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
+            if (parentEvent) {
+              // `toLocalMidnight()`, because the master converted its own times, too
+              event = parentEvent.getOccurrenceByDate(parentEvent.toLocalMidnight(sanitize.date(item.RecurrenceId))) as EWSEvent;
+            }
+            event ??= this.newEvent();
             event.fromXML(item);
             // For a modified occurrence, this already adds the event to `this.events`
             await event.saveLocally();

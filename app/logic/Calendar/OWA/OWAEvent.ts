@@ -86,7 +86,7 @@ export class OWAEvent extends ExchangeEvent {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
-          this.makeExclusionLocally(sanitize.date(deletion.Start));
+          this.makeExclusionLocally(this.toLocalMidnight(sanitize.date(deletion.Start)));
         }
       }
     } else {

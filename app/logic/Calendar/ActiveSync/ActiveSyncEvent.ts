@@ -79,7 +79,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), this.allDay && this.calendar.account.protocolVersion == "16.1"));
+          this.makeExclusionLocally(this.toLocalMidnight(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), this.allDay && this.calendar.account.protocolVersion == "16.1")));
         }
       }
     } else {
