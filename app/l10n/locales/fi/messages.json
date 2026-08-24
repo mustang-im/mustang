@@ -1281,7 +1281,7 @@
   "1oE7EH": "Käytä selaimen HTTP- ja NTLM-toteutusta",
   "qriJi0": "Käytä Chromium-verkkopinoa NTLM-kirjautumiseen ja HTTP-pyyntöjen lähettämiseen. Kokeile tätä, jos kirjautuminen Exchange-palvelimeesi on epävakaata tai jos haluat käyttää Windowsin kertakirjautumista (SSO).",
   "nfFs8Z": "VAROITUS: Tässä yksityisessä avaimessa käytetään itse allekirjoitettua juuritodistusta.",
-  "bbWQS2": "Arkipäivät",
   "CN8qvD": "S/MIME-avaimellasi ei ole vielä varmennetta. Lisää se kohdassa Asetukset | Sähköposti | Identiteetti | Salaus",
-  "Ecuzv4": "Varmenneketju"
+  "Ecuzv4": "Varmenneketju",
+  "zwHdOR": "Työviikko"
 }

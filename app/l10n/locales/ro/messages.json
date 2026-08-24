@@ -1281,7 +1281,7 @@
   "1oE7EH": "Utilizați implementarea HTTP și NTLM a browserului",
   "qriJi0": "Folosiți stiva de rețea Chromium pentru a efectua autentificarea NTLM și solicitările HTTP. Încercați această metodă dacă autentificarea pe serverul dvs. Exchange nu funcționează corect sau dacă doriți să utilizați autentificarea unică (SSO) Windows.",
   "nfFs8Z": "ATENȚIE: Această cheie privată utilizează un certificat rădăcină autosemnat.",
-  "bbWQS2": "Zilele lucrătoare",
   "CN8qvD": "Cheia ta S/MIME nu are încă un certificat. Te rugăm să o adaugi, din Setări | E-mail | Identitate | Criptare",
-  "Ecuzv4": "Lanțul de certificate"
+  "Ecuzv4": "Lanțul de certificate",
+  "zwHdOR": "Săptămâna de lucru"
 }

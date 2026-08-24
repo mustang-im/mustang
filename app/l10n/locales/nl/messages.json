@@ -1281,7 +1281,7 @@
   "1oE7EH": "Gebruik de HTTP- en NTLM-implementatie van de browser",
   "qriJi0": "Gebruik de Chromium-netwerkstack om de NTLM-aanmelding en HTTP-verzoeken uit te voeren. Probeer dit als de aanmelding bij je Exchange-server niet betrouwbaar is, of als je gebruik wilt maken van Windows SSO.",
   "nfFs8Z": "WAARSCHUWING: Deze privésleutel maakt gebruik van een zelfondertekend hoofdcertificaat.",
-  "bbWQS2": "Weekdagen",
   "CN8qvD": "Je S/MIME-sleutel heeft nog geen certificaat. Voeg dit toe via Instellingen | E-mail | Identiteit | Versleuteling",
-  "Ecuzv4": "Certificaatketen"
+  "Ecuzv4": "Certificaatketen",
+  "zwHdOR": "Werkweek"
 }

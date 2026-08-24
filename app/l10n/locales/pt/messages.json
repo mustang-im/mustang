@@ -1281,7 +1281,7 @@
   "1oE7EH": "Utilizar a implementação HTTP e NTLM do navegador",
   "qriJi0": "Utilize a pilha de rede do Chromium para efetuar o início de sessão NTLM e as solicitações HTTP. Experimente esta opção se o início de sessão no seu servidor Exchange não for fiável ou se pretender utilizar o SSO do Windows.",
   "nfFs8Z": "AVISO: Esta chave privada utiliza um certificado raiz autoassinado.",
-  "bbWQS2": "Dias úteis",
   "CN8qvD": "A sua chave S/MIME ainda não tem um certificado. Por favor, adicione-o em Definições | Correio | Identidade | Encriptação",
-  "Ecuzv4": "Cadeia de certificados"
+  "Ecuzv4": "Cadeia de certificados",
+  "zwHdOR": "Semana de trabalho"
 }

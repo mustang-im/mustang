@@ -1281,7 +1281,7 @@
   "1oE7EH": "Utilizza l'implementazione HTTP e NTLM del browser",
   "qriJi0": "Utilizza lo stack di rete Chromium per eseguire l'accesso NTLM e le richieste HTTP. Prova questa soluzione se l'accesso al tuo server Exchange risulta inaffidabile o se desideri utilizzare l'SSO di Windows.",
   "nfFs8Z": "AVVISO: questa chiave privata utilizza un certificato radice autofirmato.",
-  "bbWQS2": "Giorni feriali",
   "CN8qvD": "La tua chiave S/MIME non dispone ancora di un certificato. Aggiungilo in Impostazioni | Posta | Identità | Crittografia",
-  "Ecuzv4": "Catena di certificati"
+  "Ecuzv4": "Catena di certificati",
+  "zwHdOR": "Settimana lavorativa"
 }

@@ -1281,7 +1281,7 @@
   "1oE7EH": "Izmantojiet pārlūka HTTP un NTLM implementāciju",
   "qriJi0": "Izmantojiet „Chromium“ tīkla slāni, lai veiktu NTLM autentifikāciju un HTTP pieprasījumus. Izmēģiniet šo risinājumu, ja autentifikācija jūsu „Exchange“ serverī nedarbojas stabili vai ja vēlaties izmantot „Windows“ vienreizējo autentifikāciju (SSO).",
   "nfFs8Z": "BRĪDINĀJUMS Šim privātajam atslēgas pārim tiek izmantots pašparakstīts saknes sertifikāts.",
-  "bbWQS2": "Darba dienas",
   "CN8qvD": "Jūsu S/MIME atslēgai vēl nav sertifikāta. Lūdzu, pievienojiet to sadaļā „Iestatījumi“ | „Pasts“ | „Identitāte“ | „Šifrēšana“",
-  "Ecuzv4": "Sertifikātu ķēde"
+  "Ecuzv4": "Sertifikātu ķēde",
+  "zwHdOR": "Darba nedēļa"
 }

@@ -1281,7 +1281,7 @@
   "1oE7EH": "Tarayıcının HTTP ve NTLM uygulamasını kullanın",
   "qriJi0": "NTLM oturum açma işlemini ve HTTP isteklerini gerçekleştirmek için Chromium ağ yığınını kullanın. Exchange sunucunuza oturum açma işlemi güvenilir değilse veya Windows SSO'yu kullanmak istiyorsanız bunu deneyin.",
   "nfFs8Z": "UYARI: Bu özel anahtar, kendi imzalı bir kök sertifika kullanmaktadır.",
-  "bbWQS2": "Hafta içi",
   "CN8qvD": "S/MIME anahtarınız için henüz bir sertifika bulunmamaktadır. Lütfen Ayarlar | Posta | Kimlik | Şifreleme bölümünden bunu ekleyin.",
-  "Ecuzv4": "Sertifika zinciri"
+  "Ecuzv4": "Sertifika zinciri",
+  "zwHdOR": "Çalışma haftası"
 }

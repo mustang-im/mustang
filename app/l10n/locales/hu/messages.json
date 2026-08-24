@@ -1281,7 +1281,7 @@
   "1oE7EH": "Használja a böngésző HTTP- és NTLM-megvalósítását",
   "qriJi0": "Használd a Chromium hálózati réteget az NTLM-bejelentkezéshez és a HTTP-kérelmek végrehajtásához. Próbáld ki ezt, ha az Exchange-kiszolgálóra való bejelentkezés nem működik megbízhatóan, vagy ha a Windows SSO-t szeretnéd használni.",
   "nfFs8Z": "FIGYELMEZTETÉS: Ez a magkulcs önaláírt gyökértanúsítványt használ.",
-  "bbWQS2": "Hétköznapok",
   "CN8qvD": "Az S/MIME-kulcsodhoz még nincs tanúsítvány. Kérjük, add hozzá a Beállítások | Levelezés | Azonosító | Titkosítás menüpontban.",
-  "Ecuzv4": "Tanúsítványlánc"
+  "Ecuzv4": "Tanúsítványlánc",
+  "zwHdOR": "Munkahét"
 }

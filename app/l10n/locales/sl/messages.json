@@ -1281,7 +1281,7 @@
   "1oE7EH": "Uporabi implementacijo protokolov HTTP in NTLM v brskalniku",
   "qriJi0": "Za prijavo prek protokola NTLM in pošiljanje zahtev HTTP uporabite omrežni sklad Chromium. To poskusite, če je prijava na vaš strežnik Exchange nezanesljiva ali če želite uporabiti enotno prijavo (SSO) v sistemu Windows.",
   "nfFs8Z": "OPOZORILO: Ta zasebni ključ uporablja samopodpisani korenski certifikat.",
-  "bbWQS2": "Delovni dnevi",
   "CN8qvD": "Vaš ključ S/MIME še nima potrdila. Dodajte ga v meniju Nastavitve | Pošta | Identiteta | Šifriranje",
-  "Ecuzv4": "Veriga potrdil"
+  "Ecuzv4": "Veriga potrdil",
+  "zwHdOR": "Delovni teden"
 }

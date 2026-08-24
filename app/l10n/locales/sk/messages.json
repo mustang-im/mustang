@@ -1281,7 +1281,7 @@
   "1oE7EH": "Použite implementáciu protokolov HTTP a NTLM v prehliadači",
   "qriJi0": "Na prihlásenie pomocou protokolu NTLM a odosielanie HTTP požiadaviek použite sieťovú vrstvu Chromium. Skúste to v prípade, že prihlásenie na váš server Exchange nie je spoľahlivé alebo ak chcete využiť jednotné prihlásenie (SSO) systému Windows.",
   "nfFs8Z": "UPOZORNENIE: Tento súkromný kľúč používa samopodpísaný koreňový certifikát.",
-  "bbWQS2": "Pracovné dni",
   "CN8qvD": "Váš kľúč S/MIME zatiaľ nemá certifikát. Pridajte ho, prosím, v časti Nastavenia | Pošta | Identita | Šifrovanie",
-  "Ecuzv4": "Reťazec certifikátov"
+  "Ecuzv4": "Reťazec certifikátov",
+  "zwHdOR": "Pracovný týždeň"
 }

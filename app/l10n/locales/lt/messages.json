@@ -1281,7 +1281,7 @@
   "1oE7EH": "Naudokite naršyklės HTTP ir NTLM įgyvendinimą",
   "qriJi0": "Naudokite „Chromium“ tinklo steką, kad atliktumėte prisijungimą naudojant NTLM protokolą ir HTTP užklausas. Tai išbandykite, jei prisijungimas prie jūsų „Exchange“ serverio yra nestabilus arba norite naudoti „Windows“ vienkartinį prisijungimą (SSO).",
   "nfFs8Z": "ĮSPĖJIMAS: Šis privatusis raktas naudoja savarankiškai pasirašytą šakninį sertifikatą.",
-  "bbWQS2": "Darbdieniai",
   "CN8qvD": "Jūsų S/MIME raktas dar neturi sertifikato. Prašome jį pridėti meniu „Nustatymai“ | „Paštas“ | „Tapatybė“ | „Šifravimas“",
-  "Ecuzv4": "Sertifikatų grandinė"
+  "Ecuzv4": "Sertifikatų grandinė",
+  "zwHdOR": "Darbo savaitė"
 }

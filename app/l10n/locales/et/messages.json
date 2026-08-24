@@ -1281,7 +1281,7 @@
   "1oE7EH": "Kasuta brauseri HTTP- ja NTLM-rakendust",
   "qriJi0": "Kasuta Chromiumi võrgustikupaketti NTLM-sisselogimise ja HTTP-päringute tegemiseks. Proovi seda, kui sisselogimine sinu Exchange-serverisse ei toimi usaldusväärselt või soovid kasutada Windowsi ühekordset sisselogimist (SSO).",
   "nfFs8Z": "HOIATUS: See privaatvõti kasutab iseallkirjastatud juursertifikaati.",
-  "bbWQS2": "Tööpäevad",
   "CN8qvD": "Teie S/MIME-võtmel pole veel sertifikaati. Palun lisage see menüüs „Seaded“ | „Post“ | „Identiteet“ | „Krüpteerimine“",
-  "Ecuzv4": "Sertifikaatiahel"
+  "Ecuzv4": "Sertifikaatiahel",
+  "zwHdOR": "Töönädal"
 }

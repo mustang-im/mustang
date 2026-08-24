@@ -1281,7 +1281,7 @@
   "1oE7EH": "Verwenden Sie die HTTP- und NTLM-Implementierung des Browsers",
   "qriJi0": "Verwenden Sie den Chromium-Netzwerkstack, um die NTLM-Anmeldung und HTTP-Anfragen durchzuführen. Probieren Sie dies aus, wenn die Anmeldung bei Ihrem Exchange-Server unzuverlässig ist oder Sie das Windows-SSO nutzen möchten.",
   "nfFs8Z": "WARNUNG: Dieser private Schlüssel verwendet ein selbstsigniertes Stammzertifikat.",
-  "bbWQS2": "Wochentage",
   "CN8qvD": "Ihr S/MIME-Schlüssel verfügt noch über kein Zertifikat. Bitte fügen Sie dieses unter „Einstellungen“ | „Mail“ | „Identität“ | „Verschlüsselung“ hinzu.",
-  "Ecuzv4": "Zertifikatskette"
+  "Ecuzv4": "Zertifikatskette",
+  "zwHdOR": "Arbeitswoche"
 }

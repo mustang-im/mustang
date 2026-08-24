@@ -1281,7 +1281,7 @@
   "1oE7EH": "Brug browserens HTTP- og NTLM-implementering",
   "qriJi0": "Brug Chromium-netværksstakken til at udføre NTLM-login og HTTP-anmodninger. Prøv dette, hvis loginet til din Exchange-server er ustabilt, eller hvis du ønsker at bruge Windows SSO.",
   "nfFs8Z": "ADVARSEL: Denne private nøgle bruger et selvunderskrevet rodcertifikat.",
-  "bbWQS2": "Hverdage",
   "CN8qvD": "Din S/MIME-nøgle har endnu ikke et certifikat. Du skal tilføje det under Indstillinger | Mail | Identitet | Kryptering",
-  "Ecuzv4": "Certifikatkæde"
+  "Ecuzv4": "Certifikatkæde",
+  "zwHdOR": "Arbejdsuge"
 }

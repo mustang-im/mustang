@@ -1281,7 +1281,7 @@
   "1oE7EH": "Bruk nettleserens HTTP- og NTLM-implementering",
   "qriJi0": "Bruk Chromium-nettverksstakken til å utføre NTLM-pålogging og HTTP-forespørsler. Prøv dette hvis påloggingen til Exchange-serveren din er ustabil, eller hvis du ønsker å bruke Windows SSO.",
   "nfFs8Z": "ADVARSEL: Denne private nøkkelen bruker et selvsignert rotsertifikat.",
-  "bbWQS2": "Hverdager",
   "CN8qvD": "S/MIME-nøkkelen din har ikke noe sertifikat ennå. Legg den til under Innstillinger | E-post | Identitet | Kryptering",
-  "Ecuzv4": "Sertifikatkjede"
+  "Ecuzv4": "Sertifikatkjede",
+  "zwHdOR": "Arbeidsuke"
 }

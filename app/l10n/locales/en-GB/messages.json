@@ -1281,7 +1281,7 @@
   "1oE7EH": "Use the browser HTTP and NTLM implementation",
   "qriJi0": "Use the Chromium network stack to perform the NTLM login and HTTP requests. Try this if the login to your Exchange server is unreliable, or you want to use the Windows SSO.",
   "nfFs8Z": "WARNING This private key uses a self-signed root certificate.",
-  "bbWQS2": "Weekdays",
   "CN8qvD": "Your S/MIME key does not have a certificate yet. Please add it, in Settings | Mail | Identity | Encryption",
-  "Ecuzv4": "Certificate chain"
+  "Ecuzv4": "Certificate chain",
+  "zwHdOR": "Work week"
 }

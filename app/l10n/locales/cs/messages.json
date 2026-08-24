@@ -1281,7 +1281,7 @@
   "1oE7EH": "Využijte implementaci protokolů HTTP a NTLM v prohlížeči",
   "qriJi0": "K přihlášení pomocí protokolu NTLM a k odesílání HTTP požadavků použijte síťový stack Chromium. Tuto možnost vyzkoušejte, pokud je přihlášení k vašemu serveru Exchange nespolehlivé nebo pokud chcete využít jednotné přihlášení (SSO) systému Windows.",
   "nfFs8Z": "UPOZORNĚNÍ: Tento soukromý klíč používá kořenový certifikát s vlastním podpisem.",
-  "bbWQS2": "Pracovní dny",
   "CN8qvD": "Váš klíč S/MIME zatím nemá certifikát. Přidejte jej prosím v nabídce Nastavení | Pošta | Identita | Šifrování",
-  "Ecuzv4": "Řetězec certifikátů"
+  "Ecuzv4": "Řetězec certifikátů",
+  "zwHdOR": "Pracovní týden"
 }

@@ -1281,7 +1281,7 @@
   "1oE7EH": "Utiliser l'implémentation HTTP et NTLM du navigateur",
   "qriJi0": "Utilisez la pile réseau Chromium pour effectuer la connexion NTLM et les requêtes HTTP. Essayez cette méthode si la connexion à votre serveur Exchange n'est pas fiable ou si vous souhaitez utiliser l'authentification unique (SSO) de Windows.",
   "nfFs8Z": "AVERTISSEMENT : cette clé privée utilise un certificat racine auto-signé.",
-  "bbWQS2": "Jours de la semaine",
   "CN8qvD": "Votre clé S/MIME ne dispose pas encore de certificat. Veuillez l'ajouter dans Paramètres | Courrier | Identité | Chiffrement",
-  "Ecuzv4": "Chaîne de certificats"
+  "Ecuzv4": "Chaîne de certificats",
+  "zwHdOR": "Semaine de travail"
 }

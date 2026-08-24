@@ -1281,7 +1281,7 @@
   "1oE7EH": "Gunakan implementasi HTTP dan NTLM pada peramban",
   "qriJi0": "Gunakan tumpukan jaringan Chromium untuk melakukan proses masuk NTLM dan permintaan HTTP. Cobalah cara ini jika proses masuk ke server Exchange Anda tidak stabil, atau jika Anda ingin menggunakan SSO Windows.",
   "nfFs8Z": "PERINGATAN: Kunci pribadi ini menggunakan sertifikat akar yang ditandatangani sendiri.",
-  "bbWQS2": "Hari kerja",
   "CN8qvD": "Kunci S/MIME Anda belum memiliki sertifikat. Silakan tambahkan sertifikat tersebut di Pengaturan | Email | Identitas | Enkripsi",
-  "Ecuzv4": "Rantai sertifikat"
+  "Ecuzv4": "Rantai sertifikat",
+  "zwHdOR": "Minggu kerja"
 }

@@ -1281,7 +1281,7 @@
   "1oE7EH": "Skorzystaj z implementacji protokołów HTTP i NTLM w przeglądarce",
   "qriJi0": "Skorzystaj ze stosu sieciowego Chromium, aby przeprowadzić logowanie NTLM i wysłać żądania HTTP. Wypróbuj to rozwiązanie, jeśli logowanie do serwera Exchange nie działa niezawodnie lub chcesz skorzystać z funkcji SSO systemu Windows.",
   "nfFs8Z": "OSTRZEŻENIE: Ten klucz prywatny wykorzystuje certyfikat główny z podpisem własnym.",
-  "bbWQS2": "Dni robocze",
   "CN8qvD": "Twój klucz S/MIME nie ma jeszcze certyfikatu. Dodaj go w menu Ustawienia | Poczta | Tożsamość | Szyfrowanie",
-  "Ecuzv4": "Łańcuch certyfikatów"
+  "Ecuzv4": "Łańcuch certyfikatów",
+  "zwHdOR": "Tydzień roboczy"
 }
