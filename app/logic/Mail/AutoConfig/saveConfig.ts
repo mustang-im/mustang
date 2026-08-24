@@ -69,6 +69,7 @@ export async function saveChildService(config: Account, main: Account): Promise<
  */
 export function fillConfig(config: MailAccount, emailAddress: string, password: string) {
   if (config.source == "manual") {
+    config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
     return;
   }
   assert(emailAddress, `${config.name}: Need email address`);

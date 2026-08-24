@@ -254,6 +254,7 @@ export class MailAccount extends TCPAccount {
 
   /** Fills this object with the config values from the other config */
   cloneFrom(other: MailAccount) {
+    this.name = other.name;
     this.url = other.url;
     this.hostname = other.hostname;
     this.port = other.port;

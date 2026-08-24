@@ -141,7 +141,9 @@
   function onManualSetup() {
     if (!config ||
         !config.outgoing && (config.protocol == "imap" || config.protocol == "pop3")) {
+      let name = config?.name;
       config = makeManualConfig(emailAddress, password);
+      config.name = name;
     } else {
       fillConfig(config, emailAddress, password);
     }
