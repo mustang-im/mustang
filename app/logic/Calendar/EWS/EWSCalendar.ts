@@ -99,8 +99,6 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
   protected readonly syncFolderLock = new Lock();
 
   protected async syncFolder(): Promise<void> {
-    // A second sync run would start from the same `syncState`
-    // and therefore create the same new events a second time.
     let lock = await this.syncFolderLock.lock();
     try {
       let sync = {
@@ -117,7 +115,6 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
           m$MaxChangesReturned: kMaxCount,
         }
       };
-      let events: EWSEvent[] = [];
       let result: any = { IncludesLastItemInRange: "false" };
       while (result.IncludesLastItemInRange === "false") {
         try {
@@ -150,10 +147,9 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
             }
           }
         }
-        await this.getEvents(eventIDs, events);
+        await this.getEvents(eventIDs);
         this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       }
-      this.events.addAll(events);
     } finally {
       lock.release();
     }
@@ -204,7 +200,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     }
   }
 
-  async getEvents(eventIDs: { Id: string }[], events: EWSEvent[], parentEvent?: EWSEvent) {
+  async getEvents(eventIDs: { Id: string }[], events?: EWSEvent[], parentEvent?: EWSEvent) {
     if (!eventIDs.length) {
       return;
     }
@@ -279,9 +275,11 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
             // For a modified occurrence, this already adds the event to `this.events`
             await event.saveLocally();
             if (!this.events.contains(event)) {
-              events.push(event);
+              // Add it now, so that `getEventByItemID()` finds it when the server sends it again in a later page
+              this.events.add(event);
             }
           }
+          events?.push(event);
           if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
             await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
           }

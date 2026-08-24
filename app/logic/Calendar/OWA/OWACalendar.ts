@@ -139,6 +139,10 @@ export class OWACalendar extends ExchangeCalendar {
         let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
         event.fromJSON(item);
         await event.saveLocally();
+        if (!this.events.contains(event)) {
+          // Add it now, so that `getEventByItemID()` finds it when the server sends it again in a later page
+          this.events.add(event);
+        }
         events.add(event);
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
@@ -150,13 +154,7 @@ export class OWACalendar extends ExchangeCalendar {
   }
 
   async createOrUpdateEventFromServerByID(itemID: string) {
-    let events = new ArrayColl<OWAEvent>();
-    await this.getEvents([itemID], events);
-    for (let event of events) {
-      if (!this.events.contains(event)) {
-        this.events.add(event);
-      }
-    }
+    await this.getEvents([itemID], new ArrayColl<OWAEvent>());
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
