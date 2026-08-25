@@ -24,17 +24,21 @@
         >
         <DayLabel {day} />
         <DayCell start={day} events={filteredEvents} intervalInHours={24}
-          withMonthOnFirst={true} withMonthOnMonday={true} />
+          withMonthOnFirst={true} withMonthOnMonday={true}
+          on:celldblclick={(param) => newEventMenu.openMenu(param.detail.mouseEvent, param.detail.start)} />
       </vbox>
     {/each}
   </grid>
 </vbox>
+
+<NewEventMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import DayLabel from "./DayLabel.svelte";
   import DayCell from "./DayCell.svelte";
   import DateRange from "../DateRange.svelte";
+  import NewEventMenu from "../NewEventMenu.svelte";
   import { selectedDate } from "../selected";
   import { getWeekDays } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
@@ -48,6 +52,7 @@
   let days: Date[] = [];
   let weekDays: Date[] = [];
   let filteredEvents: Collection<Event>;
+  let newEventMenu: NewEventMenu;
   $: start, showDays, setDays();
   function setDays() {
     weekDays = getWeekDays(start);

@@ -15,7 +15,7 @@
           <MenuItem
             icon={CalendarIcon}
             label={calendar.name}
-            onClick={() => addEvent(calendar)}
+            onClick={() => createNewEvent(calendar, $selectedDate, false)}
             />
         </hbox>
       {/each}
@@ -27,7 +27,7 @@
       icon={AddToCalendarIcon}
       iconSize="22px"
       padding="6px"
-      onClick={() => addEvent($selectedCalendar)}
+      onClick={() => createNewEvent($selectedCalendar, $selectedDate, false)}
       />
   {/if}
   {#if haveMultipleCalendars}
@@ -42,9 +42,7 @@
 </hbox>
 
 <script lang="ts">
-  import { setNewEventTime } from "./event";
-  import { openEvent } from "./open";
-  import type { Calendar } from "../../logic/Calendar/Calendar";
+  import { createNewEvent } from "./event";
   import { selectedCalendar, selectedDate } from "./selected";
   import { appGlobal } from "../../logic/app";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
@@ -54,20 +52,10 @@
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../l10n/l10n";
-  import { assert } from "../../logic/util/util";
 
   $: calendars = appGlobal.calendars;
   $: haveMultipleCalendars = $calendars.length > 1;
   let isMenuOpen = false;
-
-  function addEvent(calendar: Calendar) {
-    calendar ??= appGlobal.calendars.first;
-    assert(calendar, $t`Please set up a calendar first`);
-    $selectedCalendar = calendar;
-    let event = calendar.newEvent();
-    setNewEventTime(event, false, $selectedDate);
-    openEvent(event, true);
-  }
 </script>
 
 <style>

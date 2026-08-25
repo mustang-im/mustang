@@ -11,18 +11,17 @@
     <slot name="top-right" />
   </hbox>
   <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay}
-    on:celldblclick={(param) => addEvent(param.detail.start)} />
+    on:celldblclick={(param) => newEventMenu.openMenu(param.detail.mouseEvent, param.detail.start)} />
 </vbox>
+
+<NewEventMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { setNewEventTime } from "../event";
-  import { selectedCalendar, type DateInterval } from "../selected";
-  import { openEvent } from "../open";
-  import { appGlobal } from "../../../logic/app";
-  import { assert } from "../../../logic/util/util";
+  import { type DateInterval } from "../selected";
   import { getToday } from "../../Util/date";
   import DayViewGrid from "./DayViewGrid.svelte";
+  import NewEventMenu from "../NewEventMenu.svelte";
   import DateRange from "../DateRange.svelte";
   import Button from "../../Shared/Button.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
@@ -38,16 +37,10 @@
   export let defaultFocusHour = 8;
   export let enlargeSelectedDay = false;
 
+  let newEventMenu: NewEventMenu;
+
   function goToToday() {
     start = getToday();
-  }
-
-  function addEvent(start: Date) {
-    $selectedCalendar ??= appGlobal.calendars.first;
-    assert($selectedCalendar, $t`Please set up a calendar first`);
-    let event = $selectedCalendar.newEvent();
-    setNewEventTime(event, true, start);
-    openEvent(event, true);
   }
 </script>
 
