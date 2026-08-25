@@ -1,4 +1,4 @@
-import { ExchangeEMail } from "../EWS/ExchangeEMail";
+import { ExchangeEMail, type EMailFlag, EMailFlagPidTag, EMailFlagTimePidTag, type IconIndex, IconIndexPidTag } from "../EWS/ExchangeEMail";
 import type { OWAFolder } from "./OWAFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
@@ -109,6 +109,18 @@ export class OWAEMail extends ExchangeEMail {
 
   //async markSpam(spam = true) {
   //} Don't know how to do this in OWA
+
+  protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
+    let request = new OWAUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addExtendedField("Message", EMailFlagPidTag, "Integer", verb);
+    request.addExtendedField("Message", EMailFlagTimePidTag, "SystemTime", new Date().toISOString());
+    request.addExtendedField("Message", IconIndexPidTag, "Integer", icon);
+    await this.folder.account.callOWA(request);
+  }
 
   async markDraft(isDraft = true) {
     await super.markDraft(isDraft);

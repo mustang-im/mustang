@@ -3,6 +3,7 @@ import type { GraphFolder } from "./GraphFolder";
 import type { GraphAccount } from "./GraphAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
+import { EMailFlag, EMailFlagPidTag, EMailFlagTimePidTag, IconIndex, IconIndexPidTag } from "../EWS/ExchangeEMail";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./TGraphMail";
@@ -187,7 +188,29 @@ export class GraphEMail extends EMail {
 
   async markReplied() {
     await super.markReplied();
-    await this.setFlagServer("$answered", true);
+    await this.setLastVerb(EMailFlag.ReplyToSender, IconIndex.Replied);
+  }
+
+  async markForwarded() {
+    await super.markForwarded();
+    await this.setLastVerb(EMailFlag.Forward, IconIndex.Forwarded);
+  }
+
+  /** Graph has no replied and forwarded flags, only the MAPI properties
+   * that make Outlook show the reply and forward arrows. */
+  protected async setLastVerb(verb: EMailFlag, icon: IconIndex) {
+    await this.folder.account.graphPatch(this.path, {
+      singleValueExtendedProperties: [{
+        id: `Integer ${EMailFlagPidTag}`,
+        value: String(verb),
+      }, {
+        id: `SystemTime ${EMailFlagTimePidTag}`,
+        value: new Date().toISOString(),
+      }, {
+        id: `Integer ${IconIndexPidTag}`,
+        value: String(icon),
+      }],
+    });
   }
 
   async markDraft(isDraft = true) {

@@ -1,4 +1,5 @@
-import { ExchangeFolder, MessageFlagsPidTag, IconIndexPidTag } from "./ExchangeFolder";
+import { ExchangeFolder } from "./ExchangeFolder";
+import { MessageFlagsPidTag, IconIndexPidTag } from "./ExchangeEMail";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { getSharedPersons, ExchangePermission } from "./ExchangePermission";

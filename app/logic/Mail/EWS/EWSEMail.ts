@@ -1,4 +1,4 @@
-import { ExchangeEMail } from "./ExchangeEMail";
+import { ExchangeEMail, EMailFlag, EMailFlagPidTag, EMailFlagTimePidTag, IconIndex, IconIndexPidTag } from "./ExchangeEMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
@@ -120,8 +120,8 @@ export class EWSEMail extends ExchangeEMail {
   setFlags(xmljs: Record<string, any>) {
     this.isRead = sanitize.boolean(xmljs.IsRead);
     this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
-    this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;
-    this.isForwarded = xmljs.ExtendedProperty?.Value == 0x106;
+    this.isReplied = xmljs.ExtendedProperty?.Value == IconIndex.Replied;
+    this.isForwarded = xmljs.ExtendedProperty?.Value == IconIndex.Forwarded;
     // Not `=`: The sender's `Importance:` header is not in the sync response
     this.isImportant ||= xmljs.Importance == "High";
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
@@ -171,6 +171,18 @@ export class EWSEMail extends ExchangeEMail {
     };
     await this.folder.account.callEWS(request);
     await super.markSpam(spam);
+  }
+
+  protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addExtendedField("Message", EMailFlagPidTag, "Integer", verb);
+    request.addExtendedField("Message", EMailFlagTimePidTag, "SystemTime", new Date().toISOString());
+    request.addExtendedField("Message", IconIndexPidTag, "Integer", icon);
+    await this.folder.account.callEWS(request);
   }
 
   async markDraft(isDraft = true) {

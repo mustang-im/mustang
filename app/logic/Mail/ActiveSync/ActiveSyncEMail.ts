@@ -1,4 +1,4 @@
-import { ExchangeEMail } from "../EWS/ExchangeEMail";
+import { ExchangeEMail, type IconIndex, type EMailFlag } from "../EWS/ExchangeEMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
@@ -147,6 +147,11 @@ export class ActiveSyncEMail extends ExchangeEMail {
 
   //markSpam(spam = true) {
   //}
+
+  /** The client cannot set this. The server sets it itself,
+   * but only for mails that were sent using SmartReply and SmartForward. */
+  protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
+  }
 
   async markDraft(isDraft = true) {
     throw new NotSupported("Drafts are not supported by ActiveSync 14.1");
