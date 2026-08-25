@@ -465,6 +465,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               }
               await responseCallback(message);
             } catch (ex) {
+              if (signal.aborted) {
+                continue; // Server errors on cancel
+              }
               this.errorCallback(ex);
             }
           }
@@ -542,16 +545,18 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return;
     }
     try {
+      this.notificationAbort[account.username]?.abort("Unsubscribing");
       let unsubscribe = {
         m$Unsubscribe: {
           m$SubscriptionId: account.subscriptionID,
         },
       };
-      await this.callEWS(unsubscribe);
       account.subscriptionID = undefined;
-      await this.streamNotifications(account.username);
+      await this.callEWS(unsubscribe);
     } catch (ex) {
       this.errorCallback(ex);
+    } finally {
+      await this.streamNotifications(account.username);
     }
   }
 
