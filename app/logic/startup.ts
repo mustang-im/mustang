@@ -13,6 +13,7 @@ import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Accoun
 import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
+import { retryOnTransientError } from './util/netUtil';
 import { catchErrors, logError, showError } from '../frontend/Util/error';
 import { assert, sleep } from './util/util';
 
@@ -118,10 +119,11 @@ export function checkWakeUp(): void {
 function checkAccounts(): void {
   for (let account of getAllAccounts()) {
     if (!account.isLoggedIn && account.loginOnStartup && !account.isDependentAccount) {
-      (async () => {
+      // VPN tunnel needs several seconds after the computer woke up
+      retryOnTransientError(async () => {
         await account.login(false);
         await account.startup();
-      })().catch(account.errorCallback);
+      }, 6, 10).catch(account.errorCallback);
     }
   }
   // Accounts that stayed logged in didn't run startup() above,
