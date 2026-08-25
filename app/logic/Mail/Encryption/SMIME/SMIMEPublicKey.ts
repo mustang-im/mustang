@@ -30,9 +30,9 @@ export class SMIMEPublicKey extends PublicKey {
     return certificateCommonName(cert) ?? "";
   }
 
-  async matches(key: RSAPublicKey, _default: boolean): Promise<boolean> {
+  async matches(key: RSAPublicKey): Promise<boolean> {
     if (!this.publicKeyArmored) {
-      return _default;
+      return false;
     }
     let cert = Certificate.decodePEM(this.publicKeyArmored, { label: "Certificate" });
     let rawKey = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
@@ -42,8 +42,7 @@ export class SMIMEPublicKey extends PublicKey {
   /**
    * Parses the given certificate and sets it as the public key.
    */
-  async setCertificate(certificate: string, label: string) {
-    let cert = Certificate.decodePEM(certificate, { label });
+  async setCertificate(cert: Certificate) {
     let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
     if (!this.id) {
       let id = sanitize.bigint(rsa.n).toString(16);
@@ -63,29 +62,35 @@ export class SMIMEPublicKey extends PublicKey {
     this.obsolete = now < this.created.getTime() || now > this.expires.getTime();
   }
 
-  async addCertificate(certificate: string, label: string) {
-    let cert = Certificate.decodePEM(certificate, { label });
+  async addCertificate(cert: Certificate): Promise<boolean> {
     let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
-    if (await this.matches(rsa, true)) {
-      await this.setCertificate(certificate, label);
-      return;
+    if (!this.publicKeyArmored) {
+      await this.setCertificate(cert);
+      return true;
+    }
+    if (await this.matches(rsa)) {
+      await this.setCertificate(cert);
+      return false;
     }
     for (let key of this.chain) {
-      if (await key.matches(rsa, true)) {
-        await key.setCertificate(certificate, label);
-        return;
+      if (await key.matches(rsa)) {
+        await key.setCertificate(cert);
+        return false;
       }
     }
-    this.chain.add(await SMIMEPublicKey.importPublicKey(certificate));
+    let key = new SMIMEPublicKey();
+    await key.setCertificate(cert);
+    this.chain.add(key);
+    return true;
   }
 
   async addCertificates(publicKey: string) {
     let parts = splitPEM(publicKey);
     for (let part of parts) {
       if (part.startsWith("-----BEGIN CERTIFICATE-----")) {
-        await this.addCertificate(part, "CERTIFICATE");
+        await this.addCertificate(Certificate.decodePEM(part, { label: "CERTIFICATE" }));
       } else if (part.startsWith("-----BEGIN TRUSTED CERTIFICATE-----")) {
-        await this.addCertificate(part, "TRUSTED CERTIFICATE");
+        await this.addCertificate(Certificate.decodePEM(part, { label: "TRUSTED CERTIFICATE" }));
       }
     }
   }

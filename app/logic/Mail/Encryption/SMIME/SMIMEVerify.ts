@@ -1,5 +1,6 @@
 import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
+import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
@@ -11,7 +12,7 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  * @returns the last hex digits of the signer's RSA modulus,
  *   or null, if the signature does not verify
  */
-export async function verifySignedData(signedData: any, content: Uint8Array): Promise<string | null> {
+export async function verifySignedData(signedData: any, content: Uint8Array): Promise<SMIMEPublicKey | null> {
   let certificates = sanitize.array(signedData.content.certificates, []);
   let signerInfos = sanitize.array(signedData.content.signerInfos, []);
   if (!certificates.length || !signerInfos.length) {
@@ -76,7 +77,12 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     console.log("signature did not match the signed digest");
     return null;
   }
-  return sanitize.bigint(rsa.n).toString(16).slice(-16);
+  let signer = new SMIMEPublicKey();
+  while (cert && signer.addCertificate(cert)) {
+    cert = certificates.find(chain =>
+      sameName(chain.tbsCertificate.subject, cert.tbsCertificate.issuer));
+  };
+  return signer;
 }
 
 /** Compares two X.501 names, e.g. certificate issuer and subject */
