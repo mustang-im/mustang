@@ -558,7 +558,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   async subscribeToNotifications() {
     if (this.subscriptionID) {
       console.warn("EWS: Trying to re-subscribe");
-      return; // E.g. re-login after connection loss
+      // E.g. re-login after connection loss. The subscription is still ours,
+      // but the stream that carries it died with the connection.
+      await this.streamNotifications(this.username);
+      return;
     }
     let subscribe = {
       m$Subscribe: {
@@ -584,6 +587,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
+    if (account.subscriptionID) {
+      console.warn("EWS: Trying to re-subscribe");
+      // E.g. re-login after connection loss. The subscription is still ours,
+      // but the stream that carries it died with the connection.
+      await this.streamNotifications(account.username);
+      return;
+    }
     let subscribe = {
       m$Subscribe: {
         m$StreamingSubscriptionRequest: {
