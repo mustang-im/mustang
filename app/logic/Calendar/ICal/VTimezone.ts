@@ -162,7 +162,7 @@ function utcOffset(time: Date, timezone: string): number {
 
 /** The year at `time` in `timezone`, which may differ from the year here */
 function yearIn(time: Date, timezone: string): number {
-  return new Date(time.getTime() + utcOffset(time, timezone) * k1MinuteMS).getUTCFullYear();
+  return Number(time.toLocaleDateString("lt", { timeZone: timezone, year: "numeric" }));
 }
 
 /** Which weekday of the month `local` is, e.g. 2 for the 2nd Sunday
