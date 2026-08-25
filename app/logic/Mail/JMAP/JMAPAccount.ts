@@ -565,7 +565,9 @@ export class JMAPAccount extends MailAccount {
           return;
         }
         if (isNetworkError(ex)) {
-          this.errorCallback(ex);
+          // A connection that stays open for hours drops all the time: computer
+          // sleep, Wi-Fi change, server restart. Reconnecting is normal, not an error.
+          console.log(this.name + ": Push connection dropped, reconnecting:", ex?.message);
           await waitUntilOnline(); // Computer sleep drops the network
         } else {
           throw ex;
