@@ -60,9 +60,7 @@
     }
     let fileContent = await file.text();
     let key = await importPublicKey(fileContent);
-    if (!person.encryptionPublicKeys.find(existing => existing.id == key.id)) {
-      person.encryptionPublicKeys.add(key);
-    }
+    person.addEncryptionPublicKey(key);
     isOpen = false;
     await person.save();
   }

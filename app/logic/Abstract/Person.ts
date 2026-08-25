@@ -106,6 +106,15 @@ export class Person extends ContactBase {
     // nothing to do for local persons
   }
 
+  /** Adds a PGP key or S/MIME certificate for this contact,
+   * unless we already have it. */
+  addEncryptionPublicKey(key: PublicKey) {
+    if (this.encryptionPublicKeys.some(existing => existing.id == key.id)) {
+      return;
+    }
+    this.encryptionPublicKeys.add(key);
+  }
+
   toString() {
     return this.name;
   }
