@@ -368,7 +368,7 @@ const checkForUpdateRunOnce = new RunOnce<boolean>();
 async function checkForUpdate(): Promise<boolean> {
   if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    updateState.update = await autoUpdater.checkForUpdates();
+    updateState.update = await ignoreMissingUpdateConfig(autoUpdater.checkForUpdates());
     return updateState.haveUpdate;
   });
 }
@@ -376,9 +376,22 @@ async function checkForUpdate(): Promise<boolean> {
 export async function checkForUpdateAndNotify(): Promise<boolean> {
   if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    updateState.update = await autoUpdater.checkForUpdatesAndNotify();
+    updateState.update = await ignoreMissingUpdateConfig(autoUpdater.checkForUpdatesAndNotify());
     return updateState.haveUpdate;
   });
+}
+
+/** Builds without a publish configuration ship no `app-update.yml`.
+  * They cannot update themselves, which is not an error, but no update. */
+async function ignoreMissingUpdateConfig(check: Promise<UpdateCheckResult | null>): Promise<UpdateCheckResult | null> {
+  try {
+    return await check;
+  } catch (ex) {
+    if (ex.code == "ENOENT") {
+      return null;
+    }
+    throw ex;
+  }
 }
 
 export async function installUpdate() {
