@@ -16,8 +16,6 @@ export class JMAPCalendar extends Calendar {
   readonly protocol: string = "calendar-jmap";
   declare readonly events: ArrayColl<JMAPEvent>;
   readonly deletions = new Set<string>();
-  /** TODO JMAP calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   /** ID in JMAP (because `.id` is the ID our database) */
   jmapID: TID;
   /** Primary calendar for this account */
