@@ -183,9 +183,8 @@ function dayOfNthWeekday(year: number, month: number, nth: number, weekday: numb
     let firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
     return 1 + (weekday - firstWeekday + 7) % 7 + (nth - 1) * 7;
   }
-  let lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  let lastWeekday = new Date(Date.UTC(year, month - 1, lastDay)).getUTCDay();
-  return lastDay - (lastWeekday - weekday + 7) % 7;
+  let lastDay = new Date(Date.UTC(year, month, 0));
+  return lastDay.getUTCDate() - (lastDay.getUTCDay() - weekday + 7) % 7;
 }
 
 /** iCal date-time in local time, e.g. "19700329T020000".
