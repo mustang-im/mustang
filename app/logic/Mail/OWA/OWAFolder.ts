@@ -1,5 +1,5 @@
 import { ExchangeFolder } from "../EWS/ExchangeFolder";
-import type { MessageFlagsPidTag } from "../EWS/ExchangeEMail";
+import { MessageFlagsPidTag } from "../EWS/ExchangeEMail";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { getSharedPersons, ExchangePermission } from "../EWS/ExchangePermission";
