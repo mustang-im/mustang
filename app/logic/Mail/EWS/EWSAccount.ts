@@ -37,6 +37,10 @@ import { ArrayColl } from "svelte-collections";
 export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
   readonly folderMap = new Map<string, EWSFolder>;
+  /** The login worked and we fetched the folder list, so the account
+   * is ready to take commands. Not merely: we have a password. */
+  @notifyChangedProperty
+  protected hasLoggedIn = false;
   protected throttle = new Throttle(50, 1);
   protected semaphore = new Semaphore(20);
   protected loginRunOnce = new RunOnce();
@@ -67,7 +71,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (this.mainAccount) {
       return this.mainAccount.isLoggedIn;
     }
-    return this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn;
+    return this.hasLoggedIn &&
+      (this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn);
   }
 
   async verifyLogin(): Promise<void> {
@@ -115,6 +120,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await this.loginCommon(interactive);
 
       await this.startup();
+      this.hasLoggedIn = true;
     });
   }
 
@@ -137,6 +143,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async disconnect(): Promise<void> {
+    this.hasLoggedIn = false;
     if (this.mainAccount) {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
