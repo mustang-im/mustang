@@ -61,8 +61,24 @@ export function getPublicKeyForPerson<T extends PublicKey>(person: Person, keyTy
   if (!person || person.encryptionPublicKeys.isEmpty) {
     return null;
   }
-  let keys = person.encryptionPublicKeys.filterOnce(key => !key.obsolete && (!keyType || key instanceof keyType));
+  let keys = person.encryptionPublicKeys.filterOnce(key => isUsableKey(key, keyType));
   return (keys.find(key => key.encryptByDefault) ?? keys.first) as T;
+}
+
+/** For composer, which recipient key to use for encrypting the outgoing email.
+ * Also considers the key that we know only for this email address, e.g. the
+ * certificate with which the recipient signed the email that we are replying to. */
+export function getPublicKeyForPersonUID<T extends PublicKey>(uid: PersonUID, keyType?: new () => T): T | null {
+  let saved = getPublicKeyForPerson(uid?.findPerson(), keyType);
+  if (saved) {
+    return saved;
+  }
+  let known = uid?.encryptionPublicKey;
+  return isUsableKey(known, keyType) ? known : null;
+}
+
+function isUsableKey<T extends PublicKey>(key: PublicKey | null, keyType?: new () => T): key is T {
+  return !!key && !key.obsolete && (!keyType || key instanceof keyType);
 }
 
 /** For composer, which own key to use for signing the outgoing email */

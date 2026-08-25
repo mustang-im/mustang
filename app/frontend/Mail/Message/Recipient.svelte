@@ -82,6 +82,9 @@
 
   function addToPerson(otherPerson: Person) {
     otherPerson.emailAddresses.add(new ContactEntry(recipient.emailAddress));
+    if (recipient.encryptionPublicKey) {
+      otherPerson.addEncryptionPublicKey(recipient.encryptionPublicKey);
+    }
     recipient.person = otherPerson;
   }
 

@@ -1,6 +1,6 @@
 import { SendEncrypted } from "../SendEncrypted";
 import type { EMail } from "../../EMail";
-import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
+import { getMyPrivateKey, getPublicKeyForPersonUID } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
@@ -134,7 +134,7 @@ export class SMIMESend {
       mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
       mime = new TextEncoder().encode(mimeAsText);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
-        getPublicKeyForPerson(puid.findPerson(), SMIMEPublicKey));
+        getPublicKeyForPersonUID(puid, SMIMEPublicKey));
       if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }

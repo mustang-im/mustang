@@ -55,7 +55,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { getMyPrivateKey, getPublicKeyForPerson } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getMyPrivateKey, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { TrustLevel, trustColor, trustColorFG, trustOrder } from "../../../logic/Mail/Encryption/enums";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
@@ -80,7 +80,7 @@
   $: to = mail.to;
   $: cc = mail.cc;
   $: allRecipients = $to.concat($cc);
-  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPerson(p.findPerson()));
+  $: allRecipientsKeys = $allRecipients.map(p => getPublicKeyForPersonUID(p));
   $: trustLevel = mail.shouldEncrypt ? lowestTrust($allRecipientsKeys) : TrustLevel.Personal;
   $: encryptDisabledReason =
     $mail.mustEncrypt
