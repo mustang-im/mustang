@@ -173,6 +173,17 @@ export class EWSEMail extends ExchangeEMail {
     await super.markSpam(spam);
   }
 
+  async markImportant(isImportant = true) {
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Importance", isImportant ? "High" : "Normal", "item:Importance");
+    await this.folder.account.callEWS(request);
+    await super.markImportant(isImportant);
+  }
+
   protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
     let request = new EWSUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",

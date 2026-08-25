@@ -211,6 +211,11 @@ export class JMAPEMail extends EMail {
     await this.setFlagServer("$forwarded", true);
   }
 
+  async markImportant(isImportant = true) {
+    await super.markImportant(isImportant);
+    await this.setFlagServer("$important", isImportant); // RFC 8457
+  }
+
   async markDraft(isDraft = true) {
     await super.markDraft(isDraft);
     await this.setFlagServer("$draft", isDraft);

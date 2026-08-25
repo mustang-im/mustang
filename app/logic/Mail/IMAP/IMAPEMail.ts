@@ -182,6 +182,11 @@ export class IMAPEMail extends EMail {
     await this.setFlagServer("$Forwarded", true);
   }
 
+  async markImportant(isImportant = true) {
+    await super.markImportant(isImportant);
+    await this.setFlagServer("$Important", isImportant); // RFC 8457
+  }
+
   async markDraft(isDraft = true) {
     await super.markDraft(isDraft);
     await this.setFlagServer("\\Draft", isDraft);

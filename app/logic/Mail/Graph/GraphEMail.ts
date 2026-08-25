@@ -196,6 +196,11 @@ export class GraphEMail extends EMail {
     await this.setLastVerb(EMailFlag.Forward, IconIndex.Forwarded);
   }
 
+  async markImportant(isImportant = true) {
+    await super.markImportant(isImportant);
+    await this.folder.account.graphPatch(this.path, { importance: isImportant ? "high" : "normal" });
+  }
+
   /** Graph has no replied and forwarded flags, only the MAPI properties
    * that make Outlook show the reply and forward arrows. */
   protected async setLastVerb(verb: EMailFlag, icon: IconIndex) {

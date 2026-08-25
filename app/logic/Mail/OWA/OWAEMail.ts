@@ -110,6 +110,17 @@ export class OWAEMail extends ExchangeEMail {
   //async markSpam(spam = true) {
   //} Don't know how to do this in OWA
 
+  async markImportant(isImportant = true) {
+    let request = new OWAUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Importance", isImportant ? "High" : "Normal", "item:Importance");
+    await this.folder.account.callOWA(request);
+    await super.markImportant(isImportant);
+  }
+
   protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
     let request = new OWAUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",

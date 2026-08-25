@@ -219,6 +219,10 @@ export class EMail extends Message {
     this.isForwarded = true;
   }
 
+  async markImportant(isImportant = true) {
+    this.isImportant = isImportant;
+  }
+
   async markDraft(isDraft = true) {
     this.isDraft = isDraft;
     if (this.dbID) {
