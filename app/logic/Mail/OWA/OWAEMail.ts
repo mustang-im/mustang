@@ -4,6 +4,7 @@ import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { getTagByName } from "../../Abstract/Tag";
+import { OWARequest } from "./Request/OWARequest";
 import { OWADeleteItemRequest } from "./Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
@@ -107,8 +108,19 @@ export class OWAEMail extends ExchangeEMail {
     await super.markStarred(starred);
   }
 
-  //async markSpam(spam = true) {
-  //} Don't know how to do this in OWA
+  /*async markSpam(spam = true) {
+    let request = new OWARequest("MarkAsJunk", {
+      __type: "MarkAsJunkRequest:#Exchange",
+      IsJunk: spam,
+      MoveItem: false,
+      ItemIds: [{
+        __type: "ItemId:#Exchange",
+        Id: this.itemID,
+      }],
+    });
+    await this.folder.account.callOWA(request);
+    await super.markSpam(spam);
+  }*/
 
   async markImportant(isImportant = true) {
     let request = new OWAUpdateItemRequest(this.itemID, {
