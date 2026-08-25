@@ -1,5 +1,7 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
+import { VTimezone } from "./VTimezone";
+import { myTimezone } from "../../../frontend/Util/date";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64 } from "../../util/util";
@@ -16,12 +18,33 @@ export async function getICal(event: Event, method?: iCalMethod): Promise<string
   }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
+  addVTimezones(lines, event);
   await addVEvent(lines, event);
   for (let exception of event.exceptions) {
     await addVEvent(lines, exception);
   }
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
+}
+
+/**
+ * Spells out the daylight saving time rules of every timezone that the event
+ * uses. Outlook and Exchange do not understand the `TZID` names and would
+ * otherwise show the event at the wrong time, RFC 5545 3.6.5.
+ */
+function addVTimezones(lines: (string | string[])[], event: Event): void {
+  let timezones = new Set([event, ...event.exceptions]
+    .filter(occurrence => !occurrence.allDay)
+    .map(timezoneOf)
+    .filter(timezone => timezone != "UTC")); // written as UTC times, without `TZID`
+  for (let timezone of timezones) {
+    lines.push(...new VTimezone(timezone, event.startTime).toICalLines());
+  }
+}
+
+/** The timezone in which the times of the event are meant */
+function timezoneOf(event: Event): string {
+  return event.timezone || myTimezone();
 }
 
 async function addVEvent(lines: (string | string[])[], event: Event): Promise<void> {
@@ -64,7 +87,7 @@ async function addVEvent(lines: (string | string[])[], event: Event): Promise<vo
       lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
     }
   } else {
-    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let timezone = timezoneOf(event);
     if (timezone == "UTC") {
       lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
       lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
@@ -88,7 +111,7 @@ async function addVEvent(lines: (string | string[])[], event: Event): Promise<vo
   }
   if (event.recurrenceRule) {
     lines.push(event.recurrenceRule.getCalString(event.allDay) + "\r\n");
-    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let timezone = timezoneOf(event);
     for (let exclusion of event.exclusions) {
       if (event.allDay) {
         lines.push(["EXDATE", "VALUE", "DATE", date2ical(exclusion)]);
