@@ -10,6 +10,7 @@ import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
+import type { PublicKey } from "./Encryption/PublicKey";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
@@ -108,6 +109,8 @@ export class EMail extends Message {
    * Format: `PublicKey.id` */
   @notifyChangedProperty
   signed: string | null = null;
+  /** As `signed` but giving you the actual PublicKey object */
+  signer: PublicKey | null = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
   sendRawMIME: string | null = null;

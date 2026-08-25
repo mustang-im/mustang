@@ -34,7 +34,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     }
   }
 
-  async matches(key: RSAPublicKey, _default: boolean): Promise<boolean> {
+  async matches(key: RSAPublicKey): Promise<boolean> {
     let rawKey = await this.decryptKey();
     return key.n == rawKey.n && key.e == rawKey.e;
   }

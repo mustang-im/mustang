@@ -135,7 +135,7 @@ export class SMIMESend {
       mime = new TextEncoder().encode(mimeAsText);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPerson(puid.findPerson(), SMIMEPublicKey));
-      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey, false)))).some(Boolean)) {
+      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
       let symmetricKey = new Uint8Array(32);
