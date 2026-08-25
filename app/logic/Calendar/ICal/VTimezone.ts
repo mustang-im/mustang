@@ -141,8 +141,9 @@ function utcOffsetChanges(timezone: string, year: number): Date[] {
  * @param before must have a different UTC offset than `after` */
 function findUTCOffsetChange(before: Date, after: Date, timezone: string): Date {
   let offsetBefore = utcOffset(before, timezone);
-  while (after.getTime() - before.getTime() > 1) {
-    let middle = new Date(Math.round((before.getTime() + after.getTime()) / 2));
+  // The timezone database changes the offset only at full minutes
+  while (after.getTime() - before.getTime() > k1MinuteMS) {
+    let middle = new Date(Math.round((before.getTime() + after.getTime()) / 2 / k1MinuteMS) * k1MinuteMS);
     if (utcOffset(middle, timezone) == offsetBefore) {
       before = middle;
     } else {
