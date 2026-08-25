@@ -3,7 +3,7 @@
   class:declined={$participant.response == InvitationResponse.Decline}
   class:tentative={$participant.response == InvitationResponse.Tentative}
   class:organizer={$participant.response == InvitationResponse.Organizer}
-  class:unknown={$participant.response == InvitationResponse.Unknown}
+  class:noresponse={$participant.response == InvitationResponse.NoResponseReceived}
   title={$participant.responseLabel}
   >
   {#if $participant.response == InvitationResponse.Organizer}
@@ -15,7 +15,7 @@
   {:else if $participant.response == InvitationResponse.Tentative}
     <TentativeIcon {size} />
   {:else}
-    <!--<UnknownIcon {size} title={$t`No response yet`} />-->
+    <!--<NoResponseIcon {size} title={$t`No response yet`} />-->
   {/if}
 </hbox>
 

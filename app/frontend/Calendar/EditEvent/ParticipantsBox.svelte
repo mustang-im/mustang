@@ -56,7 +56,7 @@
   export let event: Event;
 
   function onAddPerson(person: PersonUID) {
-    let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
+    let participant = new Participant(person.emailAddress, person.name, InvitationResponse.NoResponseReceived);
     event.participants.add(participant);
   }
 </script>
