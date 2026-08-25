@@ -75,10 +75,10 @@ export class JSONEMail {
       json.invitationMessage = email.invitationMessage;
     }
 
-    if (email.signed || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
+    if (email.signedByKeyID || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
       let e = json.encryption = {} as any;
       e.system = email.system;
-      e.signedPublicKeyID = email.signed;
+      e.signedPublicKeyID = email.signedByKeyID;
       e.wasEncrypted = email.wasEncrypted;
       e.mustEncrypt = email.mustEncrypt;
       e.shouldEncrypt = email.shouldEncrypt;
@@ -230,7 +230,7 @@ export class JSONEMail {
     let e = json.encryption;
     if (e) {
       email.system = sanitize.enum<EncryptionSystem>(e.system, Object.values(EncryptionSystem), null);
-      email.signed = sanitize.alphanumdash(e.signedPublicKeyID, null);
+      email.signedByKeyID = sanitize.alphanumdash(e.signedPublicKeyID, null);
       email.wasEncrypted = sanitize.boolean(e.wasEncrypted, false);
       email.shouldEncrypt = sanitize.boolean(e.shouldEncrypt, false);
       email.mustEncrypt = sanitize.boolean(e.mustEncrypt, false);

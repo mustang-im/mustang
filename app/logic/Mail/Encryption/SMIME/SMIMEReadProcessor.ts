@@ -136,8 +136,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
     await this.unwrapMIME(email, content);
     let signer = await verifySignedData(signedData, content);
     if (signer) {
-      email.signer = signer;
-      email.signed = signer.id;
+      email.signedKey = signer;
+      email.signedByKeyID = signer.id;
     }
   }
 
@@ -161,8 +161,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
     let signer = await verifySignedData(signedData, clearText);
     if (signer) {
-      email.signer = signer;
-      email.signed = signer.id;
+      email.signedKey = signer;
+      email.signedByKeyID = signer.id;
     }
   }
 

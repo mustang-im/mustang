@@ -108,9 +108,9 @@ export class EMail extends Message {
    * This gives you the specific public key that was used to sign.
    * Format: `PublicKey.id` */
   @notifyChangedProperty
-  signed: string | null = null;
+  signedByKeyID: string | null = null;
   /** As `signed` but giving you the actual PublicKey object */
-  signer: PublicKey | null = null;
+  signedKey: PublicKey | null = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
   sendRawMIME: string | null = null;
@@ -652,7 +652,7 @@ export class EMail extends Message {
     other.mustEncrypt = this.mustEncrypt;
     other.shouldEncrypt = this.shouldEncrypt;
     other.wasEncrypted = this.wasEncrypted;
-    other.signed = this.signed;
+    other.signedByKeyID = this.signedByKeyID;
     other.system = this.system;
   }
 

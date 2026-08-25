@@ -28,7 +28,7 @@ export class SMIMESend {
     let result = SendEncrypted.cloneEMail(mail);
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
-    if (mail.signed) {
+    if (mail.signedByKeyID) {
       // Only the body and content type are signed, not the headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with

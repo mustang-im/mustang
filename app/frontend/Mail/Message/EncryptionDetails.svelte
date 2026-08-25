@@ -45,14 +45,14 @@
   export let isExpanded = false;
 
   let signingKey: PublicKey;
-  $: getPublicKeyByKeyID($message.signed, message)
+  $: getPublicKeyByKeyID($message.signedByKeyID, message)
     .then(key => signingKey = key)
     .catch(showError);
-  $: signed = $message.signed && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signed = $message.signedByKeyID && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: identity = $message.outgoing ? findIdentityForEMailAddress($message.from?.emailAddress) : null;
-  $: mySigningKey = identity?.encryptionPrivateKeys.find(key => key.id == message.signed);
+  $: mySigningKey = identity?.encryptionPrivateKeys.find(key => key.id == message.signedByKeyID);
   $: title = signed && encrypted
       ? $t`End-to-end encrypted and signed`
       : signed

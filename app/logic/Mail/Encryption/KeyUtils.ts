@@ -44,8 +44,8 @@ export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Pro
       }
     }
   }
-  if (email?.signer?.id == id) {
-    return email.signer;
+  if (email?.signedKey?.id == id) {
+    return email.signedKey;
   }
   if (email && email.system != EncryptionSystem.SMIME) {
     let key = await readAutoCryptKeys(email);

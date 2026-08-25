@@ -45,7 +45,7 @@ export class PGPSend {
         encryptionKeys: recipientOpenPGPKeys,
       });
       result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted, privateKey);
-    } else if (mail.signed) {
+    } else if (mail.signedByKeyID) {
       let signature = await openPGP.sign({
         message: message,
         signingKeys: privateOpenPGPKey,
@@ -61,7 +61,7 @@ export class PGPSend {
     } else {
       throw new NotReached();
     }
-    result.signed = privateKey.id;
+    result.signedByKeyID = privateKey.id;
     return result;
   }
 
