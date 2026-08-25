@@ -29,9 +29,11 @@ export class PGPSend {
     let originalMIMEStr = new TextDecoder().decode(originalMIME);
     originalMIMEStr = originalMIMEStr.replace(/User-Agent: [^\r]+\r\n/, "");
     let openPGP = await import("openpgp");
-    let message = await openPGP.createMessage({ text: originalMIMEStr });
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
+      // Protected headers: move the real subject etc. into the encrypted part,
+      // so that only `Subject: ...` is visible on the outer message.
+      let message = await openPGP.createMessage({ text: PGPSend.protectHeaders(originalMIMEStr) });
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPerson(puid.findPerson(), PGPPublicKey));
       let recipientOpenPGPKeys: OpenPGP.PublicKey[] = [];
@@ -46,6 +48,7 @@ export class PGPSend {
       });
       result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted, privateKey);
     } else if (mail.signed) {
+      let message = await openPGP.createMessage({ text: originalMIMEStr });
       let signature = await openPGP.sign({
         message: message,
         signingKeys: privateOpenPGPKey,
@@ -92,7 +95,7 @@ export class PGPSend {
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
-      `Subject: PGP encrypted message`,
+      `Subject: PGP encrypted message`, // real subject is in the protected headers, see `protectHeaders()`
       `Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";`,
       ` boundary="${boundary}"`,
       ``,
@@ -112,6 +115,57 @@ export class PGPSend {
       `--${boundary}--`,
     ].join('\r\n');
     return mime;
+  }
+
+  /**
+   * Protected headers, as sent by Thunderbird.
+   * Wraps the message in a `multipart/mixed; protected-headers="v1"` part and
+   * moves the message headers (esp. `Subject`) into that part, so that they are
+   * encrypted together with the body. The outer message then only shows
+   * `Subject: ...`, see `createMIMEForEncrypted()`.
+   * <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
+   */
+  static protectHeaders(mime: string): string {
+    let split = mime.indexOf("\r\n\r\n");
+    let body = split >= 0 ? mime.slice(split + 4) : "";
+    let headerBlock = split >= 0 ? mime.slice(0, split) : mime;
+
+    // Unfold continuation lines (starting with space or tab)
+    let headers: string[] = [];
+    for (let line of headerBlock.split("\r\n")) {
+      if (/^[ \t]/.test(line) && headers.length) {
+        headers[headers.length - 1] += "\r\n" + line;
+      } else {
+        headers.push(line);
+      }
+    }
+
+    let messageHeaders: string[] = []; // Protected, e.g. From, To, Subject, Date, Message-ID
+    let contentHeaders: string[] = []; // Describe the body, stay with it, e.g. Content-Type
+    for (let header of headers) {
+      let name = header.slice(0, header.indexOf(":")).trim().toLowerCase();
+      if (name.startsWith("content-")) {
+        contentHeaders.push(header);
+      } else if (name == "mime-version") {
+        // stays on the outer message only
+      } else {
+        messageHeaders.push(header);
+      }
+    }
+
+    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    return [
+      `Content-Type: multipart/mixed; boundary="${boundary}";`,
+      ` protected-headers="v1"`,
+      ...messageHeaders,
+      ``,
+      `--${boundary}`,
+      ...contentHeaders,
+      ``,
+      body.replace(/(\r\n)+$/, ""),
+      `--${boundary}--`,
+      ``,
+    ].join('\r\n');
   }
 
   static createMIMEForSignedDetached(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
