@@ -38,7 +38,7 @@ export function owaResolveNamesRequest(searchTerm: string): OWARequest {
   });
 }
 
-export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): OWARequest {
+export function owaFindPersonsRequest(folderID: string, maxFetchCount: number, queryString: string | null = null): OWARequest {
   return new OWARequest("FindPeople", {
     __type: "FindPeopleRequest:#Exchange",
     IndexedPageItemView: {
@@ -58,7 +58,7 @@ export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): 
       __type: "PersonaResponseShape:#Exchange",
       BaseShape: "Default",
     },
-    QueryString: null,
+    QueryString: queryString,
     SearchPeopleSuggestionIndex: false,
     ShouldResolveOneOffEmailAddress: false,
   });

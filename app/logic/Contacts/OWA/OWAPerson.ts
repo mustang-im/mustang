@@ -3,10 +3,11 @@ import { ContactEntry } from '../../Abstract/Person';
 import { Attachment } from '../../Abstract/Attachment';
 import { StreetAddress } from '../StreetAddress';
 import type { OWAAddressbook } from './OWAAddressbook';
+import { kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
 import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";
 import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
-import { owaGetPersonaRequest, owaResolveNamesRequest } from "./Request/OWAPersonRequests";
+import { owaFindPersonsRequest, owaGetPersonaRequest, owaResolveNamesRequest } from "./Request/OWAPersonRequests";
 import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
@@ -99,10 +100,9 @@ export class OWAPerson extends ExchangePerson {
     }
     if (!this.itemID) {
       // We just created the contact, and got only its persona back
-      let response = await this.addressbook.callOWA(owaGetPersonaRequest(this.personaID));
-      this.itemID = OWAPerson.itemIDFromJSON(response.Persona);
+      this.itemID = await this.findItemIDOnServer();
     }
-    assert(this.itemID, gt`Cannot find the contact ${this.name} on the server`);
+    assert(this.itemID, gt`Cannot save the picture of ${this.name} on the server`);
     if (this.pictureAttachmentID) {
       await this.addressbook.callOWA(owaDeleteAttachmentsRequest([this.pictureAttachmentID]));
       this.pictureAttachmentID = "";
@@ -123,6 +123,20 @@ export class OWAPerson extends ExchangePerson {
       this.pictureAttachmentID = sanitize.nonemptystring(response.Attachments[0].AttachmentId.Id, "");
     }
     this.pictureOnServer = this.picture;
+  }
+
+  /** A persona that the server created a moment ago names neither its
+   * contact nor its email address, but the address book search does. */
+  protected async findItemIDOnServer(): Promise<string> {
+    let response = await this.addressbook.callOWA(owaGetPersonaRequest(this.personaID));
+    let itemID = OWAPerson.itemIDFromJSON(response.Persona);
+    if (itemID) {
+      return itemID;
+    }
+    let searchTerm = this.emailAddresses.first?.value ?? this.name;
+    response = await this.addressbook.callOWA(owaFindPersonsRequest(this.addressbook.folderID, kMaxFetchCount, searchTerm));
+    let result = ensureArray(response.ResultSet).find(result => result.PersonaId?.Id == this.personaID);
+    return result ? OWAPerson.itemIDFromJSON(result) : "";
   }
 
   protected toFields(): Record<string, string> {

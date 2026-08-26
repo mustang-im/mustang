@@ -47,13 +47,15 @@ function fakeAccount(pictureAttachmentID?: string, ...personas: any[]): any {
     errorCallback: (ex: Error) => { throw ex; },
     itemsFromResponses: OWAAccount.prototype.itemsFromResponses,
     requests: [] as any[],
+    /** What `GetPersona` returns, which lags behind the search */
+    knownPersonas: personas,
     async callOWA(request: any) {
       this.requests.push(request);
       switch (request.action) {
       case "FindPeople":
         return { ResultSet: personas };
       case "GetPersona":
-        return { Persona: personas.find(persona => persona.PersonaId.Id == request.Body.PersonaId.Id) };
+        return { Persona: this.knownPersonas.find(persona => persona.PersonaId.Id == request.Body.PersonaId.Id) };
       case "GetNotesForPersona":
         return {};
       case "GetItem":
@@ -259,4 +261,32 @@ test("keeps the name that the user typed", async () => {
   // `CreatePersona` returns only the new PersonaId
   expect(person.name).toBe("Alice Example");
   expect(person.personaID).toBe(kPersonaID);
+});
+
+test("finds the contact of a new persona through the address book", async () => {
+  addressbook = newAddressbook();
+  // The persona is too new to name its contact
+  (addressbook.account as any).knownPersonas = [{ PersonaId: { Id: kPersonaID } }];
+  let person = addressbook.newPerson();
+  person.name = "Alice Example";
+  person.picture = kFilePicture;
+
+  await person.saveToServer();
+
+  expect(person.itemID).toBe(kItemID);
+  let creates = requestsOfAction("CreateAttachment");
+  expect(creates.length).toBe(1);
+  expect(creates[0].Body.ParentItemId.Id).toBe(kItemID);
+});
+
+test("does not search the address book when the persona names its contact", async () => {
+  addressbook = newAddressbook();
+  let person = addressbook.newPerson();
+  person.name = "Alice Example";
+  person.picture = kFilePicture;
+
+  await person.saveToServer();
+
+  expect(person.itemID).toBe(kItemID);
+  expect(requestsOfAction("FindPeople").length).toBe(0);
 });
