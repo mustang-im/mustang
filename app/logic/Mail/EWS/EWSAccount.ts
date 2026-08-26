@@ -858,11 +858,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
   }
 
-  isOffice365(): boolean {
-    let hostname = new URL(this.url).hostname;
-    return hostname == "outlook.office365.com";
-  }
-
   async createToplevelFolder(name: string): Promise<EWSFolder> {
     if (this.sharedFolderRoot == "inbox") {
       throw new Error(gt`You only have access to the Inbox of this shared account`);

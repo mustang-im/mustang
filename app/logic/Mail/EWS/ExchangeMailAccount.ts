@@ -11,6 +11,11 @@ export class ExchangeMailAccount extends MailAccount {
   readonly canSendOutgoingInvitations: boolean = false;
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
 
+  isOffice365(): boolean {
+    let hostname = this.url ? new URL(this.url).hostname : null;
+    return hostname == "outlook.office365.com" || hostname == "outlook.office.com";
+  }
+
   get calendarsAvailable(): Collection<Calendar> {
     let mailboxCalendars = this.calendarsOfMailbox(this.username);
     if (mailboxCalendars.hasItems) {

@@ -615,11 +615,6 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     }
   }
 
-  isOffice365(): boolean {
-    let hostname = new URL(this.url).hostname;
-    return hostname == "outlook.office365.com";
-  }
-
   async createToplevelFolder(name: string): Promise<ActiveSyncFolder> {
     let request = {
       ParentId: "0",

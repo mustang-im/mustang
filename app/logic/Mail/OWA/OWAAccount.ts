@@ -518,7 +518,7 @@ export class OWAAccount extends ExchangeMailAccount {
   }
 
   isOffice365(): boolean {
-    return this.authorizationHeader != null;
+    return this.authorizationHeader != null || super.isOffice365();
   }
 
   async createToplevelFolder(name: string): Promise<OWAFolder> {

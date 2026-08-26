@@ -192,6 +192,10 @@ export class MailAccount extends TCPAccount {
     return this.rootFolders.first;
   }
 
+  isOffice365(): boolean {
+    return false;
+  }
+
   canShareWithPersons(): boolean {
     return false;
   }
