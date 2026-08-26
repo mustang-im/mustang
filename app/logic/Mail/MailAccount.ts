@@ -273,6 +273,10 @@ export class MailAccount extends TCPAccount {
 
     // objects
     this.oAuth2 = other.oAuth2;
+    if (this.oAuth2) {
+      // It logs in as us now, and its login web session is `webSessionID` = our account ID
+      this.oAuth2.account = this;
+    }
     this.identities.addAll(other.identities);
   }
 
