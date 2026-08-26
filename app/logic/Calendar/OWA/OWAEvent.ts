@@ -14,7 +14,8 @@ import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice36
 import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateAttachmentRequest, owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaDeleteAttachmentsRequest, owaGetAttachmentRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest, owaGetAttachmentRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
