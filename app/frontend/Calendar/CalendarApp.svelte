@@ -1,35 +1,41 @@
 <vbox flex class="calendar-app">
-  <Splitter
-    initialRightRatio={0.25}
-    rightMinWidth={250}
-    hasRight={!appGlobal.isMobile}
-    >
-    <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
-      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$dateIntervalSetting.value}>
-        <hbox slot="top-left">
-          {#if !$appGlobal.isMobile}
-            <TitleBarLeft />
-          {/if}
-        </hbox>
-        <TitleBarRight bind:dateInterval={dateIntervalSetting.value} slot="top-right" />
-      </MainView>
-    </vbox>
-    <vbox flex class="sidebar" slot="right">
-      {#if $selectedEvent && !appGlobal.isMobile}
-        <ShowEvent event={$selectedEvent} />
-      {:else}
-        <!--<TaskList />-->
-      {/if}
-    </vbox>
-  </Splitter>
+  <hbox flex>
+    {#if $isCalendarListOpen}
+      <CalendarList />
+    {/if}
+    <Splitter
+      initialRightRatio={0.25}
+      rightMinWidth={250}
+      hasRight={!appGlobal.isMobile}
+      >
+      <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
+        <MainView events={shownCalendarEvents} bind:start={$startDate} dateInterval={$dateIntervalSetting.value}>
+          <hbox slot="top-left">
+            {#if !$appGlobal.isMobile}
+              <TitleBarLeft />
+            {/if}
+          </hbox>
+          <TitleBarRight bind:dateInterval={dateIntervalSetting.value} slot="top-right" />
+        </MainView>
+      </vbox>
+      <vbox flex class="sidebar" slot="right">
+        {#if $selectedEvent && !appGlobal.isMobile}
+          <ShowEvent event={$selectedEvent} />
+        {:else}
+          <!--<TaskList />-->
+        {/if}
+      </vbox>
+    </Splitter>
+  </hbox>
   {#if $appGlobal.isMobile}
     <CalendarViewBarM />
   {/if}
 </vbox>
 
 <script lang="ts">
-  import { selectedCalendar, selectedEvent, startDate, type DateInterval } from "./selected";
+  import { isCalendarListOpen, selectedCalendar, selectedEvent, shownCalendarEvents, startDate, type DateInterval } from "./selected";
   import { appGlobal } from "../../logic/app";
+  import CalendarList from "./CalendarList.svelte";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";

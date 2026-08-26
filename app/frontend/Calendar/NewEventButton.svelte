@@ -10,7 +10,7 @@
         slot="control"
         onClick={() => isMenuOpen = !isMenuOpen}
         />
-      {#each appGlobal.calendars.each as calendar}
+      {#each $shownCalendars.each as calendar}
         <hbox class="menuitem" style="--calendar-color: {calendar.color}">
           <MenuItem
             icon={CalendarIcon}
@@ -34,8 +34,7 @@
 
 <script lang="ts">
   import { createNewEvent } from "./event";
-  import { selectedCalendar, selectedDate } from "./selected";
-  import { appGlobal } from "../../logic/app";
+  import { selectedCalendar, selectedDate, shownCalendars } from "./selected";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -43,8 +42,7 @@
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../l10n/l10n";
 
-  $: calendars = appGlobal.calendars;
-  $: haveMultipleCalendars = $calendars.length > 1;
+  $: haveMultipleCalendars = $shownCalendars.length > 1;
   let isMenuOpen = false;
 </script>
 
