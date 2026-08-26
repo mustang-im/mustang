@@ -11,13 +11,7 @@
         onClick={() => isMenuOpen = !isMenuOpen}
         />
       {#each $shownCalendars.each as calendar}
-        <hbox class="menuitem" style="--calendar-color: {calendar.color}">
-          <MenuItem
-            icon={CalendarIcon}
-            label={calendar.name}
-            onClick={() => createNewEvent(calendar, $selectedDate, false)}
-            />
-        </hbox>
+        <NewEventMenuItem {calendar} startTime={$selectedDate} exact={false} />
       {/each}
     </ButtonMenu>
   {:else}
@@ -36,10 +30,9 @@
   import { createNewEvent } from "./event";
   import { selectedCalendar, selectedDate, shownCalendars } from "./selected";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
-  import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import NewEventMenuItem from "./NewEventMenuItem.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
-  import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../l10n/l10n";
 
   $: haveMultipleCalendars = $shownCalendars.length > 1;
@@ -59,8 +52,5 @@
     align-items: center;
     justify-content: center;
     position: relative;
-  }
-  .menuitem :global(.menuitem .icon) {
-    color: var(--calendar-color);
   }
 </style>

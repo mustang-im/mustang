@@ -1,12 +1,6 @@
 <ContextMenu bind:this={menu}>
   {#each $shownCalendars.each as calendar}
-    <hbox class="menuitem" style="--calendar-color: {calendar.color}">
-      <MenuItem
-        icon={CalendarIcon}
-        label={calendar.name}
-        onClick={() => createNewEvent(calendar, startTime)}
-        />
-    </hbox>
+    <NewEventMenuItem {calendar} {startTime} />
   {/each}
 </ContextMenu>
 
@@ -14,8 +8,7 @@
   import { createNewEvent } from "./event";
   import { shownCalendars } from "./selected";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
-  import MenuItem from "../Shared/Menu/MenuItem.svelte";
-  import CalendarIcon from "lucide-svelte/icons/calendar";
+  import NewEventMenuItem from "./NewEventMenuItem.svelte";
 
   let menu: ContextMenu;
   let startTime: Date;
@@ -31,9 +24,3 @@
     }
   }
 </script>
-
-<style>
-  .menuitem :global(.menuitem .icon) {
-    color: var(--calendar-color);
-  }
-</style>

@@ -2,7 +2,9 @@
   {#if $calendars.length > 1 && !$isCalendarListOpen}
     <ShowCalendarsButton />
   {/if}
-  <NewEventButton />
+  {#if !$isCalendarListOpen}
+    <NewEventButton />
+  {/if}
 </hbox>
 
 <script lang="ts">
