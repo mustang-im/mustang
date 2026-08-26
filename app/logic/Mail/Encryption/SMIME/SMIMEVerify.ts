@@ -78,10 +78,12 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     return null;
   }
   let signer = new SMIMEPublicKey();
-  while (cert && signer.addCertificate(cert)) {
+  while (cert && await signer.addCertificate(cert)) {
     cert = certificates.find(chain =>
       sameName(chain.tbsCertificate.subject, cert.tbsCertificate.issuer));
   };
+  // Update the signer's trustLevel if possible.
+  await signer.keyStatus();
   return signer;
 }
 
