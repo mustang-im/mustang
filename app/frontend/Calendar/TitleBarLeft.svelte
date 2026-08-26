@@ -1,5 +1,5 @@
 <hbox class="title-bar">
-  {#if !$isCalendarListOpen}
+  {#if $calendars.length > 1 && !$isCalendarListOpen}
     <ShowCalendarsButton />
   {/if}
   <NewEventButton />
@@ -7,8 +7,11 @@
 
 <script lang="ts">
   import { isCalendarListOpen } from "./selected";
+  import { appGlobal } from "../../logic/app";
   import ShowCalendarsButton from "./ShowCalendarsButton.svelte";
   import NewEventButton from "./NewEventButton.svelte";
+
+  let calendars = appGlobal.calendars;
 </script>
 
 <style>
