@@ -3,14 +3,16 @@
     {#if signed || encrypted}
       <vbox class="signed key-{trustLevel} plain">
         <Clickable onClick={() => isExpanded = false}>
-          <RoundButton
-            label={title}
-            icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
-            iconSize="16px"
-            padding="3px"
-            border={false}
-            />
-          <div class="title">{title}</div>
+          <hbox>
+            <RoundButton
+              label={title}
+              icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
+              iconSize="16px"
+              padding="3px"
+              border={false}
+              />
+            <div class="title">{title}</div>
+          </hbox>
         </Clickable>
         <div class="msg">{msg}</div>
       </vbox>
