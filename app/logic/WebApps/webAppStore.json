@@ -176,7 +176,7 @@
       "homepage": "https://docs.parula.app/paper/",
       "start": "https://office.parula.app/paper/",
       "loginType": "none",
-      "icon": "https://parula.beonex.com/assets/images/parula_white.png"
+      "icon": "https://parula.app/assets/images/logo/paper.png"
     },
     {
       "id": "parula-sheets",
@@ -188,13 +188,30 @@
         "en": "Parula Spreadsheet"
       },
       "description": {
-        "en": "Open word processor with ODT and Word compatibility, real-time collaboration and change merges",
-        "de": "Offene Textverarbeitung mit ODT- und Word-Kompatibilität, Zusammenarbeit in Echtzeit, und Zusammenführen von Änderungen"
+        "en": "Open spreadsheet application with ODS and Excel compatibility, pivot tables, real-time collaboration and Visual Basic macro execution in an isolated sandbox",
+        "de": "Offene Tabellenkalkulation mit ODS- und Excel-Kompatibilität, Zusammenarbeit in Echtzeit, und Visual Basic-Makro-Ausführung in einer abgesicherten Sandbox"
       },
       "homepage": "https://docs.parula.app/sheets/",
       "start": "https://office.parula.app/sheets/",
       "loginType": "none",
-      "icon": "https://parula.beonex.com/assets/images/parula_white.png"
+      "icon": "https://parula.app/assets/images/logo/sheets.png"
+    },
+    {
+      "id": "parula-showon",
+      "categoryFullIDs": [
+        "productivity/presentation"
+      ],
+      "name": {
+        "en": "Parula ShowOn"
+      },
+      "description": {
+        "en": "Simple creation of presentations, with export to PDF and HTML",
+        "de": "Einfache Erstellung von Präsentation, mit Export zu PDF und HTML"
+      },
+      "homepage": "https://parula.app",
+      "start": "https://office.parula.app/showon/",
+      "loginType": "none",
+      "icon": "https://parula.app/assets/images/logo/showon.png"
     },
     {
       "id": "miro",
