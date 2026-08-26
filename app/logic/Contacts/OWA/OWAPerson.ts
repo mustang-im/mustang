@@ -82,7 +82,8 @@ export class OWAPerson extends ExchangePerson {
     if (Object.keys(fields).some(key => fields[key] != this.fields[key])) {
       let request = this.personaID ? new OWAUpdatePersonaRequest(this.personaID, this.fields, fields) : new OWACreatePersonaRequest(this.addressbook.folderID, this.fields, fields);
       let response = await this.addressbook.callOWA(request);
-      this.name = sanitize.nonemptystring(response.DisplayName, "");
+      // `CreatePersona` returns only the new PersonaId, so keep the name we have
+      this.name = sanitize.nonemptystring(response.DisplayName, this.name);
       this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
       this.fields = fields;
     }

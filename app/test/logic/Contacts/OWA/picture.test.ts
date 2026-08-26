@@ -85,7 +85,7 @@ function fakeAccount(pictureAttachmentID?: string, ...personas: any[]): any {
       case "DeleteAttachment":
         return {};
       default: // CreatePersona, UpdatePersona
-        return { PersonaId: { Id: kPersonaID }, DisplayName: "Alice Example" };
+        return { PersonaId: { Id: kPersonaID } };
       }
     },
   };
@@ -246,4 +246,17 @@ test("deletes the picture on the server", async () => {
   expect(requestsOfAction("DeleteAttachment").length).toBe(1);
   expect(requestsOfAction("CreateAttachment").length).toBe(0);
   expect(person.pictureAttachmentID).toBe("");
+});
+
+test("keeps the name that the user typed", async () => {
+  addressbook = newAddressbook();
+  let person = addressbook.newPerson();
+  person.name = "Alice Example";
+  person.firstName = "Alice";
+
+  await person.saveToServer();
+
+  // `CreatePersona` returns only the new PersonaId
+  expect(person.name).toBe("Alice Example");
+  expect(person.personaID).toBe(kPersonaID);
 });
