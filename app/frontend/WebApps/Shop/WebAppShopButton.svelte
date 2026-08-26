@@ -59,7 +59,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
+  import { WebAppLoginType, type WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import { selectedWebApp, showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
   import { Account } from "../../../logic/Abstract/Account";
   import { appGlobal } from "../../../logic/app";
@@ -85,6 +85,10 @@
   $: instances = myApps.filterObservable(a => a.id == app.id);
 
   function onAdd() {
+    if (app.loginType == WebAppLoginType.None) {
+      myApps.add(app.instantiate());
+      return;
+    }
     adding = true;
   }
   function onAddDone() {
