@@ -86,7 +86,7 @@
         <RoundButton
           label={$t`Close`}
           icon={CloseIcon}
-          onClick={() => onClose()}
+          onClick={() => onClose(true)}
           classes="plain right save-or-close"
           iconSize="16px"
           />
@@ -152,8 +152,9 @@
 
   /**
    * If event was sidebar only: Close event display, go back to default sidebar (e.g. tasks view)
-   * If event was full screen: go back to calendar, and keep the event in the sidebar as display-only
-   * @param deselect The event is gone, so drop it from the sidebar as well
+   * If event was full screen: go back to the calendar
+   * @param deselect The user is done with the event, so drop it from the sidebar as
+   *   well. Not for `onShrink()`, which moves the full window into the sidebar.
    */
   function onClose(deselect = false) {
     let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);

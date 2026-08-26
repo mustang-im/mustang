@@ -215,7 +215,7 @@
   function onCancel() {
     event.cancelEditing();
     event.parentEvent?.cancelEditing(); // master, when recurrence was changed
-    onClose(event.isNew && $selectedEvent == event);
+    onClose(true);
   }
 
   async function onSave() {
@@ -312,7 +312,8 @@
     onClose();
   }
 
-  /** @param deselect The event is gone, so drop it from the sidebar as well */
+  /** @param deselect The user is done with the event, so drop it from the sidebar as
+   * well. Not for `onSave()` and `onShrink()`, which leave it there as display-only. */
   function onClose(deselect = false) {
     event.finishEditing();
     let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
