@@ -1,11 +1,12 @@
 import { ExchangeAddressbook } from "../EWS/ExchangeAddressbook";
 import { type AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
+import type { Attachment } from "../../Abstract/Attachment";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
-import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { owaFindPersonsRequest, owaGetContactAttachmentsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -30,6 +31,12 @@ export class OWAAddressbook extends ExchangeAddressbook {
     return this.username == this.account.username
       ? this.account.callOWA(aRequest)
       : this.account.callOWA(aRequest, this.username);
+  }
+
+  callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment) {
+    return this.username == this.account.username
+      ? this.account.callOWAWithOffice365Attachment(aRequest, attachment)
+      : this.account.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
   }
 
   newPerson(): OWAPerson {
@@ -98,6 +105,28 @@ export class OWAAddressbook extends ExchangeAddressbook {
         }
       } catch (ex) {
         this.account.errorCallback(ex);
+      }
+    }
+    await this.listPictures();
+  }
+
+  /** Exchange saves the pictures as attachments of the contacts,
+   * which the personas do not include. */
+  protected async listPictures() {
+    let persons = this.persons.contents.filter(person => person.itemID);
+    for (let i = 0; i < persons.length; i += kMaxFetchCount) {
+      let batch = persons.slice(i, i + kMaxFetchCount);
+      let response = await this.callOWA(owaGetContactAttachmentsRequest(batch.map(person => person.itemID)));
+      let items = response.ResponseMessages ? this.account.itemsFromResponses(response.ResponseMessages.Items) : response.Items;
+      for (let item of items) {
+        try {
+          let person = batch.find(p => p.itemID == sanitize.nonemptystring(item.ItemId.Id));
+          if (await person?.updatePictureFromServer(item.Attachments)) {
+            await person.saveLocally();
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
+        }
       }
     }
   }
