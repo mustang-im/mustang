@@ -27,6 +27,7 @@
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import { fileSize } from "../../Files/file";
   import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
+  import { openExternalURL } from "../../../logic/util/os-integration";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
@@ -36,6 +37,14 @@
   export let attachment: Attachment;
 
   async function onOpen() {
+    if (!attachment.content && !attachment.filepathLocal) {
+      await attachment.load();
+      if (!attachment.content && attachment.url) {
+        // The file is on a web server that we cannot download from, e.g. a cloud drive
+        await openExternalURL(attachment.url);
+        return;
+      }
+    }
     if (canOpenFileInternally(attachment.mimeType)) {
       await attachment.load();
       await openFileInternallyFromFile(attachment.content);
