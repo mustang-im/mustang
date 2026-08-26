@@ -10,6 +10,7 @@ import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
+import type { PublicKey } from "./Encryption/PublicKey";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
@@ -51,6 +52,13 @@ export class EMail extends Message {
   /** The user has answered this message, by clicking "Reply" */
   @notifyChangedProperty
   isReplied = false;
+  /** The user has forwarded this message to somebody else */
+  @notifyChangedProperty
+  isForwarded = false;
+  /** The sender or the server marked this message as important,
+   * e.g. `Importance: high` or IMAP keyword `$Important` */
+  @notifyChangedProperty
+  isImportant = false;
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
   isDraft = false;
@@ -100,7 +108,9 @@ export class EMail extends Message {
    * This gives you the specific public key that was used to sign.
    * Format: `PublicKey.id` */
   @notifyChangedProperty
-  signed: string | null = null;
+  signedByKeyID: string | null = null;
+  /** As `signed` but giving you the actual PublicKey object */
+  signedKey: PublicKey | null = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
   sendRawMIME: string | null = null;
@@ -203,6 +213,14 @@ export class EMail extends Message {
 
   async markReplied() {
     this.isReplied = true;
+  }
+
+  async markForwarded() {
+    this.isForwarded = true;
+  }
+
+  async markImportant(isImportant = true) {
+    this.isImportant = isImportant;
   }
 
   async markDraft(isDraft = true) {
@@ -332,6 +350,10 @@ export class EMail extends Message {
       this.inReplyTo = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
+    // RFC 4021 `Importance:`, RFC 2156 `Priority:`, and the de-facto `X-Priority: 1` = highest
+    this.isImportant ||= this.mimeHeader(mail, "importance") == "high" ||
+      this.mimeHeader(mail, "priority") == "urgent" ||
+      ["1", "2"].includes(this.mimeHeader(mail, "x-priority")[0]);
 
     // Body
     this.text = mail.text;
@@ -397,6 +419,13 @@ export class EMail extends Message {
         this.folder.account.errorCallback(ex);
       }
     }
+  }
+
+  /** @param name must be lowercase
+   * @returns the header value, normalized for comparison */
+  protected mimeHeader(mail: MIME, name: string): string {
+    let header = mail.headers.find(h => h.key.toLowerCase() == name);
+    return sanitize.string(header?.value, "").toLowerCase().trim();
   }
 
   /** Used by encrypted messages.
@@ -610,6 +639,8 @@ export class EMail extends Message {
     other.threadID = this.threadID;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
+    other.isForwarded = this.isForwarded;
+    other.isImportant = this.isImportant;
     other.isDraft = this.isDraft;
     other.isDeleted = this.isDeleted;
     other.mime = this.mime;
@@ -625,7 +656,7 @@ export class EMail extends Message {
     other.mustEncrypt = this.mustEncrypt;
     other.shouldEncrypt = this.shouldEncrypt;
     other.wasEncrypted = this.wasEncrypted;
-    other.signed = this.signed;
+    other.signedByKeyID = this.signedByKeyID;
     other.system = this.system;
   }
 

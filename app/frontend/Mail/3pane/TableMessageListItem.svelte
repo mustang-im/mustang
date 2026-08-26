@@ -6,6 +6,10 @@
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
     <ReplyIcon size={16} class="reply" />
+  {:else if $message.isForwarded}
+    <ForwardIcon size={16} class="forward" />
+  {:else if $message.isImportant}
+    <ImportantIcon size={16} class="important" />
   {:else}
     <hbox class="unread-dot button" class:unread={!$message.isRead}>
       <Button
@@ -117,6 +121,8 @@
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import ReplyIcon from "lucide-svelte/icons/reply";
+  import ForwardIcon from "lucide-svelte/icons/forward";
+  import ImportantIcon from "lucide-svelte/icons/circle-alert";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
@@ -247,18 +253,25 @@
   .direction :global(svg.outgoing) {
     stroke-width: 1px;
   }
-  .direction :global(svg.reply) {
+  .direction :global(svg.reply),
+  .direction :global(svg.forward) {
     stroke-width: 1px;
+  }
+  .direction :global(svg.important) {
+    color: crimson;
   }
   @media (prefers-color-scheme: light) {
     .direction :global(svg.outgoing) {
       color: darkred;
     }
-    .direction :global(svg.reply) {
+    .direction :global(svg.reply),
+    .direction :global(svg.forward) {
       color: grey;
     }
   }
-  :global(.row.selected) .direction :global(svg.reply) {
+  :global(.row.selected) .direction :global(svg.reply),
+  :global(.row.selected) .direction :global(svg.forward),
+  :global(.row.selected) .direction :global(svg.important) {
     color: var(--selected-fg);
   }
   .star :global(svg) {

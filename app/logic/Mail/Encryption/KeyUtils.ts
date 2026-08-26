@@ -6,6 +6,7 @@ import { PGPPrivateKey } from "./PGP/PGPPrivateKey";
 import { PGPPublicKey } from "./PGP/PGPPublicKey";
 import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
 import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
+import { PKCS12 } from "./SMIME/PKCS12";
 import { readAutoCryptKeys } from "./PGP/AutoCrypt";
 import { EncryptionSystem } from "./enums";
 import type { EMail } from "../EMail";
@@ -43,6 +44,9 @@ export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Pro
       }
     }
   }
+  if (email?.signedKey?.id == id) {
+    return email.signedKey;
+  }
   if (email && email.system != EncryptionSystem.SMIME) {
     let key = await readAutoCryptKeys(email);
     if (key?.id == id) {
@@ -57,8 +61,24 @@ export function getPublicKeyForPerson<T extends PublicKey>(person: Person, keyTy
   if (!person || person.encryptionPublicKeys.isEmpty) {
     return null;
   }
-  let keys = person.encryptionPublicKeys.filterOnce(key => !key.obsolete && (!keyType || key instanceof keyType));
+  let keys = person.encryptionPublicKeys.filterOnce(key => isUsableKey(key, keyType));
   return (keys.find(key => key.encryptByDefault) ?? keys.first) as T;
+}
+
+/** For composer, which recipient key to use for encrypting the outgoing email.
+ * Also considers the key that we know only for this email address, e.g. the
+ * certificate with which the recipient signed the email that we are replying to. */
+export function getPublicKeyForPersonUID<T extends PublicKey>(uid: PersonUID, keyType?: new () => T): T | null {
+  let saved = getPublicKeyForPerson(uid?.findPerson(), keyType);
+  if (saved) {
+    return saved;
+  }
+  let known = uid?.encryptionPublicKey;
+  return isUsableKey(known, keyType) ? known : null;
+}
+
+function isUsableKey<T extends PublicKey>(key: PublicKey | null, keyType?: new () => T): key is T {
+  return !!key && !key.obsolete && (!keyType || key instanceof keyType);
 }
 
 /** For composer, which own key to use for signing the outgoing email */
@@ -70,6 +90,24 @@ export function getMyPrivateKey<T extends PublicKey & PrivateKey>(identity: Mail
   return (keys.find(key => key.encryptByDefault && key.useToSign) ??
     keys.find(key => key.useToSign) ??
     keys.first) as T | null;
+}
+
+/**
+ * Reads the key file that the user picked.
+ * .p12 files, also called .pfx, are binary and encrypted, so they are
+ * converted here into the PEM that `importPrivateKey()` reads.
+ * @returns the contents of the file, as PEM
+ */
+export async function readKeyFile(file: File, passphrase: string): Promise<string> {
+  let fileContents = new Uint8Array(await file.arrayBuffer());
+  // PEM and ASCII armor start with the "-----BEGIN " line,
+  // whereas a .p12 file starts with the ASN.1 tag for a sequence.
+  if (fileContents[0] != 0x30) {
+    return new TextDecoder().decode(fileContents);
+  }
+  let p12 = new PKCS12(passphrase);
+  await p12.read(fileContents);
+  return await p12.toPEM();
 }
 
 export async function importPrivateKey(fileContent: string, passphrase: string): Promise<PublicKey & PrivateKey> {
@@ -99,10 +137,7 @@ export async function importPublicKey(fileContent: string): Promise<PublicKey> {
 export function addPublicKeyToPersonUID(uid: PersonUID, key: PublicKey) {
   let person = uid.createPerson(appGlobal.collectedAddressbook);
   assert(person, "Need person");
-  if (person.encryptionPublicKeys.find(existing => existing.id == key.id)) {
-    return;
-  }
-  person.encryptionPublicKeys.add(key);
+  person.addEncryptionPublicKey(key);
 }
 
 

@@ -85,13 +85,7 @@ export class IMAPFolder extends Folder {
       return await imapFunc(conn);
     } catch (ex) {
       this.account.log(this, null, "error", ex);
-      if (ex.responseText) {
-        throw new IMAPCommandError(ex, ex.responseText
-          .replace("Error in IMAP command", "IMAP")
-          .replace(/ \([\d\. +]* secs\)\./, ""));
-      } else {
-        throw ex;
-      }
+      throw IMAPCommandError.fromServerResponse(ex);
     } finally {
       lock?.release();
       lockMailbox?.release();

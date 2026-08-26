@@ -39,7 +39,9 @@ export class OAuth2Tab extends OAuth2UI {
     oAuth2TabsOpen.remove(this);
   }
   success(finalURL: URLString) {
-    assert(this.doneFunc, "Need doneFunc");
+    if (!this.doneFunc) {
+      return; // E.g. the tab was closed
+    }
     this.close();
     try {
       this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(finalURL));
@@ -48,9 +50,8 @@ export class OAuth2Tab extends OAuth2UI {
     }
   }
   failed(ex: Error) {
-    assert(this.failFunc, "Need failFunc");
     this.close();
-    this.failFunc(ex);
+    this.failFunc?.(ex);
     this.failFunc = null;
     this.doneFunc = null;
   }

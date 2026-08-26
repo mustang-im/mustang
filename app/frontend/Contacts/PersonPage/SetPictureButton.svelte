@@ -26,6 +26,5 @@
       return;
     }
     person.picture = await blobToDataURL(file);
-    await person.save();
   }
 </script>

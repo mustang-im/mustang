@@ -1,6 +1,7 @@
 {#if account?.oAuth2}
   <OAuth2Login {account}
     onContinue={onContinue}
+    onCancel={onCancel}
     onError={showError}
     />
 {:else}
@@ -31,6 +32,7 @@
 
   export let account: MailAccount;
   export let onContinue = () => undefined;
+  export let onCancel = () => undefined;
 
   let errorMessage: string = null;
 

@@ -1,4 +1,4 @@
-import { ExchangeEMail } from "./ExchangeEMail";
+import { ExchangeEMail, EMailFlag, EMailFlagPidTag, EMailFlagTimePidTag, IconIndex, IconIndexPidTag } from "./ExchangeEMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
@@ -10,7 +10,7 @@ import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
+import { base64ToUint8Array, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
@@ -49,7 +49,7 @@ export class EWSEMail extends ExchangeEMail {
       };
       let result = await this.folder.account.callEWS(request);
       let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-      this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+      this.mime = base64ToUint8Array(mimeBase64);
       await this.parseMIME();
       await this.saveCompleteMessage();
     });
@@ -120,7 +120,10 @@ export class EWSEMail extends ExchangeEMail {
   setFlags(xmljs: Record<string, any>) {
     this.isRead = sanitize.boolean(xmljs.IsRead);
     this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
-    this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;
+    this.isReplied = xmljs.ExtendedProperty?.Value == IconIndex.Replied;
+    this.isForwarded = xmljs.ExtendedProperty?.Value == IconIndex.Forwarded;
+    // Not `=`: The sender's `Importance:` header is not in the sync response
+    this.isImportant ||= xmljs.Importance == "High";
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft, false);
@@ -168,6 +171,29 @@ export class EWSEMail extends ExchangeEMail {
     };
     await this.folder.account.callEWS(request);
     await super.markSpam(spam);
+  }
+
+  async markImportant(isImportant = true) {
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Importance", isImportant ? "High" : "Normal", "item:Importance");
+    await this.folder.account.callEWS(request);
+    await super.markImportant(isImportant);
+  }
+
+  protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addExtendedField("Message", EMailFlagPidTag, "Integer", verb);
+    request.addExtendedField("Message", EMailFlagTimePidTag, "SystemTime", new Date().toISOString());
+    request.addExtendedField("Message", IconIndexPidTag, "Integer", icon);
+    await this.folder.account.callEWS(request);
   }
 
   async markDraft(isDraft = true) {

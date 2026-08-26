@@ -41,13 +41,18 @@
         />
       <vbox>
         <hbox class="person-input">
-          <PersonAutocomplete
-            placeholder={$t`Mail address of your colleague`}
-            onAddPerson={checkForShares}
-            {skipPersons} />
+          {#if sharedPerson}
+            <hbox class="person" flex>{sharedPerson.nameOrEMail}</hbox>
+          {:else}
+            <PersonAutocomplete
+              placeholder={$t`Mail address of your colleague`}
+              onAddPerson={checkForShares}
+              autofocus
+              {skipPersons} />
+          {/if}
           <Button
             label={$t`Add`}
-            onClick={() => onAddPerson(sharedPerson)}
+            onClick={() => { onAddPerson(sharedPerson).catch(account.errorCallback); return; }}
             disabled={!sharedPerson || errorMessage}
             classes="primary"
             />
@@ -148,9 +153,6 @@
   .sharing-incoming {
     max-width: 40em;
   }
-  .header {
-    align-items: center;
-  }
   .subtitle {
     font-weight: normal;
   }
@@ -158,6 +160,12 @@
     opacity: 50%;
   }
   .person-input {
+    align-items: center;
     margin-block-end: 8px;
+  }
+  .person-input .person {
+    justify-content: stretch;
+    border-bottom: 1px dotted var(--border);
+    margin-inline-end: 16px;
   }
 </style>

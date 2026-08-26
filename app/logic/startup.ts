@@ -137,17 +137,23 @@ function checkAccounts(): void {
 function errorWithAccountName(account: Account, errorCallback: (ex: Error) => void) {
   return (ex: Error) => {
     account.errors.add(ex);
-    if (ex?.message) {
-      ex.message = `${account.name}: ${ex.message}`;
-    }
+    addAccountName(ex, account);
     errorCallback(ex);
   };
 }
 
 function backgroundErrorInAccount(ex: Error, account: Account) {
   account.errors.add(ex);
-  if (ex?.message) {
-    ex.message = `${account.name}: ${ex.message}`;
-  }
+  addAccountName(ex, account);
   logError(ex);
+}
+
+/** The account name is shown to the user, but must not end up in `ex.message`:
+ * We send the message to the error log server, where the account name would
+ * deanonymize the user and prevent grouping of identical errors.
+ * `errorMessage()` adds it back for the console and UI. */
+function addAccountName(ex: Error, account: Account) {
+  if (ex) {
+    (ex as any).accountName = account.name;
+  }
 }

@@ -239,7 +239,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
   import { saveBlobAsFile } from "../../Util/util";
-  import { logError, showError } from "../../Util/error";
+  import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;
@@ -265,7 +265,11 @@
 
   async function onSave() {
     try {
-      await person.save();
+      if (person) {
+        await person.save();
+      } else if (personUID) {
+        await personUID.findPerson()?.save();
+      }
     } catch (ex) {
       showError(ex);
     }

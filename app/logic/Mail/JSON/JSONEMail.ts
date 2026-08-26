@@ -46,6 +46,8 @@ export class JSONEMail {
     json.isRead = email.isRead;
     json.isStarred = email.isStarred;
     json.isReplied = email.isReplied;
+    json.isForwarded = email.isForwarded;
+    json.isImportant = email.isImportant;
     json.isSpam = email.isSpam;
     json.isDraft = email.isDraft;
     json.threadID = email.threadID;
@@ -73,10 +75,10 @@ export class JSONEMail {
       json.invitationMessage = email.invitationMessage;
     }
 
-    if (email.signed || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
+    if (email.signedByKeyID || email.wasEncrypted || email.mustEncrypt || email.shouldEncrypt) {
       let e = json.encryption = {} as any;
       e.system = email.system;
-      e.signedPublicKeyID = email.signed;
+      e.signedPublicKeyID = email.signedByKeyID;
       e.wasEncrypted = email.wasEncrypted;
       e.mustEncrypt = email.mustEncrypt;
       e.shouldEncrypt = email.shouldEncrypt;
@@ -183,6 +185,8 @@ export class JSONEMail {
     email.isRead = sanitize.boolean(json.isRead, false);
     email.isStarred = sanitize.boolean(json.isStarred, false);
     email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isForwarded = sanitize.boolean(json.isForwarded, false);
+    email.isImportant = sanitize.boolean(json.isImportant, false);
     email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
     email.downloadComplete = sanitize.boolean(json.downloadComplete);
@@ -194,6 +198,8 @@ export class JSONEMail {
     email.isRead = sanitize.boolean(json.isRead, false);
     email.isStarred = sanitize.boolean(json.isStarred, false);
     email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isForwarded = sanitize.boolean(json.isForwarded, false);
+    email.isImportant = sanitize.boolean(json.isImportant, false);
     email.isDraft = sanitize.boolean(json.isDraft, false);
     email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
@@ -224,7 +230,7 @@ export class JSONEMail {
     let e = json.encryption;
     if (e) {
       email.system = sanitize.enum<EncryptionSystem>(e.system, Object.values(EncryptionSystem), null);
-      email.signed = sanitize.alphanumdash(e.signedPublicKeyID, null);
+      email.signedByKeyID = sanitize.alphanumdash(e.signedPublicKeyID, null);
       email.wasEncrypted = sanitize.boolean(e.wasEncrypted, false);
       email.shouldEncrypt = sanitize.boolean(e.shouldEncrypt, false);
       email.mustEncrypt = sanitize.boolean(e.mustEncrypt, false);

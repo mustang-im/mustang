@@ -2,6 +2,7 @@ import type { PersonOrGroup } from "../../frontend/Contacts/Person/PersonOrGroup
 import { Group } from "./Group";
 import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
+import type { PublicKey } from "../Mail/Encryption/PublicKey";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { capitalizeWords } from "../util/util";
@@ -14,6 +15,11 @@ export class PersonUID extends Observable {
   emailAddress: string;
   @notifyChangedProperty
   person?: Person;
+  /** A key that we know for this email address, but that is not saved in an
+   * addressbook, e.g. the certificate of an email that this address signed.
+   * `createPerson()` saves it with the contact. */
+  @notifyChangedProperty
+  encryptionPublicKey?: PublicKey;
 
   constructor(emailAddress?: string, name?: string) {
     super();
@@ -43,13 +49,15 @@ export class PersonUID extends Observable {
 
   createPerson(addressbook: Addressbook) {
     this.person = this.findPerson();
-    if (this.person) {
-      return this.person;
+    if (!this.person) {
+      this.person = addressbook.newPerson();
+      this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
+      this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
+      addressbook.persons.add(this.person);
     }
-    this.person = addressbook.newPerson();
-    this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
-    this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
-    addressbook.persons.add(this.person);
+    if (this.encryptionPublicKey) {
+      this.person.addEncryptionPublicKey(this.encryptionPublicKey);
+    }
     return this.person;
   }
 

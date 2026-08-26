@@ -7,8 +7,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assertHTTPResponseOK } from "../../util/netUtil";
 import { ensureArray, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import type { DAVObject } from "tsdav";
 import type { ArrayColl } from "svelte-collections";
+import type { DAVObject } from "tsdav";
 
 export class CalDAVEvent extends Event {
   declare calendar: CalDAVCalendar;
@@ -112,7 +112,7 @@ export class CalDAVEvent extends Event {
       await assertHTTPResponseOK(response, gt`Saving the event failed`);
     } else {
       console.log("creating", this, "with ICS", iCal);
-      let filename = this.calUID + ".ics";
+      let filename = sanitize.filename(this.calUID) + ".ics";
       let response = await this.calendar.client.createCalendarObject({
         calendar: this.calendar.davCalendar,
         iCalString: iCal,

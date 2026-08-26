@@ -90,7 +90,7 @@ export class EWSEvent extends ExchangeEvent {
       this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
-          this.makeExclusionLocally(sanitize.date(deletion.Start));
+          this.makeExclusionLocally(this.toLocalMidnight(sanitize.date(deletion.Start)));
         }
       }
     } else {

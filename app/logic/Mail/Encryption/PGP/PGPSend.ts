@@ -1,6 +1,6 @@
 import { SendEncrypted } from "../SendEncrypted";
 import type { EMail } from "../../EMail";
-import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
+import { getMyPrivateKey, getPublicKeyForPersonUID } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
@@ -33,7 +33,7 @@ export class PGPSend {
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
-        getPublicKeyForPerson(puid.findPerson(), PGPPublicKey));
+        getPublicKeyForPersonUID(puid, PGPPublicKey));
       let recipientOpenPGPKeys: OpenPGP.PublicKey[] = [];
       for (let recipientKey of recipientKeys) {
         recipientOpenPGPKeys.push(await recipientKey.openPGPPublicKey(openPGP));
@@ -45,7 +45,7 @@ export class PGPSend {
         encryptionKeys: recipientOpenPGPKeys,
       });
       result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted, privateKey);
-    } else if (mail.signed) {
+    } else if (mail.signedByKeyID) {
       let signature = await openPGP.sign({
         message: message,
         signingKeys: privateOpenPGPKey,
@@ -61,7 +61,7 @@ export class PGPSend {
     } else {
       throw new NotReached();
     }
-    result.signed = privateKey.id;
+    result.signedByKeyID = privateKey.id;
     return result;
   }
 

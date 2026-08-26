@@ -59,17 +59,19 @@ export async function blobToDataURL(blob: Blob): Promise<URLString> {
   });
 }
 
-export async function base64ToArrayBuffer(base64: string, mimetype: string): Promise<ArrayBuffer> {
-  let res = await fetch(`data:${mimetype};base64,` + base64);
-  return await res.arrayBuffer();
-}
-
-/** Decodes base64. Unlike `base64ToArrayBuffer()`, this is synchronous. */
+/** Decodes base64. */
 export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
-  // The cast is needed only because `fromBase64()` is declared to return a
-  // `Uint8Array` over any buffer type. It never returns a `SharedArrayBuffer`.
-  return (Uint8Array.fromBase64?.(base64) ?? // node doesn't have it yet, unlike Electron
-    Uint8Array.from(atob(base64), char => char.charCodeAt(0))) as Uint8Array<ArrayBuffer>;
+  if (Uint8Array.fromBase64) {
+    return Uint8Array.fromBase64(base64);
+  }
+  // Fallback: node doesn't have it yet, unlike Electron
+  // `Uint8Array.from()` with a map is 30x slower = 1.2s for a 20 MB mail
+  let binary = atob(base64);
+  let bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {

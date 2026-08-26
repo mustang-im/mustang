@@ -283,6 +283,8 @@ export class IMAPAccount extends MailAccount {
         return; // reconnected meanwhile; reconnect() re-selects the inbox
       }
       await connection.mailboxOpen(inbox.path);
+    } catch (ex) {
+      throw IMAPCommandError.fromServerResponse(ex);
     } finally {
       lock?.release();
     }
@@ -570,6 +572,16 @@ const connectionPurposes = [ConnectionPurpose.Main, ConnectionPurpose.Fetch, Con
 const kIDLERenewalSeconds = 5 * 60;
 
 export class IMAPCommandError extends SpecificError {
+  /** ImapFlow reports every `NO`/`BAD` response as "Command failed" and puts
+    * the reason that the server gave into `responseText`. Show that reason. */
+  static fromServerResponse(ex: Error & { responseText?: string }): Error {
+    if (!ex?.responseText) {
+      return ex;
+    }
+    return new IMAPCommandError(ex, ex.responseText
+      .replace("Error in IMAP command", "IMAP")
+      .replace(/ \([\d\. +]* secs\)\./, ""));
+  }
 }
 
 const useragent = {

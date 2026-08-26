@@ -38,7 +38,7 @@
   import { ArrayColl, Collection } from "svelte-collections";
   import EventContent from "./EventContent.svelte";
   import { createEventDispatcher } from 'svelte';
-  const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, end: Date } }>();
+  const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, end: Date, mouseEvent: MouseEvent } }>();
 
   export let start: Date;
   export let intervalInHours: number;
@@ -64,8 +64,8 @@
 
   let hovering = false;
 
-  function onDoubleClick(event: MouseEvent) {
-    dispatchEvent("celldblclick", { start, end });
+  function onDoubleClick(mouseEvent: MouseEvent) {
+    dispatchEvent("celldblclick", { start, end, mouseEvent });
   }
 </script>
 

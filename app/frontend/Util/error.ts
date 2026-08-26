@@ -3,26 +3,26 @@ import { production } from "../../logic/build";
 import * as Sentry from "@sentry/svelte";
 
 export function showError(ex: Error) {
-  console.error(ex);
+  console.error(errorMessage(ex), ex);
   if (shouldShow(ex)) {
-    notifications.add(new Notification(ex.message, NotificationSeverity.Error, ex));
+    notifications.add(new Notification(errorMessage(ex), NotificationSeverity.Error, ex));
     logErrorToServer(ex);
   }
 }
 
 export function backgroundError(ex: Error) {
-  console.error(ex);
+  console.error(errorMessage(ex), ex);
   if (production) {
     return;
   }
   if (shouldShow(ex)) {
-    notifications.add(new Notification(ex.message, NotificationSeverity.Warning, ex));
+    notifications.add(new Notification(errorMessage(ex), NotificationSeverity.Warning, ex));
     logErrorToServer(ex);
   }
 }
 
 export function showUserError(ex: Error, autoDisappearAfterSeconds?: number): { remove(): void } {
-  let notification = new Notification(ex.message, NotificationSeverity.Error, ex);
+  let notification = new Notification(errorMessage(ex), NotificationSeverity.Error, ex);
   notifications.add(notification);
   if (autoDisappearAfterSeconds) {
     setTimeout(() => {
@@ -39,11 +39,20 @@ export function showUserError(ex: Error, autoDisappearAfterSeconds?: number): { 
 function shouldShow(ex: Error): boolean {
   return ex?.message &&
     !(ex as any).doNotShow &&
-    !notifications.find(noti => noti.message == ex.message); // don't repeat
+    !notifications.find(noti => noti.message == errorMessage(ex)); // don't repeat
+}
+
+/** The account name, for errors of a specific account.
+ * It's in a separate property and not in `ex.message`, because we must not
+ * send it to the error log server. @see `addAccountName()` */
+function errorMessage(ex: Error): string {
+  let message = ex?.message ?? ex + "";
+  let accountName = (ex as any)?.accountName;
+  return accountName ? `${accountName}: ${message}` : message;
 }
 
 export function logError(ex: Error) {
-  console.error(ex);
+  console.error(errorMessage(ex), ex);
   logErrorToServer(ex);
 }
 

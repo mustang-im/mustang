@@ -56,8 +56,9 @@ export class Person extends ContactBase {
       this.custom,
     ]);
     await super.save();
-    await this.saveLocally();
     await this.saveToServer();
+    // Why locally after server: Exchange assigns item ID etc., so need to store it locally
+    await this.saveLocally();
   }
 
   /**
@@ -103,6 +104,15 @@ export class Person extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local persons
+  }
+
+  /** Adds a PGP key or S/MIME certificate for this contact,
+   * unless we already have it. */
+  addEncryptionPublicKey(key: PublicKey) {
+    if (this.encryptionPublicKeys.some(existing => existing.id == key.id)) {
+      return;
+    }
+    this.encryptionPublicKeys.add(key);
   }
 
   toString() {

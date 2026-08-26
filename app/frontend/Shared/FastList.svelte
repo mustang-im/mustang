@@ -182,17 +182,24 @@
     }
   }
 
+  const updateSizeThrottled = throttle(updateSize, 30);
+  const resizeObserver = new ResizeObserver(updateSizeThrottled);
+
   onMount(() => {
     selectedItems.registerObserver(singleSelectionObserver);
     if (selectedItem) {
       selectedItems.add(selectedItem);
     }
 
-    const updateSizeThrottled = throttle(updateSize, 30);
-    const resizeObserver = new ResizeObserver(updateSizeThrottled);
     resizeObserver.observe(listE);
-    return () => resizeObserver.disconnect();
+    return onDestroy;
   });
+
+  function onDestroy() {
+    resizeObserver.disconnect();
+    updateSizeThrottled.cancel();
+    onScrollThrottled.cancel();
+  }
 
   function onKey(event: KeyboardEvent) {
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values

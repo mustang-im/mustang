@@ -16,11 +16,12 @@
 </Clickable>
 
 <script lang="ts">
-  import { selectedDate, selectedDateInterval } from "../selected";
+  import { selectedDate } from "../selected";
   import { getToday } from "../../Util/date";
   import Clickable from "../../Shared/Clickable.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { getLocalStorage } from "../../Util/LocalStorage";
 
   export let day: Date
   export let withMonthOnMonday = true;
@@ -36,7 +37,7 @@
 
   function changeToDay() {
     $selectedDate = day;
-    $selectedDateInterval = 2;
+    getLocalStorage("calendar.view").value = 2;
   }
 </script>
 

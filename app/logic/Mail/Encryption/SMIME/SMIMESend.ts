@@ -1,6 +1,6 @@
 import { SendEncrypted } from "../SendEncrypted";
 import type { EMail } from "../../EMail";
-import { getMyPrivateKey, getPublicKeyForPerson } from "../KeyUtils";
+import { getMyPrivateKey, getPublicKeyForPersonUID } from "../KeyUtils";
 import { CreateMIME } from "../../SMTP/CreateMIME";
 import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
@@ -28,7 +28,7 @@ export class SMIMESend {
     let result = SendEncrypted.cloneEMail(mail);
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
-    if (mail.signed) {
+    if (mail.signedByKeyID) {
       // Only the body and content type are signed, not the headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with
@@ -134,8 +134,8 @@ export class SMIMESend {
       mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
       mime = new TextEncoder().encode(mimeAsText);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
-        getPublicKeyForPerson(puid.findPerson(), SMIMEPublicKey));
-      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey, false)))).some(Boolean)) {
+        getPublicKeyForPersonUID(puid, SMIMEPublicKey));
+      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
       let symmetricKey = new Uint8Array(32);

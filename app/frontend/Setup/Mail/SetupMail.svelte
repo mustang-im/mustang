@@ -17,7 +17,8 @@
     {:else if step == Step.Instructions}
       <Instructions bind:config bind:password />
     {:else if step == Step.Login}
-      <LoginPage account={config} onContinue={onLoginSucceeded} />
+      <LoginPage account={config} onContinue={onLoginSucceeded}
+        onCancel={() => step = Step.FoundConfig} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
