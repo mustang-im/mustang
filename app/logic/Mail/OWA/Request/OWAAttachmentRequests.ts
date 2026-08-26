@@ -1,16 +1,16 @@
 import { OWARequest } from "./OWARequest";
 import type { Attachment } from "../../../Abstract/Attachment";
 
-export function owaGetAttachmentRequest(attachmentID: string): OWARequest {
+export function owaGetAttachmentsRequest(attachmentIDs: string[]): OWARequest {
   return new OWARequest("GetAttachment", {
     __type: "GetAttachmentRequest:#Exchange",
     AttachmentShape: {
       __type: "AttachmentResponseShape:#Exchange",
     },
-    AttachmentIds: [{
+    AttachmentIds: attachmentIDs.map(attachmentID => ({
       __type: "RequestAttachmentId:#Exchange",
       Id: attachmentID,
-    }],
+    })),
   });
 }
 

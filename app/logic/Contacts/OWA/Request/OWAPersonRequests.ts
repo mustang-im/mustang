@@ -52,6 +52,26 @@ export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): 
   });
 }
 
+/** Fetches the attachments of the contacts, which is where the pictures are.
+ * @param itemIDs the ItemIds of the contacts, not the PersonaIds */
+export function owaGetContactAttachmentsRequest(itemIDs: string[]): OWARequest {
+  return new OWARequest("GetItem", {
+    __type: "GetItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Attachments",
+      }],
+    },
+    ItemIds: itemIDs.map(itemID => ({
+      __type: "ItemId:#Exchange",
+      Id: itemID,
+    })),
+  });
+}
+
 export function owaGetPersonaRequest(personaID: string): OWARequest {
   return new OWARequest("GetPersona", {
     __type: "GetPersonaRequest:#Exchange",

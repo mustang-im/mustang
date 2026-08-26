@@ -14,7 +14,7 @@ import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice36
 import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest, owaGetAttachmentRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
+import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest, owaGetAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { Provider } from "../../Auth/OAuth2URLs";
@@ -145,7 +145,7 @@ export class OWAEvent extends ExchangeEvent {
       if (attachment.content || !attachment.pID) {
         continue;
       }
-      let response = await this.calendar.callOWA(owaGetAttachmentRequest(attachment.pID));
+      let response = await this.calendar.callOWA(owaGetAttachmentsRequest([attachment.pID]));
       let content = sanitize.nonemptystring(response.Attachments[0].Content);
       attachment.content = new File([base64ToUint8Array(content)],
         attachment.filename, { type: attachment.mimeType });

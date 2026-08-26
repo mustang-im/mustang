@@ -442,14 +442,15 @@ export class OWAAccount extends ExchangeMailAccount {
 
   /** Skips and reports failed items in a batch response,
    * e.g. broken or inaccessible items,
-   * so that one broken item does not abort the entire sync. */
-  itemsFromResponses(responses: any[]): any[] {
+   * so that one broken item does not abort the entire sync.
+   * @param element which array the responses hold, e.g. `Attachments` */
+  itemsFromResponses(responses: any[], element: string = "Items"): any[] {
     let items = [];
     for (let response of responses) {
       if (response.ResponseClass == "Error") {
         this.errorCallback(new OWAError({ json: response }));
       } else {
-        items.push(response.Items[0]);
+        items.push(response[element][0]);
       }
     }
     return items;
