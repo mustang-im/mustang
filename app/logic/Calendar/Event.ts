@@ -441,6 +441,12 @@ export class Event extends Observable {
     return new OutgoingInvitation(this);
   }
 
+  /** Whether `other` is the same event as this one, either the same object,
+   * or the same meeting in another calendar or in an invitation email */
+  isSameUID(other: Event | null | undefined): boolean {
+    return this == other || !!this.calUID && this.calUID == other?.calUID;
+  }
+
   /** Assumes that `startEditing()` was called before */
   hasChanged(): boolean {
     return !!this.unedited && !this.matches(this.unedited);

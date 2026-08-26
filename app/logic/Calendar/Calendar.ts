@@ -69,7 +69,7 @@ export class Calendar extends Account {
 
   /** Has a corresponding event with the same `calUID` */
   hasMatchingEvent(event: Event) {
-    return this.events.some(ev => ev.calUID == event.calUID);
+    return this.events.some(ev => ev.isSameUID(event));
   }
 
   async startup() {

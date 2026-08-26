@@ -15,7 +15,7 @@
   </hbox>
   <DayViewGrid
     events={appGlobal.calendarEvents}
-    overlayEvents={new ArrayColl([event])}
+    overlayEvents={isInCalendar ? null : new ArrayColl([event])}
     start={calendarStart}
     showHours={4}
     showDays={1}
@@ -45,6 +45,10 @@
   export let event: Event;
 
   $: calendarStart = new Date($event?.startTime?.getTime());
+
+  let calendarEvents = appGlobal.calendarEvents;
+  // Avoid showing the same event twice #1405
+  $: isInCalendar = $calendarEvents.some(ev => ev.isSameUID($event));
 </script>
 
 <style>
