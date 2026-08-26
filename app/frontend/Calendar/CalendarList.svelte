@@ -60,6 +60,9 @@
     background-color: var(--calendar-color);
     color: lch(from var(--calendar-color) calc((49.44 - l) * infinity) 0 0);
   }
+  .calendar :global(.knob) {
+    box-shadow: none;
+  }
   .name {
     align-items: center;
     margin: 0px 8px;
