@@ -1,4 +1,4 @@
-import { ExchangePerson } from "./ExchangePerson";
+import { ExchangePerson, kPictureFilename } from "./ExchangePerson";
 import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { EWSAddressbook } from './EWSAddressbook';
@@ -6,7 +6,7 @@ import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemReques
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { blobToBase64, ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class EWSPerson extends ExchangePerson {
@@ -15,6 +15,9 @@ export class EWSPerson extends ExchangePerson {
   /** The Exchange ItemId,
    * or the empty string if the item has not been saved to the server. */
   itemID = "";
+  /** The AttachmentId of the picture,
+   * or the empty string if the contact has no picture on the server. */
+  pictureAttachmentID = "";
   /** EmailAddress slots which hold X.500 addresses (RoutingType "EX", e.g. contacts from the GAL).
    * We cannot display them, but we must not delete them from the server either. */
   protected exchangeEmailKeys = new Set<string>();
@@ -70,6 +73,33 @@ export class EWSPerson extends ExchangePerson {
     this.company = sanitize.nonemptystring(xmljs.CompanyName, "");
     this.department = sanitize.nonemptystring(xmljs.Department, "");
     this.position = sanitize.nonemptystring(xmljs.JobTitle, "");
+    let pictureAttachment = ensureArray(xmljs.Attachments?.FileAttachment)
+      .find(attachment => sanitize.boolean(attachment.IsContactPhoto, false));
+    let pictureAttachmentID = sanitize.nonemptystring(pictureAttachment?.AttachmentId.Id, "");
+    if (pictureAttachmentID != this.pictureAttachmentID) {
+      this.pictureAttachmentID = pictureAttachmentID;
+      // The contents come in a separate call, @see downloadPictureFromServer()
+      this.picture = null;
+    }
+  }
+
+  /** Exchange saves the picture as an attachment of the contact,
+   * so it needs a separate call. */
+  async downloadPictureFromServer() {
+    if (this.pictureAttachmentID && !this.picture) {
+      let response = await this.addressbook.account.callEWS({
+        m$GetAttachment: {
+          m$AttachmentIds: {
+            t$AttachmentId: {
+              Id: this.pictureAttachmentID,
+            },
+          },
+        },
+      });
+      let attachment = response.Attachments.FileAttachment;
+      this.pictureFromBase64(sanitize.nonemptystring(attachment.Content), sanitize.nonemptystring(attachment.ContentType, ""));
+    }
+    this.pictureOnServer = this.picture;
   }
 
   protected static ewsToStreetAddress(entry: any): StreetAddress {
@@ -142,6 +172,47 @@ export class EWSPerson extends ExchangePerson {
     // console.log("EWSPerson.save()", request);
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
+    await this.savePictureToServer();
+  }
+
+  /** Exchange saves the picture as an attachment of the contact,
+   * so it needs separate calls, after the contact exists on the server. */
+  protected async savePictureToServer() {
+    if (!this.pictureChanged) {
+      return;
+    }
+    if (this.pictureAttachmentID) {
+      await this.addressbook.account.callEWS({
+        m$DeleteAttachment: {
+          m$AttachmentIds: {
+            t$AttachmentId: {
+              Id: this.pictureAttachmentID,
+            },
+          },
+        },
+      });
+      this.pictureAttachmentID = "";
+    }
+    if (this.picture) {
+      let picture = await this.pictureAsBlob();
+      let response = await this.addressbook.account.callEWS({
+        m$CreateAttachment: {
+          m$ParentItemId: {
+            Id: this.itemID,
+          },
+          m$Attachments: {
+            t$FileAttachment: {
+              t$Name: kPictureFilename,
+              t$ContentType: picture.type,
+              t$IsContactPhoto: true,
+              t$Content: await blobToBase64(picture),
+            },
+          },
+        },
+      });
+      this.pictureAttachmentID = sanitize.nonemptystring(response.Attachments.FileAttachment.AttachmentId.Id, "");
+    }
+    this.pictureOnServer = this.picture;
   }
 
   async deleteFromServer() {
@@ -156,11 +227,13 @@ export class EWSPerson extends ExchangePerson {
     super.fromExtraJSON(json);
     // Old existing contacts saved the itemID in the id
     this.itemID = sanitize.string(json.itemID, this.id);
+    this.pictureAttachmentID = sanitize.string(json.pictureAttachmentID, "");
   }
 
   toExtraJSON(): any {
     let json = super.toExtraJSON();
     json.itemID = this.itemID;
+    json.pictureAttachmentID = this.pictureAttachmentID;
     return json;
   }
 }

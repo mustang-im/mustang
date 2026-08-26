@@ -181,6 +181,8 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
                 FieldURI: "contacts:Surname",
               }, {
                 FieldURI: "item:Body", // contact:Notes doesn't work
+              }, {
+                FieldURI: "item:Attachments", // The picture is an attachment
               }],
             },
           },
@@ -192,15 +194,11 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         try {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id));
-          if (person) {
-            person.fromXML(result.Items.Contact);
-            await person.saveLocally();
-          } else {
-            person = new EWSPerson(this);
-            person.fromXML(result.Items.Contact);
-            await person.saveLocally();
-          }
+          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id)) ??
+            new EWSPerson(this);
+          person.fromXML(result.Items.Contact);
+          await person.downloadPictureFromServer();
+          await person.saveLocally();
         } catch (ex) {
           this.account.errorCallback(ex);
         }
