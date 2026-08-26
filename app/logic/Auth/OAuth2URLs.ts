@@ -8,8 +8,10 @@
  * This is essentially a JSON file, but allowing comments and trailing commas :).
  * It contains only data, no code.
  */
+
 export const OAuth2URLs = [
   {
+    provider: Provider.Office365,
     domains: ["outlook.com", "outlook.office365.com", "outlook.cloud.microsoft"],
     hostnames: ["outlook.office365.com", "outlook.cloud.microsoft", "outlook.office.com"],
     authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -23,6 +25,7 @@ export const OAuth2URLs = [
     doPKCE: false,
   },
   {
+    provider: Provider.Office365,
     domains: ["graph.microsoft.com"],
     hostnames: ["graph.microsoft.com"],
     authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -35,6 +38,7 @@ export const OAuth2URLs = [
     doPKCE: false,
   },
   {
+    provider: Provider.Google,
     domains: ["google.com", "gmail.com", "googlemail.com" ],
     hostnames: ["imap.gmail.com", "smtp.gmail.com", "pop.gmail.com"],
     authURL: "https://accounts.google.com/o/oauth2/auth",
@@ -46,6 +50,7 @@ export const OAuth2URLs = [
     doPKCE: true,
   },
   {
+    provider: null,
     domains: ["yahoo.com"],
     hostnames: ["imap.mail.yahoo.com", "pop.mail.yahoo.com", "smtp.mail.yahoo.com" ],
     authURL: "https://api.login.yahoo.com/oauth2/request_auth",
@@ -58,6 +63,7 @@ export const OAuth2URLs = [
     doPKCE: true,
   },
   {
+    provider: null,
     domains: ["aol.com"],
     hostnames: ["imap.aol.com", "pop.aol.com", "smtp.aol.com"],
     authURL: "https://api.login.aol.com/oauth2/request_auth",
@@ -70,6 +76,7 @@ export const OAuth2URLs = [
     doPKCE: true,
   },
   {
+    provider: null,
     domains: ["mustang.im"],
     hostnames: ["controller.mustang.im"],
     // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
@@ -84,6 +91,7 @@ export const OAuth2URLs = [
     doPKCE: false,
   },
   {
+    provider: null,
     domains: ["fastmail.com", "fastmail.fm"],
     hostnames: ["api.fastmail.com", "fastmail.com", "imap.fastmail.com"],
     authURL: "https://api.fastmail.com/oauth/authorize",
@@ -95,3 +103,13 @@ export const OAuth2URLs = [
     doPKCE: true,
   },
 ];
+
+/**
+ * The company that runs the server for an account.
+ * Only for the few providers that are so widespread that
+ * apps and services are made specifically for them.
+ */
+export enum Provider {
+  Office365 = "office365",
+  Google = "google",
+}

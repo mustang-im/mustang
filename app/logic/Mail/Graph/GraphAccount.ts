@@ -1,5 +1,6 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { AuthMethod } from "../../Abstract/Account";
+import { Provider } from "../../Auth/OAuth2URLs";
 import { GraphFolder } from "./GraphFolder";
 import type { TGraphFolder } from "./TGraphMail";
 import type { UUID } from "./TGraphGeneric";
@@ -89,8 +90,8 @@ export class GraphAccount extends ExchangeMailAccount {
     return true;
   }
 
-  isOffice365(): boolean {
-    return true;
+  provider(): Provider {
+    return Provider.Office365;
   }
 
   /**

@@ -16,6 +16,7 @@ import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemReques
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateAttachmentRequest, owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaDeleteAttachmentsRequest, owaGetAttachmentRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
 import { ContentDisposition } from "../../Abstract/Attachment";
+import { Provider } from "../../Auth/OAuth2URLs";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -251,7 +252,8 @@ export class OWAEvent extends ExchangeEvent {
   /** @param withoutAttendees Save the event as an appointment without
    *   attendees, so that the server sends no invitations yet. @see saveToServer() */
   async saveCalendarItem(withoutAttendees = false) {
-    let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest(withoutAttendees);
+    let isOffice365 = this.calendar.account.provider() == Provider.Office365;
+    let request = isOffice365 ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest(withoutAttendees);
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -285,7 +287,7 @@ export class OWAEvent extends ExchangeEvent {
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
     let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
-    if (this.calendar.account.isOffice365()) {
+    if (isOffice365) {
       request.addField("CalendarItem", "StartTimeZoneId", timezone, "calendar:StartTimeZoneId");
       request.addField("CalendarItem", "EndTimeZoneId", timezone, "calendar:EndTimeZoneId");
       (request.Header as any).TimeZoneContext = {
@@ -299,7 +301,7 @@ export class OWAEvent extends ExchangeEvent {
       request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:StartTimeZone");
       request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:EndTimeZone");
     }
-    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+    if (isOffice365 && this.isOnline && !this.onlineMeetingURL) {
       request.addField("CalendarItem", "IsOnlineMeeting", true, "IsOnlineMeeting");
       request.addField("CalendarItem", "OnlineMeetingProvider", "TeamsForBusiness", "OnlineMeetingProvider");
     }
@@ -308,7 +310,7 @@ export class OWAEvent extends ExchangeEvent {
 
     // The server will set the online meeting URL and append the description.
     // Get the new values back from the server.
-    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+    if (isOffice365 && this.isOnline && !this.onlineMeetingURL) {
       // Sadly we can't get all of the changes in one API call
       await this.getOnlineMeetingDescription();
       await this.getOnlineMeetingURL();

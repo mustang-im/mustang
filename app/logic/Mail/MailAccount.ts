@@ -7,6 +7,8 @@ import { ContactEntry } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
+import { getProvider } from "../Auth/OAuth2Util";
+import type { Provider } from "../Auth/OAuth2URLs";
 import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { Calendar } from "../Calendar/Calendar";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
@@ -192,8 +194,8 @@ export class MailAccount extends TCPAccount {
     return this.rootFolders.first;
   }
 
-  isOffice365(): boolean {
-    return false;
+  provider(): Provider | null {
+    return getProvider(this);
   }
 
   canShareWithPersons(): boolean {

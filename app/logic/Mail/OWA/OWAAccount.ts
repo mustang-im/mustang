@@ -1,6 +1,7 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { Provider } from "../../Auth/OAuth2URLs";
 import type { EMail } from "../EMail";
 import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
@@ -205,7 +206,7 @@ export class OWAAccount extends ExchangeMailAccount {
 
         await this.callOWA(new OWASubscribeToNotificationRequest());
 
-        this.notifications = this.isOffice365()
+        this.notifications = this.provider() == Provider.Office365
           ? new OWAOffice365Notifications(this)
           : new OWAExchangeNotifications(this);
         this.notifications.start()
@@ -517,8 +518,10 @@ export class OWAAccount extends ExchangeMailAccount {
     return false;
   }
 
-  isOffice365(): boolean {
-    return this.authorizationHeader != null || super.isOffice365();
+  provider(): Provider | null {
+    return this.authorizationHeader != null
+      ? Provider.Office365
+      : super.provider();
   }
 
   async createToplevelFolder(name: string): Promise<OWAFolder> {
