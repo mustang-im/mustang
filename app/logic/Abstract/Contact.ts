@@ -4,7 +4,7 @@ import type { Addressbook } from '../Contacts/Addressbook';
 import { appGlobal } from '../app';
 import { Observable, notifyChangedProperty } from '../util/Observable';
 import { Lock } from '../util/flow/Lock';
-import { assert, randomID, type URLString } from '../util/util';
+import { assert, randomID, scaleImageToDataURL, type URLString } from '../util/util';
 
 export type Contact = Person | Group;
 
@@ -26,6 +26,10 @@ export class ContactBase extends Observable {
     this.addressbook = addressbook;
   }
 
+  async setPictureFromFile(file: Blob) {
+    this.picture = await scaleImageToDataURL(file, kPictureSize, kMaxPictureLength);
+  }
+
   async save() {
     if (!this.addressbook) {
       this.addressbook = appGlobal.collectedAddressbook; // personal address book?
@@ -42,3 +46,9 @@ export class ContactBase extends Observable {
     return json;
   }
 }
+
+/** We show the picture at 96 px, and twice that on a HiDPI screen */
+const kPictureSize = 240;
+/** ActiveSync allows only 48 kB of base64 for a contact picture,
+ * [MS-ASCNTC] 2.2.2.58 `Picture`, and the other protocols have size limits, too */
+const kMaxPictureLength = 48 * 1024;

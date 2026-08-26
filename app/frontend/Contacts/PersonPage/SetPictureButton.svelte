@@ -11,7 +11,6 @@
   import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import Button from "../../Shared/Button.svelte";
   import PictureIcon from "lucide-svelte/icons/circle-user-round";
-  import { blobToDataURL } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let person: Person;
@@ -25,6 +24,6 @@
     if (!file) {
       return;
     }
-    person.picture = await blobToDataURL(file);
+    await person.setPictureFromFile(file);
   }
 </script>
