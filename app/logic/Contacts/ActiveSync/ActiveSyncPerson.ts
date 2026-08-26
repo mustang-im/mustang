@@ -4,6 +4,7 @@ import { StreetAddress } from '../StreetAddress';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { blobToBase64 } from "../../util/util";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 
 export class ActiveSyncPerson extends ExchangePerson {
@@ -35,6 +36,12 @@ export class ActiveSyncPerson extends ExchangePerson {
     this.company = sanitize.nonemptystring(wbxmljs.CompanyName, "");
     this.department = sanitize.nonemptystring(wbxmljs.Department, "");
     this.position = sanitize.nonemptystring(wbxmljs.JobTitle, "");
+    if (wbxmljs.Picture) {
+      this.pictureFromBase64(sanitize.nonemptystring(wbxmljs.Picture));
+    } else {
+      this.picture = null;
+    }
+    this.pictureOnServer = this.picture;
   }
 
   protected static fromWBXMLToStreetAddress(wbxmljs: Record<string, any>, purpose: string): ContactEntry | null {
@@ -62,7 +69,13 @@ export class ActiveSyncPerson extends ExchangePerson {
       Department: this.department || "",
       CompanyName: this.company || "",
     }
-    // Always send every slot. An empty element deletes the value,
+    // ActiveSync sends the picture inline, unlike EWS and OWA.
+    // The picture is one of the few elements that the server keeps when we omit it,
+    // so send it only when the user changed it, and spare us the upload.
+    if (this.pictureChanged) {
+      fields.Picture = this.picture ? await blobToBase64(await this.pictureAsBlob()) : {};
+    }
+    // Always send every other slot. An empty element deletes the value,
     // whereas in ActiveSync 16.x, an omitted element would keep it.
     for (let i = 0; i < 3; i++) {
       fields[`Email${i + 1}Address`] = this.emailAddresses.getIndex(i)?.value || {};
@@ -108,6 +121,7 @@ export class ActiveSyncPerson extends ExchangePerson {
         this.serverID = sanitize.nonemptystring(response.Responses.Add.ServerId);
       }
     }
+    this.pictureOnServer = this.picture;
   }
 
   protected static streetAddressToActiveSync(str: string | undefined, purpose: string, fields: Record<string, any>) {
