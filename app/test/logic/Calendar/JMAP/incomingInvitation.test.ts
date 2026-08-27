@@ -134,7 +134,6 @@ test("Accepting an invitation adds the event to the JMAP calendar", async () => 
   // As `<InvitationButtons>` does it
   let invitation = calendar.getIncomingInvitationForEMail(email);
   await invitation.respondToInvitationFromMail(InvitationResponse.Accept);
-  await invitation.calEvent()?.save();
 
   let event = calendar.events.first as JMAPEvent;
   expect(calendar.events.length).toEqual(1);
@@ -168,7 +167,6 @@ test("Declining an invitation tells the server and the organizer", async () => {
 
   let invitation = calendar.getIncomingInvitationForEMail(email);
   await invitation.respondToInvitationFromMail(InvitationResponse.Decline);
-  await invitation.calEvent()?.save();
 
   let created = Object.values(calls[0].args.create)[0] as TJMAPCalendarEvent;
   let participants = Object.values(created.participants);
@@ -188,7 +186,6 @@ test("The JMAP calendar accepts an invitation from another account's inbox", asy
 
   let invitation = calendar.getIncomingInvitationForEMail(email);
   await invitation.respondToInvitationFromMail(InvitationResponse.Accept);
-  await invitation.calEvent()?.save();
 
   // The event lands in the JMAP calendar
   expect(calendar.events.length).toEqual(1);

@@ -25,12 +25,12 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
-    // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
       await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, this.message.folder.account);
     }
+    await event.save(); // The other protocols let their server do this
   }
 
   static async respondToInvitationFromCalEvent(calEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
