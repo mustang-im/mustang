@@ -119,7 +119,7 @@ export class EWSEMail extends ExchangeEMail {
 
   setFlags(xmljs: Record<string, any>) {
     this.isRead = sanitize.boolean(xmljs.IsRead);
-    this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
+    // this.isNewArrived = xmljs.ExtendedProperty?.Value == -1; // We requested signed Integer, but @see EWSFolder
     this.isReplied = xmljs.ExtendedProperty?.Value == IconIndex.Replied;
     this.isForwarded = xmljs.ExtendedProperty?.Value == IconIndex.Forwarded;
     // Not `=`: The sender's `Importance:` header is not in the sync response

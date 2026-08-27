@@ -219,6 +219,9 @@ export class JMAPFolder extends Folder {
         //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
 
         folder.messages.removeAll(removed);
+        for (let msg of addedResult.newMessages) {
+          msg.isNewArrived = true;
+        }
         folder.messages.addAll(addedResult.newMessages);
         for (let msg of removed) {
           await msg.deleteMessageLocally();

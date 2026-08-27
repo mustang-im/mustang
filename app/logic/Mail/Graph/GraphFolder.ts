@@ -155,6 +155,9 @@ export class GraphFolder extends Folder {
       }
     }
 
+    for (let msg of newMessages) {
+      msg.isNewArrived = true;
+    }
     this.messages.addAll(newMessages);
     this.messages.removeAll(removedMessages);
     await this.saveNewMsgs(newMessages);

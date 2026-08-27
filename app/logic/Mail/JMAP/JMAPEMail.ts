@@ -59,7 +59,6 @@ export class JMAPEMail extends EMail {
       return;
     }
     // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.1.1>
-    // isNewArrived not supported
     this.isRead = sanitize.boolean(flags["$seen"], true);
     this.isStarred = sanitize.boolean(flags["$flagged"], false);
     this.isReplied = sanitize.boolean(flags["$answered"], false);
@@ -68,6 +67,7 @@ export class JMAPEMail extends EMail {
     this.isImportant ||= sanitize.boolean(flags["$important"], false); // RFC 8457
     this.isDraft = sanitize.boolean(flags["$draft"], false);
     this.isSpam = sanitize.boolean(flags["$junk"], false);
+    // `isNewArrived` @see JMAPFolder.fetchChangedMessagesForAllFolders()
 
     for (let customTag in flags) {
       if (!customTag ||

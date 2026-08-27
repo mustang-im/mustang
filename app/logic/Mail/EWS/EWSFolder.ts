@@ -62,6 +62,7 @@ export class EWSFolder extends ExchangeFolder {
   async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
     let lock = await this.listMessagesLock.lock();
     try {
+      let isNewMail = !!this.syncState; // no sync state returns the entire folder
       let sync = {
         m$SyncFolderItems: {
           m$ItemShape: {
@@ -101,6 +102,7 @@ export class EWSFolder extends ExchangeFolder {
         } catch (ex) {
           if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
             this.syncState = null;
+            isNewMail = false;
             await this.storage.saveFolder(this);
             sync.m$SyncFolderItems.m$SyncState = null;
             result = await this.account.callEWS(sync);
@@ -114,6 +116,9 @@ export class EWSFolder extends ExchangeFolder {
           this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
         ])).flat();
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        for (let msg of newMsgsInIteration) {
+          msg.isNewArrived = isNewMail;
+        }
         this.messages.addAll(newMsgsInIteration);
         newMsgs.addAll(newMsgsInIteration);
         await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);

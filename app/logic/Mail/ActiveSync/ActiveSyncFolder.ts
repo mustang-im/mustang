@@ -138,6 +138,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
 
   async listMessages(): Promise<Collection<ActiveSyncEMail>> {
     await this.readFolder();
+    let isNewMail = !!this.syncState; // no sync key returns the entire folder
     let newMsgs = new ArrayColl<ActiveSyncEMail>();
     let data = {
       WindowSize: String(kMaxCount),
@@ -182,6 +183,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
         } catch (ex) {
           this.account.errorCallback(ex);
         }
+      }
+      for (let msg of newMsgsInPage) {
+        msg.isNewArrived = isNewMail;
       }
       newMsgs.addAll(newMsgsInPage);
       this.messages.addAll(newMsgsInPage);
