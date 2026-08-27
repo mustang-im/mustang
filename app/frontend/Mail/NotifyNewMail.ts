@@ -26,7 +26,7 @@ export async function showNewMail(messages: EMail[]) {
   const onlyInAB = getLocalStorage("notifications.mail.only.addressbook", true).value;
 
   const filterConditions: ((msg: EMail) => boolean)[] = [];
-  filterConditions.push(msg => msg.isNewArrived);
+  filterConditions.push(msg => msg.isNewArrived && !msg.isRead);
   if (onlyInAB) {
     filterConditions.push(msg => msg.from?.findPerson() && appGlobal.addressbooks.some(ab => ab.persons.some(person => person == msg.from.person)));
   }
