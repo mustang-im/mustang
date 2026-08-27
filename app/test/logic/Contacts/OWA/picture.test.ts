@@ -29,7 +29,7 @@ function personaJSON(personaID = kPersonaID, itemID = kItemID): any {
     GivenName: "Alice",
     Surname: "Example",
     EmailAddresses: [{ EmailAddress: "alice@example.com" }],
-    Attributions: [{
+    AttributionsArray: [{
       Id: "0",
       SourceId: { Id: itemID },
       DisplayName: "Outlook",
@@ -140,7 +140,7 @@ test("reads the picture of the contact", async () => {
 
 test("finds the contact of a persona without attributions", async () => {
   let persona = personaJSON();
-  delete persona.Attributions;
+  delete persona.AttributionsArray;
   persona.EmailAddress = { EmailAddress: "alice@example.com", ItemId: { Id: kItemID } };
   addressbook = newAddressbook(kAttachmentID, persona);
 
