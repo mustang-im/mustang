@@ -86,7 +86,7 @@ async function showReminder() {
 
 async function openEventInApp(event: Event) {
   try {
-    openEvent(event);
+    openEvent(event, false);
     bringAppToFront();
   } catch (ex) {
     backgroundError(ex);
