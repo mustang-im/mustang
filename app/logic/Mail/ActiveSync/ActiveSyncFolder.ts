@@ -200,6 +200,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
+      if (!batch.length) {
+        continue;
+      }
       let request = {
         Fetch: batch.map(email => ({
           Store: "Mailbox",

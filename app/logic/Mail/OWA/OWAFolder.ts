@@ -168,6 +168,9 @@ export class OWAFolder extends ExchangeFolder {
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
+      if (!batch.length) {
+        continue;
+      }
       try {
         let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
         let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
