@@ -19,9 +19,9 @@ export async function getICal(event: Event, method?: iCalMethod): Promise<string
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
   addVTimezones(lines, event);
-  await addVEvent(lines, event);
+  await addVEvent(lines, event, method);
   for (let exception of event.exceptions) {
-    await addVEvent(lines, exception);
+    await addVEvent(lines, exception, method);
   }
   lines.push(["END", "VCALENDAR"]);
   return lines.map(line2ical).join("");
@@ -47,7 +47,8 @@ function timezoneOf(event: Event): string {
   return event.timezone || myTimezone();
 }
 
-async function addVEvent(lines: (string | string[])[], event: Event): Promise<void> {
+/** @param method (Optional) The invitation action, only if this iCal is sent as an invitation email */
+async function addVEvent(lines: (string | string[])[], event: Event, method?: iCalMethod): Promise<void> {
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
@@ -137,7 +138,9 @@ async function addVEvent(lines: (string | string[])[], event: Event): Promise<vo
       break;
     }
   }
-  await addAttachments(lines, event);
+  if (!method) {
+    await addAttachments(lines, event);
+  } // else: Invitations send the files as email attachments @see OutgoingInvitation.addAttachments()
   lines.push(["END", "VEVENT"]);
 }
 

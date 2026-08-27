@@ -13,6 +13,9 @@ import { addEventAttachmentTable } from "../../../logic/Calendar/SQL/SQLEventMig
 import { getICal } from "../../../logic/Calendar/ICal/ICalGenerator";
 import { convertICalToEvent } from "../../../logic/Calendar/ICal/ICalToEvent";
 import { ICalEMailProcessor } from "../../../logic/Calendar/ICal/ICalEMailProcessor";
+import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
+import { MailIdentity } from "../../../logic/Mail/MailIdentity";
+import { SpecialFolder } from "../../../logic/Mail/Folder";
 import { Attachment, ContentDisposition } from "../../../logic/Abstract/Attachment";
 import type { EMail } from "../../../logic/Mail/EMail";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
@@ -46,6 +49,9 @@ beforeAll(async () => {
     },
     readFile: (filepath: string) => fsPromises.readFile(filepath),
     fs: fsPromises,
+    createIMAPFlowConnection: () => {
+      throw new Error("The test should not talk to a server");
+    },
   } as any;
 
   calendar = new Calendar();
@@ -209,4 +215,47 @@ test("Migration adds the attachment table to a pre-existing database", async () 
 
   // Running it again on an up-to-date database is a no-op
   await addEventAttachmentTable(database);
+});
+
+/** The mail account of the organizer, with the sent emails captured */
+function setupOrganizerAccount(): EMail[] {
+  let account = new IMAPAccount();
+  account.emailAddress = "alice@example.com";
+  account.realname = "Alice";
+  account.contentStorage.clear();
+  let identity = new MailIdentity(account);
+  identity.emailAddress = account.emailAddress;
+  identity.realname = account.realname;
+  account.identities.add(identity);
+  let sentFolder = account.newFolder();
+  sentFolder.specialFolder = SpecialFolder.Sent;
+  account.rootFolders.add(sentFolder);
+  let sent: EMail[] = [];
+  account.send = async (email: EMail) => {
+    sent.push(email);
+  };
+  appGlobal.emailAccounts.add(account);
+  return sent;
+}
+
+test("The invitation email carries the files, and the iCal in it does not", async () => {
+  let sent = setupOrganizerAccount();
+  let event = newTestEvent("Kickoff");
+  event.startTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // we don't invite to past meetings
+  event.endTime = new Date(event.startTime.getTime() + 60 * 60 * 1000);
+  await event.saveLocally();
+
+  event.startEditing();
+  event.participants.add(new Participant("bob@example.com", "Bob", InvitationResponse.NoResponseReceived));
+  await event.save();
+
+  expect(sent.length).toBe(1);
+  let email = sent[0];
+  expect(email.iCalMethod).toBe("REQUEST");
+  expect(email.attachments.contents.map(a => a.filename)).toEqual(["agenda.pdf"]);
+  let attachment = email.attachments.first;
+  expect(attachment.mimeType).toBe("application/pdf");
+  expect(new Uint8Array(await attachment.content.arrayBuffer())).toEqual(kContent);
+  // The file must not be in the iCal as well, @see OutgoingInvitation.addAttachments()
+  expect(await getICal(email.event, email.iCalMethod)).not.toContain("ATTACH");
 });
