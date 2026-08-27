@@ -2,6 +2,7 @@ import { NTLMResponse, joinHeader, type NTLMRequestOptions } from "./NTLMRespons
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { retryOnTransientError } from "../../util/netUtil";
 import { Lock } from "../../util/flow/Lock";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -114,7 +115,10 @@ export class NTLMConnection {
   protected async negotiate(): Promise<{ socketID: number, type2: string | null }> {
     let type1 = await appGlobal.remoteApp.createType1Message();
     // Server ignores the body of this step, so don't waste bandwidth
-    let response = await this.send(type1, "");
+    // A VPN tunnel needs some time after computer woke up, can cause errors "before secure TLS connection"
+    let response = await retryOnTransientError(() =>
+      this.send(type1, ""),
+      3, 8);
     if (response.status != 401) {
       return { socketID: response.socketID, type2: null };
     }
