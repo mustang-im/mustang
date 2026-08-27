@@ -9,7 +9,7 @@ import { SystemNotification, NotificationKinds } from "../Shared/SystemNotificat
 import { getLocalStorage } from "../Util/LocalStorage";
 import MailIcon from '../asset/icon/appBar/mail.svg?raw';
 import { logError, showError } from "../Util/error";
-import { CollectionObserver } from "svelte-collections";
+import { CollectionObserver, type ArrayColl } from "svelte-collections";
 
 export async function newMailListener() {
   appGlobal.emailAccounts.registerObserver(accountsObserver);
@@ -87,11 +87,12 @@ async function reply(msg: EMail, replyText: string) {
 }
 
 class NewMessageObserver extends CollectionObserver<EMail> {
-  added(messages: EMail[]) {
-    showNewMail(messages)
+  added(messages: EMail[] | ArrayColl<EMail>) {
+    // `addAll()` hands us whatever the caller passed, usually a `Collection`, which has no [0]
+    showNewMail(Array.from(messages))
       .catch(logError);
   }
-  removed(messages: EMail[]) {
+  removed(messages: EMail[] | ArrayColl<EMail>) {
     // do nothing
   }
 }
