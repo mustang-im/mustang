@@ -438,8 +438,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
   }
 
-  /** @param streamID stable per stream, e.g. the streamed account's username */
-  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, streamID: string) {
+  /** @param username stable ID per stream, e.g. the streamed account's username */
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
     let lastAttempt: number;
     let signal = abort.signal;
     do {
@@ -475,6 +475,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               if (signal.aborted) {
                 continue; // Server errors on cancel
               }
+              if (ex.type == "ErrorSubscriptionNotFound") {
+                // The server dropped it, e.g. while the computer slept
+                await this.resubscribeNotifications(username);
+                return; // it restarted the stream, and aborted this one
+              }
               this.errorCallback(ex);
             }
           }
@@ -483,7 +488,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         if (this.authMethod == AuthMethod.NTLM) {
           // The stream runs for up to 29 minutes, so give it its own
           // TCP connection, outside of the pool.
-          let conn = this.ntlm.newDedicatedConnection(streamID);
+          let conn = this.ntlm.newDedicatedConnection(username);
           let onAbort = () => conn.close(); // the only way to abort the stream
           signal.addEventListener("abort", onAbort);
           try {
@@ -520,7 +525,20 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         this.errorCallback(ex);
         break;
       }
-    } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+  }
+
+  /** The server lost our subscription. Get a new one, which restarts the stream. */
+  protected async resubscribeNotifications(username: string) {
+    if (username == this.username) {
+      this.subscriptionID = undefined;
+      await this.subscribeToNotifications();
+      return;
+    }
+    for (let account of this.subscribedAccounts(username)) {
+      account.subscriptionID = undefined;
+      await this.subscribeToNotificationsForSubaccount(account);
+    }
   }
 
   async unsubscribeAllSubscriptions() {
@@ -632,14 +650,18 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     await this.streamNotifications(account.username);
   }
 
+  /** The shared mailboxes that stream their notifications under this user name */
+  protected subscribedAccounts(username: string): EWSSubscribable[] {
+    return this.dependentAccounts().contents.filter(
+      (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined);
+  }
+
   async streamNotifications(username: string) {
     this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
     this.notificationAbort[username] = new AbortController();
     let subscriptions = username == this.username
       ? [this.subscriptionID]
-      : this.dependentAccounts().contents.filter(
-          (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
-        ).map(account => account.subscriptionID);
+      : this.subscribedAccounts(username).map(account => account.subscriptionID);
     if (!subscriptions.length) {
       return;
     }
