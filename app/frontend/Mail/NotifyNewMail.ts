@@ -1,5 +1,6 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
+import { SpecialFolder, type Folder } from "../../logic/Mail/Folder";
 import { selectedMessage, selectedFolder, selectedAccount } from "./Selected";
 import { mailMustangApp } from "./MailMustangApp";
 import { openApp, bringAppToFront } from "../AppsBar/selectedApp";
@@ -99,13 +100,35 @@ let newMessageObserver = new NewMessageObserver();
 class AccountsObserver extends CollectionObserver<MailAccount> {
   added(accounts: MailAccount[]) {
     for (let account of accounts) {
-      account.inbox?.messages.registerObserver(newMessageObserver);
+      account.rootFolders.registerObserver(foldersObserver);
+      observeInbox(account.rootFolders.contents);
     }
   }
   removed(accounts: MailAccount[]) {
     for (let account of accounts) {
+      account.rootFolders.unregisterObserver(foldersObserver);
       account.inbox?.messages.unregisterObserver(newMessageObserver);
     }
   }
 }
 let accountsObserver = new AccountsObserver();
+
+/** We know the account long before its folders: They arrive one by one,
+ * first from the database, then from the server. */
+class FoldersObserver extends CollectionObserver<Folder> {
+  added(folders: Folder[]) {
+    observeInbox(folders);
+  }
+  removed(folders: Folder[]) {
+    // do nothing
+  }
+}
+let foldersObserver = new FoldersObserver();
+
+function observeInbox(folders: Folder[]) {
+  for (let folder of folders) {
+    if (folder.specialFolder == SpecialFolder.Inbox) {
+      folder.messages.registerObserver(newMessageObserver);
+    }
+  }
+}
