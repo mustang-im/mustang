@@ -47,7 +47,7 @@
 
   onMount(checkPopup);
   function checkPopup() {
-    if ((person as any).openPopup) {
+    if ((person as any).nameIsUnknown) {
       popupOpen = true;
     }
   }

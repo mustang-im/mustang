@@ -29,7 +29,7 @@
 </hbox>
 
 <script lang="ts">
-  import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { nameFromEmailAddress, PersonUID } from "../../../logic/Abstract/PersonUID";
   import { searchContacts } from "../../../logic/Contacts/Search";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -66,7 +66,6 @@
       return;
     }
     typedText = "";
-    (person as any).openPopup = person.name == person.emailAddress;
     await onAddPerson(person);
 
     // Clear, to allow user to enter the next person
@@ -83,17 +82,22 @@
 
     // Parse typed text into name and email address
     text = text.trim();
-    let name = text;
+    let name: string;
     let emailAddress = text;
-    if (text.includes("<") && text.includes(">")) {
+    let hasName = text.includes("<") && text.includes(">");
+    if (hasName) {
       let startBracket = text.indexOf("<");
       name = text.substring(0, startBracket - 1).trimEnd();
       let endBracket = text.indexOf(">");
       emailAddress = text.substring(startBracket + 1, endBracket);
+    } else {
+      name = nameFromEmailAddress(emailAddress);
     }
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
+    // Let the user correct our guess, in `PersonPopup`
+    (personUID as any).nameIsUnknown = !hasName;
     addPerson(personUID) // must return the UID synchronously
       .catch(showError);
     return personUID;
