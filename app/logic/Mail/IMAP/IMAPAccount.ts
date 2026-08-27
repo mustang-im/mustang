@@ -374,9 +374,7 @@ export class IMAPAccount extends MailAccount {
     for (let folderInfo of subFoldersInfo) {
       let subFolder = addTo.find(folder => folder.path == folderInfo.path);
       if (subFolder) {
-        if (folderInfo.status) {
-          subFolder.fromFlow(folderInfo); // update with new info
-        }
+        subFolder.fromFlow(folderInfo); // update with new info
       } else if (folderInfo.path == "[Gmail]" || folderInfo.flags.has("\\NoSelect")) {
         let subFoldersInfo = allFoldersInfo.filter(f => f.parentPath == folderInfo.path);
         this.readFolders(parent, addTo, subFoldersInfo, allFoldersInfo, resultAllFolders);
