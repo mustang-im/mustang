@@ -1,7 +1,7 @@
 import { OWARequest } from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 import type { ExchangePermission } from "../../EWS/ExchangePermission";
-// import { IconIndexPidTag } from "../../EWS/ExchangeFolder";
+// import { IconIndexPidTag } from "../../EWS/ExchangeEMail";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItem", {
@@ -25,11 +25,9 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:Importance",
         /*}, {
-          __type: "PropertyUri:#Exchange",
-          ExtendedFieldURI: {
-            PropertyTag: IconIndexPidTag,
-            PropertyType: "Integer",
-          },*/
+          __type: "ExtendedPropertyUri:#Exchange",
+          PropertyTag: IconIndexPidTag,
+          PropertyType: "Integer",*/
       }],
     },
     ParentFolderIds: [{
@@ -122,11 +120,9 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
           FieldURI: "item:TextBody",
         */
         /*}, {
-          __type: "PropertyUri:#Exchange",
-          ExtendedFieldURI: {
-            PropertyTag: IconIndexPidTag,
-            PropertyType: "Integer",
-          },*/
+          __type: "ExtendedPropertyUri:#Exchange",
+          PropertyTag: IconIndexPidTag,
+          PropertyType: "Integer",*/
       }],
     },
     ItemIds: newMessageIDs.map(id => ({
