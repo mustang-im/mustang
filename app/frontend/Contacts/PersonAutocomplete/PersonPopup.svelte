@@ -16,7 +16,7 @@
         <input class="name font-normal" type="text"
           bind:value={personUID.name}
           bind:this={nameInputEl}
-          on:input={() => nameIsUnknown = false}
+          on:input={() => personUID.nameIsUnknown = false}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
         <input class="email font-normal" type="email"
@@ -47,7 +47,7 @@
       </vbox>
     {/if}
   </hbox>
-  {#if nameIsUnknown && nameInputEl == document.activeElement}
+  {#if $personUID.nameIsUnknown && nameInputEl == document.activeElement}
     <hbox class="helptext font-small">{$t`Add the name of the person, and press ENTER`}</hbox>
   {/if}
   {#if !disabled}
@@ -106,8 +106,6 @@
   let person: Person;
   let contactEntry: ContactEntry;
   let isEditing = false;
-  /** We guessed the name from the email address, so ask the user for the real name */
-  let nameIsUnknown = false;
   let nameInputEl: HTMLInputElement;
 
   onMount(() => {
@@ -125,7 +123,6 @@
     }
     personUID ??= new PersonUID();
     personUID.emailAddress ??= kDummyPerson.emailAddress;
-    nameIsUnknown = (personUID as any).nameIsUnknown;
     person = personUID.createPerson(appGlobal.collectedAddressbook);
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
     isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;

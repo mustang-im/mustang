@@ -97,7 +97,7 @@
 
     let personUID = new PersonUID(emailAddress, name);
     // Let the user correct our guess, in `PersonPopup`
-    (personUID as any).nameIsUnknown = !hasName;
+    personUID.nameIsUnknown = !hasName;
     addPerson(personUID) // must return the UID synchronously
       .catch(showError);
     return personUID;

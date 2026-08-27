@@ -48,7 +48,7 @@
 
   onMount(checkPopup);
   async function checkPopup() {
-    if (!(person as any).nameIsUnknown) {
+    if (!person.nameIsUnknown) {
       return;
     }
     // The click that added the person is still bubbling up to the window,
