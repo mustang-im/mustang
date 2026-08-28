@@ -137,6 +137,7 @@ export class IMAPFolder extends Folder {
   protected async listAllUnknownMessages(): Promise<ArrayColl<IMAPEMail>> {
     // TODO save range of lowest and highest UID of emails that we have fetched and saved,
     // to not re-fetch the whole list over and over again.
+    let isNewMail = this.messages.hasItems;
     let allUIDs = await this.fetchUIDList({ all: true });
 
     // Delete messages that are no longer on the server @see checkDeletedMessages()
@@ -156,6 +157,9 @@ export class IMAPFolder extends Folder {
       //let startTime = Date.now();
       let fetchUIDs = newUIDs.splice(0, kBatchSize); // Gets the first n, and removes them from the list
       let { newMessages } = await this.fetchMessageList({ uid: fetchUIDs.join(",") }, {});
+      for (let msg of newMessages) {
+        msg.isNewArrived ||= isNewMail; // \Recent deprecated by IMAP4rev2
+      }
       newMsgs.addAll(newMessages);
       this.messages.addAll(newMessages);
       //let fetchTime = Date.now() - startTime;
@@ -191,6 +195,9 @@ export class IMAPFolder extends Folder {
       uid: true,
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
+    for (let msg of newMessages) {
+      msg.isNewArrived = true;
+    }
     this.messages.addAll(newMessages);
     await this.storage.saveFolderProperties(this);
     await this.saveNewMsgs(newMessages);
@@ -207,8 +214,12 @@ export class IMAPFolder extends Folder {
       if (this.countTotal === 0) {
         return new ArrayColl();
       }
+      let isNewMail = this.messages.hasItems;
       let fromUID = this.getHighestUID() ?? 1;
       let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
+      for (let msg of newMessages) {
+        msg.isNewArrived ||= isNewMail;
+      }
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       await this.storage.saveFolderProperties(this);

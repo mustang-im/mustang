@@ -57,6 +57,7 @@
 
   function onAddPerson(person: PersonUID) {
     let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
+    participant.nameIsUnknown = person.nameIsUnknown;
     event.participants.add(participant);
   }
 </script>

@@ -93,6 +93,7 @@ export class OWAFolder extends ExchangeFolder {
         return new ArrayColl<OWAEMail>();
       }
 
+      let isNewMail = this.messages.hasItems;
       let allMsgs = new ArrayColl<OWAEMail>();
       let newMsgs = new ArrayColl<OWAEMail>();
       let request = owaFindMsgsInFolderRequest(this.id, kMaxFetchCount);
@@ -121,6 +122,9 @@ export class OWAFolder extends ExchangeFolder {
           }
         }
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        for (let msg of newMsgsInIteration) {
+          msg.isNewArrived = isNewMail;
+        }
         newMsgs.addAll(newMsgsInIteration);
       }
 

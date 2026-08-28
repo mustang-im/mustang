@@ -50,7 +50,8 @@ export class GraphEMail extends EMail {
   }
 
   setFlagsLocal(json: TGraphEMail) {
-    // isNewArrived, isReplied, isForwarded, isSpam are not supported
+    // isReplied, isForwarded, isSpam are not supported
+    // `isNewArrived` @see GraphFolder.processChangedMessages()
     this.isRead = sanitize.boolean(json.isRead, true);
     // Not `=`: The sender's `Importance:` header is not in the response
     this.isImportant ||= json.importance == "high";

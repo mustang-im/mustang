@@ -357,7 +357,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
     await this.calendar.account.callEAS("MeetingResponse", request);
     // We asked ActiveSync 16.1 to send the response for us.
     if (this.calendar.account.protocolVersion != "16.1") {
-      await super.respondToInvitation(response, this.calendar.account);
+      await super.respondToInvitation(response, this.calendar.account, false);
     }
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }

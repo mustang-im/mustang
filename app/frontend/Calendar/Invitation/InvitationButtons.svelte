@@ -102,10 +102,9 @@
     myParticipation = response;
     if (invitation instanceof Event) {
       await invitation.respondToInvitation(response);
-      await invitation.save();
+      // Exchange responds and then drops the declined occurrence, so don't save it back
     } else if (invitation instanceof IncomingInvitation) {
       await invitation.respondToInvitationFromMail(response);
-      await invitation.calEvent()?.save();
     } else {
       throw new NotReached();
     }

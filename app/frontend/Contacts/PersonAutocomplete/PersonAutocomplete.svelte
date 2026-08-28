@@ -27,9 +27,10 @@
     </svelte:fragment>
   </Autocomplete>
 </hbox>
+<svelte:window on:click|capture={event => catchErrors(() => onClickOutside(event))} />
 
 <script lang="ts">
-  import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { nameFromEmailAddress, PersonUID } from "../../../logic/Abstract/PersonUID";
   import { searchContacts } from "../../../logic/Contacts/Search";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -66,7 +67,6 @@
       return;
     }
     typedText = "";
-    (person as any).openPopup = person.name == person.emailAddress;
     await onAddPerson(person);
 
     // Clear, to allow user to enter the next person
@@ -83,20 +83,41 @@
 
     // Parse typed text into name and email address
     text = text.trim();
-    let name = text;
+    let name: string;
     let emailAddress = text;
-    if (text.includes("<") && text.includes(">")) {
+    let hasName = text.includes("<") && text.includes(">");
+    if (hasName) {
       let startBracket = text.indexOf("<");
       name = text.substring(0, startBracket - 1).trimEnd();
       let endBracket = text.indexOf(">");
       emailAddress = text.substring(startBracket + 1, endBracket);
+    } else {
+      name = nameFromEmailAddress(emailAddress);
     }
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
+    // Let the user correct our guess, in `PersonPopup`
+    personUID.nameIsUnknown = !hasName;
     addPerson(personUID) // must return the UID synchronously
       .catch(showError);
     return personUID;
+  }
+
+  /** Clicking outside the field should add the person, same as pressing ENTER.
+   * Capture phase, so that we run before the click reaches its target, e.g. the
+   * [Send] button, and still within the click, so that the popup which
+   * `PersonEntry` opens after it survives, see `PersonEntry.checkPopup()`. */
+  function onClickOutside(event: MouseEvent) {
+    if (!typedText || topEl.contains(event.target as Node)) {
+      return; // clicks on a search result add the person themselves
+    }
+    let highlightedResult = topEl.querySelector(".autocomplete-list-item.selected");
+    if (!highlightedResult && !canCreate(typedText)) {
+      return; // nothing to add, e.g. a half-typed name
+    }
+    // The autocomplete component offers no API to add, so fake the ENTER key
+    inputEl.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
   }
 
   function canCreate(typedText: string) {

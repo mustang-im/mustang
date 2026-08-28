@@ -9,7 +9,7 @@ import { NTLMTestServer, sleep } from "./ntlmTestServer";
 import { HTTPConnection } from "../../../../../desktop/backend/HTTPConnection";
 // @ts-ignore .js without types
 import { createType1Message, decodeType2Message, createType3Message } from "../../../../../desktop/backend/ntlm";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("NTLM per-TCP-connection authentication", () => {
   let server: NTLMTestServer;
@@ -87,6 +87,28 @@ describe("NTLM per-TCP-connection authentication", () => {
     pool.close();
   });
 
+  it("runs requests that arrive while other requests are queued", async () => {
+    let pool = new NTLMConnectionPool(account);
+    let responses = 0;
+    // Like a sync loop or a dependent account: The response triggers the next request
+    const chain = async (id: number, left: number) => {
+      let response = await pool.request(`<request>${id}</request>`);
+      expect(await response.text()).toBe(`<response><request>${id}</request></response>`);
+      responses++;
+      if (left > 1) {
+        await chain(id, left - 1);
+      }
+    };
+    let chains = [];
+    for (let i = 0; i < 14; i++) {
+      chains.push(chain(i, 5));
+    }
+    await Promise.all(chains);
+    expect(responses).toBe(14 * 5);
+    expect(server.rejectedRequests).toBe(0);
+    pool.close();
+  });
+
   it("re-authenticates when the server closes connections between requests", async () => {
     server.closeAfterResponses = 2; // each connection dies right after the handshake + first request
     let pool = new NTLMConnectionPool(account);
@@ -110,6 +132,25 @@ describe("NTLM per-TCP-connection authentication", () => {
     expect(await response.text()).toBe("<response><request>2</request></response>");
     expect(server.handshakesCompleted).toBe(2); // re-authenticated the replacement connection
     pool.close();
+  });
+
+  it("waits for the VPN tunnel to open, instead of failing the request", async () => {
+    server.killNextRequest = true; // the tunnel is down: no connection
+    vi.useFakeTimers({ toFake: ["setTimeout"] }); // skip the retry delay
+    try {
+      let conn = new NTLMConnection(account);
+      let request = conn.request("<request>1</request>");
+      for (let i = 0; i < 10 && server.socketsCreated < 2; i++) {
+        await new Promise(resolve => setImmediate(resolve));
+        await vi.advanceTimersByTimeAsync(10 * 1000);
+      }
+      let response = await request;
+      expect(await response.text()).toBe("<response><request>1</request></response>");
+      expect(server.handshakesCompleted).toBe(1);
+      conn.close();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("does not repeat a request that the server already started to answer", async () => {

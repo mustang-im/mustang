@@ -558,6 +558,9 @@ export class OWAAccount extends ExchangeMailAccount {
       // A concurrent folder listing may have already picked up the message
       newMessageIDs = newMessageIDs.filter((id, i, ids) => !inbox.getEmailByItemID(id) && ids.indexOf(id) == i);
       let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
+      for (let msg of newMessages) {
+        msg.isNewArrived = true;
+      }
       inbox.messages.addAll(newMessages);
       inbox.downloadMessages(newMessages)
         .catch(this.errorCallback);

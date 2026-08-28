@@ -81,9 +81,10 @@ export class MailAccount extends TCPAccount {
   }
 
   get inbox(): Folder | null {
-    return this._inbox ??
-      (this._inbox = this.getSpecialFolder(SpecialFolder.Inbox)) ??
-      this.rootFolders.first;
+    // Cache only the real inbox: While we are still reading the folders,
+    // the first folder that we get is often not the inbox.
+    this._inbox ??= this.findFolder(folder => folder.specialFolder == SpecialFolder.Inbox);
+    return this._inbox ?? this.rootFolders.first;
   }
 
   get outgoing(): SMTPAccount {

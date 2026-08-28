@@ -20,6 +20,8 @@ export class PersonUID extends Observable {
    * `createPerson()` saves it with the contact. */
   @notifyChangedProperty
   encryptionPublicKey?: PublicKey;
+  /** We guessed `name` from the email address, so `PersonPopup` asks the user. Not saved. */
+  nameIsUnknown = false;
 
   constructor(emailAddress?: string, name?: string) {
     super();
