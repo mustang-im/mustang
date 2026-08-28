@@ -4,11 +4,8 @@ import type { Attachment } from "../../../Abstract/Attachment";
 export function owaGetAttachmentsRequest(attachmentIDs: string[]): OWARequest {
   return new OWARequest("GetAttachment", {
     __type: "GetAttachmentRequest:#Exchange",
-    AttachmentShape: {
-      __type: "AttachmentResponseShape:#Exchange",
-    },
     AttachmentIds: attachmentIDs.map(attachmentID => ({
-      __type: "RequestAttachmentId:#Exchange",
+      __type: "AttachmentId:#Exchange",
       Id: attachmentID,
     })),
   });
@@ -36,7 +33,7 @@ export function owaDeleteAttachmentsRequest(attachmentIDs: string[]): OWARequest
   return new OWARequest("DeleteAttachment", {
     __type: "DeleteAttachmentRequest:#Exchange",
     AttachmentIds: attachmentIDs.map(attachmentID => ({
-      __type: "RequestAttachmentId:#Exchange",
+      __type: "AttachmentId:#Exchange",
       Id: attachmentID,
     })),
   });

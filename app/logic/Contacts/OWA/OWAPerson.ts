@@ -62,7 +62,7 @@ export class OWAPerson extends ExchangePerson {
    * Fall back to the email address, which knows the contact as well,
    * @see `OWAAddressbook.listGroups()` */
   protected static itemIDFromJSON(json: any): string {
-    let contact = json.Attributions?.find(attribution => sanitize.boolean(attribution.IsWritable, false) && attribution.SourceId);
+    let contact = json.AttributionsArray?.find(attribution => sanitize.boolean(attribution.IsWritable, false) && attribution.SourceId);
     return sanitize.nonemptystring(contact?.SourceId.Id ?? json.EmailAddress?.ItemId?.Id, "");
   }
 
@@ -84,6 +84,7 @@ export class OWAPerson extends ExchangePerson {
       let response = await this.addressbook.callOWA(request);
       this.name = sanitize.nonemptystring(response.DisplayName, "");
       this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
+      this.itemID = OWAPerson.itemIDFromJSON(response);
       this.fields = fields;
     }
     await this.savePictureToServer();
@@ -97,7 +98,7 @@ export class OWAPerson extends ExchangePerson {
       return;
     }
     if (!this.itemID) {
-      // We just created the contact, and got only its persona back
+      // This probably shouldn't happen, since we sync the itemID on login.
       let response = await this.addressbook.callOWA(owaGetPersonaRequest(this.personaID));
       this.itemID = OWAPerson.itemIDFromJSON(response.Persona);
     }
