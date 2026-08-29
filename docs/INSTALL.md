@@ -22,10 +22,10 @@ yarn run dev
 1. Install: See as dev Install above
 2. Build
 ```
-(cd app; yarn build)
-(cd e2; yarn build:win)
-(cd e2; yarn build:linux)
-(cd e2; yarn build:mac)
+(cd app/; yarn build)
+(cd desktop/; yarn build:win)
+(cd desktop/; yarn build:linux)
+(cd desktop/; yarn build:mac)
 ```
 
 # Problems
