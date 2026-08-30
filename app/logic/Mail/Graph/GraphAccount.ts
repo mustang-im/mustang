@@ -289,7 +289,7 @@ export class GraphAccount extends ExchangeMailAccount {
     await this.storage.readFolderHierarchy(this);
     let oldFolders = this.getAllFolders();
 
-    this.rootFolders.addAll(await this.listSubFolders(null));
+    await this.listSubFolders(null);
 
     if (this.logging) {
       console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
@@ -312,25 +312,29 @@ export class GraphAccount extends ExchangeMailAccount {
 
   /** List the subfolders of the given parent (or root, if null).
    * Also query all descendant folders, recursively. */
-  protected async listSubFolders(parentFolder: GraphFolder | null): Promise<ArrayColl<GraphFolder>> {
+  protected async listSubFolders(parentFolder: GraphFolder | null): Promise<void> {
     let foldersJSON = await this.graphGetAll<TGraphFolder>(
       parentFolder ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
       { top: kMaxFetchCount },
       { beta: true }
     );
-    let result = new ArrayColl<GraphFolder>();
+    let parentFolders = parentFolder ? parentFolder.subFolders : this.rootFolders;
     for (let folderJSON of foldersJSON) {
-      let folder = this.newFolder();
-      folder.parent = parentFolder;
+      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as GraphFolder;
+      if (!folder) {
+        // We may already have the folder from our database, or it moved
+        folder = this.findFolder(folder => folder.id == folderJSON.id) as GraphFolder ?? this.newFolder();
+        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+        oldParentFolders.remove(folder);
+        folder.parent = parentFolder;
+        parentFolders.add(folder);
+      }
       folder.fromGraph(folderJSON);
-
-      result.add(folder);
       this.allFolders.set(folder.id, folder);
 
       // Query decendants
-      folder.children.addAll(await this.listSubFolders(folder));
+      await this.listSubFolders(folder);
     }
-    return result;
   }
 
   getFolderByID(id: string): GraphFolder | null {
