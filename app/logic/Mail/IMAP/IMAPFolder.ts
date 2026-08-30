@@ -330,7 +330,7 @@ export class IMAPFolder extends Folder {
   async getAllMessages(): Promise<ArrayColl<IMAPEMail>> {
     await this.checkDeletedMessages(1);
     let newMsgs = await this.listAllMessages();
-    await this.downloadMessages(newMsgs);
+    await this.downloadSmallMessagesFirst(newMsgs);
     return newMsgs;
   }
 

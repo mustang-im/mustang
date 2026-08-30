@@ -95,15 +95,20 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   /** Downloads the entire MIME of *all* emails in this folder.
-   * Tries to download the small emails first, then the large emails.
    * Assumes that you did `listMessages()` first.
    * @returns the actually downloaded emails. */
   async downloadAllMessages(): Promise<Collection<EMail>> {
-    let missing = this.messages.filter(msg => !msg.downloadComplete) as any as Collection<EMail>;
+    return await this.downloadSmallMessagesFirst(this.messages as any as Collection<EMail>);
+  }
+
+  /** Downloads the `emails` that we do not have yet, the small ones first,
+   * so that most of them are readable as early as possible.
+   * @returns the actually downloaded emails. */
+  protected async downloadSmallMessagesFirst(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    let missing = emails.filter(msg => !msg.downloadComplete);
     const kMaxSize = 50000;
     let missingLarge = missing.filter(msg => msg.size && msg.size > kMaxSize);
     let missingSmall = missing.subtract(missingLarge);
-    // First the small messages, then the large ones
     let downloadedSmall = await this.downloadMessages(missingSmall);
     let downloadedLarge = await this.downloadMessages(missingLarge);
     return downloadedSmall.concat(downloadedLarge);
@@ -118,7 +123,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     const kDaysPast = 14;
     let oldest = new Date();
     oldest.setDate(oldest.getDate() - kDaysPast);
-    return await this.downloadMessages(emails.filterOnce(msg => msg.received > oldest));
+    return await this.downloadSmallMessagesFirst(emails.filterOnce(msg => msg.received > oldest));
   }
 
   /** Downloads the entire MIME of the given emails.
