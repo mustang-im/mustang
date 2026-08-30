@@ -210,6 +210,13 @@ export class MailAccount extends TCPAccount {
     return [];
   }
 
+  /** The accounts of other users that the server lists for us, set up here or not.
+   * Only where the server lists them, e.g. JMAP.
+   * Otherwise, the user manually enters the colleague's email address, and we use `findSharedFolders()`. */
+  async availableSharedAccounts(): Promise<ArrayColl<PersonUID>> {
+    return new ArrayColl<PersonUID>();
+  }
+
   /** Which of the `distinguishedIDs` of `person`'s account we may access. */
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
     return [];

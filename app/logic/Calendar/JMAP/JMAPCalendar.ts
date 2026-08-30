@@ -1,11 +1,13 @@
-import { Calendar } from "../Calendar";
+import { Calendar, CalendarShareCombinedPermissions } from "../Calendar";
 import type { Event } from "../Event";
 import { JMAPEvent } from "./JMAPEvent";
-import type { TJMAPCalendar } from "./TJMAPCalendar";
+import type { TJMAPCalendar, TJMAPCalendarRights } from "./TJMAPCalendar";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
 import type { TID, TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { Participant } from "../Participant";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import { checkChangeError } from "../../Mail/JMAP/JMAPError";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -305,6 +307,53 @@ export class JMAPCalendar extends Calendar {
 
   getEventByJMAPID(jmapID: string): JMAPEvent | undefined {
     return this.events.find(p => p.jmapID == jmapID);
+  }
+
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [
+      CalendarShareCombinedPermissions.ReadAvailability,
+      CalendarShareCombinedPermissions.ReadAll,
+      CalendarShareCombinedPermissions.Modify,
+    ];
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let response = await this.account.makeSingleCall("Calendar/get", {
+      accountId: this.account.accountID,
+      ids: [this.jmapID],
+      properties: ["shareWith"],
+    }) as TJMAPGetResponse<TJMAPCalendar>;
+    return await this.account.getPrincipals(Object.keys(response.list[0]?.shareWith ?? {}));
+  }
+
+  async deleteSharedPerson(person: PersonUID) {
+    await this.setSharedPerson(person, null);
+  }
+
+  async addSharedPerson(person: PersonUID, access: CalendarShareCombinedPermissions) {
+    let mayModify = access == CalendarShareCombinedPermissions.Modify;
+    await this.setSharedPerson(person, {
+      mayReadFreeBusy: true,
+      mayReadItems: access != CalendarShareCombinedPermissions.ReadAvailability,
+      mayWriteAll: mayModify,
+      mayWriteOwn: mayModify,
+      mayUpdatePrivate: mayModify,
+      mayRSVP: mayModify,
+      mayShare: false,
+      mayDelete: false,
+    });
+  }
+
+  protected async setSharedPerson(person: PersonUID, rights: TJMAPCalendarRights | null) {
+    let principalID = (await this.account.findPrincipal(person))?.id;
+    assert(principalID, gt`You have no access to the account of ${person.emailAddress}`);
+    let response = await this.account.makeSingleCall("Calendar/set", {
+      accountId: this.account.accountID,
+      update: {
+        [this.jmapID]: { [`shareWith/${principalID}`]: rights },
+      },
+    }) as TJMAPChangeResponse<TJMAPCalendar>;
+    checkChangeError(response);
   }
 
   fromConfigJSON(json: any) {

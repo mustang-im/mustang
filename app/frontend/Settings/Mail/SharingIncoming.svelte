@@ -8,7 +8,7 @@
       disabled={showAddDialog}
       slot="buttons-top-right"
       />
-    {#if $sharedWith.isEmpty}
+    {#if $sharedWith.isEmpty && $availableAccounts.isEmpty}
       <hbox class="nothing">{$t`You are not accessing other accounts`}</hbox>
     {:else}
       {#each $sharedWith.each as otherAccount}
@@ -19,6 +19,18 @@
             label={$t`Delete`}
             icon={DeleteIcon}
             onClick={() => onDelete(otherAccount)}
+            border={false}
+            classes="plain"
+            />
+        </hbox>
+      {/each}
+      {#each $availableAccounts.each as person}
+        <hbox class="existing-person">
+          <hbox class="name available" flex>{person.nameOrEMail}</hbox>
+          <RoundButton
+            label={$t`Add`}
+            icon={AddIcon}
+            onClick={() => onAddAvailableAccount(person)}
             border={false}
             classes="plain"
             />
@@ -52,7 +64,7 @@
           {/if}
           <Button
             label={$t`Add`}
-            onClick={() => { onAddPerson(sharedPerson).catch(account.errorCallback); return; }}
+            onClick={() => onAddPerson(sharedPerson)}
             disabled={!sharedPerson || errorMessage}
             classes="primary"
             />
@@ -66,10 +78,11 @@
 </vbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Account } from "../../../logic/Abstract/Account";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { appName } from "../../../logic/build";
+  import { catchErrors } from "../../Util/error";
   import PersonAutocomplete from "../../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import StatusMessage from "../../Setup/Shared/StatusMessage.svelte";
@@ -78,11 +91,16 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
+  import { ArrayColl } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
   $: sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
-  $: skipPersons = sharedWith.map(account => new PersonUID(account.username));
+  $: skipPersons = sharedWith.map(account => new PersonUID((account as MailAccount).emailAddress));
+
+  /** Offered by the server, but not set up here, e.g. deleted by the user */
+  let availableAccounts = new ArrayColl<PersonUID>();
+  $: account, $sharedWith, catchErrors(async () => availableAccounts = await account.availableSharedAccounts());
 
   async function onDelete(otherAccount: Account) {
     let confirmed = confirm($t`Are you sure that you want to delete the account ${otherAccount.name} and all related data from ${appName}?`);
@@ -97,6 +115,7 @@
   let errorMessage: string | null = null;
   let sharedPerson: PersonUID | null = null;
   let sharedFolders: string[] = [];
+  const kSharedFolders = ["msgfolderroot", "inbox", "contacts", "calendar"];
 
   function resetAddDialog() {
     errorMessage = null;
@@ -107,12 +126,13 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      // Not only the mail account: the colleague may have shared only their calendar with us
-      if (account.dependentAccounts().find(other => other.username == person.emailAddress)) {
+      if (account.dependentAccounts().find(other =>
+            other.protocol == account.protocol && other instanceof MailAccount &&
+            other.isMyEMailAddress(person.emailAddress))) {
         errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
       }
-      sharedFolders = await account.findSharedFolders(person, ["msgfolderroot", "inbox", "contacts", "calendar"]);
+      sharedFolders = await account.findSharedFolders(person, kSharedFolders);
       if (!sharedFolders.length) {
         errorMessage = gt`You have no access to the account of ${person.name ?? ""} ${person.emailAddress}`;
         return;
@@ -121,6 +141,11 @@
     } catch (ex) {
       errorMessage = ex.message;
     }
+  }
+
+  async function onAddAvailableAccount(person: PersonUID) {
+    sharedFolders = await account.findSharedFolders(person, kSharedFolders);
+    await onAddPerson(person);
   }
 
   async function onAddPerson(person: PersonUID) {
@@ -151,7 +176,7 @@
   .subtitle {
     font-weight: normal;
   }
-  .nothing {
+  .nothing, .name.available {
     opacity: 50%;
   }
   .person-input {

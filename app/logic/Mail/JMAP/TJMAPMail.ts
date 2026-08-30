@@ -11,6 +11,9 @@ export interface TJMAPFolder {
   totalThreads: number,
   unreadThreads: number,
   myRights: TJMAPFolderRights,
+  /** Principal ID -> their rights. RFC 8621 doesn't define mailbox sharing,
+   * so the rights names differ per server. @see `JMAPAccount.mailShareRights()` */
+  shareWith?: Record<string, Record<string, boolean>>,
 }
 
 export interface TJMAPFolderRights {
