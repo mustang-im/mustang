@@ -252,6 +252,17 @@ export class Event extends Observable {
     }
   }
 
+  /** The event has not ended yet, i.e. it is currently happening or still to come.
+   * For a recurring master, whether any of its occurrences is still to come. */
+  isUpcoming(): boolean {
+    if (this.recurrenceRule) {
+      // An occurrence that started less than the event duration ago is still running
+      let nowStart = new Date(Date.now() - this.duration * 1000);
+      return !!this.recurrenceRule.getOccurrenceAfter(nowStart);
+    }
+    return this.endTime > new Date();
+  }
+
   /** in seconds */
   get duration(): number {
     let seconds = Math.round((this.endTime?.getTime() - this.startTime?.getTime()) / 1000);

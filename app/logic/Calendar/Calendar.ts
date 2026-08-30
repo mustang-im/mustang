@@ -82,11 +82,28 @@ export class Calendar extends Account {
   async listEvents() {
     await this.readEventsFromDB();
     await this.listEventsFromServer();
+    await this.downloadAttachmentsOfUpcomingEvents();
   }
 
   /** Downloads the details of all events from the server.
    * Not the attachment contents, though. */
   protected async listEventsFromServer(): Promise<void> {
+  }
+
+  /** Fetches the attachment contents of all future events.
+   * Older events are fetched only when the user opens them. */
+  async downloadAttachmentsOfUpcomingEvents(): Promise<void> {
+    let missing = this.events.filterOnce(event =>
+      event.attachments.some(attachment => attachment.pID && !attachment.content && !attachment.filepathLocal) &&
+      // `isUpcoming()` is expensive for recurring events, so check the attachments first
+      event.isUpcoming());
+    for (let event of missing) {
+      try {
+        await event.loadAttachments();
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
   }
 
   async readFromDB(): Promise<void> {
