@@ -304,7 +304,11 @@ export class JMAPFolder extends Folder {
   }
 
   /** Lists new messages, and downloads them */
-  async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {
+  async getNewMessages(): Promise<Collection<JMAPEMail>> {
+    if (!this.account.syncState.has("Email")) {
+      // Without sync state, we would fetch the entire folder
+      return await this.getRecentMessages() as Collection<JMAPEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;

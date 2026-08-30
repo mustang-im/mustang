@@ -388,6 +388,10 @@ export class EWSFolder extends ExchangeFolder {
   /** Lists only the new messages, and downloads them.
    * @returns the new messages */
   async getNewMessages(): Promise<Collection<EWSEMail>> {
+    if (!this.syncState) {
+      // Without sync state, the server returns the entire folder
+      return await this.getRecentMessages() as Collection<EWSEMail>;
+    }
     let newMsgs = await this.listMessages(); // uses syncState and should be fast
     await this.downloadMessages(newMsgs);
     return newMsgs;

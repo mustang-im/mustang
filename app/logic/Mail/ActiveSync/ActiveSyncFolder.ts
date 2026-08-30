@@ -237,6 +237,10 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async getNewMessages(): Promise<Collection<ActiveSyncEMail>> {
+    if (!this.syncState) {
+      // Without sync key, the server returns the entire folder
+      return await this.getRecentMessages() as Collection<ActiveSyncEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;

@@ -208,7 +208,11 @@ export class GraphFolder extends Folder {
   }
 
   /** Lists new messages, and downloads them */
-  async getNewMessages(): Promise<ArrayColl<GraphEMail>> {
+  async getNewMessages(): Promise<Collection<GraphEMail>> {
+    if (!this.deltaURL) {
+      // Without delta URL, we would fetch the entire folder
+      return await this.getRecentMessages() as Collection<GraphEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;

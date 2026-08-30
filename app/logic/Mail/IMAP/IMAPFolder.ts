@@ -315,6 +315,11 @@ export class IMAPFolder extends Folder {
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<Collection<IMAPEMail>> {
+    await this.readFolder();
+    if (this.messages.isEmpty) {
+      // We have no UID to start from, so we would fetch `1:*`, i.e. everything
+      return await this.getRecentMessages() as Collection<IMAPEMail>;
+    }
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);
     await this.checkDeletedMessages(this.getRecentMsg()?.uid);
