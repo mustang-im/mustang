@@ -4,7 +4,7 @@ import { JMAPEvent } from "./JMAPEvent";
 import type { TJMAPCalendar } from "./TJMAPCalendar";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
-import type { TID, TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
+import type { TID, TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { Participant } from "../Participant";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -56,21 +56,22 @@ export class JMAPCalendar extends Calendar {
       : await this.listChangedEvents();
   }
 
-  /** Lists all events in this calendar. */
   protected async listAllEvents(): Promise<ArrayColl<JMAPEvent>> {
     const batchSize = 200;
     let state: string;
-    let hasMore = true;
     let allNewEvents = new ArrayColl<JMAPEvent>();
-    for (let i = 0; hasMore; i += batchSize) {
-      let { newEvents, updatedEvents, syncState } = await retryOnTransientError(() =>
-        this.fetchEvents(i, batchSize + 1));
+    let start = 0;
+    let hasMore = true;
+    while (hasMore) {
+      let { newEvents, updatedEvents, syncState, count, pageSize } = await retryOnTransientError(() =>
+        this.fetchEvents(start, batchSize));
+      hasMore = count == pageSize; // A full page means that there is probably more
+      start += count;
       state ??= syncState;
       this.events.addAll(newEvents);
       await this.saveEvents(newEvents);
       await this.updateRecurrenceOverrides(newEvents);
       allNewEvents.addAll(newEvents);
-      hasMore = newEvents.length + updatedEvents.length > batchSize;
     }
     if (state) {
       this.account.syncState.set("CalendarEvent", state);
@@ -78,8 +79,12 @@ export class JMAPCalendar extends Calendar {
     return allNewEvents;
   }
 
-  protected async fetchEvents(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPEvent> & { syncState: string }> {
-    console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
+  /** @returns
+   * `count`: How many events the server returned.
+   * `pageSize`: The `limit` that the server used, which may be lower than the
+   *   one that we asked for. A `count` below it means that this was the last page. */
+  protected async fetchEvents(start: number, limit: number): Promise<UpdateResult<JMAPEvent> & { syncState: string, count: number, pageSize: number }> {
+    console.log("JMAP fetch", `start ${start} limit ${limit}`);
     let listResponse: TJMAPGetResponse<TJMAPCalendarEvent>;
     let lock = await this.account.stateLock.lock();
     let after = new Date();
@@ -95,7 +100,7 @@ export class JMAPCalendar extends Calendar {
               after: after.toISOString().substring(0, 19) + "Z",
             },
             sort: [
-              { property: "start" }
+              { property: "start", isAscending: false }
             ],
             position: start,
             limit: limit,
@@ -113,11 +118,15 @@ export class JMAPCalendar extends Calendar {
           "events",
         ],
       ]);
+      let queryResponse = response["list"] as TJMAPQueryResponse;
       listResponse = response["events"] as TJMAPGetResponse<TJMAPCalendarEvent>;
 
       return {
         ...this.parseEventsList(listResponse.list),
         syncState: listResponse.state,
+        count: queryResponse.ids.length,
+        // RFC 8620 5.5: Only returned when the server used a different limit than we asked, so default to what we asked
+        pageSize: sanitize.integerRange(queryResponse.limit, 1, limit * 10, limit),
       };
     } finally {
       lock.release();
