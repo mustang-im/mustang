@@ -18,12 +18,12 @@ export class JSCalendarEvent {
 
     // Text
     event.title = sanitize.nonemptystring(jmap.title, "");
+    // RFC 8984 section 4.2.2: `description` defaults to "", so servers may leave it out
+    let description = sanitize.string(jmap.description, "");
     if (jmap.descriptionContentType?.startsWith("text/html")) {
-      event.descriptionHTML = sanitize.string(jmap.description);
-    } else if (jmap.descriptionContentType?.startsWith("text/plain")) {
-      event.descriptionText = sanitize.string(jmap.description);
-    } else { // not sure what to do with this
-      event.descriptionText = sanitize.string(jmap.description);
+      event.descriptionHTML = description;
+    } else { // text/plain, and anything else that we don't know what to do with
+      event.descriptionText = description;
     }
 
     // Time
