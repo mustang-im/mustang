@@ -1,5 +1,5 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
-import type { CalendarShareCombinedPermissions } from "../Calendar";
+import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { Attachment } from "../../Abstract/Attachment";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -167,6 +167,11 @@ export class OWACalendar extends ExchangeCalendar {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [CalendarShareCombinedPermissions.ReadAvailability, CalendarShareCombinedPermissions.ReadTitle,
+      CalendarShareCombinedPermissions.ReadAll, CalendarShareCombinedPermissions.Modify];
   }
 
   async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {

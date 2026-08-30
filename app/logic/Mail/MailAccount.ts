@@ -204,6 +204,12 @@ export class MailAccount extends TCPAccount {
     return false;
   }
 
+  /** The access levels that this server can grant to other users.
+   * Ordered from least to most permission. Used by @see `addSharedPerson()` */
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [];
+  }
+
   /** Which of the `distinguishedIDs` of `person`'s account we may access. */
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
     return [];

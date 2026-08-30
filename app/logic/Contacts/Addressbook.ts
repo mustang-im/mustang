@@ -118,6 +118,12 @@ export class Addressbook extends Account {
     appGlobal.addressbooks.remove(this);
   }
 
+  /** The access levels that this server can grant to other users.
+   * Ordered from least to most permission. Used by @see `addSharedPerson()` */
+  get sharePermissionLevels(): AddressbookShareCombinedPermissions[] {
+    return [];
+  }
+
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     return new ArrayColl<PersonUID>();
   }

@@ -1,5 +1,5 @@
 import { ExchangeCalendar } from "./ExchangeCalendar";
-import type { CalendarShareCombinedPermissions } from "../Calendar";
+import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
@@ -319,6 +319,11 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [CalendarShareCombinedPermissions.ReadAvailability, CalendarShareCombinedPermissions.ReadTitle,
+      CalendarShareCombinedPermissions.ReadAll, CalendarShareCombinedPermissions.Modify];
   }
 
   async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {

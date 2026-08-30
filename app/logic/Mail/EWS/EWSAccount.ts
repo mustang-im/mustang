@@ -2,7 +2,7 @@ import { ExchangeMailAccount } from "./ExchangeMailAccount";
 import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import type { EMail } from "../EMail";
-import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, getEWSItem } from "./EWSFolder";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
@@ -1159,6 +1159,12 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     appGlobal.calendars.add(calendar);
     await calendar.startup();
     return calendar;
+  }
+
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [MailShareCombinedPermissions.Read, MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify, MailShareCombinedPermissions.Custom];
   }
 
   canShareWithPersons(): boolean {

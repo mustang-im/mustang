@@ -1,5 +1,5 @@
 import { ExchangeAddressbook } from "../EWS/ExchangeAddressbook";
-import { type AddressbookShareCombinedPermissions } from "../Addressbook";
+import { AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { Attachment } from "../../Abstract/Attachment";
 import { OWAPerson } from "./OWAPerson";
@@ -190,6 +190,10 @@ export class OWAAddressbook extends ExchangeAddressbook {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  get sharePermissionLevels(): AddressbookShareCombinedPermissions[] {
+    return [AddressbookShareCombinedPermissions.Read, AddressbookShareCombinedPermissions.Modify];
   }
 
   async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {

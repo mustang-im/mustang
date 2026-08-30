@@ -3,7 +3,7 @@ import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import { Provider } from "../../Auth/OAuth2URLs";
 import type { EMail } from "../EMail";
-import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
@@ -749,6 +749,12 @@ export class OWAAccount extends ExchangeMailAccount {
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
     return calendar;
+  }
+
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [MailShareCombinedPermissions.Read, MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify, MailShareCombinedPermissions.Custom];
   }
 
   canShareWithPersons(): boolean {

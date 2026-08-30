@@ -453,6 +453,12 @@ export class IMAPAccount extends MailAccount {
     await sentFolder.addMessage(email);
   }
 
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [MailShareCombinedPermissions.Read, MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify, MailShareCombinedPermissions.Custom];
+  }
+
   canShareWithPersons(): boolean {
     return this.namespaces?.other?.length > 0;
   }
