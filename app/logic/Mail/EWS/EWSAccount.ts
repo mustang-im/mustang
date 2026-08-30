@@ -867,16 +867,17 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
         folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
       let addressbook = this.createAddressbookAccount(folder);
-      await addressbook.save();
+      // Add it before saving it, so that a concurrent `listFolders()` sees it
       appGlobal.addressbooks.add(addressbook);
+      await addressbook.save();
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.dependsOn(this));
     if (!haveCalendar) {
       let folder = ensureArray(result.RootFolder.Folders.CalendarFolder).find(folder =>
         folder.DistinguishedFolderId == "calendar");
       let calendar = this.createCalendarAccount(folder);
-      await calendar.save();
       appGlobal.calendars.add(calendar);
+      await calendar.save();
     }
   }
 
