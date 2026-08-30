@@ -1,7 +1,7 @@
 import type { EMail } from "../EMail";
 import { FilterMoment } from "./FilterMoments";
 import { SearchEMail } from "../Store/SearchEMail";
-import type { MailAccount } from "../MailAccount";
+import { DeleteStrategy, type MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { notifyChangedProperty, Observable } from "../../util/Observable";
@@ -91,8 +91,12 @@ export class FilterRuleAction extends Observable {
         return;
       }
     }
-    if (booleanHasValue(this.deleteTrash) || booleanHasValue(this.deleteImmediately)) {
-      await email.deleteMessage();
+    if (this.deleteImmediately) {
+      await email.deleteMessage(DeleteStrategy.DeleteImmediately);
+      return;
+    }
+    if (this.deleteTrash) {
+      await email.deleteMessage(DeleteStrategy.MoveToTrash);
       return;
     }
     if (this.toFolderID) {
