@@ -149,7 +149,7 @@ export class FilterRuleAction extends Observable {
   }
 
   clone(): FilterRuleAction {
-    let clone = new (this as any).constructor();
+    let clone = new (this as any).constructor(this.account);
     clone.fromJSON(this.toJSON());
     return clone;
   }
