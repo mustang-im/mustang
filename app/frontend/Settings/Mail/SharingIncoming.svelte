@@ -66,9 +66,8 @@
 </vbox>
 
 <script lang="ts">
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Account } from "../../../logic/Abstract/Account";
-  import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
-  import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { appName } from "../../../logic/build";
   import PersonAutocomplete from "../../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
@@ -79,10 +78,9 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
 
-  export let account: Account;
+  export let account: MailAccount;
   $: sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
   $: skipPersons = sharedWith.map(account => new PersonUID(account.username));
 
@@ -109,9 +107,6 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (!(account instanceof EWSAccount || account instanceof OWAAccount)) {
-        return;
-      }
       if (account.dependentAccounts().find(other => other.username == person.emailAddress && other.protocol == account.protocol)) {
         errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
@@ -128,7 +123,6 @@
   }
 
   async function onAddPerson(person: PersonUID) {
-    assert(account instanceof EWSAccount || account instanceof OWAAccount, "Not supported");
     sharedPerson = null;
     if (sharedFolders.includes("msgfolderroot")) {
       await account.addSharedFolders(person, "msgfolderroot");

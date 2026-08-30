@@ -11,6 +11,7 @@ import { getProvider } from "../Auth/OAuth2Util";
 import type { Provider } from "../Auth/OAuth2URLs";
 import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { Calendar } from "../Calendar/Calendar";
+import type { Addressbook } from "../Contacts/Addressbook";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -201,6 +202,24 @@ export class MailAccount extends TCPAccount {
 
   canShareWithPersons(): boolean {
     return false;
+  }
+
+  /** Which of the `distinguishedIDs` of `person`'s account we may access. */
+  async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
+    return [];
+  }
+
+  /** Adds the mails that `person` shared with us as an account of their own. */
+  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox"): Promise<MailAccount> {
+    throw new AbstractFunction();
+  }
+
+  async addSharedAddressbook(person: PersonUID): Promise<Addressbook> {
+    throw new AbstractFunction();
+  }
+
+  async addSharedCalendar(person: PersonUID): Promise<Calendar> {
+    throw new AbstractFunction();
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

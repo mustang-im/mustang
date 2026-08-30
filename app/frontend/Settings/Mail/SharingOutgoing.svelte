@@ -96,7 +96,7 @@
             </vbox>
           {/if}
 
-          {#if !(account instanceof IMAPAccount)}
+          {#if $calendars.hasItems}
             <hbox class="enable">
               <Checkbox
                 label={$t`Share calendar`}
@@ -122,7 +122,9 @@
                 </hbox>
               </vbox>
             {/if}
+          {/if}
 
+          {#if $addressbooks.hasItems}
             <hbox class="enable">
               <Checkbox
                 label={$t`Share addressbook`}
@@ -146,15 +148,16 @@
                 </hbox>
               </vbox>
             {/if}
-            <hbox class="buttons">
-              <Button
-                label={$t`Add`}
-                onClick={() => onAddPersons()}
-                disabled={errorMessage}
-                classes="primary filled"
-                />
-            </hbox>
           {/if}
+
+          <hbox class="buttons">
+            <Button
+              label={$t`Add`}
+              onClick={() => onAddPersons()}
+              disabled={errorMessage}
+              classes="primary filled"
+              />
+          </hbox>
         {/if}
 
       </vbox>
@@ -164,13 +167,11 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
-  import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
-  import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
-  import { Addressbook, AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
-  import { Calendar, CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
+  import { AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
+  import { CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
   import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { appGlobal } from "../../../logic/app";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { catchErrors } from "../../Util/error";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
@@ -232,7 +233,7 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (!(account instanceof EWSAccount || account instanceof OWAAccount || account instanceof IMAPAccount)) {
+      if (!account.canShareWithPersons()) {
         return;
       }
       if (getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress)) !=
@@ -302,8 +303,8 @@
   let shareDeleteFolder = false;
   let shareCreateSubfolders = false;
   // calendars and addressbooks
-  $: calendars = account.dependentAccounts().filterObservable(acc => acc instanceof Calendar);
-  $: addressbooks = account.dependentAccounts().filterObservable(acc => acc instanceof Addressbook);
+  $: calendars = appGlobal.calendars.filterObservable(calendar => calendar.dependsOn(account));
+  $: addressbooks = appGlobal.addressbooks.filterObservable(addressbook => addressbook.dependsOn(account));
   let calendarAccess = CalendarShareCombinedPermissions.ReadAvailability;
   let addressbookAccess = AddressbookShareCombinedPermissions.Read;
 </script>
