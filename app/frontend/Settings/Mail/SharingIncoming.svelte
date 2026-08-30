@@ -91,16 +91,22 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { ArrayColl } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
-  $: sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
-  $: skipPersons = sharedWith.map(account => new PersonUID((account as MailAccount).emailAddress));
-
+  let sharedWith: Collection<Account> = new ArrayColl<Account>();
   /** Offered by the server, but not set up here, e.g. deleted by the user */
   let availableAccounts = new ArrayColl<PersonUID>();
-  $: account, $sharedWith, catchErrors(async () => availableAccounts = await account.availableSharedAccounts());
+  $: account, catchErrors(() => listAccounts());
+  $: skipPersons = sharedWith.map(account => new PersonUID((account as MailAccount).emailAddress));
+
+  /** `dependentAccounts()` is a snapshot of the accounts, so re-read both lists
+   * whenever we added or deleted one. */
+  async function listAccounts() {
+    sharedWith = account.dependentAccounts().filterObservable(dep => dep.protocol == account.protocol);
+    availableAccounts = await account.availableSharedAccounts();
+  }
 
   async function onDelete(otherAccount: Account) {
     let confirmed = confirm($t`Are you sure that you want to delete the account ${otherAccount.name} and all related data from ${appName}?`);
@@ -108,7 +114,7 @@
       return;
     }
     await otherAccount.deleteIt();
-    sharedWith.remove(otherAccount);
+    await listAccounts();
   }
 
   let showAddDialog = false;
@@ -161,6 +167,7 @@
     if (sharedFolders.includes("calendar")) {
       await account.addSharedCalendar(person);
     }
+    await listAccounts();
   }
 
   function onCloseAddDialog() {
