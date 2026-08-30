@@ -109,10 +109,31 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return downloadedSmall.concat(downloadedLarge);
   }
 
+  /** Downloads the emails of the last 2 weeks. Listing a folder for the first
+   * time returns years of mail, and we do not want to download all of that.
+   * Older mail is downloaded on demand, or by `downloadAllMessages()`.
+   * @param emails the emails that `listMessages()` just returned
+   * @returns the actually downloaded emails. */
+  async downloadRecentMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    const kDaysPast = 14;
+    let oldest = new Date();
+    oldest.setDate(oldest.getDate() - kDaysPast);
+    return await this.downloadMessages(emails.filterOnce(msg => msg.received > oldest));
+  }
+
   /** Downloads the entire MIME of the given emails.
    * @returns the actually downloaded emails. */
   async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
     throw new AbstractFunction();
+  }
+
+  /** Lists all messages of this folder, and then downloads only the recent ones.
+   * Called when we switch to a folder, including the first time we see a folder.
+   * @returns the newly listed messages */
+  async getRecentMessages(): Promise<Collection<EMail>> {
+    let newMessages = await this.listMessages();
+    await this.downloadRecentMessages(newMessages);
+    return newMessages;
   }
 
   /** Lists only the new messages, and downloads them.

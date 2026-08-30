@@ -83,8 +83,7 @@
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
-      let newMessages = await folder.listMessages();
-      await folder.downloadMessages(newMessages);
+      await folder.getRecentMessages();
     } catch (ex) {
       if (ex.authFail) {
         // await folder.account.login(true);
