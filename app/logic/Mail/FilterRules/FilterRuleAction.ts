@@ -138,7 +138,7 @@ export class FilterRuleAction extends Observable {
       copy: this.copy,
       // toFolderAccountID: this.toFolder?.account?.id,
       toFolder: this.toFolderID,
-      tags: this.addTags.contents.map(tag => tag.name),
+      addTags: this.addTags.contents.map(tag => tag.name),
     };
   }
 
