@@ -1011,7 +1011,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   private createAddressbookAccount(folder: any, dependentAcc?: EWSAccount): EWSAddressbook | null {
     assert(folder.ExtendedProperty?.Value != "true", "Need visible addressbook");
-    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" &&
+          (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
@@ -1029,7 +1030,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   private createCalendarAccount(folder: any, dependentAcc?: EWSAccount): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
-    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
+          (account as EWSCalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
@@ -1119,11 +1121,17 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folder = result.Folders.ContactsFolder;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folderID) as EWSAddressbook;
+    if (existing) {
+      return existing;
+    }
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
     addressbook.initFromMainAccount(this);
     addressbook.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     addressbook.username = person.emailAddress;
-    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    addressbook.folderID = folderID;
     appGlobal.addressbooks.add(addressbook);
     await addressbook.startup();
     return addressbook;
@@ -1150,11 +1158,17 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folder = result.Folders.CalendarFolder;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folderID) as EWSCalendar;
+    if (existing) {
+      return existing;
+    }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
     calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
-    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    calendar.folderID = folderID;
     calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
     await calendar.startup();

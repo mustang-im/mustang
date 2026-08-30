@@ -107,7 +107,8 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (account.dependentAccounts().find(other => other.username == person.emailAddress && other.protocol == account.protocol)) {
+      // Not only the mail account: the colleague may have shared only their calendar with us
+      if (account.dependentAccounts().find(other => other.username == person.emailAddress)) {
         errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
       }

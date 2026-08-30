@@ -640,7 +640,8 @@ export class OWAAccount extends ExchangeMailAccount {
 
   private createAddressbookAccount(folder: any, isPrimary: boolean, dependentAcc?: OWAAccount): OWAAddressbook | null {
     assert(!folder.IsReadOnly && folder.FolderId?.Id, "Need writable addressbook");
-    if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-owa" &&
+          (account as OWAAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
     let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
@@ -657,7 +658,8 @@ export class OWAAccount extends ExchangeMailAccount {
 
   private createCalendarAccount(folder: any, dependentAcc?: OWAAccount): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
-    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
+          (account as OWACalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
     let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
@@ -720,11 +722,17 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let result = await this.callOWA(owaSharedFolderRequest(["contacts"], person.emailAddress));
     let folder = result.Folders[0];
+    let folderID = folder.FolderId.Id;
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folderID) as OWAAddressbook;
+    if (existing) {
+      return existing;
+    }
     let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
     addressbook.initFromMainAccount(this);
     addressbook.name = `${person.name} ${folder.DisplayName}`;
     addressbook.username = person.emailAddress;
-    addressbook.folderID = folder.FolderId.Id;
+    addressbook.folderID = folderID;
     appGlobal.addressbooks.add(addressbook);
     await addressbook.listContacts();
     return addressbook;
@@ -740,11 +748,17 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let result = await this.callOWA(owaSharedFolderRequest(["calendar"], person.emailAddress));
     let folder = result.Folders[0];
+    let folderID = folder.FolderId.Id;
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folderID) as OWACalendar;
+    if (existing) {
+      return existing;
+    }
     let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
     calendar.initFromMainAccount(this);
     calendar.name = `${person.name} ${folder.DisplayName}`;
     calendar.username = person.emailAddress;
-    calendar.folderID = folder.FolderId.Id;
+    calendar.folderID = folderID;
     calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
     await calendar.listEvents();
