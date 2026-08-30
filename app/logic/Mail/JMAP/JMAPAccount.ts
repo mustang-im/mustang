@@ -33,7 +33,6 @@ export class JMAPAccount extends MailAccount {
   accountID: string;
   @notifyChangedProperty
   session: TJMAPSession;
-  allFolders = new MapColl<string, JMAPFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
@@ -334,6 +333,7 @@ export class JMAPAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
+    let currentFolders = new Map<string, JMAPFolder>();
     let oldFolders = this.getAllFolders();
 
     let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
@@ -341,8 +341,10 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      // Assumes that parent folders will be listed first
-      let parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
+      // If the server lists the parent only later, we move the folder there on the next listing
+      let parent = folderJSON.parentId
+        ? this.findFolder(folder => folder.id == folderJSON.parentId) as JMAPFolder
+        : null;
       let parentFolders = parent ? parent.subFolders : this.rootFolders;
       let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
       if (!folder) {
@@ -354,32 +356,21 @@ export class JMAPAccount extends MailAccount {
         parentFolders.add(folder);
       }
       folder.fromJMAP(folderJSON);
-      this.allFolders.set(folder.id, folder);
+      currentFolders.set(folder.id, folder);
     }
 
-    if (this.logging) {
-      // console.log("super.getAllFolders()", super.getAllFolders().contents.map(f => f.name).join(","));
-      console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
-    }
-
-    let currentFolders = new ArrayColl(this.allFolders.contents);
-    for (let oldFolder of oldFolders) {
-      if (!currentFolders.includes(oldFolder as JMAPFolder)) {
-        await oldFolder.deleteItLocally();
-        continue;
+    for (let folder of oldFolders) {
+      if (!currentFolders.has(folder.id)) {
+        await folder.deleteItLocally();
       }
     }
-    for (let folder of currentFolders) {
+    for (let folder of currentFolders.values()) {
       if (folder.dbID) {
         await this.storage.saveFolderProperties(folder);
       } else {
         await this.storage.saveFolder(folder);
       }
     }
-  }
-
-  getFolderByID(id: string): JMAPFolder | null {
-    return this.allFolders.get(id);
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {
@@ -395,7 +386,6 @@ export class JMAPAccount extends MailAccount {
     }) as TJMAPChangeResponse<TJMAPFolder>;
     checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
-    this.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
     await this.listFolders();
     await newFolder.listMessages();

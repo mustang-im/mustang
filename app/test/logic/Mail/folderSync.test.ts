@@ -54,6 +54,51 @@ test("JMAP: Listing the folders keeps the folders that we already stored", async
   await expectFolderSyncIsStable(account);
 });
 
+test("Deleting a folder also deletes its subfolders", async () => {
+  let account = await setupAccount(() => new TestJMAPAccount());
+  account.serverFolders = [
+    { id: "inbox-1", name: "Inbox", role: "inbox", sortOrder: 0, totalEmails: 0, unreadEmails: 0 },
+    { id: "sub-1", name: "Old mail", parentId: "inbox-1", sortOrder: 1, totalEmails: 0, unreadEmails: 0 },
+  ];
+  await account.listFolders();
+  let inbox = account.findFolder(folder => folder.id == "inbox-1");
+  let subFolder = account.findFolder(folder => folder.id == "sub-1");
+  expect(subFolder.parent).toBe(inbox);
+  await SQLEMail.save(newTestEMail(subFolder));
+  let subFolderID = subFolder.dbID;
+
+  await inbox.deleteItLocally();
+
+  expect(account.getAllFolders().length).toBe(0);
+  expect(subFolder.dbID).toBeNull();
+  expect(await folderPaths(account)).toEqual([]);
+  let db = await getDatabase();
+  let mailRows = await db.all(sql`SELECT id FROM email WHERE folderID = ${subFolderID}`) as any[];
+  expect(mailRows.length).toBe(0);
+});
+
+test("A folder that the server no longer lists is deleted locally", async () => {
+  let account = await setupAccount(() => new TestJMAPAccount());
+  account.serverFolders = [
+    { id: "inbox-1", name: "Inbox", role: "inbox", sortOrder: 0, totalEmails: 0, unreadEmails: 0 },
+    { id: "sent-1", name: "Sent", role: "sent", sortOrder: 1, totalEmails: 0, unreadEmails: 0 },
+  ];
+  await account.listFolders();
+  await SQLEMail.save(newTestEMail(account.findFolder(folder => folder.id == "sent-1")));
+  account.serverFolders.pop(); // The user deleted the folder in another mail app
+
+  await account.listFolders();
+
+  expect(account.getAllFolders().contents.map(folder => folder.id)).toEqual(["inbox-1"]);
+  expect(await folderPaths(account)).toEqual(["inbox-1"]);
+});
+
+async function folderPaths(account: MailAccount): Promise<string[]> {
+  let rows = await (await getDatabase()).all(sql`
+    SELECT path FROM folder WHERE accountID = ${account.dbID}`) as any[];
+  return rows.map(row => row.path).sort();
+}
+
 /** Saves a message, then lists the folders a second time, like we do on every
  * login. The folders, their DB IDs and the saved messages must survive that.
  * Otherwise, saving a message fails with "FOREIGN KEY constraint failed",

@@ -18,13 +18,12 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class GraphAccount extends ExchangeMailAccount {
   readonly protocol: string = "graph";
   accountID: string;
   userID: UUID;
-  protected allFolders = new MapColl<string, GraphFolder>();
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
@@ -287,21 +286,17 @@ export class GraphAccount extends ExchangeMailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
+    let currentFolders = new Map<string, GraphFolder>();
     let oldFolders = this.getAllFolders();
 
-    await this.listSubFolders(null);
+    await this.listSubFolders(null, currentFolders);
 
-    if (this.logging) {
-      console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
-    }
-    let currentFolders = new ArrayColl(this.allFolders.contents);
-    for (let oldFolder of oldFolders) {
-      if (!currentFolders.includes(oldFolder as GraphFolder)) {
-        await oldFolder.deleteItLocally();
-        continue;
+    for (let folder of oldFolders) {
+      if (!currentFolders.has(folder.id)) {
+        await folder.deleteItLocally();
       }
     }
-    for (let folder of currentFolders) {
+    for (let folder of currentFolders.values()) {
       if (folder.dbID) {
         await this.storage.saveFolderProperties(folder);
       } else {
@@ -311,8 +306,9 @@ export class GraphAccount extends ExchangeMailAccount {
   }
 
   /** List the subfolders of the given parent (or root, if null).
-   * Also query all descendant folders, recursively. */
-  protected async listSubFolders(parentFolder: GraphFolder | null): Promise<void> {
+   * Also query all descendant folders, recursively.
+   * @param currentFolders All folders that the server listed, filled in by us */
+  protected async listSubFolders(parentFolder: GraphFolder | null, currentFolders: Map<string, GraphFolder>): Promise<void> {
     let foldersJSON = await this.graphGetAll<TGraphFolder>(
       parentFolder ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
       { top: kMaxFetchCount },
@@ -330,15 +326,11 @@ export class GraphAccount extends ExchangeMailAccount {
         parentFolders.add(folder);
       }
       folder.fromGraph(folderJSON);
-      this.allFolders.set(folder.id, folder);
+      currentFolders.set(folder.id, folder);
 
       // Query decendants
-      await this.listSubFolders(folder);
+      await this.listSubFolders(folder, currentFolders);
     }
-  }
-
-  getFolderByID(id: string): GraphFolder | null {
-    return this.allFolders.get(id);
   }
 
   getMyID(json: any) {
@@ -356,7 +348,6 @@ export class GraphAccount extends ExchangeMailAccount {
       displayName: name,
     });
     newFolder.fromGraph(newFolderJSON);
-    this.allFolders.set(newFolder.id, newFolder);
     console.log("Folder created", name);
     await newFolder.listMessages();
     return newFolder;

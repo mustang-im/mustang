@@ -348,7 +348,6 @@ export class GraphFolder extends Folder {
       displayName: name,
     });
     newFolder.fromGraph(newFolderJSON);
-    this.account.allFolders.set(newFolder.id, newFolder);
     console.log("Folder created", name);
     await newFolder.listMessages();
     return newFolder;

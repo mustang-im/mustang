@@ -520,7 +520,6 @@ export class JMAPFolder extends Folder {
     }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
     checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
-    this.account.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
     await this.account.listFolders();
     await newFolder.listMessages();
