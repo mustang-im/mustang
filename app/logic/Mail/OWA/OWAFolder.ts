@@ -179,9 +179,11 @@ export class OWAFolder extends ExchangeFolder {
           if (email && !email.downloadComplete) {
             try {
               let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
-              email.mime = base64ToUint8Array(mimeBase64);
-              await email.parseMIME();
-              await email.saveCompleteMessage();
+              await email.downloadRunOnce.runOnce(async () => {
+                email.mime = base64ToUint8Array(mimeBase64);
+                await email.parseMIME();
+                await email.saveCompleteMessage();
+              });
               downloadedEmail.add(email);
             } catch (ex) {
               this.account.errorCallback(ex);

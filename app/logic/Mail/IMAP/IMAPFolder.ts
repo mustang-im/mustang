@@ -370,10 +370,12 @@ export class IMAPFolder extends Folder {
             if (msg?.downloadComplete) {
               continue;
             } else if (msg) {
-              msg.fromFlow(msgInfo);
               await this.updateModSeq(msgInfo.modseq);
-              await msg.parseMIME();
-              await msg.saveCompleteMessage();
+              await msg.downloadRunOnce.runOnce(async () => {
+                msg.fromFlow(msgInfo);
+                await msg.parseMIME();
+                await msg.saveCompleteMessage();
+              });
               downloadedMsgs.add(msg);
             }
           } catch (ex) {

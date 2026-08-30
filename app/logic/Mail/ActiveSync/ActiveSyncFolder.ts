@@ -224,9 +224,11 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
           }
           let email = emailsToDownload.find(email => email.serverID == result.ServerId);
           if (email && !email.downloadComplete) {
-            email.mime = result.Properties.Body.RawData;
-            await email.parseMIME();
-            await email.saveCompleteMessage();
+            await email.downloadRunOnce.runOnce(async () => {
+              email.mime = result.Properties.Body.RawData;
+              await email.parseMIME();
+              await email.saveCompleteMessage();
+            });
             downloadedEmail.add(email);
           }
         } catch (ex) {

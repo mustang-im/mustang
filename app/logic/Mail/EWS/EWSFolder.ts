@@ -364,10 +364,12 @@ export class EWSFolder extends ExchangeFolder {
             }
             let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
             if (email && !email.downloadComplete) {
-              let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-              email.mime = base64ToUint8Array(mimeBase64);
-              await email.parseMIME();
-              await email.saveCompleteMessage();
+              await email.downloadRunOnce.runOnce(async () => {
+                let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+                email.mime = base64ToUint8Array(mimeBase64);
+                await email.parseMIME();
+                await email.saveCompleteMessage();
+              });
               downloadedEmail.add(email);
             }
           } catch (ex) {
