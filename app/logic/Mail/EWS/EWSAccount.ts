@@ -27,6 +27,7 @@ import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
+import { Lock } from "../../util/flow/Lock";
 import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -56,6 +57,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
   /** AbortController for streaming notifications */
   protected notificationAbort: Record<string, AbortController> = {};
+  protected subscribeLock = new Lock();
   /** SubscriptionId for unsubscribing on disconnect */
   subscriptionID?: string;
 
@@ -586,68 +588,76 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async subscribeToNotifications() {
-    if (this.subscriptionID) {
-      console.warn("EWS: Trying to re-subscribe");
-      // E.g. re-login after connection loss. The subscription is still ours,
-      // but the stream that carries it died with the connection.
-      await this.streamNotifications(this.username);
-      return;
-    }
-    let subscribe = {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-              "NewMailEvent",
-            ],
+    let lock = await this.subscribeLock.lock();
+    try {
+      if (this.subscriptionID) {
+        console.warn("EWS: Trying to re-subscribe");
+        // E.g. re-login after connection loss. The subscription is still ours,
+        // but the stream that carries it died with the connection.
+        await this.streamNotifications(this.username);
+        return;
+      }
+      let subscribe = {
+        m$Subscribe: {
+          m$StreamingSubscriptionRequest: {
+            t$EventTypes: {
+              t$EventType: [
+                "CopiedEvent",
+                "CreatedEvent",
+                "DeletedEvent",
+                "ModifiedEvent",
+                "MovedEvent",
+                "NewMailEvent",
+              ],
+            },
+            SubscribeToAllFolders: true,
           },
-          SubscribeToAllFolders: true,
         },
-      },
-    };
-    let response = await this.callEWS(subscribe);
-    assert(!this.subscriptionID, "stream notification started twice");
-    this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications(this.username);
+      };
+      let response = await this.callEWS(subscribe);
+      this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+      await this.streamNotifications(this.username);
+    } finally {
+      lock.release();
+    }
   }
 
   async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
-    if (account.subscriptionID) {
-      console.warn("EWS: Trying to re-subscribe");
-      // E.g. re-login after connection loss. The subscription is still ours,
-      // but the stream that carries it died with the connection.
-      await this.streamNotifications(account.username);
-      return;
-    }
-    let subscribe = {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$FolderIds: {
-            t$FolderId: {
-              Id: account.folderID,
+    let lock = await this.subscribeLock.lock();
+    try {
+      if (account.subscriptionID) {
+        console.warn("EWS: Trying to re-subscribe");
+        // E.g. re-login after connection loss. The subscription is still ours,
+        // but the stream that carries it died with the connection.
+        await this.streamNotifications(account.username);
+        return;
+      }
+      let subscribe = {
+        m$Subscribe: {
+          m$StreamingSubscriptionRequest: {
+            t$FolderIds: {
+              t$FolderId: {
+                Id: account.folderID,
+              },
+            },
+            t$EventTypes: {
+              t$EventType: [
+                "CopiedEvent",
+                "CreatedEvent",
+                "DeletedEvent",
+                "ModifiedEvent",
+                "MovedEvent",
+              ],
             },
           },
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-            ],
-          },
         },
-      },
-    };
-    let response = await this.callEWS(subscribe);
-    assert(!account.subscriptionID, "stream notification started twice");
-    account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications(account.username);
+      };
+      let response = await this.callEWS(subscribe);
+      account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+      await this.streamNotifications(account.username);
+    } finally {
+      lock.release();
+    }
   }
 
   /** The shared mailboxes that stream their notifications under this user name */
