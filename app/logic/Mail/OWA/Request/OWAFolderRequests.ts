@@ -90,6 +90,9 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
         FieldURI: "item:Subject",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Size",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "item:DateTimeReceived",
       }, {
         __type: "PropertyUri:#Exchange",

@@ -59,6 +59,7 @@ export class EWSEMail extends ExchangeEMail {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.id = sanitize.nonemptystring(xmljs.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(xmljs.Subject, "");
+    this.size = sanitize.integer(xmljs.Size, null);
     this.sent = sanitize.date(xmljs.DateTimeSent, new Date());
     this.received = sanitize.date(xmljs.DateTimeReceived, new Date());
     this.setFlags(xmljs);

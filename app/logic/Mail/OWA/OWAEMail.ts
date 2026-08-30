@@ -40,6 +40,7 @@ export class OWAEMail extends ExchangeEMail {
     this.itemID = sanitize.nonemptystring(json.ItemId.Id);
     this.id = sanitize.nonemptystring(json.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(json.Subject, "");
+    this.size = sanitize.integer(json.Size, null);
     this.sent = sanitize.date(json.DateTimeSent, new Date());
     this.received = sanitize.date(json.DateTimeReceived, new Date());
     this.setFlags(json);

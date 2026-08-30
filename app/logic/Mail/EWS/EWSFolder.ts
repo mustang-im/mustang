@@ -278,6 +278,8 @@ export class EWSFolder extends ExchangeFolder {
               }, {
                 FieldURI: "item:Subject",
               }, {
+                FieldURI: "item:Size",
+              }, {
                 FieldURI: "item:DateTimeReceived",
               }, {
                 FieldURI: "item:InReplyTo",

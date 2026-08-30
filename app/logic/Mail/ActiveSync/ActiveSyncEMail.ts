@@ -58,6 +58,7 @@ export class ActiveSyncEMail extends ExchangeEMail {
 
   fromWBXML(wbxmljs: any) {
     this.subject = sanitize.nonemptystring(wbxmljs.Subject, "");
+    this.size = sanitize.integer(wbxmljs.Body?.EstimatedDataSize, null); // without body
     this.received = sanitize.date(wbxmljs.DateReceived, new Date());
     this.sent = this.received; // ActiveSync only supports received date
     this.setFlags(wbxmljs);
