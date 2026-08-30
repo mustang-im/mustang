@@ -308,8 +308,11 @@ export class Folder extends Observable implements TreeItem<Folder> {
     await this.deleteItOnServer();
   }
 
-  /** Warning: Also deletes all messages in the folder, also on the server */
+  /** Warning: Also deletes all messages and subfolders of the folder */
   async deleteItLocally(): Promise<void> {
+    for (let subFolder of this.subFolders.contents) {
+      await subFolder.deleteItLocally();
+    }
     if (this.parent) {
       this.parent.subFolders.remove(this);
     } else {
