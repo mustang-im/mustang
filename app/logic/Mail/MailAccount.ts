@@ -142,6 +142,10 @@ export class MailAccount extends TCPAccount {
     return new Folder(this);
   }
 
+  newIdentity(): MailIdentity {
+    return new MailIdentity(this);
+  }
+
   newEMailFrom(): EMail {
     let folder = this.getSpecialFolder(SpecialFolder.Sent);
     let email = folder.newEMail();
@@ -251,7 +255,9 @@ export class MailAccount extends TCPAccount {
     this.identities.clear();
     for (let idJSON of sanitize.array(json.identities, [])) {
       try {
-        this.identities.add(MailIdentity.fromConfigJSON(idJSON, this));
+        let identity = this.newIdentity();
+        identity.fromConfigJSON(idJSON);
+        this.identities.add(identity);
       } catch (ex) {
         this.errorCallback(ex);
       }

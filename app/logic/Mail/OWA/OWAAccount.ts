@@ -1,5 +1,4 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
-import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import { Provider } from "../../Auth/OAuth2URLs";
 import type { EMail } from "../EMail";
@@ -702,7 +701,7 @@ export class OWAAccount extends ExchangeMailAccount {
     account.username = person.emailAddress;
     account.emailAddress = person.emailAddress;
     account.sharedFolderRoot = sharedFolderRoot;
-    let identity = new MailIdentity(account);
+    let identity = account.newIdentity();
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);

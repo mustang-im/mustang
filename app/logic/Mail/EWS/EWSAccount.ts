@@ -1,5 +1,4 @@
 import { ExchangeMailAccount } from "./ExchangeMailAccount";
-import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import type { EMail } from "../EMail";
 import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
@@ -1090,7 +1089,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     account.username = person.emailAddress;
     account.emailAddress = person.emailAddress;
     account.sharedFolderRoot = sharedFolderRoot;
-    let identity = new MailIdentity(account);
+    let identity = account.newIdentity();
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);

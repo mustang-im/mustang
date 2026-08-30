@@ -1,7 +1,6 @@
 import { MailAccount } from "../MailAccount";
 import { ContactEntry } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import { MailIdentity } from "../MailIdentity";
 import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import type { Account } from "../../Abstract/Account";
 import { Calendar } from "../../Calendar/Calendar";
@@ -35,7 +34,7 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   fillConfig(config, emailAddress, password);
 
-  let identity = new MailIdentity(config);
+  let identity = config.newIdentity();
   identity.realname = config.realname;
   identity.emailAddress = config.emailAddress;
   config.identities.add(identity);
