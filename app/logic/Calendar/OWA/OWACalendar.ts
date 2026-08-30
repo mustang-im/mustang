@@ -79,13 +79,11 @@ export class OWACalendar extends ExchangeCalendar {
     return this.events.find(p => p.itemID == id);
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     await this.listEventsRunOnce.runOnce(() => this.listEventsSlow());
   }
 
   async listEventsSlow() {
-    await super.listEvents();
     let events = new ArrayColl<OWAEvent>;
     await this.listFolder(events);
     for (let event of this.events.subtract(events)) {

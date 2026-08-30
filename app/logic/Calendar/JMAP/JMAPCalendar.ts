@@ -45,8 +45,7 @@ export class JMAPCalendar extends Calendar {
     return [];
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     if (!this.account.isLoggedIn) {
       await this.account.login(false);
     }

@@ -118,9 +118,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
     }
   }
 
-  async listEvents() {
-    await super.listEvents();
-
+  protected async listEventsFromServer() {
     let data = {
       WindowSize: String(kMaxCount),
       Options: {

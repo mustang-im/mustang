@@ -90,8 +90,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     return availabilities;
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     await this.syncFolder();
     await this.save();
   }

@@ -77,8 +77,16 @@ export class Calendar extends Account {
     await this.listEvents();
   }
 
+  /** Reads the events that we already have,
+   * then downloads the events from the server. */
   async listEvents() {
     await this.readEventsFromDB();
+    await this.listEventsFromServer();
+  }
+
+  /** Downloads the details of all events from the server.
+   * Not the attachment contents, though. */
+  protected async listEventsFromServer(): Promise<void> {
   }
 
   async readFromDB(): Promise<void> {

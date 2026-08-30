@@ -101,8 +101,7 @@ export class CalDAVCalendar extends Calendar {
     }
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     await this.sync();
     await this.save();
   }
