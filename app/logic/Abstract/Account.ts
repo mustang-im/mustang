@@ -3,6 +3,7 @@ import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { RunOnce } from "../util/flow/RunOnce";
 import { logError } from "../../frontend/Util/error";
 import { SpecificError, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -53,6 +54,7 @@ export class Account extends Observable {
    * which cannot be attributed directly to an API function called,
    * e.g. errors while processing server messages. */
   errorCallback = (ex) => console.error(ex);
+  protected dependentStartupOnce = new RunOnce();
 
   constructor() {
     super();
@@ -86,7 +88,7 @@ export class Account extends Observable {
    */
   protected async startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
-      dependent.startup()
+      dependent.dependentStartupOnce.runOnce(() => dependent.startup())
         .catch(dependent.errorCallback);
     }
   }
