@@ -62,9 +62,10 @@ export interface TJMAPPerson {
 export interface TJMAPIdentity {
   id: string,
   name: string,
+  /** Immutable. `*@example.com` = catch-all */
   email: string,
-  replyTo: string[],
-  bcc: string[],
+  replyTo: TJMAPEmailAddress[] | null,
+  bcc: TJMAPEmailAddress[] | null,
   textSignature: string,
   htmlSignature: string,
   mayDelete: boolean,
@@ -99,6 +100,6 @@ export interface TJMAPEmailHeader {
 }
 
 export interface TJMAPEmailAddress {
-  name: string,
+  name: string | null,
   email: string,
 }

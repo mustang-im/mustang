@@ -1,7 +1,7 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
+import { JMAPIdentity } from "./JMAPIdentity";
 import type { EMail } from "../EMail";
-import { MailIdentity } from "../MailIdentity";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
@@ -35,6 +35,7 @@ export class JMAPAccount extends MailAccount {
   accountID: string;
   @notifyChangedProperty
   session: TJMAPSession;
+  declare readonly identities: ArrayColl<JMAPIdentity>;
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
@@ -81,6 +82,9 @@ export class JMAPAccount extends MailAccount {
       this.session = (this.mainAccount as JMAPAccount).session;
     }
     try {
+      if (this.haveSubmission) {
+        await this.listIdentities();
+      }
       if (this.haveMail) {
         await super.startup();
         let inbox = this.inbox as JMAPFolder;
@@ -152,6 +156,9 @@ export class JMAPAccount extends MailAccount {
   get haveMail(): boolean {
     return !!this.accountCapabilities["urn:ietf:params:jmap:mail"];
   }
+  get haveSubmission(): boolean {
+    return !!this.accountCapabilities["urn:ietf:params:jmap:submission"];
+  }
   get haveContacts(): boolean {
     return !!this.accountCapabilities["urn:ietf:params:jmap:contacts"];
   }
@@ -161,12 +168,12 @@ export class JMAPAccount extends MailAccount {
   get haveSharing(): boolean {
     return this.hasCapability("urn:ietf:params:jmap:principals");
   }
-  /* <compat for="Cyrus" reason="Mailbox sharing is in no RFC, and Cyrus invented its own rights"> */
-  /** Cyrus announces its core extension always, even when its non-standard extensions are off. */
+  // <compat for="Cyrus">
+  // Cyrus announces its core extension always, even when its non-standard extensions are off.
   get isCyrus(): boolean {
     return this.hasCapability("https://cyrusimap.org/ns/jmap/core");
   }
-  /* </compat> */
+  // </compat>
 
   /** A single API call, with a single result */
   async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
@@ -497,21 +504,61 @@ export class JMAPAccount extends MailAccount {
 
   protected async findIdentityOnServer(email: EMail): Promise<string | null> {
     assert(email.identity, `${this.name}: Please set the email identity before sending`);
+    if (!email.identity.pID) {
+      await this.listIdentities();
+    }
     if (email.identity.pID) {
       return email.identity.pID as string;
     }
+    // Our identity is local-only, e.g. a catch-all
+    let identity = this.identities.find(identity =>
+      identity.pID && identity.isEMailAddress(email.from.emailAddress));
+    // <compat for="Cyrus" reason="Offers a single identity, for the login user, and takes the `From` address from the mail itself">
+    if (this.isCyrus) {
+      identity ??= this.identities.find(identity => !!identity.pID);
+    }
+    // </compat>
+    assert(identity, gt`The server does not allow sending from this email address`);
+    return identity.pID;
+  }
 
-    let listResponse = await this.makeSingleCall("Identity/get", {
-      accountId: this.accountID,
-    }) as TJMAPGetResponse<TJMAPIdentity>;
-    for (let jmapIdentity of listResponse.list) {
-      if (email.from.emailAddress == jmapIdentity.email ||
-          email.identity.emailAddress == jmapIdentity.email ||
-          email.identity.isEMailAddress(jmapIdentity.email)) {
-        return email.identity.pID = jmapIdentity.id;
+  /** Creates, updates or removes our local identities, to match the server.
+   * Also for the accounts of other users: We are a member of some of them,
+   * e.g. functional accounts, and may then send as them. */
+  async listIdentities(): Promise<void> {
+    let response: TJMAPGetResponse<TJMAPIdentity>;
+    try {
+      response = await this.makeSingleCall("Identity/get", {
+        accountId: this.accountID,
+        ids: null,
+      }) as TJMAPGetResponse<TJMAPIdentity>;
+    } catch (ex) {
+      if ((ex as any).code == "forbidden") {
+        return; // Another user's account, and we are not a member of it
+      }
+      throw ex;
+    }
+
+    let obsolete = new ArrayColl(this.identities.contents.filter(identity => identity.pID));
+    for (let json of response.list) {
+      try {
+        let identity = this.identities.find(identity => identity.isSameAs(json));
+        if (identity) {
+          obsolete.remove(identity);
+        } else {
+          identity = this.newIdentity();
+          this.identities.add(identity);
+        }
+        identity.fromJMAP(json);
+      } catch (ex) {
+        this.errorCallback(ex);
       }
     }
-    return null;
+    // Identities that were never saved to the server have no `pID` and stay
+    this.identities.removeAll(obsolete);
+
+    this.syncState.set("Identity", response.state);
+    await this.save();
   }
 
   /**
@@ -534,6 +581,9 @@ export class JMAPAccount extends MailAccount {
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
+    if (type == "Identity") {
+      await this.listIdentities();
+    }
     if (type == "ContactCard") {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
@@ -552,7 +602,7 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
-    let types = ["Email"];
+    let types = ["Email", "Identity"];
     if (this.haveContacts) {
       types.push("ContactCard");
     }
@@ -766,7 +816,7 @@ export class JMAPAccount extends MailAccount {
     account.username = sanitize.nonemptystring(this.session.accounts[sharedAccountID].name);
     account.emailAddress = sanitize.emailAddress(person.emailAddress);
     account.accountID = sharedAccountID;
-    let identity = new MailIdentity(account);
+    let identity = account.newIdentity();
     identity.realname = person.name;
     identity.emailAddress = account.emailAddress;
     account.identities.add(identity);
@@ -796,14 +846,14 @@ export class JMAPAccount extends MailAccount {
   }
 
   get sharePermissionLevels(): MailShareCombinedPermissions[] {
-    /* <compat for="Cyrus" reason="Knows only 3 coarse rights, so it cannot express flags-only or custom access"> */
+    // <compat for="Cyrus" reason="Knows only 3 coarse rights, so it cannot express flags-only or custom access">
     if (this.isCyrus) {
       return [
         MailShareCombinedPermissions.Read,
         MailShareCombinedPermissions.Modify,
       ];
     }
-    /* </compat> */
+    // </compat>
     return [
       MailShareCombinedPermissions.Read,
       MailShareCombinedPermissions.FlagChange,
@@ -864,7 +914,7 @@ export class JMAPAccount extends MailAccount {
     let mayRemove = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.Delete);
     let mayDeleteFolder = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.DeleteFolder);
     let mayCreateChild = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.CreateSubfolders);
-    /* <compat for="Cyrus" reason="Knows only 3 coarse rights, so this over-grants"> */
+    // <compat for="Cyrus" reason="Knows only 3 coarse rights, so this over-grants">
     if (this.isCyrus) {
       return {
         mayRead: mayRead,
@@ -872,7 +922,7 @@ export class JMAPAccount extends MailAccount {
         mayAdmin: mayDeleteFolder || mayCreateChild,
       };
     }
-    /* </compat> */
+    // </compat>
     return {
       mayReadItems: mayRead,
       maySetSeen: mayFlag,
@@ -891,9 +941,11 @@ export class JMAPAccount extends MailAccount {
    * @see <https://www.rfc-editor.org/rfc/rfc9670.html#section-1.5.2> */
   protected get principalsAccountID(): string {
     let accountID = this.accountCapabilities["urn:ietf:params:jmap:principals:owner"]?.accountIdForPrincipal;
-    /* <compat for="Stalwart" reason="Sends `principals:owner` only inside `Principal.accounts`, not in the session"> */
-    accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
-    /* </compat> */
+    // <compat for="Stalwart" reason="Sends `principals:owner` only inside `Principal.accounts`, not in the session">
+    if (this.isCyrus) {
+      accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
+    }
+    // </compat>
     return sanitize.nonemptystring(accountID);
   }
 
@@ -920,9 +972,11 @@ export class JMAPAccount extends MailAccount {
     ]);
     let principals = (response["principals"] as TJMAPGetResponse<TJMAPPrincipal>).list;
     let matching = principals.find(principal => principal.email?.toLowerCase() == person.emailAddress.toLowerCase());
-    /* <compat for="Cyrus" reason="`Principal.email` comes from the calendar scheduling addresses, and may be unset"> */
-    matching ??= principals[0];
-    /* </compat> */
+    // <compat for="Cyrus" reason="`Principal.email` comes from the calendar scheduling addresses, and may be unset">
+    if (this.isCyrus) {
+      matching ??= principals[0];
+    }
+    // </compat>
     return matching ?? null;
   }
 
@@ -980,5 +1034,9 @@ export class JMAPAccount extends MailAccount {
 
   newFolder(): JMAPFolder {
     return new JMAPFolder(this);
+  }
+
+  newIdentity(): JMAPIdentity {
+    return new JMAPIdentity(this);
   }
 }
