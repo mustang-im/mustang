@@ -341,18 +341,17 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
       // Assumes that parent folders will be listed first
-      folder.parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
-
-      let parentGroup = folder.parent
-        ? folder.parent.subFolders
-        : this.rootFolders;
-      let existing = parentGroup.find(folder => folder.id == folderJSON.id) as JMAPFolder;
-      if (existing) {
-        folder = existing;
-      } else {
-        parentGroup.add(folder);
+      let parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
+      let parentFolders = parent ? parent.subFolders : this.rootFolders;
+      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
+      if (!folder) {
+        // We may already have the folder from our database, or it moved
+        folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
+        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+        oldParentFolders.remove(folder);
+        folder.parent = parent;
+        parentFolders.add(folder);
       }
       folder.fromJMAP(folderJSON);
       this.allFolders.set(folder.id, folder);
