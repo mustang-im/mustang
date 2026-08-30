@@ -18,10 +18,10 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.addressbooks.add(appGlobal.collectedAddressbook);
   appGlobal.calendars.add(await createPersonalCalendar());
 
+  await loadTagsList(); // before the accounts: their filter rules reference the tags
   await login();
 
   readSavedSearches();
-  await loadTagsList();
 }
 
 /**

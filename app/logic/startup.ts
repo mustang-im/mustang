@@ -59,6 +59,7 @@ export async function getStartObjects(): Promise<void> {
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
+  await loadTagsList(); // before the accounts: their filter rules reference the tags
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   appGlobal.meetAccounts.addAll(await readMeetAccounts());
@@ -72,7 +73,6 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.personalAddressbook = appGlobal.addressbooks.first;
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
-  await loadTagsList();
 }
 
 /**
