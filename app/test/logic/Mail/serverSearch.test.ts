@@ -1,0 +1,200 @@
+// app first, to resolve the import cycle around Abstract/Account.ts
+import { appGlobal } from "../../../logic/app";
+import { MailAccount } from "../../../logic/Mail/MailAccount";
+import { SpecialFolder, type Folder } from "../../../logic/Mail/Folder";
+import type { EMail } from "../../../logic/Mail/EMail";
+import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import { CombinedSearchEMail } from "../../../logic/Mail/Store/CombinedSearchEMail";
+import { IMAPSearchEMail } from "../../../logic/Mail/IMAP/IMAPSearchEMail";
+import { JMAPSearchEMail } from "../../../logic/Mail/JMAP/JMAPSearchEMail";
+import { ExchangeSearchEMail } from "../../../logic/Mail/EWS/ExchangeSearchEMail";
+import { SQLEMail } from "../../../logic/Mail/SQL/SQLEMail";
+import { getDatabase } from "../../../logic/Mail/SQL/SQLDatabase";
+import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
+import { Person, ContactEntry } from "../../../logic/Abstract/Person";
+import { getTagByName } from "../../../logic/Abstract/Tag";
+import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
+import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
+import { ArrayColl } from "svelte-collections";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import sql from "../../../../lib/rs-sqlite";
+import { beforeEach, expect, test } from "vitest";
+
+/** Stands in for e.g. `IMAPSearchEMail`, and returns what the server "found" */
+class TestServerSearch extends SearchEMail {
+  declare account: TestMailAccount;
+
+  async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
+    if (this.account.serverError) {
+      throw this.account.serverError;
+    }
+    return this.account.serverResults;
+  }
+}
+
+class TestMailAccount extends MailAccount {
+  readonly serverResults = new ArrayColl<EMail>();
+  serverError: Error | null = null;
+
+  newSearchEMail(): TestServerSearch {
+    return new TestServerSearch();
+  }
+}
+
+test("The combined search merges the local database and the server results", async () => {
+  let account = await setupAccount();
+  let inbox = account.inbox;
+  await SQLEMail.save(newTestEMail(inbox, "old", "Budget report", "2026-01-01"));
+  await SQLEMail.save(newTestEMail(inbox, "both", "Budget meeting", "2026-02-01"));
+  // The server finds the same email again, plus one that we never downloaded
+  account.serverResults.add(newTestEMail(inbox, "both", "Budget meeting", "2026-02-01"));
+  account.serverResults.add(newTestEMail(inbox, "new", "Budget draft", "2026-03-01"));
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  let results = await search.startSearch();
+
+  expect(results.contents.map(email => email.subject)).toEqual([
+    "Budget draft", "Budget meeting", "Budget report"]);
+});
+
+test("The limit applies to the combined results", async () => {
+  let account = await setupAccount();
+  let inbox = account.inbox;
+  await SQLEMail.save(newTestEMail(inbox, "old", "Budget report", "2026-01-01"));
+  account.serverResults.add(newTestEMail(inbox, "new", "Budget draft", "2026-03-01"));
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  let results = await search.startSearch(1);
+
+  expect(results.contents.map(email => email.subject)).toEqual(["Budget draft"]);
+});
+
+test("A server search that fails still returns the database results", async () => {
+  let account = await setupAccount();
+  await SQLEMail.save(newTestEMail(account.inbox, "old", "Budget report", "2026-01-01"));
+  account.serverError = new Error("Server is down");
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  let results = await search.startSearch();
+
+  expect(results.contents.map(email => email.subject)).toEqual(["Budget report"]);
+});
+
+test("IMAP: The `or` groups nest, because each search key is allowed only once", () => {
+  let search = new IMAPSearchEMail();
+  search.bodyText = "budget";
+  search.isRead = false;
+  search.includesPerson = testPerson("alice@example.com");
+
+  expect((search as any).imapQuery()).toEqual({
+    seen: false,
+    or: [{ subject: "budget" }, { body: "budget" }],
+    not: {
+      not: {
+        or: [
+          { from: "alice@example.com" },
+          { to: "alice@example.com" },
+          { cc: "alice@example.com" },
+          { bcc: "alice@example.com" },
+        ],
+      },
+    },
+  });
+});
+
+test("JMAP: The criteria become filter conditions", () => {
+  let search = new JMAPSearchEMail();
+  search.bodyText = "budget";
+  search.isRead = false;
+  search.hasAttachment = true;
+  search.tags.add(getTagByName("Work"));
+
+  expect((search as any).filterConditions()).toEqual([
+    { operator: "OR", conditions: [{ subject: "budget" }, { body: "budget" }] },
+    { notKeyword: "$seen" },
+    { hasKeyword: "Work" },
+    { hasAttachment: true },
+  ]);
+});
+
+test("Exchange: The criteria become an AQS query", () => {
+  let search = new ExchangeSearchEMail();
+  search.bodyText = `say "hi"`;
+  search.hasAttachment = true;
+  search.includesPerson = testPerson("alice@example.com");
+
+  expect((search as any).queryString()).toBe(
+    `(subject:"say  hi " OR body:"say  hi ") AND ` +
+    `(participants:"alice@example.com") AND hasattachment:true`);
+});
+
+test("Exchange: Criteria that AQS cannot express find nothing", () => {
+  let search = new ExchangeSearchEMail();
+  search.bodyText = "budget";
+  search.isRead = false;
+
+  expect((search as any).queryString()).toBeNull();
+});
+
+let inbox: Folder;
+
+beforeEach(async () => {
+  // `getDatabase()` keeps the first database, so clean it instead
+  if (inbox) {
+    await (await getDatabase()).run(sql`DELETE FROM email`);
+  }
+});
+
+async function setupAccount(): Promise<TestMailAccount> {
+  let account = new TestMailAccount();
+  account.name = "Test";
+  account.emailAddress = "user@example.com";
+  account.storage = new DummyMailStorage();
+  appGlobal.emailAccounts.replaceAll([account]);
+
+  if (!inbox) {
+    let tempDir = mkdtempSync(path.join(tmpdir(), "server-search-test-"));
+    appGlobal.remoteApp = {
+      getSQLiteDatabase: (filename: string) =>
+        new InProcessSQLiteDatabase(path.join(tempDir, filename)),
+    };
+    let db = await getDatabase();
+    let accountRow = await db.run(sql`
+      INSERT INTO emailAccount (idStr, protocol) VALUES (${account.id}, ${"imap"})`);
+    let folderRow = await db.run(sql`
+      INSERT INTO folder (accountID, name, path)
+      VALUES (${accountRow.lastInsertRowid}, ${"Inbox"}, ${"INBOX"})`);
+    inbox = account.newFolder();
+    inbox.name = "Inbox";
+    inbox.id = "INBOX";
+    inbox.specialFolder = SpecialFolder.Inbox;
+    inbox.dbID = folderRow.lastInsertRowid;
+  }
+  inbox.account = account;
+  inbox.messages.clear();
+  account.rootFolders.add(inbox);
+  return account;
+}
+
+function newTestEMail(folder: Folder, pID: string, subject: string, sentDate: string): EMail {
+  let email = folder.newEMail();
+  email.id = pID + "@example.com";
+  email.pID = pID;
+  email.subject = subject;
+  email.sent = new Date(sentDate + "T10:00:00Z");
+  email.received = email.sent;
+  email.from = findOrCreatePersonUID("alice@example.com", "Alice");
+  email.contact = email.from;
+  return email;
+}
+
+function testPerson(emailAddress: string): Person {
+  let person = new Person();
+  person.emailAddresses.add(new ContactEntry(emailAddress, "work"));
+  return person;
+}
