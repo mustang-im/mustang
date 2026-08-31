@@ -48,6 +48,13 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     return new ActiveSyncFolder(this);
   }
 
+  /** ActiveSync `Search` identifies each hit only with a `LongId` that is valid
+   * for that one result set, never with the `ServerId` that we store. So we could
+   * not tell which of the emails that we already have it found, and list them twice. */
+  newSearchEMail(): null {
+    return null;
+  }
+
   /**
    * Currently storing the folder sync key, protocol version and policy key
    * (if any) in local storage. Should this migrate to configJSON?

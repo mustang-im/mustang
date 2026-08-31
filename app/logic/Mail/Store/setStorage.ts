@@ -2,13 +2,13 @@
 import { MailZIP } from "./MailZIP";
 import { RawFilesAttachment } from "./RawFilesAttachment";
 import { SQLMailStorage } from "../SQL/SQLMailStorage";
-import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
 // #else
 import { DummyMailStorage } from "../Store/DummyMailStorage";
 // #endif
 import type { EMail } from "../EMail";
-import { SearchEMail } from "./SearchEMail";
+import { CombinedSearchEMail } from "./CombinedSearchEMail";
+import type { SearchEMail } from "./SearchEMail";
 import type { MailAccount } from "../MailAccount";
 
 export function setStorage(acc: MailAccount) {
@@ -35,11 +35,7 @@ export function setContentStorage(acc: MailAccount) {
 }
 
 export function newSearchEMail(): SearchEMail {
-  // #if [!WEBMAIL]
-  return new SQLSearchEMail();
-  // #else
-  return new SearchEMail(); // TODO server-side search
-  // #endif
+  return new CombinedSearchEMail();
 }
 
 export async function findMessageByID(msgid: string): Promise<EMail | undefined> {

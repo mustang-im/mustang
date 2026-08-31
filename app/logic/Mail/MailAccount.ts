@@ -13,6 +13,7 @@ import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { Calendar } from "../Calendar/Calendar";
 import type { Addressbook } from "../Contacts/Addressbook";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
+import type { SearchEMail } from "./Store/SearchEMail";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { AbstractFunction, assert } from "../util/util";
@@ -144,6 +145,12 @@ export class MailAccount extends TCPAccount {
 
   newIdentity(): MailIdentity {
     return new MailIdentity(this);
+  }
+
+  /** Lets the server search this account, also emails that we did not download.
+   * @returns null, if this protocol has no server-side search */
+  newSearchEMail(): SearchEMail | null {
+    return null;
   }
 
   newEMailFrom(): EMail {
