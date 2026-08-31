@@ -19,7 +19,9 @@ export async function searchContacts(searchStr: string, skip: (person: PersonUID
       person.name?.toLowerCase().includes(inputPart) ||
       person.emailAddresses.some(c => c.value?.toLowerCase().includes(inputPart)))));
   }
-  let results = await Promise.allSettled(appGlobal.searchOnlyAddressbooks.map(async ab => {
+  // `.contents`, because `Collection.map()` keeps observing the address book list
+  // and would re-run this search whenever a GAL is added or removed
+  let results = await Promise.allSettled(appGlobal.searchOnlyAddressbooks.contents.map(async ab => {
     let results = new ArrayColl<Person>;
     await ab.quickSearchAsync(searchStr.toLowerCase(), results);
     persons = persons.concat(results.contents);

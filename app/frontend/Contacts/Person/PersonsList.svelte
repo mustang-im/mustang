@@ -43,8 +43,10 @@
   export let sortBy = (person: PersonOrGroup) => person.name.toLowerCase();
 
   let searchAddressbooks = appGlobal.addressbooks.merge(appGlobal.searchOnlyAddressbooks);
+  // `.contents`, because `Collection.map()` keeps observing `searchAddressbooks`
+  // and would re-run this search whenever an address book is added or removed
   $: filteredPersons = searchTerm
-    ? mergeColls(searchAddressbooks.map(ab => ab.quickSearch(searchTerm, true)))
+    ? mergeColls(new ArrayColl(searchAddressbooks.contents.map(ab => ab.quickSearch(searchTerm, true))))
     : persons;
   $: sortedPersons = filteredPersons.sortBy(sortBy);
 
