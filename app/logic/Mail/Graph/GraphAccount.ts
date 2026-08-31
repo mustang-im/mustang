@@ -251,9 +251,8 @@ export class GraphAccount extends ExchangeMailAccount {
       if (this.logging) {
         console.log("Calling <" + url + ">", method.toUpperCase(), "with options", options);
       }
-      return await ky[method](url);
-      // let result = options?.result ?? "json";
-      // return await ky[method](url)[result](options); // e.g. await ky.get(url).json();
+      // options: JPC turns undefined into null, which ky throws on
+      return await ky[method](url, { json: options?.json, body: options?.body });
     } catch (ex) {
       await this.httpError(ex);
     }
