@@ -183,6 +183,23 @@ export class JMAPAccount extends MailAccount {
     return response[1];
   }
 
+  /** Like `makeSingleCall()`, but might be either for our account or for a shared account.
+   * Calls to shared accounts might fail due to lacking permissions.
+   * Unfortunately, the session object from Stalwart doesn't tell us the actual permissions
+   * we have, so all we can do is try and error. This function mostly handles the error.
+   * In this specific error condition, it returns `null` instead of throwing.
+   * @returns null, if they did not share this part of their account with us */
+  async makeSingleCallForSharedAccount(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any> | null> {
+    try {
+      return await this.makeSingleCall(method, argumentsJSON);
+    } catch (ex) {
+      if (this.isDependentAccount && (ex as any).code == "forbidden") {
+        return null;
+      }
+      throw ex;
+    }
+  }
+
   /** Make multiple calls in one request, and return only the last result.
    * @calls Array of calls.
    *   Each call is an array with 3 entries:
@@ -526,17 +543,12 @@ export class JMAPAccount extends MailAccount {
    * Also for the accounts of other users: We are a member of some of them,
    * e.g. functional accounts, and may then send as them. */
   async listIdentities(): Promise<void> {
-    let response: TJMAPGetResponse<TJMAPIdentity>;
-    try {
-      response = await this.makeSingleCall("Identity/get", {
-        accountId: this.accountID,
-        ids: null,
-      }) as TJMAPGetResponse<TJMAPIdentity>;
-    } catch (ex) {
-      if ((ex as any).code == "forbidden") {
-        return; // Another user's account, and we are not a member of it
-      }
-      throw ex;
+    let response = await this.makeSingleCallForSharedAccount("Identity/get", {
+      accountId: this.accountID,
+      ids: null,
+    }) as TJMAPGetResponse<TJMAPIdentity>;
+    if (!response) {
+      return; // Another user's account, and we are not a member of it
     }
 
     let obsolete = new ArrayColl(this.identities.contents.filter(identity => identity.pID));
@@ -673,9 +685,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listAddressbooks() {
-    let response = await this.makeSingleCall("AddressBook/get", {
+    let response = await this.makeSingleCallForSharedAccount("AddressBook/get", {
       accountId: this.accountID,
     });
+    if (!response) {
+      return; // Another user's account, and they did not share their contacts with us
+    }
     let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
@@ -691,9 +706,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listCalendars() {
-    let response = await this.makeSingleCall("Calendar/get", {
+    let response = await this.makeSingleCallForSharedAccount("Calendar/get", {
       accountId: this.accountID,
     });
+    if (!response) {
+      return; // Another user's account, and they did not share their calendars with us
+    }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||

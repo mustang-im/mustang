@@ -9,6 +9,13 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, expect, test } from "vitest";
 
+const kAccountCapabilities = {
+  "urn:ietf:params:jmap:mail": {},
+  "urn:ietf:params:jmap:submission": {},
+  "urn:ietf:params:jmap:contacts": {},
+  "urn:ietf:params:jmap:calendars": {},
+};
+
 /** John's own account, and Jane's, which she delegated to him.
  * Neither server sends `principals:owner`, so only `primaryAccounts` names
  * the account that holds the `Principal` objects. */
@@ -28,17 +35,13 @@ function newSession(extraCapabilities: Record<string, any>): TJMAPSession {
     accounts: {
       u1: {
         name: "john.doe@example.com", isPersonal: true, isReadOnly: false,
-        accountCapabilities: {
-          "urn:ietf:params:jmap:mail": {},
-          "urn:ietf:params:jmap:submission": {},
-        },
+        accountCapabilities: kAccountCapabilities,
       },
+      // Stalwart lists the capabilities of *our* account for the accounts of
+      // other users as well, even for the parts that they did not share with us
       u2: {
         name: "jane.smith@example.com", isPersonal: false, isReadOnly: false,
-        accountCapabilities: {
-          "urn:ietf:params:jmap:mail": {},
-          "urn:ietf:params:jmap:submission": {},
-        },
+        accountCapabilities: kAccountCapabilities,
       },
     },
     apiUrl: "http://example.com/jmap/api",
@@ -75,6 +78,13 @@ function respond(method: string, args: any): any {
   throw new Error("Test server has no answer for " + method);
 }
 
+/** Jane delegated only her mail, so the server refuses everything else,
+ * although the session claims that her account offers it */
+function sharedWithUs(method: string, accountID: string): boolean {
+  return accountID != "u2" ||
+    method.startsWith("Mailbox/") || method.startsWith("Email/");
+}
+
 let session: TJMAPSession;
 let calls: string[];
 
@@ -90,7 +100,9 @@ beforeEach(() => {
   JMAPAccount.prototype.httpPost = async (url: string, request: any) => ({
     methodResponses: request.methodCalls.map(([method, args, callID]) => {
       calls.push(method + " " + args.accountId);
-      return [method, respond(method, args), callID];
+      return sharedWithUs(method, args.accountId)
+        ? [method, respond(method, args), callID]
+        : ["error", { type: "forbidden", description: "You do not have access to account " + args.accountId }, callID];
     }),
     sessionState: "s1",
   });
@@ -130,6 +142,8 @@ test("Setup adds the account that another user delegated to us", async () => {
   expect(shared[0].rootFolders.hasItems).toBe(true);
   // Set up during the login, rather than only after the next app start
   expect(calls).toContain("Mailbox/get u2");
+  // The parts that she did not share do not abort the setup of the rest
+  expect(calls).toContain("AddressBook/get u2");
 });
 
 test("Setup adds it also on a server that implements the older `Principal` draft", async () => {
