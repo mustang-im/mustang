@@ -1,4 +1,4 @@
-import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
+import { Workspace, getWorkspaceByID, accountColors, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -59,7 +59,7 @@ export class Account extends Observable {
   constructor() {
     super();
     this.id = findFreeAccountID();
-    this.color = randomAccountColor();
+    this.color = unusedAccountColor();
   }
 
   /**
@@ -319,4 +319,20 @@ export class ConnectError extends SpecificError {
 export class LoginError extends SpecificError {
   authFail = true;
   isUserError = true;
+}
+
+/**
+ * Returns a preset account color that is not used by another account yet.
+ * Once all preset colors are taken, falls back to any random color.
+ */
+export function unusedAccountColor(): string {
+  let usedColors = getAllAccounts().contents.map(account => account.color);
+  let unusedColors = accountColors.filter(color => !usedColors.includes(color));
+  return unusedColors.length
+    ? unusedColors[Math.floor(Math.random() * unusedColors.length)]
+    : randomColor();
+}
+
+function randomColor(): string {
+  return "#" + Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0");
 }
