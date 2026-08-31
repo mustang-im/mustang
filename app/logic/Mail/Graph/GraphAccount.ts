@@ -2,6 +2,7 @@ import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { Provider } from "../../Auth/OAuth2URLs";
 import { GraphFolder } from "./GraphFolder";
+import { GraphSearchEMail } from "./GraphSearchEMail";
 import type { TGraphFolder } from "./TGraphMail";
 import type { UUID } from "./TGraphGeneric";
 import type { EMail } from "../EMail";
@@ -426,6 +427,10 @@ export class GraphAccount extends ExchangeMailAccount {
 
   newFolder(): GraphFolder {
     return new GraphFolder(this);
+  }
+
+  newSearch(): GraphSearchEMail {
+    return new GraphSearchEMail();
   }
 }
 

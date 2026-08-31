@@ -12,7 +12,7 @@ import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
-import type { ImapFlow, MailboxLockObject } from "../../../../desktop/backend/node_modules/imapflow";
+import type { ImapFlow, MailboxLockObject, SearchObject } from "../../../../desktop/backend/node_modules/imapflow";
 
 export class IMAPFolder extends Folder {
   declare account: IMAPAccount;
@@ -229,7 +229,31 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
+  /** Searches the messages of this folder on the server.
+   * The results are *not* added to `this.messages`: they are only the matches,
+   * not the entire folder contents.
+   * @param query IMAP `SEARCH` keys, @see `IMAPSearchEMail`
+   * @returns the matching emails, newest first */
+  async searchMessages(query: SearchObject, limit?: number): Promise<ArrayColl<IMAPEMail>> {
+    let uids = (await this.fetchUIDList(query)).sortBy(uid => -uid).contents;
+    if (limit) {
+      uids = uids.slice(0, limit);
+    }
+    let results = new ArrayColl<IMAPEMail>();
+    const kBatchSize = 200; // A `FETCH` of all UIDs at once would exceed the line length
+    for (let i = 0; i < uids.length; i += kBatchSize) {
+      let { newMessages, updatedMessages } = await this.fetchMessageList(
+        { uid: uids.slice(i, i + kBatchSize).join(",") }, {}, false);
+      results.addAll(updatedMessages);
+      results.addAll(newMessages);
+    }
+    return results;
+  }
+
+  /** @param updateSyncState Only if `range` covers the entire folder.
+   *   The highest modseq of a few messages says nothing about the other messages,
+   *   so taking it as folder sync state would skip their changes. */
+  protected async fetchMessageList(range: any, options: any, updateSyncState = true): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
     await this.runCommand(async (conn) => {
@@ -259,7 +283,9 @@ export class IMAPFolder extends Folder {
         }
         modseq = msgInfo.modseq
       }
-      await this.updateModSeq(modseq);
+      if (updateSyncState) {
+        await this.updateModSeq(modseq);
+      }
     }, ConnectionPurpose.Fetch);
     return { newMessages, updatedMessages };
   }

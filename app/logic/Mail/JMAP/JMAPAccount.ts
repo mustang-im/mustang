@@ -1,6 +1,7 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
 import { JMAPIdentity } from "./JMAPIdentity";
+import { JMAPSearchEMail } from "./JMAPSearchEMail";
 import type { EMail } from "../EMail";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { PersonUID } from "../../Abstract/PersonUID";
@@ -1054,5 +1055,9 @@ export class JMAPAccount extends MailAccount {
 
   newIdentity(): JMAPIdentity {
     return new JMAPIdentity(this);
+  }
+
+  newSearch(): JMAPSearchEMail {
+    return new JMAPSearchEMail();
   }
 }

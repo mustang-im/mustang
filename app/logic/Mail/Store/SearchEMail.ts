@@ -26,6 +26,9 @@ export class SearchEMail extends Observable {
   set folder(folder: Folder | null) {
     this._folder = folder;
     this.folderID = folder?.id;
+    if (folder?.account) {
+      this.account = folder.account;
+    }
   }
 
   @notifyChangedProperty
@@ -117,9 +120,30 @@ export class SearchEMail extends Observable {
     };
   }
 
+  copyFrom(other: SearchEMail) {
+    this.account = other.account;
+    this._folder = other._folder;
+    this.folderID = other.folderID;
+    this.isOutgoing = other.isOutgoing;
+    this.includesPerson = other.includesPerson;
+    this.messageID = other.messageID;
+    this.threadID = other.threadID;
+    this.sentDateMin = other.sentDateMin;
+    this.sentDateMax = other.sentDateMax;
+    this.sizeMin = other.sizeMin;
+    this.sizeMax = other.sizeMax;
+    this.isRead = other.isRead;
+    this.isStarred = other.isStarred;
+    this.isReplied = other.isReplied;
+    this.tags.replaceAll(other.tags);
+    this.hasAttachment = other.hasAttachment;
+    this.hasAttachmentMIMETypes.replaceAll(other.hasAttachmentMIMETypes);
+    this.bodyText = other.bodyText;
+  }
+
   clone(): SearchEMail {
     let clone = new (this as any).constructor();
-    clone.fromJSON(this.toJSON());
+    clone.copyFrom(this);
     return clone;
   }
 

@@ -1,4 +1,5 @@
 import { OWARequest } from "./OWARequest";
+import type { ExchangeCondition } from "../../EWS/ExchangeSearchEMail";
 import type { OWAEMail } from "../OWAEMail";
 import type { ExchangePermission } from "../../EWS/ExchangePermission";
 // import { IconIndexPidTag } from "../../EWS/ExchangeEMail";
@@ -42,6 +43,85 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
       MaxEntriesReturned: maxFetchCount,
     },
   });
+}
+
+/** Searches the `folderIDs`, @see `ExchangeSearchEMail` */
+export function owaSearchMsgsRequest(folderIDs: string[], conditions: ExchangeCondition[], maxFetchCount: number): OWARequest {
+  return new OWARequest("FindItem", {
+    __type: "FindItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:ParentFolderId",
+      }],
+    },
+    ParentFolderIds: folderIDs.map(folderID => ({
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    })),
+    Traversal: "Shallow",
+    Restriction: {
+      Item: conditions.length == 1
+        ? toOWA(conditions[0])
+        : { __type: "And:#Exchange", Items: conditions.map(toOWA) },
+    },
+    SortOrder: [{
+      __type: "SortResults:#Exchange",
+      Order: "Descending",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
+      },
+    }],
+    Paging: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
+      MaxEntriesReturned: maxFetchCount,
+    },
+  });
+}
+
+function toOWA(condition: ExchangeCondition): any {
+  let property = condition.propertyTag ? {
+    __type: "ExtendedPropertyUri:#Exchange",
+    PropertyTag: condition.propertyTag,
+    PropertyType: "Integer",
+  } : {
+    __type: "PropertyUri:#Exchange",
+    FieldURI: condition.fieldURI,
+  };
+  switch (condition.operator) {
+    case "Or":
+      return { __type: "Or:#Exchange", Items: condition.conditions.map(toOWA) };
+    case "Not":
+      return { __type: "Not:#Exchange", Item: toOWA(condition.conditions[0]) };
+    case "Contains":
+      return {
+        __type: "Contains:#Exchange",
+        Item: property,
+        Constant: {
+          __type: "Constant:#Exchange",
+          Value: condition.value,
+        },
+        ContainmentMode: "Substring",
+        ContainmentComparison: "IgnoreCase",
+      };
+    default:
+      return {
+        __type: `${condition.operator}:#Exchange`,
+        Item: property,
+        FieldURIOrConstant: {
+          __type: "FieldURIOrConstantType:#Exchange",
+          Item: {
+            __type: "Constant:#Exchange",
+            Value: condition.value,
+          },
+        },
+      };
+  }
 }
 
 export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest {

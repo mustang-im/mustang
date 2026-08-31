@@ -3,6 +3,7 @@ import { AuthMethod, type Account } from "../../Abstract/Account";
 import type { EMail } from "../EMail";
 import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, getEWSItem } from "./EWSFolder";
+import { EWSSearchEMail } from "./EWSSearchEMail";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
@@ -62,6 +63,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
+  }
+
+  newSearch(): EWSSearchEMail {
+    return new EWSSearchEMail();
   }
 
   get folderID(): string {

@@ -45,7 +45,7 @@
 </vbox>
 
 <script lang="ts">
-  import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
+  import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { selectedMessage } from "../Selected";
@@ -70,7 +70,7 @@
 
   let isOpen = true;
   const kLimit = 200;
-  let search = newSearchEMail();
+  let search = newServerSearchEMail();
   let tags = search.tags;
   let attachmentTypes = search.hasAttachmentMIMETypes;
 
