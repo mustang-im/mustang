@@ -1029,6 +1029,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     if (dependentAcc) {
       addressbook.username = dependentAcc.username;
+      addressbook.color = dependentAcc.color;
     }
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return addressbook;
@@ -1049,6 +1050,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     if (dependentAcc) {
       calendar.username = dependentAcc.username;
+      calendar.color = dependentAcc.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
@@ -1092,6 +1094,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let account = newAccountForProtocol("ews") as EWSAccount;
     account.initFromMainAccount(this);
+    account.color = this.colorForSharedAccount(person);
     account.name = person.name;
     account.username = person.emailAddress;
     account.emailAddress = person.emailAddress;
@@ -1135,6 +1138,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
     addressbook.initFromMainAccount(this);
+    addressbook.color = this.colorForSharedAccount(person);
     addressbook.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     addressbook.username = person.emailAddress;
     addressbook.folderID = folderID;
@@ -1172,6 +1176,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
+    calendar.color = this.colorForSharedAccount(person);
     calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
     calendar.folderID = folderID;

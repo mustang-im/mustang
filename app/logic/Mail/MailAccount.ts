@@ -1,4 +1,5 @@
 import { TCPAccount } from "../Abstract/TCPAccount";
+import { unusedAccountColor } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "./Folder";
 import type { EMail } from "./EMail";
@@ -244,6 +245,12 @@ export class MailAccount extends TCPAccount {
 
   async addSharedCalendar(person: PersonUID): Promise<Calendar> {
     throw new AbstractFunction();
+  }
+
+  /** So that the user does not mistake another person's mails for ours */
+  protected colorForSharedAccount(person: PersonUID): string {
+    return this.dependentAccounts().find(acc => acc.username == person.emailAddress)?.color ??
+      unusedAccountColor();
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

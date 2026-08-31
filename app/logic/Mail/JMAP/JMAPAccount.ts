@@ -831,6 +831,7 @@ export class JMAPAccount extends MailAccount {
     assert(sharedAccountID, gt`You have no access to the account of ${person.emailAddress}`);
     let account = newAccountForProtocol("jmap") as JMAPAccount;
     account.initFromMainAccount(this);
+    account.color = this.colorForSharedAccount(person);
     account.name = person.name ?? person.emailAddress;
     account.username = sanitize.nonemptystring(this.session.accounts[sharedAccountID].name);
     account.emailAddress = sanitize.emailAddress(person.emailAddress);

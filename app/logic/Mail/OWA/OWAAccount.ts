@@ -656,6 +656,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     if (dependentAcc) {
       addressbook.username = dependentAcc.username;
+      addressbook.color = dependentAcc.color;
     }
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return addressbook;
@@ -676,6 +677,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     if (dependentAcc) {
       calendar.username = dependentAcc.username;
+      calendar.color = dependentAcc.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
@@ -703,6 +705,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let account = newAccountForProtocol("owa") as OWAAccount;
     account.initFromMainAccount(this);
+    account.color = this.colorForSharedAccount(person);
     account.name = person.name;
     account.username = person.emailAddress;
     account.emailAddress = person.emailAddress;
@@ -735,6 +738,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
     addressbook.initFromMainAccount(this);
+    addressbook.color = this.colorForSharedAccount(person);
     addressbook.name = `${person.name} ${folder.DisplayName}`;
     addressbook.username = person.emailAddress;
     addressbook.folderID = folderID;
@@ -761,6 +765,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
     calendar.initFromMainAccount(this);
+    calendar.color = this.colorForSharedAccount(person);
     calendar.name = `${person.name} ${folder.DisplayName}`;
     calendar.username = person.emailAddress;
     calendar.folderID = folderID;

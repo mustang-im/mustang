@@ -154,6 +154,14 @@ test("Setup adds it also on a server that implements the older `Principal` draft
   expect(delegatedAccounts().length).toBe(1);
 });
 
+test("The delegated account has a color of its own", async () => {
+  session = kStalwartSession;
+
+  let account = await loginToNewAccount();
+
+  expect(delegatedAccounts()[0].color).not.toBe(account.color);
+});
+
 test("The delegated account is added only once", async () => {
   session = kStalwartSession;
 
