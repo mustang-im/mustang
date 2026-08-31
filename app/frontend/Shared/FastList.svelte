@@ -85,8 +85,9 @@
    * @see also selectedItem
    *
    * out only
+   * `let`, not `const`: Svelte 5 nulls a bound readonly export on destroy.
    */
-  export const selectedItems = new ArrayColl<T>();
+  export let selectedItems = new ArrayColl<T>();
 
   /**
    * The list item that the user selected,
