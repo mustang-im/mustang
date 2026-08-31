@@ -12,7 +12,9 @@
   >
   <hbox class="top-row">
     <hbox class="direction">
-      {#if $message.outgoing}
+      {#if $message.isSending}
+        <SendingIcon size={16} class="sending" />
+      {:else if $message.outgoing}
         <OutgoingIcon size={16} class="outgoing" />
       {:else if $message.isReplied}
         <ReplyIcon size={16} class="reply" />
@@ -121,6 +123,7 @@
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
+  import SendingIcon from "lucide-svelte/icons/send";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ForwardIcon from "lucide-svelte/icons/forward";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
@@ -276,16 +279,27 @@
       color: darkred;
     }
     .direction :global(svg.reply),
-    .direction :global(svg.forward) {
+    .direction :global(svg.forward),
+    .direction :global(svg.sending) {
       color: grey;
     }
   }
   .direction :global(svg.reply),
-  .direction :global(svg.forward) {
+  .direction :global(svg.forward),
+  .direction :global(svg.sending) {
     stroke-width: 1px;
+  }
+  .direction :global(svg.sending) {
+    animation: sending 1.5s ease-in-out infinite;
+  }
+  @keyframes sending {
+    0% { opacity: 20%; transform: translateX(-3px); }
+    50% { opacity: 100%; transform: translateX(0px); }
+    100% { opacity: 20%; transform: translateX(3px); }
   }
   :global(.row.selected) .direction :global(svg.reply),
   :global(.row.selected) .direction :global(svg.forward),
+  :global(.row.selected) .direction :global(svg.sending),
   :global(.row.selected) .direction :global(svg.important) {
     color: var(--selected-fg);
   }

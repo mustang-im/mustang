@@ -62,6 +62,10 @@ export class EMail extends Message {
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
   isDraft = false;
+  /** We are currently sending this message to the server.
+   * It's in the Sent folder, animated, until the server took it. */
+  @notifyChangedProperty
+  isSending = false;
   @notifyChangedProperty
   isDeleted = false;
   /** Complete MIME source of the email */
