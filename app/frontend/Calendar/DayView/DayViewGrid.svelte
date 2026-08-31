@@ -164,6 +164,7 @@
     border-top: 1px dotted var(--border);
     border-left: 1px dotted var(--border);
     border-bottom: 1px dotted var(--border);
+    min-width: 0px; /* Long titles must not widen the column */
   }
   .date-day {
     padding: 8px 16px;
