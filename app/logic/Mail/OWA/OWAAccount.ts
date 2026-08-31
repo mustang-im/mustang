@@ -4,6 +4,7 @@ import { Provider } from "../../Auth/OAuth2URLs";
 import type { EMail } from "../EMail";
 import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
+import { OWASearchEMail } from "./OWASearchEMail";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./Notification/OWANotifications";
 import { OWAExchangeNotifications } from "./Notification/OWAExchangeNotifications";
@@ -71,6 +72,10 @@ export class OWAAccount extends ExchangeMailAccount {
 
   newFolder(): OWAFolder {
     return new OWAFolder(this);
+  }
+
+  newSearchEMail(): OWASearchEMail {
+    return new OWASearchEMail();
   }
 
   /**

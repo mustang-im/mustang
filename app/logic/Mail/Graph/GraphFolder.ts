@@ -169,7 +169,7 @@ export class GraphFolder extends Folder {
     return { newMessages, missingMessagesJSON };
   }
 
-  protected parseMessageList(msgs: TGraphEMail[], checkUpdates = true): { newMessages: ArrayColl<GraphEMail>, updatedMessages: ArrayColl<GraphEMail> } {
+  parseMessageList(msgs: TGraphEMail[], checkUpdates = true): { newMessages: ArrayColl<GraphEMail>, updatedMessages: ArrayColl<GraphEMail> } {
     let newMessages = new ArrayColl<GraphEMail>();
     let updatedMessages = new ArrayColl<GraphEMail>();
     for (let json of msgs) {

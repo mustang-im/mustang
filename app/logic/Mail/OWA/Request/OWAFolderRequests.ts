@@ -44,6 +44,41 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
   });
 }
 
+/** Searches the `folderIDs` with an AQS query, @see `ExchangeSearchEMail` */
+export function owaSearchMsgsRequest(folderIDs: string[], queryString: string, maxFetchCount: number): OWARequest {
+  return new OWARequest("FindItem", {
+    __type: "FindItemRequest:#Exchange",
+    ItemShape: {
+      __type: "ItemResponseShape:#Exchange",
+      BaseShape: "IdOnly",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:ParentFolderId",
+      }],
+    },
+    ParentFolderIds: folderIDs.map(folderID => ({
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    })),
+    Traversal: "Shallow",
+    Paging: {
+      __type: "IndexedPageView:#Exchange",
+      BasePoint: "Beginning",
+      Offset: 0,
+      MaxEntriesReturned: maxFetchCount,
+    },
+    SortOrder: [{
+      __type: "FieldOrder:#Exchange",
+      Order: "Descending",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
+      },
+    }],
+    QueryString: queryString,
+  });
+}
+
 export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest {
   return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
