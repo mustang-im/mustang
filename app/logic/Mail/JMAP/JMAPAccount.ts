@@ -941,10 +941,8 @@ export class JMAPAccount extends MailAccount {
    * @see <https://www.rfc-editor.org/rfc/rfc9670.html#section-1.5.2> */
   protected get principalsAccountID(): string {
     let accountID = this.accountCapabilities["urn:ietf:params:jmap:principals:owner"]?.accountIdForPrincipal;
-    // <compat for="Stalwart" reason="Sends `principals:owner` only inside `Principal.accounts`, not in the session">
-    if (this.isCyrus) {
-      accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
-    }
+    // <compat for="Stalwart, Cyrus" reason="Neither sends `principals:owner` in the session: Stalwart has it only inside `Principal.accounts`, and Cyrus implements the older draft, which has no such capability">
+    accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
     // </compat>
     return sanitize.nonemptystring(accountID);
   }

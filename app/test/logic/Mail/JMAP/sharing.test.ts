@@ -149,3 +149,28 @@ test("Mailbox rights use the vocabulary of the server", () => {
   expect((cyrus as any).mailShareRights(MailShareCombinedPermissions.Modify, []))
     .toEqual({ mayRead: true, mayWrite: true, mayAdmin: true });
 });
+
+test("The principals account is found, even when the server omits `principals:owner`", () => {
+  let stalwart = newAccount("u1");
+  expect((stalwart as any).principalsAccountID).toBe("u1");
+
+  let cyrus = newCyrusAccount();
+  expect((cyrus as any).principalsAccountID).toBe("u1");
+
+  let withOwner = newAccount("u1");
+  withOwner.session = {
+    ...kSession,
+    primaryAccounts: { "urn:ietf:params:jmap:mail": "u1" },
+    accounts: {
+      ...kSession.accounts,
+      u1: {
+        ...kSession.accounts.u1,
+        accountCapabilities: {
+          ...kSession.accounts.u1.accountCapabilities,
+          "urn:ietf:params:jmap:principals:owner": { accountIdForPrincipal: "p1" },
+        },
+      },
+    },
+  } as any as TJMAPSession;
+  expect((withOwner as any).principalsAccountID).toBe("p1");
+});
