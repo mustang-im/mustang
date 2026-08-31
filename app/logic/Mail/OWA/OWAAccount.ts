@@ -204,7 +204,8 @@ export class OWAAccount extends ExchangeMailAccount {
           await addressbook.save();
         }
 
-        if (!this.isDependentAccount) {
+        if (!this.isDependentAccount &&
+            !appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
           appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
         }
 

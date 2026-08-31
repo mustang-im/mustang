@@ -110,7 +110,8 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
 
         // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-        if (!this.isDependentAccount) {
+        if (!this.isDependentAccount &&
+            !appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
           appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
         }
 

@@ -138,7 +138,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
           return;
         }
-        appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+        if (!appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
+          appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+        }
         // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
         await this.subscribeToNotifications();
