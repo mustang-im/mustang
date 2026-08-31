@@ -12,7 +12,7 @@ beforeAll(() => {
   } as any;
 });
 
-/** A weekly series, as the server returns it */
+/** A weekly series with a reminder 10 minutes before the start, as the server returns it */
 function serverEvent(): TJMAPCalendarEvent {
   return {
     "@type": "Event",
@@ -27,6 +27,9 @@ function serverEvent(): TJMAPCalendarEvent {
     showWithoutTime: false,
     calendarIds: { calendarID: true },
     recurrenceRule: { "@type": "RecurrenceRule", frequency: "weekly", interval: 1 },
+    alerts: {
+      "1": { "@type": "Alert", action: "display", trigger: { "@type": "OffsetTrigger", offset: "-PT10M" } },
+    },
   } as any as TJMAPCalendarEvent;
 }
 
@@ -84,4 +87,94 @@ test("A new event sends its UID", async () => {
 
   expect(event.calUID).toBeTruthy();
   expect(sent[0].create[event.id].uid).toBe(event.calUID);
+});
+
+test("The reminder is read from the server", async () => {
+  let { event } = await listEvents([serverEvent()]);
+
+  expect(event.startTime.getTime() - event.alarm.getTime()).toBe(10 * 60 * 1000);
+});
+
+test("An event without an alert has no reminder", async () => {
+  let json = serverEvent();
+  delete json.alerts;
+  let { event } = await listEvents([json]);
+
+  expect(event.alarm).toBe(null);
+});
+
+test("An absolute alert time is read as the reminder", async () => {
+  let json = serverEvent();
+  json.alerts = {
+    "1": { "@type": "Alert", action: "display", trigger: { "@type": "AbsoluteTrigger", when: "2026-01-05T08:00:00Z" } },
+  };
+  let { event } = await listEvents([json]);
+
+  expect(event.alarm.toISOString()).toBe("2026-01-05T08:00:00.000Z");
+});
+
+test("An alert relative to the end is read as the reminder", async () => {
+  let json = serverEvent();
+  json.alerts = {
+    "1": { "@type": "Alert", action: "display", trigger: { "@type": "OffsetTrigger", offset: "PT5M", relativeTo: "end" } },
+  };
+  let { event } = await listEvents([json]);
+
+  expect(event.alarm.getTime() - event.endTime.getTime()).toBe(5 * 60 * 1000);
+});
+
+test("A changed reminder is sent to the server", async () => {
+  let { event, sent } = await listEvents([serverEvent()]);
+
+  event.alarm = new Date(event.startTime.getTime() - 15 * 60 * 1000);
+  await event.save();
+
+  expect(Object.values(sent[0].update.eventID.alerts)[0]).toMatchObject({
+    "@type": "Alert",
+    trigger: { "@type": "OffsetTrigger", offset: "-PT15M" },
+  });
+  // Otherwise the server ignores our alert and uses the calendar default
+  expect(sent[0].update.eventID.useDefaultAlerts).toBe(false);
+});
+
+test("An unchanged alert is left alone", async () => {
+  // Our offset trigger fires before every occurrence, but the absolute trigger
+  // that it would replace fires only once
+  let json = serverEvent();
+  json.alerts = {
+    "1": { "@type": "Alert", action: "display", trigger: { "@type": "AbsoluteTrigger", when: "2026-01-05T08:00:00Z" } },
+  };
+  let { event, sent } = await listEvents([json]);
+
+  event.title = "Weekly meeting";
+  await event.save();
+
+  expect(Object.values(sent[0].update.eventID.alerts)[0]).toMatchObject({
+    trigger: { "@type": "AbsoluteTrigger", when: "2026-01-05T08:00:00Z" },
+  });
+  expect(sent[0].update.eventID).not.toHaveProperty("useDefaultAlerts");
+});
+
+test("A changed reminder replaces an absolute alert", async () => {
+  let json = serverEvent();
+  json.alerts = {
+    "1": { "@type": "Alert", action: "display", trigger: { "@type": "AbsoluteTrigger", when: "2026-01-05T08:00:00Z" } },
+  };
+  let { event, sent } = await listEvents([json]);
+
+  event.alarm = new Date(event.startTime.getTime() - 15 * 60 * 1000);
+  await event.save();
+
+  expect(Object.values(sent[0].update.eventID.alerts)[0]).toMatchObject({
+    trigger: { "@type": "OffsetTrigger", offset: "-PT15M" },
+  });
+});
+
+test("A removed reminder is sent to the server", async () => {
+  let { event, sent } = await listEvents([serverEvent()]);
+
+  event.alarm = null;
+  await event.save();
+
+  expect(sent[0].update.eventID.alerts).toEqual({});
 });

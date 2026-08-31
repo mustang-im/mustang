@@ -1,8 +1,9 @@
 import { Event, RecurrenceCase } from "../Event";
-import type { TJMAPCalendarEvent, TJSCalendarRecurrenceRule, TJSCalendarRecurrenceFrequency } from "./TJSCalendar";
+import type { TJMAPCalendarEvent, TJSCalendarAlert, TJSCalendarRecurrenceRule, TJSCalendarRecurrenceFrequency } from "./TJSCalendar";
 import { Frequency, RecurrenceRule, type RecurrenceInit } from "../RecurrenceRule";
 import { InvitationResponse } from "../Invitation/InvitationStatus";
 import { Participant } from "../Participant";
+import { k1DayS, k1HourS, k1MinuteS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -28,9 +29,13 @@ export class JSCalendarEvent {
 
     // Time
     event.startTime = this.toDate(jmap.start, jmap);
-    event.endTime = getEndTimeFromDuration(event.startTime, sanitize.nonemptystring(jmap.duration, "PT0S"));
+    event.endTime = new Date(event.startTime.getTime() +
+      toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S")) * 1000);
     event.timezone = jmap.timeZone ?? null;
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
+
+    // Reminder. We support only one alarm per event, so take the first.
+    event.alarm = this.toAlarm(Object.values(jmap.alerts ?? {})[0], event);
 
     // Recurrence
     if (jmap.recurrenceRule) {
@@ -121,17 +126,23 @@ export class JSCalendarEvent {
 
     // Time
     jmap.start = this.fromDate(event.startTime, event);
-    if (Number.isInteger(event.durationDays)) {
-      jmap.duration = "P" + event.durationDays + "D";
-    } else if (Number.isInteger(event.durationHours)) {
-      jmap.duration = "PT" + event.durationHours + "H";
-    } else if (Number.isInteger(event.durationMinutes)) {
-      jmap.duration = "PT" + event.durationMinutes + "M";
-    } else {
-      jmap.duration = "PT" + event.duration + "S";
-    }
+    jmap.duration = fromSeconds(event.duration);
     jmap.timeZone = event.timezone;
     jmap.showWithoutTime = event.allDay;
+
+    // Reminder. Keep an unchanged alert as it is: ours is an offset from the start
+    // and fires before every occurrence, an absolute trigger only once.
+    let alert = Object.values(jmap.alerts ?? {})[0];
+    if (this.toAlarm(alert, event)?.getTime() != event.alarm?.getTime()) {
+      jmap.useDefaultAlerts = false; // or the server ignores our alerts
+      if (!event.alarm) {
+        delete jmap.alerts[Object.keys(jmap.alerts)[0]];
+      } else if (alert) {
+        alert.trigger = this.fromAlarm(event);
+      } else {
+        (jmap.alerts ??= {})["0"] = { "@type": "Alert", action: "display", trigger: this.fromAlarm(event) };
+      }
+    }
 
     // Recurrence
     if (event.recurrenceCase == RecurrenceCase.Master) {
@@ -271,6 +282,26 @@ export class JSCalendarEvent {
     jmap.color = event.color;
   }
 
+  /** When the alert fires. null, if there is none, or we don't know the trigger. */
+  static toAlarm(alert: TJSCalendarAlert | undefined, event: Event): Date | null {
+    if (alert?.trigger?.["@type"] == "AbsoluteTrigger") {
+      return sanitize.date(alert.trigger.when, null);
+    }
+    if (alert?.trigger?.["@type"] == "OffsetTrigger") {
+      let relativeTo = alert.trigger.relativeTo == "end" ? event.endTime : event.startTime;
+      return new Date(relativeTo.getTime() + toSeconds(alert.trigger.offset) * 1000);
+    }
+    return null;
+  }
+
+  /** Always an offset from the start, because that's all that our UI can set */
+  static fromAlarm(event: Event): TJSCalendarAlert["trigger"] {
+    return {
+      "@type": "OffsetTrigger",
+      offset: fromSeconds(Math.round((event.alarm.getTime() - event.startTime.getTime()) / 1000)),
+    };
+  }
+
   static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
     if (!date) {
       return null;
@@ -309,15 +340,30 @@ export class JSCalendarEvent {
   }
 }
 
-function getEndTimeFromDuration(start: Date, duration: string): Date {
-  const match = duration.match(/^P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?)?$/);
+/** @param duration ISO 8601, e.g. "PT1H". Alarm offsets may be negative, e.g. "-PT15M". */
+function toSeconds(duration: string): number {
+  let match = duration.match(/^(-?)P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?)?$/);
   assert(match, "JSCalendar duration is invalid. Bad value: " + duration);
-  const [, weeks, days, hours, minutes, seconds] = match;
-  const totalMs = (Number(weeks || 0) * 7 + Number(days || 0)) * 86400000
-    + Number(hours || 0) * 3600000
-    + Number(minutes || 0) * 60000
-    + Number(seconds || 0) * 1000;
-  return new Date(start.getTime() + totalMs);
+  let [, sign, weeks, days, hours, minutes, seconds] = match;
+  let total = (Number(weeks || 0) * 7 + Number(days || 0)) * k1DayS
+    + Number(hours || 0) * k1HourS
+    + Number(minutes || 0) * k1MinuteS
+    + Number(seconds || 0);
+  return sign ? -total : total;
+}
+
+/** @param seconds may be negative, for alarm offsets */
+function fromSeconds(seconds: number): string {
+  let sign = seconds < 0 ? "-" : "";
+  let abs = Math.abs(seconds);
+  if (abs % k1DayS == 0) {
+    return sign + "P" + abs / k1DayS + "D";
+  } else if (abs % k1HourS == 0) {
+    return sign + "PT" + abs / k1HourS + "H";
+  } else if (abs % k1MinuteS == 0) {
+    return sign + "PT" + abs / k1MinuteS + "M";
+  }
+  return sign + "PT" + abs + "S";
 }
 
 const kLocationNameDescriptionSeparator = "\n---\n";
