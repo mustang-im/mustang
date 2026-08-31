@@ -2,6 +2,7 @@ import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { IMAPFolder } from "./IMAPFolder";
+import { IMAPSearchEMail } from "./IMAPSearchEMail";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -542,6 +543,10 @@ export class IMAPAccount extends MailAccount {
 
   newFolder(): IMAPFolder {
     return new IMAPFolder(this);
+  }
+
+  newSearchEMail(): IMAPSearchEMail {
+    return new IMAPSearchEMail();
   }
 }
 
