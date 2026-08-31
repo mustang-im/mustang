@@ -20,13 +20,14 @@ export class JSContact {
     person.lastName = sanitize.nonemptystring(jscontact.name?.components?.find(c => c.kind == "surname")?.value, "");
 
     JSContact.toContactEntries(person.emailAddresses, jscontact.emails, e => new ContactEntry(
-      sanitize.emailAddress(e.address),
+      // Contacts imported from vCard often have a `mailto:` URL here, not a bare address
+      sanitize.emailAddress(e.address?.replace(/^mailto:/i, ""), null),
       null, "mailto"));
     JSContact.toContactEntries(person.phoneNumbers, jscontact.phones, e => new ContactEntry(
-      sanitize.nonemptystring(e.number),
+      sanitize.nonemptystring(e.number, null),
       null, JSContact.fromPhoneFeatureToProtocol(e.features)));
     JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
-      sanitize.nonemptystring(e.uri ?? e.user),
+      sanitize.nonemptystring(e.uri ?? e.user, null),
       null, e.service));
     JSContact.toContactEntries(person.urls, jscontact.links, e => {
       let url = sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
@@ -163,6 +164,9 @@ export class JSContact {
     for (let jmapID in jscontactEntries) {
       let jscontactEntry = jscontactEntries[jmapID];
       let newCE = getValues(jscontactEntry);
+      if (!newCE.value) { // malformed value on the server, e.g. not an email address
+        continue;
+      }
       newCE.purpose = JSContact.fromContextToPurpose(jscontactEntry.contexts);
       newCE.preference = sanitize.integerRange(jscontactEntry.pref, 0, 100, 100);
       let existing = personEntries.find(p => getJMAPID(p) == jmapID);
