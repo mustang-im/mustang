@@ -77,8 +77,14 @@
   $: search.bodyText = $globalSearchTerm;
   $: isOpen && $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
   const startSearchDebounced = debounce(() => startSearch(), 300);
+  let lastCriteria: string;
   async function startSearch() {
     try {
+      let criteria = JSON.stringify(search.toJSON());
+      if (criteria == lastCriteria) {
+        return; // backstop to break loops
+      }
+      lastCriteria = criteria;
       $selectedMessage = null;
       if (search.bodyText == null) { // <==> $globalSearchTerm == null
         searchMessages = null;
