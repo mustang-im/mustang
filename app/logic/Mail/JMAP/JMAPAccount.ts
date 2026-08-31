@@ -942,7 +942,7 @@ export class JMAPAccount extends MailAccount {
   protected get principalsAccountID(): string {
     let accountID = this.accountCapabilities["urn:ietf:params:jmap:principals:owner"]?.accountIdForPrincipal;
     // <compat for="Stalwart" reason="Sends `principals:owner` only inside `Principal.accounts`, not in the session">
-    if (this.isCyrus) {
+    if (!this.isCyrus) {
       accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
     }
     // </compat>
