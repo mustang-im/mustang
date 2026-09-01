@@ -187,11 +187,6 @@
   const resizeObserver = new ResizeObserver(updateSizeThrottled);
 
   onMount(() => {
-    selectedItems.registerObserver(singleSelectionObserver);
-    if (selectedItem) {
-      selectedItems.add(selectedItem);
-    }
-
     resizeObserver.observe(listE);
     return onDestroy;
   });
@@ -320,8 +315,13 @@
 
   /** If the selected items were removed from the list,
    * adapt the selectedItems and implicitly selectedItem. */
-  $: ensureSelection && $items && replaceSelectedItem();
+  $: $items && replaceSelectedItem();
   function replaceSelectedItem() {
+    // Before the first `selectedItems` change, else the caller misses it. Repeats are no-ops.
+    selectedItems.registerObserver(singleSelectionObserver);
+    if (!ensureSelection) {
+      return;
+    }
     let wantedItem = selectedItem; // `removeAll()` below clears it
     if (selectedItems.isEmpty) {
       if (items.includes(wantedItem)) { // The caller selected it before the items arrived
