@@ -56,7 +56,7 @@
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
-  export let defaultFocusHour = 8;
+  export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
 
   let startHour = 0;
@@ -67,9 +67,9 @@
   let visibleHeight = 0;
   $: pxPerHour =  visibleHeight / showHours;
   $: scrollHeight = pxPerHour * (endHour - startHour);
-  $: focusHour = start.toDateString() == new Date().toDateString()
+  $: focusHour = defaultFocusHour ?? (start.toDateString() == new Date().toDateString()
     ? new Date().getHours()
-    : defaultFocusHour;
+    : 8);
   $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
 
   let startTimes: Date[] = [];

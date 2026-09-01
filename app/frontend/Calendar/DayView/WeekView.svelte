@@ -34,7 +34,7 @@
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
-  export let defaultFocusHour = 8;
+  export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
 
   let newEventMenu: NewEventMenu;
