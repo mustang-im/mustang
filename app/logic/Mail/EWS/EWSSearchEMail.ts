@@ -97,7 +97,7 @@ function toEWS(condition: ExchangeCondition): any {
     case "Contains":
       return {
         t$Contains: {
-          ContainmentMode: "Substring",
+          ContainmentMode: condition.containmentMode,
           ContainmentComparison: "IgnoreCase",
           ...property,
           t$Constant: { Value: condition.value },

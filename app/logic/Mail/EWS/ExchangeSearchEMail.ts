@@ -33,7 +33,11 @@ export class ExchangeSearchEMail extends SearchEMail {
       ]));
     }
     for (let tag of this.tags) {
-      conditions.push(new ExchangeCondition("Contains", "item:Categories", tag.name));
+      let tagged = new ExchangeCondition("Contains", "item:Categories", tag.name);
+      // A tag is one entry of the list, not a part of one, otherwise "Work"
+      // would also find the emails tagged "Workshop"
+      tagged.containmentMode = "FullString";
+      conditions.push(tagged);
     }
     if (this.messageID) {
       conditions.push(new ExchangeCondition("IsEqualTo", "message:InternetMessageId", this.messageID));
@@ -83,4 +87,7 @@ export class ExchangeCondition {
 
   /** MAPI property tag, for the properties that have no `fieldURI` */
   propertyTag: string | null = null;
+  /** Only for `Contains`: `Substring` finds the value anywhere in the property,
+   * `FullString` only when the whole property equals it. */
+  containmentMode: "Substring" | "FullString" = "Substring";
 }

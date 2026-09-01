@@ -106,7 +106,7 @@ function toOWA(condition: ExchangeCondition): any {
           __type: "Constant:#Exchange",
           Value: condition.value,
         },
-        ContainmentMode: "Substring",
+        ContainmentMode: condition.containmentMode,
         ContainmentComparison: "IgnoreCase",
       };
     default:
