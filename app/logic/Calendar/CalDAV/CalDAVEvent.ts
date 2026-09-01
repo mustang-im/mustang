@@ -120,6 +120,7 @@ export class CalDAVEvent extends Event {
       await assertHTTPResponseOK(response, gt`Saving the event failed`);
       this.url = new URL(filename, this.calendar.calendarURL).href;
       this.originalICal = iCal;
+      await this.saveLocally(); // Save server IDs, otherwise we get dups
     }
     await this.sendInvitationsDirectly();
   }

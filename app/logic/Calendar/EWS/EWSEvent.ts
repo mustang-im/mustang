@@ -239,7 +239,8 @@ export class EWSEvent extends ExchangeEvent {
      * invitation, and add the attendees only after the attachments.
      * Otherwise, the attendees would get 2 invitations,
      * and the first one without the attachments. */
-    let inviteAfterAttachments = !this.itemID && !this.parentEvent &&
+    let isNew = !this.itemID;
+    let inviteAfterAttachments = isNew && !this.parentEvent &&
       this.participants.hasItems && this.attachments.hasItems;
 
     /* Disabling tasks for now.
@@ -254,6 +255,9 @@ export class EWSEvent extends ExchangeEvent {
     await this.saveAttachmentsToServer();
     if (inviteAfterAttachments) {
       await this.saveCalendarItemToServer();
+    }
+    if (isNew) {
+      await this.saveLocally(); // Save server IDs, otherwise we get dups
     }
   }
 
