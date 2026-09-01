@@ -45,7 +45,6 @@
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { mergeColls } from "svelte-collections";
-  import { onMount } from "svelte";
 
   $: accounts = appGlobal.chatAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
   $: rooms = $selectedAccount ? $selectedAccount.rooms : mergeColls(accounts.map(a => a.rooms));
@@ -59,9 +58,22 @@
     await $selectedRoom?.listMessages();
   }
 
-  onMount(() => {
-    $selectedRoom = $selectedPerson && rooms.find(room => roomMatchesPerson(room, $selectedPerson));
-  });
+  /** The person that the other apps show, e.g. the sender of the mail that the user just read.
+   * Read before `linkSelectedPerson()` overwrites it with the person of the last open chat. */
+  let personFromOtherApp = $selectedPerson;
+
+  $: $rooms, selectRoom()
+  /** Show the chat with the person that the other apps show. Otherwise, keep the open chat. */
+  function selectRoom() {
+    let personRoom = personFromOtherApp &&
+      rooms.find(room => roomMatchesPerson(room, personFromOtherApp));
+    if (personRoom) {
+      personFromOtherApp = null; // Only when opening the app, not on every new chat
+      $selectedRoom = personRoom;
+    } else if (!rooms.contains($selectedRoom)) {
+      $selectedRoom = rooms.last;
+    }
+  }
   function roomMatchesPerson(room: ChatRoom, person: Person): boolean {
     return room.contact instanceof ChatPersonUID && room.contact.matchesPerson(person);
   }
@@ -74,13 +86,6 @@
       : contact instanceof Person ? contact : null;
     if (person) {
       $selectedPerson = person;
-    }
-  }
-
-  $: $rooms, clearSelectedChat()
-  function clearSelectedChat() {
-    if (!rooms.contains($selectedRoom)) {
-      $selectedRoom = rooms.last;
     }
   }
 </script>
