@@ -2,7 +2,9 @@
 <hbox class="direction" style="--account-color: {$message.folder.account.color}" class:read={$message.isRead}
   on:contextmenu={contextMenu.onContextMenu}
   >
-  {#if $message.outgoing}
+  {#if $message.isSending}
+    <SendingIcon size={16} class="sending" />
+  {:else if $message.outgoing}
     <OutgoingIcon size={16} class="outgoing" />
   {:else if $message.isReplied}
     <ReplyIcon size={16} class="reply" />
@@ -120,6 +122,7 @@
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
+  import SendingIcon from "lucide-svelte/icons/send";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ForwardIcon from "lucide-svelte/icons/forward";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
@@ -254,8 +257,20 @@
     stroke-width: 1px;
   }
   .direction :global(svg.reply),
-  .direction :global(svg.forward) {
+  .direction :global(svg.forward),
+  .direction :global(svg.sending) {
     stroke-width: 1px;
+  }
+  .direction :global(svg.sending) {
+    animation: sending 1.5s linear infinite;
+  }
+  /* Flies away to the top right. The middle points sit above the straight
+   * line, so that it climbs steeply first and then flattens out. */
+  @keyframes sending {
+    0% { opacity: 0%; transform: translate(-4px, 3px); animation-timing-function: ease-out; }
+    20% { opacity: 100%; transform: translate(-2px, -1px); }
+    80% { opacity: 100%; transform: translate(2px, -2px); animation-timing-function: ease-in; }
+    100% { opacity: 0%; transform: translate(4px, -3px); }
   }
   .direction :global(svg.important) {
     color: crimson;
@@ -265,12 +280,14 @@
       color: darkred;
     }
     .direction :global(svg.reply),
-    .direction :global(svg.forward) {
+    .direction :global(svg.forward),
+    .direction :global(svg.sending) {
       color: grey;
     }
   }
   :global(.row.selected) .direction :global(svg.reply),
   :global(.row.selected) .direction :global(svg.forward),
+  :global(.row.selected) .direction :global(svg.sending),
   :global(.row.selected) .direction :global(svg.important) {
     color: var(--selected-fg);
   }

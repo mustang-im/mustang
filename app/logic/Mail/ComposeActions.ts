@@ -302,12 +302,16 @@ export class ComposeActions {
    * - Insert inline images
    * - Add footer signature
    * - Encrypt
+   * - Send
    * - Delete drafts
    *
    * Called by composer.
-   * The actual send on the protocol level is done by `EMail.send()`
+   * The actual send on the protocol level is done by `MailAccount.send()`
+   *
+   * @param onSending Called once the mail is on its way, i.e. after all errors
+   *   that the user must fix were thrown. The composer uses it to close itself.
    */
-  async send(): Promise<void> {
+  async send(onSending?: () => void): Promise<void> {
     let fromIdentity = this.email.identity;
     assert(fromIdentity, "Need identity set on mail");
     if (fromIdentity.replyTo) {
@@ -341,9 +345,24 @@ export class ComposeActions {
       this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
     }
     this.email.isDraft = false;
+    this.email.sent = new Date();
+    this.email.received = this.email.sent;
+    this.email.outgoing = true;
+    this.email.contact = this.email.to.first;
 
     let mail = await SendEncrypted.encryptAsNeeded(this.email);
-    await account.send(mail);
+
+    let sentFolder = this.email.folder;
+    this.email.isSending = true;
+    sentFolder?.messages.add(this.email);
+    onSending?.();
+    try {
+      await account.send(mail);
+    } finally {
+      this.email.isSending = false;
+      // The real sent mail comes with the next folder sync.
+      sentFolder?.messages.remove(this.email);
+    }
 
     this.email.folder = previousFolder;
     this.deleteDrafts(previousDrafts)

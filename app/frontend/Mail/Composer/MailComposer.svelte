@@ -361,8 +361,14 @@
     null;
 
   async function onSend() {
-    await mail.compose.send();
-    onClose();
+    try {
+      await mail.compose.send(onClose);
+    } catch (ex) {
+      if (closing) { // Already closed. Re-open, to not lose the mail.
+        mailMustangApp.writeMail(mail);
+      }
+      throw ex;
+    }
   }
 
   let closing = false;
