@@ -82,8 +82,15 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     cert = certificates.find(chain =>
       sameName(chain.tbsCertificate.subject, cert.tbsCertificate.issuer));
   };
-  // Update the signer's trustLevel if possible.
-  await signer.keyStatus();
+  // Update the signer's trustLevel if possible. The signature is already
+  // proven here, so a failure to reach the CA certificates - they are not
+  // available on all platforms - must not discard it. The trustLevel then
+  // stays `Sender`, which is what an unknown CA gives us anyway.
+  try {
+    await signer.keyStatus();
+  } catch (ex) {
+    console.error(ex);
+  }
   return signer;
 }
 
