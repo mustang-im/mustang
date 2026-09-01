@@ -14,7 +14,7 @@ export class JMAPSearchEMail extends SearchEMail {
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let results = new ArrayColl<EMail>();
     if (this.isOutgoing !== null || this.threadID || this.hasAttachmentMIMETypes.hasItems) {
-      return results; // JMAP has no filter condition for these
+      this.unsupportedFilters = true; // JMAP has no filter condition for these
     }
     if (this.includesPerson && this.includesPerson.emailAddresses.isEmpty) {
       return results; // Without an email address, the person has no emails

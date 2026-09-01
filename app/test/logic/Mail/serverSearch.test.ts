@@ -5,6 +5,7 @@ import { SpecialFolder, type Folder } from "../../../logic/Mail/Folder";
 import type { EMail } from "../../../logic/Mail/EMail";
 import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { CombinedSearchEMail } from "../../../logic/Mail/Store/CombinedSearchEMail";
+import { QuickSearchEMail } from "../../../logic/Mail/Store/QuickSearchEMail";
 import { IMAPSearchEMail } from "../../../logic/Mail/IMAP/IMAPSearchEMail";
 import { JMAPSearchEMail } from "../../../logic/Mail/JMAP/JMAPSearchEMail";
 import { ExchangeSearchEMail } from "../../../logic/Mail/EWS/ExchangeSearchEMail";
@@ -60,6 +61,52 @@ test("The combined search merges the local database and the server results", asy
 
   expect(results.contents.map(email => email.subject)).toEqual([
     "Budget draft", "Budget meeting", "Budget report"]);
+});
+
+test("The server results are filtered again, because the server ignores what it cannot express", async () => {
+  let account = await setupAccount();
+  let inbox = account.inbox;
+  await SQLEMail.save(newTestEMail(inbox, "old", "Budget report", "2026-01-01"));
+  account.serverResults.add(newTestEMail(inbox, "new", "Budget draft", "2026-03-01"));
+  let alreadyRead = newTestEMail(inbox, "read", "Budget meeting", "2026-04-01");
+  alreadyRead.isRead = true;
+  account.serverResults.add(alreadyRead);
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  search.isRead = false;
+  let results = await search.startSearch();
+  await search.finished;
+
+  expect(results.contents.map(email => email.subject)).toEqual([
+    "Budget draft", "Budget report"]);
+});
+
+test("A server result matches, even if we do not have the body that the server searched", async () => {
+  let account = await setupAccount();
+  // The subject does not contain the search term
+  account.serverResults.add(newTestEMail(account.inbox, "new", "Lunch", "2026-03-01"));
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  let results = await search.startSearch();
+  await search.finished;
+
+  expect(results.contents.map(email => email.subject)).toEqual(["Lunch"]);
+});
+
+test("The quick search ignores the case of the search term", async () => {
+  let account = await setupAccount();
+  account.inbox.messages.add(newTestEMail(account.inbox, "one", "Budget report", "2026-01-01"));
+  account.inbox.messages.add(newTestEMail(account.inbox, "two", "Lunch", "2026-02-01"));
+
+  let search = new QuickSearchEMail();
+  search.folder = account.inbox;
+  search.bodyText = "Budget";
+
+  let results = await search.startSearch();
+
+  expect(results.contents.map(email => email.subject)).toEqual(["Budget report"]);
 });
 
 test("The limit applies to the combined results", async () => {
@@ -182,12 +229,15 @@ test("EWS: The criteria become a restriction", async () => {
   });
 });
 
-test("Exchange: Criteria that a restriction cannot express find nothing", () => {
+test("Exchange: Criteria that a restriction cannot express are flagged", () => {
   let search = new ExchangeSearchEMail();
   search.bodyText = "budget";
   search.isReplied = true; // Exchange has no property for it
 
-  expect((search as any).conditions()).toBeNull();
+  let conditions = (search as any).conditions();
+
+  expect(search.unsupportedFilters).toBe(true);
+  expect(conditions.length).toBe(1);
 });
 
 let inbox: Folder;

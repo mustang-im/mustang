@@ -1,4 +1,5 @@
 import { SearchEMail } from "./SearchEMail";
+import { QuickSearchEMail } from "./QuickSearchEMail";
 // #if [!WEBMAIL]
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 // #endif
@@ -53,9 +54,15 @@ export class CombinedSearchEMail extends SearchEMail {
     const kMaxServerResults = 200;
     let serverLimit = limit ?? kMaxServerResults;
 
+    /** Drops the results that the server could not filter out */
+    let resultFilter = new QuickSearchEMail();
+    resultFilter.copyFrom(this);
+
     this.finished = Promise.all(searches.contents.map(async search => {
       try {
-        addUnique(await search.startSearch(search == dbSearch ? limit : serverLimit), allResults, foundMap, limit);
+        let isDBSearch = search == dbSearch;
+        let found = await search.startSearch(isDBSearch ? limit : serverLimit);
+        addUnique(isDBSearch ? found : resultFilter.filter(found, true), allResults, foundMap, limit);
       } catch (ex) {
         backgroundError(ex); // The other searches should still return their results
       }

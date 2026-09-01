@@ -15,7 +15,7 @@ export class IMAPSearchEMail extends SearchEMail {
     let results = new ArrayColl<EMail>();
     if (this.isOutgoing !== null || this.threadID ||
         this.hasAttachment !== null || this.hasAttachmentMIMETypes.hasItems) {
-      return results; // IMAP has no search key for these
+      this.unsupportedFilters = true; // IMAP has no search key for these
     }
     if (this.includesPerson && this.includesPerson.emailAddresses.isEmpty) {
       return results; // Without an email address, the person has no emails

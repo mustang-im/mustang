@@ -46,14 +46,14 @@ export class GraphSearchEMail extends SearchEMail {
   }
 
   /** Translates our search criteria into a `$search` query.
-   * @returns null, if the query syntax has no property for one of the criteria */
+   * @returns null, if none of the criteria fits the query syntax */
   protected searchQuery(): string | null {
     // Graph knows neither the read, flagged and answered state nor the categories
     if (this.isOutgoing !== null || this.isRead !== null ||
         this.isStarred !== null || this.isReplied !== null ||
         this.threadID || this.messageID ||
         this.tags.hasItems || this.hasAttachmentMIMETypes.hasItems) {
-      return null;
+      this.unsupportedFilters = true;
     }
     let terms: string[] = [];
     if (this.bodyText) {

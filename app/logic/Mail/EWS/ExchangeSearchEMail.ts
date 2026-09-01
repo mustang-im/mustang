@@ -19,11 +19,11 @@ export class ExchangeSearchEMail extends SearchEMail {
   declare account: ExchangeMailAccount;
 
   /** Translates our search criteria into Exchange restriction conditions, to be ANDed.
-   * @returns null, if Exchange has no property for one of the criteria */
+   * @returns null, if none of the criteria fits a restriction */
   protected conditions(): ExchangeCondition[] | null {
     if (this.isOutgoing !== null || this.isReplied !== null || this.threadID ||
         this.includesPerson || this.hasAttachmentMIMETypes.hasItems) {
-      return null;
+      this.unsupportedFilters = true; // Exchange has no property for these
     }
     let conditions: ExchangeCondition[] = [];
     if (this.bodyText) {

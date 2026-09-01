@@ -68,6 +68,10 @@ export class SearchEMail extends Observable {
   @notifyChangedProperty
   bodyText: string | null = null;
 
+  /** The protocol cannot search for one of the criteria above, so the server
+   * ignored it, and the results are a superset of what we searched for. */
+  unsupportedFilters = false;
+
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     throw new AbstractFunction();
   }
@@ -232,6 +236,7 @@ function matchesBoolean(search: boolean | undefined, value: boolean) {
 }
 
 export function msgHasSearchTerm(msg: EMail, searchTerm: string) {
+  searchTerm = searchTerm.toLowerCase();
   return msg.subject?.toLowerCase().includes(searchTerm) ||
     msg.contact?.name?.toLowerCase().includes(searchTerm) ||
     msg.from?.name?.toLowerCase().includes(searchTerm) ||
