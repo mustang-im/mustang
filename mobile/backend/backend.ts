@@ -8,6 +8,7 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import crypto from "node:crypto";
+import tls from "node:tls";
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -70,6 +71,7 @@ async function createSharedAppObject() {
     createTSDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
+    getCACertificates,
     newAdmZIP,
     newHTTPServer,
     newHTTPConnection,
@@ -87,6 +89,14 @@ async function createSharedAppObject() {
       join: path.join,
     },
   };
+}
+
+function getCACertificates(type: string) {
+  if (tls.getCACertificates) {
+    return tls.getCACertificates(type);
+  }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
 function createType3MessageFromType2Message(WWWAuthenticate, username, password) {

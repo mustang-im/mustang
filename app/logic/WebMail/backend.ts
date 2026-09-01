@@ -64,6 +64,11 @@ export class WebMailBackend {
   }
   async setTheme() {
   }
+  /** The browser does not let us at its root store, so S/MIME certificates
+   * stay at the trust level that the user gives them. */
+  async getCACertificates(type: string): Promise<string[]> {
+    return [];
+  }
 }
 
 export class HTTPFetchError extends Error {
