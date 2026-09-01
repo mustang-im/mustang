@@ -47,6 +47,7 @@
   import { getToday, getWeekStart } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { tick } from "svelte";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -70,7 +71,11 @@
   $: focusHour = defaultFocusHour ?? (start.toDateString() == new Date().toDateString()
     ? new Date().getHours()
     : 8);
-  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
+  $: focusHour, pxPerHour, scrollToFocusHour();
+  async function scrollToFocusHour() {
+    await tick(); // The new grid height reaches the DOM only after the update
+    scrollE?.scrollTo((focusHour - 0.5) * pxPerHour);
+  }
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
