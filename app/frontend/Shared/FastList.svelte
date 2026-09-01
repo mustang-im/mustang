@@ -322,10 +322,13 @@
    * adapt the selectedItems and implicitly selectedItem. */
   $: ensureSelection && $items && replaceSelectedItem();
   function replaceSelectedItem() {
+    let wantedItem = selectedItem; // `removeAll()` below clears it
     if (selectedItems.isEmpty) {
+      if (items.includes(wantedItem)) { // The caller selected it before the items arrived
+        selectedItems.add(wantedItem);
+      }
       return;
     }
-    let wantedItem = selectedItem; // `removeAll()` below clears it
     selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
       let newItem = items.includes(wantedItem) ? wantedItem : items.getIndex(lastSelectedIndex) ?? items.first;
