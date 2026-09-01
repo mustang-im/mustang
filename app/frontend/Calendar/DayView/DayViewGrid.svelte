@@ -16,7 +16,7 @@
               <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
             </vbox>
           </slot>
-          <vbox class="all-day-events">
+          <vbox class="all-day-events" style="max-height: {visibleHeight / 3}px">
             {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
               <AllDayEvent {event} {start} />
             {/each}
@@ -176,6 +176,7 @@
   .all-day-events {
     margin: 0px -1px -2px 0px;
     opacity: 85%;
+    overflow-y: auto;
   }
   .weekday {
     margin-block-start: -4px;
