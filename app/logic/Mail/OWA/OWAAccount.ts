@@ -730,7 +730,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let result = await this.callOWA(owaSharedFolderRequest(["contacts"], person.emailAddress));
     let folder = result.Folders[0];
-    let folderID = folder.FolderId.Id;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
     let existing = this.dependentAccounts().find(account =>
       account.protocol == "addressbook-owa" && (account as OWAAddressbook).folderID == folderID) as OWAAddressbook;
     if (existing) {
@@ -757,7 +757,7 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     let result = await this.callOWA(owaSharedFolderRequest(["calendar"], person.emailAddress));
     let folder = result.Folders[0];
-    let folderID = folder.FolderId.Id;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
     let existing = this.dependentAccounts().find(account =>
       account.protocol == "calendar-owa" && (account as OWACalendar).folderID == folderID) as OWACalendar;
     if (existing) {
