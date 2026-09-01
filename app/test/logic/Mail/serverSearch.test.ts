@@ -9,6 +9,7 @@ import { QuickSearchEMail } from "../../../logic/Mail/Store/QuickSearchEMail";
 import { IMAPSearchEMail } from "../../../logic/Mail/IMAP/IMAPSearchEMail";
 import { JMAPSearchEMail } from "../../../logic/Mail/JMAP/JMAPSearchEMail";
 import { ExchangeSearchEMail } from "../../../logic/Mail/EWS/ExchangeSearchEMail";
+import { GraphSearchEMail } from "../../../logic/Mail/Graph/GraphSearchEMail";
 import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
 import { SQLEMail } from "../../../logic/Mail/SQL/SQLEMail";
 import { getDatabase } from "../../../logic/Mail/SQL/SQLDatabase";
@@ -186,6 +187,23 @@ test("JMAP: The criteria become filter conditions", () => {
     { hasKeyword: "Work" },
     { hasAttachment: true },
   ]);
+});
+
+test("Graph: The whole query is quoted once, so the text must not quote again", () => {
+  // `$search="(subject:"x" OR body:"x")"` ends after `(subject:` and is a 400
+  let search = new GraphSearchEMail();
+  search.bodyText = 'say "hello: world"';
+  search.hasAttachment = true;
+
+  expect((search as any).searchQuery()).toBe(
+    "(subject:say hello world OR body:say hello world) AND hasattachment:true");
+});
+
+test("Graph: A search term of only syntax characters is not a search", () => {
+  let search = new GraphSearchEMail();
+  search.bodyText = "((";
+
+  expect((search as any).searchQuery()).toBeNull();
 });
 
 test("EWS: All folders are searched in a single request", async () => {

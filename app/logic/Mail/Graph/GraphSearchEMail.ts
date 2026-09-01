@@ -56,8 +56,9 @@ export class GraphSearchEMail extends SearchEMail {
       this.unsupportedFilters = true;
     }
     let terms: string[] = [];
-    if (this.bodyText) {
-      terms.push(`(subject:${quote(this.bodyText)} OR body:${quote(this.bodyText)})`);
+    let bodyText = this.bodyText ? searchText(this.bodyText) : null;
+    if (bodyText) {
+      terms.push(`(subject:${bodyText} OR body:${bodyText})`);
     }
     if (this.includesPerson) {
       let addresses = this.includesPerson.emailAddresses.contents;
@@ -65,7 +66,7 @@ export class GraphSearchEMail extends SearchEMail {
         return null; // Without an email address, the person has no emails
       }
       terms.push("(" + addresses
-        .map(address => `participants:${quote(address.value)}`)
+        .map(address => `participants:${searchText(address.value)}`)
         .join(" OR ") + ")");
     }
     if (this.hasAttachment !== null) {
@@ -89,11 +90,12 @@ export class GraphSearchEMail extends SearchEMail {
   }
 }
 
-/** The query syntax has no escape character, so the value becomes a phrase
- * without quotes in it. Unquoted, a `word:` in the user's text would silently
- * turn into a property restriction. */
-function quote(value: string): string {
-  return `"${value.replace(/["\\]/g, " ")}"`;
+/** `$search` puts the whole query in double quotes, and the syntax has no escape
+ * character, so quotes and parens in the user's text would end the query early
+ * and the server rejects it. A `word:` would silently turn into a property
+ * restriction. Drop them all, rather than search for something else than asked. */
+function searchText(value: string): string {
+  return value.replace(/["\\:()\s]+/g, " ").trim();
 }
 
 /** Dates are compared without the time of day */
