@@ -1,4 +1,5 @@
 import { ExchangeSearchEMail } from "../EWS/ExchangeSearchEMail";
+import { newestFirst } from "../EWS/EWSSearchEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import type { OWAFolder } from "./OWAFolder";
 import { owaSearchMsgsRequest } from "./Request/OWAFolderRequests";
@@ -28,6 +29,7 @@ export class OWASearchEMail extends ExchangeSearchEMail {
       }
       items = items.concat(response.RootFolder?.Items ?? []);
     }
+    items = newestFirst(items, limit);
 
     for (let folder of folders) {
       let newItemIDs: string[] = [];

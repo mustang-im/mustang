@@ -55,6 +55,9 @@ export function owaSearchMsgsRequest(folderIDs: string[], conditions: ExchangeCo
       AdditionalProperties: [{
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:ParentFolderId",
+      }, {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "item:DateTimeSent",
       }],
     },
     ParentFolderIds: folderIDs.map(folderID => ({
