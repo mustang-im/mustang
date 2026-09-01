@@ -7,7 +7,7 @@
     {#if $displayEvents?.hasItems}
       {#each $displayEvents.each as event (event.id)}
         <EventContainer {event} {start} {end} {conflicts}>
-          <EventContent {event} {start} {end} forceShowText={conflicts.length > 1} />
+          <EventContent {event} {start} {end} forceShowText={false && conflicts.length > 1} />
         </EventContainer>
       {/each}
     {/if}
