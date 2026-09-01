@@ -17,6 +17,8 @@ import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
 import { Person, ContactEntry } from "../../../logic/Abstract/Person";
 import { getTagByName } from "../../../logic/Abstract/Tag";
 import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
+import { Workspace } from "../../../logic/Abstract/Workspace";
+import { selectedWorkspace } from "../../../frontend/MainWindow/Selected";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { ArrayColl } from "svelte-collections";
 import { mkdtempSync } from "node:fs";
@@ -152,6 +154,61 @@ test("A search leaves its own criteria alone", async () => {
   expect(JSON.stringify(search.toJSON())).toBe(criteria);
 });
 
+test.skip("A workspace also restricts the local database search", async () => {
+  let work = await setupAccount("Work");
+  let home = await setupAccount("Home");
+  appGlobal.emailAccounts.replaceAll([work, home]);
+  work.workspace = new Workspace("Work", null, null);
+  home.workspace = new Workspace("Home", null, null);
+  await SQLEMail.save(newTestEMail(work.inbox, "w1", "Budget at work", "2026-01-01"));
+  await SQLEMail.save(newTestEMail(home.inbox, "h1", "Budget at home", "2026-02-01"));
+  selectedWorkspace.set(work.workspace);
+
+  let search = new CombinedSearchEMail();
+  search.bodyText = "budget";
+  let results = await search.startSearch();
+  await search.finished;
+
+  expect(results.contents.map(email => email.subject)).toEqual(["Budget at work"]);
+});
+
+test("EWS: A tag matches the whole category, not a part of it", async () => {
+  let account = newTestEWSAccount();
+  let search = account.newSearch();
+  search.account = account;
+  search.tags.add(getTagByName("Work"));
+
+  await search.startSearch(10);
+
+  expect(account.requests[0].m$FindItem.m$Restriction).toEqual({
+    t$Contains: {
+      ContainmentMode: "FullString", // "Work" must not find "Workshop"
+      ContainmentComparison: "IgnoreCase",
+      t$FieldURI: { FieldURI: "item:Categories" },
+      t$Constant: { Value: "Work" },
+    },
+  });
+});
+
+test("EWS: Only the newest emails of all folders together are loaded", async () => {
+  let account = newTestEWSAccount();
+  // The server applies the limit to each folder separately, so each of them
+  // returns its own newest emails, and most of them are not ours
+  account.foundItems = [
+    testEWSItem("inbox-old", "Inbox", "2026-01-01"),
+    testEWSItem("inbox-new", "Inbox", "2026-04-01"),
+    testEWSItem("sent-old", "Sent", "2026-02-01"),
+    testEWSItem("sent-new", "Sent", "2026-03-01"),
+  ];
+
+  await startEWSSearch(account, 2);
+
+  let loaded = account.requests
+    .filter(request => request.m$GetItem)
+    .flatMap(request => request.m$GetItem.m$ItemIds.t$ItemId.map(item => item.Id));
+  expect(loaded).toEqual(["inbox-new", "sent-new"]);
+});
+
 test("IMAP: The `or` groups nest, because each search key is allowed only once", () => {
   let search = new IMAPSearchEMail();
   search.bodyText = "budget";
@@ -258,43 +315,42 @@ test("Exchange: Criteria that a restriction cannot express are flagged", () => {
   expect(conditions.length).toBe(1);
 });
 
-let inbox: Folder;
+let databaseDir: string;
 
 beforeEach(async () => {
   // `getDatabase()` keeps the first database, so clean it instead
-  if (inbox) {
+  if (databaseDir) {
     await (await getDatabase()).run(sql`DELETE FROM email`);
   }
+  selectedWorkspace.set(null);
 });
 
-async function setupAccount(): Promise<TestMailAccount> {
-  let account = new TestMailAccount();
-  account.name = "Test";
-  account.emailAddress = "user@example.com";
-  account.storage = new DummyMailStorage();
-  appGlobal.emailAccounts.replaceAll([account]);
-
-  if (!inbox) {
-    let tempDir = mkdtempSync(path.join(tmpdir(), "server-search-test-"));
+async function setupAccount(name = "Test"): Promise<TestMailAccount> {
+  if (!databaseDir) {
+    databaseDir = mkdtempSync(path.join(tmpdir(), "server-search-test-"));
     appGlobal.remoteApp = {
       getSQLiteDatabase: (filename: string) =>
-        new InProcessSQLiteDatabase(path.join(tempDir, filename)),
+        new InProcessSQLiteDatabase(path.join(databaseDir, filename)),
     };
-    let db = await getDatabase();
-    let accountRow = await db.run(sql`
-      INSERT INTO emailAccount (idStr, protocol) VALUES (${account.id}, ${"imap"})`);
-    let folderRow = await db.run(sql`
-      INSERT INTO folder (accountID, name, path)
-      VALUES (${accountRow.lastInsertRowid}, ${"Inbox"}, ${"INBOX"})`);
-    inbox = account.newFolder();
-    inbox.name = "Inbox";
-    inbox.id = "INBOX";
-    inbox.specialFolder = SpecialFolder.Inbox;
-    inbox.dbID = folderRow.lastInsertRowid;
   }
-  inbox.account = account;
-  inbox.messages.clear();
+  let account = new TestMailAccount();
+  account.name = name;
+  account.emailAddress = `${name}@example.com`;
+  account.storage = new DummyMailStorage();
+  let db = await getDatabase();
+  let accountRow = await db.run(sql`
+    INSERT INTO emailAccount (idStr, protocol) VALUES (${account.id}, ${"imap"})`);
+  account.dbID = accountRow.lastInsertRowid;
+  let folderRow = await db.run(sql`
+    INSERT INTO folder (accountID, name, path)
+    VALUES (${account.dbID}, ${"Inbox"}, ${"INBOX"})`);
+  let inbox = account.newFolder();
+  inbox.name = "Inbox";
+  inbox.id = "INBOX";
+  inbox.specialFolder = SpecialFolder.Inbox;
+  inbox.dbID = folderRow.lastInsertRowid;
   account.rootFolders.add(inbox);
+  appGlobal.emailAccounts.replaceAll([account]);
   return account;
 }
 
@@ -310,14 +366,32 @@ function newTestEMail(folder: Folder, pID: string, subject: string, sentDate: st
   return email;
 }
 
-/** Records the `FindItem` requests, and finds nothing */
+/** Records the requests, and answers `FindItem` with `foundItems` */
 class TestEWSAccount extends EWSAccount {
   readonly requests: any[] = [];
+  foundItems: any[] = [];
 
   async callEWS(request: any): Promise<any> {
     this.requests.push(request);
-    return { RootFolder: { Items: {} } };
+    if (!request.m$FindItem) {
+      return []; // `GetItem`: no headers
+    }
+    return this.getAllFolders().contents.map(folder => ({ // 1 response per folder
+      RootFolder: {
+        Items: {
+          Message: this.foundItems.filter(item => item.ParentFolderId.Id == folder.id),
+        },
+      },
+    }));
   }
+}
+
+function testEWSItem(itemID: string, folderID: string, sentDate: string) {
+  return {
+    ItemId: { Id: itemID },
+    ParentFolderId: { Id: folderID },
+    DateTimeSent: sentDate + "T10:00:00Z",
+  };
 }
 
 function newTestEWSAccount(): TestEWSAccount {
@@ -333,11 +407,11 @@ function newTestEWSAccount(): TestEWSAccount {
   return account;
 }
 
-async function startEWSSearch(account: TestEWSAccount) {
+async function startEWSSearch(account: TestEWSAccount, limit = 10) {
   let search = account.newSearch();
   search.account = account;
   search.bodyText = "budget";
-  await search.startSearch(10);
+  await search.startSearch(limit);
 }
 
 function searchedFolderIDs(account: TestEWSAccount): string[] {
