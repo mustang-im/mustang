@@ -51,7 +51,7 @@ function shownFolderNames(target: HTMLElement): string[] {
   return [...target.querySelectorAll(".folder-list .row")].map(rowE => rowE.textContent.trim());
 }
 
-test("Switching the account lists only the folders of the new account", () => {
+test("Switching the account lists and selects the folders of the new account", () => {
   let accountA = newTestAccount("A", ["Inbox", "Sent", "Parent"]);
   let subFolder = newSubFolder(accountA.rootFolders.find(folder => folder.name == "Parent"), "Subfolder");
   // More folders than account A, so that the old list position picks the wrong one
@@ -65,10 +65,12 @@ test("Switching the account lists only the folders of the new account", () => {
   mount(MailApp, { target });
   flushSync();
   expect(shownFolderNames(target)[0]).toEqual("Inbox");
+  expect(get(selectedFolder)).toBe(subFolder);
 
   selectedAccount.set(accountB);
   flushSync();
-  // The subfolder of account A was listed above the inbox of account B
+  // The subfolder of account A was listed above the inbox of account B, and stayed selected
   expect(shownFolderNames(target)).not.toContain("Subfolder");
   expect(shownFolderNames(target)[0]).toEqual("Inbox");
+  expect(get(selectedFolder)).toBe(accountB.inbox);
 });
