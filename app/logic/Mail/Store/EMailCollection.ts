@@ -73,6 +73,11 @@ export class EMailCollection<T extends EMail> extends SortedCollection<T> {
       }
     });
   }
+
+  // TODO: Move to SortedCollection in svelte-collections
+  add(email: T) {
+    this.addAll([email]);
+  }
 }
 
 /**
