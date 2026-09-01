@@ -48,8 +48,12 @@
     }
     path.reverse(); // top->down
     for (let cur of path) {
+      let pos = showItems.getKeyForValue(cur);
+      if (pos == undefined) { // from another tree, e.g. another account
+        return;
+      }
       cur.expanded = true;
-      showItems.splice(showItems.getKeyForValue(cur) + 1, 0, ...cur.children.contents);
+      showItems.splice(pos + 1, 0, ...cur.children.contents);
     }
   }
 
