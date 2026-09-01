@@ -132,15 +132,14 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (account.dependentAccounts().find(other =>
-            other.protocol == account.protocol && other instanceof MailAccount &&
-            other.isMyEMailAddress(person.emailAddress))) {
-        errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
+      let shared = await account.findSharedFolders(person, kSharedFolders);
+      if (!shared.length) {
+        errorMessage = gt`You have no access to the account of ${person.name ?? ""} ${person.emailAddress}`;
         return;
       }
-      sharedFolders = await account.findSharedFolders(person, kSharedFolders);
+      sharedFolders = notYetAdded(person, shared);
       if (!sharedFolders.length) {
-        errorMessage = gt`You have no access to the account of ${person.name ?? ""} ${person.emailAddress}`;
+        errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
       }
       sharedPerson = person;
@@ -149,8 +148,21 @@
     }
   }
 
+  /** The colleague may share their calendar only after we added their mailbox,
+   * or the other way round, so add whatever is not set up here yet.
+   * `addSharedAddressbook()` and `addSharedCalendar()` re-use the account that
+   * we already have, but `addSharedFolders()` would create a second mail account. */
+  function notYetAdded(person: PersonUID, sharedFolders: string[]): string[] {
+    let haveMailAccount = account.dependentAccounts().find(other =>
+      other.protocol == account.protocol && other instanceof MailAccount &&
+      other.isMyEMailAddress(person.emailAddress));
+    return haveMailAccount
+      ? sharedFolders.filter(folder => folder != "msgfolderroot" && folder != "inbox")
+      : sharedFolders;
+  }
+
   async function onAddAvailableAccount(person: PersonUID) {
-    sharedFolders = await account.findSharedFolders(person, kSharedFolders);
+    sharedFolders = notYetAdded(person, await account.findSharedFolders(person, kSharedFolders));
     await onAddPerson(person);
   }
 
