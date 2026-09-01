@@ -325,9 +325,10 @@
     if (selectedItems.isEmpty) {
       return;
     }
+    let wantedItem = selectedItem; // `removeAll()` below clears it
     selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
-      let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
+      let newItem = items.includes(wantedItem) ? wantedItem : items.getIndex(lastSelectedIndex) ?? items.first;
       if (!newItem) {
         return;
       }
