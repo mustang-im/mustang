@@ -162,6 +162,7 @@ export class File extends FileOrDirectory {
     this.clearURL();
     if (this.filepathLocal) {
       await appGlobal.remoteApp.deleteFile(this.filepathLocal);
+      this.filepathLocal = null; // the "on disk" marker, @see saveAsLocalFile()
     }
   }
 
