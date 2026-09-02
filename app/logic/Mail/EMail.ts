@@ -466,7 +466,6 @@ export class EMail extends Message {
     if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
-    await this.processMessage();
     await this.saveMetadataLocally();
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
@@ -474,7 +473,11 @@ export class EMail extends Message {
     }
     await contentSaves.wait();
     this.downloadComplete = true;
-    await this.saveWritablePropsLocally(); // save downloadComplete = true
+    await this.processMessage();
+    if (this.isDeleted) { // rule deleted or moved
+      return;
+    }
+    await this.saveWritablePropsLocally(); // downloadComplete = true, and what the filter rules changed
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -586,14 +589,17 @@ export class EMail extends Message {
   /**
    * Runs filters, spam filter, and content interpreters on the message.
    *
-   * Should be called after the entire message has been downloaded,
-   * and before it is stored.
+   * Should be called after the entire message has been downloaded
+   * and stored, because the filter actions tag, move and delete it in the database.
    */
   async processMessage() {
     let rules = this.folder?.account?.filterRuleActions.contents;
     rules = rules?.filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
     for (let rule of rules) {
       await rule.run(this);
+      if (this.isDeleted) { // rule deleted or moved
+        return;
+      }
     }
   }
 
