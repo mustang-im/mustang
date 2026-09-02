@@ -1,15 +1,141 @@
-import { MailAccount } from "../MailAccount";
+import { MailAccount, DeleteStrategy } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { POP3Connection } from "./POP3Connection";
 import { POP3Folder } from "./POP3Folder";
 import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
-import { assert, NotImplemented } from "../../util/util";
+import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { notifyChangedProperty } from "../../util/Observable";
+import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 export class POP3Account extends MailAccount {
   readonly protocol: string = "pop3";
+  deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  /** Otherwise, they are deleted from the server right after the download */
+  @notifyChangedProperty
+  leaveOnServer = true;
+  /** Only with `leaveOnServer`. 0 = never */
+  @notifyChangedProperty
+  deleteAfterDays = 0;
+  /** How often to check for new mail. In minutes. 0 or null = polling disabled */
+  @notifyChangedProperty
+  pollIntervalMinutes = 10;
+  protected hasLoggedIn = false;
+  /** Opened by `login()`, for the first mail check */
+  protected loginConnection: POP3Connection | null = null;
+  /** High level logging about the commands we issue */
+  logCommands = false;
+
+  constructor() {
+    super();
+    assert(appGlobal.remoteApp.newTCPSocket, "POP3: Need backend");
+  }
+
+  get isLoggedIn(): boolean {
+    return this.hasLoggedIn;
+  }
 
   async login(interactive: boolean): Promise<void> {
     await super.login(interactive);
-    throw new NotImplemented("POP3 is coming soon. For now, use IMAP instead.");
+    if (!this.dbID) {
+      await this.storage.saveAccount(this);
+    }
+    await this.storage.readFolderHierarchy(this);
+    if (this.authMethod == AuthMethod.OAuth2 && !this.oAuth2?.isLoggedIn) {
+      assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
+      await this.oAuth2.login(interactive);
+    }
+    this.loginConnection = await this.connect();
+    await this.startup();
+  }
+
+  /** Once per login: The app calls this after `login()`, which called it already */
+  async startup() {
+    if (this.hasLoggedIn) {
+      return;
+    }
+    await super.startup();
+    this.hasLoggedIn = true;
+    this.notifyObservers();
+    (this.inbox as POP3Folder).startPolling();
+  }
+
+  async verifyLogin(): Promise<void> {
+    if (this.authMethod == AuthMethod.OAuth2 && !this.oAuth2?.isLoggedIn) {
+      assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
+      await this.oAuth2.login(true);
+    }
+    let connection = await this.connect();
+    await connection.quit();
+  }
+
+  /** Every mail check is its own short session: The server shows only the mails that existed at login */
+  async connect(): Promise<POP3Connection> {
+    let connection = this.loginConnection;
+    this.loginConnection = null;
+    if (connection && !connection.closed) {
+      return connection;
+    }
+    this.fatalError = null;
+    connection = new POP3Connection(this);
+    try {
+      await connection.login();
+    } catch (ex) {
+      throw this.fatalError = ex;
+    }
+    return connection;
+  }
+
+  /** Mails downloaded before this time are deleted from the server. null = keep them all */
+  deleteFromServerBefore(): Date | null {
+    if (!this.leaveOnServer) {
+      return new Date();
+    }
+    if (!this.deleteAfterDays) {
+      return null;
+    }
+    let before = new Date();
+    before.setDate(before.getDate() - this.deleteAfterDays);
+    return before;
+  }
+
+  async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+    if (this.rootFolders.hasItems) {
+      return;
+    }
+    for (let [specialFolder, name] of [
+      [SpecialFolder.Inbox, gt`Inbox`],
+      [SpecialFolder.Sent, gt`Sent`],
+      [SpecialFolder.Drafts, gt`Drafts`],
+      [SpecialFolder.Trash, gt`Trash`],
+    ] as [SpecialFolder, string][]) {
+      let folder = this.newFolder();
+      folder.name = name;
+      folder.path = name;
+      folder.specialFolder = specialFolder;
+      this.rootFolders.add(folder);
+      await folder.save();
+    }
+  }
+
+  async createToplevelFolder(name: string): Promise<POP3Folder> {
+    let folder = await super.createToplevelFolder(name) as POP3Folder;
+    folder.path = name;
+    await folder.save();
+    return folder;
+  }
+
+  async logout(): Promise<void> {
+    for (let folder of this.getAllFolders()) {
+      (folder as POP3Folder).stopPolling();
+    }
+    this.hasLoggedIn = false;
+    await this.loginConnection?.quit();
+    this.loginConnection = null;
+    await this.oAuth2?.logout();
   }
 
   async send(email: EMail): Promise<void> {
@@ -23,7 +149,22 @@ export class POP3Account extends MailAccount {
 
   protected async saveSent(email: EMail): Promise<void> {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
+    email.isRead = true;
     await sentFolder.addMessage(email);
+  }
+
+  fromConfigJSON(config: any) {
+    super.fromConfigJSON(config);
+    this.leaveOnServer = sanitize.boolean(config.leaveOnServer, this.leaveOnServer);
+    this.deleteAfterDays = sanitize.integer(config.deleteAfterDays, this.deleteAfterDays);
+    this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.leaveOnServer = this.leaveOnServer;
+    json.deleteAfterDays = this.deleteAfterDays;
+    json.pollIntervalMinutes = this.pollIntervalMinutes;
+    return json;
   }
 
   newFolder(): POP3Folder {
