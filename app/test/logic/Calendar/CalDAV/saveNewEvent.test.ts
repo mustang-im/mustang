@@ -50,3 +50,20 @@ test("The URL that a new event got on the server is saved to the DB", async () =
   await SQLEvent.read(event.dbID, readEvent);
   expect(readEvent.url).toBe(event.url);
 });
+
+test("The URL is the server ID of the event, so it cannot be saved twice", async () => {
+  let event = calendar.newEvent() as CalDAVEvent;
+  event.title = "Standup";
+  event.startTime = new Date("2026-07-14T10:00:00Z");
+  event.endTime = new Date("2026-07-14T11:00:00Z");
+  event.url = kCalendarURL + "standup.ics";
+  await event.saveLocally();
+  expect(event.pID).toBe(event.url);
+
+  let copy = calendar.newEvent() as CalDAVEvent;
+  copy.title = "Standup";
+  copy.startTime = event.startTime;
+  copy.endTime = event.endTime;
+  copy.url = event.url;
+  await expect(copy.saveLocally()).rejects.toThrow();
+});

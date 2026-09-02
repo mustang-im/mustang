@@ -1,6 +1,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import { appGlobal } from "../../../../logic/app";
 import { Calendar } from "../../../../logic/Calendar/Calendar";
+import { CalDAVCalendar } from "../../../../logic/Calendar/CalDAV/CalDAVCalendar";
 import type { Event } from "../../../../logic/Calendar/Event";
 import { Frequency, RecurrenceRule } from "../../../../logic/Calendar/RecurrenceRule";
 import { SQLCalendar } from "../../../../logic/Calendar/SQL/SQLCalendar";
@@ -90,13 +91,41 @@ test("The migration removes the events that older versions saved twice", async (
   // An event that exists only locally, so there is nothing to remove
   let localOnly = newTestEvent("Lunch", null);
   await localOnly.saveLocally();
+  // CalDAV kept the URL in the JSON, where neither the copies nor the index see it
+  let davCalendar = new CalDAVCalendar();
+  davCalendar.name = "DAV";
+  davCalendar.storage = new SQLCalendarStorage();
+  await SQLCalendar.save(davCalendar);
+  const kURL = "https://dav.example.com/calendars/test/standup.ics";
+  let dav = await insertOldCalDAVRow(davCalendar, kURL);
+  await insertOldCalDAVRow(davCalendar, kURL);
 
   database.pragma("foreign_keys = false"); // as `migrate()` runs the migrations
   await removeDuplicateEvents(database);
   database.pragma("foreign_keys = true");
 
-  let rows = await database.all(sql`SELECT id FROM event WHERE id >= ${series.dbID} ORDER BY id`) as any[];
+  let rows = await database.all(sql`
+    SELECT id FROM event WHERE calendarID = ${calendar.dbID} AND id >= ${series.dbID} ORDER BY id
+    `) as any[];
   expect(rows.map(row => row.id)).toEqual([series.dbID, exception.dbID, fromServer.dbID, localOnly.dbID]);
+  let davRows = await database.all(sql`
+    SELECT id, pID, json FROM event WHERE calendarID = ${davCalendar.dbID}
+    `) as any[];
+  expect(davRows.map(row => row.id)).toEqual([dav]);
+  expect(davRows[0].pID).toBe(kURL);
+  expect(JSON.parse(davRows[0].json)).toEqual({ original: "BEGIN:VCALENDAR" });
   // The index is in place afterwards, so the copies cannot come back
   await expect(newTestEvent("Standup", "series").saveLocally()).rejects.toThrow();
 });
+
+/** A CalDAV event as the versions before the index saved it: the URL in the JSON, no server ID.
+ * @returns the row ID */
+async function insertOldCalDAVRow(calendar: Calendar, url: string): Promise<number> {
+  let insert = await (await getDatabase()).run(sql`
+    INSERT INTO event (calendarID, calUID, title, startTime, endTime, json)
+    VALUES (${calendar.dbID}, ${"standup-uid"}, ${"Standup"},
+      ${"2026-07-14T10:00:00.000Z"}, ${"2026-07-14T11:00:00.000Z"},
+      ${JSON.stringify({ url, original: "BEGIN:VCALENDAR" })})
+    `);
+  return insert.lastInsertRowid as number;
+}

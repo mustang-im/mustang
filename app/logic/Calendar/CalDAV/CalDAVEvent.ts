@@ -14,14 +14,13 @@ export class CalDAVEvent extends Event {
   declare calendar: CalDAVCalendar;
   declare parentEvent: CalDAVEvent;
   declare readonly exceptions: ArrayColl<CalDAVEvent>;
-  /** URL of this specific Event on the server. null, if not yet saved on server. */
-  url: URLString | null = null;
   originalICal: string;
 
-  get itemID(): string | null {
+  /** URL of this event on the server, which is its ID there. null until saved. */
+  get url(): URLString | null {
     return this.pID;
   }
-  set itemID(val: string | null) {
+  set url(val: URLString | null) {
     this.pID = val;
   }
   get etag(): string | null {
@@ -130,12 +129,10 @@ export class CalDAVEvent extends Event {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
-    this.url = sanitize.url(json.url, null);
     this.originalICal = sanitize.string(json.original, null);
   }
   toExtraJSON(): any {
     let json = super.toExtraJSON();
-    json.url = this.url;
     json.original = this.originalICal;
     return json;
   }

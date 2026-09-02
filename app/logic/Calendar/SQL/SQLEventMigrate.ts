@@ -28,6 +28,13 @@ export async function removeDuplicateEvents(database: Database): Promise<void> {
   if (existing) {
     return;
   }
+  // CalDAV kept the URL of the event, which is its server ID, in the JSON,
+  // so first move it where the copies below and the index can see it
+  await database.run(sql`
+    UPDATE event SET pID = json_extract(json, '$.url'), json = json_remove(json, '$.url')
+    WHERE pID IS NULL AND json_extract(json, '$.url') IS NOT NULL AND
+      calendarID IN (SELECT id FROM calendar WHERE protocol = 'caldav')
+    `);
   // 2 syncs at the same time each wrote a full set of rows. Keep the oldest copy,
   // which is the one that the sync has been updating since. Masters first, so that
   // the exceptions of the kept master survive, whichever sync wrote them first.
