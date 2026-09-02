@@ -100,6 +100,8 @@ class WireTap {
   removeCapability: string | null = null;
   /** Answer `CAPA` with `-ERR`, like qmail-pop3d */
   refuseCAPA = false;
+  /** Close the connection on `QUIT`, without the `+OK` */
+  dropOnQUIT = false;
   port: number;
   protected server: net.Server;
 
@@ -114,6 +116,10 @@ class WireTap {
         let text = data.toString("latin1");
         this.wire.push({ from: "client", text });
         capaOutstanding ||= this.refuseCAPA && /(^|\r\n)CAPA\r\n/.test(text);
+        if (this.dropOnQUIT && /(^|\r\n)QUIT\r\n/.test(text)) {
+          client.destroy();
+          return;
+        }
         server.write(data);
       });
       server.on("data", data => {
@@ -547,6 +553,17 @@ for (let server of servers) {
         msg.mime = null;
         await msg.download();
         expect(decode(msg.mime)).toEqual(decode(mime));
+      }, kTimeout);
+
+      test("A server that closes the connection instead of answering QUIT", async () => {
+        execSync(server.reset);
+        let tap = new WireTap(server.hostname, server.port);
+        tap.dropOnQUIT = true;
+        await tap.start();
+        let acc = newAccountVia(tap, server);
+        await acc.login(false);
+        expect(inboxOf(acc).messages.length).toBe(7);
+        await tap.stop();
       }, kTimeout);
 
       test.runIf(server.stop && server.restart)("A server that goes away mid-session, and the recovery", async () => {
