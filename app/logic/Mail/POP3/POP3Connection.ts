@@ -188,6 +188,9 @@ export class POP3Connection {
     if (/basic authentication is disabled/i.test(ex.message)) {
       return new LoginError(ex, gt`Server ${this.account.hostname} requires OAuth2 login. Please change the authentication method.`);
     }
+    if (/under a layer|plaintext/i.test(ex.message)) {
+      return new LoginError(ex, gt`Server ${this.account.hostname} requires an encrypted connection for the login. Please turn on TLS.` + "\n" + ex.message);
+    }
     return new LoginError(ex, gt`Check your login, username, and password.` + "\n" + ex.message);
   }
 
