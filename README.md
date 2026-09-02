@@ -7,15 +7,15 @@ https://parula.app
 
 # Architecture
 
-It is a full desktop client for Linux, Windows, macOS, Android and iOS,
-running as local app, and written entirely in TypeScript and HTML.
+Parula is a full desktop client for Linux, Windows, macOS, Android and iOS,
+running as local app, with local data, and written entirely in TypeScript and HTML.
 It is currently based on Electron and CapacitorJS as runtime,
 but can use other runtimes like Gecko as well.
 
 Data is stored and processed locally, and not passing through a server
-or cloud service (apart from your IMAP mail server et al, obviously).
+or cloud service (apart from your self-chosen mail server etc, obviously).
 
-It makes an emphasis on clean code architecture and design and APIs,
+We put an emphasis on clean code architecture and design and APIs,
 with a strict separation between logic and UI code, and observers,
 to allow easy modification and adaptions to new needs.
 It will also support extensions, using a high-level API.
@@ -137,8 +137,8 @@ Created by the most experienced Thunderbird developers
   * E-Mail
   * Chat
   * Meetings - Calendar events
-  * Phone calls done in the app (soon)
-  * Files sent or received
+  * Phone calls done in the app (planned)
+  * Files sent or received (planned)
 
 ## Meet
 
@@ -147,6 +147,8 @@ Video conference
 ### Protocols
 * WebRTC-based video conference
 * SIP - Make and receive normal phone calls directly from the app
+  * Phone operators, with SIP
+  * Your own phone switch, with SIP
 * Microsoft Teams (planned)
 
 ### Features
@@ -166,21 +168,52 @@ Video conference
 * Clearly displayed whether your camera and mic are on or off, to avoid that others can accidentally see or hear you
 * Select camera and microphone to use
 
+## Chat
+
+In development
+
+### Protocols
+* XMPP
+  * 1:1 chat
+  * Group chat
+  * Edit messages
+  * Retract messages
+  * Encryption with OMEMO Double Ratchet
+* Matrix
+  * 1:1 chat
+  * Group chat
+  * Edit messages
+  * Retract messages
+  * Encryption with Megolm
+* Teams (planned)
+* WhatsApp
+  * 1:1 chat
+  * Group chat
+  * Encryption with Double Ratchet
+  * Native implementation, works like WhatsApp Android
+  * Connects directly, no intermediate server
+  * Set up as secondary client
+* Signal
+  * 1:1 chat
+  * Group chat
+  * Encryption with Double Ratchet
+  * Native implementation
+  * Connects directly, no intermediate server
+  * Set up as secondary client
+
 ## File sharing
 
-Currently, shows only E-Mail attachments
-
-Planned features are:
+In development
 
 ### Protocols
 
 * E-mail attachments shown, shorted by person
-* WebDAV - NextCloud, ownCloud, openCloud, SharePoint, OneDrive, GMX, web.de
-* Graph - Office365/SharePoint, openCloud
-* Create sharing links, as public URL or only for specific users on the same server
+* WebDAV - NextCloud, ownCloud, openCloud, SharePoint, OneDrive, GMX, web.de (read only)
+* Graph - Office365/SharePoint, openCloud (planned)
+* Create sharing links, as public URL or only for specific users on the same server (planned)
   * NextCloud
   * openCloud
-* Local file system
+* Local file system (alpha)
 
 ### Features
 
