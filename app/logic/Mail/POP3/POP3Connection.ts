@@ -43,6 +43,9 @@ export class POP3Connection {
       }
       await this.authenticate();
       await this.readCapabilities(); // e.g. Gmail shows PIPELINING only now
+      if (this.capabilities.has("UTF8")) {
+        await this.command("UTF8"); // RFC 6856. Courier otherwise replaces a mail with non-ASCII headers with a MIME wrapper
+      }
       this.isLoggedIn = true;
     } catch (ex) {
       await this.close();
