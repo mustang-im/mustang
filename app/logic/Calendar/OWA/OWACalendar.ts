@@ -12,6 +12,7 @@ import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
+import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -23,6 +24,7 @@ export class OWACalendar extends ExchangeCalendar {
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
   protected listEventsRunOnce = new RunOnce();
+  protected readonly listEventsLock = new Lock();
 
   get account(): OWAAccount {
     assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
@@ -84,13 +86,18 @@ export class OWACalendar extends ExchangeCalendar {
   }
 
   async listEventsSlow() {
-    let events = new ArrayColl<OWAEvent>;
-    await this.listFolder(events);
-    for (let event of this.events.subtract(events)) {
-      // This might be a filled occurrence that has since been modified.
-      await event.deleteLocally();
+    let lock = await this.listEventsLock.lock();
+    try {
+      let events = new ArrayColl<OWAEvent>;
+      await this.listFolder(events);
+      for (let event of this.events.subtract(events)) {
+        // This might be a filled occurrence that has since been modified.
+        await event.deleteLocally();
+      }
+      this.events.replaceAll(events);
+    } finally {
+      lock.release();
     }
-    this.events.replaceAll(events);
   }
 
   protected async listFolder(events: ArrayColl<OWAEvent>) {
@@ -118,7 +125,18 @@ export class OWACalendar extends ExchangeCalendar {
     }
   }
 
-  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  /** Fetches one event from the server and updates our local copy,
+   * e.g. after Exchange processed an invitation */
+  async getEventFromServerByID(itemID: string, parentEvent?: OWAEvent) {
+    let lock = await this.listEventsLock.lock();
+    try {
+      await this.getEvents([itemID], new ArrayColl<OWAEvent>(), parentEvent);
+    } finally {
+      lock.release();
+    }
+  }
+
+  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }
@@ -154,10 +172,6 @@ export class OWACalendar extends ExchangeCalendar {
         this.account.errorCallback(ex);
       }
     }
-  }
-
-  async createOrUpdateEventFromServerByID(itemID: string) {
-    await this.getEvents([itemID], new ArrayColl<OWAEvent>());
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

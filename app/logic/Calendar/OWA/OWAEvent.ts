@@ -480,7 +480,7 @@ export class OWAEvent extends ExchangeEvent {
     });
     await this.calendar.callOWA(request);
     try {
-      await this.calendar.getEvents([itemID], new ArrayColl<OWAEvent>(), this.parentEvent);
+      await this.calendar.getEventFromServerByID(itemID, this.parentEvent);
     } catch (ex) {
       if (ex.type == "ErrorItemNotFound") { // expected
         await this.deleteLocally(); // OWA deleted the event from the server
