@@ -88,10 +88,9 @@ test("Find by last name", async () => {
   expect(results.first.emailAddresses.first.value).toBe("ben@example.com");
 });
 
-test("Find by an email address which is not the primary one", async () => {
+test("An email address which is not the primary one is not found", async () => {
   let results = await search("sales");
-  expect(results.length).toBe(1);
-  expect(results.first.name).toBe("Ben Bucksch");
+  expect(results.length).toBe(0);
 });
 
 test("Person matching both name and email address is returned only once", async () => {

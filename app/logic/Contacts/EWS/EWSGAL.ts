@@ -22,6 +22,8 @@ export class EWSGAL extends SearchOnlyAddressbook {
     throw new NotReached();
   }
 
+  /** Searches only the names: an `smtp:` search would find the secondary email
+   * addresses, too, but it costs a second server call for every keystroke. */
   async quickSearchAsync(searchTerm: string, results: ArrayColl<EWSPerson>) {
     await this.resolveNames(searchTerm, results);
   }
