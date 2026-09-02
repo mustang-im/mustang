@@ -11,16 +11,16 @@ test("The same meeting in another calendar or invitation is the same event", () 
   let otherMeeting = new Event();
   otherMeeting.calUID = "meeting-2";
 
-  expect(invitation.isSameAs(invitation)).toBe(true);
-  expect(invitation.isSameAs(inCalendar)).toBe(true);
-  expect(invitation.isSameAs(otherMeeting)).toBe(false);
-  expect(invitation.isSameAs(null)).toBe(false);
+  expect(invitation.isSameUID(invitation)).toBe(true);
+  expect(invitation.isSameUID(inCalendar)).toBe(true);
+  expect(invitation.isSameUID(otherMeeting)).toBe(false);
+  expect(invitation.isSameUID(null)).toBe(false);
 });
 
 test("New events without calUID are not the same event", () => {
   let event = new Event();
   let otherEvent = new Event();
 
-  expect(event.isSameAs(otherEvent)).toBe(false);
-  expect(event.isSameAs(event)).toBe(true);
+  expect(event.isSameUID(otherEvent)).toBe(false);
+  expect(event.isSameUID(event)).toBe(true);
 });
