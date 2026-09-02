@@ -4,6 +4,7 @@ import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
 import { SendEncrypted } from "./Encryption/SendEncrypted";
+import { ExtraData } from "./ExtraData";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -68,8 +69,9 @@ export class ComposeActions {
     let reply = this.newMailFromSameIdentity();
 
     let original = this.email;
-    original.markReplied()
-      .catch(original.folder.account.errorCallback);
+    let sendData = new SendData();
+    sendData.replyTo = original;
+    reply.extraData.set(SendData.extraDataName, sendData);
 
     reply.subject = "Re: " + original.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = original.messageID;
@@ -136,8 +138,9 @@ export class ComposeActions {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
-    this.email.markForwarded()
-      .catch(this.email.folder.account.errorCallback);
+    let sendData = new SendData();
+    sendData.forwarded = this.email;
+    forward.extraData.set(SendData.extraDataName, sendData);
     return forward;
   }
 
@@ -303,6 +306,7 @@ export class ComposeActions {
    * - Add footer signature
    * - Encrypt
    * - Send
+   * - Mark the message that we replied to or forwarded
    * - Delete drafts
    *
    * Called by composer.
@@ -365,6 +369,11 @@ export class ComposeActions {
     }
 
     this.email.folder = previousFolder;
+    let sendData = this.email.extraData.get(SendData.extraDataName) as SendData;
+    sendData?.replyTo?.markReplied()
+      .catch(backgroundError);
+    sendData?.forwarded?.markForwarded()
+      .catch(backgroundError);
     this.deleteDrafts(previousDrafts)
       .catch(backgroundError);
   }
@@ -400,5 +409,17 @@ export class ComposeActions {
     for (let previousDraft of previousDrafts) {
       await previousDraft.deleteMessage();
     }
+  }
+}
+
+/** What `send()` still has to do, once the mail went out.
+ * Live objects, not IDs, so a saved draft loses them. */
+class SendData extends ExtraData {
+  static extraDataName = "send";
+  replyTo: EMail | null = null;
+  forwarded: EMail | null = null;
+
+  toJSON(): null {
+    return null;
   }
 }
