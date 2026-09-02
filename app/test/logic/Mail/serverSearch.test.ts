@@ -206,6 +206,22 @@ test("EWS: Only the newest emails of all folders together are loaded", async () 
   expect(loadedItemIDs(account)).toEqual(["inbox-new", "inbox-mid"]);
 });
 
+test("EWS: An unsent draft has no date, and counts as new", async () => {
+  let account = newTestEWSAccount();
+  let drafts = account.newFolder();
+  drafts.name = drafts.id = "Drafts";
+  account.rootFolders.add(drafts);
+  account.foundItems = [
+    testEWSItem("inbox-old", "Inbox", "2026-01-01"),
+    testEWSItem("inbox-new", "Inbox", "2026-04-01"),
+    { ItemId: { Id: "draft" }, ParentFolderId: { Id: "Drafts" } },
+  ];
+
+  await startEWSSearch(account, 2);
+
+  expect(loadedItemIDs(account)).toEqual(["inbox-new", "draft"]);
+});
+
 test("IMAP: The `or` groups nest, because each search key is allowed only once", () => {
   let search = new IMAPSearchEMail();
   search.bodyText = "budget";

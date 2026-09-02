@@ -73,12 +73,12 @@ export class ExchangeSearchEMail extends SearchEMail {
   }
 
   /** The server sorts and limits each folder separately, so it returns up to
-   * `limit` items *per folder*. Only these are the newest ones of the mailbox,
-   * and only for these we need to load the headers. */
+   * `limit` items *per folder*. We load the headers only of the newest of all of them. */
   protected newestFirst(items: any[], limit?: number): any[] {
+    let now = Date.now(); // An unsent draft has no date, and counts as new, like in `EWSEMail`
     items.sort((a, b) =>
-      (Date.parse(b.DateTimeSent) || 0) - (Date.parse(a.DateTimeSent) || 0));
-    return limit ? items.slice(0, limit) : items;
+      (Date.parse(b.DateTimeSent) || now) - (Date.parse(a.DateTimeSent) || now));
+    return items.slice(0, limit);
   }
 }
 
