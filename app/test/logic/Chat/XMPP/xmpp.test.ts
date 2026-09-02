@@ -1,6 +1,6 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import { appGlobal } from "../../../../logic/app";
-import { setupChatTestEnv, newChatStorage, Database } from "./setup";
+import { setupChatTestEnv, newChatStorage } from "./setup";
 import { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
 import { XMPP1to1Chat } from "../../../../logic/Chat/XMPP/XMPP1to1Chat";
 import { getDatabase } from "../../../../logic/Chat/SQL/SQLDatabase";
@@ -61,8 +61,7 @@ test("Login with wrong password fails cleanly", { timeout: 10000 }, async () => 
   expect(account.isLoggedIn).toBe(false);
 });
 
-// Needs the in-process SQLite, see setup.ts
-test.skipIf(!Database)("Login, roster, message history, send, live message, then sync again without duplicates", { timeout: 30000 }, async () => {
+test("Login, roster, message history, send, live message, then sync again without duplicates", { timeout: 30000 }, async () => {
   let account = newAccount();
   appGlobal.chatAccounts.add(account);
   await account.login(true);
@@ -73,7 +72,10 @@ test.skipIf(!Database)("Login, roster, message history, send, live message, then
   expect(account.roster.length).toBe(2);
   let alicePerson = account.getExistingPerson(kAlice);
   expect(alicePerson?.name).toBe("Alice Test");
-  expect(appGlobal.personalAddressbook.persons.find(p => p.name == "Alice Test")).toBeTruthy();
+  // Roster contacts stay `ChatPersonUID`s. Linking them to a `Person` is up to
+  // the UI, so the chat must not add them to the address book by itself.
+  expect(alicePerson.findPerson()).toBeUndefined();
+  expect(appGlobal.personalAddressbook.persons.isEmpty).toBe(true);
   let aliceChat = account.getExistingChat(kAlice) as XMPP1to1Chat;
   let bobChat = account.getExistingChat(kBob) as XMPP1to1Chat;
   expect(aliceChat).toBeTruthy();
@@ -149,7 +151,7 @@ test.skipIf(!Database)("Login, roster, message history, send, live message, then
 });
 
 // 450 messages = 3 batches of 200 (kBatchSize in XMPP1to1Chat)
-test.skipIf(!Database)("First sync gets the whole archive, in batches", { timeout: 30000 }, async () => {
+test("First sync gets the whole archive, in batches", { timeout: 30000 }, async () => {
   const kCharlie = "charlie@localhost";
   const kTotal = 450;
   for (let i = 1; i <= kTotal; i++) {
@@ -182,11 +184,11 @@ test.skipIf(!Database)("First sync gets the whole archive, in batches", { timeou
   appGlobal.chatAccounts.remove(account);
 });
 
-// The same flow without the local DB, as when the SQLite native module
-// doesn't load (see setup.ts): everything stays in memory.
+// The same flow without the local DB, as in the webmail build: chats and
+// messages stay in memory.
 // Keep this test last: it stubs out reading rooms from the DB.
 test("Login and sync without local DB", { timeout: 30000 }, async () => {
-  SQLChatRoom.readAll = async () => {}; // as in setup.ts without SQLite
+  SQLChatRoom.readAll = async () => {}; // there are no saved rooms to read
   let account = newAccount();
   account.storage = new DummyChatStorage();
   appGlobal.chatAccounts.add(account);
