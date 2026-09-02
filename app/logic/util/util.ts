@@ -32,6 +32,10 @@ export function ensureArray<Type>(val: Type[] | Type): Type[] {
   return val ? Array.isArray(val) ? val : [val] : [];
 }
 
+export function booleanHasValue(value: boolean | null | undefined): value is boolean {
+  return value === true || value === false;
+}
+
 export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }

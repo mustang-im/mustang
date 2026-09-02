@@ -272,6 +272,32 @@ test("EWS: All folders are searched in a single request", async () => {
   expect(searchedFolderIDs(account)).toEqual(["Inbox", "Sent"]);
 });
 
+test("A criterion that is `undefined` instead of `null` is still no criterion", async () => {
+  let account = newTestEWSAccount();
+  let search = account.newSearch();
+  search.account = account;
+  search.bodyText = "budget";
+  // The UI may hand over `undefined` (#1424)
+  search.isOutgoing = undefined;
+  search.isStarred = undefined;
+  search.hasAttachment = undefined;
+
+  await search.startSearch(10);
+
+  expect(Object.keys(account.requests[0].m$FindItem.m$Restriction)).toEqual(["t$Or"]);
+  expect(search.unsupportedFilters).toBe(false);
+
+  let jmap = new JMAPSearchEMail();
+  jmap.isStarred = undefined;
+  jmap.hasAttachment = undefined;
+  expect((jmap as any).filterConditions()).toEqual([]);
+
+  let graph = new GraphSearchEMail();
+  graph.isStarred = undefined;
+  graph.hasAttachment = undefined;
+  expect((graph as any).searchQuery()).toBeNull();
+});
+
 test("EWS: The criteria become a restriction", async () => {
   let account = newTestEWSAccount();
   let search = account.newSearch();

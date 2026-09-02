@@ -1,6 +1,6 @@
 import { SearchEMail, msgHasSearchTerm } from "../Store/SearchEMail";
 import type { EMail } from "../EMail";
-import { assert } from "../../util/util";
+import { assert, booleanHasValue } from "../../util/util";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 /** Searches messages only in `this.folder.messages` */
@@ -20,18 +20,18 @@ export class QuickSearchEMail extends SearchEMail {
   filter(emails: Collection<EMail>, alreadySearchedBody = false): ArrayColl<EMail> {
     let searchTerms = this.bodyText ? this.bodyText.split(" ").filter(Boolean) : [];
     return emails.filterOnce(msg =>
-      (this.isStarred === null || msg.isStarred === this.isStarred) &&
-      (this.isRead === null || msg.isRead === this.isRead) &&
-      (this.hasAttachment === null || msg.hasVisibleAttachments === this.hasAttachment) &&
+      (!booleanHasValue(this.isStarred) || msg.isStarred === this.isStarred) &&
+      (!booleanHasValue(this.isRead) || msg.isRead === this.isRead) &&
+      (!booleanHasValue(this.hasAttachment) || msg.hasVisibleAttachments === this.hasAttachment) &&
       (!searchTerms.length || alreadySearchedBody && !msg.text ||
         searchTerms.every(term => msgHasSearchTerm(msg, term)))
     ) as ArrayColl<EMail>;
   }
 
   hasSearch(): boolean {
-    return this.isStarred !== null ||
-      this.isRead !== null ||
-      this.hasAttachment !== null ||
+    return booleanHasValue(this.isStarred) ||
+      booleanHasValue(this.isRead) ||
+      booleanHasValue(this.hasAttachment) ||
       !!this.bodyText;
   }
 

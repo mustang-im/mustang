@@ -3,6 +3,7 @@ import { type GraphAccount, kMaxFetchCount } from "./GraphAccount";
 import type { GraphFolder } from "./GraphFolder";
 import { type TGraphEMail, TGraphEMailHeaderProperties } from "./TGraphMail";
 import type { EMail } from "../EMail";
+import { booleanHasValue } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 /**
@@ -49,8 +50,8 @@ export class GraphSearchEMail extends SearchEMail {
    * @returns null, if none of the criteria fits the query syntax */
   protected searchQuery(): string | null {
     // Graph knows neither the read, flagged and answered state nor the categories
-    if (this.isOutgoing !== null || this.isRead !== null ||
-        this.isStarred !== null || this.isReplied !== null ||
+    if (booleanHasValue(this.isOutgoing) || booleanHasValue(this.isRead) ||
+        booleanHasValue(this.isStarred) || booleanHasValue(this.isReplied) ||
         this.threadID || this.messageID ||
         this.tags.hasItems || this.hasAttachmentMIMETypes.hasItems) {
       this.unsupportedFilters = true;
@@ -69,7 +70,7 @@ export class GraphSearchEMail extends SearchEMail {
         .map(address => `participants:${searchText(address.value)}`)
         .join(" OR ") + ")");
     }
-    if (this.hasAttachment !== null) {
+    if (booleanHasValue(this.hasAttachment)) {
       terms.push(`hasattachment:${this.hasAttachment}`);
     }
     if (this.sizeMin) {

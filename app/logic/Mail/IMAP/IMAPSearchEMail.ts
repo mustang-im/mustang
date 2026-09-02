@@ -2,6 +2,7 @@ import { SearchEMail } from "../Store/SearchEMail";
 import type { IMAPAccount } from "./IMAPAccount";
 import type { IMAPFolder } from "./IMAPFolder";
 import type { EMail } from "../EMail";
+import { booleanHasValue } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import type { SearchObject } from "../../../../desktop/backend/node_modules/imapflow";
 
@@ -13,8 +14,8 @@ export class IMAPSearchEMail extends SearchEMail {
 
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let results = new ArrayColl<EMail>();
-    if (this.isOutgoing !== null || this.threadID ||
-        this.hasAttachment !== null || this.hasAttachmentMIMETypes.hasItems) {
+    if (booleanHasValue(this.isOutgoing) || this.threadID ||
+        booleanHasValue(this.hasAttachment) || this.hasAttachmentMIMETypes.hasItems) {
       this.unsupportedFilters = true; // IMAP has no search key for these
     }
     if (this.includesPerson && this.includesPerson.emailAddresses.isEmpty) {
@@ -47,13 +48,13 @@ export class IMAPSearchEMail extends SearchEMail {
     if (this.messageID) {
       conditions.push({ header: { "message-id": this.messageID } });
     }
-    if (this.isRead !== null) {
+    if (booleanHasValue(this.isRead)) {
       conditions.push({ seen: this.isRead });
     }
-    if (this.isStarred !== null) {
+    if (booleanHasValue(this.isStarred)) {
       conditions.push({ flagged: this.isStarred });
     }
-    if (this.isReplied !== null) {
+    if (booleanHasValue(this.isReplied)) {
       conditions.push({ answered: this.isReplied });
     }
     for (let tag of this.tags) {

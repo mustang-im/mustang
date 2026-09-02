@@ -1,6 +1,7 @@
 import { SearchEMail } from "../Store/SearchEMail";
 import type { ExchangeMailAccount } from "./ExchangeMailAccount";
 import { FlagStatusPidTag } from "./ExchangeEMail";
+import { booleanHasValue } from "../../util/util";
 
 /**
  * Lets the Exchange server search, using a `Restriction` in `FindItem`.
@@ -21,7 +22,7 @@ export class ExchangeSearchEMail extends SearchEMail {
   /** Translates our search criteria into Exchange restriction conditions, to be ANDed.
    * @returns null, if none of the criteria fits a restriction */
   protected conditions(): ExchangeCondition[] | null {
-    if (this.isOutgoing !== null || this.isReplied !== null || this.threadID ||
+    if (booleanHasValue(this.isOutgoing) || booleanHasValue(this.isReplied) || this.threadID ||
         this.includesPerson || this.hasAttachmentMIMETypes.hasItems) {
       this.unsupportedFilters = true; // Exchange has no property for these
     }
@@ -42,13 +43,13 @@ export class ExchangeSearchEMail extends SearchEMail {
     if (this.messageID) {
       conditions.push(new ExchangeCondition("IsEqualTo", "message:InternetMessageId", this.messageID));
     }
-    if (this.isRead !== null) {
+    if (booleanHasValue(this.isRead)) {
       conditions.push(new ExchangeCondition("IsEqualTo", "message:IsRead", this.isRead));
     }
-    if (this.hasAttachment !== null) {
+    if (booleanHasValue(this.hasAttachment)) {
       conditions.push(new ExchangeCondition("IsEqualTo", "item:HasAttachments", this.hasAttachment));
     }
-    if (this.isStarred !== null) {
+    if (booleanHasValue(this.isStarred)) {
       let flagged = new ExchangeCondition("IsEqualTo", null, 2);
       flagged.propertyTag = FlagStatusPidTag;
       conditions.push(this.isStarred

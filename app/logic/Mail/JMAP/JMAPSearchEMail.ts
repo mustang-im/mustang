@@ -4,6 +4,7 @@ import type { JMAPFolder } from "./JMAPFolder";
 import type { TJMAPEMailHeaders } from "./TJMAPMail";
 import type { TJMAPGetResponse } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
+import { booleanHasValue } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 /** Lets the JMAP server search, using `Email/query`.
@@ -13,7 +14,7 @@ export class JMAPSearchEMail extends SearchEMail {
 
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let results = new ArrayColl<EMail>();
-    if (this.isOutgoing !== null || this.threadID || this.hasAttachmentMIMETypes.hasItems) {
+    if (booleanHasValue(this.isOutgoing) || this.threadID || this.hasAttachmentMIMETypes.hasItems) {
       this.unsupportedFilters = true; // JMAP has no filter condition for these
     }
     if (this.includesPerson && this.includesPerson.emailAddresses.isEmpty) {
@@ -84,19 +85,19 @@ export class JMAPSearchEMail extends SearchEMail {
     if (this.messageID) {
       conditions.push({ header: [ "Message-ID", this.messageID ] });
     }
-    if (this.isRead !== null) {
+    if (booleanHasValue(this.isRead)) {
       conditions.push(this.isRead ? { hasKeyword: "$seen" } : { notKeyword: "$seen" });
     }
-    if (this.isStarred !== null) {
+    if (booleanHasValue(this.isStarred)) {
       conditions.push(this.isStarred ? { hasKeyword: "$flagged" } : { notKeyword: "$flagged" });
     }
-    if (this.isReplied !== null) {
+    if (booleanHasValue(this.isReplied)) {
       conditions.push(this.isReplied ? { hasKeyword: "$answered" } : { notKeyword: "$answered" });
     }
     for (let tag of this.tags) {
       conditions.push({ hasKeyword: tag.name });
     }
-    if (this.hasAttachment !== null) {
+    if (booleanHasValue(this.hasAttachment)) {
       conditions.push({ hasAttachment: this.hasAttachment });
     }
     if (this.sizeMin) {

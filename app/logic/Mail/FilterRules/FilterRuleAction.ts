@@ -5,7 +5,7 @@ import { DeleteStrategy, type MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { notifyChangedProperty, Observable } from "../../util/Observable";
-import { assert } from "../../util/util";
+import { assert, booleanHasValue } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { SetColl } from "svelte-collections";
@@ -153,8 +153,4 @@ export class FilterRuleAction extends Observable {
     clone.fromJSON(this.toJSON());
     return clone;
   }
-}
-
-function booleanHasValue(value: boolean | null | undefined): boolean {
-  return value === true || value === false;
 }
