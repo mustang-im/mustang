@@ -631,7 +631,7 @@ export class EMail extends Message {
     } else if (this.folder.specialFolder == SpecialFolder.Sent) {
       moments = [FilterMoment.Outgoing];
     }
-    let rules = account.filterRuleActions.contents.filter(rule => moments.includes(rule.when));
+    let rules = account.filterRuleActions.filterOnce(rule => moments.includes(rule.when));
     for (let rule of rules) {
       try {
         await rule.run(this);
