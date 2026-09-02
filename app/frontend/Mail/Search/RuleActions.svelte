@@ -72,8 +72,15 @@
 
   let hasAddTag: boolean | null = null;
   let hasFolder: boolean | null = null;
+  let shownRule: FilterRuleAction = null;
   $: $rule, load()
   function load() {
+    if (rule == shownRule) {
+      /** hasAddTag and hasFolder have no property in the rule.
+       * Deriving them again would reset them while the user is still picking. */
+      return;
+    }
+    shownRule = rule;
     hasAddTag = rule.addTags.hasItems ? true : undefined;
     hasFolder = rule.toFolder ? true : undefined;
   }
@@ -84,7 +91,6 @@
       rule.addTags.clear();
     } else {
       removeDelete();
-      hasAddTag = true;
     }
   }
   function updateFolder() {
@@ -101,6 +107,8 @@
       rule.copy = null;
       rule.toFolder = null;
       rule.addTags.clear();
+      hasFolder = undefined;
+      hasAddTag = undefined;
     }
   }
   function updateStar() {

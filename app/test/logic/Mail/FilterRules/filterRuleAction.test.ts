@@ -32,6 +32,20 @@ test("The tags of a rule survive saving and reading the config", async () => {
   expect(readRule.addTags.contents.map(tag => tag.name)).toEqual(["Newsletter"]);
 });
 
+test("The target folder of a rule survives saving and reading the config", async () => {
+  let account = await setupAccount();
+  let rule = new FilterRuleAction(account);
+  rule.name = "Newsletters";
+  rule.toFolder = account.findFolder(folder => folder.name == "Newsletters");
+  account.filterRuleActions.add(rule);
+
+  let readAccount = await setupAccount();
+  readAccount.fromConfigJSON(JSON.parse(JSON.stringify(account.toConfigJSON())));
+
+  let readRule = readAccount.filterRuleActions.first;
+  expect(readRule.toFolder?.name).toBe("Newsletters");
+});
+
 test("A rule marks the mail as read and tags it, in the database", async () => {
   let account = await setupAccount();
   let rule = new FilterRuleAction(account);
