@@ -330,7 +330,7 @@ export class EMail extends Message {
     let mail = await postalMIME.parse(this.mime);
 
     this.id ??= sanitize.string(mail.messageId, this.id ?? "");
-    this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
+    this.subject ||= sanitize.string(mail.subject, "");
     this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
     if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
       this.from = mail.from?.address
