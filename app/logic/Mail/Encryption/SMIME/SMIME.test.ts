@@ -4,6 +4,8 @@ import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { kOurCapabilities } from "./SMIMESend";
 import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "./SMIMERSAES";
 import { verifySignedData } from "./SMIMEVerify";
+import type { SMIMEPublicKey } from "./SMIMEPublicKey";
+import { appGlobal } from "../../../app";
 import { berToDER } from "../../../../../lib/asn1/ber";
 import { base64ToBytes } from "../../../../../lib/asn1/decoders/pem";
 
@@ -20,6 +22,14 @@ globalThis.indexedDB ??= {
     return Math.sign(a.length - b.length);
   },
 } as any;
+
+// `keyStatus()` needs the CA certificates from the backend. Empty is honest:
+// the test certificate is self-signed, so no CA vouches for it anyway.
+appGlobal.remoteApp ??= {
+  async getCACertificates(type: string): Promise<string[]> {
+    return [];
+  },
+};
 
 /**
  * Builds an RSA private key the same way the app does: generate it with
@@ -263,7 +273,7 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
     return RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data).n.toString(16).slice(-16);
   }
 
-  async function readOpaque(base64: string): Promise<{ content: Uint8Array, signer: string | null }> {
+  async function readOpaque(base64: string): Promise<{ content: Uint8Array, signer: SMIMEPublicKey | null }> {
     let signedData = SignedData.decodeFromBase64(base64, { berToDER: true });
     expect(signedData.content.contentInfo.contentType).toBe("data");
     let content = OctetString.decode(signedData.content.contentInfo.content);
@@ -291,18 +301,18 @@ describe("Opaque-signed and streaming BER messages (Outlook style)", () => {
   test("reads and verifies an opaque-signed message (DER)", async () => {
     let { content, signer } = await readOpaque(kOpaqueSignedDER);
     expect(new TextDecoder().decode(content)).toBe(kOpaqueContent);
-    expect(signer).toBe(signerModulusTail());
+    expect(signer?.id).toBe(signerModulusTail());
   });
 
   test("reads and verifies an opaque-signed message (streaming BER)", async () => {
     let { content, signer } = await readOpaque(kOpaqueSignedStreaming);
     expect(new TextDecoder().decode(content)).toBe(kOpaqueContent);
-    expect(signer).toBe(signerModulusTail());
+    expect(signer?.id).toBe(signerModulusTail());
   });
 
   test("verifies a signature without signed attributes", async () => {
     let { signer } = await readOpaque(kOpaqueSignedNoAttrs);
-    expect(signer).toBe(signerModulusTail());
+    expect(signer?.id).toBe(signerModulusTail());
   });
 
   test("rejects a signature over other content", async () => {
