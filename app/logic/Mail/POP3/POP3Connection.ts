@@ -182,7 +182,7 @@ export class POP3Connection {
     if (!(ex instanceof POP3Error)) {
       return ex;
     }
-    if (["IN-USE", "LOGIN-DELAY", "SYS/TEMP"].includes(ex.code) || /lock|wait|busy/i.test(ex.message)) {
+    if (["IN-USE", "LOGIN-DELAY", "SYS/TEMP"].includes(ex.code) || /lock|wait|busy|too many/i.test(ex.message)) {
       return new ConnectError(ex, gt`Server ${this.account.hostname} is busy` + "\n" + ex.message);
     }
     if (/basic authentication is disabled/i.test(ex.message)) {
