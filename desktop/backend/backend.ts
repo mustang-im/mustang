@@ -99,6 +99,7 @@ async function createSharedAppObject() {
     newHTTPConnection,
     newNetSession,
     newTCPSocket,
+    startTLS,
     newWebSocket,
     gunzip,
     getCACertificates,
@@ -274,6 +275,17 @@ function newNetSession(url: string, partition: string, username: string, passwor
  * You can attach `connect`/`error`/`data` listeners and `connect()` */
 function newTCPSocket(): net.Socket {
   return new net.Socket();
+}
+
+/** Wraps a connected `newTCPSocket()` in TLS, for implicit TLS and STARTTLS.
+ * Resolves once the handshake succeeded, so that you can attach listeners.
+ * @param tlsOptions node `tls.ConnectionOptions`, e.g. `rejectUnauthorized: false`
+ *   accepts self-signed and expired certificates, `minVersion: "TLSv1"` old servers. */
+function startTLS(socket: net.Socket, hostname: string, tlsOptions?: tls.ConnectionOptions): Promise<tls.TLSSocket> {
+  return new Promise((resolve, reject) => {
+    let tlsSocket = tls.connect({ socket, servername: hostname, ...tlsOptions }, () => resolve(tlsSocket));
+    tlsSocket.on("error", reject);
+  });
 }
 
 /** A new `ws` WebSocket, for the Signal chat-service socket. The renderer's browser

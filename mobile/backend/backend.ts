@@ -8,6 +8,7 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import crypto from "node:crypto";
+import net from "node:net";
 import tls from "node:tls";
 
 // TODO Remove backend OWA.* entirely and
@@ -75,6 +76,8 @@ async function createSharedAppObject() {
     newAdmZIP,
     newHTTPServer,
     newHTTPConnection,
+    newTCPSocket,
+    startTLS,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -271,6 +274,23 @@ async function newHTTPServer() {
 async function newHTTPConnection(url: string, options?: any) {
   const { HTTPConnection } = await import("../../desktop/backend/HTTPConnection");
   return new HTTPConnection(url, options);
+}
+
+/** A new raw TCP socket, from the node net module.
+ * You can attach `connect`/`error`/`data` listeners and `connect()` */
+function newTCPSocket(): net.Socket {
+  return new net.Socket();
+}
+
+/** Wraps a connected `newTCPSocket()` in TLS, for implicit TLS and STARTTLS.
+ * Resolves once the handshake succeeded, so that you can attach listeners.
+ * @param tlsOptions node `tls.ConnectionOptions`, e.g. `rejectUnauthorized: false`
+ *   accepts self-signed and expired certificates, `minVersion: "TLSv1"` old servers. */
+function startTLS(socket: net.Socket, hostname: string, tlsOptions?: tls.ConnectionOptions): Promise<tls.TLSSocket> {
+  return new Promise((resolve, reject) => {
+    let tlsSocket = tls.connect({ socket, servername: hostname, ...tlsOptions }, () => resolve(tlsSocket));
+    tlsSocket.on("error", reject);
+  });
 }
 
 function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
