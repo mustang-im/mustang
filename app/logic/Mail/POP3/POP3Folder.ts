@@ -1,7 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { POP3EMail } from "./POP3EMail";
 import type { POP3Account } from "./POP3Account";
-import type { POP3Connection } from "./POP3Connection";
+import { POP3Error, type POP3Connection } from "./POP3Connection";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
@@ -135,14 +135,21 @@ export class POP3Folder extends Folder {
     const kBatchSize = 20;
     for (let i = 0; i < newNumbers.length; i += kBatchSize) {
       let batch = newNumbers.slice(i, i + kBatchSize);
-      let mimes = await Promise.all(batch.map(number => conn.retr(number)));
+      let downloads = await Promise.allSettled(batch.map(number => conn.retr(number)));
       let batchMsgs = new ArrayColl<POP3EMail>();
       for (let [j, number] of batch.entries()) {
+        let download = downloads[j];
+        if (download.status == "rejected" && !(download.reason instanceof POP3Error)) {
+          throw download.reason; // the connection broke, and took the rest of the batch with it
+        }
         let email = this.newEMail();
         email.uidl = listing.get(number);
-        email.mime = mimes[j];
         email.isNewArrived = isNewMail;
         try {
+          if (download.status == "rejected") { // e.g. Courier, once another session deleted the mail
+            throw download.reason;
+          }
+          email.mime = download.value;
           await email.parseMIME();
           email.id ||= email.uidl;
           email.received = email.sent;
