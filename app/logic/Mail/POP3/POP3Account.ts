@@ -3,11 +3,11 @@ import { AuthMethod } from "../../Abstract/Account";
 import { POP3Connection } from "./POP3Connection";
 import { POP3Folder } from "./POP3Folder";
 import type { EMail } from "../EMail";
-import { SpecialFolder } from "../Folder";
+import { SpecialFolder, specialFolderNames } from "../Folder";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
-import { assert } from "../../util/util";
+import { assert, capitalizeStart } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class POP3Account extends MailAccount {
@@ -22,6 +22,10 @@ export class POP3Account extends MailAccount {
   /** How often to check for new mail. In minutes. 0 or null = polling disabled */
   @notifyChangedProperty
   pollIntervalMinutes = 10;
+  /** Whether we have successfully logged in *and* are polling.
+   * Does not mean we have a standing TCP connection.
+   * Compare @see POP3Connection.login() */
+  @notifyChangedProperty
   protected hasLoggedIn = false;
   /** Opened by `login()`, for the first mail check */
   protected loginConnection: POP3Connection | null = null;
@@ -33,6 +37,9 @@ export class POP3Account extends MailAccount {
     assert(appGlobal.remoteApp.newTCPSocket, "POP3: Need backend");
   }
 
+  /** Whether we have successfully logged in *and* are polling.
+   * Does not mean we have a standing TCP connection.
+   * Compare @see POP3Connection.login() */
   get isLoggedIn(): boolean {
     return this.hasLoggedIn;
   }
@@ -106,15 +113,15 @@ export class POP3Account extends MailAccount {
     if (this.rootFolders.hasItems) {
       return;
     }
-    for (let [specialFolder, name] of [
-      [SpecialFolder.Inbox, gt`Inbox`],
-      [SpecialFolder.Sent, gt`Sent`],
-      [SpecialFolder.Drafts, gt`Drafts`],
-      [SpecialFolder.Trash, gt`Trash`],
-    ] as [SpecialFolder, string][]) {
+    for (let specialFolder of [
+      SpecialFolder.Inbox,
+      SpecialFolder.Sent,
+      SpecialFolder.Drafts,
+      SpecialFolder.Trash,
+    ]) {
       let folder = this.newFolder();
-      folder.name = name;
-      folder.path = name;
+      folder.name = specialFolderNames[specialFolder]; // localized
+      folder.path = sanitize.filename(capitalizeStart(specialFolder)); // not localized
       folder.specialFolder = specialFolder;
       this.rootFolders.add(folder);
       await folder.save();
@@ -122,6 +129,7 @@ export class POP3Account extends MailAccount {
   }
 
   async createToplevelFolder(name: string): Promise<POP3Folder> {
+    sanitize.filename(name);
     let folder = await super.createToplevelFolder(name) as POP3Folder;
     folder.path = name;
     await folder.save();

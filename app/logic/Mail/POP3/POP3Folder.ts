@@ -228,6 +228,7 @@ export class POP3Folder extends Folder {
   }
 
   async createSubFolder(name: string): Promise<POP3Folder> {
+    sanitize.filename(name);
     let folder = await super.createSubFolder(name) as POP3Folder;
     folder.path = this.path + "/" + name;
     await folder.save();
@@ -235,6 +236,7 @@ export class POP3Folder extends Folder {
   }
 
   async rename(newName: string): Promise<void> {
+    sanitize.filename(newName);
     await super.rename(newName);
     await this.updatePath(this.parent ? this.parent.path + "/" + newName : newName);
   }
