@@ -80,9 +80,9 @@
     if (checked === true && allowFalse) {
       checked = false;
     } else if (checked === true) {
-      checked = undefined;
+      checked = null;
     } else if (checked === false && allowIndetermined) {
-      checked = undefined;
+      checked = null;
     } else if (checked === false) {
       checked = true;
     } else if (checked === undefined || checked === null) {
