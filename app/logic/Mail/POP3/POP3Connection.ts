@@ -221,11 +221,15 @@ export class POP3Connection {
     await this.command(`DELE ${number}`);
   }
 
+  /** The response is advisory: Some servers answer it before they finished
+   * deleting, and others close the connection instead of answering. */
   async quit(): Promise<void> {
     try {
       if (!this.closed) {
         await this.command("QUIT");
       }
+    } catch (ex) {
+      // the mails are downloaded already
     } finally {
       await this.close();
     }
