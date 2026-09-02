@@ -354,7 +354,7 @@ export class POP3Connection {
     }
     this.closed = true;
     this.isLoggedIn = false;
-    let error = ex instanceof Error ? ex :
+    let error = ex instanceof ConnectError ? ex :
       new ConnectError(ex, gt`Connection to server ${this.account.hostname} closed` + (ex?.message ? "\n" + ex.message : ""));
     for (let pending of this.pending.contents) {
       pending.reject(error);
