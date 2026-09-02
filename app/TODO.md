@@ -55,8 +55,6 @@
     * Poll
   * Actions (Filters)
     * Run on fetch, not full download
-    * Save/load folder and tag
-    * Move on server fails, works locally
   * Calendar
     * Free/Busy
     * Tasks
@@ -82,7 +80,6 @@
 ## Zucca
 * TB import: Duplicated own Identity
 * Attachments list: Fetch with email headers (not only during full download)
-* Mail: Search on server
 ## Elena
 * Clear profile
 * Debug dump of settings
@@ -266,8 +263,6 @@
 ## POP3
 
 ## Missing features
-* Filters / Actions
-  * Fix apply filter
 * Spam filter
 * Archive
 * Undo
@@ -297,10 +292,6 @@
     -> Use the search criteria as filter criteria
     -> Let user specify filter actions
 * Filter actions
-  * Move into folder
-  * Delete
-  * Mark as spam
-  * Add tag
   * Redirect
 * Run filters using Sieve or locally
 
