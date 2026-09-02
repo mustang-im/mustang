@@ -17,7 +17,7 @@
   </Checkbox>
   {#if hasAddTag}
     <vbox class="tags">
-      <TagSelector tags={availableTags} selectedTags={rule.addTags} canAdd={false} />
+      <TagSelector tags={availableTags} selectedTags={rule.addTags} />
     </vbox>
   {/if}
   <Checkbox bind:checked={hasFolder} allowFalse={false} allowIndetermined={true}
