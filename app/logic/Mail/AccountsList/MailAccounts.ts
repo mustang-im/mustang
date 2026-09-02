@@ -18,6 +18,7 @@ import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
 import { dataProcessorsHookup } from '../SML/DataProcessors';
+import { encryptionProcessorsHookup } from '../Encryption/Processors';
 import { NotReached, NotSupported } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
@@ -95,3 +96,4 @@ export function labelForMailProtocol(protocol: string): string {
 
 // TODO Find better spot to call this
 dataProcessorsHookup();
+encryptionProcessorsHookup();

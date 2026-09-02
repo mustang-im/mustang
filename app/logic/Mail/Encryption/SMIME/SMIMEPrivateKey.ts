@@ -3,7 +3,6 @@ import { SMIMEPublicKey, splitPEM } from "./SMIMEPublicKey";
 import { Any, PrivateKeyInfo, EncryptedPrivateKeyInfo, RSAPrivateKey, RSAPublicKey, CertificationRequestInfo, DigestInfo, CertificationRequest, Null } from "./SMIMEASN1";
 import { decryptPBES2, encryptPrivateKey } from "./PBES2";
 import { decrypt, padFF } from "./SMIMERSAES";
-import { SMIMEReadProcessor } from "./SMIMEReadProcessor";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../../util/Observable";
 import { assert } from "../../../util/util";
@@ -185,5 +184,3 @@ const attributeTypes: Record<string, "printstr" | "utf8str" | "ia5str"> = {
   CN: "utf8str", // commonName
   E: "ia5str", // emailAddress
 };
-
-SMIMEReadProcessor.hookup();
