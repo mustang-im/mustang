@@ -13,14 +13,14 @@ beforeAll(() => {
 
 test("Attachment contents as base64", async () => {
   let attachment = newAttachment();
-  expect(await attachment.contentBase64()).toBe(Buffer.from(kContent).toString("base64"));
+  expect(await attachment.contentAsBase64()).toBe(Buffer.from(kContent).toString("base64"));
 });
 
 test("Attachment whose file is gone from disk reports the filename", async () => {
   let attachment = newAttachment();
   attachment.content.arrayBuffer = () => Promise.reject(new Error("File not found"));
-  await expect(attachment.contentBase64()).rejects.toThrow(UserError);
-  await expect(attachment.contentBase64()).rejects.toThrow("agenda.pdf");
+  await expect(attachment.contentAsBase64()).rejects.toThrow(UserError);
+  await expect(attachment.contentAsBase64()).rejects.toThrow("agenda.pdf");
 });
 
 function newAttachment(): Attachment {
