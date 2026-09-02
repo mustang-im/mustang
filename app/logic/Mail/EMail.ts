@@ -591,10 +591,17 @@ export class EMail extends Message {
    *
    * Should be called after the entire message has been downloaded
    * and stored, because the filter actions tag, move and delete it in the database.
+   *
+   * We download mails in every folder, but a mail arrives only in the inbox,
+   * so that is the only place where the rules for incoming mail run.
    */
   async processMessage() {
-    let rules = this.folder?.account?.filterRuleActions.contents;
-    rules = rules?.filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
+    let account = this.folder.account;
+    if (this.folder != account.inbox) {
+      return;
+    }
+    let rules = account.filterRuleActions.contents
+      .filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
     for (let rule of rules) {
       await rule.run(this);
       if (this.isDeleted) { // rule deleted or moved
