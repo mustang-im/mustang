@@ -47,8 +47,7 @@
   export let haveError = false;
 
   // Show only the most preferred (= first) config of the same protocol
-  // TODO POP3 not yet implemented
-  $: uniqueConfigs = filterUnique(altConfigs?.filter(a => a.protocol != "pop3"), (a, b) => a.protocol == b.protocol);
+  $: uniqueConfigs = filterUnique(altConfigs, (a, b) => a.protocol == b.protocol);
 
   $: successMessage = !config?.source ? $t`No config found` :
     config.source == "ispdb" ? $t`We found the configuration in our database.` :
