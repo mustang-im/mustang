@@ -129,6 +129,21 @@ test("A rule for mails that I send runs on the mails in the Sent folder", async 
   expect(await storedTags(account)).toEqual(["Sent by me"]);
 });
 
+test("A rule that marks as not spam leaves the mail in the inbox, also without a spam folder", async () => {
+  let account = await setupAccount();
+  let rule = new FilterRuleAction(account);
+  rule.markAsSpam = false;
+  rule.markAsRead = true;
+  account.filterRuleActions.add(rule);
+
+  let email = newTestMail(account.inbox);
+  await email.saveCompleteMessage();
+
+  expect(account.serverActions.contents).toEqual(["read true"]);
+  expect(account.inbox.messages.contents).toEqual([email]);
+  expect((await storedMails(account)).map(row => row.downloadComplete)).toEqual([1]);
+});
+
 test("A rule whose criteria do not match leaves the mail alone", async () => {
   let account = await setupAccount();
   let rule = new FilterRuleAction(account);

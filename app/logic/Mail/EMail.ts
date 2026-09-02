@@ -183,14 +183,15 @@ export class EMail extends Message {
         let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam)
           ?? this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         if (isSpam) {
-          assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+          assert(spamFolder.specialFolder == SpecialFolder.Spam || spamFolder.specialFolder == SpecialFolder.Trash,
+            gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
           /** Immediate reaction for end user */
           await this.deleteMessageLocally();
           await this.markSpam(isSpam);
           await spamFolder.moveMessageHere(this);
         } else {
           await this.markSpam(isSpam);
-          if (this.folder == spamFolder) {
+          if (this.folder.specialFolder == SpecialFolder.Spam) {
             await this.folder.account.inbox.moveMessageHere(this);
           }
         }
