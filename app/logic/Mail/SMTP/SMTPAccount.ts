@@ -57,7 +57,7 @@ export class SMTPAccount extends MailAccount {
       requireTLS: this.tls == TLSSocketType.STARTTLS,
       ignoreTLS: this.tls == TLSSocketType.Plain,
       tls: {
-        //minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
+        minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
       auth: noAuth ? undefined : {

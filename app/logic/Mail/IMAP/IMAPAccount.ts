@@ -21,7 +21,6 @@ import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
-  acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /**
