@@ -1,5 +1,6 @@
 // #if [!WEBMAIL]
 import { RawFilesAttachment } from "./RawFilesAttachment";
+import { MailDir } from "./MailDir";
 import { SQLMailStorage } from "../SQL/SQLMailStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
@@ -28,7 +29,9 @@ export function setContentStorage(acc: MailAccount) {
     // First entry will be used for reading
     acc.contentStorage.add(new SQLSourceEMail());
     //acc.contentStorage.add(new MailZIP());
-    //acc.contentStorage.add(new MailDir());
+    if (acc.protocol == "pop3") { // The server does not keep the mails, so back them up as files
+      acc.contentStorage.add(new MailDir());
+    }
     acc.contentStorage.add(new RawFilesAttachment());
   }
   // #endif
