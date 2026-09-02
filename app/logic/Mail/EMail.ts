@@ -594,14 +594,17 @@ export class EMail extends Message {
    *
    * We download mails in every folder, but a mail arrives only in the inbox,
    * so that is the only place where the rules for incoming mail run.
+   * Likewise, the rules for sent mail run on the mails in the Sent folder.
    */
   async processMessage() {
     let account = this.folder.account;
-    if (this.folder != account.inbox) {
-      return;
+    let moments: FilterMoment[] = [];
+    if (this.folder == account.inbox) {
+      moments = [FilterMoment.IncomingBeforeSpam, FilterMoment.IncomingAfterSpam];
+    } else if (this.folder.specialFolder == SpecialFolder.Sent) {
+      moments = [FilterMoment.Outgoing];
     }
-    let rules = account.filterRuleActions.contents
-      .filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
+    let rules = account.filterRuleActions.contents.filter(rule => moments.includes(rule.when));
     for (let rule of rules) {
       await rule.run(this);
       if (this.isDeleted) { // rule deleted or moved
