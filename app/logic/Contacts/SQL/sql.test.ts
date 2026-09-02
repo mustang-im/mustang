@@ -5,7 +5,7 @@ import { SQLGroup } from './SQLGroup';
 import { SQLPerson } from './SQLPerson';
 import { FakeAddressbook, FakeChatPerson, fakeGroups, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend.test';
+import { connectToBackend } from '../../../test/logic/util/backend';
 import { Collection } from 'svelte-collections';
 import { expect, test } from 'vitest';
 

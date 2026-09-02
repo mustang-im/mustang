@@ -7,7 +7,7 @@ import { SQLSearchEMail } from './SQLSearchEMail';
 import { readMailAccounts } from '../AccountsList/MailAccounts';
 import { FakeMailAccount, FakeChatPerson, fakePersons, FakeAddressbook } from '../../testData';
 import { makeTestDatabase } from './SQLDatabase';
-import { connectToBackend } from '../../../test/logic/util/backend.test';
+import { connectToBackend } from '../../../test/logic/util/backend';
 import { appGlobal } from '../../app';
 import { ArrayColl } from 'svelte-collections';
 import { expect, test } from 'vitest';

@@ -3,7 +3,7 @@ import { SQLCalendar } from './SQLCalendar';
 import { SQLEvent } from './SQLEvent';
 import { FakeAddressbook, FakeCalendar, FakeChatPerson, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend.test';
+import { connectToBackend } from '../../../test/logic/util/backend';
 import { expect, test } from 'vitest';
 import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
 

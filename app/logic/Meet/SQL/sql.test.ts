@@ -2,7 +2,7 @@ import { makeTestDatabase } from './SQLDatabase';
 import { SQLMeetAccount } from './SQLMeetAccount';
 import { fakeMeetAccount, fakeChatPerson } from '../../testData';
 import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend.test';
+import { connectToBackend } from '../../../test/logic/util/backend';
 import { expect, test } from 'vitest';
 
 test("Save and read meet accounts from SQL database", { timeout: 10000 }, async () => {

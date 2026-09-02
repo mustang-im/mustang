@@ -5,7 +5,7 @@ import { newTopicAccountForProtocol } from '../TopicAccounts';
 import { Topic } from '../Topic';
 import { Paragraph } from '../PageContent';
 import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend.test';
+import { connectToBackend } from '../../../test/logic/util/backend';
 import { expect, test } from 'vitest';
 
 test("Save and read topics from SQL database", { timeout: 10000 }, async () => {

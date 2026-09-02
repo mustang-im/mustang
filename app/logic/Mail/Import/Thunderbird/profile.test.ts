@@ -1,5 +1,5 @@
 import { ThunderbirdProfile } from "./TBProfile";
-import { connectToBackend } from "../../../../test/logic/util/backend.test";
+import { connectToBackend } from "../../../../test/logic/util/backend";
 import { expect, test } from 'vitest'
 
 test("Read Thunderbird profiles", async () => {
