@@ -71,6 +71,15 @@ export class ExchangeSearchEMail extends SearchEMail {
     // Listing the newest emails is not a search
     return conditions.length ? conditions : null;
   }
+
+  /** The server sorts and limits each folder separately, so it returns up to
+   * `limit` items *per folder*. Only these are the newest ones of the mailbox,
+   * and only for these we need to load the headers. */
+  protected newestFirst(items: any[], limit?: number): any[] {
+    items.sort((a, b) =>
+      (Date.parse(b.DateTimeSent) || 0) - (Date.parse(a.DateTimeSent) || 0));
+    return limit ? items.slice(0, limit) : items;
+  }
 }
 
 /** One condition of an Exchange `Restriction` */

@@ -62,7 +62,7 @@ export class EWSSearchEMail extends ExchangeSearchEMail {
         items = items.concat(getEWSItems(response.RootFolder.Items));
       }
     }
-    items = newestFirst(items, limit);
+    items = this.newestFirst(items, limit);
 
     for (let folder of folders) {
       let newItemIDs: any[] = [];
@@ -85,15 +85,6 @@ export class EWSSearchEMail extends ExchangeSearchEMail {
     }
     return results;
   }
-}
-
-/** The server sorts and limits each folder separately, so it returns up to
- * `limit` items *per folder*. Only these are the newest ones of the mailbox,
- * and only for these we need to load the headers. */
-export function newestFirst(items: any[], limit?: number): any[] {
-  items.sort((a, b) =>
-    (Date.parse(b.DateTimeSent) || 0) - (Date.parse(a.DateTimeSent) || 0));
-  return limit ? items.slice(0, limit) : items;
 }
 
 /** @returns the condition as a single-entry object, e.g. `{ t$IsEqualTo: ... }` */
