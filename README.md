@@ -42,7 +42,7 @@ Created by the most experienced Thunderbird developers
   * Shared folders
 * ActiveSync
 * Microsoft Graph - for Office365
-* POP3 (later)
+* POP3 (alpha)
 
 ### Features
 
