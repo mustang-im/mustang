@@ -195,18 +195,15 @@ test("EWS: Only the newest emails of all folders together are loaded", async () 
   // The server applies the limit to each folder separately, so each of them
   // returns its own newest emails, and most of them are not ours
   account.foundItems = [
-    testEWSItem("inbox-old", "Inbox", "2026-01-01"),
     testEWSItem("inbox-new", "Inbox", "2026-04-01"),
+    testEWSItem("inbox-mid", "Inbox", "2026-03-01"),
     testEWSItem("sent-old", "Sent", "2026-02-01"),
-    testEWSItem("sent-new", "Sent", "2026-03-01"),
+    testEWSItem("sent-older", "Sent", "2026-01-01"),
   ];
 
   await startEWSSearch(account, 2);
 
-  let loaded = account.requests
-    .filter(request => request.m$GetItem)
-    .flatMap(request => request.m$GetItem.m$ItemIds.t$ItemId.map(item => item.Id));
-  expect(loaded).toEqual(["inbox-new", "sent-new"]);
+  expect(loadedItemIDs(account)).toEqual(["inbox-new", "inbox-mid"]);
 });
 
 test("IMAP: The `or` groups nest, because each search key is allowed only once", () => {
@@ -443,6 +440,13 @@ async function startEWSSearch(account: TestEWSAccount, limit = 10) {
 function searchedFolderIDs(account: TestEWSAccount): string[] {
   return account.requests[0].m$FindItem.m$ParentFolderIds.t$FolderId
     .map(folder => folder.Id);
+}
+
+/** The IDs of the emails whose headers the search asked for, with `GetItem` */
+function loadedItemIDs(account: TestEWSAccount): string[] {
+  return account.requests
+    .filter(request => request.m$GetItem)
+    .flatMap(request => request.m$GetItem.m$ItemIds.t$ItemId.map(item => item.Id));
 }
 
 function testPerson(emailAddress: string): Person {
