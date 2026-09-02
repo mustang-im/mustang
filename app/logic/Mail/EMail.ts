@@ -180,7 +180,8 @@ export class EMail extends Message {
     try {
       let strategy = this.folder.account.spamStrategy;
       if (strategy == DeleteStrategy.MoveToTrash) {
-        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
+        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam)
+          ?? this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
         if (isSpam) {
           /** Immediate reaction for end user */
