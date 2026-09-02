@@ -32,10 +32,15 @@
   </vbox>
 {/if}
 
+{#if config?.protocol == "pop3"}
+  <POP3Warning />
+{/if}
+
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import DisplayConfig from "./DisplayConfig.svelte";
+  import POP3Warning from "./POP3Warning.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import { filterUnique } from "../../../logic/util/collections";
