@@ -1291,5 +1291,9 @@
   "CgYXuv": "Este ficheiro não contém nenhuma chave secreta",
   "+Da3e0": "Este ficheiro utiliza uma encriptação não suportada",
   "TtBh7Q": "Este ficheiro utiliza um formato não suportado",
-  "eEW1G7": "Senha incorreta para este ficheiro"
+  "eEW1G7": "Senha incorreta para este ficheiro",
+  "+JwmkX": "O servidor não permite o envio a partir deste endereço de e-mail",
+  "+rwhb+": "A pasta de destino da regra de filtragem {0} já não existe",
+  "6hXpAt": "Esta mensagem está encriptada e a chave não está disponível",
+  "nLbQfr": "Não tem acesso à conta de {0}"
 }

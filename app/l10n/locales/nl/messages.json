@@ -1291,5 +1291,9 @@
   "CgYXuv": "Dit bestand bevat geen geheime sleutel",
   "+Da3e0": "Dit bestand maakt gebruik van een niet-ondersteunde versleuteling",
   "TtBh7Q": "Dit bestand heeft een niet-ondersteunde indeling",
-  "eEW1G7": "Verkeerde wachtwoordzin voor dit bestand"
+  "eEW1G7": "Verkeerde wachtwoordzin voor dit bestand",
+  "+JwmkX": "De server staat het verzenden vanaf dit e-mailadres niet toe",
+  "+rwhb+": "De doelmap van filterregel {0} bestaat niet meer",
+  "6hXpAt": "Dit bericht is versleuteld en de sleutel is niet beschikbaar",
+  "nLbQfr": "Je hebt geen toegang tot het account van {0}"
 }

@@ -1291,5 +1291,9 @@
   "CgYXuv": "Acest fișier nu conține nicio cheie secretă",
   "+Da3e0": "Acest fișier utilizează o metodă de criptare neacceptată",
   "TtBh7Q": "Acest fișier are un format neacceptat",
-  "eEW1G7": "Parola incorectă pentru acest fișier"
+  "eEW1G7": "Parola incorectă pentru acest fișier",
+  "+JwmkX": "Serverul nu permite trimiterea de e-mailuri de la această adresă de e-mail",
+  "+rwhb+": "Dosarul țintă al regulii de filtrare „{0}” nu mai există",
+  "6hXpAt": "Acest mesaj este criptat, iar cheia nu este disponibilă",
+  "nLbQfr": "Nu aveți acces la contul {0}"
 }

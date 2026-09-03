@@ -1291,5 +1291,9 @@
   "CgYXuv": "Šiame faile nėra slaptojo rakto",
   "+Da3e0": "Šiame faile naudojamas nepalaikomas šifravimas",
   "TtBh7Q": "Šis failas yra nepalaikomo formato",
-  "eEW1G7": "Šiam failui įvestas neteisingas slaptažodis"
+  "eEW1G7": "Šiam failui įvestas neteisingas slaptažodis",
+  "+JwmkX": "Serveris neleidžia siųsti laiškų iš šio el. pašto adreso",
+  "+rwhb+": "Filtravimo taisyklės „{0}“ tikslinis aplankas nebeegzistuoja",
+  "6hXpAt": "Ši žinutė yra užšifruota, o raktas nėra prieinamas",
+  "nLbQfr": "Jūs neturite prieigos prie paskyros {0}"
 }

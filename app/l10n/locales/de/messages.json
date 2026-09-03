@@ -1291,5 +1291,9 @@
   "CgYXuv": "Diese Datei enthält keinen geheimen Schlüssel.",
   "+Da3e0": "Diese Datei verwendet eine nicht unterstützte Verschlüsselung.",
   "TtBh7Q": "Diese Datei hat ein nicht unterstütztes Format.",
-  "eEW1G7": "Falsche Passphrase für diese Datei"
+  "eEW1G7": "Falsche Passphrase für diese Datei",
+  "+JwmkX": "Der Server lässt das Versenden von E-Mails von dieser E-Mail-Adresse nicht zu.",
+  "+rwhb+": "Der Zielordner der Filterregel „{0}“ existiert nicht mehr.",
+  "6hXpAt": "Diese Nachricht ist verschlüsselt, und der Schlüssel ist nicht verfügbar.",
+  "nLbQfr": "Sie haben keinen Zugriff auf das Konto unter {0}"
 }

@@ -1291,5 +1291,9 @@
   "CgYXuv": "Den här filen innehåller ingen hemlig nyckel",
   "+Da3e0": "Den här filen använder en krypteringsmetod som inte stöds",
   "TtBh7Q": "Den här filen har ett format som inte stöds",
-  "eEW1G7": "Fel lösenordsfras för den här filen"
+  "eEW1G7": "Fel lösenordsfras för den här filen",
+  "+JwmkX": "Servern tillåter inte att man skickar e-post från den här e-postadressen",
+  "+rwhb+": "Målmappen för filterregeln ”{0}” finns inte längre",
+  "6hXpAt": "Detta meddelande är krypterat och nyckeln finns inte tillgänglig",
+  "nLbQfr": "Du har ingen åtkomst till kontot på {0}"
 }

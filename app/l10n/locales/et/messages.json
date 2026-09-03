@@ -1291,5 +1291,9 @@
   "CgYXuv": "See fail ei sisalda salajast võtit",
   "+Da3e0": "Selles failis kasutatakse toetamata krüpteerimist",
   "TtBh7Q": "See fail on toetamata formaadis",
-  "eEW1G7": "Selle faili parool on vale"
+  "eEW1G7": "Selle faili parool on vale",
+  "+JwmkX": "Server ei luba sellelt e-posti aadressilt kirju saata",
+  "+rwhb+": "Filtreerimisreegli „{0}“ sihtkausta enam ei ole",
+  "6hXpAt": "See sõnum on krüpteeritud ja võti pole kättesaadav",
+  "nLbQfr": "Teil puudub juurdepääs kasutaja {0} kontole"
 }

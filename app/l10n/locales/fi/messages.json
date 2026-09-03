@@ -1291,5 +1291,9 @@
   "CgYXuv": "Tämä tiedosto ei sisällä salaavaa avainta",
   "+Da3e0": "Tässä tiedostossa käytetään salausta, jota ei tueta",
   "TtBh7Q": "Tämä tiedosto on muodossa, jota ei tueta",
-  "eEW1G7": "Tämän tiedoston salasana on väärä"
+  "eEW1G7": "Tämän tiedoston salasana on väärä",
+  "+JwmkX": "Palvelin ei salli lähettämistä tästä sähköpostiosoitteesta",
+  "+rwhb+": "Suodatussäännön {0} kohdekansio ei ole enää olemassa",
+  "6hXpAt": "Tämä viesti on salattu, eikä salausavainta ole saatavilla",
+  "nLbQfr": "Sinulla ei ole käyttöoikeutta tiliin {0}"
 }

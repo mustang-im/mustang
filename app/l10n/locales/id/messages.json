@@ -1291,5 +1291,9 @@
   "CgYXuv": "Berkas ini tidak berisi kunci rahasia",
   "+Da3e0": "Berkas ini menggunakan enkripsi yang tidak didukung",
   "TtBh7Q": "Berkas ini menggunakan format yang tidak didukung",
-  "eEW1G7": "Kata sandi yang salah untuk berkas ini"
+  "eEW1G7": "Kata sandi yang salah untuk berkas ini",
+  "+JwmkX": "Server tidak mengizinkan pengiriman email dari alamat email ini",
+  "+rwhb+": "Folder tujuan dari aturan penyaringan {0} sudah tidak ada lagi",
+  "6hXpAt": "Pesan ini telah dienkripsi, dan kuncinya tidak tersedia",
+  "nLbQfr": "Anda tidak memiliki akses ke akun {0}"
 }

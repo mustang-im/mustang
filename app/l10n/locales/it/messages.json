@@ -1291,5 +1291,9 @@
   "CgYXuv": "Questo file non contiene alcuna chiave segreta",
   "+Da3e0": "Questo file utilizza una crittografia non supportata",
   "TtBh7Q": "Questo file utilizza un formato non supportato",
-  "eEW1G7": "Passphrase errata per questo file"
+  "eEW1G7": "Passphrase errata per questo file",
+  "+JwmkX": "Il server non consente l'invio di messaggi da questo indirizzo e-mail",
+  "+rwhb+": "La cartella di destinazione della regola di filtro {0} non esiste più",
+  "6hXpAt": "Questo messaggio è crittografato e la chiave non è disponibile",
+  "nLbQfr": "Non hai accesso all'account {0}"
 }

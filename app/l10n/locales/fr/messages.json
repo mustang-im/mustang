@@ -1291,5 +1291,9 @@
   "CgYXuv": "Ce fichier ne contient aucune clé secrète",
   "+Da3e0": "Ce fichier utilise un cryptage non pris en charge",
   "TtBh7Q": "Ce fichier est dans un format non pris en charge.",
-  "eEW1G7": "Mot de passe incorrect pour ce fichier"
+  "eEW1G7": "Mot de passe incorrect pour ce fichier",
+  "+JwmkX": "Le serveur n'autorise pas l'envoi d'e-mails à partir de cette adresse e-mail",
+  "+rwhb+": "Le dossier de destination de la règle de filtrage « {0} » n'existe plus.",
+  "6hXpAt": "Ce message est chiffré et la clé n'est pas disponible.",
+  "nLbQfr": "Vous n'avez pas accès au compte {0}"
 }

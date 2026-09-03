@@ -1291,5 +1291,9 @@
   "CgYXuv": "Ez a fájl nem tartalmaz titkos kulcsot",
   "+Da3e0": "Ez a fájl nem támogatott titkosítást használ",
   "TtBh7Q": "Ez a fájl nem támogatott formátumú",
-  "eEW1G7": "A fájlhoz nem megfelelő jelszó"
+  "eEW1G7": "A fájlhoz nem megfelelő jelszó",
+  "+JwmkX": "A szerver nem engedélyezi az e-mail küldését erről a címről",
+  "+rwhb+": "A „{0}” szűrőszabály célmappája már nem létezik",
+  "6hXpAt": "Ez az üzenet titkosítva van, és a titkosító kulcs nem áll rendelkezésre",
+  "nLbQfr": "Nincs hozzáférésed a {0} fiókhoz."
 }
