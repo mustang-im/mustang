@@ -109,3 +109,64 @@ XRpmQu5NpqERE1Vyw0YIc0uaolRAE/oCOusg74n6LU1jCHrQkUd3v/rtbn0JBuji
 Cla1Ekw+ndF8WJpMPM8UDMtACYQ/yYxPWS4=
 
 `;
+
+/**
+ * Bare LF line endings, inside and out, as NSS writes them: the signature
+ * is over the LF bytes of the signed part, so the reader must not convert
+ * them. Thunderbird's own test messages look like this.
+ * `openssl cms -sign -binary -in part.txt -signer alice.crt -inkey alice.key
+ *   -outform DER`, where `part.txt` is the text/plain part below,
+ * with LF endings and without a trailing newline.
+ */
+export const kClearSignedLF = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Signed with LF line endings
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <sig-lf@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20"
+
+This is an S/MIME signed message
+
+------LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20
+Content-Type: text/plain; charset=utf-8
+
+Hello, this is signed.
+------LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+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
+------LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20--`;

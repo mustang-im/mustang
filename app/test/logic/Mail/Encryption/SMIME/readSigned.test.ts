@@ -3,7 +3,7 @@ import { setupTestFolder } from "../../SQL/setup";
 import { getPublicKeyByKeyID } from "../../../../../logic/Mail/Encryption/KeyUtils";
 import { TrustLevel } from "../../../../../logic/Mail/Encryption/enums";
 import type { EMail } from "../../../../../logic/Mail/EMail";
-import { kClearSigned, kOpaqueSigned } from "./signedMessages";
+import { kClearSigned, kClearSignedLF, kOpaqueSigned } from "./signedMessages";
 import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
@@ -36,7 +36,7 @@ async function readMessage(mime: string): Promise<EMail> {
     },
   });
   let email = folder.newEMail();
-  email.mime = new TextEncoder().encode(toCRLF(mime));
+  email.mime = new TextEncoder().encode(mime);
   await email.parseMIME();
   return email;
 }
@@ -56,19 +56,25 @@ async function signedWithKeyName(email: EMail): Promise<string | null> {
 
 describe("Signature of a received message, without an own private key", () => {
   test("clear-signed message", async () => {
-    let email = await readMessage(kClearSigned);
+    let email = await readMessage(toCRLF(kClearSigned));
     expect(email.text.trim()).toBe("Hello, this is signed.");
     expect(await signedWithKeyName(email)).toBe("F9D7");
   });
 
   test("opaque-signed message, as Outlook sends it", async () => {
-    let email = await readMessage(kOpaqueSigned);
+    let email = await readMessage(toCRLF(kOpaqueSigned));
     expect(email.text.trim()).toBe("Hello, this is signed.");
     expect(await signedWithKeyName(email)).toBe("F9D7");
   });
 
+  test("a message with bare LF line endings, as NSS writes them", async () => {
+    let email = await readMessage(kClearSignedLF);
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    expect(await signedWithKeyName(email)).toBe("B687");
+  });
+
   test("an unknown CA leaves the trust level to the user", async () => {
-    let email = await readMessage(kClearSigned);
+    let email = await readMessage(toCRLF(kClearSigned));
     let key = await getPublicKeyByKeyID(email.signedByKeyID, email);
     expect(key.trustLevel).toBe(TrustLevel.Sender);
   });
