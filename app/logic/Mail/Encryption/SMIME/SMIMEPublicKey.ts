@@ -109,10 +109,11 @@ export class SMIMEPublicKey extends PublicKey {
     }
     // This checks only that each certificate is validly signed by the next one
     // up to a trusted root. It does not verify basicConstraints (CA:TRUE) or
-    // keyUsage/extKeyUsage (emailProtection). Identity is bound elsewhere, by
-    // matching the signer's stored key ID against `email.from`, so a rogue leaf
-    // cannot sign as another identity today. Do not start trusting the chain
-    // itself for identity binding without adding those X.509 path checks first.
+    // keyUsage/extKeyUsage (emailProtection). Identity is bound elsewhere, in
+    // `EMail.rememberSigner()`, by matching the email addresses of the signer
+    // certificate against `email.from`, so a rogue leaf cannot sign as another
+    // identity today. Do not start trusting the chain itself for identity
+    // binding without adding those X.509 path checks first.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
     for (let key of this.chain) {
       if (key.obsolete) {
