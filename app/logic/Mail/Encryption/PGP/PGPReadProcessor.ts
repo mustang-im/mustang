@@ -60,8 +60,7 @@ export class PGPReadProcessor extends EMailProcessor {
       });
       email.wasEncrypted = true;
       if (decryptedResult.signatures?.length) {
-        let signedWithKey = await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP);
-        email.signedByKeyID = signedWithKey?.id ?? null;
+        email.rememberSigner(await this.checkSignatures(decryptedResult.signatures, senderPublicKeys, email.sent, openPGP));
       }
       // TODO If inner MIME doesn't contain headers, keep the outer ones
       await this.updateMIME(email, decryptedResult.data, outerFrom);
@@ -81,8 +80,7 @@ export class PGPReadProcessor extends EMailProcessor {
         format: "binary",
         // date: email.sent, // TODO plus a few minutes. Getting "Signature creation time is in the future"
       });
-      let signedWithKey = await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent, openPGP);
-      email.signedByKeyID = signedWithKey?.id ?? null;
+      email.rememberSigner(await this.checkSignatures(verificationResult.signatures, senderPublicKeys, email.sent, openPGP));
       email.attachments.remove(detachedSignaturePart);
     }
   }
@@ -122,7 +120,7 @@ export class PGPReadProcessor extends EMailProcessor {
     if (email.from.emailAddress.toLowerCase() != outerFrom.toLowerCase()) {
       // Treat as phishing
       console.warn("PGP signature ignored, because inner signed From: is", email.from.emailAddress, "but outer header From: is", outerFrom);
-      email.signedByKeyID = null;
+      email.rememberSigner(null);
     }
     email.downloadComplete = false;
     email.mime = content;

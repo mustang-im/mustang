@@ -113,7 +113,8 @@ export class EMail extends Message {
    * Format: `PublicKey.id` */
   @notifyChangedProperty
   signedByKeyID: string | null = null;
-  /** As `signed` but giving you the actual PublicKey object */
+  /** As `signed` but giving you the actual PublicKey object.
+   * Set this using @see rememberSigner() */
   signedKey: PublicKey | null = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
@@ -170,6 +171,29 @@ export class EMail extends Message {
     recipients.addAll(this.to);
     recipients.addAll(this.cc);
     return recipients;
+  }
+
+  /** Keeps the key that the sender signed this email with, so that the
+   * user can inspect it, add it to his addressbook, and encrypt his reply
+   * with it. The key travels with the message - in the CMS blob for S/MIME,
+   * in the AutoCrypt header for PGP - so this is the only place where we
+   * have it for senders who are not in the addressbook.
+   * Only keys that were issued for the `From:` address describe the sender.
+   * @param signer null, if the signature did not verify */
+  rememberSigner(signer: PublicKey | null) {
+    this.signedKey = signer;
+    this.signedByKeyID = signer?.id ?? null;
+    if (!signer) {
+      return;
+    }
+    let emailAddress = this.from?.emailAddress?.toLowerCase();
+    if (!emailAddress || !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
+      return;
+    }
+    let known = this.from.encryptionPublicKey;
+    if (!known || known.obsolete) {
+      this.from.encryptionPublicKey = signer;
+    }
   }
 
   /** Marks as spam, and deletes or moves the message, as configured */

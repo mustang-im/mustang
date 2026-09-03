@@ -3,7 +3,6 @@ import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import type { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
 import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
@@ -135,7 +134,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let content = OctetString.decode(contentInfo.content);
     // show the msg, even if the signature is invalid
     await this.unwrapMIME(email, content);
-    this.rememberSigner(email, await verifySignedData(signedData, content));
+    email.rememberSigner(await verifySignedData(signedData, content));
   }
 
   /** Verifies a cleartext message with a detached signature
@@ -156,27 +155,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
       return;
     }
     let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
-    this.rememberSigner(email, await verifySignedData(signedData, clearText));
-  }
-
-  /** Keeps the certificate that the sender signed this email with, so that the
-   * user can inspect it, add it to his addressbook, and encrypt his reply with it.
-   * Only certificates that were issued for the `From:` address describe the sender.
-   * @param signer null, if the signature did not verify */
-  protected rememberSigner(email: EMail, signer: SMIMEPublicKey | null) {
-    if (!signer) {
-      return;
-    }
-    email.signedKey = signer;
-    email.signedByKeyID = signer.id;
-    let emailAddress = email.from?.emailAddress?.toLowerCase();
-    if (!emailAddress || !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
-      return;
-    }
-    let known = email.from.encryptionPublicKey;
-    if (!known || known.obsolete) {
-      email.from.encryptionPublicKey = signer;
-    }
+    email.rememberSigner(await verifySignedData(signedData, clearText));
   }
 
   /** Replaces the message with the MIME entity extracted from the CMS
