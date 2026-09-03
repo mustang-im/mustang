@@ -92,6 +92,22 @@ test("A CMS blob that was delivered as a plain file, as Microsoft sends it", asy
   expect(email.text.trim()).toBe("Hello, this is encrypted.");
 });
 
+describe("Messages that only claim to be S/MIME", () => {
+  test("An archiver kept the S/MIME headers around the plain message", async () => {
+    let { email, errors } = await read(kMislabelled);
+
+    expect(errors).toEqual([]);
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    expect(email.signedByKeyID).toBe("b687f50d63928c37"); // the inner signature was checked
+  });
+
+  test("A blob that is neither MIME nor valid CMS says so", async () => {
+    let { errors } = await read(kNotCMS);
+
+    expect(errors).toEqual(["This message is not a valid S/MIME message"]);
+  });
+});
+
 describe("Algorithms that we do not implement", () => {
   test("An unsupported cipher is named, instead of leaving the message empty", async () => {
     let { errors } = await read(kCamellia, await SMIMEPrivateKey.importPrivateKey(kOurKey));
@@ -445,3 +461,87 @@ DNdHAPJQuCZuybECCZUKMaABQzGiwKhPvQTvpe2CfpiQPXi0wBf9IeaMXMxnN0bO
 REUwfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQLhZ9MZr1QUFEQ7ufBZWtN4BQ
 85DMorulmVpREDsUAoQyZqPsjQMs0aaAincZRr3Dwu4L0E3PX20k5wLaNmOG4XK3
 5Gllpx+qCxwIIr7h99iaHTy8LfqFSpdYbWcLbYYkUz4=`;
+
+/** As archivers mangle them: the headers say enveloped-data, but the
+ * content is the plain MIME message, here a `multipart/signed` from
+ * `openssl cms -sign -in part.txt -signer alice.crt -inkey alice.key
+ *   -outform SMIME -md sha256`, base64-encoded with CRLF */
+const kMislabelled = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Mangled by an archiver
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-mislabelled@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+TUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogbXVsdGlwYXJ0L3NpZ25l
+ZDsgcHJvdG9jb2w9ImFwcGxpY2F0aW9uL3BrY3M3LXNpZ25hdHVyZSI7IG1pY2Fs
+Zz0ic2hhLTI1NiI7IGJvdW5kYXJ5PSItLS0tNkM5NDg0MDkxN0M3NEE1MjEyRTI2
+OEZGODc5ODNDODMiDQoNClRoaXMgaXMgYW4gUy9NSU1FIHNpZ25lZCBtZXNzYWdl
+DQoNCi0tLS0tLTZDOTQ4NDA5MTdDNzRBNTIxMkUyNjhGRjg3OTgzQzgzDQpDb250
+ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9dXRmLTgNCg0KSGVsbG8sIHRo
+aXMgaXMgc2lnbmVkLg0KDQotLS0tLS02Qzk0ODQwOTE3Qzc0QTUyMTJFMjY4RkY4
+Nzk4M0M4Mw0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9wa2NzNy1zaWduYXR1
+cmU7IG5hbWU9InNtaW1lLnA3cyINCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6
+IGJhc2U2NA0KQ29udGVudC1EaXNwb3NpdGlvbjogYXR0YWNobWVudDsgZmlsZW5h
+bWU9InNtaW1lLnA3cyINCg0KTUlJRit3WUpLb1pJaHZjTkFRY0NvSUlGN0RDQ0Jl
+Z0NBUUV4RFRBTEJnbGdoa2dCWlFNRUFnRXdDd1lKS29aSQ0KaHZjTkFRY0JvSUlE
+WnpDQ0EyTXdnZ0pMb0FNQ0FRSUNGQ1U5M2FBQVBMeFM2cDhYWGJaTjFEVWlETWpD
+TUEwRw0KQ1NxR1NJYjNEUUVCQ3dVQU1ESXhEakFNQmdOVkJBTU1CVUZzYVdObE1T
+QXdIZ1lKS29aSWh2Y05BUWtCRmhGaA0KYkdsalpVQmxlR0Z0Y0d4bExtTnZiVEFl
+RncweU5qQTVNRE13TmpNd01UUmFGdzB6TmpBNE16RXdOak13TVRSYQ0KTURJeERq
+QU1CZ05WQkFNTUJVRnNhV05sTVNBd0hnWUpLb1pJaHZjTkFRa0JGaEZoYkdsalpV
+QmxlR0Z0Y0d4bA0KTG1OdmJUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQ
+QURDQ0FRb0NnZ0VCQU15NFFMOC9RVmxvUlRjcg0KRERhOTQxOWdZMnMyRFN6cW1q
+S0pvdllxdDRodDJ6Y0E1TzgxSkRucDVYeU9ra01tOUFNVHZ0d05lenNUMWI5Sw0K
+K29OZ1ZSc1RTdTZGWWdZdFkwbHdQK3EvcDZXSTY1MzIvTUUzcHN2UXoyeDJxRk9l
+MCtyMkdOK3UxY0hVN0lQNQ0KeXhoaHhYUGpwcFJnTHo0YUNIMTEzc282OWtFM3VP
+cXdCQlZQYXIwMFp1N1l1aytIak13d1BUR2dLUlZaek9RdQ0KVS9FOCtTL2JFZExE
+NTFocjRRVTBJN0VxNnpUeG5ybUszWms2bjlMb2pQaXlqUCtYVTdTSkgyOVlUTjBH
+QlZUTw0KQURIV2grelEyWFlTMjRBS0ppdmEzME1ObkRkZW0zTGVmZzVXRy9DS2Fn
+S1FNK1k0bXdUTHdzbE5ZbVJGdG9mMQ0KRFdPU2pEY0NBd0VBQWFOeE1HOHdIUVlE
+VlIwT0JCWUVGQW54Rnh5MGJ3Z21wZ2JrdFl1OC9iNnoxcVJxTUI4Rw0KQTFVZEl3
+UVlNQmFBRkFueEZ4eTBid2dtcGdia3RZdTgvYjZ6MXFScU1BOEdBMVVkRXdFQi93
+UUZNQU1CQWY4dw0KSEFZRFZSMFJCQlV3RTRFUllXeHBZMlZBWlhoaGJYQnNaUzVq
+YjIwd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQg0KQUtUaVVwTnpSUlNVSjBSR0d3
+a2Z3RHlQdSs4V1NMR2ZkdEZZRS92bk9BYlRWaTAzUDRrYnNTSlFCZHBjcGNJKw0K
+cXpQa3JBeU1UaGFxeTNEajJyT2F6T2szWjkwZEZlVjNJZUxsZ0tkQlNtMHkydHU2
+aFVTS2gwYklSNnZMcC94RQ0KMkxvcmhnZUdEL1BNUVZIZkRtYmJ1UXlGUDZDSHoz
+UmhyQUR4bm1EeFRGM0FMdlhTMjRpWmY4UUY2T3ZCSWxUbw0KbmpOcnNjcTlzWUhD
+QmpuNWQvOVBDYm1lMlFRRFliMzVpeS9HV2JzeG5HZXk5UzVmVVUrY3FUU3hKL25J
+OVNzNA0KQURjTnNLNityV2ZmeDFjQllPNVN3SGEyOUIvdHFvS2VMT0JxbDNaM2tV
+Z2R4RUxGRGhwdmV4R1RHNXVaTFFkQQ0KWklzMDVDR0I1eGJjWVlQaS95VDZjeVl4
+Z2dKYU1JSUNWZ0lCQVRCS01ESXhEakFNQmdOVkJBTU1CVUZzYVdObA0KTVNBd0hn
+WUpLb1pJaHZjTkFRa0JGaEZoYkdsalpVQmxlR0Z0Y0d4bExtTnZiUUlVSlQzZG9B
+QTh2RkxxbnhkZA0KdGszVU5TSU15TUl3Q3dZSllJWklBV1VEQkFJQm9JSGtNQmdH
+Q1NxR1NJYjNEUUVKQXpFTEJna3Foa2lHOXcwQg0KQndFd0hBWUpLb1pJaHZjTkFR
+a0ZNUThYRFRJMk1Ea3dNekEyTkRVd05sb3dMd1lKS29aSWh2Y05BUWtFTVNJRQ0K
+SUZETnBKcTZmVmFWNS8wY3NxNkZMbkh4YjlwRHYzL2pDVlk2WkIzZG1SSzRNSGtH
+Q1NxR1NJYjNEUUVKRHpGcw0KTUdvd0N3WUpZSVpJQVdVREJBRXFNQXNHQ1dDR1NB
+RmxBd1FCRmpBTEJnbGdoa2dCWlFNRUFRSXdDZ1lJS29aSQ0KaHZjTkF3Y3dEZ1lJ
+S29aSWh2Y05Bd0lDQWdDQU1BMEdDQ3FHU0liM0RRTUNBZ0ZBTUFjR0JTc09Bd0lI
+TUEwRw0KQ0NxR1NJYjNEUU1DQWdFb01BMEdDU3FHU0liM0RRRUJBUVVBQklJQkFG
+c2VNRnBIQUNGaXNDR0hKRHE0UkJvag0KUE1oOG1hNVhybEV2OSt5ZzJpNGhMdVJk
+cityUHB5S0h3NzVnN0xzN29oekVqQ1NYTmFOUGhVNko0ZnJLZE04UA0KMkp1RVpk
+SXhvR2sxTFFWZEhGNjhHMCtYVE1WRWhPcmxFQnN6WjRQeXk3UEFTTkZ3VnFQL3Y5
+ZFd6dTA0blZoUQ0KUGRqK3Mya21FR1dwdHArVDFoU0FyWlo1aUJDVUlWYTRpcWll
+U1UxQXRpN3JTSkkvT0hvRXNqVStQdTV6bTVRRw0KQUJPTnBEOGUvNnVQQXFUVXhx
+bmptcGt6RHJNMjBIdEw0L21Sb04zTGtWVWZ6N2EwdkV2aVdVVkUwWllzWS9EZg0K
+bkVwaVYrWE5iSXlqVnhjcUNMQklOa1o0ZFNwdmE1T1F2NjdWb0JHclZ3UEZESHkv
+a0RPVVk4K3Q2cnRxOURzPQ0KDQotLS0tLS02Qzk0ODQwOTE3Qzc0QTUyMTJFMjY4
+RkY4Nzk4M0M4My0tDQoNCg==`;
+
+/** The content is an ASN.1 SEQUENCE, but not a CMS ContentInfo */
+const kNotCMS = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Not a CMS blob
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-notcms@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MAMCAQU=`;

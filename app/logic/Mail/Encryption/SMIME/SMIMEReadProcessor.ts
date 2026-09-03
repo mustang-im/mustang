@@ -36,7 +36,19 @@ export class SMIMEReadProcessor extends EMailProcessor {
         return;
       }
       let blob = new Uint8Array(await cms.arrayBuffer());
-      let type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      // Some archivers keep the S/MIME headers, but store the message that
+      // they decrypted. What we have is then MIME, not an ASN.1 SEQUENCE.
+      if (blob[0] != 0x30) {
+        await this.unwrapMIME(email, blob);
+        return;
+      }
+      let type: string | number[];
+      try {
+        type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      } catch (ex) {
+        console.error(ex);
+        throw new UserError(gt`This message is not a valid S/MIME message`);
+      }
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
       } else if (type == "envelopedData") {
