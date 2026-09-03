@@ -756,7 +756,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       try {
         let mailFolder = this.folderMap.get(sanitize.string(folderID));
         if (mailFolder) {
-          await mailFolder.updateChangedMessages();
+          let newMsgs = await mailFolder.updateChangedMessages();
+          mailFolder.downloadMessages(newMsgs)
+            .catch(this.errorCallback);
           continue;
         }
         let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folderID) as EWSAddressbook | null;

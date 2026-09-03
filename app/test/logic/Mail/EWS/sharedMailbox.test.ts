@@ -1,8 +1,35 @@
 import { beforeAll, expect, test } from "vitest";
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
+import { EWSFolder } from "../../../../logic/Mail/EWS/EWSFolder";
+import type { EWSEMail } from "../../../../logic/Mail/EWS/EWSEMail";
 import { ExchangeCalendar } from "../../../../logic/Calendar/EWS/ExchangeCalendar";
 import { gLicense } from "../../../../logic/util/License";
+import { ArrayColl, type Collection } from "svelte-collections";
+
+/** Answers the server calls that a notification triggers */
+class TestFolder extends EWSFolder {
+  readonly downloaded = new ArrayColl<EWSEMail>();
+
+  async listMessages(): Promise<Collection<EWSEMail>> {
+    let email = this.newEMail();
+    email.itemID = "new-mail-" + this.id;
+    return new ArrayColl([email]);
+  }
+
+  async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
+    this.downloaded.addAll(emails);
+    return emails;
+  }
+}
+
+function newInbox(account: EWSAccount, id: string): TestFolder {
+  let inbox = new TestFolder(account);
+  inbox.id = id;
+  inbox.syncState = "sync-state"; // otherwise we list the whole folder
+  account.folderMap.set(inbox.id, inbox);
+  return inbox;
+}
 
 // Alice's own mailbox, plus Bob's and Carol's, which they shared with her
 let alice = new EWSAccount();
@@ -23,6 +50,8 @@ bobCalendar.useForInvitations = true;
 let carol = new EWSAccount();
 carol.initFromMainAccount(alice);
 carol.username = "carol@example.com";
+
+let aliceInbox = newInbox(alice, "alice-inbox");
 
 appGlobal.emailAccounts.addAll([alice, bob, carol]);
 appGlobal.calendars.addAll([aliceCalendar, bobCalendar]);
@@ -55,4 +84,10 @@ test("Invitations to our own mailbox do not go to the shared calendar", () => {
   expect(alice.calendarsAvailable.length).toBe(1);
   expect(alice.calendarsAvailable.first).toBe(aliceCalendar);
   expect(alice.calendar).toBe(aliceCalendar);
+});
+
+test("New mail in our own mailbox is downloaded as it arrives", async () => {
+  await alice.processNotification({ NewMailEvent: { ItemId: { Id: "new-mail-alice-inbox" }, ParentFolderId: { Id: aliceInbox.id } } });
+
+  expect(aliceInbox.downloaded.length).toBe(1);
 });
