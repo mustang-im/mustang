@@ -64,7 +64,7 @@ test("Login with wrong password fails cleanly", { timeout: 10000 }, async () => 
 test("Login, roster, message history, send, live message, then sync again without duplicates", { timeout: 30000 }, async () => {
   let account = newAccount();
   appGlobal.chatAccounts.add(account);
-  await account.login(true);
+  await account.loginAndStartup(true);
   expect(account.isLoggedIn).toBe(true);
   expect(account.dbID).toBeTruthy();
 
@@ -81,7 +81,7 @@ test("Login, roster, message history, send, live message, then sync again withou
   expect(aliceChat).toBeTruthy();
   expect(bobChat).toBeTruthy();
 
-  // History from the server archive (login() also syncs in the background;
+  // History from the server archive (the startup also syncs in the background;
   // the lock makes this call wait for it, and dedup prevents doubles)
   await aliceChat.listMessages();
   await bobChat.listMessages();
@@ -130,7 +130,7 @@ test("Login, roster, message history, send, live message, then sync again withou
   appGlobal.chatAccounts.remove(account);
   appGlobal.chatAccounts.add(account2);
   server.countQueriesAfter = 0;
-  await account2.login(false);
+  await account2.loginAndStartup(false);
 
   let aliceChat2 = account2.getExistingChat(kAlice) as XMPP1to1Chat;
   expect(aliceChat2.dbID).toBe(aliceChat.dbID); // from DB, not re-created
@@ -165,8 +165,8 @@ test("First sync gets the whole archive, in batches", { timeout: 30000 }, async 
   }
   let account = newAccount();
   appGlobal.chatAccounts.add(account);
-  await account.login(false);
-  // Charlie is not in the roster, so only we sync this chat, not login()
+  await account.loginAndStartup(false);
+  // Charlie is not in the roster, so only we sync this chat, not the startup
   let chat = await account.getNewChat(kCharlie) as XMPP1to1Chat;
   await chat.listMessages();
 
@@ -192,7 +192,7 @@ test("Login and sync without local DB", { timeout: 30000 }, async () => {
   let account = newAccount();
   account.storage = new DummyChatStorage();
   appGlobal.chatAccounts.add(account);
-  await account.login(true);
+  await account.loginAndStartup(true);
   expect(account.isLoggedIn).toBe(true);
   expect(account.roster.length).toBe(2);
   let aliceChat = account.getExistingChat(kAlice) as XMPP1to1Chat;
