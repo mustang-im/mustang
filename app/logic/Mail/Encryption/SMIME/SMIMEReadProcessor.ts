@@ -36,13 +36,23 @@ export class SMIMEReadProcessor extends EMailProcessor {
         return;
       }
       let blob = new Uint8Array(await cms.arrayBuffer());
-      let type;
+      if (blob[0] != 0x30) { // not an ASN.1 SEQUENCE
+        // Some archivers keep the S/MIME headers, but store the message that
+        // they decrypted. What we have is then MIME.
+        if (/^[\w-]+:/.test(new TextDecoder().decode(blob.subarray(0, 100)))) {
+          await this.unwrapMIME(email, blob);
+          return;
+        }
+        // Spam and broken senders label plain text as `application/pkcs7-mime`
+        console.warn("pkcs7-mime message is not a CMS blob");
+        return;
+      }
+      let type: string | number[];
       try {
         type = ContentInfo.decode(blob, { berToDER: true }).contentType;
       } catch (ex) {
-        // Spam and broken senders label plain text as `application/pkcs7-mime`
-        console.warn("pkcs7-mime message is not a CMS blob", ex);
-        return;
+        console.error(ex);
+        throw new UserError(gt`This message is not a valid S/MIME message`);
       }
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
