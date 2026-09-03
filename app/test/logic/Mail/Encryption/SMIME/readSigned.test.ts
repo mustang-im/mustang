@@ -3,7 +3,7 @@ import { setupTestFolder } from "../../SQL/setup";
 import { getPublicKeyByKeyID } from "../../../../../logic/Mail/Encryption/KeyUtils";
 import { TrustLevel } from "../../../../../logic/Mail/Encryption/enums";
 import type { EMail } from "../../../../../logic/Mail/EMail";
-import { kClearSigned, kClearSignedLF, kClearSignedOctetStream, kOpaqueSigned } from "./signedMessages";
+import { kClearSigned, kClearSignedLF, kClearSignedOctetStream, kOpaqueSigned, kECClearSigned256, kECClearSigned384, kECClearSigned521 } from "./signedMessages";
 import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
@@ -84,5 +84,25 @@ describe("Signature of a received message, without an own private key", () => {
     let email = await readMessage(toCRLF(kClearSigned));
     let key = await getPublicKeyByKeyID(email.signedByKeyID, email);
     expect(key.trustLevel).toBe(TrustLevel.Sender);
+  });
+});
+
+describe("Signature made with an elliptic curve key", () => {
+  test.each([
+    ["P-256", 256, kECClearSigned256],
+    ["P-384", 384, kECClearSigned384],
+    ["P-521", 521, kECClearSigned521],
+  ])("%s verifies", async (curve, keyLengthInBits, mime: string) => {
+    let email = await readMessage(toCRLF(mime));
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    let key = await getPublicKeyByKeyID(email.signedByKeyID, email);
+    expect(key.cipher).toBe("ECDSA/" + curve);
+    expect(key.keyLengthInBits).toBe(keyLengthInBits);
+  });
+
+  test("a changed message does not verify", async () => {
+    let email = await readMessage(toCRLF(kECClearSigned256.replace("this is signed", "this was changed")));
+    expect(email.text.trim()).toBe("Hello, this was changed.");
+    expect(email.signedByKeyID).toBe(null);
   });
 });

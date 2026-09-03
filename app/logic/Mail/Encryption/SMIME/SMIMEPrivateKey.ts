@@ -1,6 +1,6 @@
 import type { PrivateKey } from "../PrivateKey";
 import { SMIMEPublicKey, splitPEM } from "./SMIMEPublicKey";
-import { Any, PrivateKeyInfo, EncryptedPrivateKeyInfo, RSAPrivateKey, RSAPublicKey, CertificationRequestInfo, DigestInfo, CertificationRequest, Null } from "./SMIMEASN1";
+import { Any, PrivateKeyInfo, EncryptedPrivateKeyInfo, RSAPrivateKey, RSAPublicKey, SubjectPublicKeyInfo, CertificationRequestInfo, DigestInfo, CertificationRequest, Null } from "./SMIMEASN1";
 import { decryptPBES2, encryptPrivateKey } from "./PBES2";
 import { decrypt, padFF } from "./SMIMERSAES";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -33,7 +33,13 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     }
   }
 
-  async matches(key: RSAPublicKey): Promise<boolean> {
+  /** Whether the given certificate belongs to our private key,
+   * which is always an RSA key */
+  async matches(publicKey: SubjectPublicKeyInfo): Promise<boolean> {
+    if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
+      return false;
+    }
+    let key = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
     let rawKey = await this.decryptKey();
     return key.n == rawKey.n && key.e == rawKey.e;
   }

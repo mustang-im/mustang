@@ -232,3 +232,159 @@ XFo+Kq4MhISmx2bscNFVWM6A3eKUs1UhTnnAsTPIG/EbHrQ/vQHq6HAKtwHwyDDj
 ZikM+dvZ81aszPh+10RuwIX8N8bNIrPvCslMy1G0DwRPObDzYlbxJrwGJl3cIsE=
 
 ------72D4E9ED7779F5B28FF1B7EC321EEE7F--`;
+
+/* Clear-signed with an EC certificate, as Thunderbird and Apple Mail sign
+ * when the user's key is on a NIST curve, and as many European CAs issue.
+ * One message per curve, each with the hash that goes with it:
+ * openssl ecparam -name prime256v1 -genkey -noout -out ec256.key
+ * openssl req -x509 -key ec256.key -sha256 -days 3650 -out ec256.crt \
+ *   -subj "/CN=EC Alice/emailAddress=ec256@example.com" \
+ *   -addext "subjectAltName=email:ec256@example.com"
+ * printf 'Content-Type: text/plain; charset=utf-8\n\nHello, this is signed.' > body.txt
+ * openssl cms -sign -signer ec256.crt -inkey ec256.key -md sha256 \
+ *   -in body.txt -outform SMIME
+ * The other two use -name secp384r1 with -sha384/-md sha384,
+ * and -name secp521r1 with -sha512/-md sha512. */
+
+/** ECDSA on P-256, with SHA-256 */
+export const kECClearSigned256 = `From: EC Alice <ec256@example.com>
+To: User <user@example.com>
+Subject: Signed test
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <sig-ec256@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----60FAF574DFE81B5AAEE8865E94E6AD85"
+
+This is an S/MIME signed message
+
+------60FAF574DFE81B5AAEE8865E94E6AD85
+Content-Type: text/plain; charset=utf-8
+
+Hello, this is signed.
+------60FAF574DFE81B5AAEE8865E94E6AD85
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+MIIDugYJKoZIhvcNAQcCoIIDqzCCA6cCAQExDTALBglghkgBZQMEAgEwCwYJKoZI
+hvcNAQcBoIIB4TCCAd0wggGDoAMCAQICFEreUJcDmeUDVrgXHxZ6FMwyFQT+MAoG
+CCqGSM49BAMCMDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFl
+YzI1NkBleGFtcGxlLmNvbTAeFw0yNjA5MDMwNjI3MDZaFw0zNjA4MzEwNjI3MDZa
+MDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFlYzI1NkBleGFt
+cGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABDp2hTMhlULocs5hP+VR
+mo+C7nbDxTGP0ctmNJ9Hf/Qtz54hy1ftvWSKZfGvAzgwVT+tcOjtBYJLWuE2izhV
+pV2jcTBvMB0GA1UdDgQWBBRuG1E8SoaTpWs5YHmdQlQ71tG8hDAfBgNVHSMEGDAW
+gBRuG1E8SoaTpWs5YHmdQlQ71tG8hDAPBgNVHRMBAf8EBTADAQH/MBwGA1UdEQQV
+MBOBEWVjMjU2QGV4YW1wbGUuY29tMAoGCCqGSM49BAMCA0gAMEUCIQCCw6rJ9E+5
+9/Vk6CQMYGxaPpailreX2okvAVCU8b51sgIgKv0lIHddHmK8zxjrs0EEWv1eI2Bj
+zgBkPDZ4WWwPxVYxggGfMIIBmwIBATBNMDUxETAPBgNVBAMMCEVDIEFsaWNlMSAw
+HgYJKoZIhvcNAQkBFhFlYzI1NkBleGFtcGxlLmNvbQIUSt5QlwOZ5QNWuBcfFnoU
+zDIVBP4wCwYJYIZIAWUDBAIBoIHkMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEw
+HAYJKoZIhvcNAQkFMQ8XDTI2MDkwMzA2MjcwN1owLwYJKoZIhvcNAQkEMSIEINoX
+U0VI6VFWlk73pplSr5kR1/uHPr8UIz3oO6+QsHDDMHkGCSqGSIb3DQEJDzFsMGow
+CwYJYIZIAWUDBAEqMAsGCWCGSAFlAwQBFjALBglghkgBZQMEAQIwCgYIKoZIhvcN
+AwcwDgYIKoZIhvcNAwICAgCAMA0GCCqGSIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqG
+SIb3DQMCAgEoMAoGCCqGSM49BAMCBEcwRQIhAIDyNN/JlvRTvJZh9yJJ/KaRaDOF
+q+YEfluAH6euDc/BAiBC9UEq+sz+DoWsZchYFN60MOhw4vXP72mfuuOeDHaSEQ==
+
+------60FAF574DFE81B5AAEE8865E94E6AD85--
+
+`;
+
+/** ECDSA on P-384, with SHA-384 */
+export const kECClearSigned384 = `From: EC Alice <ec384@example.com>
+To: User <user@example.com>
+Subject: Signed test
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <sig-ec384@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-384"; boundary="----25E51055B53B71BB24C715CC4466A099"
+
+This is an S/MIME signed message
+
+------25E51055B53B71BB24C715CC4466A099
+Content-Type: text/plain; charset=utf-8
+
+Hello, this is signed.
+------25E51055B53B71BB24C715CC4466A099
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+MIIEKAYJKoZIhvcNAQcCoIIEGTCCBBUCAQExDTALBglghkgBZQMEAgIwCwYJKoZI
+hvcNAQcBoIICHjCCAhowggGgoAMCAQICFBztuvaZR4Hhf1N78JpFG7o/qUiCMAoG
+CCqGSM49BAMDMDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFl
+YzM4NEBleGFtcGxlLmNvbTAeFw0yNjA5MDMwNjI3MDZaFw0zNjA4MzEwNjI3MDZa
+MDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFlYzM4NEBleGFt
+cGxlLmNvbTB2MBAGByqGSM49AgEGBSuBBAAiA2IABAqzRCFv9cPCl9mNFvoj53Vd
+AeTpWZ068vnamuqLGPxVy1NI2eEn5K8+syU4LAu/wQNxpfMwdhnM2JwyJqAYgv/d
+WW40KrX0diynyflRSwILtjFuf+mQMc99N4L3p6HYzqNxMG8wHQYDVR0OBBYEFALX
+shbusFFTuBXeI7plX7IJQSp/MB8GA1UdIwQYMBaAFALXshbusFFTuBXeI7plX7IJ
+QSp/MA8GA1UdEwEB/wQFMAMBAf8wHAYDVR0RBBUwE4ERZWMzODRAZXhhbXBsZS5j
+b20wCgYIKoZIzj0EAwMDaAAwZQIxAIUDKWmRQ27iTp6AKQVCoEWUQZXo6LAHDjDM
+vFAGzKqAypuBBPxhZeiEs3HAJggeEAIwRKVNFWMmx8dtmBKl8n2dL+QKU2v4qdVy
+9J776wiQiZ5gv2xpDnHY3UyNwNWRmgwtMYIB0DCCAcwCAQEwTTA1MREwDwYDVQQD
+DAhFQyBBbGljZTEgMB4GCSqGSIb3DQEJARYRZWMzODRAZXhhbXBsZS5jb20CFBzt
+uvaZR4Hhf1N78JpFG7o/qUiCMAsGCWCGSAFlAwQCAqCB9DAYBgkqhkiG9w0BCQMx
+CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MDMwNjI3MDdaMD8GCSqG
+SIb3DQEJBDEyBDDptjzglRziurbIV5C6jbHU48uyR4JfjSKrxRd2z/ixd7qf4dHN
+Pzn7700jSco/PtYweQYJKoZIhvcNAQkPMWwwajALBglghkgBZQMEASowCwYJYIZI
+AWUDBAEWMAsGCWCGSAFlAwQBAjAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAw
+DQYIKoZIhvcNAwICAUAwBwYFKw4DAgcwDQYIKoZIhvcNAwICASgwCgYIKoZIzj0E
+AwMEaDBmAjEAyZjQY1GZ/jgyNiANfUFIdfFfyqq0+6qFj5XUW/F6ksx5a5j51SBC
+t5madqRJyVpTAjEAjLXZcIsz+FvzpVNqo5SRHk1VIIDygjWVxV6ytWGBe3JRInIP
+XwdKGUdkGCL08J3e
+
+------25E51055B53B71BB24C715CC4466A099--
+
+`;
+
+/** ECDSA on P-521, with SHA-512 */
+export const kECClearSigned521 = `From: EC Alice <ec521@example.com>
+To: User <user@example.com>
+Subject: Signed test
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <sig-ec521@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-512"; boundary="----3BE2B724EE772B743C71A2505ED03F5B"
+
+This is an S/MIME signed message
+
+------3BE2B724EE772B743C71A2505ED03F5B
+Content-Type: text/plain; charset=utf-8
+
+Hello, this is signed.
+------3BE2B724EE772B743C71A2505ED03F5B
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+MIIEpgYJKoZIhvcNAQcCoIIElzCCBJMCAQExDTALBglghkgBZQMEAgMwCwYJKoZI
+hvcNAQcBoIICaDCCAmQwggHGoAMCAQICFCKUt3ew41m6JYWhnY6mSHOOymlNMAoG
+CCqGSM49BAMEMDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFl
+YzUyMUBleGFtcGxlLmNvbTAeFw0yNjA5MDMwNjI3MDZaFw0zNjA4MzEwNjI3MDZa
+MDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcNAQkBFhFlYzUyMUBleGFt
+cGxlLmNvbTCBmzAQBgcqhkjOPQIBBgUrgQQAIwOBhgAEALla9Jb+8BKJjIJqGTl1
+SUcVv4XAmmjwA67VTIvnl9VHYN3kFEyVpwGKegMPonTtlSwjRiyfVw4A+hGFadMp
+662qAG2E1eVMZw2k20H8THCJd+MUZSua2YhwIufO7wsJ4G0ZE53bdsLWMZePfmoN
+RmTMenQQNVDox/JLaj0qQvwLa747o3EwbzAdBgNVHQ4EFgQUVncAOXc7fusE0e/K
+OP4XfSdSzmAwHwYDVR0jBBgwFoAUVncAOXc7fusE0e/KOP4XfSdSzmAwDwYDVR0T
+AQH/BAUwAwEB/zAcBgNVHREEFTATgRFlYzUyMUBleGFtcGxlLmNvbTAKBggqhkjO
+PQQDBAOBiwAwgYcCQXV4EcmKSh0jSVg9dAQ7Z6mECXBSj4A7CASXGlg17tB73md9
+Ms27SgXgcCTcPdfgES2FDXH+ayi2RyugMFAlhD95AkIBxEkozmh6WpH2kdwqks8q
+WO0678vMCXwiNC4hL1FXt48mXy62zcVyVPwLDrVwuOnL4ulPZ5l8BL6t6omzqCpr
+XjoxggIEMIICAAIBATBNMDUxETAPBgNVBAMMCEVDIEFsaWNlMSAwHgYJKoZIhvcN
+AQkBFhFlYzUyMUBleGFtcGxlLmNvbQIUIpS3d7DjWbolhaGdjqZIc47KaU0wCwYJ
+YIZIAWUDBAIDoIIBBDAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3
+DQEJBTEPFw0yNjA5MDMwNjI3MDdaME8GCSqGSIb3DQEJBDFCBECZJ9CANovdf0xk
+DmXviA+izhxNFRY/JV/vE0JhoIMxoB38tnO5zgyRx7nrGHJLQUB0zh690vfaqoiI
+PyawAO73MHkGCSqGSIb3DQEJDzFsMGowCwYJYIZIAWUDBAEqMAsGCWCGSAFlAwQB
+FjALBglghkgBZQMEAQIwCgYIKoZIhvcNAwcwDgYIKoZIhvcNAwICAgCAMA0GCCqG
+SIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqGSIb3DQMCAgEoMAoGCCqGSM49BAMEBIGK
+MIGHAkEBTvz/Jfm3uILTxp/g3BrtfggffFIHhbKVG6K82bGhQH8KunZfmayeRzUj
+y+MjMf9g1ttttnHQe906JxHk2uGRTQJCARcny51C1uc8vMFJuno+++NQrdc3Ecou
+hmvW9DdKzC0ATulo6GPcJmurI+EWRrzV1GTGOPU8b99Mc/4DvZxX/yCC
+
+------3BE2B724EE772B743C71A2505ED03F5B--
+
+`;

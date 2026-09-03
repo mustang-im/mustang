@@ -1,7 +1,7 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
-import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayToHex } from "./SMIMERSAES";
+import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, Oid, RDNSequence, TBSCertificate, DigestInfo, type WebCryptoAlgorithm } from "./SMIMEASN1";
+import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayFromHex, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -30,24 +30,32 @@ export class SMIMEPublicKey extends PublicKey {
     return certificateCommonName(cert) ?? "";
   }
 
-  async matches(key: RSAPublicKey): Promise<boolean> {
+  /** Whether the given certificate holds the same key as this one */
+  async matches(publicKey: SubjectPublicKeyInfo): Promise<boolean> {
     if (!this.publicKeyArmored) {
       return false;
     }
     let cert = Certificate.decodePEM(this.publicKeyArmored, { label: "Certificate" });
-    let rawKey = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
-    return key.n == rawKey.n && key.e == rawKey.e;
+    return !indexedDB.cmp(SubjectPublicKeyInfo.encode(publicKey), SubjectPublicKeyInfo.encode(cert.tbsCertificate.publicKey));
   }
 
   /**
    * Parses the given certificate and sets it as the public key.
    */
   async setCertificate(cert: Certificate) {
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    let publicKey = cert.tbsCertificate.publicKey;
     if (!this.id) {
-      let id = sanitize.bigint(rsa.n).toString(16);
-      this.id = id.slice(-16);
-      this.keyLengthInBits = id.length * 4;
+      if (publicKey.algorithmIdentifier.algorithm == "ecPublicKey") {
+        let curve = sanitize.translate(Oid.decode(publicKey.algorithmIdentifier.parameters), NamedCurve, null);
+        this.cipher = curve ? "ECDSA/P-" + curve : "ECDSA";
+        this.keyLengthInBits = curve;
+        // The curve point identifies the key, like the modulus does for RSA
+        this.id = Uint8ArrayToHex(publicKey.subjectPublicKey.data).slice(-16);
+      } else {
+        let id = sanitize.bigint(RSAPublicKey.decode(publicKey.subjectPublicKey.data).n).toString(16);
+        this.id = id.slice(-16);
+        this.keyLengthInBits = id.length * 4;
+      }
     }
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
     this.userIDs.replaceAll(certificateEMailAddresses(cert));
@@ -63,17 +71,17 @@ export class SMIMEPublicKey extends PublicKey {
   }
 
   async addCertificate(cert: Certificate): Promise<boolean> {
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    let publicKey = cert.tbsCertificate.publicKey;
     if (!this.publicKeyArmored) {
       await this.setCertificate(cert);
       return true;
     }
-    if (await this.matches(rsa)) {
+    if (await this.matches(publicKey)) {
       await this.setCertificate(cert);
       return false;
     }
     for (let key of this.chain) {
-      if (await key.matches(rsa)) {
+      if (await key.matches(publicKey)) {
         await key.setCertificate(cert);
         return false;
       }
@@ -227,6 +235,27 @@ async function verifySignature(cert: Certificate, signer: Certificate): Promise<
     console.error(ex);
     return false;
   }
+}
+
+/** Verifies an ECDSA signature, e.g. of a certificate or of a signed message.
+ * WebCrypto can do this for us, unlike the RSA verification, which needs a
+ * primitive that WebCrypto does not expose.
+ * @param publicKey the `subjectPublicKeyInfo` of the signer certificate
+ * @param signature the DER `ECDSASigValue` that X.509 and CMS store
+ * @param digestAlgorithm the hash that the signature was made over
+ * @param content the signed bytes */
+export async function verifyECDSA(publicKey: SubjectPublicKeyInfo, signature: Uint8Array, digestAlgorithm: WebCryptoAlgorithm, content: Uint8Array): Promise<boolean> {
+  let curve = sanitize.translate(Oid.decode(publicKey.algorithmIdentifier.parameters), NamedCurve, null);
+  if (!curve) {
+    console.log("unsupported elliptic curve");
+    return false;
+  }
+  let key = await crypto.subtle.importKey("spki", SubjectPublicKeyInfo.encode(publicKey) as BufferSource, { name: "ECDSA", namedCurve: "P-" + curve }, false, ["verify"]);
+  // WebCrypto wants r and s one after the other, each in the size of the curve
+  let size = curve + 7 >> 3;
+  let { r, s } = ECDSASigValue.decode(signature);
+  let rs = Uint8ArrayFromHex(r.toString(16).padStart(size * 2, "0") + s.toString(16).padStart(size * 2, "0"));
+  return await crypto.subtle.verify({ name: "ECDSA", hash: digestAlgorithm }, key, rs as BufferSource, content as BufferSource);
 }
 
 let promiseGetCACertificates: Record<string, Promise<Certificate[]> | undefined> = {};
