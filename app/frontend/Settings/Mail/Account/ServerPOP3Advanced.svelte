@@ -12,19 +12,26 @@
   <hbox class="leave-box">
     <Checkbox bind:checked={account.leaveOnServer} label={$t`Leave the mails on the server`} allowIndetermined={false} />
   </hbox>
-  {#if account.leaveOnServer}
+  {#if $account.leaveOnServer}
     <hbox class="interval-box">
       <label for="deleteAfterDays">{$t`Delete them from the server after`}</label>
       <input type="number" bind:value={account.deleteAfterDays} name="deleteAfterDays" min={0} max={9999} maxlength={4} />
       <hbox class="unit">{$t`days (0 = never)`}</hbox>
     </hbox>
   {/if}
+  {#if $account.deleteAfterDays || !$account.leaveOnServer}
+    <StatusMessage status="warning" message={$t`POP3 downloads mails to this device and *deletes* the emails on the server. Your phone and other devices cannot get those mails anymore. Use IMAP, if possible. (Exceptions are Google and Outlook.)`}>
+      <AlertIcon slot="icon" size={20} />
+    </StatusMessage>
+  {/if}
 </HeaderGroupBox>
 
 <script lang="ts">
   import type { POP3Account } from "../../../../logic/Mail/POP3/POP3Account";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
+  import StatusMessage from "../../../Setup/Shared/StatusMessage.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
+  import AlertIcon from "lucide-svelte/icons/alert-triangle";
   import { t } from "../../../../l10n/l10n";
 
   export let account: POP3Account;

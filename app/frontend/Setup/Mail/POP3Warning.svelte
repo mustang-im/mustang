@@ -1,4 +1,4 @@
-<StatusMessage status="warning" message={$t`POP3 only downloads mails to this device. Your phone and other devices will not see which mails you read, moved or deleted, and once the mails are deleted from the server, they are gone there. If your provider offers IMAP, please use IMAP instead.`}>
+<StatusMessage status="warning" message={$t`POP3 either *deletes* the emails on the server, so your phone and other devices cannot get those mails anymore. Or it causes a lot of unnecessary Internet traffic for mail check, even if you have no new mail. POP3 is no longer adequate as soon as you use more than one device. Use IMAP, if possible. (Exceptions are Google and Outlook.)`}>
   <AlertIcon slot="icon" size={20} />
 </StatusMessage>
 

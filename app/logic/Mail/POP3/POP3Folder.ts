@@ -213,7 +213,7 @@ export class POP3Folder extends Folder {
     for (let message of messages) {
       await message.loadMIME();
       await this.addMessage(message);
-      if (action != "move") {
+      if (action == "copy") {
         continue;
       }
       if (message.folder.account == this.account) {
