@@ -1,4 +1,4 @@
-import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, Time, type TBSCertificate } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, Time, Certificate, SigningCertificate, SigningCertificateV2, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
 import { SMIMEPublicKey, verifyECDSA } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -81,6 +81,22 @@ export async function verifySignedData(signedData: any, content: Uint8Array, sen
       signedAt = Time.decode(signingTimeAttribute.attrValue[0]).value;
       if (sent && Math.abs(signedAt - sent.getTime()) > k1HourMS) {
         console.log("message was signed at a different time than it was sent");
+        return null;
+      }
+    }
+    let essAttribute = signerInfo.signedAttrs.find(attr =>
+      attr.attrType == "signingCertificate" || attr.attrType == "signingCertificateV2");
+    if (essAttribute) {
+      // RFC 5035: the signer named the certificate that he used, by its hash,
+      // so that nobody can swap it for another certificate of the same owner
+      let certIDs = essAttribute.attrType == "signingCertificateV2"
+        ? SigningCertificateV2.decode(essAttribute.attrValue[0]).certs
+        : SigningCertificate.decode(essAttribute.attrValue[0]).certs;
+      let certDER = Certificate.encode(cert);
+      let hashes = await Promise.all(certIDs.map(certID =>
+        crypto.subtle.digest(sanitize.translate(certID.hashAlgorithm?.algorithm, DigestAlgorithm, "SHA-1"), certDER as BufferSource)));
+      if (!certIDs.some((certID, i) => !indexedDB.cmp(new Uint8Array(hashes[i]), certID.certHash))) {
+        console.log("the signature names another certificate than the one that it came with");
         return null;
       }
     }
