@@ -142,8 +142,9 @@ export class SMIMESend {
       }
       mimeAsText = contentHeaders.join("\r\n") + mimeAsText.slice(pos);
       mime = new TextEncoder().encode(mimeAsText);
-      let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
+      let recipientKeys = mail.allRecipients().contents.map(puid =>
         getPublicKeyForPersonUID(puid, SMIMEPublicKey));
+      assert(recipientKeys.every(key => key), gt`Cannot encrypt to all recipients using S/MIME`);
       if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
