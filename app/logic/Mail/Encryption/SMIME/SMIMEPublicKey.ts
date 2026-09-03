@@ -129,7 +129,9 @@ export class SMIMEPublicKey extends PublicKey {
       for (let ca of await lazyGetCACertificates(type)) {
         if (await verifySignature(cert, ca)) {
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
-          if (trustOrder(this.trustLevel) < trustOrder(caTrust)) {
+          // Never overrule the user, who distrusted this certificate
+          if (this.trustLevel != TrustLevel.Distrusted &&
+              trustOrder(this.trustLevel) < trustOrder(caTrust)) {
             this.trustLevel = caTrust;
             this.caName = certificateCommonName(ca);
           }
