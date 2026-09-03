@@ -2,6 +2,7 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
+import type { Workspace } from "../../Abstract/Workspace";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { findPerson } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
@@ -17,6 +18,8 @@ import { SetColl, type ArrayColl } from "svelte-collections";
 export class SearchEMail extends Observable {
   @notifyChangedProperty
   account: MailAccount | null = null;
+  @notifyChangedProperty
+  workspace: Workspace | null = null;
   _folder: Folder | null = null;
   @notifyChangedProperty
   folderID: string | undefined;
@@ -126,6 +129,7 @@ export class SearchEMail extends Observable {
 
   copyFrom(other: SearchEMail) {
     this.account = other.account;
+    this.workspace = other.workspace;
     this._folder = other._folder;
     this.folderID = other.folderID;
     this.isOutgoing = other.isOutgoing;

@@ -5,11 +5,9 @@ import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 // #endif
 import type { EMail } from "../EMail";
 import type { MailAccount } from "../MailAccount";
-import { selectedWorkspace } from "../../../frontend/MainWindow/Selected";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
-import { get } from "svelte/store";
 
 /** Runs the local database search and the server-side search of each account in
  * parallel, and combines their results. Each of them finds emails that the others
@@ -29,12 +27,11 @@ export class CombinedSearchEMail extends SearchEMail {
     // #endif
 
     let emailAccounts = new ArrayColl(appGlobal.emailAccounts) as Collection<MailAccount>;
-    let workspace = get(selectedWorkspace);
     let onlyAccount = this.account ?? this.folder?.account;
     if (onlyAccount) {
       emailAccounts = new ArrayColl([onlyAccount]);
-    } else if (workspace) {
-      emailAccounts = appGlobal.emailAccounts.filterOnce(acc => acc.workspace == workspace);
+    } else if (this.workspace) {
+      emailAccounts = appGlobal.emailAccounts.filterOnce(acc => acc.workspace == this.workspace);
     }
 
     for (let account of emailAccounts) {

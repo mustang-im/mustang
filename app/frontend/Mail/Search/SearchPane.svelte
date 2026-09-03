@@ -49,6 +49,7 @@
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { selectedMessage } from "../Selected";
+  import { selectedWorkspace } from "../../MainWindow/Selected";
   import SearchCriteria from "./SearchCriteria.svelte";
   import SavedSearchUI from "./SavedSearchUI.svelte";
   import RulesFromSearchUI from "./RulesFromSearchUI.svelte";
@@ -75,6 +76,7 @@
   let attachmentTypes = search.hasAttachmentMIMETypes;
 
   $: search.bodyText = $globalSearchTerm;
+  $: search.workspace = $selectedWorkspace;
   $: isOpen && $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
   const startSearchDebounced = debounce(() => startSearch(), 300);
   let lastCriteria: string;

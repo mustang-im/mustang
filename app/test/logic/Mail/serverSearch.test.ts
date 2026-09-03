@@ -18,7 +18,6 @@ import { Person, ContactEntry } from "../../../logic/Abstract/Person";
 import { getTagByName } from "../../../logic/Abstract/Tag";
 import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
 import { Workspace } from "../../../logic/Abstract/Workspace";
-import { selectedWorkspace } from "../../../frontend/MainWindow/Selected";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { ArrayColl } from "svelte-collections";
 import { mkdtempSync } from "node:fs";
@@ -154,7 +153,7 @@ test("A search leaves its own criteria alone", async () => {
   expect(JSON.stringify(search.toJSON())).toBe(criteria);
 });
 
-test.skip("A workspace also restricts the local database search", async () => {
+test("A workspace also restricts the local database search", async () => {
   let work = await setupAccount("Work");
   let home = await setupAccount("Home");
   appGlobal.emailAccounts.replaceAll([work, home]);
@@ -162,9 +161,9 @@ test.skip("A workspace also restricts the local database search", async () => {
   home.workspace = new Workspace("Home", null, null);
   await SQLEMail.save(newTestEMail(work.inbox, "w1", "Budget at work", "2026-01-01"));
   await SQLEMail.save(newTestEMail(home.inbox, "h1", "Budget at home", "2026-02-01"));
-  selectedWorkspace.set(work.workspace);
 
   let search = new CombinedSearchEMail();
+  search.workspace = work.workspace;
   search.bodyText = "budget";
   let results = await search.startSearch();
   await search.finished;
@@ -361,7 +360,6 @@ beforeEach(async () => {
   if (databaseDir) {
     await (await getDatabase()).run(sql`DELETE FROM email`);
   }
-  selectedWorkspace.set(null);
 });
 
 async function setupAccount(name = "Test"): Promise<TestMailAccount> {

@@ -29,6 +29,7 @@
   import { Person } from "../../../../logic/Abstract/Person";
   import { newSearchEMail } from "../../../../logic/Mail/Store/setStorage";
   import { selectedAccount, selectedFolder } from "../../../Mail/Selected";
+  import { selectedWorkspace } from "../../../MainWindow/Selected";
   import { selectedPerson } from "../../../Contacts/Person/Selected";
   import { allAccountsAccount } from "../../../../logic/Mail/AccountsList/ShowAccounts";
   import { goTo } from "../../selectedApp";
@@ -57,6 +58,7 @@
     goTo("/mail/person", { searchMessages });
 
     let search = newSearchEMail();
+    search.workspace = $selectedWorkspace;
     search.includesPerson = person;
     let result = await search.startSearch();
     searchMessages.addColl(result);

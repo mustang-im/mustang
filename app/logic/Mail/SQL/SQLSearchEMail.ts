@@ -22,17 +22,24 @@ export class SQLSearchEMail extends SearchEMail {
     }
     // TODO 1:n relations attachments and recipients
 
+    // The workspace shows only some of the accounts, so it finds only their emails
+    let accountIDs = this.account?.dbID
+      ? [this.account.dbID]
+      : this.workspace && !this.folder
+        ? appGlobal.emailAccounts.filterOnce(acc => acc.workspace == this.workspace).contents.map(acc => acc.dbID)
+        : null;
+
     // Search matching emails directly in the SQL database
     let query = sql`
       SELECT
         email.id as id, folderID
       FROM email
-      $${this.account?.dbID ? sql` LEFT JOIN folder ON (email.folderID = folder.id) ` : sql``}
+      $${accountIDs ? sql` LEFT JOIN folder ON (email.folderID = folder.id) ` : sql``}
       $${this.includesPerson ? sql` LEFT JOIN emailPersonRel ON (email.id = emailPersonRel.emailID) LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id) ` : sql``}
       $${this.hasAttachment === true || this.hasAttachment === false ? sql` LEFT JOIN emailAttachment ON (email.id = emailAttachment.emailID) ` : sql``}
       $${this.tags?.hasItems ? sql` LEFT JOIN emailTag ON (email.id = emailTag.emailID) ` : sql``}
       WHERE 1=1
-        $${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : sql``}
+        $${accountIDs ? sql` AND accountID IN ${accountIDs} ` : sql``}
         $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
         $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing ? 1 : 0} ` : sql``}
         $${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead ? 1 : 0} ` : sql``}

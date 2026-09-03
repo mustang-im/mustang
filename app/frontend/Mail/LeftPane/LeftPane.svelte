@@ -51,6 +51,7 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
+  import { selectedWorkspace } from "../../MainWindow/Selected";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { openFolderProperties } from '../FolderPropertiesPage.svelte';
   import { appGlobal } from "../../../logic/app";
@@ -108,6 +109,7 @@
     lastPerson = person;
 
     let search = newSearchEMail();
+    search.workspace = $selectedWorkspace;
     search.includesPerson = person;
     let messages = await search.startSearch();
 
