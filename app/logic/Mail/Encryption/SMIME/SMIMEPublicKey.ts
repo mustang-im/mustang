@@ -210,8 +210,12 @@ async function verifySignature(cert: Certificate, signer: Certificate): Promise<
     }
     let algorithm = sanitize.translate(cert.signatureAlgorithm.algorithm, SignatureAlgorithm);
     let signedCert = TBSCertificate.encode(cert.tbsCertificate);
+    let publicKey = signer.tbsCertificate.publicKey;
+    if (publicKey.algorithmIdentifier.algorithm == "ecPublicKey") {
+      return await verifyECDSA(publicKey, cert.signatureValue.data, algorithm, signedCert);
+    }
     let signedDigest = new Uint8Array(await crypto.subtle.digest(algorithm, signedCert));
-    let rsa = RSAPublicKey.decode(signer.tbsCertificate.publicKey.subjectPublicKey.data);
+    let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
     let block = encrypt(cert.signatureValue.data, rsa);
     let digestInfo = DigestInfo.decode(unpadPKCS(block, BlockType.Signed));
     if (sanitize.translate(digestInfo.digestAlgorithm.algorithm, DigestAlgorithm) != algorithm) {
