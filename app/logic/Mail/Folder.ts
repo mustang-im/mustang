@@ -131,12 +131,11 @@ export class Folder extends Observable implements TreeItem<Folder> {
     throw new AbstractFunction();
   }
 
-  /** Lists all messages of this folder, and then downloads only the recent ones.
-   * Called when we switch to a folder, including the first time we see a folder.
+  /** Lists all messages of this folder, and then downloads the recent ones
    * @returns the newly listed messages */
   async getRecentMessages(): Promise<Collection<EMail>> {
     let newMessages = await this.listMessages();
-    await this.downloadRecentMessages(newMessages);
+    await this.downloadRecentMessages(this.messages); // not newMessages, in case we missed some last time
     return newMessages;
   }
 

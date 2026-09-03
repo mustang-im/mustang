@@ -27,6 +27,8 @@ class TestEWSAccount extends EWSAccount {
   /** The first MIME request waits for this, so that we can act while it is in flight */
   readonly answerFirstMIMERequest = Promise.withResolvers<void>();
   blockFirstMIMERequest = false;
+  /** The server is down, or the app quits, while we fetch the MIME source */
+  failMIMERequests = false;
   protected sentChanges = false;
 
   async callEWS(request: any): Promise<any> {
@@ -42,6 +44,9 @@ class TestEWSAccount extends EWSAccount {
       }
       this.mimeRequests.push(ids);
       this.gotFirstMIMERequest.resolve();
+      if (this.failMIMERequests) {
+        throw new Error("The server is down");
+      }
       if (this.blockFirstMIMERequest) {
         this.blockFirstMIMERequest = false;
         await this.answerFirstMIMERequest.promise;
@@ -126,6 +131,24 @@ test("The new messages of the last 2 days are all downloaded", async () => {
   await inbox.getNewMessages();
 
   expect(inbox.messages.length).toBe(kNewMessages);
+  let notDownloaded = inbox.messages.contents.filter(message => !message.downloadComplete);
+  expect(notDownloaded.map(message => message.subject)).toEqual([]);
+}, 30000);
+
+test("Opening the folder fetches the mail that we listed, but never got", async () => {
+  let account = await setupAccountWithNewMail();
+  let inbox = account.inbox as EWSFolder;
+  // The last app run listed the new mail, but the server did not give us the content
+  account.errorCallback = () => undefined;
+  account.failMIMERequests = true;
+  await inbox.getNewMessages();
+  expect(inbox.messages.contents.filter(message => message.downloadComplete)).toEqual([]);
+
+  // The user starts the app again and opens the inbox. The server has nothing
+  // new, so only the folder itself still tells us what we are missing.
+  account.failMIMERequests = false;
+  await inbox.getRecentMessages();
+
   let notDownloaded = inbox.messages.contents.filter(message => !message.downloadComplete);
   expect(notDownloaded.map(message => message.subject)).toEqual([]);
 }, 30000);
