@@ -7,6 +7,7 @@ import { SpecialFolder, specialFolderNames } from "../Folder";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { assert, capitalizeStart } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -31,6 +32,7 @@ export class POP3Account extends MailAccount {
   protected loginConnection: POP3Connection | null = null;
   /** High level logging about the commands we issue */
   logCommands = false;
+  protected loginRunOnce = new RunOnce();
 
   constructor() {
     super();
@@ -45,16 +47,18 @@ export class POP3Account extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await super.login(interactive);
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
-    if (this.authMethod == AuthMethod.OAuth2 && !this.oAuth2?.isLoggedIn) {
-      assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
-      await this.oAuth2.login(interactive);
-    }
-    this.loginConnection = await this.connect();
+    await this.loginRunOnce.runOnce(async () => {
+      await super.login(interactive);
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
+      }
+      await this.storage.readFolderHierarchy(this);
+      if (this.authMethod == AuthMethod.OAuth2 && !this.oAuth2?.isLoggedIn) {
+        assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
+        await this.oAuth2.login(interactive);
+      }
+      this.loginConnection = await this.connect();
+    });
   }
 
   async syncOnStartup() {

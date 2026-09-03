@@ -111,6 +111,18 @@ test("The login only connects, the startup downloads the mails", async () => {
   expect(inboxOf(acc).messages.length).toBe(3);
 });
 
+test("Two concurrent logins open one session", async () => {
+  await server.start();
+  let acc = newAccount();
+
+  await Promise.all([acc.login(false), acc.login(false)]);
+
+  // POP3 servers allow only one session per mailbox
+  expect(server.commands.filter(c => c.startsWith("PASS"))).toEqual(["PASS secret"]);
+
+  await acc.logout(); // the login left its connection open, for the first mail check
+});
+
 test("Deletes the mails from the server right after the download", async () => {
   await server.start();
   let acc = newAccount();
