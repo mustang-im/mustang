@@ -1291,5 +1291,9 @@
   "CgYXuv": "This file contains no secret key",
   "+Da3e0": "This file uses an unsupported encryption",
   "TtBh7Q": "This file uses an unsupported format",
-  "eEW1G7": "Wrong passphrase for this file"
+  "eEW1G7": "Wrong passphrase for this file",
+  "+JwmkX": "The server does not allow sending from this email address",
+  "+rwhb+": "The target folder of filter rule {0} does not exist anymore",
+  "6hXpAt": "This message is encrypted, and the key is not available",
+  "nLbQfr": "You have no access to the account of {0}"
 }

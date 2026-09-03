@@ -1291,5 +1291,9 @@
   "CgYXuv": "Denne fil indeholder ingen hemmelig nøgle",
   "+Da3e0": "Denne fil bruger en kryptering, der ikke understøttes",
   "TtBh7Q": "Denne fil er i et format, der ikke understøttes",
-  "eEW1G7": "Forkert adgangskode til denne fil"
+  "eEW1G7": "Forkert adgangskode til denne fil",
+  "+JwmkX": "Serveren tillader ikke afsendelse fra denne e-mailadresse",
+  "+rwhb+": "Mappemappen for filterreglen {0} findes ikke længere",
+  "6hXpAt": "Denne besked er krypteret, og nøglen er ikke tilgængelig",
+  "nLbQfr": "Du har ikke adgang til kontoen {0}"
 }

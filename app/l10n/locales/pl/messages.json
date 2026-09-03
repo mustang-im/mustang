@@ -1291,5 +1291,9 @@
   "CgYXuv": "Ten plik nie zawiera klucza tajnego",
   "+Da3e0": "Ten plik wykorzystuje nieobsługiwane szyfrowanie",
   "TtBh7Q": "Ten plik ma format, który nie jest obsługiwany",
-  "eEW1G7": "Nieprawidłowe hasło dla tego pliku"
+  "eEW1G7": "Nieprawidłowe hasło dla tego pliku",
+  "+JwmkX": "Serwer nie zezwala na wysyłanie wiadomości z tego adresu e-mail",
+  "+rwhb+": "Folder docelowy reguły filtrowania „{0}” już nie istnieje",
+  "6hXpAt": "Ta wiadomość jest zaszyfrowana, a klucz nie jest dostępny",
+  "nLbQfr": "Nie masz dostępu do konta {0}"
 }

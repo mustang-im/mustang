@@ -1291,5 +1291,9 @@
   "CgYXuv": "Denne filen inneholder ingen hemmelig nøkkel",
   "+Da3e0": "Denne filen bruker en kryptering som ikke støttes",
   "TtBh7Q": "Denne filen har et format som ikke støttes",
-  "eEW1G7": "Feil passord for denne filen"
+  "eEW1G7": "Feil passord for denne filen",
+  "+JwmkX": "Serveren tillater ikke sending fra denne e-postadressen",
+  "+rwhb+": "Mappemappen til filterregelen «{0}» finnes ikke lenger",
+  "6hXpAt": "Denne meldingen er kryptert, og nøkkelen er ikke tilgjengelig",
+  "nLbQfr": "Du har ikke tilgang til kontoen til {0}"
 }

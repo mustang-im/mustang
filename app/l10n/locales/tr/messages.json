@@ -1291,5 +1291,9 @@
   "CgYXuv": "Bu dosya gizli anahtar içermemektedir",
   "+Da3e0": "Bu dosya, desteklenmeyen bir şifreleme yöntemi kullanmaktadır",
   "TtBh7Q": "Bu dosya desteklenmeyen bir biçim kullanıyor",
-  "eEW1G7": "Bu dosya için yanlış şifre"
+  "eEW1G7": "Bu dosya için yanlış şifre",
+  "+JwmkX": "Sunucu, bu e-posta adresinden mesaj gönderilmesine izin vermiyor",
+  "+rwhb+": "{0} filtre kuralının hedef klasörü artık mevcut değil",
+  "6hXpAt": "Bu mesaj şifrelenmiştir ve şifre anahtarı mevcut değildir",
+  "nLbQfr": "{0} hesabına erişiminiz yoktur."
 }

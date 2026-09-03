@@ -1291,5 +1291,9 @@
   "CgYXuv": "Šajā failā nav slepenā atslēga",
   "+Da3e0": "Šajā failā tiek izmantota neatbalstīta šifrēšana",
   "TtBh7Q": "Šis fails ir neatbalstītā formātā",
-  "eEW1G7": "Nepareiza paroles frāze šim failam"
+  "eEW1G7": "Nepareiza paroles frāze šim failam",
+  "+JwmkX": "Serveris neļauj sūtīt vēstules no šīs e-pasta adreses",
+  "+rwhb+": "Filtrēšanas noteikuma „{0}” mērķa mape vairs nepastāv",
+  "6hXpAt": "Šis ziņojums ir šifrēts, un atslēga nav pieejama",
+  "nLbQfr": "Jums nav piekļuves kontam {0}"
 }

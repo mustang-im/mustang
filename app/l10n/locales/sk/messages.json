@@ -1291,5 +1291,9 @@
   "CgYXuv": "Tento súbor neobsahuje žiadny tajný kľúč",
   "+Da3e0": "Tento súbor používa nepodporované šifrovanie",
   "TtBh7Q": "Tento súbor má nepodporovaný formát",
-  "eEW1G7": "Nesprávna prístupová fráza pre tento súbor"
+  "eEW1G7": "Nesprávna prístupová fráza pre tento súbor",
+  "+JwmkX": "Server neumožňuje odosielanie správ z tejto e-mailovej adresy",
+  "+rwhb+": "Cieľový priečinok pravidla filtrovania „{0}“ už neexistuje",
+  "6hXpAt": "Táto správa je zašifrovaná a kľúč nie je k dispozícii",
+  "nLbQfr": "Nemáte prístup k účtu {0}"
 }

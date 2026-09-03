@@ -1291,5 +1291,9 @@
   "CgYXuv": "Tệp này không chứa khóa bí mật nào",
   "+Da3e0": "Tệp này sử dụng phương thức mã hóa không được hỗ trợ",
   "TtBh7Q": "Tệp này sử dụng định dạng không được hỗ trợ",
-  "eEW1G7": "Mật khẩu không đúng cho tệp này"
+  "eEW1G7": "Mật khẩu không đúng cho tệp này",
+  "+JwmkX": "Máy chủ không cho phép gửi email từ địa chỉ email này",
+  "+rwhb+": "Thư mục đích của quy tắc lọc “{0}” hiện không còn tồn tại nữa",
+  "6hXpAt": "Thông điệp này đã được mã hóa và không có khóa giải mã.",
+  "nLbQfr": "Bạn không có quyền truy cập vào tài khoản {0}"
 }

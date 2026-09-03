@@ -1291,5 +1291,9 @@
   "CgYXuv": "Este archivo no contiene ninguna clave secreta",
   "+Da3e0": "Este archivo utiliza un cifrado no compatible",
   "TtBh7Q": "Este archivo utiliza un formato no compatible",
-  "eEW1G7": "Contraseña incorrecta para este archivo"
+  "eEW1G7": "Contraseña incorrecta para este archivo",
+  "+JwmkX": "El servidor no permite el envío desde esta dirección de correo electrónico",
+  "+rwhb+": "La carpeta de destino de la regla de filtrado «{0}» ya no existe.",
+  "6hXpAt": "Este mensaje está cifrado y no se dispone de la clave.",
+  "nLbQfr": "No tienes acceso a la cuenta de {0}"
 }

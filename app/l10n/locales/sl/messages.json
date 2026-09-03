@@ -1291,5 +1291,9 @@
   "CgYXuv": "Ta datoteka ne vsebuje nobenega skrivnega ključa",
   "+Da3e0": "Ta datoteka uporablja nepodprto šifriranje",
   "TtBh7Q": "Ta datoteka je v nepodprtem formatu",
-  "eEW1G7": "Napačna gesla za to datoteko"
+  "eEW1G7": "Napačna gesla za to datoteko",
+  "+JwmkX": "Strežnik ne dovoljuje pošiljanja s tega e-poštnega naslova",
+  "+rwhb+": "Ciljna mapa pravila za filtriranje »{0}« ne obstaja več",
+  "6hXpAt": "To sporočilo je šifrirano, ključ pa ni na voljo",
+  "nLbQfr": "Nimate dostopa do računa {0}"
 }
