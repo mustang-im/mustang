@@ -84,6 +84,14 @@ test("A message that names our certificate by its subjectKeyIdentifier", async (
   expect(email.text.trim()).toBe("Hello, this is encrypted.");
 });
 
+test("A CMS blob that was delivered as a plain file, as Microsoft sends it", async () => {
+  let { email, errors } = await read(kOctetStream, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+  expect(errors).toEqual([]);
+  expect(email.wasEncrypted).toBe(true);
+  expect(email.text.trim()).toBe("Hello, this is encrypted.");
+});
+
 describe("Algorithms that we do not implement", () => {
   test("An unsupported cipher is named, instead of leaving the message empty", async () => {
     let { errors } = await read(kCamellia, await SMIMEPrivateKey.importPrivateKey(kOurKey));
@@ -412,3 +420,28 @@ xEUsq+M6twfxGBGHhmCR+rz2pqd8CrL1JLJEvd5Mkk+ngFL6PbuXpVsUhhmCjDB8
 BgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBAxdIlTvEfnQrSKea7ihQxzgFDk3W25
 fGVVagXm1xTBCsl4oCNjrKPK93GMEiBDztEktg3oIAuRn8WMJQ+tKOPTwAPoveL9
 HLxHAcbqU8yiKZB81KFOji2jLU6WIqdorSqPmQ==`;
+
+/** `openssl cms -encrypt -aes256 -in body.txt -outform SMIME -recip user.crt`,
+ * with the Content-Type replaced by the generic file type that Microsoft
+ * uses and that gateways rewrite to. MS-OXOSMIME section 2.2.1 */
+const kOctetStream = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted, delivered as a file
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-octet@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/octet-stream; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/AYJKoZIhvcNAQcDoIIB7TCCAekCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBABA2+2E7Tdf+TWzwzy6i
+K3DOG35PkFxaLLOLWiXX0P/CcQis+pDNg5Ga2hb5O4orCGzg0D/XFsIYfDOGzUyg
+KMJPNLnQ2tnO3ObkWJ2DMHCuJkfLwA9i9pNTi6DSWsq0RhqqlTs01GlIq8gBfoj3
+d8wHwdvVURDpP2f9e5X3Ht8FOzA5N1LTNpjqq3TX9nQjU5VIFcSlEACtBz80FFnW
+50nTI8YgFqcmZ2Gl9tDDhcSJZVQt0TewqtpRsDNGc0IBPFnFvpdF3rHyrZelvaSW
+DNdHAPJQuCZuybECCZUKMaABQzGiwKhPvQTvpe2CfpiQPXi0wBf9IeaMXMxnN0bO
+REUwfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQLhZ9MZr1QUFEQ7ufBZWtN4BQ
+85DMorulmVpREDsUAoQyZqPsjQMs0aaAincZRr3Dwu4L0E3PX20k5wLaNmOG4XK3
+5Gllpx+qCxwIIr7h99iaHTy8LfqFSpdYbWcLbYYkUz4=`;
