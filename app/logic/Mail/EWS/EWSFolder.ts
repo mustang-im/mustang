@@ -9,6 +9,7 @@ import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import { EWSItemError } from "./EWSError";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { CreateMIME } from "../SMTP/CreateMIME";
+import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
@@ -358,25 +359,28 @@ export class EWSFolder extends ExchangeFolder {
       };
       try {
         let results = ensureArray(await this.account.callEWS(request));
+        let saving = new PromiseAllDone();
         for (let result of results) {
           try {
             if (result.ResponseClass == "Error") {
               throw new EWSItemError(result, request);
             }
             let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
-            if (email && !email.downloadComplete) {
-              await email.downloadRunOnce.runOnce(async () => {
+            if (email && !email.downloadComplete && !email.downloadRunOnce.running) {
+              // Save the whole batch in parallel. They mostly wait for the DB.
+              saving.add(email.downloadRunOnce.runOnce(async () => {
                 let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
                 email.mime = base64ToUint8Array(mimeBase64);
                 await email.parseMIME();
                 await email.saveCompleteMessage();
-              });
+              }));
               downloadedEmail.add(email);
             }
           } catch (ex) {
             this.account.errorCallback(ex);
           }
         }
+        await saving.wait();
       } catch (ex) {
         this.account.errorCallback(ex);
       }
