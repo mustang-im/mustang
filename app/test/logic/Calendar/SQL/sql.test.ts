@@ -1,11 +1,11 @@
-import { makeTestDatabase } from './SQLDatabase';
-import { SQLCalendar } from './SQLCalendar';
-import { SQLEvent } from './SQLEvent';
-import { FakeAddressbook, FakeCalendar, FakeChatPerson, fakePersons } from '../../testData';
-import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend';
+import { makeTestDatabase } from '../../../../logic/Calendar/SQL/SQLDatabase';
+import { SQLCalendar } from '../../../../logic/Calendar/SQL/SQLCalendar';
+import { SQLEvent } from '../../../../logic/Calendar/SQL/SQLEvent';
+import { FakeAddressbook, FakeCalendar, FakeChatPerson, fakePersons } from '../../../../logic/testData';
+import { appGlobal } from '../../../../logic/app';
+import { connectToBackend } from '../../util/backend';
 import { expect, test } from 'vitest';
-import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
+import { SQLPerson } from '../../../../logic/Contacts/SQL/SQLPerson';
 
 test("Save and read calendars from SQL database", { timeout: 10000 }, async () => {
   await connectToBackend();

@@ -1,11 +1,11 @@
-import { makeTestDatabase } from './SQLDatabase';
-import { SQLTopicAccount } from './SQLTopicAccount';
-import { SQLTopic } from './SQLTopic';
-import { newTopicAccountForProtocol } from '../TopicAccounts';
-import { Topic } from '../Topic';
-import { Paragraph } from '../PageContent';
-import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend';
+import { makeTestDatabase } from '../../../../logic/Topic/SQL/SQLDatabase';
+import { SQLTopicAccount } from '../../../../logic/Topic/SQL/SQLTopicAccount';
+import { SQLTopic } from '../../../../logic/Topic/SQL/SQLTopic';
+import { newTopicAccountForProtocol } from '../../../../logic/Topic/TopicAccounts';
+import { Topic } from '../../../../logic/Topic/Topic';
+import { Paragraph } from '../../../../logic/Topic/PageContent';
+import { appGlobal } from '../../../../logic/app';
+import { connectToBackend } from '../../util/backend';
 import { expect, test } from 'vitest';
 
 test("Save and read topics from SQL database", { timeout: 10000 }, async () => {

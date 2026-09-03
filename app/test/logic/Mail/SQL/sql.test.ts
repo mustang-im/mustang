@@ -1,14 +1,14 @@
-import { EMail } from '../EMail';
-import { Folder, SpecialFolder } from '../Folder';
-import { SQLMailAccount } from './SQLMailAccount';
-import { SQLEMail } from './SQLEMail';
-import { SQLFolder } from './SQLFolder';
-import { SQLSearchEMail } from './SQLSearchEMail';
-import { readMailAccounts } from '../AccountsList/MailAccounts';
-import { FakeMailAccount, FakeChatPerson, fakePersons, FakeAddressbook } from '../../testData';
-import { makeTestDatabase } from './SQLDatabase';
-import { connectToBackend } from '../../../test/logic/util/backend';
-import { appGlobal } from '../../app';
+import { EMail } from '../../../../logic/Mail/EMail';
+import { Folder, SpecialFolder } from '../../../../logic/Mail/Folder';
+import { SQLMailAccount } from '../../../../logic/Mail/SQL/SQLMailAccount';
+import { SQLEMail } from '../../../../logic/Mail/SQL/SQLEMail';
+import { SQLFolder } from '../../../../logic/Mail/SQL/SQLFolder';
+import { SQLSearchEMail } from '../../../../logic/Mail/SQL/SQLSearchEMail';
+import { readMailAccounts } from '../../../../logic/Mail/AccountsList/MailAccounts';
+import { FakeMailAccount, FakeChatPerson, fakePersons, FakeAddressbook } from '../../../../logic/testData';
+import { makeTestDatabase } from '../../../../logic/Mail/SQL/SQLDatabase';
+import { connectToBackend } from '../../util/backend';
+import { appGlobal } from '../../../../logic/app';
 import { ArrayColl } from 'svelte-collections';
 import { expect, test } from 'vitest';
 

@@ -1,7 +1,7 @@
-import { ThunderbirdProfile } from "./TBProfile";
-import { connectToBackend } from "../../../../test/logic/util/backend";
+import { ThunderbirdProfile } from "../../../../../logic/Mail/Import/Thunderbird/TBProfile";
+import { connectToBackend } from "../../../util/backend";
 import { expect, test } from 'vitest'
-import { ThunderbirdAddressbook } from "./TBAddressbook";
+import { ThunderbirdAddressbook } from "../../../../../logic/Mail/Import/Thunderbird/TBAddressbook";
 
 test("Read Thunderbird addressbook", async () => {
   await connectToBackend();

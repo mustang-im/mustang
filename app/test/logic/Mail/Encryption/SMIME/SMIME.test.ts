@@ -1,13 +1,13 @@
 import { expect, test, describe } from "vitest";
-import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, AuthEnvelopedData, GCMParameters, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "./SMIMEASN1";
-import { decryptAuthEnveloped } from "./SMIMEDecrypt";
-import { kOurCapabilities } from "./SMIMESend";
-import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "./SMIMERSAES";
-import { verifySignedData } from "./SMIMEVerify";
-import type { SMIMEPublicKey } from "./SMIMEPublicKey";
-import { appGlobal } from "../../../app";
-import { berToDER } from "../../../../../lib/asn1/ber";
-import { base64ToBytes } from "../../../../../lib/asn1/decoders/pem";
+import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, AuthEnvelopedData, GCMParameters, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
+import { decryptAuthEnveloped } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEDecrypt";
+import { kOurCapabilities } from "../../../../../logic/Mail/Encryption/SMIME/SMIMESend";
+import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "../../../../../logic/Mail/Encryption/SMIME/SMIMERSAES";
+import { verifySignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
+import type { SMIMEPublicKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+import { appGlobal } from "../../../../../logic/app";
+import { berToDER } from "../../../../../../lib/asn1/ber";
+import { base64ToBytes } from "../../../../../../lib/asn1/decoders/pem";
 
 // `verifySignedData()` compares digests using `indexedDB.cmp()`,
 // which the browser has, but Node does not.

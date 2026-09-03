@@ -1,8 +1,8 @@
-import { makeTestDatabase } from './SQLDatabase';
-import { SQLMeetAccount } from './SQLMeetAccount';
-import { fakeMeetAccount, fakeChatPerson } from '../../testData';
-import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend';
+import { makeTestDatabase } from '../../../../logic/Meet/SQL/SQLDatabase';
+import { SQLMeetAccount } from '../../../../logic/Meet/SQL/SQLMeetAccount';
+import { fakeMeetAccount, fakeChatPerson } from '../../../../logic/testData';
+import { appGlobal } from '../../../../logic/app';
+import { connectToBackend } from '../../util/backend';
 import { expect, test } from 'vitest';
 
 test("Save and read meet accounts from SQL database", { timeout: 10000 }, async () => {

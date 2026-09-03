@@ -1,11 +1,11 @@
-import { makeTestDatabase } from './SQLDatabase';
-import { ContactEntry } from '../../Abstract/Person';
-import { SQLAddressbook } from './SQLAddressbook';
-import { SQLGroup } from './SQLGroup';
-import { SQLPerson } from './SQLPerson';
-import { FakeAddressbook, FakeChatPerson, fakeGroups, fakePersons } from '../../testData';
-import { appGlobal } from '../../app';
-import { connectToBackend } from '../../../test/logic/util/backend';
+import { makeTestDatabase } from '../../../../logic/Contacts/SQL/SQLDatabase';
+import { ContactEntry } from '../../../../logic/Abstract/Person';
+import { SQLAddressbook } from '../../../../logic/Contacts/SQL/SQLAddressbook';
+import { SQLGroup } from '../../../../logic/Contacts/SQL/SQLGroup';
+import { SQLPerson } from '../../../../logic/Contacts/SQL/SQLPerson';
+import { FakeAddressbook, FakeChatPerson, fakeGroups, fakePersons } from '../../../../logic/testData';
+import { appGlobal } from '../../../../logic/app';
+import { connectToBackend } from '../../util/backend';
 import { Collection } from 'svelte-collections';
 import { expect, test } from 'vitest';
 

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { Frequency, Weekday, RecurrenceInit, RecurrenceRule } from './RecurrenceRule';
+import { Frequency, Weekday, RecurrenceInit, RecurrenceRule } from '../../../logic/Calendar/RecurrenceRule';
 
 /** All times below, so that the expected RRULEs don't depend on the machine's zone. */
 const kTimezone = "UTC";
