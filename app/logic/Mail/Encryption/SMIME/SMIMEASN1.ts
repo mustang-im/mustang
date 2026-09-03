@@ -109,6 +109,9 @@ const oids = {
   // RFC 5035: which certificate the signer used
   "1.2.840.113549.1.9.16.2.12": "signingCertificate",
   "1.2.840.113549.1.9.16.2.47": "signingCertificateV2",
+  // RFC 5280: what a certificate may be used for
+  "2.5.29.30": "nameConstraints",
+  "2.5.29.37.0": "anyExtendedKeyUsage",
 };
 
 export type WebCryptoAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
@@ -307,6 +310,48 @@ const GeneralName = define("GeneralName", function() {
 
 export const SubjectAlternativeName = define("SubjectAlternativeName", function() {
   this.seqof(GeneralName);
+});
+
+/** Whether the certificate may issue other certificates, and how many more
+ * certificates may follow it in the chain. RFC 5280 section 4.2.1.9 */
+export interface BasicConstraints {
+  cA: boolean;
+  pathLenConstraint?: bigint;
+}
+export const BasicConstraints = define<BasicConstraints>("BasicConstraints", function() {
+  this.seq().obj(
+    this.key("cA").bool().def(false),
+    this.key("pathLenConstraint").optional().int(),
+  );
+});
+
+/** What the key may be used for, one bit per usage, starting with
+ * digitalSignature as the highest bit. RFC 5280 section 4.2.1.3 */
+export const KeyUsage = define<BitString>("KeyUsage", function() {
+  this.bitstr();
+});
+
+/** What the certificate may be used for, e.g. `emailProtection`.
+ * RFC 5280 section 4.2.1.12 */
+export const ExtKeyUsage = define<(string | number[])[]>("ExtKeyUsage", function() {
+  this.seqof(Oid);
+});
+
+const GeneralSubtree = define("GeneralSubtree", function() {
+  this.seq().obj(
+    this.key("base").use(GeneralName),
+    this.key("minimum").optional().implicit(0).int(),
+    this.key("maximum").optional().implicit(1).int(),
+  );
+});
+
+/** The names that a CA certificate may issue certificates for, e.g. a company
+ * CA that is limited to its own email domain. RFC 5280 section 4.2.1.10 */
+export const NameConstraints = define("NameConstraints", function() {
+  this.seq().obj(
+    this.key("permittedSubtrees").optional().implicit(0).seqof(GeneralSubtree),
+    this.key("excludedSubtrees").optional().implicit(1).seqof(GeneralSubtree),
+  );
 });
 
 /** The part of a certificate that is (to be) signed */

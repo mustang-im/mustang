@@ -1,6 +1,6 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, AlgorithmIdentifier, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, RSASSAPSSParams, Oid, RDNSequence, TBSCertificate, DigestInfo, type WebCryptoAlgorithm } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, AlgorithmIdentifier, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, RSASSAPSSParams, Oid, RDNSequence, TBSCertificate, DigestInfo, BasicConstraints, KeyUsage, ExtKeyUsage, NameConstraints, type WebCryptoAlgorithm } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayFromHex, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -107,14 +107,10 @@ export class SMIMEPublicKey extends PublicKey {
     if (!this.certificate) {
       return KeyStatus.NoCertificate;
     }
-    // This checks only that each certificate is validly signed by the next one
-    // up to a trusted root. It does not verify basicConstraints (CA:TRUE) or
-    // keyUsage/extKeyUsage (emailProtection). Identity is bound elsewhere, in
-    // `EMail.rememberSigner()`, by matching the email addresses of the signer
-    // certificate against `email.from`, so a rogue leaf cannot sign as another
-    // identity today. Do not start trusting the chain itself for identity
-    // binding without adding those X.509 path checks first.
+    // Identity is bound elsewhere, in `EMail.rememberSigner()`, by matching
+    // the email addresses of the signer certificate against `email.from`.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    let depth = 0; // how many certificates are below this issuer in the chain
     for (let key of this.chain) {
       if (key.obsolete) {
         console.log("obsolete certificate in chain");
@@ -124,7 +120,25 @@ export class SMIMEPublicKey extends PublicKey {
       if (!await verifySignature(cert, signer)) {
         return KeyStatus.ChainInvalid;
       }
+      // RFC 5280 section 6.1: only a CA may issue certificates, only as deep
+      // as its `pathLenConstraint` allows, and only for the names that it is
+      // limited to. Trusted roots are exempt: the user vouches for them.
+      let extension = signer.tbsCertificate.extensions?.find(ext => ext.extnID == "basicConstraints");
+      let { cA, pathLenConstraint } = extension ? BasicConstraints.decode(extension.extnValue) : { cA: false };
+      if (!cA || pathLenConstraint != null && pathLenConstraint < depth) {
+        console.log("certificate in chain may not issue this certificate");
+        return KeyStatus.ChainInvalid;
+      }
+      if (!allowsKeyUsage(signer, KeyUsageBit.KeyCertSign)) {
+        console.log("certificate in chain may not sign certificates");
+        return KeyStatus.ChainInvalid;
+      }
+      if (!allowsEMailAddresses(signer, this.userIDs)) {
+        console.log("certificate is for an address that its CA may not issue");
+        return KeyStatus.ChainInvalid;
+      }
       cert = signer;
+      depth++;
     }
     for (let type of ["bundled", "system", "extra"]) {
       for (let ca of await lazyGetCACertificates(type)) {
@@ -286,6 +300,61 @@ export async function verifyRSAPSS(publicKey: SubjectPublicKeyInfo, signature: U
   return await crypto.subtle.verify({ name: "RSA-PSS", saltLength: Number(params.saltLength) }, key, signature as BufferSource, content as BufferSource);
 }
 
+/** Whether the certificate allows this use of its key.
+ * A certificate that does not say allows all of them.
+ * RFC 5280 section 4.2.1.3 */
+export function allowsKeyUsage(cert: Certificate, usage: KeyUsageBit): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "keyUsage");
+  if (!extension) {
+    return true;
+  }
+  let allowed = KeyUsage.decode(extension.extnValue);
+  return !!(allowed.data[usage >> 3] & 0x80 >> (usage & 7));
+}
+
+/** Whether the certificate allows this purpose, e.g. `emailProtection`.
+ * A certificate that does not say allows all of them.
+ * RFC 5280 section 4.2.1.12 */
+export function allowsPurpose(cert: Certificate, purpose: string): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "extKeyUsage");
+  if (!extension) {
+    return true;
+  }
+  return ExtKeyUsage.decode(extension.extnValue)
+    .some(allowed => allowed == purpose || allowed == "anyExtendedKeyUsage");
+}
+
+/** Whether the email addresses are all within the subtrees that this CA
+ * certificate may issue certificates for. RFC 5280 section 4.2.1.10 */
+function allowsEMailAddresses(cert: Certificate, emailAddresses: ArrayColl<string>): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "nameConstraints");
+  if (!extension) {
+    return true;
+  }
+  let constraints: any;
+  try {
+    constraints = NameConstraints.decode(extension.extnValue);
+  } catch (ex) {
+    // Subtree types that we do not implement, e.g. directoryName, fail to
+    // decode. They do not limit the email addresses anyway.
+    console.error(ex);
+    return true;
+  }
+  let emailSubtrees = (subtrees: any[]) => sanitize.array(subtrees, [])
+    .filter(subtree => subtree.base.type == "rfc822Name")
+    .map(subtree => sanitize.string(subtree.base.value, "").toLowerCase());
+  // A subtree is a complete address, a host, or `.domain` for its subdomains
+  let matches = (address: string, subtree: string) =>
+    subtree.includes("@") ? address == subtree :
+      subtree.startsWith(".") ? address.endsWith(subtree) :
+        address.endsWith("@" + subtree);
+  let permitted = emailSubtrees(constraints.permittedSubtrees);
+  let excluded = emailSubtrees(constraints.excludedSubtrees);
+  return emailAddresses.every(address =>
+    (!permitted.length || permitted.some(subtree => matches(address, subtree))) &&
+    !excluded.some(subtree => matches(address, subtree)));
+}
+
 let promiseGetCACertificates: Record<string, Promise<Certificate[]> | undefined> = {};
 function lazyGetCACertificates(type: string): Promise<Certificate[]> {
   return promiseGetCACertificates[type] ??= getCACertificatesLazy(type);
@@ -303,6 +372,15 @@ async function getCACertificatesLazy(type: string): Promise<Certificate[]> {
     }
   }
   return certificates;
+}
+
+/** The bit for each use in the `keyUsage` extension.
+ * RFC 5280 section 4.2.1.3 */
+export enum KeyUsageBit {
+  DigitalSignature = 0,
+  NonRepudiation = 1,
+  KeyEncipherment = 2,
+  KeyCertSign = 5,
 }
 
 export enum KeyStatus {

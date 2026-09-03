@@ -1,6 +1,6 @@
 import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, Time, Certificate, SigningCertificate, SigningCertificateV2, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
-import { SMIMEPublicKey, verifyECDSA } from "./SMIMEPublicKey";
+import { SMIMEPublicKey, verifyECDSA, allowsKeyUsage, allowsPurpose, KeyUsageBit } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
@@ -30,6 +30,17 @@ export async function verifySignedData(signedData: any, content: Uint8Array, sen
     sameName(sid.issuer, cert.tbsCertificate.issuer));
   if (!cert) {
     console.log("the certificate that signed the message was not sent with it");
+    return null;
+  }
+  // RFC 5280 sections 4.2.1.3 and 4.2.1.12: the certificate must be meant for
+  // signing, and for email
+  if (!allowsKeyUsage(cert, KeyUsageBit.DigitalSignature) &&
+      !allowsKeyUsage(cert, KeyUsageBit.NonRepudiation)) {
+    console.log("the certificate is not for signing");
+    return null;
+  }
+  if (!allowsPurpose(cert, "emailProtection")) {
+    console.log("the certificate is not for email");
     return null;
   }
   let publicKey = cert.tbsCertificate.publicKey;
