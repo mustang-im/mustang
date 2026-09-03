@@ -44,7 +44,7 @@ async function signedAttributes(): Promise<any[]> {
     attrValue: [Oid.encode("data")],
   }, {
     attrType: "signingTime",
-    attrValue: [UTCTime.encode(Date.parse("2026-09-03T06:29:01Z"))],
+    attrValue: [UTCTime.encode(Date.parse("2026-09-04T12:00:00Z"))],
   }, {
     attrType: "messageDigest",
     attrValue: [OctetString.encode(messageDigest)],
@@ -144,15 +144,15 @@ describe("Signing time", () => {
   });
 
   test("must be around the time when the message was sent", async () => {
-    let signedData = await signAsEva(await signedAttributes()); // signed 06:29:01
-    expect(await verify(signedData, new Date("2026-09-03T06:00:00Z"))).toBeTruthy();
-    expect(await verify(signedData, new Date("2026-09-03T09:00:00Z"))).toBe(null);
+    let signedData = await signAsEva(await signedAttributes()); // signed at 12:00
+    expect(await verify(signedData, new Date("2026-09-04T12:30:00Z"))).toBeTruthy();
+    expect(await verify(signedData, new Date("2026-09-04T15:00:00Z"))).toBe(null);
   });
 
   test("falls back to the send time, when the message does not say", async () => {
     let attributes = (await signedAttributes()).filter(attr => attr.attrType != "signingTime");
     let signedData = await signAsEva(attributes);
-    expect(await verify(signedData, new Date("2026-09-04T12:00:00Z"))).toBeTruthy();
+    expect(await verify(signedData, new Date("2026-09-04T18:00:00Z"))).toBeTruthy();
     expect(await verify(signedData, new Date("2035-01-01T12:00:00Z"))).toBe(null);
   });
 });
@@ -170,6 +170,18 @@ describe("The certificate that the signer names (RFC 5035)", () => {
     signedData.content.certificates = [substitute];
     signedData.content.signerInfos[0].sid.value.serialNumber = substitute.tbsCertificate.serialNumber;
     expect(await verify(signedData)).toBe(null);
+  });
+});
+
+describe("What the signer certificate is for", () => {
+  test("must include signing", async () => {
+    let cert = Certificate.decodePEM(kEvaEncryptionCert, { label: "CERTIFICATE" });
+    expect(await verify(await signAsEva(await signedAttributes(), cert))).toBe(null);
+  });
+
+  test("must include email", async () => {
+    let cert = Certificate.decodePEM(kEvaServerCert, { label: "CERTIFICATE" });
+    expect(await verify(await signAsEva(await signedAttributes(), cert))).toBe(null);
   });
 });
 
@@ -315,5 +327,61 @@ otV8/KfnUR8VAHRF0HPA4NrPQgcLaVg7wi1Zt3apLJNJL/9gR6Nsw1flPq5iFeMK
 Y+BsgL++oU9ugSSdm0g4BAdBBAS0kahguzUyDafXhpa29OJPmdk17eIFlVkWCk5x
 EAlfYlVEhOegaf2hJ9FH/VJXNErGdfyuv4T//cAj/+G1wbh1FsAcCLdZKoRO3RGD
 JTrM0S1CkAIlZCU+JgwgKeaF4cyCaps=
+-----END CERTIFICATE-----
+`;
+
+/* The same key and subject as `kSignedByEva`, but issued for encrypting only:
+ * keyUsage=critical,keyEncipherment, extendedKeyUsage=emailProtection
+ * openssl verify -CAfile ca.crt -purpose smimesign eva-encipher.crt fails
+ */
+const kEvaEncryptionCert = `
+-----BEGIN CERTIFICATE-----
+MIIDczCCAlugAwIBAgIBLDANBgkqhkiG9w0BAQsFADAmMRAwDgYDVQQDDAdUZXN0
+IENBMRIwEAYDVQRhDAlWQVRERS05OTkwHhcNMjYwOTAzMDY0NDQxWhcNMzQxMTIw
+MDY0NDQxWjBCMQwwCgYDVQQDDANFdmExEjAQBgNVBGEMCVZBVERFLTEyMzEeMBwG
+CSqGSIb3DQEJARYPZXZhQGV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAtHnpvtitvfqLmNxgJ2IX4ZH7rcdW5CbEHwzJJbGFCZ8MzwUU
+T7v0QM4Pu3soCmFvDmoqqH/JbP31wz0gkaSj+dUDhSiqCvObn5SQ7QuHvza3j6Vt
+qZIx6PSJ+/lKT6iICvIWrEQkL0+/77HA/af/7Yro9hTC50O8ATctgqvC4ngS/a18
+OyJSZLJy3yDFbXe6xG/uxAi3MtoWD5srQwmkYonyeEbpkwaSDGPYvhswp9/LZSTz
+E490IuUtsoLg7aayDECNjHgOr/NCj97mLPWobgKBM3mXNPvt+3rDJNfRUNOx+cwI
+mAPGQkcpgvm9qRl5Xyo5XRt5t5o+eR9nchj4tQIDAQABo4GPMIGMMAkGA1UdEwQC
+MAAwDgYDVR0PAQH/BAQDAgUgMBMGA1UdJQQMMAoGCCsGAQUFBwMEMBoGA1UdEQQT
+MBGBD2V2YUBleGFtcGxlLmNvbTAdBgNVHQ4EFgQU3Zv6m443avRUCiOHUPPtrKxf
+NAEwHwYDVR0jBBgwFoAUhvNcd2obmnDc913nfrD3oVQH0b0wDQYJKoZIhvcNAQEL
+BQADggEBAGaN7NjPgQeNau4u01rnmXr+83MUAGpdVYTUAwL6zXgGy0lBxlM+tAzj
+jB89XKIYLHCMvlcDQPM0baYDudNM1LD3nALxhlhP78TDILMh6Q6niGP0d/iIKK2j
+gNyWZw4mCkJwFF+hAVIHvHYt/Gzt3gVe1uYNIfiSBR+f0Xt0pCdhIbvCjjecZubh
+InmQMMkvBQiHUJSfzJvMFxv/NpSajwM5YfP5BxKmP66nA6r69KCrEgIIVI9IitEB
+3SIp8Igp+lqW5jeoORzlfwO6O6++3FB/Q1acT4a1mXrui7j4AMxmRacdJJpniCM3
+zswrYiqd9CKrmSFDpMv9N13C+s9bCNc=
+-----END CERTIFICATE-----
+`;
+
+/* ... and one for a TLS server:
+ * keyUsage=critical,digitalSignature, extendedKeyUsage=serverAuth
+ * openssl verify -CAfile ca.crt -purpose smimesign eva-tls.crt fails
+ */
+const kEvaServerCert = `
+-----BEGIN CERTIFICATE-----
+MIIDczCCAlugAwIBAgIBLTANBgkqhkiG9w0BAQsFADAmMRAwDgYDVQQDDAdUZXN0
+IENBMRIwEAYDVQRhDAlWQVRERS05OTkwHhcNMjYwOTAzMDY0NDQxWhcNMzQxMTIw
+MDY0NDQxWjBCMQwwCgYDVQQDDANFdmExEjAQBgNVBGEMCVZBVERFLTEyMzEeMBwG
+CSqGSIb3DQEJARYPZXZhQGV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAtHnpvtitvfqLmNxgJ2IX4ZH7rcdW5CbEHwzJJbGFCZ8MzwUU
+T7v0QM4Pu3soCmFvDmoqqH/JbP31wz0gkaSj+dUDhSiqCvObn5SQ7QuHvza3j6Vt
+qZIx6PSJ+/lKT6iICvIWrEQkL0+/77HA/af/7Yro9hTC50O8ATctgqvC4ngS/a18
+OyJSZLJy3yDFbXe6xG/uxAi3MtoWD5srQwmkYonyeEbpkwaSDGPYvhswp9/LZSTz
+E490IuUtsoLg7aayDECNjHgOr/NCj97mLPWobgKBM3mXNPvt+3rDJNfRUNOx+cwI
+mAPGQkcpgvm9qRl5Xyo5XRt5t5o+eR9nchj4tQIDAQABo4GPMIGMMAkGA1UdEwQC
+MAAwDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMBMBoGA1UdEQQT
+MBGBD2V2YUBleGFtcGxlLmNvbTAdBgNVHQ4EFgQU3Zv6m443avRUCiOHUPPtrKxf
+NAEwHwYDVR0jBBgwFoAUhvNcd2obmnDc913nfrD3oVQH0b0wDQYJKoZIhvcNAQEL
+BQADggEBAB0huPurNBZ8YlWKGvVO4HRlsfURtRtC9WlYc/mOpQHk4+CU1r/mbSLL
+yMQA/BjYFftr4FPvszB8mTrsbUnuE9kHhUSH36pctKoWRweCXvZvB1rSjjp1KyR9
+F8qhv93n7nBa36+Q4HdrLvYYQFCy0fIzQG5fVBk2GzgQWKnGhVh374/WJIKTP8kY
+wRwxgXTK46XfMeOh6AEvqgMh1/yCt/XalD/CXpIyhtXn2DEZCPw3/lYES5dV+L+9
+w5VtgGqrCduHyrD/OZJ6Er3Rq773kDr4jHGUzRJf3bV8IX6CJWmf2YP/4zDvKDdo
+wGsiG7V2Som0wpt2oln0qG11yIpQVwo=
 -----END CERTIFICATE-----
 `;
