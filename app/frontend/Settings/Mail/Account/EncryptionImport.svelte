@@ -33,11 +33,13 @@
       <hbox class="label">{$t`Import from`}</hbox>
       <hbox class="buttons">
         <hbox bind:this={appsButton}>
+          <!--
           <Button
             label={$t`App`}
             icon={AppIcon}
             onClick={onImportFromApps}
             />
+          -->
         </hbox>
         <Button
           label={$t`File`}
