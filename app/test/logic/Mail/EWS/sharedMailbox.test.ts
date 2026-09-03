@@ -10,8 +10,10 @@ import { ArrayColl, type Collection } from "svelte-collections";
 /** Answers the server calls that a notification triggers */
 class TestFolder extends EWSFolder {
   readonly downloaded = new ArrayColl<EWSEMail>();
+  /** The notification does not wait for the download, so the test has to */
+  readonly downloadedNewMail = Promise.withResolvers<void>();
 
-  async listMessages(): Promise<Collection<EWSEMail>> {
+  async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
     let email = this.newEMail();
     email.itemID = "new-mail-" + this.id;
     return new ArrayColl([email]);
@@ -19,6 +21,7 @@ class TestFolder extends EWSFolder {
 
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
     this.downloaded.addAll(emails);
+    this.downloadedNewMail.resolve();
     return emails;
   }
 }
@@ -26,7 +29,6 @@ class TestFolder extends EWSFolder {
 function newInbox(account: EWSAccount, id: string): TestFolder {
   let inbox = new TestFolder(account);
   inbox.id = id;
-  inbox.syncState = "sync-state"; // otherwise we list the whole folder
   account.folderMap.set(inbox.id, inbox);
   return inbox;
 }
@@ -89,6 +91,7 @@ test("Invitations to our own mailbox do not go to the shared calendar", () => {
 
 test("New mail in our own mailbox is downloaded as it arrives", async () => {
   await alice.processNotification({ NewMailEvent: { ItemId: { Id: "new-mail-alice-inbox" }, ParentFolderId: { Id: aliceInbox.id } } });
+  await aliceInbox.downloadedNewMail.promise;
 
   expect(aliceInbox.downloaded.length).toBe(1);
 });
@@ -96,6 +99,7 @@ test("New mail in our own mailbox is downloaded as it arrives", async () => {
 test("New mail in a mailbox shared with us is downloaded as it arrives", async () => {
   // The notification arrives on Alice's connection, but the folder is Bob's
   await alice.processNotification({ NewMailEvent: { ItemId: { Id: "new-mail-bob-inbox" }, ParentFolderId: { Id: bobInbox.id } } });
+  await bobInbox.downloadedNewMail.promise;
 
   expect(bobInbox.downloaded.length).toBe(1);
 });
