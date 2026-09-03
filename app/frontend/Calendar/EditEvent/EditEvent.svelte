@@ -181,6 +181,9 @@
     border: 1px solid var(--border);
     border-radius: 5px;
   }
+  .description {
+    min-width: 300px;
+  }
   .description :global(.section > .icon) {
     display: none;
   }
