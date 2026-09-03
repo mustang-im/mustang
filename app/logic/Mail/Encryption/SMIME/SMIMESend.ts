@@ -145,7 +145,8 @@ export class SMIMESend {
       let recipientKeys = mail.allRecipients().contents.map(puid =>
         getPublicKeyForPersonUID(puid, SMIMEPublicKey));
       assert(recipientKeys.every(key => key), gt`Cannot encrypt to all recipients using S/MIME`);
-      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
+      let myCertificate = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
+      if (!(await Promise.all(recipientKeys.map(key => key.matches(myCertificate.tbsCertificate.publicKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
       let symmetricKey = new Uint8Array(32);

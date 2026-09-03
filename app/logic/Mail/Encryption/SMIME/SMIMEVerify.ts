@@ -1,6 +1,6 @@
 import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
-import { SMIMEPublicKey } from "./SMIMEPublicKey";
+import { SMIMEPublicKey, verifyECDSA } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
@@ -9,7 +9,7 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  * @param signedData decoded `SignedData`
  * @param content the signed bytes: the cleartext MIME part for
  *   `multipart/signed`, or the unwrapped eContent for opaque-signed messages
- * @returns the last hex digits of the signer's RSA modulus,
+ * @returns the signer's public key,
  *   or null, if the signature does not verify
  */
 export async function verifySignedData(signedData: any, content: Uint8Array): Promise<SMIMEPublicKey | null> {
@@ -30,22 +30,25 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
       sameName(sid.issuer, cert.tbsCertificate.issuer)) ?? cert;
   }
   let publicKey = cert.tbsCertificate.publicKey;
-  if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
-    console.log("certificate does not contain an RSA public key");
+  let isECDSA = publicKey.algorithmIdentifier.algorithm == "ecPublicKey";
+  if (!isECDSA && publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
+    console.log("certificate does not contain an RSA or ECDSA public key");
     return null;
   }
   let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
   // RFC 5652 section 10.1.2: signers write rsaEncryption, but verifiers
   // should also accept e.g. sha256WithRSAEncryption, which some clients
-  // write instead. Its hash must match the digest algorithm.
-  if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption" &&
+  // write instead. Its hash must match the digest algorithm. RFC 5753
+  // section 2 says the same for ECDSA, where Thunderbird and Apple Mail
+  // write ecdsaWithSHA256 rather than the bare ecPublicKey.
+  if (signerInfo.signatureAlgorithm.algorithm != (isECDSA ? "ecPublicKey" : "rsaEncryption") &&
       sanitize.translate(signerInfo.signatureAlgorithm.algorithm, SignatureAlgorithm, null) != digestAlgorithm) {
-    console.log("signature was not signed with RSA");
+    console.log("signature algorithm does not match the certificate");
     return null;
   }
   let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, content as BufferSource));
-  // Without signed attributes, the signature covers the content digest directly.
-  let signedDigest = messageDigest;
+  // Without signed attributes, the signature covers the content directly.
+  let signedContent = content;
   if (signerInfo.signedAttrs) {
     let digestAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "messageDigest");
     if (!digestAttribute) {
@@ -56,8 +59,7 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
       console.log("signed digest did not match message");
       return null;
     }
-    let signedAttrs = Attributes.encode(signerInfo.signedAttrs);
-    signedDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, signedAttrs));
+    signedContent = Attributes.encode(signerInfo.signedAttrs);
   }
   /* `await crypto.subtle.verify()` returns `false` on
    * correctly signed messages...
@@ -67,15 +69,23 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     return rsa.n.toString(16);
   }
   */
-  let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
-  let digestInfo = DigestInfo.decode(unpadPKCS(encrypt(signerInfo.signature, rsa), BlockType.Signed));
-  if (digestInfo.digestAlgorithm.algorithm != signerInfo.digestAlgorithm.algorithm) {
-    console.log("signature algorithm mismatch");
-    return null;
-  }
-  if (indexedDB.cmp(digestInfo.digest, signedDigest)) {
-    console.log("signature did not match the signed digest");
-    return null;
+  if (isECDSA) {
+    if (!await verifyECDSA(publicKey, signerInfo.signature, digestAlgorithm, signedContent)) {
+      console.log("signature did not match the signed content");
+      return null;
+    }
+  } else {
+    let signedDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, signedContent));
+    let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
+    let digestInfo = DigestInfo.decode(unpadPKCS(encrypt(signerInfo.signature, rsa), BlockType.Signed));
+    if (digestInfo.digestAlgorithm.algorithm != signerInfo.digestAlgorithm.algorithm) {
+      console.log("signature algorithm mismatch");
+      return null;
+    }
+    if (indexedDB.cmp(digestInfo.digest, signedDigest)) {
+      console.log("signature did not match the signed digest");
+      return null;
+    }
   }
   let signer = new SMIMEPublicKey();
   while (cert && await signer.addCertificate(cert)) {
