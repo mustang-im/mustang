@@ -174,7 +174,6 @@ export class OWAAccount extends ExchangeMailAccount {
     await this.loginRunOnce.runOnce(async () => {
       if (this.mainAccount) {
         await this.mainAccount.login(interactive);
-        await this.listFolders();
         return;
       }
       await ensureLicensed();
