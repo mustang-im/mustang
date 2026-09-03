@@ -153,6 +153,20 @@ describe("NTLM per-TCP-connection authentication", () => {
     }
   });
 
+  it("opens the TCP connections one at a time, for servers that refuse simultaneous connects", async () => {
+    server.refuseSimultaneousConnects = true;
+    let pool = new NTLMConnectionPool(account);
+    let requests = [];
+    for (let i = 0; i < 6; i++) {
+      requests.push(pool.request(`<request>${i}</request>`).then(async response => {
+        expect(await response.text()).toBe(`<response><request>${i}</request></response>`);
+      }));
+    }
+    await Promise.all(requests);
+    expect(server.connectsRefused).toBe(0);
+    pool.close();
+  });
+
   it("does not repeat a request that the server already started to answer", async () => {
     server.killWhileResponding = true; // RST in the middle of the 200 response
     let pool = new NTLMConnectionPool(account);

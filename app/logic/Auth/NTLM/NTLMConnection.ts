@@ -37,10 +37,13 @@ export class NTLMConnection {
   /** `socketID` of the TCP connection that we logged in to. 0 = none. */
   protected authenticatedSocketID = 0;
   protected readonly lock = new Lock();
+  /** from `NTLMConnectionPool` */
+  protected readonly handshakeLock: Lock;
 
-  constructor(account: EWSAccount, cookies?: CookieJar) {
+  constructor(account: EWSAccount, cookies?: CookieJar, handshakeLock?: Lock) {
     this.account = account;
     this.cookies = cookies ?? new CookieJar();
+    this.handshakeLock = handshakeLock ?? new Lock();
   }
 
   /**
@@ -116,9 +119,15 @@ export class NTLMConnection {
     let type1 = await appGlobal.remoteApp.createType1Message();
     // Server ignores the body of this step, so don't waste bandwidth
     // A VPN tunnel needs some time after computer woke up, can cause errors "before secure TLS connection"
-    let response = await retryOnTransientError(() =>
-      this.send(type1, ""),
-      3, 8);
+    let response = await retryOnTransientError(async () => {
+      // Some servers and VPN gateways drop connections when multiple are established at the same time.
+      let locked = await this.handshakeLock.lock();
+      try {
+        return await this.send(type1, "");
+      } finally {
+        locked.release();
+      }
+    }, 3, 8);
     if (response.status != 401) {
       return { socketID: response.socketID, type2: null };
     }

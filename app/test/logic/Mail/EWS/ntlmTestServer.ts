@@ -46,6 +46,10 @@ export class NTLMTestServer {
   /** Body of each request that had one, in order. The Type 1 probe of the
    * handshake has none, so this is what the server actually processed. */
   requestBodies: string[] = [];
+  /** TCP connections dropped by `refuseSimultaneousConnects` */
+  connectsRefused = 0;
+  /** Accepted, but no request on them yet, i.e. still being established */
+  protected connecting = new Set<Socket>();
 
   // Behavior
   requireAuth = true;
@@ -55,6 +59,10 @@ export class NTLMTestServer {
   closeAfterResponses = 0;
   /** Destroy the TCP connection as soon as the next request arrives on it */
   killNextRequest = false;
+  /** Refuse a new TCP connection that is opened while another connection is
+   * still being established, like a server or VPN gateway that lets only one
+   * TLS handshake through at a time */
+  refuseSimultaneousConnects = false;
   /** Answer the next request only partially, then reset the TCP connection.
    * The server processed the request, so the client must not repeat it. */
   killWhileResponding = false;
@@ -77,7 +85,13 @@ export class NTLMTestServer {
       });
     });
     this.server.on("connection", socket => {
+      if (this.refuseSimultaneousConnects && this.connecting.size) {
+        this.connectsRefused++;
+        socket.resetAndDestroy();
+        return;
+      }
       this.socketsCreated++;
+      this.connecting.add(socket);
       this.states.set(socket, { authenticated: false, challenge: null, responses: 0 });
       socket.on("data", () => {
         if (this.killNextRequest) {
@@ -85,7 +99,10 @@ export class NTLMTestServer {
           socket.destroy();
         }
       });
-      socket.on("close", () => this.states.delete(socket));
+      socket.on("close", () => {
+        this.connecting.delete(socket);
+        this.states.delete(socket);
+      });
     });
     await new Promise<void>(resolve => this.server.listen(0, "127.0.0.1", resolve));
     this.url = `http://127.0.0.1:${(this.server.address() as AddressInfo).port}/EWS/Exchange.asmx`;
@@ -109,6 +126,8 @@ export class NTLMTestServer {
 
   protected async onRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     this.requests++;
+    this.connecting.delete(req.socket); // the connection is up
+
     this.cookieLog.push(req.headers.cookie ?? "");
     let body = "";
     for await (let chunk of req) {

@@ -1,6 +1,7 @@
 import { NTLMConnection, CookieJar } from "./NTLMConnection";
 import type { NTLMRequestOptions, NTLMResponse } from "./NTLMResponse";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import { Lock } from "../../util/flow/Lock";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { arrayRemove } from "../../util/util";
 
@@ -21,6 +22,7 @@ export class NTLMConnectionPool {
   protected readonly free: NTLMConnection[] = [];
   protected readonly all: NTLMConnection[] = [];
   protected readonly semaphore: Semaphore;
+  protected readonly handshakeLock = new Lock();
 
   constructor(account: EWSAccount, cookies = new CookieJar(), maxConnections = 6) {
     this.account = account;
@@ -34,7 +36,7 @@ export class NTLMConnectionPool {
     let locked = await this.semaphore.lock();
     let conn = this.free.pop();
     if (!conn) {
-      conn = new NTLMConnection(this.account, this.cookies);
+      conn = new NTLMConnection(this.account, this.cookies, this.handshakeLock);
       this.all.push(conn);
     }
     try {
@@ -62,7 +64,7 @@ export class NTLMConnectionPool {
    * @param _streamID only `NTLMChromiumSession` needs it
    */
   newDedicatedConnection(_streamID?: string): NTLMConnection {
-    return new NTLMConnection(this.account, this.cookies);
+    return new NTLMConnection(this.account, this.cookies, this.handshakeLock);
   }
 
   protected remove(conn: NTLMConnection): void {
