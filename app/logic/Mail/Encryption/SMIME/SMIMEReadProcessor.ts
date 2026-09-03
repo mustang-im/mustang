@@ -4,7 +4,7 @@ import type { Attachment } from "../../../Abstract/Attachment";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, RC2CBCParameters, SignedData } from "./SMIMEASN1";
+import { AlgorithmIdentifier, ContentInfo, DigestAlgorithm, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, RC2CBCParameters, RSAESOAEPParams, SignedData, algorithmName } from "./SMIMEASN1";
 import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { rc2Decrypt, tripleDESDecrypt } from "./legacyCiphers";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
@@ -153,13 +153,18 @@ export class SMIMEReadProcessor extends EMailProcessor {
             if (!isForOurCertificate) {
               continue;
             }
-            let keyEncryptionAlgorithm = recipientInfo.value.keyEncryptionAlgorithm.algorithm;
-            if (keyEncryptionAlgorithm != "rsaEncryption") {
-              unsupportedKeyTransport = algorithmName(keyEncryptionAlgorithm);
-              continue;
+            let keyEncryptionAlgorithm = recipientInfo.value.keyEncryptionAlgorithm;
+            if (keyEncryptionAlgorithm.algorithm == "rsaEncryption") {
+              let rawKey = await privateKey.decryptKey();
+              return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
             }
-            let rawKey = await privateKey.decryptKey();
-            return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
+            if (keyEncryptionAlgorithm.algorithm == "rsaESOAEP") {
+              let contentKey = await decryptOAEP(recipientInfo.value.encryptedKey, privateKey, keyEncryptionAlgorithm);
+              if (contentKey) {
+                return contentKey;
+              }
+            }
+            unsupportedKeyTransport = algorithmName(keyEncryptionAlgorithm.algorithm);
           }
         }
       }
@@ -231,6 +236,33 @@ export class SMIMEReadProcessor extends EMailProcessor {
   }
 }
 
+/**
+ * Decrypts the content key that was encrypted with RSA-OAEP, RFC 8551
+ * section 2.4.3. WebCrypto implements it, unlike the PKCS#1 v1.5 padding
+ * that we do ourselves.
+ * @param algorithm the `keyEncryptionAlgorithm` of the recipient
+ * @returns null, if the message uses OAEP in a way that WebCrypto cannot
+ */
+async function decryptOAEP(encryptedKey: Uint8Array, privateKey: SMIMEPrivateKey, algorithm: AlgorithmIdentifier): Promise<Uint8Array | null> {
+  let { hashFunc, maskGenFunc, pSourceFunc } = RSAESOAEPParams.decode(algorithm.parameters);
+  // RFC 3560 section 3: in CMS, the label is always empty
+  if (maskGenFunc.algorithm != "mgf1" || pSourceFunc.algorithm != "pSpecified" ||
+      pSourceFunc.parameters && OctetString.decode(pSourceFunc.parameters).length) {
+    return null;
+  }
+  let hash = sanitize.translate(hashFunc.algorithm, DigestAlgorithm, null);
+  // Without parameters, the mask generation uses SHA-1
+  let maskHash = maskGenFunc.parameters
+    ? sanitize.translate(AlgorithmIdentifier.decode(maskGenFunc.parameters).algorithm, DigestAlgorithm, null)
+    : "SHA-1";
+  if (!hash || hash != maskHash) { // WebCrypto uses the same hash for both
+    return null;
+  }
+  let pkcs8 = await privateKey.decryptKeyPKCS8();
+  let key = await crypto.subtle.importKey("pkcs8", pkcs8 as BufferSource, { name: "RSA-OAEP", hash }, false, ["decrypt"]);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "RSA-OAEP" }, key, encryptedKey as BufferSource));
+}
+
 /** Whether the part is an S/MIME blob that was sent with a generic file
  * type, and can be recognised only by its file name. Microsoft sends and
  * accepts them like this, and gateways rewrite the type that way.
@@ -238,10 +270,4 @@ export class SMIMEReadProcessor extends EMailProcessor {
 function isSMIMEFile(attachment: Attachment | undefined, extension: string): boolean {
   return attachment?.mimeType.toLowerCase() == "application/octet-stream" &&
     !!attachment.filename?.toLowerCase().endsWith(extension);
-}
-
-/** Names an algorithm for the user: our name for its OID, or the OID
- * itself, for the algorithms that we do not know. */
-function algorithmName(algorithm: string | number[]): string {
-  return Array.isArray(algorithm) ? algorithm.join(".") : algorithm;
 }

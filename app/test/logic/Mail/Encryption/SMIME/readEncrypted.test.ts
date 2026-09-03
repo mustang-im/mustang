@@ -92,6 +92,24 @@ test("A CMS blob that was delivered as a plain file, as Microsoft sends it", asy
   expect(email.text.trim()).toBe("Hello, this is encrypted.");
 });
 
+describe("RSA-OAEP key transport, which RFC 8551 asks for", () => {
+  test("with SHA-1, which the sender leaves out as the default", async () => {
+    let { email, errors } = await read(kOAEP, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("with SHA-256", async () => {
+    let { email, errors } = await read(kOAEPSHA256, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+});
+
 describe("Messages that only claim to be S/MIME", () => {
   test("An archiver kept the S/MIME headers around the plain message", async () => {
     let { email, errors } = await read(kMislabelled);
@@ -115,8 +133,8 @@ describe("Algorithms that we do not implement", () => {
     expect(errors).toEqual(["This message is encrypted with 1.2.392.200011.61.1.1.1.2, which is not supported"]);
   });
 
-  test("An unsupported key transport is named, not reported as a missing key", async () => {
-    let { errors } = await read(kOAEP, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+  test("OAEP with a different hash for the mask than for the digest", async () => {
+    let { errors } = await read(kOAEPMixedHashes, await SMIMEPrivateKey.importPrivateKey(kOurKey));
 
     expect(errors).toEqual(["The key of this message is encrypted with rsaESOAEP, which is not supported"]);
   });
@@ -367,7 +385,7 @@ hN0wfgYJKoZIhvcNAQcBMB8GCyqDCIyaSz0BAQECBBAIRM331zx1v66IGd/vNXTI
 gFDGGMQO5T77gbbSkB6bK7wuVfwKTGVJNsQEVAkW+fb8dxA9YfWJavtiUaWxUUB4
 fwOvE+nAm22cF7W8FTPUaqGiMyBXStfBfbudN7yYSTruhQ==`;
 
-/** `openssl cms -encrypt -aes256 -keyopt rsa_padding_mode:oaep ...`:
+/** `openssl cms -encrypt -aes256 -recip user.crt -keyopt rsa_padding_mode:oaep`:
  * the content key is encrypted with RSA-OAEP instead of PKCS#1 v1.5 */
 const kOAEP = `From: Alice <alice@example.com>
 To: User <user@example.com>
@@ -545,3 +563,51 @@ Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m
 Content-Transfer-Encoding: base64
 
 MAMCAQU=`;
+
+/** As `kOAEP`, but with `-keyopt rsa_oaep_md:sha256` */
+const kOAEPSHA256 = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP and SHA-256
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaep256@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIICJwYJKoZIhvcNAQcDoIICGDCCAhQCAQAxggGPMIIBiwIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MDgGCSqGSIb3DQEBBzAroA0wCwYJYIZIAWUDBAIBoRow
+GAYJKoZIhvcNAQEIMAsGCWCGSAFlAwQCAQSCAQB3zs6BjpmNbYsS9OTUeTvtm3pq
+WgTbIrMFzJaEJvAgBtPcwq1iKSZ0dazRPOxPvyGt31l5Xax79yPsn9QfGGWyQdgw
+HKgRHFcNyWE/bALly3tfIp50ZUEuoOeG2QaCWOR8CJUZ76WGQFKgZKTRCSb0p9TI
+6Ljwy3jcEOOjBTALL+iQIDMPgfUP8JeghNVUpFaZZV6wq4xB5UyXNz7HABz0twfZ
+zsD2hAuwPqLlTjoI0WL1amwvBokWPL/rck554g7WjwkMKNG79IRFDuynQQAqOPp8
+Z7xRZlYPVIaogqeq40wnqAfs92UBcmd5MsdaNOytzqMnoPn9ZD16RfoMIXJXMHwG
+CSqGSIb3DQEHATAdBglghkgBZQMEASoEELuPk9hIoNve/YWGQD6S+OCAUMaHwD4v
+gDlQdrYeLWUy/YZXYnXMiEPxqWSTgfaCVJ9dAgqjformP4grMxonMG1QQpfFYccF
+VFMbbjUkFXWCGUh4e6ceKHQzVn8/n04gRd8l`;
+
+/** As `kOAEP`, but with `-keyopt rsa_oaep_md:sha256 -keyopt rsa_mgf1_md:sha1`,
+ * which WebCrypto cannot do: it uses one hash for the digest and the mask */
+const kOAEPMixedHashes = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP and 2 hashes
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaepmix@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIICCwYJKoZIhvcNAQcDoIIB/DCCAfgCAQAxggFzMIIBbwIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MBwGCSqGSIb3DQEBBzAPoA0wCwYJYIZIAWUDBAIBBIIB
+AKu2MkkXt3aad4BOfHEYA8FF9wS6mOV2bV95wJzNCHjc2v3kpvNUCaxnnD0Z00Gp
+kOvc1e0gABAy723+D3Yup5PjbVFaALjNnWaAb92Nf0dLad0egZznULeUgd5dIGdU
+sT0gxsdKBHPMdT349gK1DlqQU0oXBUcuRNhjX0i+sWBpEZ8ic+0MMNSkAWWyCjVP
+I+Ga7Hahv1TQYyx6ovwfeVoF/BpZ23zg/F7xhJtakccoQBsSrvSI/9/khg0gF19t
+7aShS+Hc/L+1NGsV/A3Cn81ropICoxIpTCvchHmJPzM/DbxBiBZYDG9Kan7Jp/Fb
+wM1P7/iE9uAS7ZuhVYXaA88wfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQRxQ7
+TNLlehPPNu8+eZGzY4BQoFaD6JFl51+vbUjWxNzZM9UoarLm8IuY1d7/ZcZtSoDv
+oHIbzPGWb+TXMqpLR0nP2VEAr/dG9X/+CMmJSVonKKUrd3m/a16kI7xyezqjuWg=`;

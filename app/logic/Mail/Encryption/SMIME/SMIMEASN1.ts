@@ -143,6 +143,12 @@ export const Oid = define<string>("Oid", function() {
   this.objid(oids);
 });
 
+/** Names an algorithm for the user: our name for its OID, or the OID
+ * itself, for the algorithms that we do not know. */
+export function algorithmName(algorithm: string | number[]): string {
+  return Array.isArray(algorithm) ? algorithm.join(".") : algorithm;
+}
+
 export const GeneralTime = define<number>("GeneralTime", function() {
   this.gentime();
 });
@@ -361,11 +367,13 @@ export const PBKDF2Params = define<PBKDF2Params>("PBKDF2Params", function() {
 });
 
 /* CMS */
+/** The parameters of RSA-OAEP. Senders leave out what has the default
+ * value, so OpenSSL sends an empty sequence for SHA-1. RFC 4055 section 4.1 */
 export const RSAESOAEPParams = define("RSAESOAEPParams", function() {
   this.seq().obj(
-    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier),
-    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier),
-    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier),
+    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier).def({ algorithm: "sha1" }),
+    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier).def({ algorithm: "mgf1" }),
+    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier).def({ algorithm: "pSpecified" }),
   );
 });
 
