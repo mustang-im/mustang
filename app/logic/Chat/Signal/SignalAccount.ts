@@ -395,7 +395,7 @@ export class SignalAccount extends ChatAccount {
 
   /** Syncs the roster (storage service), turns it into rooms, and fetches the
    * roster's profiles (name + avatar) in the background. */
-  async startup(): Promise<void> {
+  async syncOnStartup(): Promise<void> {
     await this.syncRoster().catch(this.errorCallback); // if error, still show the rooms from DB
     await this.createRoomsFromRoster();
     for (let contact of this.roster.contents) {

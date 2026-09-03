@@ -127,7 +127,7 @@ function checkAccounts(): void {
         .catch(account.errorCallback);
     }
   }
-  // Accounts that stayed logged in didn't run startup() above,
+  // Accounts that stayed logged in didn't run sync() above,
   // but new mail may have arrived while we were sleeping
   for (let account of appGlobal.emailAccounts) {
     if (account.isLoggedIn) {

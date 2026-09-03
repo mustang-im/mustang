@@ -51,8 +51,8 @@ export class MailAccount extends TCPAccount {
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
   readDBRunOnce = new RunOnce();
 
-  async startup() {
-    await super.startup();
+  async syncOnStartup() {
+    await super.syncOnStartup();
     await this.listFolders();
     assert(this.inbox, gt`Inbox not found`);
     await this.inbox.getNewMessages();

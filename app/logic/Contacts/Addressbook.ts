@@ -34,8 +34,8 @@ export class Addressbook extends Account {
     return true; // for local addressbook
   }
 
-  async startup() {
-    await super.startup();
+  async syncOnStartup() {
+    await super.syncOnStartup();
     await this.listContacts();
     await this.startupDependentAccounts();
   }

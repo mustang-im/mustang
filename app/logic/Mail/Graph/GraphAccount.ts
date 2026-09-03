@@ -55,10 +55,10 @@ export class GraphAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       try {
-        await super.startup();
+        await super.syncOnStartup();
         let inbox = this.inbox as GraphFolder;
         assert(inbox, "Inbox not found");
         inbox.startPolling();

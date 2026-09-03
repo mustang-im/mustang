@@ -55,15 +55,15 @@ export class POP3Account extends MailAccount {
       await this.oAuth2.login(interactive);
     }
     this.loginConnection = await this.connect();
-    await this.startup();
+    await this.syncOnStartup();
   }
 
   /** Once per login: The app calls this after `login()`, which called it already */
-  async startup() {
+  async syncOnStartup() {
     if (this.hasLoggedIn) {
       return;
     }
-    await super.startup();
+    await super.syncOnStartup();
     this.hasLoggedIn = true;
     this.notifyObservers();
     (this.inbox as POP3Folder).startPolling();

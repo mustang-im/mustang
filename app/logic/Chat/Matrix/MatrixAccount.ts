@@ -79,7 +79,7 @@ export class MatrixAccount extends ChatAccount {
   }
 
   /** Starts the sync with the server, which populates `persons` and `chats`. */
-  async startup(): Promise<void> {
+  async syncOnStartup(): Promise<void> {
     // "detached": local echoes live in a separate pending list. Required for sending
     // events that relate to another (e.g. an `m.replace` edit): the SDK resolves the
     // target via `room.getPendingEvents()`, which throws under the legacy default

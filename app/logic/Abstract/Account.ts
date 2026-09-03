@@ -67,8 +67,11 @@ export class Account extends Observable {
    * fetches the new mail, subscribes to changes on the server, and starts the
    * dependent accounts. The UI could make these calls at any time, so `login()`
    * must not call this: it would run twice. @see `loginAndStartup()`
+   *
+   * Runs after the app start, after a manual login, and after the computer
+   * slept. The caller may skip it and issue a single call instead.
    */
-  async startup() {
+  async syncOnStartup() {
   }
 
   /**
@@ -87,7 +90,7 @@ export class Account extends Observable {
    */
   protected async startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
-      dependent.dependentStartupOnce.runOnce(() => dependent.startup())
+      dependent.dependentStartupOnce.runOnce(() => dependent.syncOnStartup())
         .catch(dependent.errorCallback);
     }
   }
@@ -105,14 +108,14 @@ export class Account extends Observable {
 
   /**
    * The preparation which allows us to issue any normal call to the server,
-   * including sending the password.
+   * including sending the password. There are no calls to the server before it.
    *
    * Depending on the protocol:
    * - IMAP: opening the the TCP connection, CAPABILITY, login
    * - JMAP: the session
    * …
    *
-   * Initial sync is done in `startup()`, not here.
+   * Initial sync is done in `syncOnStartup()`, not here.
    * `loginAndStartup()` does both.
    *
    * @param interactive
@@ -143,7 +146,7 @@ export class Account extends Observable {
       return;
     }
     await this.login(interactive);
-    await this.startup();
+    await this.syncOnStartup();
   }
 
   /** For setup only. Test that the login works. */

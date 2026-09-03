@@ -58,7 +58,7 @@ export class XMPPAccount extends ChatAccount {
   }
 
   /** This will populate `roster` and `rooms`. */
-  async startup(): Promise<void> {
+  async syncOnStartup(): Promise<void> {
     await this.getRoster();
     await this.createChatsFromRoster();
     await this.getGroupChats();

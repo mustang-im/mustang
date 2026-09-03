@@ -68,9 +68,9 @@ export class AllAccounts extends MailAccount {
     }
   }
 
-  async startup(): Promise<void> {
+  async syncOnStartup(): Promise<void> {
     for (let account of this.accounts) {
-      await account.startup();
+      await account.syncOnStartup();
     }
   }
 

@@ -77,7 +77,7 @@ export class JMAPAccount extends MailAccount {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       if (this.isDependentAccount) {
         this.session = (this.mainAccount as JMAPAccount).session;
@@ -88,7 +88,7 @@ export class JMAPAccount extends MailAccount {
           await this.listIdentities();
         }
         if (this.haveMail) {
-          await super.startup();
+          await super.syncOnStartup();
           let inbox = this.inbox as JMAPFolder;
           assert(inbox, "Inbox not found");
           inbox.startPolling();
@@ -830,7 +830,7 @@ export class JMAPAccount extends MailAccount {
       : [];
   }
 
-  /** Its folders, calendars and addressbooks are added by its `startup()`. */
+  /** Its folders, calendars and addressbooks are added by its `syncOnStartup()`. */
   async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox"): Promise<JMAPAccount> {
     let sharedAccountID = this.sharedAccountID(person);
     assert(sharedAccountID, gt`You have no access to the account of ${person.emailAddress}`);
@@ -847,7 +847,7 @@ export class JMAPAccount extends MailAccount {
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.startup();
+    await account.syncOnStartup();
     return account;
   }
 

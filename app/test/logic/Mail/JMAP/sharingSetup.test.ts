@@ -135,7 +135,7 @@ function delegatedAccounts(): JMAPAccount[] {
     .filter(acc => acc.emailAddress == "jane.smith@example.com") as JMAPAccount[];
 }
 
-test("login() only gets the session; startup() lists the folders", async () => {
+test("login() only gets the session; syncOnStartup() lists the folders", async () => {
   session = kStalwartSession;
   let account = newAccount();
 
@@ -143,7 +143,7 @@ test("login() only gets the session; startup() lists the folders", async () => {
   expect(account.isLoggedIn).toBeTruthy();
   expect(calls).toEqual([]);
 
-  await account.startup();
+  await account.syncOnStartup();
   expect(calls).toContain("Mailbox/get u1");
 });
 
@@ -158,12 +158,12 @@ test("Two concurrent login() calls get the session once", async () => {
   expect(sessionGets).toBe(1);
 });
 
-test("Two concurrent startup() calls run the startup once", async () => {
+test("Two concurrent syncOnStartup() calls run the startup once", async () => {
   session = kStalwartSession;
   let account = newAccount();
   await account.login(true);
 
-  await Promise.all([account.startup(), account.startup()]);
+  await Promise.all([account.syncOnStartup(), account.syncOnStartup()]);
 
   expect(calls.filter(call => call == "Mailbox/get u1")).toHaveLength(1);
 });

@@ -26,7 +26,7 @@ export class SMTPAccount extends MailAccount {
   }
 
   // Should not be called, but do nothing, just in case.
-  async startup() {
+  async syncOnStartup() {
   }
 
   // We have no folders

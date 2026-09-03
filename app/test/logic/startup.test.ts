@@ -55,7 +55,7 @@ test("The Login button of a shared mailbox logs in the main account, which start
   expect(dependent.calls).toEqual(["startup", "startup", "startup"]);
 });
 
-/** `login()` only logs in. The caller runs `startup()`. */
+/** `login()` only logs in. The caller runs `syncOnStartup()`. */
 class TestAccount extends ChatAccount {
   calls: string[] = [];
   loggedIn = false;
@@ -69,7 +69,7 @@ class TestAccount extends ChatAccount {
     this.loggedIn = true;
   }
 
-  async startup() {
+  async syncOnStartup() {
     this.calls.push("startup");
     await this.startupDependentAccounts();
   }

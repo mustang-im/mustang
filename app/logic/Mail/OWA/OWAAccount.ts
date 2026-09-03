@@ -185,11 +185,11 @@ export class OWAAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       try {
         // `listFolders()` will subscribe to new user-added calendars
-        await super.startup();
+        await super.syncOnStartup();
 
         // Create primary addressbook automatically
         let haveAddressbook = appGlobal.addressbooks.some(addressbook => addressbook.dependsOn(this));

@@ -129,10 +129,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       try {
-        await super.startup();
+        await super.syncOnStartup();
         if (this.isDependentAccount) {
           await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
           return;
@@ -1099,7 +1099,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.startup();
+    await account.syncOnStartup();
     return account;
   }
 
@@ -1137,7 +1137,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     addressbook.username = person.emailAddress;
     addressbook.folderID = folderID;
     appGlobal.addressbooks.add(addressbook);
-    await addressbook.startup();
+    await addressbook.syncOnStartup();
     return addressbook;
   }
 
@@ -1176,7 +1176,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.folderID = folderID;
     calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
-    await calendar.startup();
+    await calendar.syncOnStartup();
     return calendar;
   }
 

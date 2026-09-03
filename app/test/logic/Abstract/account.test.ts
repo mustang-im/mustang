@@ -33,7 +33,7 @@ test("A calendar starts up the calendars that depend on it, e.g. the other calen
   subCalendar.mainAccount = mainCalendar;
   appGlobal.calendars.addAll([mainCalendar, subCalendar]);
   try {
-    await mainCalendar.startup();
+    await mainCalendar.syncOnStartup();
     expect(subCalendar.startupCount).toBe(1);
   } finally {
     subCalendar.finishStartup();
@@ -61,7 +61,7 @@ class TestAccount extends Account {
   }
 }
 
-/** Runs the real `Calendar.startup()`, without a server */
+/** Runs the real `Calendar.syncOnStartup()`, without a server */
 class TestMainCalendar extends Calendar {
   async listEvents() {
   }
@@ -72,7 +72,7 @@ class TestCalendar extends Calendar {
   startupCount = 0;
   finishStartup: () => void = () => undefined;
 
-  async startup() {
+  async syncOnStartup() {
     this.startupCount++;
     await new Promise<void>(resolve => this.finishStartup = resolve);
   }

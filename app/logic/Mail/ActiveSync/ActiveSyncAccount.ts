@@ -104,10 +104,10 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       try {
-        await super.startup();
+        await super.syncOnStartup();
 
         // `listFolders()` will subscribe to new user-added addressbooks and calendars
 

@@ -73,10 +73,10 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
       this.namespaces = await this.getNamespaces();
-      await super.startup();
+      await super.syncOnStartup();
       this.notifyObservers();
       (this.inbox as IMAPFolder).startPolling();
       await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
