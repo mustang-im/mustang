@@ -1,5 +1,6 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
+import type { Attachment } from "../../../Abstract/Attachment";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
@@ -25,7 +26,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let contentTypeHeader = sanitize.string(postal.headers.find(header => header.key == "content-type")?.value, "");
     let contentType = parseHeaderParameters(contentTypeHeader).$main;
     if (contentType == "application/pkcs7-mime" ||
-        contentType == "application/x-pkcs7-mime") { // legacy type name, used by Outlook
+        contentType == "application/x-pkcs7-mime" || // legacy type name, used by Outlook
+        isSMIMEFile(email.attachments.first, ".p7m")) {
       // The whole message is a CMS blob. It's the only body part, but fsr
       // this is an attachment.
       let cms = email.attachments.first?.content;
@@ -167,12 +169,15 @@ export class SMIMEReadProcessor extends EMailProcessor {
   /** Verifies a cleartext message with a detached signature
    * (`multipart/signed`). */
   protected async readClearSigned(email: EMail, contentTypeHeader: string) {
-    let signatureMimeType = email.attachments.last?.mimeType.toLowerCase();
+    let signaturePart = email.attachments.last;
+    let signatureMimeType = signaturePart?.mimeType.toLowerCase();
     if (signatureMimeType != "application/pkcs7-signature" &&
-        signatureMimeType != "application/x-pkcs7-signature") { // legacy type name
+        signatureMimeType != "application/x-pkcs7-signature" && // legacy type name
+        !isSMIMEFile(signaturePart, ".p7s")) {
       return;
     }
     email.system = EncryptionSystem.SMIME;
+    signaturePart.hidden = true; // we show the signature, not the file
     let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
@@ -201,6 +206,15 @@ export class SMIMEReadProcessor extends EMailProcessor {
     await email.parseMIME(); // checks signature recursively
     await email.saveCompleteMessage();
   }
+}
+
+/** Whether the part is an S/MIME blob that was sent with a generic file
+ * type, and can be recognised only by its file name. Microsoft sends and
+ * accepts them like this, and gateways rewrite the type that way.
+ * MS-OXOSMIME section 2.2.1 */
+function isSMIMEFile(attachment: Attachment | undefined, extension: string): boolean {
+  return attachment?.mimeType.toLowerCase() == "application/octet-stream" &&
+    !!attachment.filename?.toLowerCase().endsWith(extension);
 }
 
 /** Names an algorithm for the user: our name for its OID, or the OID

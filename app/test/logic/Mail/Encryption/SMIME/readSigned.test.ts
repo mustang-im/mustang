@@ -3,7 +3,7 @@ import { setupTestFolder } from "../../SQL/setup";
 import { getPublicKeyByKeyID } from "../../../../../logic/Mail/Encryption/KeyUtils";
 import { TrustLevel } from "../../../../../logic/Mail/Encryption/enums";
 import type { EMail } from "../../../../../logic/Mail/EMail";
-import { kClearSigned, kClearSignedLF, kOpaqueSigned } from "./signedMessages";
+import { kClearSigned, kClearSignedLF, kClearSignedOctetStream, kOpaqueSigned } from "./signedMessages";
 import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
@@ -71,6 +71,13 @@ describe("Signature of a received message, without an own private key", () => {
     let email = await readMessage(kClearSignedLF);
     expect(email.text.trim()).toBe("Hello, this is signed.");
     expect(await signedWithKeyName(email)).toBe("B687");
+  });
+
+  test("a signature that was delivered as a plain file, as Microsoft sends it", async () => {
+    let email = await readMessage(toCRLF(kClearSignedOctetStream));
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    expect(await signedWithKeyName(email)).toBe("B687");
+    expect(email.attachments.last.hidden).toBe(true);
   });
 
   test("an unknown CA leaves the trust level to the user", async () => {

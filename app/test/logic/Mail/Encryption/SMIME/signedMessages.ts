@@ -170,3 +170,65 @@ OnfjFum6XxRrfLktYt8qmkFD/ZN4JVLcKlIft1zlZM1HZ69bUJ4wwRceFRBnlBk/
 QxETfQXeq9VhSoBhtmy68UOkroqbu/jawehgvWiI5qQqVJ9OZJIBupOgARO4UFfW
 yD6/Z6pMwfCgw1sAA6nsHryvEv9paPdHJEGNePqE+RXqJ1gSAUUgp7y1085LzeU=
 ------LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20--`;
+
+/**
+ * The signature part with the generic file type that Microsoft uses and
+ * that gateways rewrite to. MS-OXOSMIME section 2.2.1
+ * `openssl cms -sign -in part.txt -signer alice.crt -inkey alice.key
+ *   -outform SMIME -md sha256`, with the Content-Type of the signature
+ * part replaced by `application/octet-stream; name="smime.p7s"`.
+ */
+export const kClearSignedOctetStream = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Signed, signature delivered as a file
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <sig-octet@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----72D4E9ED7779F5B28FF1B7EC321EEE7F"
+
+This is an S/MIME signed message
+
+------72D4E9ED7779F5B28FF1B7EC321EEE7F
+Content-Type: text/plain; charset=utf-8
+
+Hello, this is signed.
+
+------72D4E9ED7779F5B28FF1B7EC321EEE7F
+Content-Type: application/octet-stream; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+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
+
+------72D4E9ED7779F5B28FF1B7EC321EEE7F--`;
