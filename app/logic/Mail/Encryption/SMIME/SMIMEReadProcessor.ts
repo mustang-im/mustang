@@ -3,8 +3,9 @@ import type { EMail } from "../../EMail";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
+import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, RC2CBCParameters, SignedData } from "./SMIMEASN1";
 import { decryptAuthEnveloped } from "./SMIMEDecrypt";
+import { rc2Decrypt, tripleDESDecrypt } from "./legacyCiphers";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes, parseHeaderParameters } from "../MIME";
@@ -51,16 +52,32 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let envelopedData = EnvelopedData.decode(blob, { berToDER: true });
-    if (!sanitize.enum(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm, ["aes128cbc", "aes192cbc", "aes256cbc"], null)) {
+    let { contentEncryptionAlgorithm, encryptedContent } = envelopedData.content.encryptedContentInfo;
+    let cipher = contentEncryptionAlgorithm.algorithm;
+    if (!sanitize.enum(cipher, ["aes128cbc", "aes192cbc", "aes256cbc", "desEDE3CBC", "rc2CBC"], null)) {
       return;
     }
-    let vector = OctetString.decode(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.parameters);
-    let encryptedContent = envelopedData.content.encryptedContentInfo.encryptedContent;
     let symmetricKey = await this.decryptSymmetricKey(email, envelopedData.content.recipientInfos);
-    let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
-    let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
+    let decryptedContent: Uint8Array;
+    if (cipher == "desEDE3CBC") {
+      // Apple Mail always encrypts with Triple DES, and Thunderbird does
+      // for recipients with a short key. WebCrypto implements neither
+      // Triple DES nor RC2, so we decrypt them ourselves.
+      decryptedContent = tripleDESDecrypt(encryptedContent, symmetricKey, OctetString.decode(contentEncryptionAlgorithm.parameters));
+    } else if (cipher == "rc2CBC") {
+      let { rc2ParameterVersion, iv } = RC2CBCParameters.decode(contentEncryptionAlgorithm.parameters);
+      // RFC 3370 section 5.2: below 256, the version is a code for the
+      // effective key length, from 256 up it is that length in bits itself.
+      let version = Number(rc2ParameterVersion);
+      let effectiveKeyBits = { 58: 128, 120: 64, 160: 40 }[version] ?? version;
+      decryptedContent = rc2Decrypt(encryptedContent, symmetricKey, iv, sanitize.integerRange(effectiveKeyBits, 8, 1024));
+    } else {
+      let vector = OctetString.decode(contentEncryptionAlgorithm.parameters);
+      let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
+      decryptedContent = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent));
+    }
     email.wasEncrypted = true;
-    await this.unwrapMIME(email, new Uint8Array(decryptedContent));
+    await this.unwrapMIME(email, decryptedContent);
   }
 
   /** Decrypts a message that was encrypted with an authenticating cipher,

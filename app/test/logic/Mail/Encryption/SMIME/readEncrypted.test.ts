@@ -2,7 +2,9 @@ import "../../../../../logic/app";
 import { setupTestFolder } from "../../SQL/setup";
 import { appGlobal } from "../../../../../logic/app";
 import { MailIdentity } from "../../../../../logic/Mail/MailIdentity";
-import { expect, test } from "vitest";
+import { SMIMEPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+import type { EMail } from "../../../../../logic/Mail/EMail";
+import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
 globalThis.indexedDB ??= {
@@ -17,21 +19,61 @@ globalThis.indexedDB ??= {
   },
 } as any;
 
-test("An encrypted message that is not for us tells the user why it stays empty", async () => {
+/**
+ * Reads the message as the user that it is addressed to.
+ * @param privateKeys the S/MIME keys of that user, in the order that the
+ *   settings hold them
+ * @returns the message, and the errors that the user was shown
+ */
+async function read(mime: string, ...privateKeys: SMIMEPrivateKey[]): Promise<{ email: EMail, errors: string[] }> {
   let { folder } = await setupTestFolder();
+  // `findIdentity()` searches all accounts, including those of earlier tests
+  appGlobal.emailAccounts.clear();
   let identity = new MailIdentity(folder.account);
   identity.emailAddress = "user@example.com";
   identity.realname = "User";
+  identity.encryptionPrivateKeys.addAll(privateKeys);
   folder.account.identities.add(identity);
   appGlobal.emailAccounts.add(folder.account);
-  let errors: Error[] = [];
-  folder.account.errorCallback = (ex) => errors.push(ex);
+  let errors: string[] = [];
+  folder.account.errorCallback = ex => errors.push(ex.message);
 
   let email = folder.newEMail();
-  email.mime = new TextEncoder().encode(kEncrypted.replace(/\n/g, "\r\n"));
+  email.mime = new TextEncoder().encode(mime.replace(/\n/g, "\r\n"));
   await email.parseMIME();
+  return { email, errors };
+}
 
-  expect(errors.map(ex => ex.message)).toEqual(["This message is encrypted, and the key is not available"]);
+test("An encrypted message that is not for us tells the user why it stays empty", async () => {
+  let { errors } = await read(kEncrypted);
+
+  expect(errors).toEqual(["This message is encrypted, and the key is not available"]);
+});
+
+describe("Ciphers that other mail apps encrypt with", () => {
+  test("Triple DES, as Apple Mail and Thunderbird send it", async () => {
+    let { email, errors } = await read(k3DES, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("RC2 with 128 bits", async () => {
+    let { email, errors } = await read(kRC2, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("RC2 with the 40 bit export key length", async () => {
+    let { email, errors } = await read(kRC2Export, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
 });
 
 /** `openssl smime -sign | openssl smime -encrypt`, to a certificate that is not ours */
@@ -112,3 +154,131 @@ sF4lpN22hBEJeL/Ophn6Bgp84v4WwbCJAZawO9JNhL+d/WBn0yf05KU4yfqKcOH4
 OTI4DTbekCe8ODSpWFo/1MynsRWTDM2B+enLAnX2XLMdVwQ=
 
 `;
+
+/** The S/MIME identity that the messages below are encrypted to.
+ * `openssl req -x509 -newkey rsa:2048 -keyout user.key -out user.crt -nodes
+ *   -subj "/CN=User/emailAddress=user@example.com"
+ *   -addext "subjectAltName=email:user@example.com"
+ *   -addext "subjectKeyIdentifier=hash"
+ *   -addext "keyUsage=digitalSignature,keyEncipherment"` */
+const kOurKey = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHFL19V/qBg0z4
+KcGCo9GIcy/9SyL8g6rTgn0QXdhjoUXdIjMG/uJ/XnSiFWJjps6WSOSY93XcSXrp
+30ngrUBa0qRnC/cUe4Jlj1HU1izE1fAi+onlvY1ny3OEiFNpbsVMv3QUsiz8Xh5v
+QmNkR97q5GkOipEryuOdoZjuHCmERFjBiG0+JIuCbG0JzgWiREJ9PGI3TjbDx9Pj
+YAnwBTIBMeUGbpXCT+o1AKmMJ/Pr/F1WBqe77hVGbfmqNtvkcrYzweUt8bo7VJck
+Jix+AUHNcPMEftnuU8xq/fDt+buAQOcHzQOunuJcxVSF8AoF77UMYBY1zWLPIyG8
+PBU+4jEPAgMBAAECggEAXcTWldXdH6iNFexxAYwQsvDyXx9HXOHVkedJ6e4R8Kdz
+JTupBjgCzhRa4kcpPx+/+Yhe5+/S203e745lGUbxY3YIyqKXn9Wm7xgo5pN0pcfQ
+4mDYl9YG5ycsg3XEuAndM4+P6Pmdd8cLFcOS1haGGGQ6WYeJ5jMbr9EAG9M2+N11
+Z8Po5pumGEC7tXYeso707r+tqQLYVCl7WuA2H0HqvTsyptmHxz0asZxAwVeMalJT
+OcJnfjevISlhRJa9ZfksDBu/L4nfS/5X/6MIym/s/8TvSWrIygFh74u83znIPs6K
+kcmZnFOFoBxHowguuFNvmEJ/A2kuxnykFIDo9eS24QKBgQDuV78FLzJ0uTy7YRzN
+cgYlmBbTuOUqeRMfGRZcVcC6auhecSsunsdtBM38lD7RXiRdAWBJlahTsvS+upwL
+SzhFcCb+YOEjGuV4NY5VmY1gnY4VmD1YNQ3tnsPl34OM4WB0s0ILRVZ6mWHoB1mV
+l854CWzndIbtitmN7xZ2FGqqLwKBgQDV1GGfmiwXHDHfC9fzps9S0OoXNeLJLs4J
+rDdIowMpedVnmV7/YkoDLjEBdH1BG4LXe0l6Kb7yVEVKS5j1DtrcVVs9fOoNkVl8
+62RDq8Q7wHZ+FLDqnUC2X3jKYcY4b1d1tx58vjZ8+NwfIvx2uSQUVN+9srb94DSK
+fbGQ/o6PIQKBgQDCRM80QJYVwe6YpL0/T9NmzSK+DBTum6VUUbSCKnte90jTwdZ6
+t3zBhYsIdyUEroFhNX/wOoXrQxBubdhG9Fa3coS2Du0zGfc0FiMf7nrn50Qqod5O
+iWAC8MeoFJk7OXDPblVEro2gfGjrISKJ5iSqfrQ/rCFWeTh+kgRy1o1ijQKBgFzF
+wn1OlKaKMxEEwHMUAot53LapSHXk+ruznmDDaRHLrE1Ae7jt2hK7LcPl2Jow53m6
+Ic0A47mb2lw7pGdeRJKn7egllB7C20KZlmzNz1vlSwO00nVYOMVncq7L8QZ3OEj4
+ZB/XHyjliAtyUHrqJL81e8WADmjjp6gWlL3F0/BBAoGAWdLZeoxC+jTiT7/QKeh+
+gByK2TC7+CbSNMLkDwF/C1vM08ACn6rHaz2L53TmRRlPIhHPbE4t7ENlsM+wca5n
+UjMQcdDfg+MMl5xzhc89Wcu7NMuvxWDqD1jjhi9Poik1QyRYu1IJ+2DtsH5Viqf1
+d4Lk+gHjiODNex6QqnxkIwc=
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+MIIDazCCAlOgAwIBAgIUNn2UnxH1jnnZYFI4xfGh+UMMu3cwDQYJKoZIhvcNAQEL
+BQAwMDENMAsGA1UEAwwEVXNlcjEfMB0GCSqGSIb3DQEJARYQdXNlckBleGFtcGxl
+LmNvbTAeFw0yNjA5MDMwNjE4MzdaFw0zNjA4MzEwNjE4MzdaMDAxDTALBgNVBAMM
+BFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDHFL19V/qBg0z4KcGCo9GIcy/9SyL8g6rT
+gn0QXdhjoUXdIjMG/uJ/XnSiFWJjps6WSOSY93XcSXrp30ngrUBa0qRnC/cUe4Jl
+j1HU1izE1fAi+onlvY1ny3OEiFNpbsVMv3QUsiz8Xh5vQmNkR97q5GkOipEryuOd
+oZjuHCmERFjBiG0+JIuCbG0JzgWiREJ9PGI3TjbDx9PjYAnwBTIBMeUGbpXCT+o1
+AKmMJ/Pr/F1WBqe77hVGbfmqNtvkcrYzweUt8bo7VJckJix+AUHNcPMEftnuU8xq
+/fDt+buAQOcHzQOunuJcxVSF8AoF77UMYBY1zWLPIyG8PBU+4jEPAgMBAAGjfTB7
+MB8GA1UdIwQYMBaAFEMlUw+zyn92kfdBY9waadqEGIeXMA8GA1UdEwEB/wQFMAMB
+Af8wGwYDVR0RBBQwEoEQdXNlckBleGFtcGxlLmNvbTAdBgNVHQ4EFgQUQyVTD7PK
+f3aR90Fj3Bpp2oQYh5cwCwYDVR0PBAQDAgWgMA0GCSqGSIb3DQEBCwUAA4IBAQDF
+VeJlLzy0dK1c78kqQIqWrPTWtRFgypW0Kvz6mnG9649gqm0HmHe/PLbUm4oZrdFD
+7C3xBYwVL7JSSjsdU2tOiS5eAtv26y/kThfxjgp9I7uBpiJ28tUylicB3wD+G6bN
+WUzH0zg4B2GInfrutwziwFQ1gheKyf8Q4Q9xgW+HgP7EiX6NaMCCNdPeolIw1LkI
+WV0rzv81Q5Ad3uta5BG4cy9kptUIYvLPrUkqhbXkrOo4KyAfljVw90B6DSjZrU4n
+5n/ySiiSVlEY9VygZJdPDuDE73MiI9VrZvEN2PA5xZldHcohvQW3XaXw/17RHmKq
+1ewAnoWSUmfPbKCQgmtF
+-----END CERTIFICATE-----`;
+
+/** `openssl cms -encrypt -des3 -in body.txt -outform SMIME -recip user.crt`,
+ * where `body.txt` is the MIME entity that the message decrypts to */
+const k3DES = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with 3DES
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-des3@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB6wYJKoZIhvcNAQcDoIIB3DCCAdgCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBALvgpagNSko+cHvDIw9D
+S2khFMKv2hPEtlJHdBBJ6bAuqu20DJUgMq3zlXLM5IzWFKRYR/2Nwmk35lVxLCny
+9KXj4+RtJC4RQlFWToElr57/z63sUbPMLYh6EvDv2URdag3Pb5KXJ+x1BXgcm4e+
+nP1MgmlFgOxc9FXS9iCXXiUf6/NBS0BGtDWA1oY6UzFg9Z33NDjHuzJuv9U0XzKw
+9wN4yK/dy9juYWQ7QFpTHL3c/2x0y6MAnCB/a9WfA7uQNBTHa7sMkBi4+++fwohM
+QLXTuOTmGCc303IW7vwbVJfnrNXiMRONC+FxWYSSq1pSDcS6RL0iUBPccKpqIw9k
+4gEwawYJKoZIhvcNAQcBMBQGCCqGSIb3DQMHBAjQon5SqXREV4BIwkEbCZV79TBG
+SUEJfF087NTIp84e6tiNuFzXJDIFXlcQqwoY5BIvyvZ+vZ9gfCrseB/O4tX1YNvq
+/w9PYPmjQsZ08TyBa0QB`;
+
+/** `openssl cms -encrypt -rc2-128 -provider legacy -provider default
+ *   -in body.txt -outform SMIME -recip user.crt`.
+ * RC2 lives in the legacy provider of OpenSSL 3. */
+const kRC2 = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RC2
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-rc2@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB8AYJKoZIhvcNAQcDoIIB4TCCAd0CAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAFwAwL+jAyj56j1HUfCv
+7GPHHtyNGmKyAd4ZVljWWkSeyY5Ggt9MqzN1mb5mLX5qZ3/f3fewHFqLQuNOOmde
+SHSsj9LkSOryoHdaz5HcfB7fcc6J7N7ZydSZ6kxOc4JyYn7vOHDfLEkuC4xSeJQV
+ICA1DtLFCIflkkie+FR+bJnwnZTY271NQaowmtTaVkT+Ewv4Oe0+uyyNzVwOyZVs
+18ty9c3XSW12yvK3Tiz8K+aiNlq04APPMFnE+sSWNagdcJjAeo7KuxRfn4HHjQPS
+DDvhe0GrrnkN0f5QepxEVDgGlvZzs1AEanixKA+m0celuK95gxm2eSeRQATX1dgI
+KvcwcAYJKoZIhvcNAQcBMBkGCCqGSIb3DQMCMA0CAToECFu0so91oorLgEg3jcBR
+2P2Gh+U0oulXNEgiKt5lUWdvIZpcDX08kHjZmObAPJBIN9LTitsJUDGqGPri4qv1
+3iM1LDR56tCa3qKnXz/PMxKisHQ=`;
+
+/** As `kRC2`, but with `-rc2-40` */
+const kRC2Export = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RC2-40
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-rc240@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB8QYJKoZIhvcNAQcDoIIB4jCCAd4CAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAFj92uLMItuLnZWN6FhH
+UJ2nH73j8oz6dZmQiRgSUJDJxVY3umLVBT4l+yC3/B9Wl5S18E0yQ3lZaSLiDqsk
+QQ16OBRsQCz/gC1SYWA9RNJ40W2QEQ4L95cKQWE0wWOGgXhDcZJEvzhEiUCqntPv
+WPtOCBLj3/i3HlpZqoaXJuSt32V7uJP6d7E+yB7rHTuIRB7m4YbWsJ6mKM9RyoZt
+9CN9d7dZaRqgLa/f0tp+/PO8k7NmzYgUC5pau5ddsu3DFUZOnN0aDO85JfK4iY/f
+U2g8BfQFpt80fgIWrFVw8Kh8zwhcl0tifFzGgVhy94wJhg0AW4U8Fy6NIPfTdUTd
+0uswcQYJKoZIhvcNAQcBMBoGCCqGSIb3DQMCMA4CAgCgBAgSZnhpIyC3u4BIYyJy
+FX/G+LwiLT2k641mQH1sAaQXDv9LK/ULoZZHyQAFzMFpiEBE7WD4CdOG59a8+PMZ
+UMYGFLFYP9MPSj13EdiN7JbrOZVJ`;
