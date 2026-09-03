@@ -147,6 +147,16 @@ test("login() only gets the session; startup() lists the folders", async () => {
   expect(calls).toContain("Mailbox/get u1");
 });
 
+test("Two concurrent startup() calls run the startup once", async () => {
+  session = kStalwartSession;
+  let account = newAccount();
+  await account.login(true);
+
+  await Promise.all([account.startup(), account.startup()]);
+
+  expect(calls.filter(call => call == "Mailbox/get u1")).toHaveLength(1);
+});
+
 test("Setup adds the account that another user delegated to us", async () => {
   session = kStalwartSession;
 

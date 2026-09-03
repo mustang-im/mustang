@@ -24,6 +24,7 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
@@ -43,6 +44,7 @@ export class JMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
+  protected startupRunOnce = new RunOnce();
   protected pushAbort: AbortController | null = null;
   logging = true;
 
@@ -73,39 +75,41 @@ export class JMAPAccount extends MailAccount {
   }
 
   async startup() {
-    if (this.isDependentAccount) {
-      this.session = (this.mainAccount as JMAPAccount).session;
-    }
-    let firstSync = this.rootFolders.isEmpty;
-    try {
-      if (this.haveSubmission) {
-        await this.listIdentities();
+    await this.startupRunOnce.runOnce(async () => {
+      if (this.isDependentAccount) {
+        this.session = (this.mainAccount as JMAPAccount).session;
       }
-      if (this.haveMail) {
-        await super.startup();
-        let inbox = this.inbox as JMAPFolder;
-        assert(inbox, "Inbox not found");
-        inbox.startPolling();
+      let firstSync = this.rootFolders.isEmpty;
+      try {
+        if (this.haveSubmission) {
+          await this.listIdentities();
+        }
+        if (this.haveMail) {
+          await super.startup();
+          let inbox = this.inbox as JMAPFolder;
+          assert(inbox, "Inbox not found");
+          inbox.startPolling();
+        }
+        if (!this.isDependentAccount) { // One stream covers all accounts shared with us
+          this.startPushListener()
+            .catch(this.errorCallback);
+        }
+        if (this.haveContacts) {
+          await this.listAddressbooks();
+        }
+        if (this.haveCalendar) {
+          await this.listCalendars();
+        }
+        if (!this.isDependentAccount && this.haveSharing) {
+          await this.addNewlySharedAccounts(); // Shared while we were not running
+        }
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-      if (!this.isDependentAccount) { // One stream covers all accounts shared with us
-        this.startPushListener()
-          .catch(this.errorCallback);
+      if (firstSync && !this.isDependentAccount) {
+        await this.addSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
       }
-      if (this.haveContacts) {
-        await this.listAddressbooks();
-      }
-      if (this.haveCalendar) {
-        await this.listCalendars();
-      }
-      if (!this.isDependentAccount && this.haveSharing) {
-        await this.addNewlySharedAccounts(); // Shared while we were not running
-      }
-    } finally { // Even when the mail folders failed, so that calendar and addressbook still work
-      await this.startupDependentAccounts();
-    }
-    if (firstSync && !this.isDependentAccount) {
-      await this.addSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
-    }
+    });
   }
 
   async verifyLogin(): Promise<void> {
