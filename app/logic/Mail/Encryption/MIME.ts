@@ -51,7 +51,7 @@ export function parseHeaderParameters(headerValue: string | null | undefined): R
  * Generic function, unrelated to encryption.
  * postal-mime unfortunately doesn't parse parameters.
  *
- * Assumes CRLF
+ * Accepts both CRLF and bare LF line endings
  *
  * @param mime The entire MIME message. May contain other multipart structures.
  * @param contentType Value of the Content-Type header for this particular part
@@ -73,7 +73,10 @@ export function parseMIMEDirectSubpartsBytes(mime: Uint8Array, contentType: stri
   assert(parameters.$main.startsWith("multipart/"), "Need multipart/* Content-Type, but got " + contentType);
   let boundary = parameters.boundary;
   assert(boundary, "No boundary found in Content-Type header " + contentType);
-  let delimiter = Uint8Array.from("\r\n--" + boundary, c => c.charCodeAt(0));
+  // Bare LF, as NSS writes it, must work as well. The signature of a
+  // `multipart/signed` is over the exact bytes of the part, so the caller
+  // must be able to hand them on unchanged.
+  let delimiter = Uint8Array.from("\n--" + boundary, c => c.charCodeAt(0));
   let parts: Uint8Array[] = [];
   let pos = indexOfBytes(mime, delimiter, 0); // Skip content before the first part
   assert(pos >= 0, "Start boundary not found");
@@ -86,10 +89,11 @@ export function parseMIMEDirectSubpartsBytes(mime: Uint8Array, contentType: stri
       assert(end[0] == 0x2D && end[1] == 0x2D, "End boundary not found");
       break;
     }
-    parts.push(mime.subarray(start, pos));
+    // The line ending before the boundary belongs to the delimiter
+    parts.push(mime.subarray(start, mime[pos - 1] == 0x0D ? pos - 1 : pos));
   }
   // Remove newline after boundary
-  return parts.map(part => part[0] == 0x0D && part[1] == 0x0A ? part.subarray(2) : part);
+  return parts.map(part => part.subarray(part[0] == 0x0D ? 2 : 1));
 }
 
 function indexOfBytes(haystack: Uint8Array, needle: Uint8Array, from: number): number {

@@ -176,7 +176,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
-    let signatureBase64 = new TextDecoder().decode(signature).split("\r\n\r\n")[1];
+    let signatureBase64 = new TextDecoder().decode(signature).split(/\r?\n\r?\n/)[1];
     if (!signatureBase64) {
       console.warn("signature part has no content");
       return;
