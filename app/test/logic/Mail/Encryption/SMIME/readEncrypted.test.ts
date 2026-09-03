@@ -76,6 +76,14 @@ describe("Ciphers that other mail apps encrypt with", () => {
   });
 });
 
+test("A message that names our certificate by its subjectKeyIdentifier", async () => {
+  let { email, errors } = await read(kKeyIdentifier, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+  expect(errors).toEqual([]);
+  expect(email.wasEncrypted).toBe(true);
+  expect(email.text.trim()).toBe("Hello, this is encrypted.");
+});
+
 describe("Algorithms that we do not implement", () => {
   test("An unsupported cipher is named, instead of leaving the message empty", async () => {
     let { errors } = await read(kCamellia, await SMIMEPrivateKey.importPrivateKey(kOurKey));
@@ -381,3 +389,26 @@ RzdNM/j29ibMdc79c1Iwtm5UbTXt6uo1MHwGCSqGSIb3DQEHATAdBglghkgBZQME
 ASoEELZRNmez5JQ3FWy++6q9JTKAUJuCIk93Mea2ePGVnVePWa744VxpkfzX9Oja
 wSRTDC7T1ij8Z94jF0Lueip0XOYXKwxD0IY0fnYcPNZgnNiAF9bhj17QmADGf49g
 f5OAMaBd`;
+
+/** `openssl cms -encrypt -keyid -aes256 ...`: the recipient is named by the
+ * subjectKeyIdentifier of the certificate, not by issuer and serial number */
+const kKeyIdentifier = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted by key identifier
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-keyid@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIByAYJKoZIhvcNAQcDoIIBuTCCAbUCAQIxggEwMIIBLAIBAoAUQyVTD7PKf3aR
+90Fj3Bpp2oQYh5cwDQYJKoZIhvcNAQEBBQAEggEAm3dcHXGfuSs7AJY6V3DllJmG
+c2bNY75AahsSXsmIG3G7b6Ll0SrJL+/0mKv7YxMA02F/H0e/pjiz2e+smxbyyzhl
+XxQUsAIjz8ZmxyjjwmA3udRZmkRwV8JNNADCxJlVSQUI2+OWIX7JlM19sTrzG6Iu
+Jr6UFoSmrcmQ9UYyb9Lu7891jkBvbyTdcvLkVoOR3whRJ1sC3L+yTwXIrum3Dh3a
+ZP8k4I/hYiSsHmcNpwduN+KVNlR7lFex69xhTeF2eAVBTTWJ3I9ceXkwLJ/urHhY
+xEUsq+M6twfxGBGHhmCR+rz2pqd8CrL1JLJEvd5Mkk+ngFL6PbuXpVsUhhmCjDB8
+BgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBAxdIlTvEfnQrSKea7ihQxzgFDk3W25
+fGVVagXm1xTBCsl4oCNjrKPK93GMEiBDztEktg3oIAuRn8WMJQ+tKOPTwAPoveL9
+HLxHAcbqU8yiKZB81KFOji2jLU6WIqdorSqPmQ==`;

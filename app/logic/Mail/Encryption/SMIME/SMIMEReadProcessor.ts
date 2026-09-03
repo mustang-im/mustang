@@ -111,16 +111,21 @@ export class SMIMEReadProcessor extends EMailProcessor {
             continue;
           }
           let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
-          let issuer = cert.tbsCertificate.issuer;
+          let extensionValue = cert.tbsCertificate.extensions?.find(extension => extension.extnID == "subjectKeyIdentifier")?.extnValue;
+          // The extension wraps the identifier in another OCTET STRING
+          let ourKeyIdentifier = extensionValue && OctetString.decode(extensionValue);
           for (let recipientInfo of recipientInfos) {
-            if (recipientInfo.type != "ktri" ||
-                recipientInfo.value.rid.type != "issuerAndSerialNumber") {
-              // TODO Support subjectKeyIdentifier
+            if (recipientInfo.type != "ktri") {
               continue;
             }
-            let rid = recipientInfo.value.rid.value;
-            if (rid.serialNumber != cert.tbsCertificate.serialNumber ||
-                !sameName(rid.issuer, issuer)) {
+            // Senders name our certificate either by its issuer and serial
+            // number, or by its subjectKeyIdentifier. RFC 5652 section 6.2.1
+            let rid = recipientInfo.value.rid;
+            let isForOurCertificate = rid.type == "issuerAndSerialNumber"
+              ? rid.value.serialNumber == cert.tbsCertificate.serialNumber &&
+                sameName(rid.value.issuer, cert.tbsCertificate.issuer)
+              : !!ourKeyIdentifier && !indexedDB.cmp(rid.value, ourKeyIdentifier);
+            if (!isForOurCertificate) {
               continue;
             }
             let keyEncryptionAlgorithm = recipientInfo.value.keyEncryptionAlgorithm.algorithm;
