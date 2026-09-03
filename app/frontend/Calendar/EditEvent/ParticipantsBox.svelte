@@ -50,6 +50,7 @@
   import ExpandSection from "../../Shared/ExpandSection.svelte";
   import AvailabilityGrid from "./AvailabilityGrid.svelte";
   import SectionTitle from "./SectionTitle.svelte";
+  import { showError } from "../../Util/error";
   // import OptionalParticipantsIcon from "lucide-svelte/icons/circle-dashed";
   import { t } from "../../../l10n/l10n";
 
@@ -59,6 +60,8 @@
     let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
     participant.nameIsUnknown = person.nameIsUnknown;
     event.participants.add(participant);
+    participant.person?.fetchEncryptionKeys()
+      .catch(showError);
   }
 </script>
 
