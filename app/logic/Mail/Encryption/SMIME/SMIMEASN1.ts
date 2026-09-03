@@ -361,11 +361,13 @@ export const PBKDF2Params = define<PBKDF2Params>("PBKDF2Params", function() {
 });
 
 /* CMS */
+/** The parameters of RSA-OAEP. Senders leave out what has the default
+ * value, so OpenSSL sends an empty sequence for SHA-1. RFC 4055 section 4.1 */
 export const RSAESOAEPParams = define("RSAESOAEPParams", function() {
   this.seq().obj(
-    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier),
-    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier),
-    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier),
+    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier).def({ algorithm: "sha1" }),
+    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier).def({ algorithm: "mgf1" }),
+    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier).def({ algorithm: "pSpecified" }),
   );
 });
 
