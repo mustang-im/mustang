@@ -55,7 +55,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let { contentEncryptionAlgorithm, encryptedContent } = envelopedData.content.encryptedContentInfo;
     let cipher = contentEncryptionAlgorithm.algorithm;
     if (!sanitize.enum(cipher, ["aes128cbc", "aes192cbc", "aes256cbc", "desEDE3CBC", "rc2CBC"], null)) {
-      return;
+      throw new UserError(gt`This message is encrypted with ${algorithmName(cipher)}, which is not supported`);
     }
     let symmetricKey = await this.decryptSymmetricKey(email, envelopedData.content.recipientInfos);
     let decryptedContent: Uint8Array;
@@ -87,9 +87,9 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readAuthEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let authEnvelopedData = AuthEnvelopedData.decode(blob, { berToDER: true }).content;
-    if (!sanitize.enum(authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm,
-        ["aes128gcm", "aes192gcm", "aes256gcm"], null)) {
-      return;
+    let cipher = authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm;
+    if (!sanitize.enum(cipher, ["aes128gcm", "aes192gcm", "aes256gcm"], null)) {
+      throw new UserError(gt`This message is encrypted with ${algorithmName(cipher)}, which is not supported`);
     }
     let symmetricKey = await this.decryptSymmetricKey(email, authEnvelopedData.recipientInfos);
     email.wasEncrypted = true;
@@ -101,31 +101,41 @@ export class SMIMEReadProcessor extends EMailProcessor {
    * @throws if the message was not encrypted to any of our keys */
   protected async decryptSymmetricKey(email: EMail, recipientInfos: any[]): Promise<Uint8Array> {
     // XXX what if you were BCC'd?
+    let unsupportedKeyTransport: string | null = null;
     for (let recipient of email.allRecipients()) {
       let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
       if (identity) {
         for (let privateKey of identity.encryptionPrivateKeys) {
-          if (privateKey instanceof SMIMEPrivateKey) {
-            let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
-            let issuer = cert.tbsCertificate.issuer;
-            for (let recipientInfo of recipientInfos) {
-              if (recipientInfo.type != "ktri" ||
-                  recipientInfo.value.keyEncryptionAlgorithm.algorithm != "rsaEncryption" ||
-                  recipientInfo.value.rid.type != "issuerAndSerialNumber") {
-                // TODO Support subjectKeyIdentifier
-                continue;
-              }
-              let rid = recipientInfo.value.rid.value;
-              if (rid.serialNumber != cert.tbsCertificate.serialNumber ||
-                  !sameName(rid.issuer, issuer)) {
-                continue;
-              }
-              let rawKey = await privateKey.decryptKey();
-              return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
+          // A key that the user just created has no certificate yet
+          if (!(privateKey instanceof SMIMEPrivateKey) || !privateKey.certificate) {
+            continue;
+          }
+          let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
+          let issuer = cert.tbsCertificate.issuer;
+          for (let recipientInfo of recipientInfos) {
+            if (recipientInfo.type != "ktri" ||
+                recipientInfo.value.rid.type != "issuerAndSerialNumber") {
+              // TODO Support subjectKeyIdentifier
+              continue;
             }
+            let rid = recipientInfo.value.rid.value;
+            if (rid.serialNumber != cert.tbsCertificate.serialNumber ||
+                !sameName(rid.issuer, issuer)) {
+              continue;
+            }
+            let keyEncryptionAlgorithm = recipientInfo.value.keyEncryptionAlgorithm.algorithm;
+            if (keyEncryptionAlgorithm != "rsaEncryption") {
+              unsupportedKeyTransport = algorithmName(keyEncryptionAlgorithm);
+              continue;
+            }
+            let rawKey = await privateKey.decryptKey();
+            return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
           }
         }
       }
+    }
+    if (unsupportedKeyTransport) {
+      throw new UserError(gt`The key of this message is encrypted with ${unsupportedKeyTransport}, which is not supported`);
     }
     throw new UserError(gt`This message is encrypted, and the key is not available`);
   }
@@ -186,4 +196,10 @@ export class SMIMEReadProcessor extends EMailProcessor {
     await email.parseMIME(); // checks signature recursively
     await email.saveCompleteMessage();
   }
+}
+
+/** Names an algorithm for the user: our name for its OID, or the OID
+ * itself, for the algorithms that we do not know. */
+function algorithmName(algorithm: string | number[]): string {
+  return Array.isArray(algorithm) ? algorithm.join(".") : algorithm;
 }

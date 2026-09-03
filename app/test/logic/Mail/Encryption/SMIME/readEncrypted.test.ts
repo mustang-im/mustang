@@ -76,6 +76,35 @@ describe("Ciphers that other mail apps encrypt with", () => {
   });
 });
 
+describe("Algorithms that we do not implement", () => {
+  test("An unsupported cipher is named, instead of leaving the message empty", async () => {
+    let { errors } = await read(kCamellia, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["This message is encrypted with 1.2.392.200011.61.1.1.1.2, which is not supported"]);
+  });
+
+  test("An unsupported key transport is named, not reported as a missing key", async () => {
+    let { errors } = await read(kOAEP, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["The key of this message is encrypted with rsaESOAEP, which is not supported"]);
+  });
+
+  test("A message to an EC certificate is not for us, whatever the sender used", async () => {
+    let { errors } = await read(kECDH, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["This message is encrypted, and the key is not available"]);
+  });
+
+  test("A key without a certificate does not stop the other keys", async () => {
+    let { email, errors } = await read(k3DES,
+      await SMIMEPrivateKey.createNewPrivateKey("user@example.com"), // as [Create new key] leaves it
+      await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  }, 30000); // generating the 4096 bit key takes a while
+});
+
 /** `openssl smime -sign | openssl smime -encrypt`, to a certificate that is not ours */
 const kEncrypted = `From: Alice <alice@example.com>
 To: User <user@example.com>
@@ -282,3 +311,73 @@ U2g8BfQFpt80fgIWrFVw8Kh8zwhcl0tifFzGgVhy94wJhg0AW4U8Fy6NIPfTdUTd
 0uswcQYJKoZIhvcNAQcBMBoGCCqGSIb3DQMCMA4CAgCgBAgSZnhpIyC3u4BIYyJy
 FX/G+LwiLT2k641mQH1sAaQXDv9LK/ULoZZHyQAFzMFpiEBE7WD4CdOG59a8+PMZ
 UMYGFLFYP9MPSj13EdiN7JbrOZVJ`;
+
+/** `openssl cms -encrypt -camellia128 ...`: a cipher that we do not implement */
+const kCamellia = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with Camellia
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-camellia@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/gYJKoZIhvcNAQcDoIIB7zCCAesCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAC9DhweaUbqf4w89Bj2P
+EyJAFVPUXTnlwEkY5zlYTi6iXwMunRobvoI8DoXf/lN5vBxuUBA3cQwg1+c2L/Xr
+BTsrbFGSZT8iKxb1TiVpsA0Gphtr3Tn+vslvaI8b0dRPvf6kBsTvNVTXCFQ0wjGh
+AZkdz7WiemeILXbW17nVq4l1aRBVYDlcLRqzxJ0LSdGF9M2fazdXmYakilMwofWs
+E9+e7seMMM+xuLNr1wGogviVJEzMFLOsqLiBxNkDwDNqCGVMDfaK5MM6vjg/IY2z
+xyRd7PvaXgStA6rRpBEkJpI5fX1aQM4bqPNXjrZzufytLLR5/4Qyj8BbgELRcfE+
+hN0wfgYJKoZIhvcNAQcBMB8GCyqDCIyaSz0BAQECBBAIRM331zx1v66IGd/vNXTI
+gFDGGMQO5T77gbbSkB6bK7wuVfwKTGVJNsQEVAkW+fb8dxA9YfWJavtiUaWxUUB4
+fwOvE+nAm22cF7W8FTPUaqGiMyBXStfBfbudN7yYSTruhQ==`;
+
+/** `openssl cms -encrypt -aes256 -keyopt rsa_padding_mode:oaep ...`:
+ * the content key is encrypted with RSA-OAEP instead of PKCS#1 v1.5 */
+const kOAEP = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaep@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/AYJKoZIhvcNAQcDoIIB7TCCAekCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBBzAABIIBAEAa1wWQ61WqVJl2Z87B
+WN/IwnnV1RrO7p9odFZ4aLe+EmEPLlys9qnP/Jx7bsFN1fMOY13VFZz+xg6xw5TG
+VbvQOuf5cpFmytoNak9LXQJA5tw/jxP0SlJhb+ARX8hmZ2NxVUNPBVgxgzKzNX16
+6y5BmOMnHoTPPxlcVjRt1/6rf/9l8fNt+3vrRbzlXJO1mwTGN2DNaEFxP+c652gu
+0HUTar2vrf3dca4YRj1iz2Qua4cUKd8xMTvlNf9GWsfWpD59dQLbH2usfAulo3H0
+6IbKwlnbBx0+cMRtjI0ow/+jn8WgkAKY3ZZz63LKz7khJSLSmXSfX7jw6zejNYji
+z0owfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQHpzfNJOdR+9vexUeW0BEboBQ
+aBrnnQ9HhHGEcMqjqjlS87kikTbSyy3HR479tEzVMHHfv8FQQp9el2DKypN8qIww
+DSoahJ89vm89/M6HMB2X2Rlx7UAXFmjvwJgIBDx/480=`;
+
+/** `openssl cms -encrypt -aes256 ... -recip ec.crt`, where `ec.crt` is an
+ * EC certificate: the sender then uses key agreement, not key transport.
+ * `openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256` */
+const kECDH = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted to an EC key
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-ecdh@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIBggYJKoZIhvcNAQcDoIIBczCCAW8CAQIxgeuhgegCAQOgUaFPMAkGByqGSM49
+AgEDQgAEDvN8iS2lkk5NBffdBBA2TFOh4oOyFrmPZuBsKHHWysczNW6Vkf47GFEz
+8x8TV5EKLo2qfeJO5gqvIv/8l1HE8zAYBgkrgQUQhkg/AAIwCwYJYIZIAWUDBAEt
+MHYwdDBIMDAxDTALBgNVBAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhh
+bXBsZS5jb20CFCrDSc8tdxKCmYU+ZU6DjBEiOTOzBCiKYMhaZ7u88Esj5yN7IMD2
+RzdNM/j29ibMdc79c1Iwtm5UbTXt6uo1MHwGCSqGSIb3DQEHATAdBglghkgBZQME
+ASoEELZRNmez5JQ3FWy++6q9JTKAUJuCIk93Mea2ePGVnVePWa744VxpkfzX9Oja
+wSRTDC7T1ij8Z94jF0Lueip0XOYXKwxD0IY0fnYcPNZgnNiAF9bhj17QmADGf49g
+f5OAMaBd`;
