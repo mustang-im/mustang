@@ -336,10 +336,11 @@ export class EWSFolder extends ExchangeFolder {
   }
 
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
+    const kMaxDownloadCount = 10;
     let downloadedEmail = new ArrayColl<EWSEMail>();
     let emailsToDownload = emails.contents;
-    for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
-      let batch = emailsToDownload.slice(i, i + kMaxCount);
+    for (let i = 0; i < emailsToDownload.length; i += kMaxDownloadCount) {
+      let batch = emailsToDownload.slice(i, i + kMaxDownloadCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
       if (!batch.length) {
         continue;
