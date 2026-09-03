@@ -1,4 +1,5 @@
 import { appGlobal } from './app';
+import { Person } from './Abstract/Person';
 import { readMailAccounts } from './Mail/AccountsList/MailAccounts';
 import { readChatAccounts } from './Chat/AccountsList/ChatAccounts';
 import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
@@ -16,6 +17,9 @@ import { production, webMail } from './build';
 import { retryOnTransientError } from './util/netUtil';
 import { catchErrors, logError, showError } from '../frontend/Util/error';
 import { assert, sleep } from './util/util';
+
+// Set before anything reads it. Not in `app.ts` to break import cycle.
+appGlobal.me = new Person();
 
 /** Read JPC secret from frontent URL hash `jpcSecret=password`.
  * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */

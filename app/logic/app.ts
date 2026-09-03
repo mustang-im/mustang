@@ -1,6 +1,6 @@
 import type { MailAccount } from './Mail/MailAccount';
 import type { ChatAccount } from './Chat/ChatAccount';
-import { Person } from './Abstract/Person';
+import type { Person } from './Abstract/Person';
 import type { Addressbook, SearchOnlyAddressbook } from './Contacts/Addressbook';
 import type { Calendar } from './Calendar/Calendar';
 import type { MeetAccount } from './Meet/MeetAccount';
@@ -34,7 +34,8 @@ class AppGlobal extends Observable {
   readonly topics: Collection<Topic> = mergeColls(this.topicAccounts.map(acc => acc.topics));
   //readonly allContacts: Collection<Contact> = mergeColls(this.addressbooks.map(ab => ab.contacts));
   remoteApp: any;
-  me = new Person();
+  /** The user's real name. Obj set in `startup.ts`, and name when loading accounts. */
+  me: Person;
 
   @notifyChangedProperty
   isSmall = false;

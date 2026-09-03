@@ -1,4 +1,5 @@
 import { appGlobal } from '../app';
+import { Person } from '../Abstract/Person';
 import { WebMailBackend } from './backend';
 import { login } from './config';
 import type { Account } from '../Abstract/Account';
@@ -9,6 +10,9 @@ import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from '../Abstract/Tag';
 import { getComputerOn } from '../util/backend-wrapper';
 import { logError } from '../../frontend/Util/error';
+
+// Before anything reads it, @see `startup.ts`
+appGlobal.me = new Person();
 
 export async function getStartObjects(): Promise<void> {
   gLicense.license = { valid: true }; // Proprietary, see comment in License.ts

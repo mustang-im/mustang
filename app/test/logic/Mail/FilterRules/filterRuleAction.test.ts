@@ -1,5 +1,6 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import { appGlobal } from "../../../../logic/app";
+import { Person } from "../../../../logic/Abstract/Person";
 import { DeleteStrategy, MailAccount } from "../../../../logic/Mail/MailAccount";
 import { Folder, SpecialFolder } from "../../../../logic/Mail/Folder";
 import { EMail } from "../../../../logic/Mail/EMail";
@@ -16,6 +17,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import sql from "../../../../../lib/rs-sqlite";
 import { expect, test } from "vitest";
+
+appGlobal.me = new Person(); // as `startup.ts` does
 
 test("The tags of a rule survive saving and reading the config", async () => {
   let account = await setupAccount();
