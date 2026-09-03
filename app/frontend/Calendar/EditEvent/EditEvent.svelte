@@ -1,77 +1,79 @@
 <FileDropTarget on:add-files={(dropped) => catchErrors(() => onFilesDrop(dropped))}>
   <vbox flex class="event-edit-window">
     <DialogHeader bind:event />
-    <Scroll>
-      <vbox class="columns" flex class:show-description={showDescription} class:show-attachments={showAttachments} bind:offsetWidth={width}>
-        <vbox class="column1">
-          <hbox class="time-box" >
-            <TimeBox {event} />
-          </hbox>
-          <Section label={$t`Title`}>
-            <TitleBox {event} />
-          </Section>
-          <Section>
-            <ExpanderButtons>
-              <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
-              <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />
-              <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
-              <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
-              <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
-              <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
-              <ExpanderButton bind:expanded={showAttachments} label={$t`Attachment`} icon={AttachmentIcon} on:expand={() => catchErrors(expandAttachments)} />
-            </ExpanderButtons>
-          </Section>
-          {#if showRepeat}
-            <Section label={$t`Repeat`} icon={RepeatIcon}>
-              <RepeatBox {event} />
+    <hbox flex bind:offsetWidth={width}>
+      <Scroll>
+        <vbox class="columns" flex class:show-description={showDescription} class:show-attachments={showAttachments}>
+          <vbox class="column1">
+            <hbox class="time-box" >
+              <TimeBox {event} />
+            </hbox>
+            <Section label={$t`Title`}>
+              <TitleBox {event} />
             </Section>
-          {/if}
-          {#if showReminder}
-            <Section label={$t`Reminder`} icon={ReminderIcon}>
-              <SectionTitle label={$t`Reminder`}>
-                <ReminderBox {event} />
-              </SectionTitle>
+            <Section>
+              <ExpanderButtons>
+                <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
+                <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />
+                <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
+                <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
+                <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
+                <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
+                <ExpanderButton bind:expanded={showAttachments} label={$t`Attachment`} icon={AttachmentIcon} on:expand={() => catchErrors(expandAttachments)} />
+              </ExpanderButtons>
             </Section>
-          {/if}
-          {#if showParticipants}
-            <Section label={$t`Invite`} icon={ParticipantsIcon}>
-              <ParticipantsBox {event} />
-            </Section>
-          {/if}
-          {#if showLocation}
-            <Section label={$t`Location`} icon={LocationIcon}>
-              <SectionTitle label={$t`Location`}>
-                <LocationBox {event} />
-              </SectionTitle>
-            </Section>
-          {/if}
-          {#if showOnlineMeeting}
-            <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
-              <SectionTitle label={$t`Online meeting`}>
-                <OnlineMeetingBox {event} />
-              </SectionTitle>
-            </Section>
+            {#if showRepeat}
+              <Section label={$t`Repeat`} icon={RepeatIcon}>
+                <RepeatBox {event} />
+              </Section>
+            {/if}
+            {#if showReminder}
+              <Section label={$t`Reminder`} icon={ReminderIcon}>
+                <SectionTitle label={$t`Reminder`}>
+                  <ReminderBox {event} />
+                </SectionTitle>
+              </Section>
+            {/if}
+            {#if showParticipants}
+              <Section label={$t`Invite`} icon={ParticipantsIcon}>
+                <ParticipantsBox {event} />
+              </Section>
+            {/if}
+            {#if showLocation}
+              <Section label={$t`Location`} icon={LocationIcon}>
+                <SectionTitle label={$t`Location`}>
+                  <LocationBox {event} />
+                </SectionTitle>
+              </Section>
+            {/if}
+            {#if showOnlineMeeting}
+              <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
+                <SectionTitle label={$t`Online meeting`}>
+                  <OnlineMeetingBox {event} />
+                </SectionTitle>
+              </Section>
+            {/if}
+          </vbox>
+          <vbox class="column2 description" flex>
+            {#if showDescription}
+              <Section label={$t`Description`} icon={DescriptionIcon} flex>
+                <DescriptionBox {event} />
+              </Section>
+            {/if}
+          </vbox>
+          {#if showAttachments}
+            <vbox class="column3 attachments">
+              <AttachmentsPane message={event} />
+            </vbox>
           {/if}
         </vbox>
-        <vbox class="column2 description" flex>
-          {#if showDescription}
-            <Section label={$t`Description`} icon={DescriptionIcon} flex>
-              <DescriptionBox {event} />
-            </Section>
-          {/if}
+      </Scroll>
+      {#if width > 800}
+        <vbox class="mycalendar">
+          <EventInDayView {event} showHours={10} />
         </vbox>
-        {#if showAttachments}
-          <vbox class="column3 attachments">
-            <AttachmentsPane message={event} />
-          </vbox>
-        {/if}
-        {#if width > 600}
-          <vbox class="mycalendar">
-            <EventInDayView {event} showHours={10} />
-          </vbox>
-        {/if}
-      </vbox>
-    </Scroll>
+      {/if}
+    </hbox>
   </vbox>
 </FileDropTarget>
 
@@ -209,7 +211,8 @@
     }*/
   }
   .mycalendar {
-    width: 150px;
+    width: 200px;
+    margin-block-start: -10px;
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
