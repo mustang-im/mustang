@@ -66,7 +66,7 @@ function answerGetItems() {
 test("An invitation that Exchange processes during the sync does not add the event a second time", async () => {
   await Promise.all([
     calendar.listEventsSlow(),
-    calendar.createOrUpdateEventFromServerByID(kItemID),
+    calendar.getEventFromServerByID(kItemID),
   ]);
 
   expect(errors).toEqual([]);
