@@ -85,6 +85,18 @@ describe("Signature of a received message, without an own private key", () => {
     let key = await getPublicKeyByKeyID(email.signedByKeyID, email);
     expect(key.trustLevel).toBe(TrustLevel.Sender);
   });
+
+  test("a certificate for another address does not sign for the sender", async () => {
+    let email = await readMessage(toCRLF(kClearSigned.replace("Alice <alice@", "Bob <bob@")));
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    expect(email.signedByKeyID).toBe(null);
+    expect(email.from.encryptionPublicKey).toBeFalsy();
+  });
+
+  test("the sender address is compared case-insensitively", async () => {
+    let email = await readMessage(toCRLF(kClearSigned.replace("alice@example.com", "Alice@Example.COM")));
+    expect(await signedWithKeyName(email)).toBe("F9D7");
+  });
 });
 
 describe("Signature made with an elliptic curve key", () => {
