@@ -1,5 +1,6 @@
-import { SignedData, OctetString, RDNSequence } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
+import { SignedData, OctetString, RDNSequence, Oid, UTCTime, Attributes, DigestInfo, Null, PrivateKeyInfo, RSAPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
 import { verifySignedData, sameName } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
+import { decrypt, padFF } from "../../../../../logic/Mail/Encryption/SMIME/SMIMERSAES";
 import { appGlobal } from "../../../../../logic/app";
 import { expect, test, describe } from "vitest";
 
@@ -33,6 +34,60 @@ async function verify(signedData: any): Promise<any> {
   return await verifySignedData(signedData, OctetString.decode(signedData.content.contentInfo.content));
 }
 
+const kContent = "Content-Type: text/plain\r\n\r\nHello from Eva.\r\n";
+
+/** The attributes of a correct message, for the tests to vary */
+async function signedAttributes(): Promise<any[]> {
+  let messageDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(kContent)));
+  return [{
+    attrType: "contentType",
+    attrValue: [Oid.encode("data")],
+  }, {
+    attrType: "signingTime",
+    attrValue: [UTCTime.encode(Date.parse("2026-09-03T06:29:01Z"))],
+  }, {
+    attrType: "messageDigest",
+    attrValue: [OctetString.encode(messageDigest)],
+  }];
+}
+
+/** Signs the attributes with Eva's key, and wraps them in an opaque-signed
+ * message, the same way that `SMIMESend` builds it */
+async function signAsEva(signedAttrs: any[], cert = certificates()[1]): Promise<any> {
+  let attributesDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", Attributes.encode(signedAttrs)));
+  let digestInfo = {
+    digestAlgorithm: { algorithm: "sha256", parameters: Null.encode() },
+    digest: attributesDigest,
+  };
+  let key = RSAPrivateKey.decode(PrivateKeyInfo.decodePEM(kEvaKey, { label: "PRIVATE KEY" }).privateKey);
+  return {
+    contentType: "signedData",
+    content: {
+      version: 1n,
+      digestAlgorithms: [{ algorithm: "sha256", parameters: Null.encode() }],
+      contentInfo: {
+        contentType: "data",
+        content: OctetString.encode(new TextEncoder().encode(kContent)),
+      },
+      certificates: [cert],
+      signerInfos: [{
+        version: 1n,
+        sid: {
+          type: "issuerAndSerialNumber",
+          value: {
+            issuer: cert.tbsCertificate.issuer,
+            serialNumber: cert.tbsCertificate.serialNumber,
+          },
+        },
+        digestAlgorithm: { algorithm: "sha256", parameters: Null.encode() },
+        signedAttrs,
+        signatureAlgorithm: { algorithm: "rsaEncryption", parameters: Null.encode() },
+        signature: decrypt(padFF(DigestInfo.encode(digestInfo), key), key),
+      }],
+    },
+  };
+}
+
 describe("Which certificate signed", () => {
   test("compares attribute types that our OID map does not know", () => {
     let subject = certificates()[1].tbsCertificate.subject;
@@ -61,6 +116,20 @@ describe("Which certificate signed", () => {
     let signedData = SignedData.decodeFromBase64(kSignedByEva);
     signedData.content.signerInfos[0].digestAlgorithm.algorithm = "rsaESOAEP";
     expect(await verify(signedData)).toBe(null);
+  });
+});
+
+describe("Signed attributes", () => {
+  test("the message that the other tests vary verifies", async () => {
+    let signer = await verify(await signAsEva(await signedAttributes()));
+    expect(signer?.userIDs.contents).toEqual(["eva@example.com"]);
+  });
+
+  test("the content type must be signed, and must be the one of the message", async () => {
+    let attributes = await signedAttributes();
+    attributes[0].attrValue = [Oid.encode("encryptedData")];
+    expect(await verify(await signAsEva(attributes))).toBe(null);
+    expect(await verify(await signAsEva(attributes.slice(1)))).toBe(null);
   });
 });
 
@@ -116,4 +185,36 @@ const kSignedByEva = `
   PYPoRjJ8O2L1N2a6u5QdismVkcjwzeskRLwS84BQWTfoGdrgwmNECjUUBpSm+rwnEIz9xsWuoSwPyvBt2mlhD5YuwiN6qXJe2/LK
   pkYT0tN998SbHQ/Q6mdND1AdyiVssuCmfkmYqJEqDHno7+yhfqh4l5uGtE863/cMzqfc1dNiLKQyh7957aS44BgbPkvtKjPrY+Ia
   F5M=
+`;
+
+/** Eva's private key, to sign the messages that the tests build */
+const kEvaKey = `
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC0eem+2K29+ouY
+3GAnYhfhkfutx1bkJsQfDMklsYUJnwzPBRRPu/RAzg+7eygKYW8Oaiqof8ls/fXD
+PSCRpKP51QOFKKoK85uflJDtC4e/NrePpW2pkjHo9In7+UpPqIgK8hasRCQvT7/v
+scD9p//tiuj2FMLnQ7wBNy2Cq8LieBL9rXw7IlJksnLfIMVtd7rEb+7ECLcy2hYP
+mytDCaRiifJ4RumTBpIMY9i+GzCn38tlJPMTj3Qi5S2yguDtprIMQI2MeA6v80KP
+3uYs9ahuAoEzeZc0++37esMk19FQ07H5zAiYA8ZCRymC+b2pGXlfKjldG3m3mj55
+H2dyGPi1AgMBAAECggEAGTvqjiqnBacgbvvGiKXTMlDtCxE8zvhfTPrGrSSIYMis
+9nfUAooEeYMro/Ubq3KQH/MsNRRuSh+q2zo9cYpppabpBRdNyeuMg4rhm03qFGGc
+LNOJOmpx3AvvtxwrYxPstvW+bHu3632PwqiXPrWHYo6c9WYAZ8GKv0jDGOrXJumS
+yq9X7aicCvNuMrghMWkUceATurCHGNmMbOt2xIr4RVTS+g/xWQvwQ66Y7nwnWuHf
+IkRtRoSH8y4tu2o+jBAuKTXHwJTxXqO9OnFBIBG2XwKu9wWdiTILeJPO0uBf26m2
+rRTodhkUWAfBWTb+1yjCP+uS+d7Q9ZgHyvdfClVlyQKBgQDm+aXs+KewmBmlFXmt
+r0dHmbSyuLTry4ByVTM/WVhG76zisHzqNIG343cXbLl9N5rsMH/AemJqMv+H97+h
+2vvHU6Rg12jM9uEJ3l9LLaGRelNmjpphzRA930ltr6UIZMJSqci5v7gf1wI3z8w2
+Zj0EC3QEY1YwuRWTGRnfulMtPwKBgQDIB57QeZNDNyCyWVXHVU30sgbv+iXfEgei
+sNEy0WA/ztcX0f0L4EyH7DO3u6mdyTmMJzEVdg3/H8J1PdO/yAknI45iR/jyBRE4
+KrI4trk/g/XvesgsLrwxvbW31ZYXWcynx1YD+1LAoW2LluVDEiZEUwvRxqtpF5jW
+uYmxUM05CwKBgQChLdMY44f5VpqGtc68YhUmpN8Q3I38AX13y3bAnTNaBQSrCCeT
+M+LVlNjVMtzZwYTNjyaHBaBJpZ7lngBPDUYnmXmazpbmeN0fCtuK1aPqpecvKRIY
+b4YG9xsBfNF4Yv+rualF3cC6D0sP8WT7DStE+E0UhtFtnKquhJSmqBpE9wKBgAS4
+wVP0erhsdbYgC7lP1y4+gZFqmzg/ybRabiW/8YCwFj22tD1yhvvyZGoi4Ocbl+Mq
+DauPBNeP3Vw9IGF3jFfDLBo/zq2P1w83Wsuh7I+GQujrQgxg8gpOixqSzR8x/HW9
+a9deOF7ZsKdJ4ZGKvSKBv1atVOB/MRloecqYuK9vAoGBAJhBElyFNcrH57rjAVbJ
+4bMcRQFh3SQX3a/Ma/a0ooFRexZGVaysXvfFJ/lAQDAIOM/rRspcyS1enCmTVsXI
+Qx5tVPeCThb0Y7Q0McOz9eZNfSZ/Jmq2EMUi2OR+SQjN0yNZMTTRhwun89YR9Ozw
+d1kTfZ40oM8sTyaJlTdJANWn
+-----END PRIVATE KEY-----
 `;

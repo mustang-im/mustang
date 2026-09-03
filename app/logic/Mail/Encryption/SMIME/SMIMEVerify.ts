@@ -1,4 +1,4 @@
-import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, type TBSCertificate } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
 import { SMIMEPublicKey, verifyECDSA } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -54,6 +54,14 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
   // Without signed attributes, the signature covers the content directly.
   let signedContent = content;
   if (signerInfo.signedAttrs) {
+    // RFC 5652 section 5.3: the attributes must say which content they cover,
+    // so that a signature cannot be moved to another kind of content
+    let contentTypeAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "contentType");
+    if (!contentTypeAttribute ||
+        String(Oid.decode(contentTypeAttribute.attrValue[0])) != String(signedData.content.contentInfo.contentType)) {
+      console.log("signature was made for another content type");
+      return null;
+    }
     let digestAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "messageDigest");
     if (!digestAttribute) {
       console.log("signature did not contain a message digest");
