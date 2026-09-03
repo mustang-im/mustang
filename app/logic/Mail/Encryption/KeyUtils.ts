@@ -8,6 +8,7 @@ import { SMIMEPrivateKey } from "./SMIME/SMIMEPrivateKey";
 import { SMIMEPublicKey } from "./SMIME/SMIMEPublicKey";
 import { PKCS12 } from "./SMIME/PKCS12";
 import { readAutoCryptKeys } from "./PGP/AutoCrypt";
+import { publicKeyFromJSON } from "./KeyFromJSON";
 import { EncryptionSystem } from "./enums";
 import type { EMail } from "../EMail";
 import { findAllIdentities, type MailIdentity } from "../MailIdentity";
@@ -47,10 +48,25 @@ export async function getPublicKeyByKeyID(id: string | null, email?: EMail): Pro
   if (email?.signedKey?.id == id) {
     return email.signedKey;
   }
+  if (email?.signedKeyJSON) {
+    let key = publicKeyFromJSON(email.signedKeyJSON);
+    if (key.id == id) {
+      email.signedKey = key;
+      return key;
+    }
+  }
   if (email && email.system != EncryptionSystem.SMIME) {
     let key = await readAutoCryptKeys(email);
     if (key?.id == id) {
       return key;
+    }
+  }
+  if (email) {
+    // Last resort, for messages that we stored before we kept the key
+    await email.loadMIME(); // calls `rememberSigner()` via processors
+    if (email.signedKey?.id == id) {
+      await email.saveWritablePropsLocally();
+      return email.signedKey;
     }
   }
   return null;

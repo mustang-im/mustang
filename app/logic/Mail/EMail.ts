@@ -116,6 +116,9 @@ export class EMail extends Message {
   /** As `signed` but giving you the actual PublicKey object.
    * Set this using @see rememberSigner() */
   signedKey: PublicKey | null = null;
+  /** As `signedKey`, but not parsed yet.
+   * `getPublicKeyByKeyID()` parses it when the reader needs it. */
+  signedKeyJSON: any = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
   sendRawMIME: string | null = null;

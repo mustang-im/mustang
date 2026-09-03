@@ -79,10 +79,23 @@ export class JSONEMail {
       let e = json.encryption = {} as any;
       e.system = email.system;
       e.signedPublicKeyID = email.signedByKeyID;
+      e.signedPublicKey = this.saveSigner(email);
       e.wasEncrypted = email.wasEncrypted;
       e.mustEncrypt = email.mustEncrypt;
       e.shouldEncrypt = email.shouldEncrypt;
     }
+  }
+
+  /** Only for senders who are not in the addressbook,
+   * because the addressbook has the better copy.
+   * @returns {JSON} what we read, if we never parsed the key */
+  protected static saveSigner(email: EMail): any {
+    let onContact = email.from?.findPerson()?.encryptionPublicKeys
+      .find(key => key.id == email.signedByKeyID);
+    if (onContact) {
+      return null;
+    }
+    return email.signedKey?.toJSON() ?? email.signedKeyJSON;
   }
 
   protected static saveRecipients(email: EMail, json: any) {
@@ -231,6 +244,8 @@ export class JSONEMail {
     if (e) {
       email.system = sanitize.enum<EncryptionSystem>(e.system, Object.values(EncryptionSystem), null);
       email.signedByKeyID = sanitize.alphanumdash(e.signedPublicKeyID, null);
+      // Parsed on demand, @see `getPublicKeyByKeyID()`
+      email.signedKeyJSON = e.signedPublicKey ?? null;
       email.wasEncrypted = sanitize.boolean(e.wasEncrypted, false);
       email.shouldEncrypt = sanitize.boolean(e.shouldEncrypt, false);
       email.mustEncrypt = sanitize.boolean(e.mustEncrypt, false);
