@@ -8,8 +8,9 @@ import { decryptAuthEnveloped } from "./SMIMEDecrypt";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes, parseHeaderParameters } from "../MIME";
-import { assert } from "../../../util/util";
+import { UserError, assert } from "../../../util/util";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
+import { gt } from "../../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import type { Email as PostalEmail } from "postal-mime";
 
@@ -56,9 +57,6 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let vector = OctetString.decode(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.parameters);
     let encryptedContent = envelopedData.content.encryptedContentInfo.encryptedContent;
     let symmetricKey = await this.decryptSymmetricKey(email, envelopedData.content.recipientInfos);
-    if (!symmetricKey) {
-      return;
-    }
     let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
     let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
     email.wasEncrypted = true;
@@ -77,17 +75,14 @@ export class SMIMEReadProcessor extends EMailProcessor {
       return;
     }
     let symmetricKey = await this.decryptSymmetricKey(email, authEnvelopedData.recipientInfos);
-    if (!symmetricKey) {
-      return;
-    }
     email.wasEncrypted = true;
     await this.unwrapMIME(email, await decryptAuthEnveloped(authEnvelopedData, symmetricKey));
   }
 
   /** Finds the private key of one of our identities that this message was
    * encrypted to, and decrypts the symmetric content key with it.
-   * @returns null, if the message was not encrypted to any of our keys */
-  protected async decryptSymmetricKey(email: EMail, recipientInfos: any[]): Promise<Uint8Array | null> {
+   * @throws if the message was not encrypted to any of our keys */
+  protected async decryptSymmetricKey(email: EMail, recipientInfos: any[]): Promise<Uint8Array> {
     // XXX what if you were BCC'd?
     for (let recipient of email.allRecipients()) {
       let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
@@ -115,7 +110,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
         }
       }
     }
-    return null;
+    throw new UserError(gt`This message is encrypted, and the key is not available`);
   }
 
   /** Reads an opaque-signed message (used by Outlook), where the whole
