@@ -67,21 +67,16 @@ export class JMAPAccount extends MailAccount {
       await this.storage.saveAccount(this);
     }
     await this.storage.readFolderHierarchy(this);
-    let firstSync = this.rootFolders.isEmpty;
 
     await this.loginOAuth2(interactive);
     await this.getSession();
-    await this.startup();
-
-    if (firstSync) {
-      await this.addSharedAccounts();
-    }
   }
 
   async startup() {
     if (this.isDependentAccount) {
       this.session = (this.mainAccount as JMAPAccount).session;
     }
+    let firstSync = this.rootFolders.isEmpty;
     try {
       if (this.haveSubmission) {
         await this.listIdentities();
@@ -107,6 +102,9 @@ export class JMAPAccount extends MailAccount {
       }
     } finally { // Even when the mail folders failed, so that calendar and addressbook still work
       await this.startupDependentAccounts();
+    }
+    if (firstSync && !this.isDependentAccount) {
+      await this.addSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
     }
   }
 

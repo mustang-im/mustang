@@ -68,6 +68,12 @@ export class AllAccounts extends MailAccount {
     }
   }
 
+  async startup(): Promise<void> {
+    for (let account of this.accounts) {
+      await account.startup();
+    }
+  }
+
   async listFolders(): Promise<void> {
     await Promise.all(this.accounts.contents.map(account =>
       account.listFolders()));

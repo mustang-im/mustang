@@ -67,7 +67,6 @@ export class IMAPAccount extends MailAccount {
     await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
-    await this.startup();
   }
 
   async startup() {

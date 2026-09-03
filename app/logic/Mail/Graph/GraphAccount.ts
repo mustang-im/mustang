@@ -53,8 +53,6 @@ export class GraphAccount extends ExchangeMailAccount {
 
       await this.loginOAuth2(interactive);
     });
-
-    await this.startup();
   }
 
   async startup() {

@@ -113,7 +113,7 @@ function replaceVar(str: string, emailAddress: string): string {
  * 2. Sets the realname of the user based on the From in messages in Sent
  * 3. Pre-populates the Collected Addresses. */
 export async function getFirstMessages(config: MailAccount) {
-  await config.login(true);
+  await config.loginAndStartup(true);
   let sent = config.getSpecialFolder(SpecialFolder.Sent);
   let inbox = config.getSpecialFolder(SpecialFolder.Inbox);
   if (sent) {

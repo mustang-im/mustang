@@ -90,8 +90,7 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
     (async () => {
       await account.readFromDB();
       if (account.loginOnStartup && !account.isDependentAccount) {
-        await account.login(false);
-        await account.startup();
+        await account.loginAndStartup(false);
       }
     })().catch(errorWithAccountName(account, startupErrorCallback));
   }
@@ -120,10 +119,8 @@ function checkAccounts(): void {
   for (let account of getAllAccounts()) {
     if (!account.isLoggedIn && account.loginOnStartup && !account.isDependentAccount) {
       // VPN tunnel needs several seconds after the computer network woke up
-      retryOnTransientError(async () => {
-        await account.login(false);
-        await account.startup();
-      }, 2, 4).catch(account.errorCallback);
+      retryOnTransientError(() => account.loginAndStartup(false), 2, 4)
+        .catch(account.errorCallback);
     }
   }
   // Accounts that stayed logged in didn't run startup() above,

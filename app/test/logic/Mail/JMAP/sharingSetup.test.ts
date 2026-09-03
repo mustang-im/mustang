@@ -113,7 +113,7 @@ afterEach(() => {
   appGlobal.emailAccounts.clear();
 });
 
-async function loginToNewAccount(): Promise<JMAPAccount> {
+function newAccount(): JMAPAccount {
   let account = newAccountForProtocol("jmap") as JMAPAccount;
   account.name = "John";
   account.emailAddress = "john.doe@example.com";
@@ -121,7 +121,12 @@ async function loginToNewAccount(): Promise<JMAPAccount> {
   account.url = "http://example.com/jmap/session";
   account.pollIntervalMinutes = 0; // no timers in tests
   appGlobal.emailAccounts.add(account);
-  await account.login(true);
+  return account;
+}
+
+async function loginToNewAccount(): Promise<JMAPAccount> {
+  let account = newAccount();
+  await account.loginAndStartup(true);
   return account;
 }
 
@@ -129,6 +134,18 @@ function delegatedAccounts(): JMAPAccount[] {
   return appGlobal.emailAccounts.contents
     .filter(acc => acc.emailAddress == "jane.smith@example.com") as JMAPAccount[];
 }
+
+test("login() only gets the session; startup() lists the folders", async () => {
+  session = kStalwartSession;
+  let account = newAccount();
+
+  await account.login(true);
+  expect(account.isLoggedIn).toBeTruthy();
+  expect(calls).toEqual([]);
+
+  await account.startup();
+  expect(calls).toContain("Mailbox/get u1");
+});
 
 test("Setup adds the account that another user delegated to us", async () => {
   session = kStalwartSession;
@@ -140,7 +157,7 @@ test("Setup adds the account that another user delegated to us", async () => {
   expect(shared[0].accountID).toBe("u2");
   expect(shared[0].mainAccount).toBe(account);
   expect(shared[0].rootFolders.hasItems).toBe(true);
-  // Set up during the login, rather than only after the next app start
+  // Set up during the account setup, rather than only after the next app start
   expect(calls).toContain("Mailbox/get u2");
   // The parts that she did not share do not abort the setup of the rest
   expect(calls).toContain("AddressBook/get u2");
@@ -166,7 +183,7 @@ test("The delegated account is added only once", async () => {
   session = kStalwartSession;
 
   let account = await loginToNewAccount();
-  await account.login(true);
+  await account.loginAndStartup(true);
 
   expect(delegatedAccounts().length).toBe(1);
 });

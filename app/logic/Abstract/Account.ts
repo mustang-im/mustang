@@ -63,11 +63,10 @@ export class Account extends Observable {
   }
 
   /**
-   * For local accounts, this is the startup entry point. It is overridden
-   * e.g. for contacts and calendar to load data from the database.
-   * Startup for accounts that need to log in will attempt to use a
-   * noninteractive `login` call instead. However if this is successful
-   * then the account's login code should finish by running its startup code.
+   * The initial sync after the login: lists the folders, events or contacts,
+   * fetches the new mail, subscribes to changes on the server, and starts the
+   * dependent accounts. The UI could make these calls at any time, so `login()`
+   * must not call this: it would run twice. @see `loginAndStartup()`
    */
   async startup() {
   }
@@ -98,6 +97,17 @@ export class Account extends Observable {
   }
 
   /**
+   * The preparation which allows us to issue any normal call to the server,
+   * including sending the password.
+   *
+   * Depending on the protocol:
+   * - IMAP: opening the the TCP connection, CAPABILITY, login
+   * - JMAP: the session
+   * …
+   *
+   * Initial sync is done in `startup()`, not here.
+   * `loginAndStartup()` does both.
+   *
    * @param interactive
    *   true: If needed, open UI to ask user to log in manually,
    *     e.g. using password, MFA, or passkey
@@ -116,6 +126,17 @@ export class Account extends Observable {
     if (this.isDependentAccount && !this.isLoggedIn) {
       await this.mainAccount.login(interactive);
     }
+  }
+
+  /** Logs in and runs the initial sync, like the app start does.
+   * For the Login and Get Mail buttons and the account setup. */
+  async loginAndStartup(interactive: boolean): Promise<void> {
+    if (this.isDependentAccount) {
+      await this.mainAccount.loginAndStartup(interactive); // it starts us up
+      return;
+    }
+    await this.login(interactive);
+    await this.startup();
   }
 
   /** For setup only. Test that the login works. */

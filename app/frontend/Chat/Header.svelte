@@ -8,7 +8,7 @@
         icon={LoginIcon}
         classes="small"
         iconSize="12px"
-        onClick={() => $selectedAccount.login(true)}
+        onClick={() => $selectedAccount.loginAndStartup(true)}
         />
     {/if}
     <ButtonMenu bind:isMenuOpen={isButtonMenuOpen}>

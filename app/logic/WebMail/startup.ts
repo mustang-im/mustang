@@ -34,14 +34,14 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void):
   for (let account of appGlobal.chatAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (!account.isDependentAccount) {
-      account.login(false)
+      account.loginAndStartup(false)
         .catch(startupErrorCallback);
     }
   }
 
   for (let account of appGlobal.emailAccounts) {
     account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
-    account.login(false)
+    account.loginAndStartup(false)
       .catch(startupErrorCallback);
   }
 }
@@ -50,7 +50,7 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void):
 function checkAccounts(): void {
   for (let account of appGlobal.chatAccounts) {
     if (!account.isLoggedIn && !account.isDependentAccount) {
-      account.login(false)
+      account.loginAndStartup(false)
         .catch(account.errorCallback);
     }
   }
@@ -59,7 +59,7 @@ function checkAccounts(): void {
       account.inbox?.getNewMessages()
         .catch(account.errorCallback);
     } else {
-      account.login(false)
+      account.loginAndStartup(false)
         .catch(account.errorCallback);
     }
   }
