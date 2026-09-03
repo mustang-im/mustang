@@ -64,9 +64,67 @@ MsJt4do7Rv0376bfm9Dl+mwGQ1JxTHgWS7kyZd+9GBY50zDzB78wngvmHW/MAjB4
 cD0wdFSSGXx0GEFDJDKhPZOkkHk9FfMNh4jYJD/KvwDL+MxnfiChzTi8ztx08/s=
 -----END CERTIFICATE-----`;
 
+/* A root CA that signs with RSASSA-PSS instead of the older PKCS#1 v1.5
+ * padding, and a certificate that it issued:
+ * openssl req -x509 -newkey rsa:2048 -keyout pssca.key -out pssca.crt \
+ *   -days 3650 -nodes -sha256 -sigopt rsa_padding_mode:pss \
+ *   -sigopt rsa_pss_saltlen:-1 -subj "/O=Parula Test/CN=PSS Test Root CA" \
+ *   -addext "basicConstraints=critical,CA:TRUE" \
+ *   -addext "keyUsage=critical,keyCertSign,cRLSign"
+ * openssl x509 -req -in pssleaf.csr -out pssleaf.crt -set_serial 0x2b \
+ *   -CA pssca.crt -CAkey pssca.key -days 3650 -sha256 \
+ *   -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -extfile <(printf \
+ *   "basicConstraints=CA:FALSE\nextendedKeyUsage=emailProtection\n") */
+const kPSSRootCA = `-----BEGIN CERTIFICATE-----
+MIIDuzCCAm+gAwIBAgIUQDvP5TTqbKnzk1WRSE+QPPR1jOgwQQYJKoZIhvcNAQEK
+MDSgDzANBglghkgBZQMEAgEFAKEcMBoGCSqGSIb3DQEBCDANBglghkgBZQMEAgEF
+AKIDAgEgMDExFDASBgNVBAoMC1BhcnVsYSBUZXN0MRkwFwYDVQQDDBBQU1MgVGVz
+dCBSb290IENBMB4XDTI2MDkwMzA2NDUwMloXDTM2MDgzMTA2NDUwMlowMTEUMBIG
+A1UECgwLUGFydWxhIFRlc3QxGTAXBgNVBAMMEFBTUyBUZXN0IFJvb3QgQ0EwggEi
+MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDtii3VDit7KCCYTKJZDrjLZUU/
+bfXwtNyI+zCXOKhKnsAFJtFiWBq7yLXW7bAbr0h1tTFrIVyxxehWJcZBAV/d4RLM
+rpHh3kw71VaQ2AqrQJvrhaPlt6OqhlLBZr1F/Vw5EdWwcJn8RCHLl/VkcjQtswbG
+Am3ZZbF4ZL6pMi3xfjuRe4FB2qd8K7fqgzK8q6WHZyhK7UXBdFBwA1bsIGV2FOZy
+VBysZr50BBxQSAtucGI8oSKXbAuPKKnP1hD5oOslzhCXYyWOeej0W9o/Y1Jp2Yvk
+jRjGh4BcdUW7T1cNXd/pyfxPhMH8zD+rTb9ZC5uWzCiAb6gwHqEQHH9WLqH3AgMB
+AAGjYzBhMB0GA1UdDgQWBBSBU7CiO+fudQcADudjBj3/rRzMfTAfBgNVHSMEGDAW
+gBSBU7CiO+fudQcADudjBj3/rRzMfTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB
+/wQEAwIBBjBBBgkqhkiG9w0BAQowNKAPMA0GCWCGSAFlAwQCAQUAoRwwGgYJKoZI
+hvcNAQEIMA0GCWCGSAFlAwQCAQUAogMCASADggEBADkF3vo6fGvy1A7gHhgOJSo+
+dNYT2TaHqW1zwn+kTCD+U1JnM9LTfJQk43g5WvexIjRDyfVw54AUTAYzCny8tRoS
+SgPImMVqFZJsVvT8ShAiH1VFHftMAN6CDQqGGmbxNmkpMeWCXz4acs2pRfYLsSjd
+2AzdQbqNfyloRhgCo4zPKLikUXhbkAyfR0gROgOeVU9dFfLDxN/rUhm0h1LafSwz
+U+I+pp4Fgd/aQSyuW/q7nBxAK4KISsBRb/gMiA3jqaoNhfEHpnXpKurGzy4mA0Vx
+wU0JSLA7zZP1yuME0PZQSFOKIlN+uDWU6mSMXqsTM896f7jway61fH4etF4MoM4=
+-----END CERTIFICATE-----`;
+
+const kPSSLeaf = `-----BEGIN CERTIFICATE-----
+MIIDyzCCAn+gAwIBAgIBKzBBBgkqhkiG9w0BAQowNKAPMA0GCWCGSAFlAwQCAQUA
+oRwwGgYJKoZIhvcNAQEIMA0GCWCGSAFlAwQCAQUAogMCASAwMTEUMBIGA1UECgwL
+UGFydWxhIFRlc3QxGTAXBgNVBAMMEFBTUyBUZXN0IFJvb3QgQ0EwHhcNMjYwOTAz
+MDY0NTAyWhcNMzYwODMxMDY0NTAyWjA1MRAwDgYDVQQDDAdQU1MgQm9iMSEwHwYJ
+KoZIhvcNAQkBFhJwc3Nib2JAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQCRQRTe7tAgMUnaW10RWJlM/TYpJEg3hu2tJFTDEvJaZraJ
+omdF78RSgt0Qheu8dm98CvRYYZvxp1hrLdj0Ks95hO4L1V2XLNXFv4Mn9kVC5F+M
+Q+HvjphFQZ2BcFix9gGxa6I9DsTXihs3WyszxOXIMIxw7PRyusX709OvTTZnj0Ss
+/PLQAbhMJQxLfcYs3bDRqHNdR9KtPq8mf4kc+SEz4WEKv6nJ+AVSwXz5P1FQ+OQR
+nv9yfJij5TbLF8HInVnzyiyZyMHKHWufs9cOYHmKMiOOAPfD5091gj8dXvSCH8Bq
+nWcjAz9joTJM2BkN0a2WsSffLXMe9O1IMBvD063JAgMBAAGjgYEwfzAJBgNVHRME
+AjAAMBMGA1UdJQQMMAoGCCsGAQUFBwMEMB0GA1UdEQQWMBSBEnBzc2JvYkBleGFt
+cGxlLmNvbTAdBgNVHQ4EFgQUgSert8xjX7wyoLqsxcue1mQfQ4owHwYDVR0jBBgw
+FoAUgVOwojvn7nUHAA7nYwY9/60czH0wQQYJKoZIhvcNAQEKMDSgDzANBglghkgB
+ZQMEAgEFAKEcMBoGCSqGSIb3DQEBCDANBglghkgBZQMEAgEFAKIDAgEgA4IBAQDD
+w75zlbIOwr/NNWHnJ8MyTDIave0XG9iYoKoOMAuRUylaXccSQHNHBWobVJcU0gHV
+WqzYUHwEkLucONhZzPOUqG9na6slNcDq9sGGQIlG83ENpNH6KjoAAv9RfwxmC12m
+smc+ZxLvaO9MS5eA6J78tWg3QOzXBo/ATbRRvPfRlI5eLYPRsTb30x4tcuUYdYqm
+UQ/i8YVxk3MJwhovF+x0KBLFSCj6RH0oPLvoqRJYty6SWKaZSs1jvOd8VAjko6YE
+QpQYGLQWDbm8H4tjgltSrneaiKh+jMQJqk/CCcKSzcpyV3rnRHuq6toN301MwYhH
+GaL7trvUPa5x6YdUJd7b
+-----END CERTIFICATE-----`;
+
 appGlobal.remoteApp ??= {
   async getCACertificates(type: string): Promise<string[]> {
-    return type == "extra" ? [kECRootCA] : [];
+    return type == "extra" ? [kECRootCA, kPSSRootCA] : [];
   },
 };
 
@@ -76,5 +134,13 @@ describe("Certificate issued by an EC certificate authority", () => {
     expect(await key.keyStatus()).toBe(KeyStatus.Valid);
     expect(key.trustLevel).toBe(TrustLevel.Personal);
     expect(key.caName).toBe("EC Test Root CA");
+  });
+});
+
+describe("Certificate signed with RSA-PSS", () => {
+  test("is valid, and names the CA that signed it", async () => {
+    let key = await SMIMEPublicKey.importPublicKey(kPSSLeaf);
+    expect(await key.keyStatus()).toBe(KeyStatus.Valid);
+    expect(key.caName).toBe("PSS Test Root CA");
   });
 });

@@ -1,6 +1,6 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, Oid, RDNSequence, TBSCertificate, DigestInfo, type WebCryptoAlgorithm } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, AlgorithmIdentifier, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, RSASSAPSSParams, Oid, RDNSequence, TBSCertificate, DigestInfo, type WebCryptoAlgorithm } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayFromHex, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -208,9 +208,12 @@ async function verifySignature(cert: Certificate, signer: Certificate): Promise<
       console.log("subject did not match issuer");
       return false;
     }
-    let algorithm = sanitize.translate(cert.signatureAlgorithm.algorithm, SignatureAlgorithm);
     let signedCert = TBSCertificate.encode(cert.tbsCertificate);
     let publicKey = signer.tbsCertificate.publicKey;
+    if (cert.signatureAlgorithm.algorithm == "rsassaPss") {
+      return await verifyRSAPSS(publicKey, cert.signatureValue.data, cert.signatureAlgorithm.parameters, signedCert);
+    }
+    let algorithm = sanitize.translate(cert.signatureAlgorithm.algorithm, SignatureAlgorithm);
     if (publicKey.algorithmIdentifier.algorithm == "ecPublicKey") {
       return await verifyECDSA(publicKey, cert.signatureValue.data, algorithm, signedCert);
     }
@@ -260,6 +263,24 @@ export async function verifyECDSA(publicKey: SubjectPublicKeyInfo, signature: Ui
   let { r, s } = ECDSASigValue.decode(signature);
   let rs = Uint8ArrayFromHex(r.toString(16).padStart(size * 2, "0") + s.toString(16).padStart(size * 2, "0"));
   return await crypto.subtle.verify({ name: "ECDSA", hash: digestAlgorithm }, key, rs as BufferSource, content as BufferSource);
+}
+
+/** Verifies an RSASSA-PSS signature, which some CAs use instead of the older
+ * PKCS#1 v1.5 padding. WebCrypto implements PSS, so this needs no maths of
+ * our own either. RFC 4055.
+ * @param parameters the `RSASSAPSSParams` of the signature algorithm */
+export async function verifyRSAPSS(publicKey: SubjectPublicKeyInfo, signature: Uint8Array, parameters: Uint8Array, content: Uint8Array): Promise<boolean> {
+  let params = RSASSAPSSParams.decode(parameters);
+  let digestAlgorithm = sanitize.translate(params.hashAlgorithm.algorithm, DigestAlgorithm);
+  // RFC 4055 section 3.1: the mask is generated with the same hash,
+  // and 1 is the only trailer field that the RFC defines.
+  if (params.maskGenAlgorithm.algorithm != "mgf1" || params.trailerField != 1n ||
+      sanitize.translate(AlgorithmIdentifier.decode(params.maskGenAlgorithm.parameters).algorithm, DigestAlgorithm, null) != digestAlgorithm) {
+    console.log("unsupported PSS parameters");
+    return false;
+  }
+  let key = await crypto.subtle.importKey("spki", SubjectPublicKeyInfo.encode(publicKey) as BufferSource, { name: "RSA-PSS", hash: digestAlgorithm }, false, ["verify"]);
+  return await crypto.subtle.verify({ name: "RSA-PSS", saltLength: Number(params.saltLength) }, key, signature as BufferSource, content as BufferSource);
 }
 
 let promiseGetCACertificates: Record<string, Promise<Certificate[]> | undefined> = {};
