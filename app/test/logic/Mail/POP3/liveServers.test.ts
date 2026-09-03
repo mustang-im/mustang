@@ -400,7 +400,7 @@ for (let server of servers) {
         let tap = new WireTap(server.hostname, server.port);
         await tap.start();
         let acc = newAccountVia(tap, server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         expect(inbox.messages.contents.map(msg => msg.subject).sort())
           .toEqual(["BareLF", "CRLFStored", "Dots", "First", "Large", "Second", "Third"]);
@@ -429,7 +429,7 @@ for (let server of servers) {
       test("Dot-stuffed, bare LF and large mails arrive byte-correct", async () => {
         execSync(server.reset);
         let acc = newAccount(server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
 
         let dots = inbox.messages.find(msg => msg.subject == "Dots");
@@ -457,7 +457,7 @@ for (let server of servers) {
         let tap = new WireTap(server.hostname, server.port);
         await tap.start();
         let acc = newAccountVia(tap, server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         expect(inboxOf(acc).messages.length).toBe(7);
         expect(tap.pipelined).toBe(true);
 
@@ -465,7 +465,7 @@ for (let server of servers) {
         tap.removeCapability = "PIPELINING";
         tap.wire.length = 0;
         acc = newAccountVia(tap, server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         expect(inboxOf(acc).messages.length).toBe(7);
         expect(tap.pipelined).toBe(false);
         await tap.stop();
@@ -475,7 +475,7 @@ for (let server of servers) {
         execSync(server.reset);
         let acc = newAccount(server);
         acc.leaveOnServer = false;
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         expect(inboxOf(acc).messages.length).toBe(7);
         await waitFor(() => !mailFiles(server.maildir).length);
         expect(mailFiles(server.maildir)).toEqual([]);
@@ -489,7 +489,7 @@ for (let server of servers) {
         await tap.start();
         acc.hostname = tap.hostname;
         acc.port = tap.port;
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         expect(tap.commands.filter(command => command.startsWith("DELE"))).toEqual([]);
         expect(mailFiles(server.maildir).length).toBe(7);
@@ -513,7 +513,7 @@ for (let server of servers) {
       test("Mails that the MIME parser may not like are downloaded exactly once", async () => {
         execSync(server.reset);
         let acc = newAccount(server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         let before = inbox.messages.length;
 
@@ -537,7 +537,7 @@ for (let server of servers) {
         execSync(server.reset);
         let acc = newAccount(server);
         acc.leaveOnServer = false;
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         await waitFor(() => !mailFiles(server.maildir).length);
         expect((await inbox.getNewMessages()).length).toBe(0);
@@ -547,7 +547,7 @@ for (let server of servers) {
       test("Downloads a mail again, when the local copy is gone", async () => {
         execSync(server.reset);
         let acc = newAccount(server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let msg = inboxOf(acc).messages.find(msg => msg.subject == "Dots");
         let mime = msg.mime;
         msg.mime = null;
@@ -561,7 +561,7 @@ for (let server of servers) {
         tap.dropOnQUIT = true;
         await tap.start();
         let acc = newAccountVia(tap, server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         expect(inboxOf(acc).messages.length).toBe(7);
         await tap.stop();
       }, kTimeout);
@@ -569,7 +569,7 @@ for (let server of servers) {
       test.runIf(server.stop && server.restart)("A server that goes away mid-session, and the recovery", async () => {
         execSync(server.reset);
         let acc = newAccount(server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         deliver(server.maildir, "AfterRestart", "Downloaded after the server came back.\r\n");
 
@@ -592,7 +592,7 @@ for (let server of servers) {
       test.fails("A server that gives every mail the same UIDL", async () => {
         execSync(server.reset);
         let acc = newAccount(server);
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         let first = inbox.messages.length;
         deliver(server.maildir, "AfterDuplicates", "A mail delivered after the first check.\n");
@@ -609,7 +609,7 @@ for (let server of servers) {
         let acc = newAccountVia(tap, server);
         acc.username = server.big.username;
         acc.password = server.big.password;
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         let inbox = inboxOf(acc);
         expect(inbox.messages.length).toBe(server.big.count);
         expect(tap.commands).toContain("UIDL"); // the full listing, the first time
@@ -646,7 +646,7 @@ for (let server of servers) {
         acc.username = server.big.username;
         acc.password = server.big.password;
         acc.leaveOnServer = false;
-        await acc.login(false);
+        await acc.loginAndStartup(false);
         expect(inboxOf(acc).messages.length).toBe(server.big.count);
         await waitFor(() => !mailFiles(server.big.maildir).length);
         expect(mailFiles(server.big.maildir)).toEqual([]);

@@ -58,7 +58,7 @@ function inboxOf(acc: POP3Account): POP3Folder {
 test("Downloads the mails once, and new ones later", async () => {
   await server.start();
   let acc = newAccount();
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   expect(acc.isLoggedIn).toBe(true);
   let inbox = inboxOf(acc);
   expect(inbox.messages.contents.map(msg => msg.subject).sort()).toEqual(["First", "Second", "Third"]);
@@ -96,11 +96,26 @@ test("Downloads the mails once, and new ones later", async () => {
   expect(restored.toExtraJSON()).toEqual(json);
 });
 
+test("The login only connects, the startup downloads the mails", async () => {
+  await server.start();
+  let acc = newAccount();
+
+  await acc.login(false);
+
+  expect(acc.isLoggedIn).toBe(true);
+  expect(server.commands).toContain("PASS secret");
+  expect(server.commands.filter(c => c.startsWith("RETR"))).toEqual([]);
+
+  await acc.syncOnStartup();
+
+  expect(inboxOf(acc).messages.length).toBe(3);
+});
+
 test("Deletes the mails from the server right after the download", async () => {
   await server.start();
   let acc = newAccount();
   acc.leaveOnServer = false;
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   expect(inboxOf(acc).messages.length).toBe(3);
   expect(server.commands.filter(c => c.startsWith("DELE")).sort()).toEqual(["DELE 1", "DELE 2", "DELE 3"]);
   expect(server.mails).toEqual([]);
@@ -110,7 +125,7 @@ test("Deletes the mails from the server after some days", async () => {
   await server.start();
   let acc = newAccount();
   acc.deleteAfterDays = 7;
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   let inbox = inboxOf(acc);
   expect(server.commands.filter(c => c.startsWith("DELE"))).toEqual([]);
   let eightDaysAgo = new Date();
@@ -147,7 +162,7 @@ test("STARTTLS with a self-signed certificate", async () => {
   expect(isCertError(ex)).toBe(true);
 
   acc.acceptBrokenTLSCerts = true;
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   expect(inboxOf(acc).messages.length).toBe(3);
   // The login happened after STLS, with the capabilities re-read after STLS
   let commands = server.commands.slice(server.commands.lastIndexOf("STLS"));
@@ -160,7 +175,7 @@ test("Implicit TLS, with AUTH PLAIN when the server offers no USER", async () =>
   await server.start();
   let acc = newAccount(TLSSocketType.TLS);
   acc.acceptBrokenTLSCerts = true;
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   expect(inboxOf(acc).messages.length).toBe(3);
   expect(server.commands).toContain("AUTH PLAIN");
   expect(server.commands).toContain("\0user\0secret");
@@ -172,7 +187,7 @@ test("OAuth2", async () => {
   let acc = newAccount();
   acc.authMethod = AuthMethod.OAuth2;
   acc.oAuth2 = { isLoggedIn: true, accessToken: "valid-token", subscribe: () => () => {} } as any;
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   expect(inboxOf(acc).messages.length).toBe(3);
   expect(server.commands).toContain("AUTH XOAUTH2");
   expect(server.commands).toContain("user=user\x01auth=Bearer valid-token\x01\x01");
@@ -188,7 +203,7 @@ test("Reassembles responses that arrive in pieces, and unstuffs dots", async () 
   server.mails = [mail("x1", "Dots", "Line one\r\n.Line starting with a dot\r\n..Two dots\r\n+OK not a status line\r\n-ERR neither\r\n.\r\nlast")];
   await server.start();
   let acc = newAccount();
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   let msg = inboxOf(acc).messages.first;
   expect(msg.subject).toBe("Dots");
   expect(new TextDecoder().decode(msg.mime)).toContain("Line one\r\n.Line starting with a dot\r\n..Two dots\r\n+OK not a status line\r\n-ERR neither\r\n.\r\nlast\r\n");
@@ -202,7 +217,7 @@ test("Big mailbox: Lists only the mails after the last known one", async () => {
   }
   await server.start();
   let acc = newAccount();
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   let inbox = inboxOf(acc);
   expect(inbox.messages.length).toBe(1200);
   expect(server.commands).toContain("UIDL"); // full listing, the first time
@@ -234,7 +249,7 @@ test("Big mailbox: Lists only the mails after the last known one", async () => {
 test("Local folders: Sent, move to trash, delete", async () => {
   await server.start();
   let acc = newAccount();
-  await acc.login(false);
+  await acc.loginAndStartup(false);
   let inbox = inboxOf(acc);
   let sent = acc.getSpecialFolder(SpecialFolder.Sent) as POP3Folder;
   let trash = acc.getSpecialFolder(SpecialFolder.Trash) as POP3Folder;

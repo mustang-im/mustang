@@ -26,7 +26,7 @@ export class POP3Account extends MailAccount {
    * Does not mean we have a standing TCP connection.
    * Compare @see POP3Connection.login() */
   @notifyChangedProperty
-  protected hasLoggedIn = false;
+  protected isPolling = false;
   /** Opened by `login()`, for the first mail check */
   protected loginConnection: POP3Connection | null = null;
   /** High level logging about the commands we issue */
@@ -41,7 +41,7 @@ export class POP3Account extends MailAccount {
    * Does not mean we have a standing TCP connection.
    * Compare @see POP3Connection.login() */
   get isLoggedIn(): boolean {
-    return this.hasLoggedIn;
+    return this.isPolling;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -55,18 +55,13 @@ export class POP3Account extends MailAccount {
       await this.oAuth2.login(interactive);
     }
     this.loginConnection = await this.connect();
-    await this.syncOnStartup();
   }
 
-  /** Once per login: The app calls this after `login()`, which called it already */
   async syncOnStartup() {
-    if (this.hasLoggedIn) {
-      return;
-    }
     await super.syncOnStartup();
-    this.hasLoggedIn = true;
     this.notifyObservers();
     (this.inbox as POP3Folder).startPolling();
+    this.isPolling = true;
   }
 
   async verifyLogin(): Promise<void> {
@@ -140,7 +135,7 @@ export class POP3Account extends MailAccount {
     for (let folder of this.getAllFolders()) {
       (folder as POP3Folder).stopPolling();
     }
-    this.hasLoggedIn = false;
+    this.isPolling = false;
     await this.loginConnection?.quit();
     this.loginConnection = null;
     await this.oAuth2?.logout();
