@@ -106,6 +106,9 @@ const oids = {
   "2.16.840.1.101.3.4.2.1": "sha256",
   "2.16.840.1.101.3.4.2.2": "sha384",
   "2.16.840.1.101.3.4.2.3": "sha512",
+  // RFC 5035: which certificate the signer used
+  "1.2.840.113549.1.9.16.2.12": "signingCertificate",
+  "1.2.840.113549.1.9.16.2.47": "signingCertificateV2",
 };
 
 export type WebCryptoAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
@@ -594,6 +597,39 @@ export const SignedData = define("SignedData", function() {
       this.key("crls").implicit(1).optional().setof(Any),
       this.key("signerInfos").setof(SignerInfo),
     ),
+  );
+});
+
+/** The signer names the certificate that he used, by its hash, in a signed
+ * attribute, so that nobody can swap it for another certificate of the same
+ * owner. RFC 5035 section 5. `issuerSerial` and `policies` are not needed,
+ * because the hash already identifies the certificate exactly. */
+const ESSCertID = define("ESSCertID", function() {
+  this.seq().obj(
+    this.key("certHash").octstr(), // always SHA-1, in this version
+    this.key("issuerSerial").optional().any(),
+  );
+});
+
+export const SigningCertificate = define("SigningCertificate", function() {
+  this.seq().obj(
+    this.key("certs").seqof(ESSCertID),
+    this.key("policies").optional().any(),
+  );
+});
+
+const ESSCertIDv2 = define("ESSCertIDv2", function() {
+  this.seq().obj(
+    this.key("hashAlgorithm").use(AlgorithmIdentifier).def({ algorithm: "sha256" }),
+    this.key("certHash").octstr(),
+    this.key("issuerSerial").optional().any(),
+  );
+});
+
+export const SigningCertificateV2 = define("SigningCertificateV2", function() {
+  this.seq().obj(
+    this.key("certs").seqof(ESSCertIDv2),
+    this.key("policies").optional().any(),
   );
 });
 

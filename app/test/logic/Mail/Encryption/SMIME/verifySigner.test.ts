@@ -1,4 +1,4 @@
-import { SignedData, OctetString, RDNSequence, Oid, UTCTime, Attributes, DigestInfo, Null, PrivateKeyInfo, RSAPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
+import { SignedData, OctetString, RDNSequence, Certificate, Oid, UTCTime, Attributes, DigestInfo, Null, PrivateKeyInfo, RSAPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
 import { verifySignedData, sameName } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
 import { decrypt, padFF } from "../../../../../logic/Mail/Encryption/SMIME/SMIMERSAES";
 import { appGlobal } from "../../../../../logic/app";
@@ -157,6 +157,22 @@ describe("Signing time", () => {
   });
 });
 
+describe("The certificate that the signer names (RFC 5035)", () => {
+  test("must be the one that verified the signature", async () => {
+    expect((await verify(SignedData.decodeFromBase64(kSignedByEvaESS)))?.userIDs.contents)
+      .toEqual(["eva@example.com"]);
+  });
+
+  test("catches a certificate that was swapped for another one of the same owner", async () => {
+    let signedData = SignedData.decodeFromBase64(kSignedByEvaESS);
+    // Same subject and same key, so nothing else notices the swap
+    let substitute = Certificate.decodePEM(kEvaSecondCert, { label: "CERTIFICATE" });
+    signedData.content.certificates = [substitute];
+    signedData.content.signerInfos[0].sid.value.serialNumber = substitute.tbsCertificate.serialNumber;
+    expect(await verify(signedData)).toBe(null);
+  });
+});
+
 /* A CA and a signer certificate that both have an organizationIdentifier
  * (2.5.4.97) in their name, which our OID map does not know. The CA
  * certificate comes first in the message, so that the signer is only found
@@ -241,4 +257,63 @@ a9deOF7ZsKdJ4ZGKvSKBv1atVOB/MRloecqYuK9vAoGBAJhBElyFNcrH57rjAVbJ
 Qx5tVPeCThb0Y7Q0McOz9eZNfSZ/Jmq2EMUi2OR+SQjN0yNZMTTRhwun89YR9Ozw
 d1kTfZ40oM8sTyaJlTdJANWn
 -----END PRIVATE KEY-----
+`;
+
+/* The same message, signed with the ESS signingCertificateV2 attribute:
+ * openssl cms -sign -cades -in body.txt -signer eva.crt -inkey eva.key \
+ *   -nodetach -binary -md sha256 -outform DER -out eva-cades.p7m
+ * openssl cms -verify -cades -inform DER -in eva-cades.p7m -CAfile ca.crt -purpose smimesign
+ */
+const kSignedByEvaESS = `
+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
+40DBr1lHLdFSKFOG6hJCuU66aAKHZkAHP9c=
+`;
+
+/* A second certificate for the same key and the same subject:
+ * openssl x509 -req -in eva.csr -out eva2.crt -CA ca.crt -CAkey ca.key -days 3000 \
+ *   -sha256 -set_serial 0x2b -extfile <(...as eva.crt...)
+ */
+const kEvaSecondCert = `
+-----BEGIN CERTIFICATE-----
+MIIDczCCAlugAwIBAgIBKzANBgkqhkiG9w0BAQsFADAmMRAwDgYDVQQDDAdUZXN0
+IENBMRIwEAYDVQRhDAlWQVRERS05OTkwHhcNMjYwOTAzMDY0MDI2WhcNMzQxMTIw
+MDY0MDI2WjBCMQwwCgYDVQQDDANFdmExEjAQBgNVBGEMCVZBVERFLTEyMzEeMBwG
+CSqGSIb3DQEJARYPZXZhQGV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAtHnpvtitvfqLmNxgJ2IX4ZH7rcdW5CbEHwzJJbGFCZ8MzwUU
+T7v0QM4Pu3soCmFvDmoqqH/JbP31wz0gkaSj+dUDhSiqCvObn5SQ7QuHvza3j6Vt
+qZIx6PSJ+/lKT6iICvIWrEQkL0+/77HA/af/7Yro9hTC50O8ATctgqvC4ngS/a18
+OyJSZLJy3yDFbXe6xG/uxAi3MtoWD5srQwmkYonyeEbpkwaSDGPYvhswp9/LZSTz
+E490IuUtsoLg7aayDECNjHgOr/NCj97mLPWobgKBM3mXNPvt+3rDJNfRUNOx+cwI
+mAPGQkcpgvm9qRl5Xyo5XRt5t5o+eR9nchj4tQIDAQABo4GPMIGMMAkGA1UdEwQC
+MAAwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMEMBoGA1UdEQQT
+MBGBD2V2YUBleGFtcGxlLmNvbTAdBgNVHQ4EFgQU3Zv6m443avRUCiOHUPPtrKxf
+NAEwHwYDVR0jBBgwFoAUhvNcd2obmnDc913nfrD3oVQH0b0wDQYJKoZIhvcNAQEL
+BQADggEBADQ/QRppzX9KgXWPQJUcjZkxidcDlypLMYXLrrV57XyHwWnIsHdOCdMh
+rOaXpD51n4fwhifMyoJ7Y+hvuBQLeeerjb6fTjwpqJ0UY6gWVPrqYta+SkhMmfDP
+otV8/KfnUR8VAHRF0HPA4NrPQgcLaVg7wi1Zt3apLJNJL/9gR6Nsw1flPq5iFeMK
+Y+BsgL++oU9ugSSdm0g4BAdBBAS0kahguzUyDafXhpa29OJPmdk17eIFlVkWCk5x
+EAlfYlVEhOegaf2hJ9FH/VJXNErGdfyuv4T//cAj/+G1wbh1FsAcCLdZKoRO3RGD
+JTrM0S1CkAIlZCU+JgwgKeaF4cyCaps=
+-----END CERTIFICATE-----
 `;
