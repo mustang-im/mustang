@@ -29,14 +29,19 @@ export class SMIMESend {
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
     if (mail.signedByKeyID) {
-      // Only the body and content type are signed, not the headers.
+      // Only the body and its own Content-* headers are signed, not the
+      // message headers. Without the transfer encoding, every reader shows
+      // the raw quoted-printable text.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with
       // whitespace) attached to their header.
       let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
+      let contentHeaders = headers.filter(header => /^Content-/i.test(header));
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
+      if (!contentHeaders.some(header => /^Content-Type: /i.test(header))) {
+        contentHeaders.push("Content-Type: text/plain");
+      }
+      mimeAsText = contentHeaders.join("\r\n") + mimeAsText.slice(pos);
       let messageDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mimeAsText)));
       // DER SET OF requires the elements sorted by their encoding (X.690
       // section 11.6). With these fixed value sizes, that is the order below:
@@ -124,14 +129,18 @@ export class SMIMESend {
       pos = mimeAsText.indexOf("\r\n\r\n");
     }
     if (mail.shouldEncrypt) {
-      // Only the body and content type are encrypted, not the headers.
+      // Only the body and its own Content-* headers are encrypted, not the
+      // message headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with
       // whitespace) attached to their header.
       let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
+      let contentHeaders = headers.filter(header => /^Content-/i.test(header));
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
+      if (!contentHeaders.some(header => /^Content-Type: /i.test(header))) {
+        contentHeaders.push("Content-Type: text/plain");
+      }
+      mimeAsText = contentHeaders.join("\r\n") + mimeAsText.slice(pos);
       mime = new TextEncoder().encode(mimeAsText);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPersonUID(puid, SMIMEPublicKey));
