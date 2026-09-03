@@ -155,7 +155,7 @@ export class ActiveSyncPerson extends ExchangePerson {
 
   /** The GAL search returns no S/MIME certificates, so we resolve the person
    * once more, which does return them. */
-  async fetchEncryptionKeys() {
+  protected async fetchEncryptionKeysFromDirectory() {
     let emailAddress = this.emailAddresses.first?.value;
     if (!emailAddress) {
       return;

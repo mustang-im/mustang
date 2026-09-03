@@ -136,6 +136,16 @@ test("Read the `userCertificate` of the person that the user picked", async () =
   expect((key as SMIMEPublicKey).certificate).toContain("-----BEGIN CERTIFICATE-----");
 });
 
+test("Ask the directory only once for the same person", async () => {
+  let account = fakeAccount();
+  let person = (await search("cathy", account)).first;
+  // The composer asks when the user picks the person, and again when they encrypt
+  await Promise.all([person.fetchEncryptionKeys(), person.fetchEncryptionKeys()]);
+  await person.fetchEncryptionKeys();
+  expect(account.queries.length).toBe(2); // the search, and one lookup
+  expect(person.encryptionPublicKeys.length).toBe(1);
+});
+
 test("Prefer `userSMIMECertificate` over `userCertificate`, as RFC 2798 says", async () => {
   let person = (await search("bucksch")).first;
   await person.fetchEncryptionKeys();

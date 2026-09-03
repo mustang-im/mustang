@@ -174,7 +174,7 @@ export class OWAPerson extends ExchangePerson {
 
   /** The personas that the GAL search returns have no S/MIME certificates,
    * so we resolve the person once more, which does return them. */
-  async fetchEncryptionKeys() {
+  protected async fetchEncryptionKeysFromDirectory() {
     let emailAddress = this.emailAddresses.first?.value;
     if (!emailAddress) {
       return;

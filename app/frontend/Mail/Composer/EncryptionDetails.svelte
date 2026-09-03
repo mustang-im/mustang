@@ -106,13 +106,9 @@
     await Promise.all([autoFetchAddressbookKeys(), autoQueryKeyServer()]);
   }
 
-  /** Address book searches leave out the keys: 1 more request per keypress */
+  /** The address book search leaves the keys out, to stay fast */
   async function autoFetchAddressbookKeys() {
-    let notYetFetched = recipientsWithoutKeys.filterOnce(r => !(r as any)._fetchedAddressbookKeys);
-    for (let recipient of notYetFetched) {
-      (recipient as any)._fetchedAddressbookKeys = true;
-    }
-    await Promise.all(notYetFetched.contents.map(recipient =>
+    await Promise.all(recipientsWithoutKeys.contents.map(recipient =>
       recipient.findPerson()?.fetchEncryptionKeys()));
   }
 

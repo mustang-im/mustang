@@ -112,9 +112,17 @@ export class Person extends ContactBase {
     // nothing to do for local persons
   }
 
+  protected directoryLookup: Promise<void> | null = null;
+
   /** Fetches e.g. the S/MIME certificate that the company directory has for
-   * this person. Costs a server round trip. Reports errors, does not throw. */
+   * this person. Costs a server round trip, and only one: later callers wait
+   * for the lookup that is already running, or get its result.
+   * Reports errors, does not throw. */
   async fetchEncryptionKeys(): Promise<void> {
+    await (this.directoryLookup ??= this.fetchEncryptionKeysFromDirectory());
+  }
+
+  protected async fetchEncryptionKeysFromDirectory(): Promise<void> {
     // Most address books return the keys together with the person
   }
 
