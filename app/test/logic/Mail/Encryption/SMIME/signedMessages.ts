@@ -1,13 +1,14 @@
 /**
  * `openssl smime -sign`, self-signed certificate for alice@example.com.
  * Stored with LF, but S/MIME digests the signed part with CRLF.
+ * `Date:` is the signing time in the signature, which the verifier compares.
  */
 
 /** Detached signature */
 export const kClearSigned = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: Signed test
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Mon, 31 Aug 2026 20:20:12 +0000
 Message-ID: <sig-clearsigned@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256"; boundary="----3120AE5FA6844B38B313D9FF5848BBF0"
@@ -66,7 +67,7 @@ T1ku
 export const kOpaqueSigned = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: Signed test
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Mon, 31 Aug 2026 20:20:12 +0000
 Message-ID: <sig-opaque@example.com>
 MIME-Version: 1.0
 Content-Disposition: attachment; filename="smime.p7m"
@@ -121,7 +122,7 @@ Cla1Ekw+ndF8WJpMPM8UDMtACYQ/yYxPWS4=
 export const kClearSignedLF = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: Signed with LF line endings
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:30:14 +0000
 Message-ID: <sig-lf@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----LF74A9C1D0E5B34F2A9C8E1D6B3A5F7E20"
@@ -181,7 +182,7 @@ yD6/Z6pMwfCgw1sAA6nsHryvEv9paPdHJEGNePqE+RXqJ1gSAUUgp7y1085LzeU=
 export const kClearSignedOctetStream = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: Signed, signature delivered as a file
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:43:20 +0000
 Message-ID: <sig-octet@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----72D4E9ED7779F5B28FF1B7EC321EEE7F"
@@ -250,7 +251,7 @@ ZikM+dvZ81aszPh+10RuwIX8N8bNIrPvCslMy1G0DwRPObDzYlbxJrwGJl3cIsE=
 export const kECClearSigned256 = `From: EC Alice <ec256@example.com>
 To: User <user@example.com>
 Subject: Signed test
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:27:07 +0000
 Message-ID: <sig-ec256@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-256"; boundary="----60FAF574DFE81B5AAEE8865E94E6AD85"
@@ -295,7 +296,7 @@ q+YEfluAH6euDc/BAiBC9UEq+sz+DoWsZchYFN60MOhw4vXP72mfuuOeDHaSEQ==
 export const kECClearSigned384 = `From: EC Alice <ec384@example.com>
 To: User <user@example.com>
 Subject: Signed test
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:27:07 +0000
 Message-ID: <sig-ec384@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-384"; boundary="----25E51055B53B71BB24C715CC4466A099"
@@ -343,7 +344,7 @@ XwdKGUdkGCL08J3e
 export const kECClearSigned521 = `From: EC Alice <ec521@example.com>
 To: User <user@example.com>
 Subject: Signed test
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:27:07 +0000
 Message-ID: <sig-ec521@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="sha-512"; boundary="----3BE2B724EE772B743C71A2505ED03F5B"

@@ -487,7 +487,7 @@ REUwfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQLhZ9MZr1QUFEQ7ufBZWtN4BQ
 const kMislabelled = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: Mangled by an archiver
-Date: Tue, 14 Jul 2026 10:00:00 +0000
+Date: Thu, 03 Sep 2026 06:45:06 +0000
 Message-ID: <enc-mislabelled@example.com>
 MIME-Version: 1.0
 Content-Disposition: attachment; filename="smime.p7m"

@@ -170,6 +170,16 @@ export const UTCTime = define<number>("UTCTime", function() {
   this.utctime();
 });
 
+/** A point in time, in either of the 2 encodings that X.509 and CMS allow.
+ * RFC 5280 section 4.1.2.5, RFC 5652 section 11.3. */
+export interface Time {
+  type: "utctime" | "gentime";
+  value: number;
+}
+export const Time = define<Time>("Time", function() {
+  this.choice({ utctime: this.utctime(), gentime: this.gentime() });
+});
+
 /** An algorithm */
 export interface AlgorithmIdentifier {
   algorithm: string | number[];
@@ -302,7 +312,7 @@ export interface TBSCertificate {
   serialNumber: bigint,
   signature: AlgorithmIdentifier,
   issuer: AttributeValue[],
-  validity: Record<"notBefore" | "notAfter", { type: "utctime" | "gentime", value: number }>,
+  validity: Record<"notBefore" | "notAfter", Time>,
   subject: AttributeValue[],
   publicKey: SubjectPublicKeyInfo,
   issuerUniqueId?: BitString,
@@ -316,8 +326,8 @@ export const TBSCertificate = define<TBSCertificate>("TBSCertificate", function(
     this.key("signature").use(AlgorithmIdentifier),
     this.key("issuer").seqof(AttributeValue),
     this.key("validity").seq().obj(
-      this.key("notBefore").choice({ utctime: this.utctime(), gentime: this.gentime() }),
-      this.key("notAfter").choice({ utctime: this.utctime(), gentime: this.gentime() }),
+      this.key("notBefore").use(Time),
+      this.key("notAfter").use(Time),
     ),
     this.key("subject").seqof(AttributeValue),
     this.key("publicKey").use(SubjectPublicKeyInfo),

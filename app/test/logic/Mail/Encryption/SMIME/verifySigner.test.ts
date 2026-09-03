@@ -30,8 +30,8 @@ function certificates(): any[] {
   return SignedData.decodeFromBase64(kSignedByEva).content.certificates;
 }
 
-async function verify(signedData: any): Promise<any> {
-  return await verifySignedData(signedData, OctetString.decode(signedData.content.contentInfo.content));
+async function verify(signedData: any, sent?: Date): Promise<any> {
+  return await verifySignedData(signedData, OctetString.decode(signedData.content.contentInfo.content), sent);
 }
 
 const kContent = "Content-Type: text/plain\r\n\r\nHello from Eva.\r\n";
@@ -130,6 +130,30 @@ describe("Signed attributes", () => {
     attributes[0].attrValue = [Oid.encode("encryptedData")];
     expect(await verify(await signAsEva(attributes))).toBe(null);
     expect(await verify(await signAsEva(attributes.slice(1)))).toBe(null);
+  });
+});
+
+describe("Signing time", () => {
+  /* Eva's certificate is valid from 2026-09-03 to 2034-11-20 */
+  test("must be within the validity of the signer certificate", async () => {
+    let attributes = await signedAttributes();
+    attributes[1].attrValue = [UTCTime.encode(Date.parse("2026-09-01T12:00:00Z"))];
+    expect(await verify(await signAsEva(attributes))).toBe(null);
+    attributes[1].attrValue = [UTCTime.encode(Date.parse("2035-01-01T12:00:00Z"))];
+    expect(await verify(await signAsEva(attributes))).toBe(null);
+  });
+
+  test("must be around the time when the message was sent", async () => {
+    let signedData = await signAsEva(await signedAttributes()); // signed 06:29:01
+    expect(await verify(signedData, new Date("2026-09-03T06:00:00Z"))).toBeTruthy();
+    expect(await verify(signedData, new Date("2026-09-03T09:00:00Z"))).toBe(null);
+  });
+
+  test("falls back to the send time, when the message does not say", async () => {
+    let attributes = (await signedAttributes()).filter(attr => attr.attrType != "signingTime");
+    let signedData = await signAsEva(attributes);
+    expect(await verify(signedData, new Date("2026-09-04T12:00:00Z"))).toBeTruthy();
+    expect(await verify(signedData, new Date("2035-01-01T12:00:00Z"))).toBe(null);
   });
 });
 

@@ -97,6 +97,17 @@ describe("Signature of a received message, without an own private key", () => {
     let email = await readMessage(toCRLF(kClearSigned.replace("alice@example.com", "Alice@Example.COM")));
     expect(await signedWithKeyName(email)).toBe("F9D7");
   });
+
+  test("a signature from hours before the message was sent does not count", async () => {
+    // The signature was made at 20:20:12 on the day before
+    let sentLater = "Date: Tue, 01 Sep 2026 05:20:12 +0000";
+    let clearSigned = await readMessage(toCRLF(kClearSigned.replace(/Date: .*/, sentLater)));
+    expect(clearSigned.text.trim()).toBe("Hello, this is signed.");
+    expect(clearSigned.signedByKeyID).toBe(null);
+    let opaqueSigned = await readMessage(toCRLF(kOpaqueSigned.replace(/Date: .*/, sentLater)));
+    expect(opaqueSigned.text.trim()).toBe("Hello, this is signed.");
+    expect(opaqueSigned.signedByKeyID).toBe(null);
+  });
 });
 
 describe("Signature made with an elliptic curve key", () => {

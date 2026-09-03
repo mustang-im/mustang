@@ -1,4 +1,4 @@
-import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, type TBSCertificate } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, Time, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
 import { SMIMEPublicKey, verifyECDSA } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -9,10 +9,13 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  * @param signedData decoded `SignedData`
  * @param content the signed bytes: the cleartext MIME part for
  *   `multipart/signed`, or the unwrapped eContent for opaque-signed messages
+ * @param sent when the message says that it was sent, i.e. the `Date:`
+ *   header. Compared with the signing time, and used in its stead, if the
+ *   signature does not give one.
  * @returns the signer's public key,
  *   or null, if the signature does not verify
  */
-export async function verifySignedData(signedData: any, content: Uint8Array): Promise<SMIMEPublicKey | null> {
+export async function verifySignedData(signedData: any, content: Uint8Array, sent?: Date): Promise<SMIMEPublicKey | null> {
   let certificates = sanitize.array(signedData.content.certificates, []);
   let signerInfos = sanitize.array(signedData.content.signerInfos, []);
   if (!certificates.length || !signerInfos.length) {
@@ -53,6 +56,7 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
   let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, content as BufferSource));
   // Without signed attributes, the signature covers the content directly.
   let signedContent = content;
+  let signedAt = sent?.getTime();
   if (signerInfo.signedAttrs) {
     // RFC 5652 section 5.3: the attributes must say which content they cover,
     // so that a signature cannot be moved to another kind of content
@@ -71,7 +75,23 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
       console.log("signed digest did not match message");
       return null;
     }
+    let signingTimeAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "signingTime");
+    if (signingTimeAttribute) {
+      const k1HourMS = 60 * 60 * 1000;
+      signedAt = Time.decode(signingTimeAttribute.attrValue[0]).value;
+      if (sent && Math.abs(signedAt - sent.getTime()) > k1HourMS) {
+        console.log("message was signed at a different time than it was sent");
+        return null;
+      }
+    }
     signedContent = Attributes.encode(signerInfo.signedAttrs);
+  }
+  // The certificate must have been valid when the message was signed. Mail
+  // that was signed before the certificate expired stays signed afterwards.
+  let { notBefore, notAfter } = cert.tbsCertificate.validity;
+  if (signedAt && (signedAt < notBefore.value || signedAt > notAfter.value)) {
+    console.log("the certificate was not valid when the message was signed");
+    return null;
   }
   /* `await crypto.subtle.verify()` returns `false` on
    * correctly signed messages...

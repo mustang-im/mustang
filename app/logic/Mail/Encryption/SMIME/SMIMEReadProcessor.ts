@@ -180,7 +180,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let content = OctetString.decode(contentInfo.content);
     // show the msg, even if the signature is invalid
     await this.unwrapMIME(email, content);
-    email.rememberSigner(await verifySignedData(signedData, content));
+    email.rememberSigner(await verifySignedData(signedData, content, email.sent));
   }
 
   /** Verifies a cleartext message with a detached signature
@@ -204,7 +204,7 @@ export class SMIMEReadProcessor extends EMailProcessor {
       return;
     }
     let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
-    email.rememberSigner(await verifySignedData(signedData, clearText));
+    email.rememberSigner(await verifySignedData(signedData, clearText, email.sent));
   }
 
   /** Replaces the message with the MIME entity extracted from the CMS
