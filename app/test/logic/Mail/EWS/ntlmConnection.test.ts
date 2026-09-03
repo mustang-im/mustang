@@ -290,10 +290,25 @@ describe("NTLM per-TCP-connection authentication", () => {
 
 /** Makes the direct backend object look like it came over JPC:
  * All methods return promises. */
+/** The backend runs in another process, so results and errors reach the app
+ * as JSON, exactly like `lib/jpc/message.js` sends them. An error arrives as
+ * its message plus its own properties, e.g. `code` and `responseStarted`. */
 function jpcLike(conn: HTTPConnection) {
+  let overJPC = async (func: () => any) => {
+    try {
+      return JSON.parse(JSON.stringify(await func() ?? null));
+    } catch (ex) {
+      throw Object.assign(new Error(), JSON.parse(JSON.stringify({
+        ...ex,
+        message: ex.message,
+        code: ex.code,
+      })));
+    }
+  };
   return {
-    request: async (options: any, onChunk?: (chunk: string) => Promise<void>) => conn.request(options, onChunk),
-    isAlive: async () => conn.isAlive(),
-    close: async () => conn.close(),
+    request: async (options: any, onChunk?: (chunk: string) => Promise<void>) =>
+      overJPC(() => conn.request(options, onChunk)),
+    isAlive: async () => overJPC(() => conn.isAlive()),
+    close: async () => overJPC(() => conn.close()),
   };
 }
