@@ -20,14 +20,14 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     return null;
   }
   let signerInfo = signerInfos[0];
-  let cert = certificates[0];
-  if (signerInfo.sid?.type == "issuerAndSerialNumber") {
-    let sid = signerInfo.sid.value;
-    // Fall back to the first certificate, for messages that we signed
-    // before, when the sid held the subject instead of the issuer.
-    cert = certificates.find(cert =>
-      cert.tbsCertificate.serialNumber == sid.serialNumber &&
-      sameName(sid.issuer, cert.tbsCertificate.issuer)) ?? cert;
+  let sid = signerInfo.sid?.value;
+  // TODO Support `subjectKeyIdentifier`
+  let cert = signerInfo.sid?.type == "issuerAndSerialNumber" && certificates.find(cert =>
+    cert.tbsCertificate.serialNumber == sid.serialNumber &&
+    sameName(sid.issuer, cert.tbsCertificate.issuer));
+  if (!cert) {
+    console.log("the certificate that signed the message was not sent with it");
+    return null;
   }
   let publicKey = cert.tbsCertificate.publicKey;
   let isECDSA = publicKey.algorithmIdentifier.algorithm == "ecPublicKey";
@@ -35,7 +35,11 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     console.log("certificate does not contain an RSA or ECDSA public key");
     return null;
   }
-  let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
+  let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm, null);
+  if (!digestAlgorithm) {
+    console.log("message was digested with an algorithm that we do not know");
+    return null;
+  }
   // RFC 5652 section 10.1.2: signers write rsaEncryption, but verifiers
   // should also accept e.g. sha256WithRSAEncryption, which some clients
   // write instead. Its hash must match the digest algorithm. RFC 5753

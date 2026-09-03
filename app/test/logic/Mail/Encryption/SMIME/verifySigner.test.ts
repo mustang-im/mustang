@@ -49,6 +49,19 @@ describe("Which certificate signed", () => {
     let signer = await verify(SignedData.decodeFromBase64(kSignedByEva));
     expect(signer?.userIDs.contents).toEqual(["eva@example.com"]);
   });
+
+  test("does not accept a certificate that the signature does not name", async () => {
+    let signedData = SignedData.decodeFromBase64(kSignedByEva);
+    signedData.content.certificates = [certificates()[1]]; // only the signer
+    signedData.content.signerInfos[0].sid.value.serialNumber = 4711n;
+    expect(await verify(signedData)).toBe(null);
+  });
+
+  test("fails cleanly on a digest algorithm that we do not know", async () => {
+    let signedData = SignedData.decodeFromBase64(kSignedByEva);
+    signedData.content.signerInfos[0].digestAlgorithm.algorithm = "rsaESOAEP";
+    expect(await verify(signedData)).toBe(null);
+  });
 });
 
 /* A CA and a signer certificate that both have an organizationIdentifier
