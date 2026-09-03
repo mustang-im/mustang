@@ -75,6 +75,7 @@ export class Calendar extends Account {
   async startup() {
     await super.startup();
     await this.listEvents();
+    await this.startupDependentAccounts();
   }
 
   /** Reads the events that we already have,

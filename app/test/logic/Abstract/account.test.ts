@@ -27,6 +27,20 @@ test("Starting the dependent accounts again does not start them twice", async ()
   }
 });
 
+test("A calendar starts up the calendars that depend on it, e.g. the other calendars of a CalDAV account", async () => {
+  let mainCalendar = new TestMainCalendar();
+  let subCalendar = new TestCalendar();
+  subCalendar.mainAccount = mainCalendar;
+  appGlobal.calendars.addAll([mainCalendar, subCalendar]);
+  try {
+    await mainCalendar.startup();
+    expect(subCalendar.startupCount).toBe(1);
+  } finally {
+    subCalendar.finishStartup();
+    appGlobal.calendars.clear();
+  }
+});
+
 test("Each new account gets a color that no other account has", () => {
   let colors = new SetColl<string>();
   try {
@@ -44,6 +58,12 @@ test("Each new account gets a color that no other account has", () => {
 class TestAccount extends Account {
   async startDependents() {
     await this.startupDependentAccounts();
+  }
+}
+
+/** Runs the real `Calendar.startup()`, without a server */
+class TestMainCalendar extends Calendar {
+  async listEvents() {
   }
 }
 
