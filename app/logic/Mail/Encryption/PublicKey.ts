@@ -85,6 +85,12 @@ export class PublicKey extends Observable {
     return batches.join(" ");
   }
 
+  /** Whether we may encrypt to this key. Certificates can be issued for
+   * signing only, and then encrypting to them would not reach the owner. */
+  usableForEncryption(): boolean {
+    return true;
+  }
+
   publicKeyAsFile(): File {
     // Implement using this.keyAsFile()
     throw new AbstractFunction();

@@ -71,6 +71,16 @@ describe("Certificate chain", () => {
   });
 });
 
+describe("Encrypting to a certificate", () => {
+  test("needs a certificate that allows it", async () => {
+    let key = await SMIMEPublicKey.importPublicKey(kEvaCert);
+    expect(key.usableForEncryption()).toBe(true);
+    // A CA certificate is for signing certificates, not for mail
+    let ca = await SMIMEPublicKey.importPublicKey(kIntermediate);
+    expect(ca.usableForEncryption()).toBe(false);
+  });
+});
+
 /* Our test CA, and a certificate that it issued.
  * openssl genpkey -quiet -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out ca.key
  * openssl req -x509 -key ca.key -out ca.crt -days 3650 -sha256 \

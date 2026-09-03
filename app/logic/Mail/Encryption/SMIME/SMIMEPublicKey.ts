@@ -160,6 +160,16 @@ export class SMIMEPublicKey extends PublicKey {
     return KeyStatus.ChainIncomplete;
   }
 
+  /** A certificate can be issued for signing only, or for a TLS server.
+   * Without a certificate, nothing limits the key. */
+  usableForEncryption(): boolean {
+    if (!this.certificate) {
+      return true;
+    }
+    let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    return allowsKeyUsage(cert, KeyUsageBit.KeyEncipherment) && allowsPurpose(cert, "emailProtection");
+  }
+
   /** Reads an S/MIME certificate from a file.
    * @param publicKey The certificate in PEM format
    * Factory function. */
