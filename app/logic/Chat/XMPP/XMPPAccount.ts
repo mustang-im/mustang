@@ -11,7 +11,6 @@ import { Group } from '../../Abstract/Group';
 import { ChatPersonUID, nameFromChatID } from '../ChatPersonUID';
 import { ConnectError, LoginError } from '../../Abstract/Account';
 import { kImageMimeTypes } from '../../Files/FileType/MIMETypes';
-import { appGlobal } from '../../app';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { assert, blobToDataURL } from '../../util/util';
 import { gt } from '../../../l10n/l10n';
@@ -55,8 +54,7 @@ export class XMPPAccount extends ChatAccount {
       return;
     }
     await super.login(interactive);
-    await Promise.all(appGlobal.addressbooks.contents.map(ab => ab.readContactsFromDB())); // ChatRooms need Persons
-    await this.listRooms(); // saves account, loads known chats from DB
+    await this.readFromDB();
     await this.connect();
     await this.getRoster();
     await this.createChatsFromRoster();

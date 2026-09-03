@@ -115,8 +115,11 @@ export class MatrixAccount extends ChatAccount {
     //await crypto.requestOwnUserVerification();
   };
 
+  /** TODO `listRooms()` would create a second room object for each room read here. */
+  async readFromDB(): Promise<void> {
+  }
+
   async listRooms(): Promise<void> {
-    // await super.listRooms(); TODO merge fresh list from server with old
     if (!this.dbID) {
       await this.save(); // needed to save rooms
     }

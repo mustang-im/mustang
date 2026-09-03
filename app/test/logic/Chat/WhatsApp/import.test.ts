@@ -143,7 +143,7 @@ test("Import WhatsApp backup, then import again without duplicates", { timeout: 
 
   // Reload everything from the local database, like after a restart
   account.rooms.clear();
-  await account.listRooms();
+  await account.readFromDB();
   expect(account.rooms.length).toBe(2);
   let aliceRoom2 = account.rooms.contents.find(r => r.id == kAliceJID)!;
   expect((aliceRoom2.contact as ChatPersonUID).person).toBe(alice);

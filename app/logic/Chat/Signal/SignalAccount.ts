@@ -149,14 +149,9 @@ export class SignalAccount extends ChatAccount {
 
   // --- login / connection ---
 
-  async startup(): Promise<void> {
-    await this.listRooms();
-  }
-
   async login(interactive: boolean): Promise<void> {
     await super.login(interactive);
-    await Promise.all(appGlobal.addressbooks.contents.map(ab => ab.readContactsFromDB()));
-    await this.listRooms();
+    await this.readFromDB();
     if (this.aciStore && this.servicePassword) {
       await this.connect();
     }
