@@ -52,6 +52,7 @@ carol.initFromMainAccount(alice);
 carol.username = "carol@example.com";
 
 let aliceInbox = newInbox(alice, "alice-inbox");
+let bobInbox = newInbox(bob, "bob-inbox");
 
 appGlobal.emailAccounts.addAll([alice, bob, carol]);
 appGlobal.calendars.addAll([aliceCalendar, bobCalendar]);
@@ -90,4 +91,11 @@ test("New mail in our own mailbox is downloaded as it arrives", async () => {
   await alice.processNotification({ NewMailEvent: { ItemId: { Id: "new-mail-alice-inbox" }, ParentFolderId: { Id: aliceInbox.id } } });
 
   expect(aliceInbox.downloaded.length).toBe(1);
+});
+
+test("New mail in a mailbox shared with us is downloaded as it arrives", async () => {
+  // The notification arrives on Alice's connection, but the folder is Bob's
+  await alice.processNotification({ NewMailEvent: { ItemId: { Id: "new-mail-bob-inbox" }, ParentFolderId: { Id: bobInbox.id } } });
+
+  expect(bobInbox.downloaded.length).toBe(1);
 });

@@ -754,19 +754,33 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     for (let folderID of folderIDs) {
       try {
-        let mailFolder = this.folderMap.get(sanitize.string(folderID));
+        let id = sanitize.string(folderID);
+        let mailFolder = this.folderMap.get(id);
+        if (!mailFolder) {
+          // A mailbox that another user shared with us is a separate account
+          // with its own folders, but its notifications arrive on our connection.
+          let sharedAccount = appGlobal.emailAccounts.find((account: EWSAccount) =>
+            account instanceof EWSAccount &&
+            account.mainAccount == this &&
+            account.folderMap?.has(id)) as EWSAccount | null;
+          mailFolder = sharedAccount?.folderMap.get(id);
+        }
         if (mailFolder) {
           let newMsgs = await mailFolder.updateChangedMessages();
           mailFolder.downloadMessages(newMsgs)
             .catch(this.errorCallback);
           continue;
         }
-        let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folderID) as EWSAddressbook | null;
+        let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) =>
+          addressbook.mainAccount == this &&
+          addressbook.folderID == id) as EWSAddressbook | null;
         if (addressbook) {
           await addressbook.listContacts();
           continue;
         }
-        let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.mainAccount == this && calendar.folderID == folderID) as EWSCalendar | null;
+        let calendar = appGlobal.calendars.find((calendar: EWSCalendar) =>
+          calendar.mainAccount == this &&
+          calendar.folderID == id) as EWSCalendar | null;
         if (calendar) {
           await calendar.listEvents();
           continue;
