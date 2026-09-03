@@ -15,7 +15,6 @@ import { assert } from "../../../util/util";
  * @param certificates `userCertificate`: DER-encoded X.509 certificates, each base64-encoded
  */
 export async function addDirectoryCertificatesToPerson(person: Person, smimeCertificates: string[], certificates: string[]) {
-  // The EWS GAL search results are not part of an address book, so they have no error callback
   const errorCallback = (ex: Error) => person.addressbook ? person.addressbook.errorCallback(ex) : console.error(ex);
   let foundPreferred = false;
   for (let blob of smimeCertificates) {

@@ -5,6 +5,7 @@ import type { EWSAddressbook } from './EWSAddressbook';
 import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { blobToBase64, dataURLToBlob, ensureArray } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -192,6 +193,36 @@ export class EWSPerson extends ExchangePerson {
     }
     let request = new EWSDeleteItemRequest(this.itemID);
     await this.addressbook.account.callEWS(request);
+  }
+
+  /** The GAL search leaves out the S/MIME certificates, so we resolve the
+   * person once more, with the property set that has them. */
+  async fetchEncryptionKeys() {
+    let emailAddress = this.emailAddresses.first?.value;
+    if (!emailAddress) {
+      return;
+    }
+    let query = {
+      m$ResolveNames: {
+        m$UnresolvedEntry: emailAddress,
+        ReturnFullContactData: true,
+        ContactDataShape: "AllProperties",
+      },
+    };
+    try {
+      let response = await this.addressbook.account.callEWS(query);
+      let resolution = ensureArray(response.ResolutionSet?.Resolution).find(candidate =>
+        candidate.Mailbox?.EmailAddress?.toLowerCase() == emailAddress.toLowerCase());
+      // `UserSMIMECertificate` and `MSExchangeCertificate` are the AD
+      // attributes `userSMIMECertificate` and `userCertificate`, resp.
+      await addDirectoryCertificatesToPerson(this,
+        ensureArray(resolution?.Contact?.UserSMIMECertificate?.Base64Binary),
+        ensureArray(resolution?.Contact?.MSExchangeCertificate?.Base64Binary));
+    } catch (ex) {
+      if (ex.type != "ErrorNameResolutionNoResults") { // this error is expected
+        this.addressbook.errorCallback(ex);
+      }
+    }
   }
 
   fromExtraJSON(json: any) {

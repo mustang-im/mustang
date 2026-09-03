@@ -36,7 +36,9 @@ const kPersons = [{
 function fakeAccount(persons = kPersons): any {
   return {
     errorCallback: (ex: Error) => { throw ex; },
+    queries: [] as any[],
     async callEWS(query: any) {
+      this.queries.push(query);
       this.lastQuery = query;
       let entry = query.m$ResolveNames.m$UnresolvedEntry.toLowerCase();
       let matches = entry.startsWith("smtp:")
@@ -112,35 +114,72 @@ test("Server errors are passed on", async () => {
   await expect(search("ben", account)).rejects.toMatchObject({ type: "ErrorAccessDenied" });
 });
 
-test("Read the `userCertificate` from the GAL", async () => {
+test("The search itself costs only 1 request, and returns no certificates", async () => {
   let account = fakeAccount();
-  let results = await search("cathy", account);
+  let results = await search("bucksch", account);
+  expect(account.queries.length).toBe(1);
+  expect(account.lastQuery.m$ResolveNames.ContactDataShape).toBeUndefined();
+  expect(results.first.encryptionPublicKeys.length).toBe(0);
+});
+
+test("Read the `userCertificate` of the person that the user picked", async () => {
+  let account = fakeAccount();
+  let person = (await search("cathy", account)).first;
+  await person.fetchEncryptionKeys();
+  expect(account.queries.length).toBe(2);
+  expect(account.lastQuery.m$ResolveNames.m$UnresolvedEntry).toBe(person.emailAddresses.first.value);
   expect(account.lastQuery.m$ResolveNames.ContactDataShape).toBe("AllProperties");
-  expect(results.first.encryptionPublicKeys.length).toBe(1);
-  let key = results.first.encryptionPublicKeys.first;
+  expect(person.encryptionPublicKeys.length).toBe(1);
+  let key = person.encryptionPublicKeys.first;
   expect(key).toBeInstanceOf(SMIMEPublicKey);
   expect(key.userIDs.first).toBe(kCertificateEmailAddress);
   expect((key as SMIMEPublicKey).certificate).toContain("-----BEGIN CERTIFICATE-----");
 });
 
 test("Prefer `userSMIMECertificate` over `userCertificate`, as RFC 2798 says", async () => {
-  let results = await search("bucksch");
-  expect(results.first.encryptionPublicKeys.length).toBe(1);
-  let key = results.first.encryptionPublicKeys.first as SMIMEPublicKey;
+  let person = (await search("bucksch")).first;
+  await person.fetchEncryptionKeys();
+  expect(person.encryptionPublicKeys.length).toBe(1);
+  let key = person.encryptionPublicKeys.first as SMIMEPublicKey;
   expect(key.userIDs.first).toBe(kSMIMECertificateEmailAddress);
 });
 
 test("Read the certificate chain from `userSMIMECertificate`", async () => {
-  let results = await search("bucksch");
-  let key = results.first.encryptionPublicKeys.first as SMIMEPublicKey;
+  let person = (await search("bucksch")).first;
+  await person.fetchEncryptionKeys();
+  let key = person.encryptionPublicKeys.first as SMIMEPublicKey;
   expect(key.chain.length).toBe(1); // the CA which issued the certificate
   expect(key.chain.first.commonName).toBe("Test SMIME CA");
 });
 
 test("Person without a certificate in the GAL", async () => {
-  let results = await search("sally");
-  expect(results.first.name).toBe("Sally Smith");
-  expect(results.first.encryptionPublicKeys.length).toBe(0);
+  let person = (await search("sally")).first;
+  expect(person.name).toBe("Sally Smith");
+  await person.fetchEncryptionKeys();
+  expect(person.encryptionPublicKeys.length).toBe(0);
+});
+
+test("Certificates are optional, and their failure does not disturb the user", async () => {
+  let errors: Error[] = [];
+  let account = fakeAccount();
+  account.errorCallback = (ex: Error) => errors.push(ex);
+  let person = (await search("bucksch", account)).first;
+  account.callEWS = async () => {
+    throw new Error("The operation is not supported");
+  };
+  await person.fetchEncryptionKeys();
+  expect(person.encryptionPublicKeys.length).toBe(0);
+  expect(errors.map(ex => ex.message)).toEqual(["The operation is not supported"]);
+});
+
+test("The person is no longer in the GAL", async () => {
+  let account = fakeAccount();
+  let person = (await search("bucksch", account)).first;
+  account.callEWS = async () => {
+    throw { type: "ErrorNameResolutionNoResults" }; // expected, and not an error for us
+  };
+  await person.fetchEncryptionKeys(); // the error callback would throw
+  expect(person.encryptionPublicKeys.length).toBe(0);
 });
 
 test("Broken certificates are skipped", async () => {
@@ -153,9 +192,9 @@ test("Broken certificates are skipped", async () => {
     certificates: ["Not a certificate"],
   }]);
   account.errorCallback = () => undefined; // the error is reported, not thrown
-  let results = await search("bucksch", account);
-  expect(results.length).toBe(1);
-  expect(results.first.encryptionPublicKeys.length).toBe(0);
+  let person = (await search("bucksch", account)).first;
+  await person.fetchEncryptionKeys();
+  expect(person.encryptionPublicKeys.length).toBe(0);
 });
 
 test("Broken `userSMIMECertificate` falls back to `userCertificate`", async () => {
@@ -168,7 +207,8 @@ test("Broken `userSMIMECertificate` falls back to `userCertificate`", async () =
     certificates: [kCertificate],
   }]);
   account.errorCallback = () => undefined; // the error is reported, not thrown
-  let results = await search("bucksch", account);
-  expect(results.first.encryptionPublicKeys.length).toBe(1);
-  expect(results.first.encryptionPublicKeys.first.userIDs.first).toBe(kCertificateEmailAddress);
+  let person = (await search("bucksch", account)).first;
+  await person.fetchEncryptionKeys();
+  expect(person.encryptionPublicKeys.length).toBe(1);
+  expect(person.encryptionPublicKeys.first.userIDs.first).toBe(kCertificateEmailAddress);
 });
