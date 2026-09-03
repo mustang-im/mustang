@@ -44,6 +44,7 @@ export class JMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
+  protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
   protected pushAbort: AbortController | null = null;
   logging = true;
@@ -61,17 +62,19 @@ export class JMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await super.login(interactive);
-    if (this.isDependentAccount) {
-      return; // `super.login()` logged in the main account, which starts us up
-    }
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
+    await this.loginRunOnce.runOnce(async () => {
+      await super.login(interactive);
+      if (this.isDependentAccount) {
+        return; // `super.login()` logged in the main account, which starts us up
+      }
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
+      }
+      await this.storage.readFolderHierarchy(this);
 
-    await this.loginOAuth2(interactive);
-    await this.getSession();
+      await this.loginOAuth2(interactive);
+      await this.getSession();
+    });
   }
 
   async startup() {

@@ -147,6 +147,17 @@ test("login() only gets the session; startup() lists the folders", async () => {
   expect(calls).toContain("Mailbox/get u1");
 });
 
+test("Two concurrent login() calls get the session once", async () => {
+  session = kStalwartSession;
+  let sessionGets = 0;
+  JMAPAccount.prototype.httpGet = async () => { sessionGets++; return session; };
+  let account = newAccount();
+
+  await Promise.all([account.login(true), account.login(true)]);
+
+  expect(sessionGets).toBe(1);
+});
+
 test("Two concurrent startup() calls run the startup once", async () => {
   session = kStalwartSession;
   let account = newAccount();

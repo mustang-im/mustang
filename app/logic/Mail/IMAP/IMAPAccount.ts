@@ -36,6 +36,8 @@ export class IMAPAccount extends MailAccount {
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
   /** High level logging about the commands we issue, logged by us */
   logCommands = false;
   /** Logs by ImapFlow */
@@ -60,21 +62,25 @@ export class IMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await super.login(interactive);
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
+    await this.loginRunOnce.runOnce(async () => {
+      await super.login(interactive);
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
+      }
+      await this.storage.readFolderHierarchy(this);
 
-    await this.connection(interactive);
+      await this.connection(interactive);
+    });
   }
 
   async startup() {
-    this.namespaces = await this.getNamespaces();
-    await super.startup();
-    this.notifyObservers();
-    (this.inbox as IMAPFolder).startPolling();
-    await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
+    await this.startupRunOnce.runOnce(async () => {
+      this.namespaces = await this.getNamespaces();
+      await super.startup();
+      this.notifyObservers();
+      (this.inbox as IMAPFolder).startPolling();
+      await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
+    });
   }
 
   async verifyLogin(): Promise<void> {
