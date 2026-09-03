@@ -4,7 +4,7 @@ import "../../../../../logic/app";
 import { appGlobal } from "../../../../../logic/app";
 import { SMIMEPublicKey, KeyStatus } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { TrustLevel } from "../../../../../logic/Mail/Encryption/enums";
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, vi } from "vitest";
 
 // The browser has this, but Node does not.
 globalThis.indexedDB ??= {
@@ -134,6 +134,23 @@ describe("Certificate issued by an EC certificate authority", () => {
     expect(await key.keyStatus()).toBe(KeyStatus.Valid);
     expect(key.trustLevel).toBe(TrustLevel.Personal);
     expect(key.caName).toBe("EC Test Root CA");
+  });
+});
+
+describe("Certificate chain at the time of a signature", () => {
+  test("is valid when its CA certificate was valid then", async () => {
+    let key = await SMIMEPublicKey.importPublicKey(kRSALeaf + "\n" + kECRootCA);
+    let ca = key.chain.first;
+    const k1DayMS = 24 * 60 * 60 * 1000;
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(ca.expires.getTime() + k1DayMS);
+      expect(await key.keyStatus()).toBe(KeyStatus.ChainInvalid);
+      expect(await key.keyStatus(new Date(ca.expires.getTime() - k1DayMS))).toBe(KeyStatus.Valid);
+      expect(await key.keyStatus(new Date(ca.created.getTime() - k1DayMS))).toBe(KeyStatus.ChainInvalid);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

@@ -103,7 +103,9 @@ export class SMIMEPublicKey extends PublicKey {
     }
   }
 
-  async keyStatus(): Promise<KeyStatus> {
+  /** @param validAt when the certificates must have been valid, e.g. when
+   *   the message was signed. Default: now */
+  async keyStatus(validAt?: Date): Promise<KeyStatus> {
     if (!this.certificate) {
       return KeyStatus.NoCertificate;
     }
@@ -116,7 +118,7 @@ export class SMIMEPublicKey extends PublicKey {
     // binding without adding those X.509 path checks first.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
     for (let key of this.chain) {
-      if (key.obsolete) {
+      if (validAt ? validAt < key.created || !!key.expires && validAt > key.expires : key.obsolete) {
         console.log("obsolete certificate in chain");
         return KeyStatus.ChainInvalid;
       }
