@@ -1,16 +1,17 @@
-import { expect, test } from "vitest";
+import { beforeAll, expect, test } from "vitest";
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
-import { ExchangeMailAccount } from "../../../../logic/Mail/EWS/ExchangeMailAccount";
+import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import { ExchangeCalendar } from "../../../../logic/Calendar/EWS/ExchangeCalendar";
+import { gLicense } from "../../../../logic/util/License";
 
 // Alice's own mailbox, plus Bob's and Carol's, which they shared with her
-let alice = new ExchangeMailAccount();
+let alice = new EWSAccount();
 alice.username = "alice@example.com";
 let aliceCalendar = new ExchangeCalendar();
 aliceCalendar.initFromMainAccount(alice);
 aliceCalendar.useForInvitations = true;
 
-let bob = new ExchangeMailAccount();
+let bob = new EWSAccount();
 bob.initFromMainAccount(alice);
 bob.username = "bob@example.com";
 let bobCalendar = new ExchangeCalendar();
@@ -19,12 +20,24 @@ bobCalendar.username = bob.username;
 bobCalendar.useForInvitations = true;
 
 // Carol shared no calendar
-let carol = new ExchangeMailAccount();
+let carol = new EWSAccount();
 carol.initFromMainAccount(alice);
 carol.username = "carol@example.com";
 
 appGlobal.emailAccounts.addAll([alice, bob, carol]);
 appGlobal.calendars.addAll([aliceCalendar, bobCalendar]);
+
+beforeAll(() => gLicense.license = { valid: true });
+
+test("The shared mailbox is logged in, once the account which owns the connection is", async () => {
+  let bobShownAsLoggedIn = false; // what `<AccountListItem>` shows
+  bob.subscribe(() => bobShownAsLoggedIn = bob.isLoggedIn);
+
+  await alice.login(false);
+
+  expect(bob.isLoggedIn).toBe(true);
+  expect(bobShownAsLoggedIn).toBe(true);
+});
 
 test("Invitations to the shared mailbox go to the shared calendar", () => {
   expect(bob.calendarsAvailable.length).toBe(1);

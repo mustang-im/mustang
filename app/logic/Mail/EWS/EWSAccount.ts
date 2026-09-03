@@ -125,6 +125,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await super.login(interactive);
       await this.loginCommon(interactive);
       this.hasLoggedIn = true;
+      this.notifyObserversOfSubaccounts();
     });
   }
 
@@ -150,6 +151,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async disconnect(): Promise<void> {
     this.hasLoggedIn = false;
+    this.notifyObserversOfSubaccounts();
     if (this.mainAccount) {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
@@ -161,12 +163,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
-    }
-  }
-
-  notifyObserversOfSubaccounts() {
-    for (let account of this.dependentAccounts()) {
-      account.notifyObservers();
     }
   }
 

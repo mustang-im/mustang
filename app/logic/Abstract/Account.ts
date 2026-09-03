@@ -92,6 +92,13 @@ export class Account extends Observable {
     }
   }
 
+  /** Tell the UI that the dependent accounts are logged in etc as well. */
+  notifyObserversOfSubaccounts() {
+    for (let dependent of this.dependentAccounts()) {
+      dependent.notifyObservers();
+    }
+  }
+
   get isLoggedIn(): boolean {
     return false;
   }

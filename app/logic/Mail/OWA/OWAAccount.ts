@@ -236,12 +236,6 @@ export class OWAAccount extends ExchangeMailAccount {
     }
   }
 
-  notifyObserversOfSubaccounts() {
-    for (let account of this.dependentAccounts()) {
-      account.notifyObservers();
-    }
-  }
-
   needsLicense(): boolean {
     return true;
   }
