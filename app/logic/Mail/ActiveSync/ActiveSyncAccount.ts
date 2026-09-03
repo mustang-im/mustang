@@ -85,6 +85,9 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
         await this.oAuth2.login(interactive);
       }
       this.protocolVersion = this.getStorageItem("protocolVersion");
+      if (!this.protocolVersion) {
+        await this.checkProtocolVersion();
+      }
       if (this.protocolVersion == "14.0") {
         let request = {
           DeviceInformation: {
@@ -160,10 +163,17 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     return clientID;
   }
 
-  /**
-   * Performs an OPTIONS request to check the server's ActiveSync version.
-   */
+  /** For setup only. Test that the login works, and get the protocol version. */
   async verifyLogin(): Promise<void> {
+    await this.checkProtocolVersion();
+  }
+
+  /**
+   * Asks the server, with an OPTIONS request, which ActiveSync versions it
+   * speaks, and uses the newest one that we both support. Every request states
+   * the version, so we need it before any other call, i.e. during the login.
+   */
+  async checkProtocolVersion(): Promise<void> {
     let options: any = {
       headers: {
         "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
@@ -199,7 +209,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     if (response.status == 401) {
       const repeat = async () => {
         this.retries++;
-        await this.verifyLogin(); // repeat the call
+        await this.checkProtocolVersion(); // repeat the call
         this.retries = 0;
       }
       if (this.retries) {
