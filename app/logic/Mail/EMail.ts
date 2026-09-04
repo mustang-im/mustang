@@ -182,15 +182,18 @@ export class EMail extends Message {
    * in the AutoCrypt header for PGP - so this is the only place where we
    * have it for senders who are not in the addressbook.
    * Only keys that were issued for the `From:` address describe the sender.
+   * A signature by any other key does not tell us who wrote the message,
+   * so it does not count as signed at all.
    * @param signer null, if the signature did not verify */
   rememberSigner(signer: PublicKey | null) {
+    let emailAddress = this.from?.emailAddress?.toLowerCase();
+    if (signer && !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
+      console.log("signature ignored: the key is for", signer.userIDs.join(", "), "but the sender is", emailAddress);
+      signer = null;
+    }
     this.signedKey = signer;
     this.signedByKeyID = signer?.id ?? null;
     if (!signer) {
-      return;
-    }
-    let emailAddress = this.from?.emailAddress?.toLowerCase();
-    if (!emailAddress || !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
       return;
     }
     let known = this.from.encryptionPublicKey;

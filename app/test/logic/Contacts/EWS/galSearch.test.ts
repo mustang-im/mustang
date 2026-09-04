@@ -7,6 +7,19 @@ import { kCertificate, kCertificateEmailAddress, kSMIMECertificate, kSMIMECertif
 import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
 
+// The browser has this, but Node does not.
+globalThis.indexedDB ??= {
+  cmp(a: Uint8Array, b: Uint8Array): number {
+    let length = Math.min(a.length, b.length);
+    for (let i = 0; i < length; i++) {
+      if (a[i] != b[i]) {
+        return a[i] < b[i] ? -1 : 1;
+      }
+    }
+    return Math.sign(a.length - b.length);
+  },
+} as any;
+
 const kPersons = [{
   name: "Ben Bucksch",
   firstName: "Ben",

@@ -34,11 +34,17 @@ import { define } from "../../../../../lib/asn1/api";
 
 /** Object identifiers */
 const oids = {
+  "1.2.840.10045.2.1": "ecPublicKey",
+  "1.2.840.10045.3.1.7": "secp256r1",
+  "1.2.840.10045.4.3.2": "ecdsaWithSHA256",
+  "1.2.840.10045.4.3.3": "ecdsaWithSHA384",
+  "1.2.840.10045.4.3.4": "ecdsaWithSHA512",
   "1.2.840.113549.1.1.1": "rsaEncryption",
   "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
   "1.2.840.113549.1.1.7": "rsaESOAEP",
   "1.2.840.113549.1.1.8": "mgf1",
   "1.2.840.113549.1.1.9": "pSpecified",
+  "1.2.840.113549.1.1.10": "rsassaPss",
   "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
   "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
   "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
@@ -71,10 +77,13 @@ const oids = {
   "1.2.840.113549.2.9": "hmacWithSHA256",
   "1.2.840.113549.2.10": "hmacWithSHA384",
   "1.2.840.113549.2.11": "hmacWithSHA512",
+  "1.2.840.113549.3.2": "rc2CBC",
   "1.2.840.113549.3.7": "desEDE3CBC",
   "1.3.6.1.5.5.7.3.4": "emailProtection",
   //"1.3.6.1.5.5.8.1.2": "hmacWithSHA1",
   "1.3.14.3.2.26": "sha1",
+  "1.3.132.0.34": "secp384r1",
+  "1.3.132.0.35": "secp521r1",
   "2.1.0.1.1": "printstr",
   "2.5.4.3": "CN", // commonName
   "2.5.4.6": "C", // country
@@ -97,9 +106,15 @@ const oids = {
   "2.16.840.1.101.3.4.2.1": "sha256",
   "2.16.840.1.101.3.4.2.2": "sha384",
   "2.16.840.1.101.3.4.2.3": "sha512",
+  // RFC 5035: which certificate the signer used
+  "1.2.840.113549.1.9.16.2.12": "signingCertificate",
+  "1.2.840.113549.1.9.16.2.47": "signingCertificateV2",
+  // RFC 5280: what a certificate may be used for
+  "2.5.29.30": "nameConstraints",
+  "2.5.29.37.0": "anyExtendedKeyUsage",
 };
 
-type WebCryptoAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
+export type WebCryptoAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
 
 /** Converts a digest (hashing) algorithm name to WebCrypto. */
 export const DigestAlgorithm: Record<string, WebCryptoAlgorithm> = {
@@ -115,6 +130,17 @@ export const SignatureAlgorithm: Record<string, WebCryptoAlgorithm> = {
   sha256WithRSAEncryption: "SHA-256",
   sha384WithRSAEncryption: "SHA-384",
   sha512WithRSAEncryption: "SHA-512",
+  ecdsaWithSHA256: "SHA-256",
+  ecdsaWithSHA384: "SHA-384",
+  ecdsaWithSHA512: "SHA-512",
+}
+
+/** The elliptic curves whose signatures we can verify, and the bit length of
+ * their coordinates. Their WebCrypto name is "P-" and that bit length. */
+export const NamedCurve: Record<string, number> = {
+  secp256r1: 256,
+  secp384r1: 384,
+  secp521r1: 521,
 }
 
 /** Extracts the WebCrypto hash algorithm used by a key derivation algorithm. */
@@ -148,6 +174,16 @@ export const GeneralTime = define<number>("GeneralTime", function() {
 
 export const UTCTime = define<number>("UTCTime", function() {
   this.utctime();
+});
+
+/** A point in time, in either of the 2 encodings that X.509 and CMS allow.
+ * RFC 5280 section 4.1.2.5, RFC 5652 section 11.3. */
+export interface Time {
+  type: "utctime" | "gentime";
+  value: number;
+}
+export const Time = define<Time>("Time", function() {
+  this.choice({ utctime: this.utctime(), gentime: this.gentime() });
 });
 
 /** An algorithm */
@@ -190,7 +226,7 @@ export const RDNSequence = define<AttributeValue[]>("RDNSequence", function() {
 });
 
 export interface SubjectPublicKeyInfo {
-  algorithmIdenfitier: AlgorithmIdentifier;
+  algorithmIdentifier: AlgorithmIdentifier;
   subjectPublicKey: BitString;
 }
 export const SubjectPublicKeyInfo = define<SubjectPublicKeyInfo>("SubjectPublicKeyInfo", function() {
@@ -213,6 +249,37 @@ export const RSAPublicKey = define<RSAPublicKey>("RSAPublicKey", function() {
   this.seq().obj(
     this.key("n").int(),
     this.key("e").int(),
+  );
+});
+
+/** The signature value of an ECDSA signature, in certificates and in CMS.
+ * RFC 5480 section 2. WebCrypto instead wants r and s concatenated,
+ * each as a fixed-size number of the size of the curve. */
+export interface ECDSASigValue {
+  r: bigint;
+  s: bigint;
+}
+export const ECDSASigValue = define<ECDSASigValue>("ECDSASigValue", function() {
+  this.seq().obj(
+    this.key("r").int(),
+    this.key("s").int(),
+  );
+});
+
+/** The parameters of an RSASSA-PSS signature. RFC 4055 section 3.1.
+ * The defaults are all SHA-1, which we do not accept. */
+export interface RSASSAPSSParams {
+  hashAlgorithm: AlgorithmIdentifier;
+  maskGenAlgorithm: AlgorithmIdentifier;
+  saltLength: bigint;
+  trailerField: bigint;
+}
+export const RSASSAPSSParams = define<RSASSAPSSParams>("RSASSAPSSParams", function() {
+  this.seq().obj(
+    this.key("hashAlgorithm").explicit(0).use(AlgorithmIdentifier).def({ algorithm: "sha1" }),
+    this.key("maskGenAlgorithm").explicit(1).use(AlgorithmIdentifier).def({ algorithm: "mgf1" }),
+    this.key("saltLength").explicit(2).int().def(20n),
+    this.key("trailerField").explicit(3).int().def(1n),
   );
 });
 
@@ -245,13 +312,55 @@ export const SubjectAlternativeName = define("SubjectAlternativeName", function(
   this.seqof(GeneralName);
 });
 
+/** Whether the certificate may issue other certificates, and how many more
+ * certificates may follow it in the chain. RFC 5280 section 4.2.1.9 */
+export interface BasicConstraints {
+  cA: boolean;
+  pathLenConstraint?: bigint;
+}
+export const BasicConstraints = define<BasicConstraints>("BasicConstraints", function() {
+  this.seq().obj(
+    this.key("cA").bool().def(false),
+    this.key("pathLenConstraint").optional().int(),
+  );
+});
+
+/** What the key may be used for, one bit per usage, starting with
+ * digitalSignature as the highest bit. RFC 5280 section 4.2.1.3 */
+export const KeyUsage = define<BitString>("KeyUsage", function() {
+  this.bitstr();
+});
+
+/** What the certificate may be used for, e.g. `emailProtection`.
+ * RFC 5280 section 4.2.1.12 */
+export const ExtKeyUsage = define<(string | number[])[]>("ExtKeyUsage", function() {
+  this.seqof(Oid);
+});
+
+const GeneralSubtree = define("GeneralSubtree", function() {
+  this.seq().obj(
+    this.key("base").use(GeneralName),
+    this.key("minimum").optional().implicit(0).int(),
+    this.key("maximum").optional().implicit(1).int(),
+  );
+});
+
+/** The names that a CA certificate may issue certificates for, e.g. a company
+ * CA that is limited to its own email domain. RFC 5280 section 4.2.1.10 */
+export const NameConstraints = define("NameConstraints", function() {
+  this.seq().obj(
+    this.key("permittedSubtrees").optional().implicit(0).seqof(GeneralSubtree),
+    this.key("excludedSubtrees").optional().implicit(1).seqof(GeneralSubtree),
+  );
+});
+
 /** The part of a certificate that is (to be) signed */
 export interface TBSCertificate {
   version?: bigint,
   serialNumber: bigint,
   signature: AlgorithmIdentifier,
   issuer: AttributeValue[],
-  validity: Record<"notBefore" | "notAfter", { type: "utctime" | "gentime", value: number }>,
+  validity: Record<"notBefore" | "notAfter", Time>,
   subject: AttributeValue[],
   publicKey: SubjectPublicKeyInfo,
   issuerUniqueId?: BitString,
@@ -265,8 +374,8 @@ export const TBSCertificate = define<TBSCertificate>("TBSCertificate", function(
     this.key("signature").use(AlgorithmIdentifier),
     this.key("issuer").seqof(AttributeValue),
     this.key("validity").seq().obj(
-      this.key("notBefore").choice({ utctime: this.utctime(), gentime: this.gentime() }),
-      this.key("notAfter").choice({ utctime: this.utctime(), gentime: this.gentime() }),
+      this.key("notBefore").use(Time),
+      this.key("notAfter").use(Time),
     ),
     this.key("subject").seqof(AttributeValue),
     this.key("publicKey").use(SubjectPublicKeyInfo),
@@ -360,11 +469,13 @@ export const PBKDF2Params = define<PBKDF2Params>("PBKDF2Params", function() {
 });
 
 /* CMS */
+/** The parameters of RSA-OAEP. Senders leave out what has the default
+ * value, so OpenSSL sends an empty sequence for SHA-1. RFC 4055 section 4.1 */
 export const RSAESOAEPParams = define("RSAESOAEPParams", function() {
   this.seq().obj(
-    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier),
-    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier),
-    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier),
+    this.key("hashFunc").explicit(0).use(AlgorithmIdentifier).def({ algorithm: "sha1" }),
+    this.key("maskGenFunc").explicit(1).use(AlgorithmIdentifier).def({ algorithm: "mgf1" }),
+    this.key("pSourceFunc").explicit(2).use(AlgorithmIdentifier).def({ algorithm: "pSpecified" }),
   );
 });
 
@@ -377,7 +488,7 @@ const RecipientInfo = define("RecipientInfo", function() {
           this.key("issuer").seqof(AttributeValue),
           this.key("serialNumber").int(),
         ),
-        subjectKeyIdentifier: this.implicit(0).octstr(), // TODO
+        subjectKeyIdentifier: this.implicit(0).octstr(),
       }),
       this.key("keyEncryptionAlgorithm").use(AlgorithmIdentifier),
       this.key("encryptedKey").octstr(),
@@ -446,6 +557,15 @@ export const EnvelopedData = define("EnvelopedData", function() {
       ),
       this.key("unprotectedAttrs").implicit(1).optional().use(Attributes),
     ),
+  );
+});
+
+/** The parameters of the RC2-CBC cipher. `rc2ParameterVersion` encodes
+ * the effective key length. RFC 3370 section 5.2. */
+export const RC2CBCParameters = define("RC2CBCParameters", function() {
+  this.seq().obj(
+    this.key("rc2ParameterVersion").int(),
+    this.key("iv").octstr(),
   );
 });
 
@@ -522,6 +642,39 @@ export const SignedData = define("SignedData", function() {
       this.key("crls").implicit(1).optional().setof(Any),
       this.key("signerInfos").setof(SignerInfo),
     ),
+  );
+});
+
+/** The signer names the certificate that he used, by its hash, in a signed
+ * attribute, so that nobody can swap it for another certificate of the same
+ * owner. RFC 5035 section 5. `issuerSerial` and `policies` are not needed,
+ * because the hash already identifies the certificate exactly. */
+const ESSCertID = define("ESSCertID", function() {
+  this.seq().obj(
+    this.key("certHash").octstr(), // always SHA-1, in this version
+    this.key("issuerSerial").optional().any(),
+  );
+});
+
+export const SigningCertificate = define("SigningCertificate", function() {
+  this.seq().obj(
+    this.key("certs").seqof(ESSCertID),
+    this.key("policies").optional().any(),
+  );
+});
+
+const ESSCertIDv2 = define("ESSCertIDv2", function() {
+  this.seq().obj(
+    this.key("hashAlgorithm").use(AlgorithmIdentifier).def({ algorithm: "sha256" }),
+    this.key("certHash").octstr(),
+    this.key("issuerSerial").optional().any(),
+  );
+});
+
+export const SigningCertificateV2 = define("SigningCertificateV2", function() {
+  this.seq().obj(
+    this.key("certs").seqof(ESSCertIDv2),
+    this.key("policies").optional().any(),
   );
 });
 

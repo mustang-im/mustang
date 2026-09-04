@@ -6,7 +6,7 @@ import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData, SMIMECapabilities } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
-import { assert } from "../../../util/util";
+import { UserError, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 
 export class SMIMESend {
@@ -29,14 +29,19 @@ export class SMIMESend {
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
     if (mail.signedByKeyID) {
-      // Only the body and content type are signed, not the headers.
+      // Only the body and its own Content-* headers are signed, not the
+      // message headers. Without the transfer encoding, every reader shows
+      // the raw quoted-printable text.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with
       // whitespace) attached to their header.
       let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
+      let contentHeaders = headers.filter(header => /^Content-/i.test(header));
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
+      if (!contentHeaders.some(header => /^Content-Type: /i.test(header))) {
+        contentHeaders.push("Content-Type: text/plain");
+      }
+      mimeAsText = contentHeaders.join("\r\n") + mimeAsText.slice(pos);
       let messageDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mimeAsText)));
       // DER SET OF requires the elements sorted by their encoding (X.690
       // section 11.6). With these fixed value sizes, that is the order below:
@@ -124,18 +129,24 @@ export class SMIMESend {
       pos = mimeAsText.indexOf("\r\n\r\n");
     }
     if (mail.shouldEncrypt) {
-      // Only the body and content type are encrypted, not the headers.
+      // Only the body and its own Content-* headers are encrypted, not the
+      // message headers.
       let pos = mimeAsText.indexOf("\r\n\r\n");
       // Split on CRLF, but keep folded continuation lines (those starting with
       // whitespace) attached to their header.
       let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
+      let contentHeaders = headers.filter(header => /^Content-/i.test(header));
       let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
+      if (!contentHeaders.some(header => /^Content-Type: /i.test(header))) {
+        contentHeaders.push("Content-Type: text/plain");
+      }
+      mimeAsText = contentHeaders.join("\r\n") + mimeAsText.slice(pos);
       mime = new TextEncoder().encode(mimeAsText);
-      let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
+      let recipientKeys = mail.allRecipients().contents.map(puid =>
         getPublicKeyForPersonUID(puid, SMIMEPublicKey));
-      if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
+      assert(recipientKeys.every(key => key), gt`Cannot encrypt to all recipients using S/MIME`);
+      let myCertificate = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
+      if (!(await Promise.all(recipientKeys.map(key => key.matches(myCertificate.tbsCertificate.publicKey)))).some(Boolean)) {
         recipientKeys.push(privateKey);
       }
       let symmetricKey = new Uint8Array(32);
@@ -160,7 +171,11 @@ export class SMIMESend {
       };
       for (let recipientKey of recipientKeys) {
         let cert = Certificate.decodePEM(recipientKey.certificate, { label: "CERTIFICATE" });
-        let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+        let publicKey = cert.tbsCertificate.publicKey;
+        if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
+          throw new UserError(gt`Cannot encrypt to ${recipientKey.userIDs.first}, because we can encrypt only to RSA certificates`);
+        }
+        let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
         pkcs7.content.recipientInfos.push({
           type: "ktri",
           value: {

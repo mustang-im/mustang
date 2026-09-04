@@ -1,6 +1,6 @@
-import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, type TBSCertificate } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Attributes, SubjectPublicKeyInfo, RSAPublicKey, DigestInfo, OctetString, Oid, Time, Certificate, SigningCertificate, SigningCertificateV2, type TBSCertificate } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, encrypt } from "./SMIMERSAES";
-import { SMIMEPublicKey } from "./SMIMEPublicKey";
+import { SMIMEPublicKey, verifyECDSA, allowsKeyUsage, allowsPurpose, KeyUsageBit } from "./SMIMEPublicKey";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 
 /**
@@ -9,10 +9,13 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
  * @param signedData decoded `SignedData`
  * @param content the signed bytes: the cleartext MIME part for
  *   `multipart/signed`, or the unwrapped eContent for opaque-signed messages
- * @returns the last hex digits of the signer's RSA modulus,
+ * @param sent when the message says that it was sent, i.e. the `Date:`
+ *   header. Compared with the signing time, and used in its stead, if the
+ *   signature does not give one.
+ * @returns the signer's public key,
  *   or null, if the signature does not verify
  */
-export async function verifySignedData(signedData: any, content: Uint8Array): Promise<SMIMEPublicKey | null> {
+export async function verifySignedData(signedData: any, content: Uint8Array, sent?: Date): Promise<SMIMEPublicKey | null> {
   let certificates = sanitize.array(signedData.content.certificates, []);
   let signerInfos = sanitize.array(signedData.content.signerInfos, []);
   if (!certificates.length || !signerInfos.length) {
@@ -20,33 +23,60 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     return null;
   }
   let signerInfo = signerInfos[0];
-  let cert = certificates[0];
-  if (signerInfo.sid?.type == "issuerAndSerialNumber") {
-    let sid = signerInfo.sid.value;
-    // Fall back to the first certificate, for messages that we signed
-    // before, when the sid held the subject instead of the issuer.
-    cert = certificates.find(cert =>
-      cert.tbsCertificate.serialNumber == sid.serialNumber &&
-      sameName(sid.issuer, cert.tbsCertificate.issuer)) ?? cert;
-  }
-  let publicKey = cert.tbsCertificate.publicKey;
-  if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
-    console.log("certificate does not contain an RSA public key");
+  let sid = signerInfo.sid?.value;
+  // TODO Support `subjectKeyIdentifier`
+  let cert = signerInfo.sid?.type == "issuerAndSerialNumber" && certificates.find(cert =>
+    cert.tbsCertificate.serialNumber == sid.serialNumber &&
+    sameName(sid.issuer, cert.tbsCertificate.issuer));
+  if (!cert) {
+    console.log("the certificate that signed the message was not sent with it");
     return null;
   }
-  let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm);
+  // RFC 5280 sections 4.2.1.3 and 4.2.1.12: the certificate must be meant for
+  // signing, and for email
+  if (!allowsKeyUsage(cert, KeyUsageBit.DigitalSignature) &&
+      !allowsKeyUsage(cert, KeyUsageBit.NonRepudiation)) {
+    console.log("the certificate is not for signing");
+    return null;
+  }
+  if (!allowsPurpose(cert, "emailProtection")) {
+    console.log("the certificate is not for email");
+    return null;
+  }
+  let publicKey = cert.tbsCertificate.publicKey;
+  let isECDSA = publicKey.algorithmIdentifier.algorithm == "ecPublicKey";
+  if (!isECDSA && publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
+    console.log("certificate does not contain an RSA or ECDSA public key");
+    return null;
+  }
+  let digestAlgorithm = sanitize.translate(signerInfo.digestAlgorithm.algorithm, DigestAlgorithm, null);
+  if (!digestAlgorithm) {
+    console.log("message was digested with an algorithm that we do not know");
+    return null;
+  }
   // RFC 5652 section 10.1.2: signers write rsaEncryption, but verifiers
   // should also accept e.g. sha256WithRSAEncryption, which some clients
-  // write instead. Its hash must match the digest algorithm.
-  if (signerInfo.signatureAlgorithm.algorithm != "rsaEncryption" &&
+  // write instead. Its hash must match the digest algorithm. RFC 5753
+  // section 2 says the same for ECDSA, where Thunderbird and Apple Mail
+  // write ecdsaWithSHA256 rather than the bare ecPublicKey.
+  if (signerInfo.signatureAlgorithm.algorithm != (isECDSA ? "ecPublicKey" : "rsaEncryption") &&
       sanitize.translate(signerInfo.signatureAlgorithm.algorithm, SignatureAlgorithm, null) != digestAlgorithm) {
-    console.log("signature was not signed with RSA");
+    console.log("signature algorithm does not match the certificate");
     return null;
   }
   let messageDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, content as BufferSource));
-  // Without signed attributes, the signature covers the content digest directly.
-  let signedDigest = messageDigest;
+  // Without signed attributes, the signature covers the content directly.
+  let signedContent = content;
+  let signedAt = sent?.getTime();
   if (signerInfo.signedAttrs) {
+    // RFC 5652 section 5.3: the attributes must say which content they cover,
+    // so that a signature cannot be moved to another kind of content
+    let contentTypeAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "contentType");
+    if (!contentTypeAttribute ||
+        String(Oid.decode(contentTypeAttribute.attrValue[0])) != String(signedData.content.contentInfo.contentType)) {
+      console.log("signature was made for another content type");
+      return null;
+    }
     let digestAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "messageDigest");
     if (!digestAttribute) {
       console.log("signature did not contain a message digest");
@@ -56,8 +86,39 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
       console.log("signed digest did not match message");
       return null;
     }
-    let signedAttrs = Attributes.encode(signerInfo.signedAttrs);
-    signedDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, signedAttrs));
+    let signingTimeAttribute = signerInfo.signedAttrs.find(attr => attr.attrType == "signingTime");
+    if (signingTimeAttribute) {
+      const k1HourMS = 60 * 60 * 1000;
+      signedAt = Time.decode(signingTimeAttribute.attrValue[0]).value;
+      if (sent && Math.abs(signedAt - sent.getTime()) > k1HourMS) {
+        console.log("message was signed at a different time than it was sent");
+        return null;
+      }
+    }
+    let essAttribute = signerInfo.signedAttrs.find(attr =>
+      attr.attrType == "signingCertificate" || attr.attrType == "signingCertificateV2");
+    if (essAttribute) {
+      // RFC 5035: the signer named the certificate that he used, by its hash,
+      // so that nobody can swap it for another certificate of the same owner
+      let certIDs = essAttribute.attrType == "signingCertificateV2"
+        ? SigningCertificateV2.decode(essAttribute.attrValue[0]).certs
+        : SigningCertificate.decode(essAttribute.attrValue[0]).certs;
+      let certDER = Certificate.encode(cert);
+      let hashes = await Promise.all(certIDs.map(certID =>
+        crypto.subtle.digest(sanitize.translate(certID.hashAlgorithm?.algorithm, DigestAlgorithm, "SHA-1"), certDER as BufferSource)));
+      if (!certIDs.some((certID, i) => !indexedDB.cmp(new Uint8Array(hashes[i]), certID.certHash))) {
+        console.log("the signature names another certificate than the one that it came with");
+        return null;
+      }
+    }
+    signedContent = Attributes.encode(signerInfo.signedAttrs);
+  }
+  // The certificate must have been valid when the message was signed. Mail
+  // that was signed before the certificate expired stays signed afterwards.
+  let { notBefore, notAfter } = cert.tbsCertificate.validity;
+  if (signedAt && (signedAt < notBefore.value || signedAt > notAfter.value)) {
+    console.log("the certificate was not valid when the message was signed");
+    return null;
   }
   /* `await crypto.subtle.verify()` returns `false` on
    * correctly signed messages...
@@ -67,15 +128,23 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
     return rsa.n.toString(16);
   }
   */
-  let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
-  let digestInfo = DigestInfo.decode(unpadPKCS(encrypt(signerInfo.signature, rsa), BlockType.Signed));
-  if (digestInfo.digestAlgorithm.algorithm != signerInfo.digestAlgorithm.algorithm) {
-    console.log("signature algorithm mismatch");
-    return null;
-  }
-  if (indexedDB.cmp(digestInfo.digest, signedDigest)) {
-    console.log("signature did not match the signed digest");
-    return null;
+  if (isECDSA) {
+    if (!await verifyECDSA(publicKey, signerInfo.signature, digestAlgorithm, signedContent)) {
+      console.log("signature did not match the signed content");
+      return null;
+    }
+  } else {
+    let signedDigest = new Uint8Array(await crypto.subtle.digest(digestAlgorithm, signedContent));
+    let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
+    let digestInfo = DigestInfo.decode(unpadPKCS(encrypt(signerInfo.signature, rsa), BlockType.Signed));
+    if (digestInfo.digestAlgorithm.algorithm != signerInfo.digestAlgorithm.algorithm) {
+      console.log("signature algorithm mismatch");
+      return null;
+    }
+    if (indexedDB.cmp(digestInfo.digest, signedDigest)) {
+      console.log("signature did not match the signed digest");
+      return null;
+    }
   }
   let signer = new SMIMEPublicKey();
   while (cert && await signer.addCertificate(cert)) {
@@ -97,5 +166,7 @@ export async function verifySignedData(signedData: any, content: Uint8Array): Pr
 /** Compares two X.501 names, e.g. certificate issuer and subject */
 export function sameName(a: TBSCertificate["issuer"], b: TBSCertificate["issuer"]): boolean {
   return a.length == b.length &&
-    a.every((attr, i) => attr.type == b[i].type && attr.value.value == b[i].value.value);
+    // Attribute types that our OID map does not know, e.g. the eIDAS
+    // organizationIdentifier, decode to arrays, which `==` compares by identity
+    a.every((attr, i) => String(attr.type) == String(b[i].type) && attr.value.value == b[i].value.value);
 }

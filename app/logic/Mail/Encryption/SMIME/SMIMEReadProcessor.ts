@@ -1,10 +1,12 @@
 import { EMailProcessor, ProcessingStartOn } from "../../EMailProcessor";
 import type { EMail } from "../../EMail";
+import type { Attachment } from "../../../Abstract/Attachment";
 import { MailIdentity } from "../../MailIdentity";
 import { EncryptionSystem } from "../enums";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
-import { ContentInfo, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, SignedData } from "./SMIMEASN1";
+import { AlgorithmIdentifier, ContentInfo, DigestAlgorithm, EnvelopedData, AuthEnvelopedData, Certificate, OctetString, RC2CBCParameters, RSAESOAEPParams, SignedData } from "./SMIMEASN1";
 import { decryptAuthEnveloped } from "./SMIMEDecrypt";
+import { rc2Decrypt, tripleDESDecrypt } from "./legacyCiphers";
 import { BlockType, unpadPKCS, decrypt } from "./SMIMERSAES";
 import { verifySignedData, sameName } from "./SMIMEVerify";
 import { parseMIMEDirectSubpartsBytes, parseHeaderParameters } from "../MIME";
@@ -24,7 +26,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let contentTypeHeader = sanitize.string(postal.headers.find(header => header.key == "content-type")?.value, "");
     let contentType = parseHeaderParameters(contentTypeHeader).$main;
     if (contentType == "application/pkcs7-mime" ||
-        contentType == "application/x-pkcs7-mime") { // legacy type name, used by Outlook
+        contentType == "application/x-pkcs7-mime" || // legacy type name, used by Outlook
+        isSMIMEFile(email.attachments.first, ".p7m")) {
       // The whole message is a CMS blob. It's the only body part, but fsr
       // this is an attachment.
       let cms = email.attachments.first?.content;
@@ -33,7 +36,19 @@ export class SMIMEReadProcessor extends EMailProcessor {
         return;
       }
       let blob = new Uint8Array(await cms.arrayBuffer());
-      let type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      // Some archivers keep the S/MIME headers, but store the message that
+      // they decrypted. What we have is then MIME, not an ASN.1 SEQUENCE.
+      if (blob[0] != 0x30) {
+        await this.unwrapMIME(email, blob);
+        return;
+      }
+      let type: string | number[];
+      try {
+        type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      } catch (ex) {
+        console.error(ex);
+        throw new UserError(gt`This message is not a valid S/MIME message`);
+      }
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
       } else if (type == "envelopedData") {
@@ -51,16 +66,32 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let envelopedData = EnvelopedData.decode(blob, { berToDER: true });
-    if (!sanitize.enum(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.algorithm, ["aes128cbc", "aes192cbc", "aes256cbc"], null)) {
-      return;
+    let { contentEncryptionAlgorithm, encryptedContent } = envelopedData.content.encryptedContentInfo;
+    let cipher = contentEncryptionAlgorithm.algorithm;
+    if (!sanitize.enum(cipher, ["aes128cbc", "aes192cbc", "aes256cbc", "desEDE3CBC", "rc2CBC"], null)) {
+      throw new UserError(gt`This message is encrypted with ${algorithmName(cipher)}, which is not supported`);
     }
-    let vector = OctetString.decode(envelopedData.content.encryptedContentInfo.contentEncryptionAlgorithm.parameters);
-    let encryptedContent = envelopedData.content.encryptedContentInfo.encryptedContent;
     let symmetricKey = await this.decryptSymmetricKey(email, envelopedData.content.recipientInfos);
-    let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
-    let decryptedContent = await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent);
+    let decryptedContent: Uint8Array;
+    if (cipher == "desEDE3CBC") {
+      // Apple Mail always encrypts with Triple DES, and Thunderbird does
+      // for recipients with a short key. WebCrypto implements neither
+      // Triple DES nor RC2, so we decrypt them ourselves.
+      decryptedContent = tripleDESDecrypt(encryptedContent, symmetricKey, OctetString.decode(contentEncryptionAlgorithm.parameters));
+    } else if (cipher == "rc2CBC") {
+      let { rc2ParameterVersion, iv } = RC2CBCParameters.decode(contentEncryptionAlgorithm.parameters);
+      // RFC 3370 section 5.2: below 256, the version is a code for the
+      // effective key length, from 256 up it is that length in bits itself.
+      let version = Number(rc2ParameterVersion);
+      let effectiveKeyBits = { 58: 128, 120: 64, 160: 40 }[version] ?? version;
+      decryptedContent = rc2Decrypt(encryptedContent, symmetricKey, iv, sanitize.integerRange(effectiveKeyBits, 8, 1024));
+    } else {
+      let vector = OctetString.decode(contentEncryptionAlgorithm.parameters);
+      let key = await crypto.subtle.importKey("raw", symmetricKey, "AES-CBC", false, ["decrypt"]);
+      decryptedContent = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv: vector }, key, encryptedContent));
+    }
     email.wasEncrypted = true;
-    await this.unwrapMIME(email, new Uint8Array(decryptedContent));
+    await this.unwrapMIME(email, decryptedContent);
   }
 
   /** Decrypts a message that was encrypted with an authenticating cipher,
@@ -70,9 +101,9 @@ export class SMIMEReadProcessor extends EMailProcessor {
   protected async readAuthEncrypted(email: EMail, blob: Uint8Array) {
     email.system = EncryptionSystem.SMIME;
     let authEnvelopedData = AuthEnvelopedData.decode(blob, { berToDER: true }).content;
-    if (!sanitize.enum(authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm,
-        ["aes128gcm", "aes192gcm", "aes256gcm"], null)) {
-      return;
+    let cipher = authEnvelopedData.authEncryptedContentInfo.contentEncryptionAlgorithm.algorithm;
+    if (!sanitize.enum(cipher, ["aes128gcm", "aes192gcm", "aes256gcm"], null)) {
+      throw new UserError(gt`This message is encrypted with ${algorithmName(cipher)}, which is not supported`);
     }
     let symmetricKey = await this.decryptSymmetricKey(email, authEnvelopedData.recipientInfos);
     email.wasEncrypted = true;
@@ -84,31 +115,51 @@ export class SMIMEReadProcessor extends EMailProcessor {
    * @throws if the message was not encrypted to any of our keys */
   protected async decryptSymmetricKey(email: EMail, recipientInfos: any[]): Promise<Uint8Array> {
     // XXX what if you were BCC'd?
+    let unsupportedKeyTransport: string | null = null;
     for (let recipient of email.allRecipients()) {
       let identity = MailIdentity.findIdentity(new ArrayColl([recipient]), email.folder?.account)?.identity;
       if (identity) {
         for (let privateKey of identity.encryptionPrivateKeys) {
-          if (privateKey instanceof SMIMEPrivateKey) {
-            let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
-            let issuer = cert.tbsCertificate.issuer;
-            for (let recipientInfo of recipientInfos) {
-              if (recipientInfo.type != "ktri" ||
-                  recipientInfo.value.keyEncryptionAlgorithm.algorithm != "rsaEncryption" ||
-                  recipientInfo.value.rid.type != "issuerAndSerialNumber") {
-                // TODO Support subjectKeyIdentifier
-                continue;
-              }
-              let rid = recipientInfo.value.rid.value;
-              if (rid.serialNumber != cert.tbsCertificate.serialNumber ||
-                  !sameName(rid.issuer, issuer)) {
-                continue;
-              }
+          // A key that the user just created has no certificate yet
+          if (!(privateKey instanceof SMIMEPrivateKey) || !privateKey.certificate) {
+            continue;
+          }
+          let cert = Certificate.decodePEM(privateKey.certificate, { label: "CERTIFICATE" });
+          let extensionValue = cert.tbsCertificate.extensions?.find(extension => extension.extnID == "subjectKeyIdentifier")?.extnValue;
+          // The extension wraps the identifier in another OCTET STRING
+          let ourKeyIdentifier = extensionValue && OctetString.decode(extensionValue);
+          for (let recipientInfo of recipientInfos) {
+            if (recipientInfo.type != "ktri") {
+              continue;
+            }
+            // Senders name our certificate either by its issuer and serial
+            // number, or by its subjectKeyIdentifier. RFC 5652 section 6.2.1
+            let rid = recipientInfo.value.rid;
+            let isForOurCertificate = rid.type == "issuerAndSerialNumber"
+              ? rid.value.serialNumber == cert.tbsCertificate.serialNumber &&
+                sameName(rid.value.issuer, cert.tbsCertificate.issuer)
+              : !!ourKeyIdentifier && !indexedDB.cmp(rid.value, ourKeyIdentifier);
+            if (!isForOurCertificate) {
+              continue;
+            }
+            let keyEncryptionAlgorithm = recipientInfo.value.keyEncryptionAlgorithm;
+            if (keyEncryptionAlgorithm.algorithm == "rsaEncryption") {
               let rawKey = await privateKey.decryptKey();
               return unpadPKCS(decrypt(recipientInfo.value.encryptedKey, rawKey), BlockType.Encrypted);
             }
+            if (keyEncryptionAlgorithm.algorithm == "rsaESOAEP") {
+              let contentKey = await decryptOAEP(recipientInfo.value.encryptedKey, privateKey, keyEncryptionAlgorithm);
+              if (contentKey) {
+                return contentKey;
+              }
+            }
+            unsupportedKeyTransport = algorithmName(keyEncryptionAlgorithm.algorithm);
           }
         }
       }
+    }
+    if (unsupportedKeyTransport) {
+      throw new UserError(gt`The key of this message is encrypted with ${unsupportedKeyTransport}, which is not supported`);
     }
     throw new UserError(gt`This message is encrypted, and the key is not available`);
   }
@@ -129,28 +180,31 @@ export class SMIMEReadProcessor extends EMailProcessor {
     let content = OctetString.decode(contentInfo.content);
     // show the msg, even if the signature is invalid
     await this.unwrapMIME(email, content);
-    email.rememberSigner(await verifySignedData(signedData, content));
+    email.rememberSigner(await verifySignedData(signedData, content, email.sent));
   }
 
   /** Verifies a cleartext message with a detached signature
    * (`multipart/signed`). */
   protected async readClearSigned(email: EMail, contentTypeHeader: string) {
-    let signatureMimeType = email.attachments.last?.mimeType.toLowerCase();
+    let signaturePart = email.attachments.last;
+    let signatureMimeType = signaturePart?.mimeType.toLowerCase();
     if (signatureMimeType != "application/pkcs7-signature" &&
-        signatureMimeType != "application/x-pkcs7-signature") { // legacy type name
+        signatureMimeType != "application/x-pkcs7-signature" && // legacy type name
+        !isSMIMEFile(signaturePart, ".p7s")) {
       return;
     }
     email.system = EncryptionSystem.SMIME;
+    signaturePart.hidden = true; // we show the signature, not the file
     let parts = parseMIMEDirectSubpartsBytes(email.mime, contentTypeHeader);
     assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
     let [clearText, signature] = parts;
-    let signatureBase64 = new TextDecoder().decode(signature).split("\r\n\r\n")[1];
+    let signatureBase64 = new TextDecoder().decode(signature).split(/\r?\n\r?\n/)[1];
     if (!signatureBase64) {
       console.warn("signature part has no content");
       return;
     }
     let signedData = SignedData.decodeFromBase64(signatureBase64, { berToDER: true });
-    email.rememberSigner(await verifySignedData(signedData, clearText));
+    email.rememberSigner(await verifySignedData(signedData, clearText, email.sent));
   }
 
   /** Replaces the message with the MIME entity extracted from the CMS
@@ -169,4 +223,46 @@ export class SMIMEReadProcessor extends EMailProcessor {
     await email.parseMIME(); // checks signature recursively
     await email.saveCompleteMessage();
   }
+}
+
+/**
+ * Decrypts the content key that was encrypted with RSA-OAEP, RFC 8551
+ * section 2.4.3. WebCrypto implements it, unlike the PKCS#1 v1.5 padding
+ * that we do ourselves.
+ * @param algorithm the `keyEncryptionAlgorithm` of the recipient
+ * @returns null, if the message uses OAEP in a way that WebCrypto cannot
+ */
+async function decryptOAEP(encryptedKey: Uint8Array, privateKey: SMIMEPrivateKey, algorithm: AlgorithmIdentifier): Promise<Uint8Array | null> {
+  let { hashFunc, maskGenFunc, pSourceFunc } = RSAESOAEPParams.decode(algorithm.parameters);
+  // RFC 3560 section 3: in CMS, the label is always empty
+  if (maskGenFunc.algorithm != "mgf1" || pSourceFunc.algorithm != "pSpecified" ||
+      pSourceFunc.parameters && OctetString.decode(pSourceFunc.parameters).length) {
+    return null;
+  }
+  let hash = sanitize.translate(hashFunc.algorithm, DigestAlgorithm, null);
+  // Without parameters, the mask generation uses SHA-1
+  let maskHash = maskGenFunc.parameters
+    ? sanitize.translate(AlgorithmIdentifier.decode(maskGenFunc.parameters).algorithm, DigestAlgorithm, null)
+    : "SHA-1";
+  if (!hash || hash != maskHash) { // WebCrypto uses the same hash for both
+    return null;
+  }
+  let pkcs8 = await privateKey.decryptKeyPKCS8();
+  let key = await crypto.subtle.importKey("pkcs8", pkcs8 as BufferSource, { name: "RSA-OAEP", hash }, false, ["decrypt"]);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "RSA-OAEP" }, key, encryptedKey as BufferSource));
+}
+
+/** Whether the part is an S/MIME blob that was sent with a generic file
+ * type, and can be recognised only by its file name. Microsoft sends and
+ * accepts them like this, and gateways rewrite the type that way.
+ * MS-OXOSMIME section 2.2.1 */
+function isSMIMEFile(attachment: Attachment | undefined, extension: string): boolean {
+  return attachment?.mimeType.toLowerCase() == "application/octet-stream" &&
+    !!attachment.filename?.toLowerCase().endsWith(extension);
+}
+
+/** Names an algorithm for the user: our name for its OID, or the OID
+ * itself, for the algorithms that we do not know. */
+function algorithmName(algorithm: string | number[]): string {
+  return Array.isArray(algorithm) ? algorithm.join(".") : algorithm;
 }

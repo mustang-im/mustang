@@ -1,6 +1,6 @@
 import type { PrivateKey } from "../PrivateKey";
 import { SMIMEPublicKey, splitPEM } from "./SMIMEPublicKey";
-import { Any, PrivateKeyInfo, EncryptedPrivateKeyInfo, RSAPrivateKey, RSAPublicKey, CertificationRequestInfo, DigestInfo, CertificationRequest, Null } from "./SMIMEASN1";
+import { Any, PrivateKeyInfo, EncryptedPrivateKeyInfo, RSAPrivateKey, RSAPublicKey, SubjectPublicKeyInfo, CertificationRequestInfo, DigestInfo, CertificationRequest, Null } from "./SMIMEASN1";
 import { decryptPBES2, encryptPrivateKey } from "./PBES2";
 import { decrypt, padFF } from "./SMIMERSAES";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -33,28 +33,37 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     }
   }
 
-  async matches(key: RSAPublicKey): Promise<boolean> {
+  /** Whether the given certificate belongs to our private key,
+   * which is always an RSA key */
+  async matches(publicKey: SubjectPublicKeyInfo): Promise<boolean> {
+    if (publicKey.algorithmIdentifier.algorithm != "rsaEncryption") {
+      return false;
+    }
+    let key = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
     let rawKey = await this.decryptKey();
     return key.n == rawKey.n && key.e == rawKey.e;
   }
 
   /** Decrypts our private key with our passphrase */
   async decryptKey(): Promise<RSAPrivateKey> {
-    let pkcs8: Uint8Array;
-    if (this.passphrase) {
-      let encryptedKey = EncryptedPrivateKeyInfo.decodePEM(this.privateKeyArmored, { label: "ENCRYPTED PRIVATE KEY" });
-      if (encryptedKey.encryptionAlgorithm.algorithm != "pkcs5PBES2") {
-        throw new Error("Unsupported private key encryption algorithm");
-      }
-      pkcs8 = await decryptPBES2(encryptedKey.encryptedData, encryptedKey.encryptionAlgorithm.parameters, this.passphrase);
-    } else {
-      pkcs8 = Any.decodePEM(this.privateKeyArmored, { label: "PRIVATE KEY" });
-    }
-    let privateKeyInfo = PrivateKeyInfo.decode(pkcs8);
+    let privateKeyInfo = PrivateKeyInfo.decode(await this.decryptKeyPKCS8());
     if (privateKeyInfo.privateKeyAlgorithm.algorithm != "rsaEncryption") {
       throw new Error("Unsupported private key algorithm");
     }
     return RSAPrivateKey.decode(privateKeyInfo.privateKey);
+  }
+
+  /** Decrypts our private key with our passphrase, in the PKCS#8 form
+   * that `crypto.subtle.importKey()` reads */
+  async decryptKeyPKCS8(): Promise<Uint8Array> {
+    if (!this.passphrase) {
+      return Any.decodePEM(this.privateKeyArmored, { label: "PRIVATE KEY" });
+    }
+    let encryptedKey = EncryptedPrivateKeyInfo.decodePEM(this.privateKeyArmored, { label: "ENCRYPTED PRIVATE KEY" });
+    if (encryptedKey.encryptionAlgorithm.algorithm != "pkcs5PBES2") {
+      throw new Error("Unsupported private key encryption algorithm");
+    }
+    return await decryptPBES2(encryptedKey.encryptedData, encryptedKey.encryptionAlgorithm.parameters, this.passphrase);
   }
 
   privateKeyAsFile(): File {

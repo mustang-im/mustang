@@ -1,7 +1,7 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
-import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayToHex } from "./SMIMERSAES";
+import { DigestAlgorithm, SignatureAlgorithm, AlgorithmIdentifier, Certificate, RSAPublicKey, SubjectAlternativeName, SubjectPublicKeyInfo, NamedCurve, ECDSASigValue, RSASSAPSSParams, Oid, RDNSequence, TBSCertificate, DigestInfo, BasicConstraints, KeyUsage, ExtKeyUsage, NameConstraints, type WebCryptoAlgorithm } from "./SMIMEASN1";
+import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayFromHex, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -30,24 +30,32 @@ export class SMIMEPublicKey extends PublicKey {
     return certificateCommonName(cert) ?? "";
   }
 
-  async matches(key: RSAPublicKey): Promise<boolean> {
+  /** Whether the given certificate holds the same key as this one */
+  async matches(publicKey: SubjectPublicKeyInfo): Promise<boolean> {
     if (!this.publicKeyArmored) {
       return false;
     }
     let cert = Certificate.decodePEM(this.publicKeyArmored, { label: "Certificate" });
-    let rawKey = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
-    return key.n == rawKey.n && key.e == rawKey.e;
+    return !indexedDB.cmp(SubjectPublicKeyInfo.encode(publicKey), SubjectPublicKeyInfo.encode(cert.tbsCertificate.publicKey));
   }
 
   /**
    * Parses the given certificate and sets it as the public key.
    */
   async setCertificate(cert: Certificate) {
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    let publicKey = cert.tbsCertificate.publicKey;
     if (!this.id) {
-      let id = sanitize.bigint(rsa.n).toString(16);
-      this.id = id.slice(-16);
-      this.keyLengthInBits = id.length * 4;
+      if (publicKey.algorithmIdentifier.algorithm == "ecPublicKey") {
+        let curve = sanitize.translate(Oid.decode(publicKey.algorithmIdentifier.parameters), NamedCurve, null);
+        this.cipher = curve ? "ECDSA/P-" + curve : "ECDSA";
+        this.keyLengthInBits = curve;
+        // The curve point identifies the key, like the modulus does for RSA
+        this.id = Uint8ArrayToHex(publicKey.subjectPublicKey.data).slice(-16);
+      } else {
+        let id = sanitize.bigint(RSAPublicKey.decode(publicKey.subjectPublicKey.data).n).toString(16);
+        this.id = id.slice(-16);
+        this.keyLengthInBits = id.length * 4;
+      }
     }
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
     this.userIDs.replaceAll(certificateEMailAddresses(cert));
@@ -63,17 +71,17 @@ export class SMIMEPublicKey extends PublicKey {
   }
 
   async addCertificate(cert: Certificate): Promise<boolean> {
-    let rsa = RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data);
+    let publicKey = cert.tbsCertificate.publicKey;
     if (!this.publicKeyArmored) {
       await this.setCertificate(cert);
       return true;
     }
-    if (await this.matches(rsa)) {
+    if (await this.matches(publicKey)) {
       await this.setCertificate(cert);
       return false;
     }
     for (let key of this.chain) {
-      if (await key.matches(rsa)) {
+      if (await key.matches(publicKey)) {
         await key.setCertificate(cert);
         return false;
       }
@@ -99,13 +107,10 @@ export class SMIMEPublicKey extends PublicKey {
     if (!this.certificate) {
       return KeyStatus.NoCertificate;
     }
-    // This checks only that each certificate is validly signed by the next one
-    // up to a trusted root. It does not verify basicConstraints (CA:TRUE) or
-    // keyUsage/extKeyUsage (emailProtection). Identity is bound elsewhere, by
-    // matching the signer's stored key ID against `email.from`, so a rogue leaf
-    // cannot sign as another identity today. Do not start trusting the chain
-    // itself for identity binding without adding those X.509 path checks first.
+    // Identity is bound elsewhere, in `EMail.rememberSigner()`, by matching
+    // the email addresses of the signer certificate against `email.from`.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    let depth = 0; // how many certificates are below this issuer in the chain
     for (let key of this.chain) {
       if (key.obsolete) {
         console.log("obsolete certificate in chain");
@@ -115,13 +120,33 @@ export class SMIMEPublicKey extends PublicKey {
       if (!await verifySignature(cert, signer)) {
         return KeyStatus.ChainInvalid;
       }
+      // RFC 5280 section 6.1: only a CA may issue certificates, only as deep
+      // as its `pathLenConstraint` allows, and only for the names that it is
+      // limited to. Trusted roots are exempt: the user vouches for them.
+      let extension = signer.tbsCertificate.extensions?.find(ext => ext.extnID == "basicConstraints");
+      let { cA, pathLenConstraint } = extension ? BasicConstraints.decode(extension.extnValue) : { cA: false };
+      if (!cA || pathLenConstraint != null && pathLenConstraint < depth) {
+        console.log("certificate in chain may not issue this certificate");
+        return KeyStatus.ChainInvalid;
+      }
+      if (!allowsKeyUsage(signer, KeyUsageBit.KeyCertSign)) {
+        console.log("certificate in chain may not sign certificates");
+        return KeyStatus.ChainInvalid;
+      }
+      if (!allowsEMailAddresses(signer, this.userIDs)) {
+        console.log("certificate is for an address that its CA may not issue");
+        return KeyStatus.ChainInvalid;
+      }
       cert = signer;
+      depth++;
     }
     for (let type of ["bundled", "system", "extra"]) {
       for (let ca of await lazyGetCACertificates(type)) {
         if (await verifySignature(cert, ca)) {
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
-          if (trustOrder(this.trustLevel) < trustOrder(caTrust)) {
+          // Never overrule the user, who distrusted this certificate
+          if (this.trustLevel != TrustLevel.Distrusted &&
+              trustOrder(this.trustLevel) < trustOrder(caTrust)) {
             this.trustLevel = caTrust;
             this.caName = certificateCommonName(ca);
           }
@@ -133,6 +158,16 @@ export class SMIMEPublicKey extends PublicKey {
       return KeyStatus.SelfSignedRoot;
     }
     return KeyStatus.ChainIncomplete;
+  }
+
+  /** A certificate can be issued for signing only, or for a TLS server.
+   * Without a certificate, nothing limits the key. */
+  usableForEncryption(): boolean {
+    if (!this.certificate) {
+      return true;
+    }
+    let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    return allowsKeyUsage(cert, KeyUsageBit.KeyEncipherment) && allowsPurpose(cert, "emailProtection");
   }
 
   /** Reads an S/MIME certificate from a file.
@@ -200,10 +235,17 @@ async function verifySignature(cert: Certificate, signer: Certificate): Promise<
       console.log("subject did not match issuer");
       return false;
     }
-    let algorithm = sanitize.translate(cert.signatureAlgorithm.algorithm, SignatureAlgorithm);
     let signedCert = TBSCertificate.encode(cert.tbsCertificate);
+    let publicKey = signer.tbsCertificate.publicKey;
+    if (cert.signatureAlgorithm.algorithm == "rsassaPss") {
+      return await verifyRSAPSS(publicKey, cert.signatureValue.data, cert.signatureAlgorithm.parameters, signedCert);
+    }
+    let algorithm = sanitize.translate(cert.signatureAlgorithm.algorithm, SignatureAlgorithm);
+    if (publicKey.algorithmIdentifier.algorithm == "ecPublicKey") {
+      return await verifyECDSA(publicKey, cert.signatureValue.data, algorithm, signedCert);
+    }
     let signedDigest = new Uint8Array(await crypto.subtle.digest(algorithm, signedCert));
-    let rsa = RSAPublicKey.decode(signer.tbsCertificate.publicKey.subjectPublicKey.data);
+    let rsa = RSAPublicKey.decode(publicKey.subjectPublicKey.data);
     let block = encrypt(cert.signatureValue.data, rsa);
     let digestInfo = DigestInfo.decode(unpadPKCS(block, BlockType.Signed));
     if (sanitize.translate(digestInfo.digestAlgorithm.algorithm, DigestAlgorithm) != algorithm) {
@@ -229,6 +271,100 @@ async function verifySignature(cert: Certificate, signer: Certificate): Promise<
   }
 }
 
+/** Verifies an ECDSA signature, e.g. of a certificate or of a signed message.
+ * WebCrypto can do this for us, unlike the RSA verification, which needs a
+ * primitive that WebCrypto does not expose.
+ * @param publicKey the `subjectPublicKeyInfo` of the signer certificate
+ * @param signature the DER `ECDSASigValue` that X.509 and CMS store
+ * @param digestAlgorithm the hash that the signature was made over
+ * @param content the signed bytes */
+export async function verifyECDSA(publicKey: SubjectPublicKeyInfo, signature: Uint8Array, digestAlgorithm: WebCryptoAlgorithm, content: Uint8Array): Promise<boolean> {
+  let curve = sanitize.translate(Oid.decode(publicKey.algorithmIdentifier.parameters), NamedCurve, null);
+  if (!curve) {
+    console.log("unsupported elliptic curve");
+    return false;
+  }
+  let key = await crypto.subtle.importKey("spki", SubjectPublicKeyInfo.encode(publicKey) as BufferSource, { name: "ECDSA", namedCurve: "P-" + curve }, false, ["verify"]);
+  // WebCrypto wants r and s one after the other, each in the size of the curve
+  let size = curve + 7 >> 3;
+  let { r, s } = ECDSASigValue.decode(signature);
+  let rs = Uint8ArrayFromHex(r.toString(16).padStart(size * 2, "0") + s.toString(16).padStart(size * 2, "0"));
+  return await crypto.subtle.verify({ name: "ECDSA", hash: digestAlgorithm }, key, rs as BufferSource, content as BufferSource);
+}
+
+/** Verifies an RSASSA-PSS signature, which some CAs use instead of the older
+ * PKCS#1 v1.5 padding. WebCrypto implements PSS, so this needs no maths of
+ * our own either. RFC 4055.
+ * @param parameters the `RSASSAPSSParams` of the signature algorithm */
+export async function verifyRSAPSS(publicKey: SubjectPublicKeyInfo, signature: Uint8Array, parameters: Uint8Array, content: Uint8Array): Promise<boolean> {
+  let params = RSASSAPSSParams.decode(parameters);
+  let digestAlgorithm = sanitize.translate(params.hashAlgorithm.algorithm, DigestAlgorithm);
+  // RFC 4055 section 3.1: the mask is generated with the same hash,
+  // and 1 is the only trailer field that the RFC defines.
+  if (params.maskGenAlgorithm.algorithm != "mgf1" || params.trailerField != 1n ||
+      sanitize.translate(AlgorithmIdentifier.decode(params.maskGenAlgorithm.parameters).algorithm, DigestAlgorithm, null) != digestAlgorithm) {
+    console.log("unsupported PSS parameters");
+    return false;
+  }
+  let key = await crypto.subtle.importKey("spki", SubjectPublicKeyInfo.encode(publicKey) as BufferSource, { name: "RSA-PSS", hash: digestAlgorithm }, false, ["verify"]);
+  return await crypto.subtle.verify({ name: "RSA-PSS", saltLength: Number(params.saltLength) }, key, signature as BufferSource, content as BufferSource);
+}
+
+/** Whether the certificate allows this use of its key.
+ * A certificate that does not say allows all of them.
+ * RFC 5280 section 4.2.1.3 */
+export function allowsKeyUsage(cert: Certificate, usage: KeyUsageBit): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "keyUsage");
+  if (!extension) {
+    return true;
+  }
+  let allowed = KeyUsage.decode(extension.extnValue);
+  return !!(allowed.data[usage >> 3] & 0x80 >> (usage & 7));
+}
+
+/** Whether the certificate allows this purpose, e.g. `emailProtection`.
+ * A certificate that does not say allows all of them.
+ * RFC 5280 section 4.2.1.12 */
+export function allowsPurpose(cert: Certificate, purpose: string): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "extKeyUsage");
+  if (!extension) {
+    return true;
+  }
+  return ExtKeyUsage.decode(extension.extnValue)
+    .some(allowed => allowed == purpose || allowed == "anyExtendedKeyUsage");
+}
+
+/** Whether the email addresses are all within the subtrees that this CA
+ * certificate may issue certificates for. RFC 5280 section 4.2.1.10 */
+function allowsEMailAddresses(cert: Certificate, emailAddresses: ArrayColl<string>): boolean {
+  let extension = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "nameConstraints");
+  if (!extension) {
+    return true;
+  }
+  let constraints: any;
+  try {
+    constraints = NameConstraints.decode(extension.extnValue);
+  } catch (ex) {
+    // Subtree types that we do not implement, e.g. directoryName, fail to
+    // decode. They do not limit the email addresses anyway.
+    console.error(ex);
+    return true;
+  }
+  let emailSubtrees = (subtrees: any[]) => sanitize.array(subtrees, [])
+    .filter(subtree => subtree.base.type == "rfc822Name")
+    .map(subtree => sanitize.string(subtree.base.value, "").toLowerCase());
+  // A subtree is a complete address, a host, or `.domain` for its subdomains
+  let matches = (address: string, subtree: string) =>
+    subtree.includes("@") ? address == subtree :
+      subtree.startsWith(".") ? address.endsWith(subtree) :
+        address.endsWith("@" + subtree);
+  let permitted = emailSubtrees(constraints.permittedSubtrees);
+  let excluded = emailSubtrees(constraints.excludedSubtrees);
+  return emailAddresses.every(address =>
+    (!permitted.length || permitted.some(subtree => matches(address, subtree))) &&
+    !excluded.some(subtree => matches(address, subtree)));
+}
+
 let promiseGetCACertificates: Record<string, Promise<Certificate[]> | undefined> = {};
 function lazyGetCACertificates(type: string): Promise<Certificate[]> {
   return promiseGetCACertificates[type] ??= getCACertificatesLazy(type);
@@ -246,6 +382,15 @@ async function getCACertificatesLazy(type: string): Promise<Certificate[]> {
     }
   }
   return certificates;
+}
+
+/** The bit for each use in the `keyUsage` extension.
+ * RFC 5280 section 4.2.1.3 */
+export enum KeyUsageBit {
+  DigitalSignature = 0,
+  NonRepudiation = 1,
+  KeyEncipherment = 2,
+  KeyCertSign = 5,
 }
 
 export enum KeyStatus {
