@@ -159,6 +159,11 @@ export class EWSEMail extends ExchangeEMail {
   }
 
   async markSpam(spam = true) {
+    if (!spam && this.folder.specialFolder != SpecialFolder.Spam) {
+      // For Office365, "is Junk" == "is in Junk folder", so it attempts to move
+      await super.markSpam(spam);
+      return;
+    }
     let request = {
       m$MarkAsJunk: {
         IsJunk: spam,
