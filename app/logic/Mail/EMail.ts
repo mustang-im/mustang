@@ -633,7 +633,11 @@ export class EMail extends Message {
     }
     let rules = account.filterRuleActions.contents.filter(rule => moments.includes(rule.when));
     for (let rule of rules) {
-      await rule.run(this);
+      try {
+        await rule.run(this);
+      } catch (ex) {
+        account.errorCallback(ex);
+      }
       if (this.isDeleted) { // rule deleted or moved
         return;
       }

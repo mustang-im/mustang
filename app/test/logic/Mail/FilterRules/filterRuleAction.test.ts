@@ -175,6 +175,26 @@ test("A rule whose criteria do not match leaves the mail alone", async () => {
   expect((await storedMails(account)).map(row => row.isRead)).toEqual([0]);
 });
 
+test("A rule whose action fails does not stop the other rules", async () => {
+  let account = await setupAccount();
+  let errors = new ArrayColl<Error>();
+  account.errorCallback = ex => errors.add(ex);
+  let broken = new FilterRuleAction(account);
+  broken.toFolderID = "folder that the user deleted on the server";
+  account.filterRuleActions.add(broken);
+  let rule = new FilterRuleAction(account);
+  rule.addTags.add(getTagByName("Newsletter"));
+  account.filterRuleActions.add(rule);
+
+  let email = newTestMail(account.inbox);
+  await email.saveCompleteMessage();
+
+  expect(errors.length).toBe(1);
+  expect(account.serverActions.contents).toEqual(["tag Newsletter"]);
+  expect(await storedTags(account)).toEqual(["Newsletter"]);
+  expect((await storedMails(account)).map(row => row.downloadComplete)).toEqual([1]);
+});
+
 /** Records what the filter actions did on the server,
  * because no real protocol is available in the test. */
 class TestAccount extends MailAccount {
