@@ -368,12 +368,12 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return await (this.mainAccount as EWSAccount).callEWS(aRequest, options);
     }
     await this.throttle.throttle();
-    let lock = await this.semaphore.lock();
 
     if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
       await this.oAuth2.login(false);
     }
 
+    let lock = await this.semaphore.lock();
     let response: any;
     try {
       response = this.authMethod == AuthMethod.NTLM
