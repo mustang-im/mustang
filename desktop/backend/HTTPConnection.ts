@@ -76,10 +76,14 @@ export class HTTPConnection {
       "Accept-Encoding": onChunk ? "identity" : "gzip",
       ...options.headers,
     };
+    const kTimeoutSec = 30;
     let req = this.protocolModule.request(this.url, {
       method: options.method ?? "POST",
       headers,
       agent: this.agent,
+      timeout: onChunk // onChunk = streaming
+        ? 0 // no timeout
+        : kTimeoutSec * 1000,
     });
     this.requests.add(req);
     try {
@@ -103,6 +107,9 @@ export class HTTPConnection {
           reusedSocket = req.reusedSocket;
         });
         req.on("error", fail);
+        // No retry, because server may have processed the request
+        req.on("timeout", () => req.destroy(newErrorWithCode(
+          `Server did not answer within ${kTimeoutSec} seconds`, "ETIMEDOUT")));
         req.on("response", res => {
           responseStarted = true;
           this.readResponse(res, socketID, reusedSocket, onChunk)
