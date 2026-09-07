@@ -4,6 +4,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
+import { ConnectionPurpose } from "../../Mail/EWS/ConnectionPurpose";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -77,7 +78,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       let result: any = { IncludesLastItemInRange: "false" };
       while (result.IncludesLastItemInRange === "false") {
         try {
-          result = await this.account.callEWS(sync);
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
         } catch (ex) {
           if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
             throw ex;
@@ -85,7 +86,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           this.syncState = null;
           await this.save();
           sync.m$SyncFolderItems.m$SyncState = null;
-          result = await this.account.callEWS(sync);
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
         }
         for (let changes of [result.Changes.Update, result.Changes.Create]) {
           if (changes) {
@@ -148,7 +149,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
     let groups: any[] = [];
     let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
     while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-      result = await this.account.callEWS(request);
+      result = await this.account.callEWS(request, ConnectionPurpose.Fetch);
       if (!result?.RootFolder?.Items) {
         break;
       }
@@ -191,7 +192,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
+      let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
       for (let result of results) {
         try {
           let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id)) ??
@@ -223,7 +224,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
               })),
             },
           },
-        }));
+        }, ConnectionPurpose.Fetch));
         for (let result of results) {
           let attachment = result.Attachments.FileAttachment;
           let attachmentID = sanitize.nonemptystring(attachment.AttachmentId.Id);
@@ -266,7 +267,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
+      let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
       for (let result of results) {
         try {
           let group = this.getGroupByItemID(sanitize.nonemptystring(result.Items.DistributionList.ItemId.Id));

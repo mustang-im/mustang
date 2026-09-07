@@ -1,6 +1,9 @@
+import type { ConnectionPurpose } from "../../Mail/EWS/ConnectionPurpose";
+
 export interface NTLMRequestOptions {
   headers?: Record<string, string>;
   onChunk?: (chunk: string) => Promise<void>;
+  purpose?: ConnectionPurpose;
 }
 
 /** A `fetch()` `Response`, plus the TCP connection that it came in on */

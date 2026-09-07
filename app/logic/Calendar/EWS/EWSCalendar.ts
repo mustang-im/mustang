@@ -5,6 +5,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
+import { ConnectionPurpose } from "../../Mail/EWS/ConnectionPurpose";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { EWSItemError } from "../../Mail/EWS/EWSError";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
@@ -117,13 +118,13 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       let result: any = { IncludesLastItemInRange: "false" };
       while (result.IncludesLastItemInRange === "false") {
         try {
-          result = await this.account.callEWS(sync);
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
         } catch (ex) {
           if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
             throw ex;
           }
           sync.m$SyncFolderItems.m$SyncState = null;
-          result = await this.account.callEWS(sync);
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
         }
         let eventIDs: any[] = [];
         for (let changes of [result.Changes.Update, result.Changes.Create]) {
@@ -190,7 +191,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     };
     let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
     while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-      result = await this.account.callEWS(request);
+      result = await this.account.callEWS(request, ConnectionPurpose.Fetch);
       if (!result?.RootFolder?.Items) {
         break;
       }
@@ -256,7 +257,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       },
     };
     try {
-      let results = ensureArray(await this.account.callEWS(request));
+      let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
       for (let result of results) {
         try {
           if (result.ResponseClass == "Error") {

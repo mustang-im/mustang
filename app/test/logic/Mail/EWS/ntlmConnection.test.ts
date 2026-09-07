@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { NTLMConnection } from "../../../../logic/Auth/NTLM/NTLMConnection";
 import { NTLMConnectionPool } from "../../../../logic/Auth/NTLM/NTLMConnectionPool";
+import { ConnectionPurpose } from "../../../../logic/Mail/EWS/ConnectionPurpose";
 import type { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import { LoginError } from "../../../../logic/Abstract/Account";
 import { NTLMTestServer, sleep } from "./ntlmTestServer";
@@ -84,6 +85,36 @@ describe("NTLM per-TCP-connection authentication", () => {
     // No request ever hit the server on a connection that wasn't authenticated
     expect(server.rejectedRequests).toBe(0);
     expect(server.authWhileAuthenticated).toBe(0);
+    pool.close();
+  });
+
+  it("runs a user command while the background download occupies the pool", async () => {
+    let pool = new NTLMConnectionPool(account);
+    // The download requests are slow, and there are far more of them than
+    // the pool has connections
+    server.holdRequestsContaining = "download";
+    let downloads = [];
+    for (let i = 0; i < 10; i++) {
+      downloads.push(pool.request(`<request>download ${i}</request>`,
+        { purpose: ConnectionPurpose.Fetch }));
+    }
+    for (let i = 0; i < 100 && server.heldRequestCount < 3; i++) {
+      await sleep(10);
+    }
+    // The download may occupy 3 connections, and no more, however many
+    // requests it has queued up
+    expect(server.heldRequestCount).toBe(3);
+
+    // The user clicks [Delete]. Before we split the connections by purpose,
+    // this waited for the download, i.e. here: forever.
+    let response = await pool.request("<request>delete</request>",
+      { purpose: ConnectionPurpose.Display });
+    expect(await response.text()).toBe("<response><request>delete</request></response>");
+    expect(server.heldRequestCount).toBe(3);
+
+    server.holdRequestsContaining = null;
+    server.releaseHeldRequests();
+    await Promise.all(downloads);
     pool.close();
   });
 

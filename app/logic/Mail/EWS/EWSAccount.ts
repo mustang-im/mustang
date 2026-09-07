@@ -26,6 +26,7 @@ import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { ConnectionPurpose } from "./ConnectionPurpose";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Lock } from "../../util/flow/Lock";
 import { notifyChangedProperty } from "../../util/Observable";
@@ -43,7 +44,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   @notifyChangedProperty
   protected hasLoggedIn = false;
   protected throttle = new Throttle(50, 1);
-  protected semaphore = new Semaphore(20);
+  /** How many requests may be underway at the same time.
+   * The user commands have their own budget, so that they never wait for
+   * the background download. @see `ConnectionPurpose`
+   * @see `NTLMConnectionPool` has its own limits for TCP conn on top of this. */
+  protected semaphores = new Map<ConnectionPurpose, Semaphore>([
+    [ConnectionPurpose.Fetch, new Semaphore(16)],
+    [ConnectionPurpose.Display, new Semaphore(4)],
+  ]);
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
   /** NTLM authenticates TCP connections, not HTTP requests, so it needs
@@ -363,9 +371,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
    * @param options for internal use only
    * @returns XML2JSON = XML as JSON. What the server returned.
    */
-  async callEWS(aRequest: JsonRequest, options?: any): Promise<any> {
+  async callEWS(aRequest: JsonRequest, purpose = ConnectionPurpose.Display, options?: any): Promise<any> {
     if (this.mainAccount) {
-      return await (this.mainAccount as EWSAccount).callEWS(aRequest, options);
+      return await (this.mainAccount as EWSAccount).callEWS(aRequest, purpose, options);
     }
     await this.throttle.throttle();
 
@@ -373,11 +381,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await this.oAuth2.login(false);
     }
 
-    let lock = await this.semaphore.lock();
+    let lock = await this.semaphores.get(purpose).lock();
     let response: any;
     try {
       response = this.authMethod == AuthMethod.NTLM
-        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kXMLContentType } })
+        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kXMLContentType }, purpose })
         : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
@@ -394,7 +402,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         return this.checkResponse(response, aRequest);
       } catch (ex) {
         if (this.isThrottleError(ex)) {
-          return await this.callEWS(aRequest);
+          return await this.callEWS(aRequest, purpose);
         } else {
           this.throttle.waitForSecond(1);
           throw ex;
@@ -404,7 +412,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (response.status == 401) {
       const repeat = async (options: any = {}) => {
         options.isRepeating = true;
-        return await this.callEWS(aRequest, options); // repeat the call
+        return await this.callEWS(aRequest, purpose, options); // repeat the call
       }
       if (options?.isRepeating) {
         let ex = new EWSError(response, aRequest);

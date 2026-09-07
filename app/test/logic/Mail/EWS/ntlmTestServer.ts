@@ -76,6 +76,11 @@ export class NTLMTestServer {
   /** After `streamChunks`, keep the response open, like a notification stream */
   keepStreamOpen = false;
   setCookie: string | null = null;
+  /** Do not answer requests whose body contains this string, until
+   * `releaseHeldRequests()`. Models the long requests of a mail download. */
+  holdRequestsContaining: string | null = null;
+  /** `resolve()` of each request that `holdRequestsContaining` holds back */
+  protected heldRequests: (() => void)[] = [];
 
   async start(): Promise<void> {
     this.server = http.createServer((req, res) => {
@@ -115,6 +120,21 @@ export class NTLMTestServer {
     await new Promise<void>(resolve => this.server.close(() => resolve()));
   }
 
+  /** How many requests `holdRequestsContaining` is currently holding back,
+   * i.e. how many of them reached the server at all */
+  get heldRequestCount(): number {
+    return this.heldRequests.length;
+  }
+
+  /** Lets the requests that `holdRequestsContaining` held run to completion */
+  releaseHeldRequests(): void {
+    let held = this.heldRequests;
+    this.heldRequests = [];
+    for (let release of held) {
+      release();
+    }
+  }
+
   /** Simulates a load balancer moving us to a backend server that has not
    * seen our login: All connections lose their authentication. */
   dropAuthState(): void {
@@ -145,7 +165,7 @@ export class NTLMTestServer {
       if (req.headers.authorization) {
         this.authWhileAuthenticated++;
       }
-      this.respondOK(res, state, body);
+      await this.respondOK(res, state, body);
       return;
     }
     let auth = req.headers.authorization;
@@ -163,7 +183,7 @@ export class NTLMTestServer {
         state.challenge = null;
         state.authenticated = true;
         this.handshakesCompleted++;
-        this.respondOK(res, state, body);
+        await this.respondOK(res, state, body);
         return;
       }
       // Type 3 for a challenge of another connection, or wrong password
@@ -177,7 +197,10 @@ export class NTLMTestServer {
     this.respond401(res, state, this.authScheme);
   }
 
-  protected respondOK(res: http.ServerResponse, state: SocketState, requestBody: string): void {
+  protected async respondOK(res: http.ServerResponse, state: SocketState, requestBody: string): Promise<void> {
+    if (this.holdRequestsContaining && requestBody.includes(this.holdRequestsContaining)) {
+      await new Promise<void>(resolve => this.heldRequests.push(resolve));
+    }
     if (this.noContent) {
       res.writeHead(204);
       this.finishResponse(res, state);

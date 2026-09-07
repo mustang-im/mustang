@@ -1,5 +1,6 @@
 import { ExchangeFolder } from "./ExchangeFolder";
 import { MessageFlagsPidTag, IconIndexPidTag } from "./ExchangeEMail";
+import { ConnectionPurpose } from "./ConnectionPurpose";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { getSharedPersons, ExchangePermission } from "./ExchangePermission";
@@ -99,14 +100,14 @@ export class EWSFolder extends ExchangeFolder {
       let result: any = { IncludesLastItemInRange: "false" };
       while (result.IncludesLastItemInRange === "false") {
         try {
-          result = await this.account.callEWS(sync);
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
         } catch (ex) {
           if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
             this.syncState = null;
             isNewMail = false;
             await this.storage.saveFolder(this);
             sync.m$SyncFolderItems.m$SyncState = null;
-            result = await this.account.callEWS(sync);
+            result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
           } else {
             throw ex;
           }
@@ -211,7 +212,7 @@ export class EWSFolder extends ExchangeFolder {
       };
       let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
       while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-        result = await this.account.callEWS(request);
+        result = await this.account.callEWS(request, ConnectionPurpose.Fetch);
         if (!result?.RootFolder?.Items) {
           // This folder is empty.
           break;
@@ -315,7 +316,7 @@ export class EWSFolder extends ExchangeFolder {
         },
       };
       try {
-        let results = ensureArray(await this.account.callEWS(request));
+        let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
         for (let result of results) {
           try {
             if (result.ResponseClass == "Error") {
@@ -358,7 +359,7 @@ export class EWSFolder extends ExchangeFolder {
         },
       };
       try {
-        let results = ensureArray(await this.account.callEWS(request));
+        let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
         let saving = new PromiseAllDone();
         for (let result of results) {
           try {
