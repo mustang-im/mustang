@@ -61,6 +61,10 @@
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;
   --chat-bubble-outgoing-fg: inherit;
+  /** Mail thread graph: Lines to msgs that were read, and to unread msgs */
+  --thread-line: #A8D5CD;
+  --thread-unread: #19916F;
+  --thread-node-bg: #E8E8F0;
 
   color: var(--fg);
   background-color: var(--bg);
@@ -109,6 +113,9 @@
     --chat-bubble-incoming-fg: #CCCCCC;
     --chat-bubble-outgoing-bg: #1b5954;
     --chat-bubble-outgoing-fg: #CCCCCC;
+    --thread-line: #3D6A61;
+    --thread-unread: #29B78E;
+    --thread-node-bg: #2C2C2E;
 
     color: var(--fg);
     background-color: var(--bg);
