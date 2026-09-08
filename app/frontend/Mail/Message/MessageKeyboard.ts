@@ -136,6 +136,9 @@ export async function onKeyOnMessage(event: KeyboardEvent) {
   await onKeyOnList(event);
 
   let message = get(selectedMessage);
+  if (!message) {
+    return;
+  }
   let selectedMessagesColl = get(selectedMessages);
   if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
     if (event.key == "ArrowDown" || event.key == "ArrowUp") {

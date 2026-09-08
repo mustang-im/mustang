@@ -8,7 +8,9 @@ import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage"
 import { findOrCreatePersonUID } from "../../../../logic/Abstract/PersonUID";
 import { sleep } from "../../../../logic/util/util";
 import { selectedMessage, selectedMessages } from "../../../../frontend/Mail/Selected";
+import { onKeyOnMessage } from "../../../../frontend/Mail/Message/MessageKeyboard";
 import MessageListHarness from "./MessageListHarness.svelte";
+import { ArrayColl } from "svelte-collections";
 import { flushSync, mount } from "svelte";
 import { get, writable } from "svelte/store";
 import { beforeAll, expect, test } from "vitest";
@@ -84,4 +86,11 @@ test("The Delete key deletes the selected message, also after switching the view
   expect(folder.messages.contents.map(msg => msg.subject))
     .toEqual(["Test 0", "Test 2", "Test 4"]);
   expect(get(selectedMessage)).toBeTruthy();
+});
+
+test("A cursor key with no message selected does nothing", async () => {
+  // The <webview> of another app, e.g. Files, forwards its keys to `onKeyOnMessage()`
+  selectedMessage.set(null);
+  selectedMessages.set(new ArrayColl<EMail>());
+  await onKeyOnMessage(new KeyboardEvent("keydown", { key: "ArrowDown" }));
 });
