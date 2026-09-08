@@ -140,7 +140,16 @@ export class JMAPCalendar extends Calendar {
       return await this.listAllEvents();
     }
 
-    return await this.fetchChangedEventsForAllCalendars();
+    try {
+      return await this.fetchChangedEventsForAllCalendars();
+    } catch (ex) {
+      if (ex.code == "cannotCalculateChanges") {
+        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        this.account.syncState.delete("CalendarEvent");
+        return await this.listAllEvents();
+      }
+      throw ex;
+    }
   }
 
   /**

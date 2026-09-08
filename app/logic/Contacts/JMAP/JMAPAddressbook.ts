@@ -132,7 +132,16 @@ export class JMAPAddressbook extends Addressbook {
       return await this.listAllPersons();
     }
 
-    return await this.fetchChangedPersonsForAllAddressbooks();
+    try {
+      return await this.fetchChangedPersonsForAllAddressbooks();
+    } catch (ex) {
+      if (ex.code == "cannotCalculateChanges") {
+        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        this.account.syncState.delete("ContactCard");
+        return await this.listAllPersons();
+      }
+      throw ex;
+    }
   }
 
   /**
