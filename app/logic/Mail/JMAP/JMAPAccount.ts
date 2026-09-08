@@ -662,6 +662,7 @@ export class JMAPAccount extends MailAccount {
           signal: this.pushAbort.signal,
         });
         if (!stream.ok) {
+          reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
           throw new HTTPError(stream);
         }
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
@@ -693,11 +694,13 @@ export class JMAPAccount extends MailAccount {
         if (ex.name == "AbortError") { // disconnect()
           return;
         }
-        if (isNetworkError(ex)) {
+        if (isTransientError(ex)) {
           // A connection that stays open for hours drops all the time: computer
           // sleep, Wi-Fi change, server restart. Reconnecting is normal, not an error.
           console.log(this.name + ": Push connection dropped, reconnecting:", ex?.message);
-          await waitUntilOnline(); // Computer sleep drops the network
+          if (isNetworkError(ex)) {
+            await waitUntilOnline(); // Computer sleep drops the network
+          }
         } else {
           throw ex;
         }
