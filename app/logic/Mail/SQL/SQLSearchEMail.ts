@@ -62,6 +62,10 @@ export class SQLSearchEMail extends SearchEMail {
       `;
     //console.log("query string", queryString(query));
     let rows = await (await getDatabase()).all(query) as any;
+    let emails = new ArrayColl<EMail>();
+    if (!rows.length) {
+      return emails;
+    }
 
     // Find existing email obj in `folder.messages`,
     // or create new temporary `EMail` objects for the results
@@ -90,7 +94,6 @@ export class SQLSearchEMail extends SearchEMail {
       this.account?.inbox ??
       appGlobal.emailAccounts.first?.inbox;
     assert(randomFolder, gt`Please set up a mail account first`);
-    let emails = new ArrayColl<EMail>();
     for (let row of rows) {
       let folder = findFolder(row.folderID);
       let existing = folder?.messages.find(msg => msg.dbID == row.id);
