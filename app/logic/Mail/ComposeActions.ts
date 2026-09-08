@@ -269,11 +269,11 @@ export class ComposeActions {
   populateFromMailtoURL(mailtoURL: URLString) {
     let urlObj = new URL(mailtoURL);
     let args = new URLSearchParams(urlObj.search);
-    let tos = ensureArray(urlObj.pathname.split(","));
+    let tos = ensureArray(urlObj.pathname.split(",")).filter(to => to);
     for (let to of tos) {
       this.email.to.add(findOrCreatePersonUID(sanitize.emailAddress(to), null));
     }
-    let ccs = ensureArray(args.get("cc")?.split(","));
+    let ccs = ensureArray(args.get("cc")?.split(",")).filter(cc => cc);
     for (let cc of ccs) {
       this.email.cc.add(findOrCreatePersonUID(sanitize.emailAddress(cc), null));
     }
