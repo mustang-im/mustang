@@ -162,17 +162,13 @@ export class OWAEMail extends ExchangeEMail {
       this.folder.deletions.add(this.itemID);
       let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
         [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
-      let attributes: Record<string, string | boolean> = {
+      let request = new OWADeleteItemRequest(this.itemID, {
         DeleteType: hardDelete ? "HardDelete" : "MoveToDeletedItems",
         SuppressReadReceipts: true,
-      };
-      if (this.invitationMessage) {
-        attributes.SendMeetingCancellations = "SendToNone"; // otherwise server refuses
-      }
-      /* if (this.isTask) {
-        attributes.AffectedTaskOccurrences = "AllOccurrences";
-      }*/
-      let request = new OWADeleteItemRequest(this.itemID, attributes);
+        // Otherwise server refuses to delete calendar and tasks, and they can be any mail
+        SendMeetingCancellations: "SendToNone",
+        AffectedTaskOccurrences: "AllOccurrences",
+      });
       await this.folder.account.callOWA(request);
     } finally {
       this.folder.deletions.delete(this.itemID);
