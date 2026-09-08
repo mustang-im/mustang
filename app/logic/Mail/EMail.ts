@@ -151,7 +151,7 @@ export class EMail extends Message {
   }
 
   get baseSubject(): string {
-    return this.subject.replace(/^((Re|RE|AW|Aw): ?)+/g, "");
+    return this.subject?.replace(/^((Re|RE|AW|Aw): ?)+/g, "") ?? "";
   }
 
   get storage(): MailAccountStorage {

@@ -5,6 +5,7 @@ import type { Folder } from "../../../../logic/Mail/Folder";
 import type { EMail } from "../../../../logic/Mail/EMail";
 import type { Attachment } from "../../../../logic/Abstract/Attachment";
 import { SQLEMail } from "../../../../logic/Mail/SQL/SQLEMail";
+import { SQLMailStorage } from "../../../../logic/Mail/SQL/SQLMailStorage";
 import { getDatabase } from "../../../../logic/Mail/SQL/SQLDatabase";
 import { RawFilesAttachment } from "../../../../logic/Mail/Store/RawFilesAttachment";
 import fsPromises from "node:fs/promises";
@@ -28,6 +29,8 @@ beforeAll(async () => {
     },
     fs: fsPromises,
   }));
+  folder.account.storage = new SQLMailStorage();
+  folder.account.contentStorage.add(new RawFilesAttachment());
 });
 
 async function newSavedEMail(msgID: string): Promise<EMail> {
