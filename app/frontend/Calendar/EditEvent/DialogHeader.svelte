@@ -309,11 +309,13 @@
   }
 
   function onShrink() {
-    onClose();
+    // Only moves the dialog into the sidebar, where the user keeps editing
+    calendarMustangApp.closeEvent(event);
+    goBack();
   }
 
   /** @param deselect The user is done with the event, so drop it from the sidebar as
-   * well. Not for `onSave()` and `onShrink()`, which leave it there as display-only. */
+   * well. Not for `onSave()`, which leaves it there as display-only. */
   function onClose(deselect = false) {
     event.finishEditing();
     calendarMustangApp.closeEvent(event);
