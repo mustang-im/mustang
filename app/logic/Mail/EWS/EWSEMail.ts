@@ -138,7 +138,15 @@ export class EWSEMail extends ExchangeEMail {
       SuppressReadReceipts: true,
     });
     request.addField("Message", "IsRead", read, "message:IsRead");
-    await this.folder.account.callEWS(request);
+    try {
+      await this.folder.account.callEWS(request);
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") { // it is gone on the server
+        await this.deleteMessageLocally();
+        return;
+      }
+      throw ex;
+    }
     await super.markRead(read);
   }
 
