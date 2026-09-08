@@ -42,6 +42,9 @@ export class HTTPConnection {
     let agentOptions: https.AgentOptions = {
       keepAlive: true,
       maxSockets: 1, // the whole point of this class
+      /** Idle authenticated connections occupy a slot on our end and on the server.
+          Close before VPN terminates the connection after 5 mins. */
+      timeout: 3 * k1MinuteMS,
     };
     if (secure) {
       agentOptions.ca = getCACertificates();
@@ -147,8 +150,9 @@ export class HTTPConnection {
 
   /**
    * Whether the authenticated TCP connection is (still) open.
-   * Between two requests, the server may have closed it. If so, the caller
-   * knows to re-authenticate without wasting a request that would fail.
+   * Between two requests, the server may have closed it, or we dropped it
+   * because it sat unused. If so, the caller knows to re-authenticate
+   * without wasting a request that would fail.
    * The socket can still die right after this check, but the caller detects
    * that from `socketID` of the next response.
    */
