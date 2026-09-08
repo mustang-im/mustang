@@ -33,7 +33,14 @@ export class SMIMEReadProcessor extends EMailProcessor {
         return;
       }
       let blob = new Uint8Array(await cms.arrayBuffer());
-      let type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      let type;
+      try {
+        type = ContentInfo.decode(blob, { berToDER: true }).contentType;
+      } catch (ex) {
+        // Spam and broken senders label plain text as `application/pkcs7-mime`
+        console.warn("pkcs7-mime message is not a CMS blob", ex);
+        return;
+      }
       if (type == "signedData") {
         await this.readOpaqueSigned(email, blob);
       } else if (type == "envelopedData") {
