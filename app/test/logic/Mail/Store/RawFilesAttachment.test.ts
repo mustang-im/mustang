@@ -3,6 +3,7 @@ import { appGlobal } from "../../../../logic/app";
 import { setupTestFolder, newTestEMail, addTestAttachment } from "../SQL/setup";
 import type { Folder } from "../../../../logic/Mail/Folder";
 import type { EMail } from "../../../../logic/Mail/EMail";
+import type { Attachment } from "../../../../logic/Abstract/Attachment";
 import { SQLEMail } from "../../../../logic/Mail/SQL/SQLEMail";
 import { getDatabase } from "../../../../logic/Mail/SQL/SQLDatabase";
 import { RawFilesAttachment } from "../../../../logic/Mail/Store/RawFilesAttachment";
@@ -76,4 +77,27 @@ test("Failure to write an attachment file is reported to the caller", async () =
   } finally {
     appGlobal.remoteApp.writeFile = writeFileOrig;
   }
+});
+
+test("A mail without subject can be deleted", async () => {
+  let email = await newSavedEMail("msg3@example.com");
+  email.subject = null; // JMAP, IMAP and Graph leave it null
+  await new RawFilesAttachment().save(email);
+
+  await email.deleteMessageLocally();
+  expect(email.isDeleted).toBe(true);
+});
+
+/** The user deletes the mail while its attachments are still being written */
+class DeleteWhileSaving extends RawFilesAttachment {
+  async saveAttachment(attachment: Attachment) {
+    await super.saveAttachment(attachment);
+    attachment.message.dbID = null;
+  }
+}
+
+test("A mail deleted while its attachments are written is not made read-only", async () => {
+  let email = await newSavedEMail("msg4@example.com");
+  await new DeleteWhileSaving().save(email);
+  expect(email.attachments.first.filepathLocal).toBeTruthy();
 });

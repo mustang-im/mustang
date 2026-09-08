@@ -30,7 +30,9 @@ export class RawFilesAttachment implements MailContentStorage {
       // knows that the message is not complete on disk.
       await saves.wait();
     } finally {
-      await this.messageFinished(message);
+      if (message.dbID) {
+        await this.messageFinished(message);
+      } // else: deleted while we were writing
     }
   }
 
