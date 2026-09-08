@@ -16,6 +16,7 @@ import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemReques
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest, owaGetAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { Provider } from "../../Auth/OAuth2URLs";
 import { k1MinuteMS } from "../../../frontend/Util/date";
@@ -106,7 +107,7 @@ export class OWAEvent extends ExchangeEvent {
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (json.Organizer && (json.RequiredAttendees || json.OptionalAttendees)) {
-      organizer = sanitize.emailAddress(json.Organizer.Mailbox.EmailAddress);
+      organizer = getEmailAddressOrX400(json.Organizer.Mailbox.EmailAddress);
       json.Organizer.ResponseType = "Organizer";
       addParticipants([json.Organizer], participants);
     }
