@@ -485,7 +485,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               if (signal.aborted) {
                 continue; // Server errors on cancel
               }
-              if (ex.type == "ErrorSubscriptionNotFound") {
+              if (ex.type == "ErrorSubscriptionNotFound" || ex.type == "ErrorMissedNotificationEvents") {
                 // The server dropped it, e.g. while the computer slept
                 await this.resubscribeNotifications(username);
                 return; // it restarted the stream, and aborted this one
