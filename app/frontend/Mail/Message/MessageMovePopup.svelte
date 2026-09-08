@@ -163,7 +163,7 @@
       sourceFolder.messages.getIndex(selectedMessageIndex) ??
       sourceFolder.messages.first ??
       sourceFolder.account.inbox.messages.first ??
-      sourceFolder.newEMail();
+      null; // no message left: show the start page
   }
 </script>
 

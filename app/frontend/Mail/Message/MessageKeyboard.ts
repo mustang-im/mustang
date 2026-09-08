@@ -17,8 +17,12 @@ export async function onKeyOnList(event: KeyboardEvent) {
   let message = get(selectedMessage) ?? messages[0];
 
   function goToNextMessage(previous = false) {
+    let next = message.nextMessage(previous);
+    if (!next) {
+      return;
+    }
     selectedMessagesColl.clear();
-    selectedMessagesColl.add(message.nextMessage(previous));
+    selectedMessagesColl.add(next);
   }
 
   // No modifier

@@ -718,13 +718,14 @@ export class EMail extends Message {
    * true: older message
    * false: newer message
    * null: Same list position, after deleting this message
+   * @returns null, if there is no message left to show
    *
    * Implementation: If there are more functions that are
    * not about the email itself, this might move to an `EMailActions` class,
    * like `ComposeActions`.
    * For now, given that it's just 1 function and small, keep it here.
    */
-  nextMessage(previous?: boolean): EMail {
+  nextMessage(previous?: boolean): EMail | null {
     let i = this.folder.messages.getKeyForValue(this);
     if (typeof (previous) == "boolean") {
       previous ? --i : ++i;
@@ -732,7 +733,7 @@ export class EMail extends Message {
     return this.folder.messages.getIndex(i) ??
       this.folder.messages.first ??
       this.folder.account.inbox.messages.first ??
-      this.folder.newEMail();
+      null;
   }
 
   get compose(): ComposeActions {

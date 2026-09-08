@@ -143,7 +143,7 @@
   }
 
   function goToNextMessage() {
-    message = message.nextMessage();
+    message = message.nextMessage() ?? message;
   }
 
   async function save() {
