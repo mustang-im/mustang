@@ -90,22 +90,24 @@ function urlAttribute(url: URLString, includeExternal = false) {
 }
 
 function addStyles(output: string[], styles: CSSStyleDeclaration) {
-  for (let style of [...styles].reverse()) {
-    if (styles[style]) {
-      styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
-      output.push(`${style}: ${styles[style]};`);
-    }
+  if (styles) {
+    output.push(styleDeclarations(styles));
   }
 };
 
+/** The declarations of `styles` as CSS text, with external URLs redirected to our proxy.
+ * `cssText` keeps the declaration order and the `!important` flags. Mails need
+ * `!important` in their `@media` rules to override their inline styles. */
+function styleDeclarations(styles: CSSStyleDeclaration): string {
+  return styles.cssText.replace(cssURLRegex, `$1${proxy}`);
+};
+
 function addCSSRules(output: string[], cssRules = []) {
-  for (let rule of [...cssRules].reverse()) {
+  for (let rule of cssRules) {
     switch (rule.type) {
       case CSSRule.STYLE_RULE:
         output.push(`${rule.selectorText} {`);
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
+        addStyles(output, rule.style);
         output.push('}\n');
         break;
       case CSSRule.MEDIA_RULE:
@@ -115,19 +117,15 @@ function addCSSRules(output: string[], cssRules = []) {
         break;
       case CSSRule.FONT_FACE_RULE:
         output.push('@font-face {');
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
+        addStyles(output, rule.style);
         output.push('}\n');
         break;
       case CSSRule.KEYFRAMES_RULE:
         output.push(`@keyframes ${rule.name} {`);
-        for (let frame of [...rule.cssRules].reverse()) {
+        for (let frame of rule.cssRules) {
           if (frame.type === CSSRule.KEYFRAME_RULE && frame.keyText) {
             output.push(`${frame.keyText} {`);
-            if (frame.style) {
-              addStyles(output, frame.style);
-            }
+            addStyles(output, frame.style);
             output.push('}\n');
           }
         }
@@ -186,16 +184,12 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
   }
 
   if (node.hasAttribute('style')) {
-    const styles = (node as HTMLElement).style;
-    const output = [];
-    for (let style of [...styles].reverse()) {
-      if (styles[style] && cssURLRegex.test(styles[style])) {
-        styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
-      }
-      output.push(`${style}: ${styles[style]};`);
+    let styles = styleDeclarations((node as HTMLElement).style);
+    if (styles) {
+      node.setAttribute('style', styles);
+    } else {
+      node.removeAttribute('style');
     }
-
-    node.setAttribute('style', output.join('') || node.removeAttribute('style') || '');
   }
 });
 // </copied>
