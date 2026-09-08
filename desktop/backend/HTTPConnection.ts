@@ -225,3 +225,5 @@ function getCACertificates(): string[] {
   }
   return caCertificates;
 }
+
+const k1MinuteMS = 60 * 1000;
