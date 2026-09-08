@@ -213,10 +213,17 @@ export class EWSEMail extends ExchangeEMail {
       this.folder.deletions.add(this.itemID);
       let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
         [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
-      let request = new EWSDeleteItemRequest(this.itemID, {
+      let attributes: Record<string, string | boolean> = {
         DeleteType: hardDelete ? "HardDelete" : "MoveToDeletedItems",
         SuppressReadReceipts: true,
-      });
+      };
+      if (this.invitationMessage) {
+        attributes.SendMeetingCancellations = "SendToNone"; // otherwise server refuses
+      }
+      /* if (this.isTask) {
+        attributes.AffectedTaskOccurrences = "AllOccurrences";
+      }*/
+      let request = new EWSDeleteItemRequest(this.itemID, attributes);
       await this.folder.account.callEWS(request);
     } finally {
       this.folder.deletions.delete(this.itemID);
