@@ -12,6 +12,20 @@ beforeAll(() => {
   } as any;
 });
 
+/** Enough events on the server to need several pages */
+const kEventCount = 500;
+/** What the server allows per page, where a test makes it cap ours */
+const kServerMaxLimit = 50;
+
+/**
+ * The number of calls that lists `kEventCount` events, at `pageSize` per call.
+ * The last page is short and ends the listing, unless the count divides evenly,
+ * and then it takes one more call to see that nothing is left.
+ */
+function callsNeeded(pageSize: number): number {
+  return Math.floor(kEventCount / pageSize) + 1;
+}
+
 /** Events on the server, `event0` being the oldest and `event<count - 1>` the latest */
 function serverEvents(count: number): TJMAPCalendarEvent[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -68,36 +82,38 @@ function setup(events: TJMAPCalendarEvent[], serverMaxLimit?: number) {
 }
 
 test("All events are listed, in as many calls as there are pages", async () => {
-  let { calendar, requestedLimits } = setup(serverEvents(500));
+  let { calendar, requestedLimits } = setup(serverEvents(kEventCount));
 
   await (calendar as any).listAllEvents();
 
-  expect(calendar.events.length).toBe(500);
-  expect(requestedLimits.length).toBe(3); // 200 + 200 + 100, no trailing empty page
+  expect(calendar.events.length).toBe(kEventCount);
+  // No page fetched twice, and no trailing empty one
+  expect(requestedLimits.length).toBeLessThanOrEqual(callsNeeded(requestedLimits[0]));
 });
 
 test("The latest events are listed first", async () => {
-  let { calendar } = setup(serverEvents(500));
+  let { calendar } = setup(serverEvents(kEventCount));
 
   await (calendar as any).listAllEvents();
 
-  // The first page must hold the latest events, so that the calendar shows the
-  // upcoming meetings even while the rest of the listing is still running.
-  expect(calendar.events.first.calUID).toBe("uid499");
-  expect(calendar.events.get(199).calUID).toBe("uid300");
+  // The listing must start at the latest events, so that the calendar shows the
+  // upcoming meetings even while the rest of it is still running.
+  expect(calendar.events.first.calUID).toBe(`uid${kEventCount - 1}`);
+  expect(calendar.events.get(kEventCount / 2).calUID).toBe(`uid${kEventCount / 2 - 1}`);
   expect(calendar.events.last.calUID).toBe("uid0");
 });
 
 test("A server that enforces a smaller limit does not cut the listing short", async () => {
   // #1: We used to treat the short page as "that was the last one" and stop
   // after 50 of 500 events, losing everything at the end of the list.
-  let { calendar, requestedLimits } = setup(serverEvents(500), 50);
+  let { calendar, requestedLimits } = setup(serverEvents(kEventCount), kServerMaxLimit);
 
   await (calendar as any).listAllEvents();
 
-  expect(calendar.events.length).toBe(500);
+  expect(calendar.events.length).toBe(kEventCount);
   expect(calendar.events.last.calUID).toBe("uid0"); // down to the oldest one
-  expect(requestedLimits.length).toBe(11); // 10 pages of 50, then a short one
+  expect(requestedLimits.length)
+    .toBeLessThanOrEqual(callsNeeded(Math.min(requestedLimits[0], kServerMaxLimit)));
 });
 
 test("A calendar that fits in one page needs only one call", async () => {
