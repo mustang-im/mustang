@@ -67,6 +67,9 @@ export class PGPReadProcessor extends EMailProcessor {
     } else if (detachedSignature) { // why `else`: don't overwrite the signature within the encrypted part
       await email.parseHeaders();
       let signedPart = getSignedCleartext(email);
+      if (!signedPart) {
+        return;
+      }
       signedPart = toCRLF(signedPart);
       let signedBinary = new TextEncoder().encode(signedPart);
       let signedContent = await openPGP.createMessage({ binary: signedBinary });
@@ -175,12 +178,16 @@ function attachmentOfType(email: EMail, mimeType: string): Attachment | undefine
   return email.attachments.find(a => a.mimeType.toLowerCase() == mimeType);
 }
 
-function getSignedCleartext(email: EMail): string {
+/** @returns null, if the signature is not the main content of the email,
+ * but nested, e.g. a mailing list wrapped the signed message */
+function getSignedCleartext(email: EMail): string | null {
   assert(email.headers.length > 0, "parseHeaders first");
   let contentType = email.headers.get("content-type");
   let parameters = parseHeaderParameters(contentType);
-  assert(parameters.$main == "multipart/signed", "Signature must be the main content of the email, not nested");
-  assert(parameters.protocol?.toLowerCase() == "application/pgp-signature", "PGP signature must be at the top level");
+  if (parameters.$main != "multipart/signed" ||
+      parameters.protocol?.toLowerCase() != "application/pgp-signature") {
+    return null;
+  }
   let parts = parseMIMEDirectSubparts(email.mime, contentType);
   assert(parts.length == 2, "multipart/signed must have exactly 2 subparts: cleartext and signature, but got " + parts.length);
   return parts[0];

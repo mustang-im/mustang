@@ -26,9 +26,27 @@ test("PGP signature of a sender who is not in the addressbook", async () => {
   expect(email.from.encryptionPublicKey).toBe(email.signedKey);
 });
 
+/**
+ * A mailing list wrapped the signed message into a `multipart/mixed`,
+ * adding its footer. We cannot verify the signature that way, but the
+ * message must still read normally, and this must not be reported as error.
+ */
+test("PGP signature nested inside a multipart/mixed", async () => {
+  let { folder } = await setupTestFolder();
+  let errors: Error[] = [];
+  folder.account.errorCallback = ex => errors.push(ex);
+  let email = folder.newEMail();
+  email.mime = new TextEncoder().encode(kNestedPGPSigned.replace(/\n/g, "\r\n"));
+  await email.parseMIME();
+
+  expect(errors).toEqual([]);
+  expect(email.text).toContain("Hello, this is PGP signed.");
+  expect(email.signedByKeyID).toBe(null);
+});
+
 /** gpg detached signature, with the sender key in the AutoCrypt header.
  * `Date:` is the signature creation time, which `checkSignatures()` compares. */
-const kPGPSignedAutoCrypt = `From: Alice <alice@example.com>
+const kHeaders = `From: Alice <alice@example.com>
 To: User <user@example.com>
 Subject: PGP signed test
 Date: Thu, 03 Sep 2026 01:23:47 GMT
@@ -46,7 +64,9 @@ Autocrypt: addr=alice@example.com; keydata=mQENBGqYzCMBCAC98FKaDKRkUSrWa7e3VPnl/
  A0zjzp1XDjcL171pdAj8eCLMvxGLR6nN5KtKxAdU96Fu9zUg9UPFKKFWT5eD6Evqny7Di6Op
  f3ZqeKNHN18SHu21QCuSaJk20LJAn0FQ0plkhWVZdErswPgQrKcpsEKpjqiP9HVrdpPU22Bj
  iM0SK2Pci4DO+ADcSGZ37b1i9fp/okuBXQL5L1Ig+5wo17HZNpIH9+dryxSMCol1
-Content-Type: multipart/signed; micalg=pgp-sha256; protocol="application/pgp-signature"; boundary="----=_Part_PGP_1"
+`;
+
+const kSignedPart = `Content-Type: multipart/signed; micalg=pgp-sha256; protocol="application/pgp-signature"; boundary="----=_Part_PGP_1"
 
 ------=_Part_PGP_1
 Content-Type: text/plain; charset=utf-8
@@ -68,4 +88,18 @@ m/y0PSeZfDC9lCRdAajFdD5uIUnPPQ==
 =1iWu
 -----END PGP SIGNATURE-----
 ------=_Part_PGP_1--
+`;
+
+const kPGPSignedAutoCrypt = kHeaders + kSignedPart;
+
+/** As mailing lists send it: the signed message is only one part of a
+ * `multipart/mixed`, with the list footer next to it. */
+const kNestedPGPSigned = kHeaders + `Content-Type: multipart/mixed; boundary="----=_Part_List"
+
+------=_Part_List
+` + kSignedPart + `------=_Part_List
+Content-Type: text/plain; charset=utf-8
+
+Mailing list footer
+------=_Part_List--
 `;
