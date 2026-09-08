@@ -26,7 +26,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
-import { waitUntilOnline, isNetworkError, HTTPError } from "../../util/netUtil";
+import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
@@ -47,6 +47,7 @@ export class JMAPAccount extends MailAccount {
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
   protected pushAbort: AbortController | null = null;
+  protected throttle = new Throttle(50, 1);
   logging = true;
 
   constructor() {
@@ -352,6 +353,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpGet(url: string, options?: any): Promise<any> {
     let ky = await this.ky(options);
+    await this.throttle.throttle();
     try {
       return await ky.get(url);
     } catch (ex) {
@@ -361,6 +363,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
+    await this.throttle.throttle();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
@@ -370,6 +373,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
     let ky = await this.ky(options);
+    await this.throttle.throttle();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
@@ -385,6 +389,11 @@ export class JMAPAccount extends MailAccount {
       if (ext.httpCode == 401) {
         throw new LoginError(ex, null);
       } else {
+        if (isTransientError(ext)) {
+          const kDefaultBackoffSec = 5;
+          const kMaxBackoffSec = 20; // Sensible upper limit
+          this.throttle.waitForSecond(Math.min(ext.retryAfterSeconds ?? kDefaultBackoffSec, kMaxBackoffSec));
+        }
         throw new ConnectError(ex, null);
       }
     }

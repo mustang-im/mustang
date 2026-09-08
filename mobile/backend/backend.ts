@@ -174,6 +174,8 @@ export class HTTPFetchError extends Error {
   httpStatusText: string;
   httpMethod: string;
   hostname: string;
+  /** `Retry-After`, in seconds, when the server rate-limited us */
+  retryAfterSeconds: number;
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
@@ -188,6 +190,7 @@ export class HTTPFetchError extends Error {
       this.httpStatusText = response.statusText;
       this.httpMethod = request.method;
       this.hostname = new URL(this.url).hostname;
+      this.retryAfterSeconds = parseInt(response.headers.get("Retry-After")) || undefined;
       this.message = `HTTP ${this.httpMethod} <${this.url}>${this.redirectedURL ? ` redirected to <${this.redirectedURL}>` : ''} failed with ${this.httpCode} ${this.httpStatusText}`;
     } else if (cause) {
       this.code = cause.code;
