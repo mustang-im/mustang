@@ -130,13 +130,13 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   event.participants.clear(); // in case we're updating an existing event
   let organizer: Participant | undefined;
   if (vevent.entries.organizer) {
-    let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
+    let value = emailAddressFromCalAddress(vevent.entries.organizer[0].value);
     organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), InvitationResponse.Organizer);
     event.participants.add(organizer);
   }
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
-      value = value.replace(/^MAILTO:/i, "");
+      value = emailAddressFromCalAddress(value);
       let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
       if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = InvitationResponse.Organizer;
@@ -150,6 +150,14 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
     }
   }
   readAttachments(vevent, event);
+}
+
+/** ORGANIZER and ATTENDEE are a CAL-ADDRESS, RFC 5545 3.3.3, i.e. a `mailto:` URI.
+ * // <compat for="Doctolib" reason="Writes `MAILTO:<foo@example.com>`, with the angle
+ * brackets of an RFC 5322 mail header inside the URI, where RFC 6068 allows only the
+ * bare address and RFC 3986 does not allow the brackets at all"> */
+function emailAddressFromCalAddress(calAddress: string): string {
+  return calAddress.replace(/^MAILTO:/i, "").replace(/^<(.*)>$/, "$1");
 }
 
 /** Inline attachments, RFC 5545 3.8.1.1.
