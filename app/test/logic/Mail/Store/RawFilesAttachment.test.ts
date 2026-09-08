@@ -104,3 +104,13 @@ test("A mail deleted while its attachments are written is not made read-only", a
   await new DeleteWhileSaving().save(email);
   expect(email.attachments.first.filepathLocal).toBeTruthy();
 });
+
+test("Deleting a mail deletes its attachment files", async () => {
+  let email = await newSavedEMail("msg5@example.com");
+  await new RawFilesAttachment().save(email);
+  let dir = path.dirname(email.attachments.first.filepathLocal);
+  expect((await fsPromises.readdir(dir)).length).toBe(1);
+
+  await email.deleteMessageLocally();
+  await expect(fsPromises.stat(dir)).rejects.toThrow();
+});

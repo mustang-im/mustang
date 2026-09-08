@@ -112,6 +112,7 @@ export class RawFilesAttachment implements MailContentStorage {
 
   static async rmdirWithFiles(dir: string) {
     try {
+      await appGlobal.remoteApp.fs.chmod(dir, 0o700); // `messageFinished()` made it read-only
       let files = await appGlobal.remoteApp.fs.readdir(dir);
       for (let file of files) {
         await appGlobal.remoteApp.fs.rm(dir + "/" + file);
