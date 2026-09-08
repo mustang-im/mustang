@@ -35,6 +35,9 @@
   /** Show only those persons that have files*/
   async function filterPersons(): Promise<Collection<Person>> {
     persons.clear();
+    if (!appGlobal.remoteApp) {
+      return persons;
+    }
     let uids = new MapColl<string, PersonUID>();
     let search = newSearchEMail();
     search.hasAttachment = true;
