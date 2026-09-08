@@ -96,6 +96,9 @@ export class SQLEvent extends Event {
 
     for (let exclusion of event.exclusions) {
       let index = event.recurrenceRule.getIndexOfOccurrence(exclusion);
+      if (index < 0) {
+        continue; // the rule has no occurrence then, so nothing to exclude
+      }
       await (await getDatabase()).run(sql`
         INSERT INTO eventExclusion (
           recurrenceMasterEventID, recurrenceIndex
