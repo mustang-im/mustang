@@ -31,6 +31,7 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { Lock } from "../../util/flow/Lock";
 import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
+import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -381,6 +382,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await this.oAuth2.login(false);
     }
 
+    let startTime = Date.now();
     let lock = await this.semaphores.get(purpose).lock();
     let response: any;
     try {
@@ -389,6 +391,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
+
+      let seconds = Math.round((Date.now() - startTime) / 100) / 10;
+      if (purpose == ConnectionPurpose.Display && seconds > 3) {
+        logError(new Error(`Server needed ${seconds} seconds to answer`));
+      }
     }
     try {
       response.responseText = await response.text();
