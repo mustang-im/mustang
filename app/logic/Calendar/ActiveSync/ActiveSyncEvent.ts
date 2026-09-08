@@ -281,7 +281,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       }));
     } else {
       let data = {
-        DeletesAsMoves: "1",
+        DeletesAsMoves: "0",
         GetChanges: "0",
         Commands: {
           Delete: {

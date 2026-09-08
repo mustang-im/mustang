@@ -408,7 +408,10 @@ export class EWSEvent extends ExchangeEvent {
   async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
-      let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
+      let request = new EWSDeleteItemRequest(this.itemID, {
+        DeleteType: "HardDelete",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      });
       try {
         await this.calendar.account.callEWS(request);
       } catch (ex) {
@@ -428,7 +431,7 @@ export class EWSEvent extends ExchangeEvent {
               InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
             },
           },
-          DeleteType: "MoveToDeletedItems",
+          DeleteType: "HardDelete",
           SendMeetingCancellations: "SendToAllAndSaveCopy",
         },
       };
@@ -504,7 +507,7 @@ export class EWSEvent extends ExchangeEvent {
             InstanceIndex: this.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
           },
         })),
-        DeleteType: "MoveToDeletedItems",
+        DeleteType: "HardDelete",
         SendMeetingCancellations: "SendToAllAndSaveCopy",
       },
     };

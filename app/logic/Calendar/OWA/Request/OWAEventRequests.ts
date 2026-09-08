@@ -205,7 +205,7 @@ export function owaCreateMultipleExclusionsRequest(exclusions: OWAEvent[], paren
       RecurringMasterId: parentEvent.itemID,
       InstanceIndex: parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
     })),
-    DeleteType: "MoveToDeletedItems",
+    DeleteType: "HardDelete",
     SendMeetingCancellations: "SendToAllAndSaveCopy",
   });
 }

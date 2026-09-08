@@ -191,7 +191,7 @@ export class EWSPerson extends ExchangePerson {
     if (!this.itemID) {
       return;
     }
-    let request = new EWSDeleteItemRequest(this.itemID);
+    let request = new EWSDeleteItemRequest(this.itemID, { DeleteType: "HardDelete" });
     await this.addressbook.account.callEWS(request);
   }
 

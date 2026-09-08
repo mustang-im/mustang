@@ -428,7 +428,10 @@ export class OWAEvent extends ExchangeEvent {
   async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
-      let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
+      let request = new OWADeleteItemRequest(this.itemID, {
+        DeleteType: "HardDelete",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      });
       try {
         await this.calendar.callOWA(request);
       } catch (ex) {

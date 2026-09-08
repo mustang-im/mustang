@@ -139,7 +139,7 @@ export class ActiveSyncPerson extends ExchangePerson {
       return;
     }
     let data = {
-      DeletesAsMoves: "1",
+      DeletesAsMoves: "0",
       GetChanges: "0",
       Commands: {
         Delete: {
