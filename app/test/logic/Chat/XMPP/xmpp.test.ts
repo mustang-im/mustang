@@ -8,6 +8,7 @@ import { SQLChatRoom } from "../../../../logic/Chat/SQL/SQLChatRoom";
 import { DummyChatStorage } from "../../../../logic/Chat/SQL/DummyChatStorage";
 import { LoginError } from "../../../../logic/Abstract/Account";
 import { MockXMPPServer } from "./MockXMPPServer";
+import { waitFor } from "../../util/waitFor";
 import sql from "../../../../../lib/rs-sqlite";
 import { afterAll, beforeAll, expect, test } from "vitest";
 
@@ -102,19 +103,17 @@ test("Login, roster, message history, send, live message, then sync again withou
   let sendMsg = aliceChat.newMessage();
   sendMsg.text = "Sent from the test";
   await aliceChat.sendMessage(sendMsg);
-  await new Promise(resolve => setTimeout(resolve, 500)); // until the mock server got it
-  expect(server.received.some(msg => msg.to == kAlice && msg.body == "Sent from the test")).toBe(true);
+  await waitFor(() => server.received.some(msg => msg.to == kAlice && msg.body == "Sent from the test"));
   expect(aliceChat.messages.length).toBe(4);
   expect(await countMessagesInDB()).toBe(6);
 
   // Live incoming message
   server.pushMessage(kAlice, kMe, "Live message");
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await waitFor(async () => await countMessagesInDB() == 7); // stored, which comes last
   let live = aliceChat.messages.find(msg => msg.text == "Live message");
   expect(live).toBeTruthy();
   expect(live.outgoing).toBe(false);
   expect(aliceChat.lastMessage?.text).toBe("Live message");
-  expect(await countMessagesInDB()).toBe(7);
 
   await account.logout();
   expect(account.isLoggedIn).toBe(false);
