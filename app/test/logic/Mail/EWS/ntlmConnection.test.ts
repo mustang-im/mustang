@@ -216,6 +216,45 @@ describe("NTLM per-TCP-connection authentication", () => {
     pool.close();
   }, 60000);
 
+  it("logs in again at once, when the gateway refused the connect and the user waits", async () => {
+    let pool = new NTLMConnectionPool(account);
+    server.refuseNextConnects = 2;
+
+    // Probes at 0/1/3 s, instead of the tunnel's 0/8/24 s
+    let start = Date.now();
+    let response = await pool.request("<request>open mail</request>",
+      { purpose: ConnectionPurpose.Display });
+    expect(await response.text()).toBe("<response><request>open mail</request></response>");
+    expect(Date.now() - start).toBeLessThan(5 * 1000);
+    expect(server.connectsRefused).toBe(2);
+    pool.close();
+  }, 60000);
+
+  it("gives up on a login probe that the tunnel swallows, and logs in again", async () => {
+    let pool = new NTLMConnectionPool(account);
+    server.blackHoleNextRequest = true; // the tunnel took our probe and never answers
+
+    let start = Date.now();
+    let response = await pool.request("<request>open mail</request>",
+      { purpose: ConnectionPurpose.Display });
+    expect(await response.text()).toBe("<response><request>open mail</request></response>");
+    expect(Date.now() - start).toBeLessThan(20 * 1000); // 10 s probe, not 30 s
+    pool.close();
+  }, 60000);
+
+  it("waits for the VPN tunnel, when the background download hits a refused connect", async () => {
+    let pool = new NTLMConnectionPool(account);
+    server.refuseNextConnects = 1;
+
+    // Nobody waits for this one, and the tunnel may need a moment
+    let start = Date.now();
+    let response = await pool.request("<request>download mail</request>",
+      { purpose: ConnectionPurpose.Fetch });
+    expect(await response.text()).toBe("<response><request>download mail</request></response>");
+    expect(Date.now() - start).toBeGreaterThan(8 * 1000);
+    pool.close();
+  }, 60000);
+
   it("does not repeat a request that the server already started to answer", async () => {
     server.killWhileResponding = true; // RST in the middle of the 200 response
     let pool = new NTLMConnectionPool(account);

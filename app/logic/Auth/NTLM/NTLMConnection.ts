@@ -123,9 +123,9 @@ export class NTLMConnection {
     let response = await retryOnTransientError(async () => {
       // Some servers and VPN gateways drop connections when multiple are established at the same time.
       let locked = await this.handshakeLock.lock();
-      let timeout = new Timeout(10, () => locked.release()); // if we hang, let the others connect
+      let timeout = new Timeout(11, () => locked.release()); // if we hang, let the others connect
       try {
-        return await this.send(type1, "");
+        return await this.send(type1, "", { timeoutSec: 10 });
       } finally {
         timeout.fulfilled();
         locked.release();
@@ -152,7 +152,11 @@ export class NTLMConnection {
     if (cookie) {
       headers.Cookie = cookie;
     }
-    let response = await this.conn.request({ headers, body }, options.onChunk);
+    let response = await this.conn.request({
+      headers,
+      body,
+      timeoutSec: options.timeoutSec,
+    }, options.onChunk);
     this.cookies.update(response.headers);
     return response;
   }

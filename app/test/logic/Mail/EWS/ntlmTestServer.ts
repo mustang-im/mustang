@@ -63,6 +63,8 @@ export class NTLMTestServer {
    * still being established, like a server or VPN gateway that lets only one
    * TLS handshake through at a time */
   refuseSimultaneousConnects = false;
+  /** Refuse this many TCP connections, like a VPN tunnel that is not up yet */
+  refuseNextConnects = 0;
   /** Answer the next request only partially, then reset the TCP connection.
    * The server processed the request, so the client must not repeat it. */
   killWhileResponding = false;
@@ -92,6 +94,12 @@ export class NTLMTestServer {
       });
     });
     this.server.on("connection", socket => {
+      if (this.refuseNextConnects > 0) {
+        this.refuseNextConnects--;
+        this.connectsRefused++;
+        socket.resetAndDestroy();
+        return;
+      }
       if (this.refuseSimultaneousConnects && this.connecting.size) {
         this.connectsRefused++;
         socket.resetAndDestroy();
