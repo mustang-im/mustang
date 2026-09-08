@@ -40,7 +40,7 @@
   import { tick } from 'svelte';
   import { catchErrors, showError } from "../../Util/error";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-  import { assert } from "../../../logic/util/util";
+  import { UserError } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
@@ -79,7 +79,9 @@
 
   function onCreate(text: string): PersonUID {
     // email address is substring, e.g. "Fred <fred@example.com>"
-    assert(text.includes("@"), $t`Need email address`);
+    if (!text.includes("@")) {
+      throw new UserError($t`Need email address`);
+    }
 
     // Parse typed text into name and email address
     text = text.trim();
