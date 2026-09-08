@@ -6,6 +6,7 @@ import { ConnectionPurpose } from "../../../../logic/Mail/EWS/ConnectionPurpose"
 import type { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import { LoginError } from "../../../../logic/Abstract/Account";
 import { NTLMTestServer, sleep } from "./ntlmTestServer";
+import { waitFor } from "../../util/waitFor";
 // The node.js backend parts, in-process instead of via JPC
 import { HTTPConnection } from "../../../../../desktop/backend/HTTPConnection";
 // @ts-ignore .js without types
@@ -14,19 +15,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /** `NTLMConnectionPool` gives each `ConnectionPurpose` its own connections */
 const kConnectionsPerPurpose = 2;
-
-/** Waits for what we are actually waiting for, instead of for a fixed delay */
-async function waitFor(condition: () => boolean): Promise<void> {
-  const kTimeoutMS = 500; // in-process server on loopback: a few ms, in practice
-  const kPollMS = 5;
-  for (let end = Date.now() + kTimeoutMS; Date.now() < end; ) {
-    if (condition()) {
-      return;
-    }
-    await sleep(kPollMS);
-  }
-  throw new Error("Timed out waiting for the test server");
-}
 
 describe("NTLM per-TCP-connection authentication", () => {
   let server: NTLMTestServer;
