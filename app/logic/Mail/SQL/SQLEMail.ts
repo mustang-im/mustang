@@ -139,14 +139,15 @@ export class SQLEMail {
   }
 
   protected static async saveRecipient(email: EMail, puid: PersonUID, recipientType: number) {
-    let exists = await (await getDatabase()).get(sql`
+    let findPerson = sql`
         SELECT
           id
         FROM emailPerson
         WHERE
           emailAddress = ${puid.emailAddress} AND
           name = ${puid.name}
-      `) as any;
+      `;
+    let exists = await (await getDatabase()).get(findPerson) as any;
     let personID = exists?.id;
     if (!personID) {
       let insert = await (await getDatabase()).run(sql`
@@ -155,7 +156,10 @@ export class SQLEMail {
       ) VALUES (
         ${puid.name}, ${puid.emailAddress}, ${puid.person?.dbID}
       )`);
-      personID = insert.lastInsertRowid;
+      // An ignored insert leaves `lastInsertRowid` at another table's row
+      personID = insert.changes
+        ? insert.lastInsertRowid
+        : (await (await getDatabase()).get(findPerson) as any)?.id;
     }
     await (await getDatabase()).run(sql`
       INSERT INTO emailPersonRel (
