@@ -3,7 +3,7 @@
 
   {#if account?.oAuth2}
     <OAuth2Login {account}
-      onContinue={onContinue}
+      onContinue={() => catchErrors(loginOAuth2, showError)}
       onCancel={onSkip}
       onError={showError} />
   {:else}
