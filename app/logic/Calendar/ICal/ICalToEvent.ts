@@ -129,15 +129,21 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   }
   event.participants.clear(); // in case we're updating an existing event
   let organizer: Participant | undefined;
-  if (vevent.entries.organizer) {
-    let value = emailAddressFromCalAddress(vevent.entries.organizer[0].value);
-    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), InvitationResponse.Organizer);
-    event.participants.add(organizer);
+  let organizerEntry = vevent.entries.organizer?.[0];
+  if (organizerEntry) {
+    let emailAddress = sanitize.emailAddress(emailAddressFromCalAddress(organizerEntry.value), null);
+    if (emailAddress) {
+      organizer = new Participant(emailAddress, sanitize.label(organizerEntry.properties.cn, null), InvitationResponse.Organizer);
+      event.participants.add(organizer);
+    }
   }
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
-      value = emailAddressFromCalAddress(value);
-      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
+      let emailAddress = sanitize.emailAddress(emailAddressFromCalAddress(value), null);
+      if (!emailAddress) {
+        continue; // we cannot address this participant, e.g. free text instead of an address
+      }
+      let participant = new Participant(emailAddress, sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
       if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = InvitationResponse.Organizer;
         // Remove the organizer as it has less detail than an attendee

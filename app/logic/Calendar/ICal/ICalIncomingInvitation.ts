@@ -5,7 +5,7 @@ import type { Participant } from "../Participant";
 import type { MailAccount } from "../../Mail/MailAccount";
 import type { MailIdentity } from "../../Mail/MailIdentity";
 import { appGlobal } from "../../app";
-import { assert } from "../../util/util";
+import { UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class ICalIncomingInvitation extends IncomingInvitation {
@@ -64,7 +64,9 @@ export class ICalIncomingInvitation extends IncomingInvitation {
   /** Helper for @see Event.respondToInvitation() */
   protected static async sendInvitationResponse(repliedEvent: Event, myParticipant: Participant, account: MailAccount) {
     let organizer = repliedEvent.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
+    if (!organizer) { // RFC 5546 3.2.2 demands one, but e.g. an auto-responder mangled it
+      throw new UserError(gt`This invitation does not say who invited you, so there is nobody to reply to`);
+    }
     let email = account.newEMailFrom();
     email.identity = account.findIdentityForEMailAddress(myParticipant.emailAddress) ?? account.identities.first;
     email.from.emailAddress = myParticipant.emailAddress;
