@@ -157,8 +157,7 @@
    *   well. Not for `onShrink()`, which moves the full window into the sidebar.
    */
   function onClose(deselect = false) {
-    let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
-    calendarMustangApp.subApps.remove(me);
+    calendarMustangApp.closeEvent(event);
     if (deselect || !isFullWindow) {
       // Make sidebar disappear, see CalendarApp.svelte.
       // Clears our `event` prop, so this must come after the last use of it. #1365

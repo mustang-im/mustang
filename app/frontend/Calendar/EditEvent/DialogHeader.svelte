@@ -316,8 +316,7 @@
    * well. Not for `onSave()` and `onShrink()`, which leave it there as display-only. */
   function onClose(deselect = false) {
     event.finishEditing();
-    let me = calendarMustangApp.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
-    calendarMustangApp.subApps.remove(me);
+    calendarMustangApp.closeEvent(event);
     if (deselect || !isFullWindow) {
       // Make sidebar disappear, see CalendarApp.svelte.
       // Clears our `event` prop, so this must come after the last use of it. #1365
