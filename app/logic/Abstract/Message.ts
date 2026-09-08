@@ -72,7 +72,10 @@ export class Message extends Observable {
   /** Re-create the plaintext from the current HTML, which is the source of
    * truth in the composer. Unlike `set text`, this keeps the HTML. */
   regenerateTextFromHTML() {
-    this._text = this._rawHTML ? convertHTMLToText(this._rawHTML) : null;
+    if (!this._rawHTML) { // plaintext-only
+      return;
+    }
+    this._text = convertHTMLToText(this._rawHTML);
   }
 
   /** HTML version of the message.
