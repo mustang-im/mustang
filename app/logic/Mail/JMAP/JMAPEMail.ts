@@ -8,6 +8,7 @@ import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/P
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
 import type { TJMAPGetResponse } from "./TJMAPGeneric";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -173,13 +174,13 @@ export class JMAPEMail extends EMail {
         .replace("{blobId}", this.mimeBlobId)
         .replace("{name}", "email")
         .replace("{type}", "message/rfc822");
-      let response = await account.httpGet(url, {
+      let response = await retryOnTransientError(() => account.httpGet(url, {
         headers: {
           "Accept": "message/rfc822",
           "Content-Type": undefined, // override
         },
         result: "blob",
-      });
+      }));
       this.mime = new Uint8Array(await response.arrayBuffer());
       await this.parseMIME();
       await this.saveCompleteMessage();
