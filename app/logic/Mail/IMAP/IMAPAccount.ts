@@ -222,7 +222,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
         console.error("Error", ex, "in processing server event", info);
-        this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.errorCallback(new IMAPCommandError(ex, `Server event about a message in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("expunge", async (info) => {
