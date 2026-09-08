@@ -60,8 +60,8 @@ export function isNetworkError(ex: any): boolean {
   const kNetworkErrorCodes = ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT",
     "EPIPE", "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
     "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET",
-    // ImapFlow
-    "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT"];
+    // ImapFlow. `NoConnection` = socket already closed
+    "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT", "NoConnection"];
   // Error class `instanceof` doesn't survive JPC
   return kNetworkErrorCodes.includes(ex?.code) ||
     // Chromium `net` module, e.g. `net::ERR_CONNECTION_RESET`
