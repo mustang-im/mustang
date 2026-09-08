@@ -198,6 +198,24 @@ describe("NTLM per-TCP-connection authentication", () => {
     pool.close();
   });
 
+  it("connects anyway, when the connection that holds the handshake lock hangs", async () => {
+    let pool = new NTLMConnectionPool(account);
+    server.blackHoleNextRequest = true; // holds the handshake lock for 30 s
+    let dropped = pool.request("<request>dropped</request>");
+    dropped.catch(() => null); // `pool.close()` aborts it, at the end of the test
+    for (let i = 0; i < 300 && !server.requests; i++) {
+      await sleep(10);
+    }
+
+    // The user clicks [Delete]: waits 10 s for the lock, then connects anyway
+    let start = Date.now();
+    let response = await pool.request("<request>delete</request>",
+      { purpose: ConnectionPurpose.Display });
+    expect(await response.text()).toBe("<response><request>delete</request></response>");
+    expect(Date.now() - start).toBeLessThan(20 * 1000);
+    pool.close();
+  }, 60000);
+
   it("does not repeat a request that the server already started to answer", async () => {
     server.killWhileResponding = true; // RST in the middle of the 200 response
     let pool = new NTLMConnectionPool(account);

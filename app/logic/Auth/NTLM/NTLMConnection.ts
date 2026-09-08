@@ -4,6 +4,7 @@ import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { retryOnTransientError } from "../../util/netUtil";
 import { Lock } from "../../util/flow/Lock";
+import { Timeout } from "../../util/flow/Timeout";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -122,9 +123,11 @@ export class NTLMConnection {
     let response = await retryOnTransientError(async () => {
       // Some servers and VPN gateways drop connections when multiple are established at the same time.
       let locked = await this.handshakeLock.lock();
+      let timeout = new Timeout(10, () => locked.release()); // if we hang, let the others connect
       try {
         return await this.send(type1, "");
       } finally {
+        timeout.fulfilled();
         locked.release();
       }
     }, 3, 8);

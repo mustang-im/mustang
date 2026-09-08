@@ -69,6 +69,8 @@ export class NTLMTestServer {
   /** Answer only partially, then close the TCP connection gracefully (FIN),
    * like a proxy that times out a long-running response */
   endWhileResponding = false;
+  /** Never answer the next request, like a silently dropped TCP connection */
+  blackHoleNextRequest = false;
   /** Answer with `204 No Content`, which has no response body, by spec */
   noContent = false;
   /** Send the response in these chunks, with pauses in between */
@@ -159,6 +161,10 @@ export class NTLMTestServer {
     let state = this.states.get(req.socket);
     if (!state) {
       res.destroy();
+      return;
+    }
+    if (this.blackHoleNextRequest) {
+      this.blackHoleNextRequest = false;
       return;
     }
     if (!this.requireAuth || state.authenticated) {
