@@ -389,7 +389,7 @@ export class IMAPFolder extends Folder {
         }, { uid: true });
         for await (let msgInfo of msgInfos) {
           try {
-            if (!msgInfo.envelope || this.deletions.has(msgInfo.uid)) {
+            if (!msgInfo.envelope || !msgInfo.source?.length || this.deletions.has(msgInfo.uid)) {
               continue;
             }
             let msg = this.getEMailByUID(msgInfo.uid);
