@@ -98,19 +98,19 @@ describe("NTLM per-TCP-connection authentication", () => {
       downloads.push(pool.request(`<request>download ${i}</request>`,
         { purpose: ConnectionPurpose.Fetch }));
     }
-    for (let i = 0; i < 100 && server.heldRequestCount < 3; i++) {
+    for (let i = 0; i < 100 && server.heldRequestCount < 2; i++) {
       await sleep(10);
     }
-    // The download may occupy 3 connections, and no more, however many
+    // The download may occupy 2 connections, and no more, however many
     // requests it has queued up
-    expect(server.heldRequestCount).toBe(3);
+    expect(server.heldRequestCount).toBe(2);
 
     // The user clicks [Delete]. Before we split the connections by purpose,
     // this waited for the download, i.e. here: forever.
     let response = await pool.request("<request>delete</request>",
       { purpose: ConnectionPurpose.Display });
     expect(await response.text()).toBe("<response><request>delete</request></response>");
-    expect(server.heldRequestCount).toBe(3);
+    expect(server.heldRequestCount).toBe(2);
 
     server.holdRequestsContaining = null;
     server.releaseHeldRequests();
