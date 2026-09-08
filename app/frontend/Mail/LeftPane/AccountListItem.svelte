@@ -19,24 +19,24 @@
     </hbox>
   {/if}
   <hbox class="label font-small">{$account.name}</hbox>
-    <hbox flex class="buttons">
-      {#if $account.isLoggedIn}
-        <GetMailButton folder={account.inbox} iconSize="14px" />
-      {:else}
-        <Button
-          label={$t`Login`}
-          icon={DisconnectedIcon}
-          onClick={login}
-          iconSize="16px" plain iconOnly />
-      {/if}
-      {#if account.protocol != "all"}
-        <Button
-          label={$t`Account settings`}
-          icon={SettingsIcon}
-          onClick={openSettings}
-          iconSize="16px" plain iconOnly />
-      {/if}
-    </hbox>
+  <hbox flex class="buttons">
+    {#if $account.isLoggedIn}
+      <GetMailButton folder={account.inbox} iconSize="14px" />
+    {:else}
+      <Button
+        label={$t`Login`}
+        icon={DisconnectedIcon}
+        onClick={login}
+        iconSize="16px" plain iconOnly />
+    {/if}
+    {#if account.protocol != "all"}
+      <Button
+        label={$t`Account settings`}
+        icon={SettingsIcon}
+        onClick={openSettings}
+        iconSize="16px" plain iconOnly />
+    {/if}
+  </hbox>
 </hbox>
 
 <ContextMenu bind:this={contextMenu}>
