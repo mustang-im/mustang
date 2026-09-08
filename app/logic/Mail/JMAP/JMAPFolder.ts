@@ -330,8 +330,7 @@ export class JMAPFolder extends Folder {
   async downloadMessages(emails: Collection<JMAPEMail>): Promise<Collection<JMAPEMail>> {
     let needMsgs = new ArrayColl(emails);
     let downloadedMsgs = new ArrayColl<JMAPEMail>();
-    const kMaxParallelCount = 5;
-    let semaphore = new Semaphore(kMaxParallelCount);
+    let semaphore = new Semaphore(this.account.maxParallelRequests);
     let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();

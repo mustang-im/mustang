@@ -175,6 +175,12 @@ export class JMAPAccount extends MailAccount {
   get haveSharing(): boolean {
     return this.hasCapability("urn:ietf:params:jmap:principals");
   }
+  /** One below what the server allows, so that the mail the user clicks on still gets through.
+   * @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxConcurrentRequests` */
+  get maxParallelRequests(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, 5);
+    return Math.max(1, Math.min(serverMax - 1, 30));
+  }
   // <compat for="Cyrus">
   // Cyrus announces its core extension always, even when its non-standard extensions are off.
   get isCyrus(): boolean {
