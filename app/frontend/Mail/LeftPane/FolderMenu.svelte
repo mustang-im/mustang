@@ -73,7 +73,7 @@
   }
 
   async function deleteAllMsgs() {
-    for (let msg of folder.messages) {
+    for (let msg of folder.messages.contents) { // copy: deleting alters `folder.messages`
       await msg.deleteMessage();
     }
   }
