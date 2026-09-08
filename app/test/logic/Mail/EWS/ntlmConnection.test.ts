@@ -12,6 +12,22 @@ import { HTTPConnection } from "../../../../../desktop/backend/HTTPConnection";
 import { createType1Message, decodeType2Message, createType3Message } from "../../../../../desktop/backend/ntlm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+/** `NTLMConnectionPool` gives each `ConnectionPurpose` its own connections */
+const kConnectionsPerPurpose = 2;
+
+/** Waits for what we are actually waiting for, instead of for a fixed delay */
+async function waitFor(condition: () => boolean): Promise<void> {
+  const kTimeoutMS = 500; // in-process server on loopback: a few ms, in practice
+  const kPollMS = 5;
+  for (let end = Date.now() + kTimeoutMS; Date.now() < end; ) {
+    if (condition()) {
+      return;
+    }
+    await sleep(kPollMS);
+  }
+  throw new Error("Timed out waiting for the test server");
+}
+
 describe("NTLM per-TCP-connection authentication", () => {
   let server: NTLMTestServer;
   let account: EWSAccount;
@@ -79,7 +95,8 @@ describe("NTLM per-TCP-connection authentication", () => {
       }));
     }
     await Promise.all(requests);
-    expect(server.socketsCreated).toBeLessThanOrEqual(6);
+    // A few replacements are fine, but not one connection per request
+    expect(server.socketsCreated).toBeLessThanOrEqual(kConnectionsPerPurpose * 3);
     // Each TCP connection was authenticated exactly once
     expect(server.handshakesCompleted).toBe(server.socketsCreated);
     // No request ever hit the server on a connection that wasn't authenticated
@@ -98,19 +115,17 @@ describe("NTLM per-TCP-connection authentication", () => {
       downloads.push(pool.request(`<request>download ${i}</request>`,
         { purpose: ConnectionPurpose.Fetch }));
     }
-    for (let i = 0; i < 100 && server.heldRequestCount < 2; i++) {
-      await sleep(10);
-    }
-    // The download may occupy 2 connections, and no more, however many
+    await waitFor(() => server.heldRequestCount == kConnectionsPerPurpose);
+    // The download may occupy its own connections, and no more, however many
     // requests it has queued up
-    expect(server.heldRequestCount).toBe(2);
+    expect(server.heldRequestCount).toBe(kConnectionsPerPurpose);
 
     // The user clicks [Delete]. Before we split the connections by purpose,
     // this waited for the download, i.e. here: forever.
     let response = await pool.request("<request>delete</request>",
       { purpose: ConnectionPurpose.Display });
     expect(await response.text()).toBe("<response><request>delete</request></response>");
-    expect(server.heldRequestCount).toBe(2);
+    expect(server.heldRequestCount).toBe(kConnectionsPerPurpose);
 
     server.holdRequestsContaining = null;
     server.releaseHeldRequests();
@@ -143,12 +158,13 @@ describe("NTLM per-TCP-connection authentication", () => {
   it("re-authenticates when the server closes connections between requests", async () => {
     server.closeAfterResponses = 2; // each connection dies right after the handshake + first request
     let pool = new NTLMConnectionPool(account);
-    for (let i = 0; i < 10; i++) {
+    const kRequests = 10;
+    for (let i = 0; i < kRequests; i++) {
       let response = await pool.request(`<request>${i}</request>`);
       expect(await response.text()).toBe(`<response><request>${i}</request></response>`);
       await sleep(20); // let the FIN arrive, so the client knows the connection is dead
     }
-    expect(server.handshakesCompleted).toBe(10); // one per connection
+    expect(server.handshakesCompleted).toBe(kRequests); // one per connection
     expect(server.rejectedRequests).toBe(0); // client saw each dead connection and re-authenticated pro-actively
     pool.close();
   });
@@ -203,9 +219,7 @@ describe("NTLM per-TCP-connection authentication", () => {
     server.blackHoleNextRequest = true; // holds the handshake lock for 30 s
     let dropped = pool.request("<request>dropped</request>");
     dropped.catch(() => null); // `pool.close()` aborts it, at the end of the test
-    for (let i = 0; i < 300 && !server.requests; i++) {
-      await sleep(10);
-    }
+    await waitFor(() => server.requests > 0);
 
     // The user clicks [Delete]: waits 10 s for the lock, then connects anyway
     let start = Date.now();
