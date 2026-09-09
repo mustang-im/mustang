@@ -75,7 +75,7 @@ export function sanitizeHTMLExternal(html: string): string {
 
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
 const proxy = 'http://localhost:5454/proxy?url=';
-const cssURLRegex = /(url\("?)(?!data:)/gim;
+const cssURLRegex = /url\((?!["']?data:)["']?/gim;
 const urlAttributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
 
 function urlAttribute(url: URLString, includeExternal = false) {
@@ -99,7 +99,7 @@ function addStyles(output: string[], styles: CSSStyleDeclaration) {
  * `cssText` keeps the declaration order and the `!important` flags. Mails need
  * `!important` in their `@media` rules to override their inline styles. */
 function styleDeclarations(styles: CSSStyleDeclaration): string {
-  return styles.cssText.replace(cssURLRegex, `$1${proxy}`);
+  return styles.cssText.replace(cssURLRegex, `$&${proxy}`);
 };
 
 function addCSSRules(output: string[], cssRules = []) {
