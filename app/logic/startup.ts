@@ -24,6 +24,14 @@ appGlobal.me = new Person();
 /** Read JPC secret from frontent URL hash `jpcSecret=password`.
  * Before svelte-navigator `<Router>` mounts and rewrites `location.hash` */
 let jpcSecretFromURL = new URLSearchParams(location.hash.slice(1)).get("jpcSecret");
+// Remove it, so that iframes and error log reports cannot read it
+if (jpcSecretFromURL) {
+  try {
+    history.replaceState(null, "", location.pathname + location.search);
+  } catch (ex) {
+    console.error(ex);
+  }
+}
 
 /**
  * Desktop: frontend URL hash `jpcSecret=password`
