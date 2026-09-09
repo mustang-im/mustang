@@ -98,14 +98,9 @@
     let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
       style-src ${servers}; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
-    let displayHTML = html ?? "";
-    let headPos = displayHTML.indexOf("<head>");
-    headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML =
-      displayHTML.substring(0, headPos) +
-      head +
-      (autoSize ? autoSizeCSS: "") +
-      displayHTML.substring(headPos);
+    /* Put our head additions in front of the mail, because the content is untrusted.
+     * The HTML parser moves a leading meta and style element into the head for us. */
+    let displayHTML = head + (autoSize ? autoSizeCSS : "") + (html ?? "");
     // console.log("html", displayHTML);
     blobURL = stringToBlobURL("text/html", displayHTML);
   }
