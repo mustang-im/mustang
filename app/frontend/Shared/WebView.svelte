@@ -1,8 +1,7 @@
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url ?? blobURL} {title} class:hidden {partition} />
 // #else
-<!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url ?? blobURL} {title} class:hidden />
+<iframe bind:this={webviewE} src={url ?? blobURL} {title} {sandbox} class:hidden />
 // #endif
 
 <!--
@@ -69,6 +68,12 @@
   export let allowServerCalls: boolean | string = true;
 
   $: partition = sessionID ? "persist:" + sessionID : undefined;
+
+  /** Jail untrusted `html`, e.g. a mail: No scripts, and an opaque origin to block access of app.
+   * `allow-popups` keeps the `target="_blank"` links working that `sanitizeHTML()` creates.
+   * Only a page that a web server gave us is not jailed, e.g. a web app or the payment page:
+   * That page gets the origin of its server. A `blob:` URL would get *ours*. */
+  $: sandbox = url.startsWith("https") ? undefined : "allow-popups allow-popups-to-escape-sandbox";
 
   onMount(() =>{
     if (autoSize) {
