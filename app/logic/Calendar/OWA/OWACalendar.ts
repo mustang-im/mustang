@@ -90,7 +90,7 @@ export class OWACalendar extends ExchangeCalendar {
     try {
       let events = new ArrayColl<OWAEvent>;
       await this.listFolder(events);
-      for (let event of this.events.subtract(events)) {
+      for (let event of this.events.subtract(events).contents) { // copy: delete alters events
         // This might be a filled occurrence that has since been modified.
         await event.deleteLocally();
       }

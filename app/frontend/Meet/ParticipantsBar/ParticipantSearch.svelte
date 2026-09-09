@@ -83,7 +83,7 @@
 
   $: $participants, removeJoinedParticipant()
   function removeJoinedParticipant() {
-    for (let invited of meeting.invited) {
+    for (let invited of meeting.invited.contents) { // copy: remove alters invited
       if (participants.find(p => p.name == invited.name)) {
         meeting.invited.remove(invited);
       }

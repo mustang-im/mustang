@@ -181,7 +181,7 @@ export class JSContact {
       }
     }
     // Delete old entries
-    for (let p of personEntries) {
+    for (let p of personEntries.contents) { // copy: remove alters personEntries
       let jmapID = getJMAPID(p);
       if (!jmapID || !jscontactEntries[jmapID]) {
         personEntries.remove(p);

@@ -33,3 +33,17 @@ test("Malformed email address keeps the rest of the contact", () => {
   expect(person.emailAddresses.contents.map(entry => entry.value)).toEqual(["support@stripe.com"]);
   expect(person.phoneNumbers.contents.map(entry => entry.value)).toEqual(["0123456789"]);
 });
+
+test("Addresses deleted on the server are all removed, not only every other one", () => {
+  let person = new Person();
+  JSContact.toPerson(makeContact({
+    e1: "one@example.com",
+    e2: "two@example.com",
+    e3: "three@example.com",
+    e4: "four@example.com",
+  }), person);
+  expect(person.emailAddresses.length).toBe(4);
+
+  JSContact.toPerson(makeContact({ e4: "four@example.com" }), person);
+  expect(person.emailAddresses.contents.map(entry => entry.value)).toEqual(["four@example.com"]);
+});
