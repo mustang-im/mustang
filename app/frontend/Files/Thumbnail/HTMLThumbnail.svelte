@@ -1,6 +1,7 @@
 <iframe
   src={$file.url}
   title={$file.name}
+  sandbox=""
   class:preview
   scrolling={preview ? "no" : null}
   />
