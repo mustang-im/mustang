@@ -118,7 +118,7 @@ export class JSCalendarEvent {
     jmap.title = event.title;
     if (event.hasHTML) {
       jmap.descriptionContentType = "text/html";
-      jmap.description = event.descriptionHTML;
+      jmap.description = event.rawHTMLDangerous;
     } else {
       jmap.descriptionContentType = "text/plain";
       jmap.description = event.descriptionText;
