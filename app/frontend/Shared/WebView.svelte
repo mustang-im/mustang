@@ -95,9 +95,9 @@
         over-flow: visible !important;
       }
     </style>`;
-    let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
+    let servers = allowServerCalls === true ? "*" : allowServerCalls || "";
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-      style-src ${servers}; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
+      style-src ${servers} 'unsafe-inline'; img-src data: blob: ${servers} 'unsafe-inline'">\n\n` + headHTML + `\n\n`;
     /* Put our head additions in front of the mail, because the content is untrusted.
      * The HTML parser moves a leading meta and style element into the head for us. */
     let displayHTML = head + (autoSize ? autoSizeCSS : "") + (html ?? "");
