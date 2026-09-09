@@ -90,6 +90,7 @@
   .icon {
     height: 20px;
     width: 20px;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
   }
@@ -104,7 +105,8 @@
     margin-inline-start: 6px;
     font-weight: 300;
     max-height: 1.3em;
-    max-width: calc(100% - 90px); /* HACK */
+    min-width: 0; /* avoid pushing out the buttons */
+    overflow: hidden;
   }
   .account:not(:hover) .buttons {
     display: none;
@@ -112,6 +114,7 @@
   .buttons {
     justify-content: end;
     margin-inline-end: 8px;
+    background-color: inherit;
   }
   .buttons :global(button) {
     color: unset;
@@ -120,5 +123,6 @@
   }
   .buttons :global(.get-mail button) {
     padding: 2px;
+    border: 1px solid transparent;
   }
 </style>
