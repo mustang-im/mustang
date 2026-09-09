@@ -47,8 +47,12 @@
           bold: false,
           italic: false,
           strike: false,
+          link: false,
         }),
-        LinkFeature,
+        LinkFeature.configure({
+          // Not part of the document. `sanitizeHTML()` adds them when rendering.
+          HTMLAttributes: { target: null, rel: null },
+        }),
         CodeWordFeature,
         SplitBlockquote,
         Footer,
