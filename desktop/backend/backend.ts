@@ -421,6 +421,24 @@ function setTheme(theme: "system" | "light" | "dark") {
 }
 
 async function openExternalURL(url: string) {
+  let scheme = new URL(url).protocol; // throws on a malformed URL
+
+  /** Schemes that we let the OS open. A mail fully controls the URL of its links,
+   * and `shell.openExternal()` starts whichever app the OS registered for the scheme.
+   * E.g. `file:` runs a `.desktop` file or an `.exe`, and `ms-msdt:` and `search-ms:`
+   * are remote code execution on Windows. */
+  const kAllowedURLSchemes = [
+    "https:",
+    "http:",
+    "mailto:",
+    "tel:",
+    "xmpp:",
+    "matrix:",
+  ];
+  if (!kAllowedURLSchemes.includes(scheme)) {
+    throw new Error(`Refusing to open a ${scheme} URL in an OS app`);
+  }
+
   await shell.openExternal(url);
 }
 
