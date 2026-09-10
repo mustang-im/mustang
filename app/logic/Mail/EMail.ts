@@ -15,7 +15,8 @@ import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import type { EncryptionSystem } from "./Encryption/enums";
-import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { isMobile, webMail } from "../build";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { Lock } from "../util/flow/Lock";
@@ -747,7 +748,7 @@ export class EMail extends Message {
   }
 }
 
-/** For inline images, convert `cid:` URIs into `data:` URIs. */
+/** For inline images, convert `cid:` URIs into `blob:` or `data:` URLs. */
 async function addCID(html: string, email: EMail): Promise<string> {
   try {
     let doc = new DOMParser().parseFromString(html, "text/html");
@@ -762,8 +763,12 @@ async function addCID(html: string, email: EMail): Promise<string> {
       }
       let cid = src.substring(4);
       let attachment = email.attachments.find(a => a.contentID == "<" + cid + ">");
+      // mobile/web `<iframe sandbox>` has opaque origin and won't load our `blob:`. Electron <webview> has the same origin.
+      let canLoadBlobURL = !webMail && !isMobile;
       src = attachment?.content
-        ? attachment.blobURL
+        ? canLoadBlobURL
+          ? attachment.blobURL
+          : await blobToDataURL(attachment.content)
         : "";
       img.setAttribute("src", src);
       if (src) {
