@@ -156,8 +156,8 @@
   .buttons :global(button) {
     margin-inline-start: 6px;
   }
-  .buttons :global(svg) {
-    margin: 4px;
+  .buttons :global(.icon) {
+    padding: 4px;
   }
   .buttons :global(.get-mail) {
     height: 22px;
