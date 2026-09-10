@@ -57,7 +57,7 @@ export function sanitizeHTML(html: string): string {
   includeExternal = false;
   let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["svg", "mathml"],
+    FORBID_TAGS: ["svg", "mathml", "form"],
     WHOLE_DOCUMENT: true,
   });
   return sanitized;
@@ -79,7 +79,7 @@ export function sanitizeHTMLWithoutStyleTag(html: string): string {
   includeExternal = false;
   return DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["svg", "mathml", "style"],
+    FORBID_TAGS: ["svg", "mathml", "style", "form"],
   });
 }
 
@@ -91,7 +91,7 @@ export function sanitizeHTMLExternal(html: string): string {
   includeExternal = true;
   let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["svg", "mathml"],
+    FORBID_TAGS: ["svg", "mathml", "form"],
     WHOLE_DOCUMENT: true,
   });
   includeExternal = false;
