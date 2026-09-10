@@ -107,24 +107,32 @@ export class POP3Account extends MailAccount {
     return before;
   }
 
+  /** The server has no folders, ours are local, so create them here.
+   * Needs no server, so that the user can write mail even after a failed login. */
+  async readFromDB(): Promise<void> {
+    await this.readDBRunOnce.runOnce(async () => {
+      await this.storage.readFolderHierarchy(this);
+      if (this.rootFolders.hasItems) {
+        return;
+      }
+      for (let specialFolder of [
+        SpecialFolder.Inbox,
+        SpecialFolder.Sent,
+        SpecialFolder.Drafts,
+        SpecialFolder.Trash,
+      ]) {
+        let folder = this.newFolder();
+        folder.name = specialFolderNames[specialFolder]; // localized
+        folder.path = sanitize.filename(capitalizeStart(specialFolder)); // not localized
+        folder.specialFolder = specialFolder;
+        this.rootFolders.add(folder);
+        await folder.save();
+      }
+    });
+  }
+
   async listFolders(): Promise<void> {
-    await this.storage.readFolderHierarchy(this);
-    if (this.rootFolders.hasItems) {
-      return;
-    }
-    for (let specialFolder of [
-      SpecialFolder.Inbox,
-      SpecialFolder.Sent,
-      SpecialFolder.Drafts,
-      SpecialFolder.Trash,
-    ]) {
-      let folder = this.newFolder();
-      folder.name = specialFolderNames[specialFolder]; // localized
-      folder.path = sanitize.filename(capitalizeStart(specialFolder)); // not localized
-      folder.specialFolder = specialFolder;
-      this.rootFolders.add(folder);
-      await folder.save();
-    }
+    await this.readFromDB();
   }
 
   async createToplevelFolder(name: string): Promise<POP3Folder> {

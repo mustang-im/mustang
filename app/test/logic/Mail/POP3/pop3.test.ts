@@ -303,3 +303,13 @@ test("Local folders: Sent, move to trash, delete", async () => {
   await sub.rename("Projects");
   expect(sub.path).toBe(inbox.path + "/Projects");
 });
+
+test("Local folders exist, even when the login failed", async () => {
+  await server.start();
+  let acc = newAccount();
+  await acc.readFromDB(); // The app start does this, before the login
+  expect(acc.getSpecialFolder(SpecialFolder.Sent).path).toBe("Sent");
+
+  let mail = acc.newEMailFrom();
+  expect(mail.folder.specialFolder).toBe(SpecialFolder.Sent);
+});
