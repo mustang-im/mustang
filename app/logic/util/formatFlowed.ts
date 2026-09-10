@@ -1,4 +1,4 @@
-import { assert } from "vitest";
+import { assert } from "./util";
 
 /**
  * Implements format=flowed (RFC 2646, RFC 3676),
