@@ -4,10 +4,11 @@ import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
-import { blobToBase64, NotImplemented, UserError, type URLString } from "../util/util";
-import type { ArrayColl, Collection } from "svelte-collections";
 import { RunOnce } from "../util/flow/RunOnce";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { blobToBase64, UserError, type URLString, fileExtensionForMIMEType, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
+import type { ArrayColl, Collection } from "svelte-collections";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -159,6 +160,34 @@ export class Attachment extends Observable {
         await storage.saveAttachment(this);
       }
     });
+  }
+
+  toJSON(): any {
+    let json = this.toExtraJSON();
+    json.filename = this.filename;
+    json.mimeType = this.mimeType;
+    json.size = this.size;
+    json.contentID = this.contentID;
+    json.disposition = this.disposition;
+    json.related = this.related;
+    return json;
+  }
+
+  fromJSON(json: any, fallbackID: number, filesDir: string) {
+    this.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
+    this.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
+    this.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(this.mimeType));
+    let filepathLocal = sanitize.string(json.filepathLocal, null)
+    if (filepathLocal && filesDir) {
+      this.filepathLocal = filesDir + "/" + filepathLocal;
+    }
+    this.size = sanitize.integer(json.size, -1);
+    this.disposition = sanitize.translate(json.disposition, {
+      attachment: ContentDisposition.attachment,
+      inline: ContentDisposition.inline,
+    }, ContentDisposition.unknown);
+    this.related = sanitize.boolean(json.related, false);
+    this.fromExtraJSON(json);
   }
 
   /** The `json` column of the DB row, for properties that not every protocol

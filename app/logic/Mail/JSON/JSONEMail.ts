@@ -1,12 +1,12 @@
 import type { EMail } from "../EMail";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
-import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
+import { Attachment } from "../../Abstract/Attachment";
 import { getTagByName } from "../../Abstract/Tag";
 import { getFilesDir } from "../../../logic/util/backend-wrapper";
 import { EMailProcessorList } from "../EMailProcessor";
 import { SMLData } from "../SML/SMLData";
 import { EncryptionSystem } from "../Encryption/enums";
-import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { logError } from "../../../frontend/Util/error";
 import type { ArrayColl } from "svelte-collections";
@@ -126,15 +126,8 @@ export class JSONEMail {
 
   static saveAttachment(email: EMail, a: Attachment): any {
     assert(this.filesDir, "Please call init() first");
-    let json: any = {};
-    json.filename = a.filename;
+    let json = a.toJSON();
     json.filepathLocal = a.filepathLocal?.replace(this.filesDir + "/", "");
-    json.mimeType = a.mimeType;
-    json.size = a.size;
-    json.contentID = a.contentID;
-    json.disposition = a.disposition;
-    json.related = a.related;
-    Object.assign(json, a.toExtraJSON());
     return json;
   }
 
@@ -292,23 +285,10 @@ export class JSONEMail {
     }
   }
 
-  protected static readAttachment(email: EMail, json: any, fallbackID): Attachment | null {
+  protected static readAttachment(email: EMail, json: any, fallbackID: number): Attachment | null {
     try {
       let a = email.newAttachment();
-      a.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
-      a.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
-      a.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
-      let filepathLocal = sanitize.string(json.filepathLocal, null)
-      if (filepathLocal) {
-        a.filepathLocal = this.filesDir + "/" + filepathLocal;
-      }
-      a.size = sanitize.integer(json.size, -1);
-      a.disposition = sanitize.translate(json.disposition, {
-        attachment: ContentDisposition.attachment,
-        inline: ContentDisposition.inline,
-      }, ContentDisposition.unknown);
-      a.related = sanitize.boolean(json.related, false);
-      a.fromExtraJSON(json);
+      a.fromJSON(json, fallbackID, this.filesDir);
       email.attachments.add(a);
       return a;
     } catch (ex) {
