@@ -33,6 +33,7 @@
     {/if}
     <hbox class="date font-smallest">{getDateTimeString($message.sent)}</hbox>
     <hbox class="unread-dot button" class:unread={!$message.isRead}>
+      {#key message} <!-- Rebuild per mail, otherwise the spinner from the previous mail stays. -->
       <Button
         icon={CircleIcon}
         iconSize="7px"
@@ -41,6 +42,7 @@
         onClick={toggleRead}
         plain
         />
+      {/key}
     </hbox>
     <!--
     <hbox class="buttons hover">
@@ -84,6 +86,7 @@
       </hbox>
     {/if}
     <hbox class="star button" class:starred={$message.isStarred}>
+      {#key message}
       <Button
         icon={StarIcon}
         iconSize="16px"
@@ -92,6 +95,7 @@
         onClick={toggleStar}
         plain
         />
+      {/key}
     </hbox>
     <hbox class="attachments">
       {#if $message.hasVisibleAttachments}

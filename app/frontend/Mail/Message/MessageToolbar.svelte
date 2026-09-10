@@ -1,4 +1,5 @@
 <hbox class="buttons">
+  {#key message} <!-- Rebuild per mail, otherwise the spinner from the previous mail stays. -->
   {#if message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts }
     <hbox class="draft">
       <Button
@@ -75,6 +76,7 @@
       plain
       />
   </hbox>
+  {/key}
   <hbox class="move button" bind:this={popupAnchorE}>
     <Button
       icon={FolderActionsIcon}

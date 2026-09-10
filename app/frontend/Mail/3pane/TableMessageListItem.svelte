@@ -14,6 +14,7 @@
     <ImportantIcon size={16} class="important" />
   {:else}
     <hbox class="unread-dot button" class:unread={!$message.isRead}>
+      {#key message} <!-- Rebuild per mail, otherwise the spinner from the previous mail stays. -->
       <Button
         icon={CircleIcon}
         iconSize="7px"
@@ -22,6 +23,7 @@
         onClick={toggleRead}
         plain
         />
+      {/key}
     </hbox>
   {/if}
 </hbox>
@@ -49,6 +51,7 @@
     {/if}
   </hbox>
   <hbox class="star button" class:starred={$message.isStarred}>
+    {#key message}
     <Button
       icon={StarIcon}
       iconSize="16px"
@@ -57,6 +60,7 @@
       onClick={toggleStar}
       plain
       />
+    {/key}
   </hbox>
 </hbox>
 <hbox class="date"
@@ -76,6 +80,7 @@
       plain
       />
   </hbox>
+  {#key message}
   <hbox class="spam button">
     <Button
       icon={$message.isSpam ? NotSpamIcon : SpamIcon}
@@ -97,6 +102,7 @@
       plain
       />
   </hbox>
+  {/key}
 </hbox>
 
 <ContextMenu bind:this={contextMenu}>
