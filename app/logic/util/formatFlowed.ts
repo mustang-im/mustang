@@ -246,8 +246,8 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
   }
 
   // Convert HTML DOM to HTML string
-  return new XMLSerializer().serializeToString(htmlE)
-    .replace(/^<html xmlns="[^"]+">/, "<html>");
+  // (XMLSerializer would escape `>` in `<style>` etc.)
+  return htmlE.outerHTML;
 }
 
 function getPath(currentE: HTMLElement): string {
