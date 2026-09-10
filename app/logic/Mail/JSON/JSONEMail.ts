@@ -134,6 +134,7 @@ export class JSONEMail {
     json.contentID = a.contentID;
     json.disposition = a.disposition;
     json.related = a.related;
+    Object.assign(json, a.toExtraJSON());
     return json;
   }
 
@@ -307,6 +308,7 @@ export class JSONEMail {
         inline: ContentDisposition.inline,
       }, ContentDisposition.unknown);
       a.related = sanitize.boolean(json.related, false);
+      a.fromExtraJSON(json);
       email.attachments.add(a);
       return a;
     } catch (ex) {

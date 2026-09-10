@@ -113,6 +113,7 @@ export class SQLChatMessage {
 
   protected static async saveAttachments(msg: RoomMessage) {
     for (let a of msg.attachments) {
+      let jsonStr = JSON.stringify(a.toExtraJSON(), null, 2);
       let existing = await (await getDatabase()).get(sql`
         SELECT id FROM chatAttachment
         WHERE messageID = ${msg.dbID} AND filename = ${a.filename}
@@ -123,15 +124,17 @@ export class SQLChatMessage {
             filepathLocal = COALESCE(${a.filepathLocal}, filepathLocal),
             mimeType = ${a.mimeType},
             size = ${a.size},
-            related = ${a.related ? 1 : 0}
+            related = ${a.related ? 1 : 0},
+            json = ${jsonStr}
           WHERE id = ${existing.id}
           `);
       } else {
         await (await getDatabase()).run(sql`
           INSERT INTO chatAttachment (
-            messageID, filename, filepathLocal, mimeType, size, related
+            messageID, filename, filepathLocal, mimeType, size, related, json
           ) VALUES (
-            ${msg.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.size}, ${a.related ? 1 : 0}
+            ${msg.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.size},
+            ${a.related ? 1 : 0}, ${jsonStr}
           )`);
       }
     }
@@ -193,7 +196,7 @@ export class SQLChatMessage {
     }
     if (readAttachments) {
       let attRows = await (await getDatabase()).all(sql`
-        SELECT filename, filepathLocal, mimeType, size, related
+        SELECT filename, filepathLocal, mimeType, size, related, json
         FROM chatAttachment
         WHERE messageID = ${msg.dbID}
         `) as any;
@@ -208,6 +211,7 @@ export class SQLChatMessage {
     a.size = sanitize.integer(row.size, null);
     a.related = sanitize.boolean(row.related, false);
     a.disposition = a.related ? ContentDisposition.inline : ContentDisposition.attachment;
+    a.fromExtraJSON(sanitize.json(row.json, {}) as any);
     return a;
   }
 
@@ -266,7 +270,7 @@ export class SQLChatMessage {
       `) as any;
     // Read all attachments of this chat with a single query
     let attRows = await (await getDatabase()).all(sql`
-      SELECT messageID, filename, filepathLocal, mimeType, size, related
+      SELECT messageID, filename, filepathLocal, mimeType, size, related, json
       FROM chatAttachment
       WHERE messageID IN (SELECT id FROM message WHERE chatID = ${chat.dbID})
       `) as any;

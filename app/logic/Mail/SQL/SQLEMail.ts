@@ -209,17 +209,19 @@ export class SQLEMail {
   protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
+    let jsonStr = JSON.stringify(a.toExtraJSON(), null, 2);
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
-        emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related, json
       ) VALUES (
         ${email.dbID}, ${a.filename}, ${filepath}, ${a.mimeType}, ${a.size},
-        ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}
+        ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}, ${jsonStr}
       )`);
   }
 
   protected static async updateAttachment(a: Attachment, rowID: number) {
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
+    let jsonStr = JSON.stringify(a.toExtraJSON(), null, 2);
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
         contentID = ${a.contentID},
@@ -227,6 +229,7 @@ export class SQLEMail {
         size = ${a.size},
         disposition = ${a.disposition},
         related = ${a.related ? 1 : 0},
+        json = ${jsonStr},
         filepathLocal = COALESCE(${filepath}, filepathLocal)
       WHERE id = ${rowID}
       `);
@@ -452,7 +455,7 @@ export class SQLEMail {
       // <copied to="readAll()" />
       attachmentRows = await (await getDatabase()).all(sql`
         SELECT
-          filename, filepathLocal, mimeType, size, contentID, disposition, related
+          filename, filepathLocal, mimeType, size, contentID, disposition, related, json
         FROM emailAttachment
         WHERE emailID = ${email.dbID}
       `) as any;
@@ -473,6 +476,7 @@ export class SQLEMail {
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
         a.related = sanitize.boolean(row.related, false);
+        a.fromExtraJSON(sanitize.json(row.json, {}) as any);
         email.attachments.add(a);
       } catch (ex) {
         email.folder.account.errorCallback(ex);
@@ -562,7 +566,7 @@ export class SQLEMail {
     // <copied from="readAttachments()" />
     let folderAttachmentRows = await (await getDatabase()).all(sql`
       SELECT
-        emailID, filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related, json
       FROM emailAttachment
       LEFT JOIN email ON (emailID = email.id)
       WHERE folderID = ${folder.dbID}

@@ -161,6 +161,14 @@ export class Attachment extends Observable {
     });
   }
 
+  /** The `json` column of the DB row, for properties that not every protocol
+   * has, and that therefore have no column of their own */
+  toExtraJSON(): any {
+    return {};
+  }
+  fromExtraJSON(json: any) {
+  }
+
   /** Should not show to end user. This is true for auto-processing attachments
    * like calendar invitations (ICS), vCards, encryption signatures etc. */
   get hidden(): boolean {

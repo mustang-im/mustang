@@ -192,6 +192,14 @@ export class File extends FileOrDirectory {
     await openOSAppForFile(this.filepathLocal);
   }
 
+  /** The `json` column of the DB row, for properties that not every protocol
+   * has, and that therefore have no column of their own */
+  toExtraJSON(): any {
+    return {};
+  }
+  fromExtraJSON(json: any) {
+  }
+
   async availableOnlineEditors(): Promise<Collection<WebAppListed>> {
     return new ArrayColl();
   }
