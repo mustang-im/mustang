@@ -46,6 +46,10 @@ export function fixNewlines(text: string): string {
   return text?.replace(/\r?\n/g, "\r\n");
 }
 
+/** Remove dangerous HTML from untrusted content.
+ * Intended only as additional security (defense in depth),
+ * not as sole protection. Render it in a jailed sandboxed `<iframe>`.
+ * @returns HTML snipplet, not whole document */
 export function sanitizeHTML(html: string): string {
   if (!html) {
     return "";
@@ -59,6 +63,27 @@ export function sanitizeHTML(html: string): string {
   return sanitized;
 }
 
+/** Similar to `sanitizeHTML()`,
+ * but additionally drops `<style>`, which would affect the rest of the document.
+ * The `style` attribute stays allowed, because it applies only to the element itself.
+ *
+ * E.g. to render HTML inline as `{@html san…(html)}` instead of in an `<iframe>`.
+ * Warning: Don't use this sanitizer as the only defense.
+ * Use this in combination with other defenses, e.g. for
+ * MarkDown->HTML without accepting HTML from the source MarkDown.
+ * @returns HTML snipplet, not whole document */
+export function sanitizeHTMLWithoutStyleTag(html: string): string {
+  if (!html) {
+    return "";
+  }
+  includeExternal = false;
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["svg", "mathml", "style"],
+  });
+}
+
+/** Allow to load images from Internet */
 export function sanitizeHTMLExternal(html: string): string {
   if (!html) {
     return "";

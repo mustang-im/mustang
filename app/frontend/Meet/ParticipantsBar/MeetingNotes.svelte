@@ -19,7 +19,7 @@
       <Scroll>
         <div class="description value font-small">
           {#if event.descriptionHTML}
-            {@html event.descriptionHTML}
+            {@html sanitizeHTMLWithoutStyleTag(event.descriptionHTML)}
           {:else}
             {event.descriptionText}
           {/if}
@@ -35,6 +35,7 @@
   import Button from "../../Shared/Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
+  import { sanitizeHTMLWithoutStyleTag } from "../../../logic/util/convertHTML";
   import { t } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;

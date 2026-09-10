@@ -44,7 +44,7 @@
         {/if}
         <slot name="inner-top" />
           <div class="text value font-normal">
-            {@html $message.html || ""}
+            {@html sanitizeHTMLWithoutStyleTag($message.html || "")}
             <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
             <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
             -->
@@ -84,6 +84,7 @@
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import Attachments from "./Attachments.svelte";
+  import { sanitizeHTMLWithoutStyleTag } from "../../../logic/util/convertHTML";
   import { getDateTimeString } from "../../Util/date";
 
   export let message: Message;
