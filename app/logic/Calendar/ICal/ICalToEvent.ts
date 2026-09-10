@@ -114,8 +114,11 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   }
   if (vevent.entries.conference) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    // There can be several, e.g. a `tel:` dial-in next to the video link
     event.isOnline = true;
-    event.onlineMeetingURL = sanitize.url(vevent.entries.conference[0].value);
+    event.onlineMeetingURL = vevent.entries.conference
+      .map(entry => sanitize.url(entry.value, null))
+      .find(url => !!url) ?? null;
   }
   if (vevent.entries.location) {
     // Some clients send the online meeting URL in `LOCATION` (see `CONFERENCE` above)
