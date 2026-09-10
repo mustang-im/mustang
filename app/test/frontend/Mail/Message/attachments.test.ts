@@ -119,7 +119,7 @@ test("Opening an attachment leaves it clickable for the next mail", async () => 
   expect(opened).toEqual(["/tmp/invoice0.pdf", "/tmp/invoice1.pdf"]);
 });
 
-test("An attachment is clickable again after it was opened", async () => {
+test("An attachment can be opened again, however long the OS app takes", async () => {
   let folder = newTestFolder();
   let mails = folder.messages.contents as EMail[];
   let selected = writable(mails[0]);
@@ -132,12 +132,9 @@ test("An attachment is clickable again after it was opened", async () => {
 
   await click(attachmentUI());
   expect(opened).toEqual(["/tmp/invoice0.pdf"]);
-  for (let finish of openFinished) {
-    finish();
-  }
-  openFinished = [];
-  await sleep(0.01);
-  flushSync();
 
+  // The OS never tells us that the PDF viewer finished starting up
   expect(attachmentUI().classList.contains("disabled")).toBe(false);
+  await click(attachmentUI());
+  expect(opened).toEqual(["/tmp/invoice0.pdf", "/tmp/invoice0.pdf"]);
 });
