@@ -4,12 +4,14 @@
       <div class="explanation">{$t`To encrypt this message, add certificates for the following recipients`}</div>
       <hbox flex />
       <hbox class="buttons">
-        <Button
-          label={$t`Query key servers`}
-          icon={QueryServerIcon}
-          onClick={onQueryKeyServer}
-          classes="key-server"
-          />
+        {#if hasKeyServers}
+          <Button
+            label={$t`Query key servers`}
+            icon={QueryServerIcon}
+            onClick={onQueryKeyServer}
+            classes="key-server"
+            />
+        {/if}
         <Button
           label={$t`Import…`}
           icon={ImportIcon}
@@ -62,7 +64,7 @@
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
-  import { getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { getEncryptionSystem, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { queryPGPKeyServersForUID } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { appGlobal } from "../../../logic/app";
   import EncryptionImport from "../../Contacts/PersonPage/EncryptionImport.svelte";
@@ -95,6 +97,9 @@
   // TODO Observe `encryptionPublicKeys`
   let recipientsWithoutKeys: Collection<PersonUID>;
   $: $recipientKeys, recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
+  /** The key servers have PGP keys, but no S/MIME certificates */
+  let hasKeyServers = false;
+  $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
   $: $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
     gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
@@ -114,7 +119,7 @@
   }
 
   async function autoQueryKeyServer() {
-    if (mail.system && mail.system != EncryptionSystem.PGP) {
+    if (!hasKeyServers) {
       return;
     }
     let notYetQueried = recipientsWithoutKeys.filterOnce(r => !(r as any)._queriedKeyserver);

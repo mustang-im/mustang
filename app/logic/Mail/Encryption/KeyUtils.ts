@@ -99,13 +99,19 @@ function isUsableKey<T extends PublicKey>(key: PublicKey | null, keyType?: new (
 
 /** For composer, which own key to use for signing the outgoing email */
 export function getMyPrivateKey<T extends PublicKey & PrivateKey>(identity: MailIdentity, keyType?: new () => T): T | null {
-  if (identity.encryptionPrivateKeys.isEmpty) {
+  if (!identity || identity.encryptionPrivateKeys.isEmpty) {
     return null;
   }
   let keys = identity.encryptionPrivateKeys.filterOnce(key => !key.obsolete && (!keyType || key instanceof keyType));
   return (keys.find(key => key.encryptByDefault && key.useToSign) ??
     keys.find(key => key.useToSign) ??
     keys.first) as T | null;
+}
+
+/** For composer, which encryption system the outgoing email uses:
+ * the one of the email that we answer, otherwise the one of our own key. */
+export function getEncryptionSystem(mail: EMail): EncryptionSystem | null {
+  return mail.system ?? getMyPrivateKey(mail.identity)?.system ?? null;
 }
 
 /**
