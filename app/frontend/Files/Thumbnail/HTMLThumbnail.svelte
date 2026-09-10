@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts" context="module">
-  export const kSupportedExt = ["html", "htm", "shtml", "pdf", "md", "txt"];
+  export const kSupportedExt = ["html", "htm", "shtml", "md", "txt"];
 </script>
 
 <style>
