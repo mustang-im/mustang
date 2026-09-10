@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
-import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
@@ -179,7 +179,10 @@ async function whenReady() {
   }
 }
 
-app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webContents));
+app.on('web-contents-created', (event, webContents) => {
+  setWindowOpenHandler(webContents);
+  restrictWebViews(webContents);
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -298,6 +301,23 @@ function allowCrossDomainRequestsFromFrontend() {
 function setWindowOpenHandler(webContents: WebContents) {
   webContents.setWindowOpenHandler((details) => {
     return { action: 'deny' };
+  });
+}
+
+/** We need `webviewTag`, but it also means that any `<webview>` element that ends up
+ * in our document decides its own `webPreferences`, and `nodeintegration` there is
+ * node.js in the page. We only ever set `src`, `partition` and `title`. */
+function restrictWebViews(webContents: WebContents) {
+  webContents.on('will-attach-webview', (_event, webPreferences, params) => {
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.nodeIntegrationInSubFrames = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.webSecurity = true;
+    delete params.nodeintegration;
+    delete params.nodeintegrationinsubframes;
+    delete params.disablewebsecurity;
+    delete params.allowpopups;
   });
 }
 
