@@ -333,10 +333,11 @@ async function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array): Database {
+  let safeOptions = { readonly: !!options?.readonly }; // `nativeBinding` in it would `require()` any file as native code
   if (buffer) {
-    return new Database(Buffer.from(buffer), options);
+    return new Database(Buffer.from(buffer), safeOptions);
   }
-  return new Database(filename, options);
+  return new Database(filename, safeOptions);
 }
 
 async function sendMailNodemailer(transport, mail) {
