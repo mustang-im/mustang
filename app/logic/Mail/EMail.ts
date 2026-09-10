@@ -770,7 +770,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
         attachment.hidden = true;
       }
     }
-    html = new XMLSerializer().serializeToString(doc);
+    html = doc.documentElement.outerHTML; // Serialize HTML (XMLSerializer would escape `>` in `<style>`)
   } catch (ex) {
     email.folder.account.errorCallback(ex);
   }
