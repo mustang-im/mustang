@@ -27,6 +27,7 @@
   }
 
   .text {
+    contain: paint; /* Prevent CSS on remote content from rendering outside the area */
   }
   .text :global(.person) {
     color: var(--link-fg);

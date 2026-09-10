@@ -209,6 +209,7 @@
   }
   .text {
     overflow-wrap: anywhere;
+    contain: paint; /* Prevent CSS on remote content from rendering outside the area */
   }
   .text > :global(p) {
     margin: 0;

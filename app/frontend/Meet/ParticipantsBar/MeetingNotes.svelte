@@ -63,5 +63,6 @@
     font-weight: bold;
   }
   .description {
+    contain: paint; /* Prevent CSS on remote content from rendering outside the area */
   }
 </style>
