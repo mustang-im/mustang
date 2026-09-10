@@ -115,7 +115,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   if (vevent.entries.conference) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
     event.isOnline = true;
-    event.onlineMeetingURL = vevent.entries.conference[0].value;
+    event.onlineMeetingURL = sanitize.url(vevent.entries.conference[0].value);
   }
   if (vevent.entries.location) {
     // Some clients send the online meeting URL in `LOCATION` (see `CONFERENCE` above)
