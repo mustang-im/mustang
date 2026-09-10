@@ -235,7 +235,7 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
     }
 
     if (inlineTextToHTMLConverter && line) {
-      currentE.innerHTML += inlineTextToHTMLConverter(textBlock);
+      currentE.insertAdjacentHTML("beforeend", inlineTextToHTMLConverter(textBlock));
     } else {
       let pE = document.createElement("p");
       pE.textContent = textBlock;
