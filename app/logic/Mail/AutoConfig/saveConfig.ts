@@ -11,7 +11,8 @@ import { MeetAccount } from "../../Meet/MeetAccount";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { NotReached, assert } from "../../util/util";
+import { NotReached, UserError, assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
 export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
@@ -32,6 +33,7 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
+  sanitize.emailAddress(emailAddress); // Otherwise account fails on the next start
   fillConfig(config, emailAddress, password);
 
   let identity = config.newIdentity();
