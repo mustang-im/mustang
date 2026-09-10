@@ -242,7 +242,8 @@ export class SQLEMail {
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
-        filepathLocal = ${filepath}
+        filepathLocal = ${filepath},
+        json = ${JSON.stringify(a.toExtraJSON(), null, 2)}
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
       `);

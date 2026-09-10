@@ -187,7 +187,8 @@ export class SQLEvent extends Event {
     assert(event.dbID, "Need to save event before attachment");
     await (await getDatabase()).run(sql`
       UPDATE eventAttachment SET
-        filepathLocal = ${await relativeFilepath(a)}
+        filepathLocal = ${await relativeFilepath(a)},
+        json = ${JSON.stringify(a.toExtraJSON(), null, 2)}
       WHERE eventID = ${event.dbID}
         AND filename = ${a.filename}
       `);

@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div on:click={myOnClick} on:dblclick={myOnDoubleClick}
-  disabled={!!disabled} class:disabled title={tooltip}>
+  disabled={!!disabled} class:disabled title={typeof(disabled) == "string" ? disabled : tooltip}>
   <slot />
 </div>
 
@@ -22,6 +22,9 @@
     }
     event.stopPropagation();
     event.preventDefault();
+    if (disabled) {
+      return;
+    }
     let previousDisabled = disabled;
     disabled = true;
     try {
@@ -40,6 +43,9 @@
     }
     event.stopPropagation();
     event.preventDefault();
+    if (disabled) {
+      return;
+    }
     let previousDisabled = disabled;
     disabled = true;
     try {
@@ -56,5 +62,8 @@
 <style>
   div {
     display: contents; /* Use child container CSS rules */
+  }
+  .disabled > :global(*) {
+    opacity: 50%;
   }
 </style>

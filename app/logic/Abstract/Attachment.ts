@@ -1,4 +1,5 @@
 import { File as FileEntry } from "../Files/File";
+import { checkExecutableFile, executableMessage, ExecutableKind } from "../Files/FileType/ExecutableFile";
 import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -37,6 +38,11 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
+  /** Would opening this file run untrusted code?
+   * Checked once, when we get the contents, and saved in the DB.
+   * null = none. undefined = not checked. */
+  @notifyChangedProperty
+  executable: ExecutableKind | null | undefined;
   /** Override the default hidden state.
    * Currently not saved to DB. */
   @notifyChangedProperty
@@ -99,6 +105,7 @@ export class Attachment extends Observable {
     file.size = this.size;
     file.mimetype = this.mimeType;
     file.contents = this.content;
+    file.executable = this.executable;
     file.id = this.contentID;
     return file;
   }
@@ -114,6 +121,12 @@ export class Attachment extends Observable {
     await this.message.loadAttachments?.();
   }
 
+  async readLocalFile() {
+    assert(this.filepathLocal, "Need local file first");
+    let array = await appGlobal.remoteApp.readFile(this.filepathLocal);
+    this.content = new File([array], this.filename, { type: this.mimeType });
+  }
+
   /** The file contents, base64-encoded, to send it to the server */
   async contentAsBase64(): Promise<string> {
     try {
@@ -125,7 +138,22 @@ export class Attachment extends Observable {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
+    if (this.executable === undefined) { // e.g. saved before we had this check
+      await this.read(); // we need the contents, to check them
+      await this.checkExecutable();
+    }
+    if (this.executable) {
+      throw new UserError(executableMessage(this.executable));
+    }
     await openOSAppForFile(this.filepathLocal);
+  }
+  /** Determines whether this file is code.
+   * Call this whenever we got the contents */
+  async checkExecutable(): Promise<void> {
+    if (!this.content && this.filepathLocal) {
+      await this.readLocalFile();
+    }
+    this.executable = await checkExecutableFile(this.filename, this.mimeType, this.filepathLocal, this.content);
   }
   /** Open the native file manager with the folder
    * where this file is, and select this file. */
@@ -193,9 +221,14 @@ export class Attachment extends Observable {
   /** The `json` column of the DB row, for properties that not every protocol
    * has, and that therefore have no column of their own */
   toExtraJSON(): any {
-    return {};
+    let json: any = {};
+    json.executable = this.executable;
+    return json;
   }
   fromExtraJSON(json: any) {
+    this.executable = json?.executable === undefined
+      ? undefined
+      : sanitize.enum(json.executable, Object.values(ExecutableKind), null);
   }
 
   /** Should not show to end user. This is true for auto-processing attachments
@@ -236,6 +269,8 @@ export class AttachmentFile extends FileEntry {
       if (attachment.content && !attachment.filepathLocal) {
         await attachment.save(); // write to disk, so `openOSApp()` has a file path
       }
+      await attachment.checkExecutable();
+      this.executable = attachment.executable;
       this.contents = attachment.content;
       this.filepathLocal = attachment.filepathLocal;
     });

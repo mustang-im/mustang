@@ -145,7 +145,8 @@ export class SQLChatMessage {
   static async saveAttachmentFilename(msg: RoomMessage, a: Attachment): Promise<void> {
     await (await getDatabase()).run(sql`
       UPDATE chatAttachment SET
-        filepathLocal = ${a.filepathLocal}
+        filepathLocal = ${a.filepathLocal},
+        json = ${JSON.stringify(a.toExtraJSON(), null, 2)}
       WHERE messageID = ${msg.dbID} AND filename = ${a.filename}
       `);
   }

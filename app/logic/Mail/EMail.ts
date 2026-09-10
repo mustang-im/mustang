@@ -429,6 +429,7 @@ export class EMail extends Message {
       }
     }).filter(attachment => !!attachment));
     oldAttachments.clear();
+    await Promise.all(this.attachments.contents.map(a => a.checkExecutable()));
 
     // Run processors, filters, calendar invitations, SML, etc.
     for (let processor of EMailProcessorList.processors) {

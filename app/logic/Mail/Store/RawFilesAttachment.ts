@@ -40,7 +40,10 @@ export class RawFilesAttachment implements MailContentStorage {
       return;
     }
     attachment.filepathLocal = await this.writeFile(attachment, message);
-    // Save the local file path in the message DB
+    // The OS opens the file by its name on disk, which `sanitize.filename()` changed:
+    // the sender's `invoice.b#at` became `invoice-1.bat` here
+    await attachment.checkExecutable();
+    // Save the local file path, and the check on it, in the message DB
     if (message instanceof EMail) {
       await SQLEMail.saveAttachmentFilename(message, attachment);
     } else if (message instanceof ChatMessage) {
@@ -89,6 +92,7 @@ export class RawFilesAttachment implements MailContentStorage {
     let array = await appGlobal.remoteApp.readFile(attachment.filepathLocal);
     let file = new File([array], attachment.filename, { type: attachment.mimeType });
     attachment.content = file;
+    await attachment.checkExecutable();
     return true;
   }
 

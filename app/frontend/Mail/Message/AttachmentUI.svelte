@@ -1,14 +1,15 @@
-<Clickable onClick={onOpen}>
+<Clickable onClick={onOpen} disabled={executable}>
   <hbox class="attachment"
     draggable="true"
     on:dragstart={onDragStart}
+    title={executable}
     >
     <hbox bind:this={iconEl}>
       <hbox class="icon">
         <FileIcon ext={$attachment.ext} localFilePath={$attachment.filepathLocal} size={24} />
       </hbox>
       <vbox class="info">
-        <hbox title={$attachment.filename} class="filename top-row font-normal">
+        <hbox title={executable ?? $attachment.filename} class="filename top-row font-normal">
           {$attachment.filename}
         </hbox>
         <hbox class="bottom-row font-smallest">
@@ -28,12 +29,16 @@
   import { fileSize } from "../../Files/file";
   import { openFileInternallyFromFile, canOpenFileInternally } from "../../Files/open";
   import { assert } from "../../../logic/util/util";
+  import { executableMessage } from "../../../logic/Files/FileType/ExecutableFile";
   import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
+
+  /** Why we refuse to open it. null = safe. */
+  $: executable = $attachment.executable ? executableMessage($attachment.executable) : null;
 
   async function onOpen() {
     if (canOpenFileInternally(attachment.mimeType)) {
