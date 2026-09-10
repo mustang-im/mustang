@@ -61,6 +61,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
   import { getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { queryPGPKeyServersForUID } from "../../../logic/Mail/Encryption/PGP/KeyServer";
   import { appGlobal } from "../../../logic/app";
@@ -113,6 +114,9 @@
   }
 
   async function autoQueryKeyServer() {
+    if (mail.system && mail.system != EncryptionSystem.PGP) {
+      return;
+    }
     let notYetQueried = recipientsWithoutKeys.filterOnce(r => !(r as any)._queriedKeyserver);
     await queryKeyServerFor(notYetQueried);
   }

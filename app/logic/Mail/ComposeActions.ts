@@ -79,6 +79,7 @@ export class ComposeActions {
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
     reply.mustEncrypt = original.wasEncrypted;
+    reply.system = original.system;
     importAutoCryptKeys(original)
       .catch(original.folder.account.errorCallback);
 
@@ -139,6 +140,7 @@ export class ComposeActions {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
+    forward.system = this.email.system;
     let sendData = new SendData();
     sendData.forwarded = this.email;
     forward.extraData.set(SendData.extraDataName, sendData);
