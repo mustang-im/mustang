@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div on:click={myOnClick} on:dblclick={myOnDoubleClick}
-  disabled={!!disabled} class:disabled title={typeof(disabled) == "string" ? disabled : tooltip}>
+  disabled={isDisabled} class:disabled={isDisabled} title={typeof(disabled) == "string" ? disabled : tooltip}>
   <slot />
 </div>
 
@@ -16,24 +16,25 @@
   export let disabled: boolean | string = false;
   export let tooltip: string | null = null;
 
+  let running = false;
+  $: isDisabled = !!disabled || running;
+
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
     event.stopPropagation();
     event.preventDefault();
-    if (disabled) {
+    if (isDisabled) {
       return;
     }
-    let previousDisabled = disabled;
-    disabled = true;
+    running = true;
     try {
       await onClick(event);
     } catch (ex) {
       errorCallback(ex);
-    }
-    if (disabled === true) {
-      disabled = previousDisabled;
+    } finally {
+      running = false;
     }
   }
 
@@ -43,18 +44,16 @@
     }
     event.stopPropagation();
     event.preventDefault();
-    if (disabled) {
+    if (isDisabled) {
       return;
     }
-    let previousDisabled = disabled;
-    disabled = true;
+    running = true;
     try {
       await onDoubleClick(event);
     } catch (ex) {
       errorCallback(ex);
-    }
-    if (disabled === true) {
-      disabled = previousDisabled;
+    } finally {
+      running = false;
     }
   }
 </script>
