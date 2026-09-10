@@ -33,7 +33,9 @@ export const mailDatabaseSchema = sql`
   CREATE INDEX index_emailPersonRel_emailPersonID ON emailPersonRel (emailPersonID);
 
   CREATE TABLE "email" (
-    "id" INTEGER PRIMARY KEY,
+    -- The MIME source DB and varous files are keyed by this ID.
+    -- AUTOINCREMENT avoids that SQLite gives the ID of a deleted mail to another mail.
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     -- We're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
     "folderID" INTEGER not null,
     -- Protocol-specific ID for this email. @see EMail.pid.
