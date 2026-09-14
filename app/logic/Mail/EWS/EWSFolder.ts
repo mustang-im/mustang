@@ -19,6 +19,8 @@ import { ArrayColl, type Collection } from "svelte-collections";
 export const kMaxCount = 50;
 
 export class EWSFolder extends ExchangeFolder {
+  /** DEBUG: Only for the log */
+  static _nextBatchID = 1;
   declare account: EWSAccount;
   declare readonly messages: EMailCollection<EWSEMail>;
   declare readonly subFolders: ArrayColl<EWSFolder>;
@@ -62,7 +64,11 @@ export class EWSFolder extends ExchangeFolder {
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages (not yet downloaded) */
   async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
+    let startTime = Date.now();
     let lock = await this.listMessagesLock.lock();
+    if (lock.wasWaiting) {
+      console.log(`EWS folder ${this.dbID}: updateChangedMessages() waited ${Date.now() - startTime} ms for another sync of this folder`);
+    }
     try {
       let isNewMail = !!this.syncState; // no sync state returns the entire folder
       let sync = {
@@ -117,16 +123,19 @@ export class EWSFolder extends ExchangeFolder {
           this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
           this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
         ])).flat();
+        console.log(`EWS folder ${this.dbID}: SyncFolderItems: ${ensureArray(result.Changes.Create).length} created, ${ensureArray(result.Changes.Update).length} updated, ${ensureArray(result.Changes.ReadFlagChange).length} read flags, ${ensureArray(result.Changes.Delete).length} deleted, ${newMessageIDs.length} new to fetch, ${Date.now() - startTime} ms since start`);
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
         for (let msg of newMsgsInIteration) {
           msg.isNewArrived = isNewMail;
         }
         this.messages.addAll(newMsgsInIteration);
         newMsgs.addAll(newMsgsInIteration);
+        console.log(`EWS folder ${this.dbID}: ${newMsgsInIteration.length} new mails [${newMsgsInIteration.contents.map(msg => msg.dbID).join(",")}] now in the message list, ${Date.now() - startTime} ms since start`);
         await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
         this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
         await this.storage.saveFolder(this);
       }
+      console.log(`EWS folder ${this.dbID}: updateChangedMessages() done, ${newMsgs.length} new, ${Date.now() - startTime} ms`);
       return newMsgs;
     } finally {
       lock.release();
@@ -343,7 +352,11 @@ export class EWSFolder extends ExchangeFolder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxDownloadCount) {
       let batch = emailsToDownload.slice(i, i + kMaxDownloadCount);
+      let countBefore = batch.length;
       batch = batch.filter((email) => !email.downloadRunOnce.running);
+      if (batch.length < countBefore) {
+        console.log(`EWS folder ${this.dbID}: Batch skips ${countBefore - batch.length} mails that are already downloading`);
+      }
       if (!batch.length) {
         continue;
       }
@@ -358,8 +371,18 @@ export class EWSFolder extends ExchangeFolder {
           },
         },
       };
+      let batchName = `EWS download batch#${EWSFolder._nextBatchID++}`;
+      let batchTime = Date.now();
+      console.log(`${batchName} folder ${this.dbID}: ${batch.length} mails [${batch.map(email => email.dbID).join(",")}], ${batch.reduce((sum, email) => sum + (email.size ?? 0), 0)} bytes by the headers`);
+      for (let email of batch) {
+        (email as any)._debugBatch = { batchName, batchTime };
+      }
       try {
         let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
+        console.log(`${batchName}: Got ${results.length} mails after ${Date.now() - batchTime} ms, parsing and saving`);
+        for (let email of batch) {
+          delete (email as any)._debugBatch;
+        }
         let saving = new PromiseAllDone();
         for (let result of results) {
           try {
@@ -382,7 +405,12 @@ export class EWSFolder extends ExchangeFolder {
           }
         }
         await saving.wait();
+        console.log(`${batchName}: Parsed and saved after ${Date.now() - batchTime} ms total`);
       } catch (ex) {
+        console.log(`${batchName}: FAILED after ${Date.now() - batchTime} ms: ${ex?.code ?? ""} ${ex?.message}`);
+        for (let email of batch) {
+          delete (email as any)._debugBatch;
+        }
         this.account.errorCallback(ex);
       }
     }
@@ -399,6 +427,7 @@ export class EWSFolder extends ExchangeFolder {
   /** Lists only the new messages, and downloads them.
    * @returns the new messages */
   async getNewMessages(): Promise<Collection<EWSEMail>> {
+    console.log(`EWS folder ${this.dbID}: getNewMessages(), has sync state: ${!!this.syncState}`);
     if (!this.syncState) {
       // Without sync state, the server returns the entire folder
       return await this.getRecentMessages() as Collection<EWSEMail>;

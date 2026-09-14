@@ -6,6 +6,8 @@ export interface NTLMRequestOptions {
   purpose?: ConnectionPurpose;
   /** Give up if server does not answer. Default in backend: 30s */
   timeoutSec?: number;
+  /** Only for the log, e.g. "m$GetItem" */
+  name?: string;
 }
 
 /** A `fetch()` `Response`, plus the TCP connection that it came in on */

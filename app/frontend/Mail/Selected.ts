@@ -9,6 +9,8 @@ import { writable } from "svelte/store";
 export const selectedAccount = writable<MailAccount>();
 export const selectedFolder = writable<Folder>();
 export const selectedMessage = writable<EMail>();
+/** DEBUG: When the user clicked on a mail */
+selectedMessage.subscribe(message => message && console.log(`Mail ${message.dbID}: Selected by the user, download complete: ${message.downloadComplete}, account ${message.folder?.account?.id}`));
 export const selectedMessages = writable<ArrayColl<EMail>>();
 export const selectedSearchTab = writable<SearchView>(SearchView.Folder);
 

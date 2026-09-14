@@ -33,7 +33,16 @@ export class EWSEMail extends ExchangeEMail {
   }
 
   async download() {
+    let debugBatch = (this as any)._debugBatch;
+    if (debugBatch) {
+      console.log(`EWS mail ${this.dbID}: download(), while ${debugBatch.batchName} with this mail is in flight since ${Date.now() - debugBatch.batchTime} ms, so it is downloaded twice`);
+    } else if (this.downloadRunOnce.running) {
+      console.log(`EWS mail ${this.dbID}: download() waits for the running parse and save of the background batch`);
+    }
+    let waitTime = Date.now();
     await this.downloadRunOnce.runOnce(async () => {
+      let startTime = Date.now();
+      console.log(`EWS mail ${this.dbID}: download() of ${this.size ?? "?"} bytes by the header`);
       let request = {
         m$GetItem: {
           m$ItemShape: {
@@ -48,11 +57,15 @@ export class EWSEMail extends ExchangeEMail {
         },
       };
       let result = await this.folder.account.callEWS(request);
+      let requestTime = Date.now();
       let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
       this.mime = base64ToUint8Array(mimeBase64);
       await this.parseMIME();
+      let parseTime = Date.now();
       await this.saveCompleteMessage();
+      console.log(`EWS mail ${this.dbID}: ${this.mime.length} bytes, request ${requestTime - startTime} ms, parse ${parseTime - requestTime} ms, save ${Date.now() - parseTime} ms`);
     });
+    console.log(`EWS mail ${this.dbID}: download() done after ${Date.now() - waitTime} ms`);
   }
 
   fromXML(xmljs: Record<string, any>) {

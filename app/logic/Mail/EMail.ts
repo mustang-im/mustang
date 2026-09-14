@@ -498,21 +498,27 @@ export class EMail extends Message {
    * Do this only exactly once per email `dbID`.
    * This typically happens immediately after`parseMIME()`. */
   async saveCompleteMessage() {
+    let startTime = Date.now();
     if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
     await this.saveMetadataLocally();
+    let metadataTime = Date.now();
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
       contentSaves.add(contentStorage.save(this));
     }
     await contentSaves.wait();
+    let contentTime = Date.now();
     this.downloadComplete = true;
     await this.processMessage();
+    let processTime = Date.now();
     if (this.isDeleted) { // rule deleted or moved
+      console.log(`Mail ${this.dbID}: saveCompleteMessage(): metadata ${metadataTime - startTime} ms, content ${contentTime - metadataTime} ms, processMessage() ${processTime - contentTime} ms, which deleted or moved it`);
       return;
     }
     await this.saveWritablePropsLocally(); // downloadComplete = true, and what the filter rules changed
+    console.log(`Mail ${this.dbID}: saveCompleteMessage(): metadata ${metadataTime - startTime} ms, content ${contentTime - metadataTime} ms, processMessage() ${processTime - contentTime} ms, flags ${Date.now() - processTime} ms`);
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -574,22 +580,34 @@ export class EMail extends Message {
     }
     /* RunOnce: Svelte 5 re-invokes `{#await message.loadBody()}` while the
      * load is still running, whenever an ancestor re-assigns the `message` prop */
+    let startTime = Date.now();
+    if (this.loadBodyRunOnce.running) {
+      console.log(`Mail ${this.dbID}: loadBody() joins the running load`);
+    }
     await this.loadBodyRunOnce.runOnce(async () => {
-      await Promise.resolve(); // Work around Svelte 5 bug #17678
-      if (!this._rawHTML && !this._text) {
-        if (this.dbID) {
-          await this.storage.readMessageBody(this);
-        }
+      console.log(`Mail ${this.dbID}: loadBody() start, download complete: ${this.downloadComplete}`);
+      try {
+        await Promise.resolve(); // Work around Svelte 5 bug #17678
         if (!this._rawHTML && !this._text) {
-          await this.download();
+          if (this.dbID) {
+            await this.storage.readMessageBody(this);
+            console.log(`Mail ${this.dbID}: loadBody() read the DB in ${Date.now() - startTime} ms, found the body: ${!!(this._rawHTML || this._text)}`);
+          }
+          if (!this._rawHTML && !this._text) {
+            await this.download();
+          }
         }
-      }
 
-      let html = this.html;
-      if (html?.includes("cid:")) {
-        this._sanitizedHTML = await addCID(html, this);
+        let html = this.html;
+        if (html?.includes("cid:")) {
+          this._sanitizedHTML = await addCID(html, this);
+        }
+        this.loadedBody = true; // triggers UI reload
+        console.log(`Mail ${this.dbID}: loadBody() done after ${Date.now() - startTime} ms`);
+      } catch (ex) {
+        console.log(`Mail ${this.dbID}: loadBody() FAILED after ${Date.now() - startTime} ms: ${ex?.code ?? ""} ${ex?.message}`);
+        throw ex;
       }
-      this.loadedBody = true; // triggers UI reload
     });
   }
 

@@ -40,6 +40,11 @@ export class NTLMConnection {
   protected readonly lock = new Lock();
   /** from `NTLMConnectionPool` */
   protected readonly handshakeLock: Lock;
+  static _nextID = 1;
+  /** Only for the log */
+  readonly id = NTLMConnection._nextID++;
+  /** DEBUG: The backend logs via this. Held here, because JPC holds it only weakly. */
+  protected readonly log = (message: string) => console.log(`NTLM #${this.id} ${message}`);
 
   constructor(account: EWSAccount, cookies?: CookieJar, handshakeLock?: Lock) {
     this.account = account;
@@ -57,14 +62,26 @@ export class NTLMConnection {
    * @throws LoginError if the server rejected the credentials
    */
   async request(body: string, options: NTLMRequestOptions = {}): Promise<NTLMResponse> {
+    let startTime = Date.now();
     let locked = await this.lock.lock();
+    if (locked.wasWaiting) {
+      console.log(`NTLM #${this.id} ${options.name ?? "request"}: Waited ${Date.now() - startTime} ms for the previous request on this connection`);
+    }
     try {
-      this.conn ??= await appGlobal.remoteApp.newHTTPConnection(this.account.url,
-        { acceptBrokenTLSCerts: this.account.acceptBrokenTLSCerts });
+      if (!this.conn) {
+        let createTime = Date.now();
+        this.conn = await appGlobal.remoteApp.newHTTPConnection(this.account.url,
+          { acceptBrokenTLSCerts: this.account.acceptBrokenTLSCerts, log: this.log });
+        console.log(`NTLM #${this.id}: Created backend HTTPConnection in ${Date.now() - createTime} ms`);
+      }
       // The login can fail for transient reasons, e.g. the server closed the
       // connection during the handshake. Then log in again and repeat, once.
-      return await this.requestOnce(body, options, true) ??
-        await this.requestOnce(body, options, false);
+      let response = await this.requestOnce(body, options, true);
+      if (!response) {
+        console.log(`NTLM #${this.id} ${options.name ?? "request"}: Repeating the request, after ${Date.now() - startTime} ms`);
+        response = await this.requestOnce(body, options, false);
+      }
+      return response;
     } finally {
       locked.release();
     }
@@ -76,13 +93,23 @@ export class NTLMConnection {
     try {
       let authorization: string | null = null;
       let loggedInSocketID = this.authenticatedSocketID;
-      if (!loggedInSocketID || !await this.conn.isAlive()) {
-        let challenge = await this.negotiate();
+      let aliveTime = Date.now();
+      let isAlive = !!loggedInSocketID && await this.conn.isAlive();
+      if (loggedInSocketID) {
+        console.log(`NTLM #${this.id} ${options.name ?? "request"}: Logged in on socket ${loggedInSocketID}, isAlive() ${isAlive} after ${Date.now() - aliveTime} ms`);
+      }
+      if (!isAlive) {
+        let negotiateTime = Date.now();
+        let challenge = await this.negotiate(options.name);
         if (challenge.type2) {
           // The login rides on the actual request, saving a round trip
+          let type3Time = Date.now();
           authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(
             challenge.type2, this.account.username, this.account.password);
-        } // else: server does not require authentication
+          console.log(`NTLM #${this.id} ${options.name ?? "request"}: Handshake done after ${Date.now() - negotiateTime} ms, Type 3 took ${Date.now() - type3Time} ms, sending the request with the login on socket ${challenge.socketID}`);
+        } else {
+          console.log(`NTLM #${this.id} ${options.name ?? "request"}: Server needs no login, after ${Date.now() - negotiateTime} ms`);
+        }
         loggedInSocketID = challenge.socketID;
       }
       let response = new NTLMResponse(await this.send(authorization, body, options));
@@ -91,6 +118,7 @@ export class NTLMConnection {
         return response;
       }
       this.authenticatedSocketID = 0;
+      console.log(`NTLM #${this.id} ${options.name ?? "request"}: HTTP 401 on socket ${response.socketID}, logged in on socket ${loggedInSocketID}, ${authorization ? "with" : "without"} login in this request, may retry: ${mayRetry}`);
       if (authorization && response.socketID == loggedInSocketID) {
         // The server rejected the login that we just made on this very connection
         throw new LoginError(null, gt`Login failed`);
@@ -107,25 +135,36 @@ export class NTLMConnection {
         // Only then may we repeat it. Once the server started to answer, it
         // processed the request, and repeating it would run it a second time,
         // e.g. send the same mail twice.
+        console.log(`NTLM #${this.id} ${options.name ?? "request"}: ${ex.code} on the kept-alive socket before any response, will repeat`);
         this.authenticatedSocketID = 0;
         return null;
       }
+      console.log(`NTLM #${this.id} ${options.name ?? "request"}: Failed: ${ex?.code ?? ""} ${ex?.message}, reused socket: ${ex?.reusedSocket}, response started: ${ex?.responseStarted}`);
       throw ex;
     }
   }
 
   /** NTLM handshake steps 1 and 2: Send Type 1, receive the server
    * challenge (Type 2). The challenge is bound to `socketID`. */
-  protected async negotiate(): Promise<{ socketID: number, type2: string | null }> {
+  protected async negotiate(name?: string): Promise<{ socketID: number, type2: string | null }> {
     let type1 = await appGlobal.remoteApp.createType1Message();
+    let attempt = 0;
     // Server ignores the body of this step, so don't waste bandwidth
     // A VPN tunnel needs some time after computer woke up, can cause errors "before secure TLS connection"
     let response = await retryOnTransientError(async () => {
       // Some servers and VPN gateways drop connections when multiple are established at the same time.
+      let startTime = Date.now();
+      attempt++;
       let locked = await this.handshakeLock.lock();
-      let timeout = new Timeout(11, () => locked.release()); // if we hang, let the others connect
+      if (locked.wasWaiting) {
+        console.log(`NTLM #${this.id} ${name ?? "request"}: Waited ${Date.now() - startTime} ms for the handshakes of other connections`);
+      }
+      let timeout = new Timeout(11, () => {
+        console.log(`NTLM #${this.id} ${name ?? "request"}: Handshake hangs for 11 s, letting other connections do theirs`);
+        locked.release();
+      });
       try {
-        return await this.send(type1, "", { timeoutSec: 10 });
+        return await this.send(type1, "", { timeoutSec: 10, name: `${name ?? "request"} handshake attempt ${attempt}` });
       } finally {
         timeout.fulfilled();
         locked.release();
@@ -152,18 +191,29 @@ export class NTLMConnection {
     if (cookie) {
       headers.Cookie = cookie;
     }
-    let response = await this.conn.request({
-      headers,
-      body,
-      timeoutSec: options.timeoutSec,
-    }, options.onChunk);
-    this.cookies.update(response.headers);
-    return response;
+    let startTime = Date.now();
+    let result: string;
+    try {
+      let response = await this.conn.request({
+        headers,
+        body,
+        timeoutSec: options.timeoutSec,
+      }, options.onChunk);
+      this.cookies.update(response.headers);
+      result = `HTTP ${response.status}, ${response.body.length} bytes, socket ${response.socketID}${response.reusedSocket ? "" : " new"}`;
+      return response;
+    } catch (ex) {
+      result = `${ex?.code ?? ex?.message}${ex?.reusedSocket ? " on the kept-alive socket" : ""}`;
+      throw ex;
+    } finally {
+      console.log(`NTLM #${this.id} ${options.name ?? "request"}: ${Date.now() - startTime} ms, ${result}`);
+    }
   }
 
   /** Closes the TCP connection and aborts any request underway.
    * The connection cannot be used again afterwards. */
   close(): void {
+    console.log(`NTLM #${this.id}: close()${this.conn ? "" : ", had no backend connection"}`);
     this.authenticatedSocketID = 0;
     this.conn?.close().catch(console.error);
   }

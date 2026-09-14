@@ -34,9 +34,17 @@ export class HTTPConnection {
   /** In-flight requests, so that `close()` can abort them */
   protected requests = new Set<http.ClientRequest>();
   protected _closed = false;
+  /** DEBUG: from the frontend, so that everything lands in one log */
+  protected log: (message: string) => void;
+  /** DEBUG: when each socket last finished a request */
+  protected lastActivity = new WeakMap<object, number>();
 
   constructor(url: string, options?: HTTPConnectionOptions) {
     this.url = new URL(url);
+    let log = options?.log;
+    this.log = log
+      ? message => { log(message)?.catch?.(() => {}); }
+      : message => console.log(message);
     let secure = this.url.protocol == "https:";
     this.protocolModule = secure ? https : http;
     let agentOptions: https.AgentOptions = {
@@ -91,6 +99,13 @@ export class HTTPConnection {
         : timeoutSec * 1000,
     });
     this.requests.add(req);
+    // DEBUG: Times of the request phases, relative to `startTime`
+    let startTime = Date.now();
+    let socketTime = 0, sentTime = 0, firstByteTime = 0;
+    let socketOfRequest: any = null;
+    let bytesReadBefore = 0;
+    let idleSec = "";
+    let phases = () => `socket after ${socketTime} ms, sent after ${sentTime} ms, first byte after ${firstByteTime} ms, total ${Date.now() - startTime} ms, ${socketOfRequest ? socketOfRequest.bytesRead - bytesReadBefore : 0} bytes on the wire, sent ${Buffer.byteLength(body)} bytes`;
     try {
       return await new Promise((resolve, reject) => {
         let socketID = 0;
@@ -100,25 +115,38 @@ export class HTTPConnection {
         let fail = (ex: any) => {
           ex.reusedSocket = reusedSocket;
           ex.responseStarted = responseStarted;
+          this.log(`HTTP socket ${socketID}${reusedSocket ? ` reused${idleSec}` : " new"}: FAILED ${ex?.code ?? ""} ${ex?.message}, response started: ${responseStarted}, ${phases()}`);
           reject(ex);
         };
         req.on("socket", socket => {
+          socketTime = Date.now() - startTime;
           let id = this.socketIDs.get(socket);
           if (!id) {
             id = ++this.lastSocketID;
             this.socketIDs.set(socket, id);
+            this.watchSocket(socket, id, startTime);
           }
           socketID = id;
           reusedSocket = req.reusedSocket;
+          socketOfRequest = socket;
+          bytesReadBefore = socket.bytesRead;
+          let last = this.lastActivity.get(socket);
+          idleSec = last ? ` after ${Math.round((startTime - last) / 1000)} s idle` : "";
         });
+        req.on("finish", () => sentTime = Date.now() - startTime);
         req.on("error", fail);
         // No retry, because server may have processed the request
         req.on("timeout", () => req.destroy(newErrorWithCode(
           `Server did not answer within ${timeoutSec} seconds`, "ETIMEDOUT")));
         req.on("response", res => {
           responseStarted = true;
+          firstByteTime = Date.now() - startTime;
           this.readResponse(res, socketID, reusedSocket, onChunk)
-            .then(resolve, fail);
+            .then(response => {
+              this.lastActivity.set(socketOfRequest, Date.now());
+              this.log(`HTTP socket ${socketID}${reusedSocket ? ` reused${idleSec}` : " new"}: HTTP ${response.status}, ${phases()}${onChunk ? ", streamed" : ""}${res.headers["content-encoding"] ? ", " + res.headers["content-encoding"] : ""}, keep-alive: ${res.headers["connection"] ?? "-"}`);
+              resolve(response);
+            }, fail);
         });
         req.end(body);
       });
@@ -148,6 +176,23 @@ export class HTTPConnection {
     }
     response.body = await readBodyText(stream, response.ok ? onChunk : undefined);
     return response;
+  }
+
+  /** DEBUG: Logs the life of a TCP connection: DNS, connect, TLS, and who closed it when */
+  protected watchSocket(socket: any, id: number, startTime: number): void {
+    let since = () => `${Date.now() - startTime} ms after the request started`;
+    let idle = () => {
+      let last = this.lastActivity.get(socket);
+      let state = this._closed ? "after our close()" : this.requests.size ? "during a request" : "while idle";
+      return `${state}, ${last ? `${Math.round((Date.now() - last) / 1000)} s after its last response` : "before any response"}`;
+    };
+    socket.once("lookup", (ex: any, address: string) => this.log(`HTTP socket ${id}: DNS ${ex ? "FAILED " + ex.code : "resolved to " + address}, ${since()}`));
+    socket.once("connect", () => this.log(`HTTP socket ${id}: TCP connected to ${socket.remoteAddress}:${socket.remotePort} from local port ${socket.localPort}, ${since()}`));
+    socket.once("secureConnect", () => this.log(`HTTP socket ${id}: TLS ${socket.getProtocol?.()} done, session reused: ${socket.isSessionReused?.()}, ${since()}`));
+    socket.on("timeout", () => this.log(`HTTP socket ${id}: Socket timeout ${idle()}${this.requests.size ? "" : ", so the agent closes it"}`));
+    socket.once("end", () => this.log(`HTTP socket ${id}: Server closed the connection (FIN) ${idle()}`));
+    socket.once("error", (ex: any) => this.log(`HTTP socket ${id}: Socket error ${ex?.code ?? ex?.message} ${idle()}`));
+    socket.once("close", (hadError: boolean) => this.log(`HTTP socket ${id}: Closed${hadError ? " with error" : ""} ${idle()}`));
   }
 
   /**
@@ -182,6 +227,8 @@ export class HTTPConnection {
 
 export interface HTTPConnectionOptions {
   acceptBrokenTLSCerts?: boolean;
+  /** DEBUG: Where to log. Default: console of the backend */
+  log?: (message: string) => void;
 }
 
 export interface HTTPConnectionResponse {

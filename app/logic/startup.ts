@@ -115,7 +115,12 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
 export function checkWakeUp(): void {
   let wasSleeping = false;
   let computerOn = getComputerOn();
+  let sleepTime = 0;
   computerOn.subscribe(() => catchErrors(async () => {
+    if (computerOn.isSleeping) {
+      sleepTime = Date.now();
+    }
+    console.log(`Wake-up: Computer ${computerOn.isSleeping ? "goes to sleep" : `woke up${sleepTime ? ` after ${Math.round((Date.now() - sleepTime) / 1000)} s` : ""}`}, online: ${navigator.onLine}`);
     await sleep(1);
     if (wasSleeping && !computerOn.isSleeping && navigator.onLine) {
       checkAccounts();
@@ -124,12 +129,24 @@ export function checkWakeUp(): void {
     wasSleeping = computerOn.isSleeping;
   }));
   window.addEventListener("online", checkAccounts); // network is back up
+  window.addEventListener("offline", () => console.log("Wake-up: Network offline"));
+  // DEBUG: A blocked main thread delays every response that we measure. Sleep shows as a huge lag.
+  let lastTick = Date.now();
+  setInterval(() => {
+    let lag = Date.now() - lastTick - 1000;
+    if (lag > 300) {
+      console.log(`Event loop: Main thread was blocked or asleep for ${lag} ms`);
+    }
+    lastTick = Date.now();
+  }, 1000);
 }
 
 /** On wake up */
 function checkAccounts(): void {
+  console.log(`Wake-up: checkAccounts(), online: ${navigator.onLine}`);
   for (let account of getAllAccounts()) {
     if (!account.isLoggedIn && account.loginOnStartup && !account.isDependentAccount) {
+      console.log(`Wake-up: ${account.id} is not logged in, logging in`);
       // VPN tunnel needs several seconds after the computer network woke up
       retryOnTransientError(() => account.loginAndStartup(false), 2, 4)
         .catch(account.errorCallback);
@@ -139,6 +156,7 @@ function checkAccounts(): void {
   // but new mail may have arrived while we were sleeping
   for (let account of appGlobal.emailAccounts) {
     if (account.isLoggedIn) {
+      console.log(`Wake-up: ${account.id} is logged in, getting new mail of the inbox`);
       account.inbox?.getNewMessages()
         .catch(account.errorCallback);
     }

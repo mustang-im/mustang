@@ -39,6 +39,8 @@ import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
+  /** DEBUG: Only for the log */
+  static _nextRequestID = 1;
   readonly folderMap = new Map<string, EWSFolder>;
   /** The login worked and we fetched the folder list, so the account
    * is ready to take commands. Not merely: we have a password. */
@@ -126,6 +128,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
+      console.log(`EWS ${this.id}: login(), auth ${this.authMethod}, ${this.useChromiumNTLM ? "Chromium NTLM" : "own NTLM"}`);
       if (this.mainAccount) {
         await this.mainAccount.login(interactive);
         return;
@@ -140,6 +143,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
+      console.log(`EWS ${this.id}: syncOnStartup()${this.isDependentAccount ? ", dependent account" : ""}`);
       try {
         await super.syncOnStartup();
         if (this.isDependentAccount) {
@@ -159,6 +163,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async disconnect(): Promise<void> {
+    console.log(`EWS ${this.id}: disconnect(), closes the connection pool`);
     this.hasLoggedIn = false;
     this.notifyObserversOfSubaccounts();
     if (this.mainAccount) {
@@ -374,21 +379,40 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
    */
   async callEWS(aRequest: JsonRequest, purpose = ConnectionPurpose.Display, options?: any): Promise<any> {
     if (this.mainAccount) {
+      console.log(`EWS: ${Object.keys(aRequest)[0]} of ${this.id} goes via the main account ${this.mainAccount.id}`);
       return await (this.mainAccount as EWSAccount).callEWS(aRequest, purpose, options);
     }
+    let name = `EWS#${EWSAccount._nextRequestID++} ${Object.keys(aRequest)[0]}`;
+    let callTime = Date.now();
+    console.log(`${name} ${purpose} ${this.id}: Start${options?.isRepeating ? ", repeating after HTTP 401" : ""}`);
     await this.throttle.throttle();
+    if (Date.now() - callTime > 10) {
+      console.log(`${name}: Throttle made it wait ${Date.now() - callTime} ms`);
+    }
 
     if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
       await this.oAuth2.login(false);
     }
 
     let startTime = Date.now();
-    let lock = await this.semaphores.get(purpose).lock();
+    let semaphore = this.semaphores.get(purpose);
+    if (semaphore.needToWait) {
+      console.log(`${name}: Queued at the account, ${purpose} ${semaphore.countRunning} running + ${semaphore.countWaiting} waiting`);
+    }
+    let lock = await semaphore.lock();
+    if (lock.wasWaiting) {
+      console.log(`${name}: Waited ${Date.now() - startTime} ms at the account for a ${purpose} slot`);
+    }
     let response: any;
+    let requestTime = Date.now();
     try {
+      let body = this.request2XML(aRequest);
       response = this.authMethod == AuthMethod.NTLM
-        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kXMLContentType }, purpose })
-        : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
+        ? await this.ntlm.request(body, { headers: { 'Content-Type': kXMLContentType }, purpose, name })
+        : await fetch(this.url, this.createRequestOptions({ body }));
+    } catch (ex) {
+      console.log(`${name}: FAILED after ${Date.now() - requestTime} ms in the transport, ${Date.now() - callTime} ms since start: ${ex?.code ?? ""} ${ex?.message}`);
+      throw ex;
     } finally {
       lock.release();
 
@@ -397,17 +421,24 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         logError(new Error(`Server needed ${seconds} seconds to answer`));
       }
     }
+    let transportTime = Date.now() - requestTime;
+    let textTime = Date.now();
     try {
       response.responseText = await response.text();
     } catch (ex) {
       response.responseText = "";
     }
+    console.log(`${name}: HTTP ${response.status}, ${response.responseText.length} chars, transport ${transportTime} ms, text() ${Date.now() - textTime} ms, ${Date.now() - callTime} ms since start`);
     this.fatalError = null;
     if (response.status == 200) {
       try {
+        let parseTime = Date.now();
         response.responseXML = this.parseXML(response.responseText);
-        return this.checkResponse(response, aRequest);
+        let result = this.checkResponse(response, aRequest);
+        console.log(`${name}: Parsed in ${Date.now() - parseTime} ms, done ${Date.now() - callTime} ms since start`);
+        return result;
       } catch (ex) {
+        console.log(`${name}: EWS error ${ex?.type ?? ex?.message}`);
         if (this.isThrottleError(ex)) {
           return await this.callEWS(aRequest, purpose);
         } else {
@@ -459,9 +490,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
     let lastAttempt: number;
     let signal = abort.signal;
+    let streamID = `EWS stream#${EWSAccount._nextRequestID++}`;
     do {
       try {
         lastAttempt = Date.now();
+        console.log(`${streamID} ${this.id}: Opening the notification stream`);
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
@@ -484,14 +517,21 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               if (message.ResponseClass == "Error") {
                 throw new EWSItemError(message, request);
               }
+              let seconds = Math.round((Date.now() - lastAttempt) / 1000);
               if (message.ConnectionStatus == "Closed") {
+                console.log(`${streamID}: Server says ConnectionStatus Closed, ${seconds} s after opening`);
                 continue; // Re-open connection
               }
+              let debugMessage = message as Record<string, any>;
+              console.log(`${streamID}: Received ${ensureArray(debugMessage.Notifications?.Notification).length} notification(s), ConnectionStatus ${debugMessage.ConnectionStatus ?? "-"}, ${seconds} s after opening`);
+              let callbackTime = Date.now();
               await responseCallback(message);
+              console.log(`${streamID}: Processed them in ${Date.now() - callbackTime} ms`);
             } catch (ex) {
               if (signal.aborted) {
                 continue; // Server errors on cancel
               }
+              console.log(`${streamID}: Error in the stream: ${ex?.type ?? ex?.message}`);
               if (ex.type == "ErrorSubscriptionNotFound" || ex.type == "ErrorMissedNotificationEvents") {
                 // The server dropped it, e.g. while the computer slept
                 await this.resubscribeNotifications(username);
@@ -511,7 +551,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           try {
             assert(!signal.aborted, "Stream was aborted");
             // Streams via `processChunk`. Resolves once the stream ended.
-            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk: processChunk });
+            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk: processChunk, name: streamID });
           } finally {
             signal.removeEventListener("abort", onAbort);
             conn.close();
@@ -519,6 +559,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         } else {
           response = await fetch(this.url, this.createRequestOptions({ body, signal }));
         }
+        console.log(`${streamID}: Stream ended with HTTP ${response.status}, ${Math.round((Date.now() - lastAttempt) / 1000)} s after opening`);
         if (!response.ok) {
           console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
           return;
@@ -529,6 +570,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           }
         }
       } catch (ex) {
+        console.log(`${streamID}: Stream failed ${Math.round((Date.now() - lastAttempt) / 1000)} s after opening: ${ex?.code ?? ""} ${ex?.message}, aborted: ${signal.aborted}`);
         if (signal.aborted) {
           // Log only for development purposes.
           console.log(signal.reason);
@@ -543,6 +585,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         break;
       }
     } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    console.log(`${streamID}: Stream loop quit, no more notifications on it. Aborted: ${signal.aborted}, last attempt ${Math.round((Date.now() - lastAttempt) / 1000)} s ago`);
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
@@ -682,6 +725,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async streamNotifications(username: string) {
+    console.log(`EWS ${this.id}: streamNotifications()${this.notificationAbort[username] ? ", aborting the previous stream" : ""}`);
     this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
     this.notificationAbort[username] = new AbortController();
     let subscriptions = username == this.username
@@ -760,6 +804,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     for (let newMailEvent of ensureArray(notification.NewMailEvent)) {
       folderIDs.add(newMailEvent.ParentFolderId.Id);
     }
+    console.log(`EWS notification: ${["Copied", "Created", "Deleted", "Modified", "Moved", "NewMail"].map(type => `${type} ${ensureArray(notification[type + "Event"]).length}`).join(", ")}, in ${folderIDs.size} folders, hierarchy changed: ${hierarchyChanged}`);
     if (hierarchyChanged) {
       try {
         await this.listFolders();
@@ -781,7 +826,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           mailFolder = sharedAccount?.folderMap.get(id);
         }
         if (mailFolder) {
+          let syncTime = Date.now();
           let newMsgs = await mailFolder.updateChangedMessages();
+          console.log(`EWS notification: Folder ${mailFolder.dbID} ${mailFolder.specialFolder}: ${newMsgs.length} new mails, found in ${Date.now() - syncTime} ms, starting their download`);
           mailFolder.downloadMessages(newMsgs)
             .catch(this.errorCallback);
           continue;
