@@ -165,6 +165,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
             await email.saveWritablePropsLocally();
           } else {
             email = this.newEMail();
+            email.isRead = true; // fromWBXML will update countUnread
             email.serverID = serverID;
             email.fromWBXML(item.ApplicationData);
             await email.saveMetadataLocally();
@@ -190,6 +191,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       newMsgs.addAll(newMsgsInPage);
       this.messages.addAll(newMsgsInPage);
     });
+    this.countTotal = this.messages.length;
     this.account.addPingable(this);
     return newMsgs;
   }
@@ -318,6 +320,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
     await email.saveCompleteMessage();
     await this.readFolder();
     this.messages.add(email);
+    this.countTotal++;
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {

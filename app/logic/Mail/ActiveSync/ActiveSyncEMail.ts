@@ -85,7 +85,11 @@ export class ActiveSyncEMail extends ExchangeEMail {
    * so leave omitted properties unchanged. */
   setFlags(wbxmljs: any) {
     if (wbxmljs.Read != undefined) {
-      this.isRead = wbxmljs.Read != "0";
+      let read = wbxmljs.Read != "0";
+      if (this.isRead != read) {
+        this.folder.countUnread += read ? -1 : 1;
+      }
+      this.isRead = read;
     }
     if (wbxmljs.Flag != undefined) {
       this.isStarred = wbxmljs.Flag?.Status == "2";
@@ -123,6 +127,9 @@ export class ActiveSyncEMail extends ExchangeEMail {
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
+    }
+    if (this.isRead != read) {
+      this.folder.countUnread += read ? -1 : 1;
     }
     await super.markRead(read);
   }
@@ -177,6 +184,10 @@ export class ActiveSyncEMail extends ExchangeEMail {
       let response = await this.folder.makeSyncRequest(data);
       if (response.Responses) {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      }
+      this.folder.countTotal--;
+      if (!this.isRead) {
+        this.folder.countUnread--;
       }
     } finally {
       this.folder.deletions.delete(this.serverID);
