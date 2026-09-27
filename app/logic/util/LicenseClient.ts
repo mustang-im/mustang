@@ -199,9 +199,11 @@ async function fetchTicket(): Promise<Ticket> {
     gFetchingTicket = fetchTicketUnqueued();
   }
   // TODO check for races
-  let ticket = await gFetchingTicket;
-  gFetchingTicket = null;
-  return ticket;
+  try {
+    return await gFetchingTicket;
+  } finally {
+    gFetchingTicket = null; // also after an error, otherwise all later fetches fail with it
+  }
 }
 
 /**
