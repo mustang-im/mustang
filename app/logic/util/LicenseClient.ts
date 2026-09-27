@@ -84,7 +84,7 @@ export class Ticket {
 
   get hasRecentlyExpired(): boolean {
     const kRecentlyExpired = k1MonthMS; // 1 month
-    return this.valid && this.isExpired && this.expiresIn > kRecentlyExpired;
+    return this.valid && this.isExpired && this.expiresIn > -kRecentlyExpired;
   }
 }
 
