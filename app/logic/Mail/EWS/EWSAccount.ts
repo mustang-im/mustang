@@ -23,7 +23,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
-import { ensureLicensed } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { ConnectionPurpose } from "./ConnectionPurpose";
@@ -130,7 +130,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await this.mainAccount.login(interactive);
         return;
       }
-      await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
+      await license.ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
       await super.login(interactive);
       await this.loginCommon(interactive);
       this.hasLoggedIn = true;

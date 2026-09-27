@@ -3,7 +3,7 @@ import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
 import { LiveKitMediaDeviceStreams } from "./LiveKitMediaDeviceStreams";
 import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
-import { ensureLicensed, getSavedTicket } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
@@ -43,7 +43,7 @@ export class LiveKitConf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login(true);
-    await ensureLicensed();
+    await license.ensureLicensed();
     let time = new Date().toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.state = MeetingState.Init;
@@ -64,7 +64,7 @@ export class LiveKitConf extends VideoConfMeeting {
       name: forName ?? "",
       key: this.encryptionKey ?? "",
     });*/
-    await ensureLicensed();
+    await license.ensureLicensed();
     // The invitation token has to be created together with the meeting, or in the join URL
     if (!this.invitationURL) {
       await this.createMyParticipant();
@@ -148,7 +148,7 @@ export class LiveKitConf extends VideoConfMeeting {
       myName: this.account.realname,
     }), {
       headers: {
-        "X-AuthToken": btoa(JSON.stringify(getSavedTicket())),
+        "X-AuthToken": btoa(JSON.stringify(license.savedTicket())),
       }
     });
     this.id = sanitize.alphanumdash(json.roomName);
