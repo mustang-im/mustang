@@ -1,5 +1,6 @@
 import { type Person, ContactEntry } from '../../Abstract/Person';
-import type { TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TOrganization, TOrgUnit } from './TJSContact';
+import type { TAddress, TAddressComponent, TAddressComponentKind, TEmailAddress, TJSContact, TLink, TNameComponent, TOnlineService, TPhone, TPhoneFeature, TOrganization, TOrgUnit } from './TJSContact';
+import { StreetAddress } from '../StreetAddress';
 import type { JMAPPerson } from './JMAPPerson';
 import type { TID } from '../../Mail/JMAP/TJMAPGeneric';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
@@ -33,6 +34,9 @@ export class JSContact {
       let url = sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
       return new ContactEntry(url, null, url ? new URL(url).protocol.slice(0, -1) : null);
     });
+    JSContact.toContactEntries(person.streetAddresses, jscontact.addresses, e => new ContactEntry(
+      JSContact.toStreetAddress(e).toString() || null,
+      null, null));
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
@@ -51,7 +55,10 @@ export class JSContact {
         : firstPropertyName(contexts);
   }
 
-  protected static fromPurposeToContext(purpose: string): Record<string, true> {
+  protected static fromPurposeToContext(purpose: string | null): Record<string, true> | null {
+    if (!purpose) {
+      return null;
+    }
     return purpose == "home"
       ? { private: true }
       : purpose == "work"
@@ -106,20 +113,47 @@ export class JSContact {
     jscontact.phones ??= {};
     jscontact.onlineServices ??= {};
     jscontact.links ??= {};
-    JSContact.fromContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses, "address",
-      () => { });
-    JSContact.fromContactEntries<TPhone>(jscontact.phones, person.phoneNumbers, "number",
-      (entry: any, personEntry: ContactEntry) => {
+    jscontact.addresses ??= {};
+    JSContact.fromContactEntries<TEmailAddress>(jscontact.emails, person.emailAddresses,
+      (entry: TEmailAddress, personEntry: ContactEntry) => {
+        entry.address = personEntry.value;
+      });
+    JSContact.fromContactEntries<TPhone>(jscontact.phones, person.phoneNumbers,
+      (entry: TPhone, personEntry: ContactEntry) => {
+        entry.number = personEntry.value;
         entry.features = JSContact.fromProtocolToPhoneFeature(personEntry.protocol);
       });
-    JSContact.fromContactEntries<TOnlineService>(jscontact.onlineServices, person.chatAccounts, "user",
-      (entry: any, personEntry: ContactEntry) => {
-        entry.service = personEntry.protocol;
+    JSContact.fromContactEntries<TOnlineService>(jscontact.onlineServices, person.chatAccounts,
+      (entry: TOnlineService, personEntry: ContactEntry) => {
+        // The server may have both `uri` and `user`. We read `uri ?? user`,
+        // so only overwrite them when the user changed the value.
+        let value = personEntry.value;
+        if (value != (entry.uri ?? entry.user)) {
+          if (isURI(value)) {
+            entry.uri = value;
+            delete entry.user;
+          } else {
+            entry.user = value;
+            delete entry.uri;
+          }
+        }
+        // `null` is not a valid value for JSContact String properties
+        if (personEntry.protocol) {
+          entry.service = personEntry.protocol;
+        } else {
+          delete entry.service;
+        }
       });
-    JSContact.fromContactEntries<TLink>(jscontact.links, person.urls, "uri",
-      () => { });
+    JSContact.fromContactEntries<TLink>(jscontact.links, person.urls,
+      (entry: TLink, personEntry: ContactEntry) => {
+        // Must be a URI, see RFC 9553 section 1.4.4
+        entry.uri = isURI(personEntry.value) ? personEntry.value : "https://" + personEntry.value;
+      });
+    JSContact.fromContactEntries<TAddress>(jscontact.addresses, person.streetAddresses,
+      (entry: TAddress, personEntry: ContactEntry) => {
+        JSContact.fromStreetAddress(new StreetAddress(personEntry.value), entry);
+      });
     // TODO
-    // person.streetAddresses
     // person.popularity
 
     if (person.picture) {
@@ -153,6 +187,74 @@ export class JSContact {
       entry.name = company.name;
       entry.units = company.units;
     });
+  }
+
+  /** JSContact Address -> our StreetAddress
+   * <https://www.rfc-editor.org/rfc/rfc9553.html#name-address-object>
+   * Component mapping follows RFC 9555 section 2.5.1 (vCard ADR <-> JSContact) */
+  protected static toStreetAddress(address: TAddress): StreetAddress {
+    let components = ensureArray(address?.components)
+      .filter(c => c && typeof (c) == "object" && c.kind != "separator");
+    function get(kinds: TAddressComponentKind[], separator = " "): string | null {
+      return components
+        .filter(c => kinds.includes(c.kind))
+        .map(c => sanitize.string(c.value, "").trim())
+        .filter(value => value)
+        .join(separator) || null;
+    }
+    let street = new StreetAddress();
+    street.street = get(["number", "name", "block", "direction"]) ?? get(["landmark"]);
+    street.instructions = [
+      get(["room", "apartment", "floor", "building"], ", "),
+      get(["postOfficeBox"]),
+    ].filter(line => line).join("\n") || null;
+    street.city = get(["locality"]) ?? get(["district"]) ??
+      sanitize.nonemptystring(address?.locality, null);
+    street.state = get(["region"]) ?? sanitize.nonemptystring(address?.region, null);
+    street.postalCode = get(["postcode"]) ?? sanitize.nonemptystring(address?.postcode, null);
+    street.country = get(["country"]) ?? sanitize.nonemptystring(address?.country, null) ??
+      sanitize.nonemptystring(address?.countryCode, null);
+    if (!street.toString() && address?.full) {
+      // Only the full address is known, e.g. from a vCard LABEL
+      street.street = sanitize.nonemptystring(address.full, null);
+    }
+    return street;
+  }
+
+  /** Our StreetAddress -> JSContact Address.
+   * Updates `address` in place, leaving it as-is when our value did not change,
+   * so that we do not lose data that we do not support. */
+  protected static fromStreetAddress(street: StreetAddress, address: TAddress) {
+    if (JSContact.toStreetAddress(address).toString() == street.toString()) {
+      return;
+    }
+    let oldCountry = JSContact.toStreetAddress(address).country;
+    let components: TAddressComponent[] = [];
+    function add(kind: TAddressComponentKind, value: string | null) {
+      value = value?.trim();
+      if (value) {
+        components.push({ kind, value });
+      }
+    }
+    add("apartment", street.instructions);
+    add("name", street.street);
+    add("locality", street.city);
+    add("region", street.state);
+    add("postcode", street.postalCode);
+    add("country", street.country);
+    address.components = components;
+    // We don't know the country-specific order of the components
+    address.isOrdered = false;
+    delete address.defaultSeparator;
+    address.full = street.toPlaintext();
+    // Not in the final RFC 9553. Replaced by `components`.
+    delete address.locality;
+    delete address.region;
+    delete address.postcode;
+    delete address.country;
+    if (street.country != oldCountry) {
+      delete address.countryCode;
+    }
   }
 
   protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
@@ -192,10 +294,10 @@ export class JSContact {
   protected static fromContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
       jscontactEntries: Record<TID, T>,
       personEntriesAbstract: ArrayColl<ContactEntry>,
-      valueProp: string,
-      otherPropsFunc: (entry: any, personEntry: ContactEntry) => void
+      setValuesFunc: (entry: T, personEntry: ContactEntry) => void
     ) {
-    let personEntries = personEntriesAbstract as ArrayColl<ContactEntry>;
+    let personEntries = (personEntriesAbstract as ArrayColl<ContactEntry>)
+      .contents.filter(p => p.value); // not yet filled in by the user
     for (let personEntry of personEntries) {
       let jmapID = getJMAPID(personEntry);
       if (!jmapID) {
@@ -203,10 +305,15 @@ export class JSContact {
         setJMAPID(personEntry, jmapID);
       }
       let jscontactEntry = jscontactEntries[jmapID] ??= {} as T;
-      jscontactEntry[valueProp] = personEntry.value;
-      jscontactEntry.pref = personEntry.preference;
-      jscontactEntry.contexts = JSContact.fromPurposeToContext(personEntry.purpose);
-      otherPropsFunc(jscontactEntry, personEntry);
+      // RFC 9553 section 1.5.3: 1 to 100
+      jscontactEntry.pref = sanitize.integerRange(personEntry.preference, 1, 100, ContactEntry.defaultPreference);
+      let contexts = JSContact.fromPurposeToContext(personEntry.purpose);
+      if (contexts) {
+        jscontactEntry.contexts = contexts;
+      } else {
+        delete jscontactEntry.contexts;
+      }
+      setValuesFunc(jscontactEntry, personEntry);
     }
     // Delete old entries
     for (let jmapID in jscontactEntries) {
@@ -223,6 +330,11 @@ function objValues<TValue>(obj: Record<string, TValue>): TValue[] {
     return [];
   }
   return Object.values(obj);
+}
+
+/** @returns true, if `value` starts with a URI scheme, e.g. `https:` or `xmpp:` */
+function isURI(value: string): boolean {
+  return /^[a-z][a-z0-9+.\-]*:/i.test(value ?? "");
 }
 
 function firstPropertyName(obj: Record<string, any>): string | null {
