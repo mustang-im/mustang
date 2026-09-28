@@ -39,7 +39,8 @@ export class SMIMEReadProcessor extends EMailProcessor {
       if (blob[0] != 0x30) { // not an ASN.1 SEQUENCE
         // Some archivers keep the S/MIME headers, but store the message that
         // they decrypted. What we have is then MIME.
-        if (/^[\w-]+:/.test(new TextDecoder().decode(blob.subarray(0, 100)))) {
+        let headers = new TextDecoder().decode(blob.subarray(0, 10000)).split(/\r?\n\r?\n/)[0];
+        if (/^[\w-]+:/.test(headers) && /^(Content-Type|MIME-Version):/im.test(headers)) {
           await this.unwrapMIME(email, blob);
           return;
         }
