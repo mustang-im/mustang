@@ -1,16 +1,21 @@
-<Browser
-  title={$t`Authentication`}
-  url={startURL}
-  autofill={autoFillLoginPage(dialog.oAuth2.account)}
-  on:page-change={onPageChange}
-  on:close={onClose}
-  sessionID={dialog.oAuth2.account?.webSessionID}
-  {withURLbar}
-  >
-  <hbox class="account" slot="urlbar-left">
-    {dialog.oAuth2.account?.name}
-  </hbox>
-</Browser>
+<!-- Create the <webview> only once we know the URL. Setting `src` on an
+  already created <webview> may be ignored, if its guest is not attached yet,
+  which leaves the login page blank. -->
+{#if startURL}
+  <Browser
+    title={$t`Authentication`}
+    url={startURL}
+    autofill={autoFillLoginPage(dialog.oAuth2.account)}
+    on:page-change={onPageChange}
+    on:close={onClose}
+    sessionID={dialog.oAuth2.account?.webSessionID}
+    {withURLbar}
+    >
+    <hbox class="account" slot="urlbar-left">
+      {dialog.oAuth2.account?.name}
+    </hbox>
+  </Browser>
+{/if}
 
 <script lang="ts">
   import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
