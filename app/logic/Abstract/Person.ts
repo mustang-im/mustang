@@ -196,8 +196,7 @@ export class Person extends ContactBase {
       return this;
     }
     let newPerson = newAddressbook.newPerson();
-    // Only local contacts can simply be re-assigned. Server contacts have
-    // server IDs of the old account, so they need to be re-created.
+    // Server contacts have server IDs of the old account, so they need to be re-created.
     if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newPerson) &&
         newAddressbook.protocol == "addressbook-local") {
       this.addressbook?.persons.remove(this);
