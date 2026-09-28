@@ -158,11 +158,11 @@
   /** The attachments sidebar appears as soon as there is an attachment,
    * so ask for the file right away. */
   async function expandAttachments(): Promise<void> {
-    let file = await fileSelector.selectFile();
-    if (!file) {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
       return;
     }
-    addFilesAsAttachments(event, [file]);
+    addFilesAsAttachments(event, files);
   }
 
   function onFilesDrop(dropped: CustomEvent): void {

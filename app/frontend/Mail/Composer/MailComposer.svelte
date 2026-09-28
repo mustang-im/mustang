@@ -322,11 +322,11 @@
 
   let fileSelector: FileSelector;
   async function onAddAttachment() {
-    let file = await fileSelector.selectFile();
-    if (!file) {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
       return;
     }
-    addFilesAsAttachments(mail, [file]);
+    addFilesAsAttachments(mail, files);
   }
 
   function onFilesDrop(event: CustomEvent) {
