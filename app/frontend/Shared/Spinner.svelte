@@ -27,7 +27,6 @@
     animation: l15 2s infinite;
   }
   .loader::after {
-    /* margin: 8px; TODO Makes inner part better on <StatusMessage>, but completely breaks layout in other sizes, e.g. in <RoundButton> */
     animation-duration: 3s;
   }
   @keyframes l15 {

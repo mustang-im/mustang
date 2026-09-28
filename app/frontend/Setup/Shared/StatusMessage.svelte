@@ -39,9 +39,6 @@
   .spinner {
     margin: 4px;
   }
-  .spinner :global(.loader::after) {
-    margin: 8px;
-  }
   .message {
     overflow-wrap: anywhere;
   }
