@@ -11,6 +11,9 @@ import sql, { type Query } from "../../../../lib/rs-sqlite";
 import { gt } from "../../../l10n/l10n";
 
 export class SQLSearchEMail extends SearchEMail {
+  /** Only these emails, e.g. found by another index */
+  emailIDs: number[] | null = null;
+
   /** Start a database search based on the critera set on this object */
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let parseError = backgroundError;
@@ -41,6 +44,7 @@ export class SQLSearchEMail extends SearchEMail {
       WHERE 1=1
         $${accountIDs ? sql` AND accountID IN ${accountIDs} ` : sql``}
         $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
+        $${this.emailIDs ? sql` AND email.id IN ${this.emailIDs} ` : sql``}
         $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing ? 1 : 0} ` : sql``}
         $${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead ? 1 : 0} ` : sql``}
         $${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred ? 1 : 0} ` : sql``}
