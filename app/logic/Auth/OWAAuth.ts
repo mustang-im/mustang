@@ -30,6 +30,11 @@ export class OWAAuth extends WebBasedAuth {
     if (this.isLoggedIn) {
       return "";
     }
+    // The cookies survive an app restart
+    if (await this.account.testLoggedIn()) {
+      this.isLoggedIn = true;
+      return "";
+    }
     if (!interactive) {
       throw new OAuth2LoginNeeded();
     }
