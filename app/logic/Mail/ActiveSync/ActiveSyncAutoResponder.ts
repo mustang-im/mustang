@@ -21,18 +21,18 @@ export class ActiveSyncAutoResponder extends AutoResponder {
   }
 
   async load(): Promise<void> {
-    let response = await this.callOof({ Get: { BodyType: "HTML" } });
+    let response = await this.callOOF({ Get: { BodyType: "HTML" } });
     this.fromEAS(response.Get ?? {});
   }
 
   async save(): Promise<void> {
     this.validate();
-    await this.callOof({ Set: this.toEAS() });
+    await this.callOOF({ Set: this.toEAS() });
   }
 
   /** @param request `Get` or `Set`
    * @returns `Oof` of the response */
-  protected async callOof(request: { Get?: object, Set?: object }): Promise<Record<string, any>> {
+  protected async callOOF(request: { Get?: object, Set?: object }): Promise<Record<string, any>> {
     let response = await this.account.callEAS("Settings", { Oof: request });
     if (response?.Oof?.Status != "1") {
       throw new ActiveSyncError("Settings", response?.Oof?.Status, this.account);
