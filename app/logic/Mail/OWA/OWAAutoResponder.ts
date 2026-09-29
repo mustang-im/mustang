@@ -7,7 +7,7 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
   declare readonly account: OWAAccount;
 
   async load(): Promise<void> {
-    let response = await this.callOof(new OWARequest("GetUserOofSettings", {
+    let response = await this.callOOF(new OWARequest("GetUserOofSettings", {
       __type: "GetUserOofSettingsRequest:#Exchange",
       Mailbox: this.mailbox,
     }));
@@ -16,7 +16,7 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
 
   async save(): Promise<void> {
     this.validate();
-    await this.callOof(new OWARequest("SetUserOofSettings", {
+    await this.callOOF(new OWARequest("SetUserOofSettings", {
       __type: "SetUserOofSettingsRequest:#Exchange",
       Mailbox: this.mailbox,
       UserOofSettings: this.toOWA(),
@@ -24,7 +24,7 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
   }
 
   /** As in EWS, a lone `ResponseMessage`, which `callOWA()` does not check */
-  protected async callOof(request: OWARequest): Promise<any> {
+  protected async callOOF(request: OWARequest): Promise<any> {
     let response = await this.account.callOWA(request);
     if (response?.ResponseMessage?.ResponseClass == "Error") {
       throw new OWAError({ json: response.ResponseMessage });
