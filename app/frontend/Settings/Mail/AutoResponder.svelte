@@ -5,6 +5,17 @@
     <hbox class="loading">
       <Loader />
     </hbox>
+  {:else if loadError && $autoResponder.needsPermission}
+    <vbox class="permission">
+      <hbox>{loadError.message}</hbox>
+      <hbox>
+        <Button label={$t`Allow access`}
+          classes="primary filled"
+          icon={LoginIcon}
+          onClick={onAllow}
+          />
+      </hbox>
+    </vbox>
   {:else if loadError}
     <ErrorMessageInline ex={loadError} />
   {:else}
@@ -114,6 +125,7 @@
   import Loader from "../../Shared/Loader.svelte";
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
+  import LoginIcon from "lucide-svelte/icons/log-in";
   import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 
@@ -146,6 +158,11 @@
   async function onSave() {
     await autoResponder.save();
   }
+
+  async function onAllow() {
+    await autoResponder.grantPermission();
+    await load(account);
+  }
 </script>
 
 <style>
@@ -154,6 +171,10 @@
   }
   .loading {
     margin-block-start: 32px;
+  }
+  .permission {
+    margin-block-start: 32px;
+    gap: 16px;
   }
   .options {
     gap: 8px;

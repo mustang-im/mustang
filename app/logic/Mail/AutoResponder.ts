@@ -34,6 +34,9 @@ export class AutoResponder extends Observable {
   /** Limit of `externalAudience`, set by the admin */
   @notifyChangedProperty
   maxAudience = AutoResponderAudience.All;
+  /** The login lacks the permission. @see `grantPermission()` */
+  @notifyChangedProperty
+  needsPermission = false;
 
   constructor(account: MailAccount) {
     super();
@@ -66,6 +69,11 @@ export class AutoResponder extends Observable {
 
   /** Writes these settings to the server */
   async save(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /** Asks the user to log in again and allow the missing permission */
+  async grantPermission(): Promise<void> {
     throw new AbstractFunction();
   }
 

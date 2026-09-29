@@ -5,7 +5,8 @@ import { MailAccount } from "../../../../logic/Mail/MailAccount";
 import { AutoResponder, AutoResponderAudience } from "../../../../logic/Mail/AutoResponder";
 import AutoResponderPage from "../../../../frontend/Settings/Mail/AutoResponder.svelte";
 import { flushSync, mount, tick, unmount } from "svelte";
-import { afterEach, beforeAll, expect, test } from "vitest";
+import { UserError } from "../../../../logic/util/util";
+import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 beforeAll(() => {
   appGlobal.remoteApp = {} as any;
@@ -38,9 +39,29 @@ class TestAutoResponder extends AutoResponder {
   }
 }
 
+/** Login from before we asked for the permission */
+class DeniedResponder extends TestAutoResponder {
+  granted = false;
+
+  async load() {
+    if (!this.granted) {
+      this.needsPermission = true;
+      throw new UserError("Please log in once more and allow access.");
+    }
+    await super.load();
+  }
+
+  async grantPermission() {
+    this.granted = true;
+    this.needsPermission = false;
+  }
+}
+
+let responderClass: typeof TestAutoResponder;
+
 class TestMailAccount extends MailAccount {
   newAutoResponder() {
-    return new TestAutoResponder(this);
+    return new responderClass(this);
   }
 }
 
@@ -52,7 +73,8 @@ afterEach(() => {
   target.remove();
 });
 
-async function showPage(): Promise<TestAutoResponder> {
+async function showPage(type = TestAutoResponder): Promise<TestAutoResponder> {
+  responderClass = type;
   let account = new TestMailAccount();
   target = document.createElement("div");
   document.body.append(target);
@@ -105,4 +127,18 @@ test("Replying to contacts outside shows their message", async () => {
   click(radio("Only to my contacts"));
   expect(autoResponder.externalAudience).toBe(AutoResponderAudience.Contacts);
   expect(target.querySelectorAll(".html-editor").length).toBe(2);
+});
+
+test("A login without the permission offers to allow it", async () => {
+  let autoResponder = await showPage(DeniedResponder);
+
+  expect(target.textContent).toContain("allow access");
+  expect(target.textContent).not.toContain("Send automatic replies");
+  click([...target.querySelectorAll("button")].find(el => el.textContent.includes("Allow access")));
+
+  await vi.waitFor(() => {
+    flushSync();
+    expect(radio("Send automatic replies").checked).toBe(true);
+  });
+  expect(autoResponder.needsPermission).toBe(false);
 });
