@@ -45,7 +45,10 @@ test("A mail does not get the MIME of a deleted mail that had its row ID", async
   let recycledID = gone.dbID;
 
   // As a folder delete cascades, without telling the backup DB
-  await (await getDatabase()).run(sql`DELETE FROM email WHERE id = ${recycledID}`);
+  let db = await getDatabase();
+  await db.run(sql`DELETE FROM email WHERE id = ${recycledID}`);
+  // Reuses row IDs, like a DB from before `AUTOINCREMENT`
+  await db.run(sql`DELETE FROM sqlite_sequence WHERE name = 'email'`);
 
   let fresh = await newSavedEMail("fresh@example.com");
   expect(fresh.dbID).toBe(recycledID); // SQLite reuses the freed row ID
