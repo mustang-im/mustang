@@ -231,7 +231,7 @@ export class MailAccount extends TCPAccount {
 
   /** Which of the `distinguishedIDs` of `person`'s account we may access. */
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
-    throw new NotImplemented(gt`This protocol does not implement delegated accounts`);
+    throw new NotImplemented(gt`${this.protocol} does not implement delegated accounts`);
   }
 
   /** Adds the mails that `person` shared with us as an account of their own. */
