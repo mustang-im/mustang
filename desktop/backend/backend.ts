@@ -8,6 +8,8 @@ import { WebContents } from './WebContents';
 import { Observable, notifyChangedProperty } from '../../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
+import * as sqliteVec from "sqlite-vec";
+import { pipeline } from "@huggingface/transformers";
 import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource, autoUpdater, systemPreferences, powerMonitor } from "electron";
@@ -87,6 +89,7 @@ async function createSharedAppObject() {
     // openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
+    createTextEmbedder,
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
@@ -560,7 +563,13 @@ function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array):
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
   }
-  return new Database(filename, safeOptions);
+  let database = new Database(filename, safeOptions);
+  sqliteVec.load(database);
+  return database;
+}
+
+function createTextEmbedder(model: string) {
+  return pipeline("feature-extraction", model, { dtype: "q8", cache_dir: path.join(getConfigDir(), "models") });
 }
 
 async function sendMailNodemailer(transport, mail) {

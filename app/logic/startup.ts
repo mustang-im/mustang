@@ -8,6 +8,9 @@ import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readFileSharingAccounts } from './Files/AccountsList/FileSharingAccounts';
 import { readTopicAccounts } from './Topic/TopicAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
+// #if [!WEBMAIL && !MOBILE]
+import { RAGSearchEMail } from './Mail/SQL/RAGSearchEMail';
+// #endif
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Abstract/Tag';
 import { type Account, getAllAccounts, setMainAccounts } from './Abstract/Account';
@@ -15,7 +18,7 @@ import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
 import { retryOnTransientError } from './util/netUtil';
-import { catchErrors, logError, showError } from '../frontend/Util/error';
+import { backgroundError, catchErrors, logError, showError } from '../frontend/Util/error';
 import { assert, sleep } from './util/util';
 
 // Set before anything reads it. Not in `app.ts` to break import cycle.
@@ -106,6 +109,9 @@ export function loginOnStartup(startupErrorCallback: (ex: Error) => void): void 
       }
     })().catch(errorWithAccountName(account, startupErrorCallback));
   }
+  // #if [!WEBMAIL && !MOBILE]
+  RAGSearchEMail.indexEMails().catch(backgroundError);
+  // #endif
 
   checkWakeUp();
 }
