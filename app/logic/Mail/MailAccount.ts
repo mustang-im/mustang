@@ -254,7 +254,7 @@ export class MailAccount extends TCPAccount {
     if (!shared.length) {
       throw new UserError(gt`You have no access to the account of ${person.emailAddress}`);
     }
-    await this.addSharedAccounts(person, this.newShares(person, shared));
+    await this.addSharedByPerson(person, this.newShares(person, shared));
   }
 
   /** The colleague may share their calendar only after we added their mailbox,
@@ -272,7 +272,7 @@ export class MailAccount extends TCPAccount {
   }
 
   /** @param sharedFolderIDs from `newShares()` */
-  async addSharedAccounts(person: PersonUID, sharedFolderIDs: string[]): Promise<void> {
+  async addSharedByPerson(person: PersonUID, sharedFolderIDs: string[]): Promise<void> {
     if (sharedFolderIDs.includes("msgfolderroot")) {
       await this.addSharedFolders(person, "msgfolderroot");
     } else if (sharedFolderIDs.includes("inbox")) {

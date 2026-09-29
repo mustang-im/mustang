@@ -154,7 +154,7 @@
 
   async function onAddPerson(person: PersonUID) {
     sharedPerson = null;
-    await account.addSharedAccounts(person, sharedFolders);
+    await account.addSharedByPerson(person, sharedFolders);
     await listAccounts();
   }
 

@@ -28,15 +28,11 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
     }
   }
 
-  initConfig(config)
-    .catch(backgroundError);
-}
-
-async function initConfig(config: MailAccount) {
   await config.loginAndStartup(true);
   getFirstMessages(config)
     .catch(backgroundError);
-  await addDelegates(config);
+  addDelegates(config)
+    .catch(backgroundError);
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
