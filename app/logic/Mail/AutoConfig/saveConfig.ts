@@ -134,7 +134,10 @@ export async function getFirstMessages(config: MailAccount) {
 /** After the login, adds the colleagues' accounts from <delegatedAccount>,
  * like Settings | Sharing does. */
 export async function addDelegates(config: MailAccount) {
-  for (let emailAddress of config.setup?.delegatedAccounts ?? []) {
+  if (!config.setup?.delegatedAccounts?.length) {
+    return;
+  }
+  for (let emailAddress of config.setup?.delegatedAccounts) {
     try {
       await config.addDelegate(new PersonUID(emailAddress, nameFromEmailAddress(emailAddress)));
     } catch (ex) {
