@@ -34,3 +34,20 @@ test("AutoConfig for the domain has no user", () => {
   expect(config.realname).toBeFalsy();
 });
 
+test("useraccount.xml: <delegatedAccount> in <user>", () => {
+  let config = readConfigFromXML(userAccountXML(`
+    <user>
+      <emailAddress>fred.flintstone@example.com</emailAddress>
+      <realName>Fred Flintstone</realName>
+      <delegatedAccount>Barney.Rubble@example.com</delegatedAccount>
+      <delegatedAccount>not an email address</delegatedAccount>
+      <delegatedAccount>team@example.com</delegatedAccount>
+    </user>`), null, "harddisk").first;
+  expect(config.setup.delegatedAccounts).toEqual(["barney.rubble@example.com", "team@example.com"]);
+
+  config = readConfigFromXML(userAccountXML(`
+    <user>
+      <emailAddress>fred.flintstone@example.com</emailAddress>
+    </user>`), null, "harddisk").first;
+  expect(config.setup?.delegatedAccounts ?? []).toEqual([]);
+});

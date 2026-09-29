@@ -19,9 +19,13 @@ import { assert } from "../../util/util";
  *   <user>
  *     <emailAddress>fred.flintstone@example.com</emailAddress>
  *     <realName>Fred Flintstone</realName>
+ *     <delegatedAccount>barney.rubble@example.com</delegatedAccount>
  *   </user>
  *   <emailProvider id="example.com">…</emailProvider>
  * </clientConfig>
+ *
+ * <delegatedAccount> is optional and repeatable: After the login, we add
+ * the account that this colleague shared with the user, like Settings | Sharing.
  *
  * This check runs at startup.
  */

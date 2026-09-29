@@ -12,6 +12,8 @@ export class SetupInfo {
   fileShare: FileSharingAccount;
   chat: ChatAccount;
   meet: MeetAccount;
+  /** Email addresses of colleagues' accounts to add after the login, like in Settings | Sharing */
+  delegatedAccounts: string[] = [];
   /** We know a config, but the user needs to do some manual steps for this ISP */
   instructions: SetupInstruction[] | null = null;
 }

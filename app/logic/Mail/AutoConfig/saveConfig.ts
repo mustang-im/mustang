@@ -1,7 +1,7 @@
 import { MailAccount } from "../MailAccount";
 import { ContactEntry } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
+import { PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import type { Account } from "../../Abstract/Account";
 import { Calendar } from "../../Calendar/Calendar";
 import { Addressbook } from "../../Contacts/Addressbook";
@@ -28,8 +28,15 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
     }
   }
 
+  initConfig(config)
+    .catch(backgroundError);
+}
+
+async function initConfig(config: MailAccount) {
+  await config.loginAndStartup(true);
   getFirstMessages(config)
     .catch(backgroundError);
+  await addDelegates(config);
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
@@ -111,11 +118,11 @@ function replaceVar(str: string, emailAddress: string): string {
 }
 
 /**
+ * After the login:
  * 1. Gets Inbox and Sent messages
  * 2. Sets the realname of the user based on the From in messages in Sent
  * 3. Pre-populates the Collected Addresses. */
 export async function getFirstMessages(config: MailAccount) {
-  await config.loginAndStartup(true);
   let sent = config.getSpecialFolder(SpecialFolder.Sent);
   let inbox = config.getSpecialFolder(SpecialFolder.Inbox);
   if (sent) {
@@ -125,6 +132,26 @@ export async function getFirstMessages(config: MailAccount) {
   }
   if (sent != inbox) {
     await inbox.listMessages();
+  }
+}
+
+/** After the login, adds the colleagues' accounts from <delegatedAccount>,
+ * like Settings | Sharing does. */
+export async function addDelegates(config: MailAccount) {
+  let delegates = config.setup?.delegatedAccounts ?? [];
+  if (delegates.length && !config.canShareWithPersons()) { // Same check as for showing Settings | Sharing
+    console.log(`${config.name}: No sharing with ${config.protocol}, ignoring <delegatedAccount>`);
+    return;
+  }
+  for (let emailAddress of delegates) {
+    if (config.isMyEMailAddress(emailAddress)) {
+      continue;
+    }
+    try {
+      await config.addDelegate(new PersonUID(emailAddress, nameFromEmailAddress(emailAddress)));
+    } catch (ex) {
+      backgroundError(ex);
+    }
   }
 }
 

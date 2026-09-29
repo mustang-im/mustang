@@ -17,7 +17,7 @@ import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import type { SearchEMail } from "./Store/SearchEMail";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, UserError, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { RunOnce } from "../util/flow/RunOnce";
 import { Collection, ArrayColl } from 'svelte-collections';
@@ -245,6 +245,16 @@ export class MailAccount extends TCPAccount {
 
   async addSharedCalendar(person: PersonUID): Promise<Calendar> {
     throw new AbstractFunction();
+  }
+
+  /** Adds the mails, contacts and calendar that `person` shared with us,
+   * as far as we don't have them yet. */
+  async addDelegate(person: PersonUID): Promise<void> {
+    let shared = await this.findSharedFolders(person, kSharedFolderIDs);
+    if (!shared.length) {
+      throw new UserError(gt`You have no access to the account of ${person.emailAddress}`);
+    }
+    await this.addSharedAccounts(person, this.newShares(person, shared));
   }
 
   /** The colleague may share their calendar only after we added their mailbox,

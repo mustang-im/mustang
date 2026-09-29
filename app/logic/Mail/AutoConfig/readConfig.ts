@@ -42,6 +42,9 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   let user = fullXML.user ?? {};
   let realName = sanitize.label(user.realName, null);
   let emailAddress = sanitize.emailAddress(user.emailAddress, null);
+  let delegatedAccounts = ensureArray(user.$delegatedAccount)
+    .map(delegate => sanitize.emailAddress(delegate, null))
+    .filter(Boolean);
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;
@@ -52,6 +55,10 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
       let config = readServer(iX, displayName, fullXML, source, newAccountForProtocol) as MailAccount;
       config.emailAddress ??= emailAddress;
       config.realname = realName;
+      if (delegatedAccounts.length) {
+        config.setup ??= new SetupInfo();
+        config.setup.delegatedAccounts = delegatedAccounts;
+      }
       configs.push(config);
     } catch (ex) {
       firstError = ex;
