@@ -101,6 +101,29 @@ test("An account that is already set up here is not offered again", async () => 
   }
 });
 
+test("A delegated account is added only once, and only with access", async () => {
+  let account = newAccount("u1");
+  let added: string[] = [];
+  account.addSharedFolders = async (person: PersonUID) => {
+    added.push(person.emailAddress);
+    return null;
+  };
+  await account.addDelegate(new PersonUID("jane.smith@example.com"));
+  expect(added).toEqual(["jane.smith@example.com"]);
+  await expect(account.addDelegate(new PersonUID("stranger@example.com"))).rejects.toThrow();
+
+  let jane = newAccount("u2");
+  jane.emailAddress = "jane.smith@example.com";
+  jane.mainAccount = account;
+  appGlobal.emailAccounts.add(jane);
+  try {
+    await account.addDelegate(new PersonUID("Jane.Smith@example.com"));
+    expect(added).toEqual(["jane.smith@example.com"]);
+  } finally {
+    appGlobal.emailAccounts.remove(jane);
+  }
+});
+
 test("An account that the session does not name by email address is skipped", async () => {
   let account = newAccount("u1");
   account.session = {
