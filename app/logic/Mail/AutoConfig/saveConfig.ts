@@ -134,15 +134,7 @@ export async function getFirstMessages(config: MailAccount) {
 /** After the login, adds the colleagues' accounts from <delegatedAccount>,
  * like Settings | Sharing does. */
 export async function addDelegates(config: MailAccount) {
-  let delegates = config.setup?.delegatedAccounts ?? [];
-  if (delegates.length && !config.canShareWithPersons()) { // Same check as for showing Settings | Sharing
-    console.log(`${config.name}: No sharing with ${config.protocol}, ignoring <delegatedAccount>`);
-    return;
-  }
-  for (let emailAddress of delegates) {
-    if (config.isMyEMailAddress(emailAddress)) {
-      continue;
-    }
+  for (let emailAddress of config.setup?.delegatedAccounts ?? []) {
     try {
       await config.addDelegate(new PersonUID(emailAddress, nameFromEmailAddress(emailAddress)));
     } catch (ex) {

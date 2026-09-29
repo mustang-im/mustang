@@ -17,7 +17,7 @@ import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import type { SearchEMail } from "./Store/SearchEMail";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, UserError, assert } from "../util/util";
+import { AbstractFunction, NotImplemented, UserError, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { RunOnce } from "../util/flow/RunOnce";
 import { Collection, ArrayColl } from 'svelte-collections';
@@ -231,7 +231,7 @@ export class MailAccount extends TCPAccount {
 
   /** Which of the `distinguishedIDs` of `person`'s account we may access. */
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
-    return [];
+    throw new NotImplemented(gt`This protocol does not implement delegated accounts`);
   }
 
   /** Adds the mails that `person` shared with us as an account of their own. */
