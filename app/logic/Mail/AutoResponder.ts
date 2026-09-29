@@ -1,6 +1,8 @@
 import type { MailAccount } from "./MailAccount";
 import { notifyChangedProperty, Observable } from "../util/Observable";
-import { AbstractFunction } from "../util/util";
+import { convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
+import { AbstractFunction, assert } from "../util/util";
+import { gt } from "../../l10n/l10n";
 
 /** Automatic replies to incoming mail, e.g. during vacation.
  *
@@ -65,6 +67,37 @@ export class AutoResponder extends Observable {
   /** Writes these settings to the server */
   async save(): Promise<void> {
     throw new AbstractFunction();
+  }
+
+  protected validate() {
+    if (this.enabled && this.scheduled) {
+      assert(this.endTime > this.startTime, gt`The end time must be after the start time`);
+    }
+  }
+
+  protected setTimes(startTime: Date | null, endTime: Date | null) {
+    // Old dates of a past vacation are useless as defaults
+    if (startTime && endTime && (this.scheduled || endTime > new Date())) {
+      this.startTime = startTime;
+      this.endTime = endTime;
+    }
+  }
+
+  /** @param message The reply, as the server has it: HTML from Outlook, plaintext from older clients
+   * @returns HTML */
+  protected toHTML(message: string): string {
+    if (!message || typeof (message) != "string") {
+      return "";
+    }
+    return /<[a-z!\/][^>]*>/i.test(message)
+      ? sanitizeHTML(message)
+      : convertTextToHTML(message);
+  }
+
+  /** @returns HTML for the server, or "" for none */
+  protected fromHTML(html: string): string {
+    // What the editor leaves when emptied
+    return !html || html == "<p></p>" ? "" : html;
   }
 }
 

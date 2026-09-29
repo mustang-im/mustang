@@ -1,9 +1,6 @@
 import { AutoResponder, AutoResponderAudience } from "../AutoResponder";
 import type { EWSAccount } from "./EWSAccount";
-import { convertTextToHTML, sanitizeHTML } from "../../util/convertHTML";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
-import { gt } from "../../../l10n/l10n";
 
 /** Exchange Out of Office (OOF).
  * Exchange replies only once per sender, and never to
@@ -38,9 +35,7 @@ export class EWSAutoResponder extends AutoResponder {
   }
 
   async save(): Promise<void> {
-    if (this.enabled && this.scheduled) {
-      assert(this.endTime > this.startTime, gt`The end time must be after the start time`);
-    }
+    this.validate();
     let request = {
       m$SetUserOofSettingsRequest: {
         t$Mailbox: {
@@ -58,17 +53,11 @@ export class EWSAutoResponder extends AutoResponder {
     let state = sanitize.enum(settings.OofState, ["Disabled", "Enabled", "Scheduled"], "Disabled");
     this.enabled = state != "Disabled";
     this.scheduled = state == "Scheduled";
-    let startTime = parseUTC(settings.Duration?.StartTime);
-    let endTime = parseUTC(settings.Duration?.EndTime);
-    // Old dates of a past vacation are useless as defaults
-    if (startTime && endTime && (this.scheduled || endTime > new Date())) {
-      this.startTime = startTime;
-      this.endTime = endTime;
-    }
+    this.setTimes(parseUTC(settings.Duration?.StartTime), parseUTC(settings.Duration?.EndTime));
     this.externalAudience = kAudiences[settings.ExternalAudience] ?? AutoResponderAudience.None;
     this.maxAudience = kAudiences[json.AllowExternalOof] ?? AutoResponderAudience.All;
-    this.internalHTML = toHTML(settings.InternalReply?.Message);
-    this.externalHTML = toHTML(settings.ExternalReply?.Message);
+    this.internalHTML = this.toHTML(settings.InternalReply?.Message);
+    this.externalHTML = this.toHTML(settings.ExternalReply?.Message);
   }
 
   /** Elements must be in schema order */
@@ -81,10 +70,10 @@ export class EWSAutoResponder extends AutoResponder {
         t$EndTime: this.endTime.toISOString(),
       } : null,
       t$InternalReply: {
-        t$Message: fromHTML(this.internalHTML),
+        t$Message: this.fromHTML(this.internalHTML),
       },
       t$ExternalReply: {
-        t$Message: fromHTML(this.externalHTML),
+        t$Message: this.fromHTML(this.externalHTML),
       },
     };
   }
@@ -102,21 +91,4 @@ function parseUTC(time: string): Date | null {
     return null;
   }
   return sanitize.date(/(Z|[+-]\d\d:?\d\d)$/i.test(time) ? time : time + "Z", null);
-}
-
-/** @param message The reply, as the server has it: HTML from Outlook, plaintext from older clients
- * @returns HTML */
-function toHTML(message: string): string {
-  if (!message || typeof (message) != "string") {
-    return "";
-  }
-  return /<[a-z!\/][^>]*>/i.test(message)
-    ? sanitizeHTML(message)
-    : convertTextToHTML(message);
-}
-
-/** @returns HTML for the server, or "" for none */
-function fromHTML(html: string): string {
-  // What the editor leaves when emptied
-  return !html || html == "<p></p>" ? "" : html;
 }
