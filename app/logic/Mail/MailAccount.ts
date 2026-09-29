@@ -247,6 +247,35 @@ export class MailAccount extends TCPAccount {
     throw new AbstractFunction();
   }
 
+  /** The colleague may share their calendar only after we added their mailbox,
+   * or the other way round, so add whatever is not set up here yet.
+   * `addSharedAddressbook()` and `addSharedCalendar()` re-use the account that
+   * we already have, but `addSharedFolders()` would create a second mail account.
+   * @param sharedFolderIDs from `findSharedFolders()` */
+  newShares(person: PersonUID, sharedFolderIDs: string[]): string[] {
+    let haveMailAccount = this.dependentAccounts().find(other =>
+      other.protocol == this.protocol && other instanceof MailAccount &&
+      other.isMyEMailAddress(person.emailAddress));
+    return haveMailAccount
+      ? sharedFolderIDs.filter(folder => folder != "msgfolderroot" && folder != "inbox")
+      : sharedFolderIDs;
+  }
+
+  /** @param sharedFolderIDs from `newShares()` */
+  async addSharedAccounts(person: PersonUID, sharedFolderIDs: string[]): Promise<void> {
+    if (sharedFolderIDs.includes("msgfolderroot")) {
+      await this.addSharedFolders(person, "msgfolderroot");
+    } else if (sharedFolderIDs.includes("inbox")) {
+      await this.addSharedFolders(person, "inbox");
+    }
+    if (sharedFolderIDs.includes("contacts")) {
+      await this.addSharedAddressbook(person);
+    }
+    if (sharedFolderIDs.includes("calendar")) {
+      await this.addSharedCalendar(person);
+    }
+  }
+
   /** So that the user does not mistake another person's mails for ours */
   protected colorForSharedAccount(person: PersonUID): string {
     return this.dependentAccounts().find(acc => acc.username == person.emailAddress)?.color ??
@@ -354,6 +383,9 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
   }
   return null;
 }
+
+/** What we look for in the account of a colleague. @see `findSharedFolders()` */
+export const kSharedFolderIDs = ["msgfolderroot", "inbox", "contacts", "calendar"];
 
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "harddisk" | "builtin" | null;
 

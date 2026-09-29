@@ -78,7 +78,7 @@
 </vbox>
 
 <script lang="ts">
-  import { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { type MailAccount, kSharedFolderIDs } from "../../../logic/Mail/MailAccount";
   import type { Account } from "../../../logic/Abstract/Account";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { appName } from "../../../logic/build";
@@ -121,7 +121,6 @@
   let errorMessage: string | null = null;
   let sharedPerson: PersonUID | null = null;
   let sharedFolders: string[] = [];
-  const kSharedFolders = ["msgfolderroot", "inbox", "contacts", "calendar"];
 
   function resetAddDialog() {
     errorMessage = null;
@@ -132,12 +131,12 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      let shared = await account.findSharedFolders(person, kSharedFolders);
+      let shared = await account.findSharedFolders(person, kSharedFolderIDs);
       if (!shared.length) {
         errorMessage = gt`You have no access to the account of ${person.name ?? ""} ${person.emailAddress}`;
         return;
       }
-      sharedFolders = notYetAdded(person, shared);
+      sharedFolders = account.newShares(person, shared);
       if (!sharedFolders.length) {
         errorMessage = gt`You have already added ${person.name ?? person.emailAddress}`;
         return;
@@ -148,37 +147,14 @@
     }
   }
 
-  /** The colleague may share their calendar only after we added their mailbox,
-   * or the other way round, so add whatever is not set up here yet.
-   * `addSharedAddressbook()` and `addSharedCalendar()` re-use the account that
-   * we already have, but `addSharedFolders()` would create a second mail account. */
-  function notYetAdded(person: PersonUID, sharedFolders: string[]): string[] {
-    let haveMailAccount = account.dependentAccounts().find(other =>
-      other.protocol == account.protocol && other instanceof MailAccount &&
-      other.isMyEMailAddress(person.emailAddress));
-    return haveMailAccount
-      ? sharedFolders.filter(folder => folder != "msgfolderroot" && folder != "inbox")
-      : sharedFolders;
-  }
-
   async function onAddAvailableAccount(person: PersonUID) {
-    sharedFolders = notYetAdded(person, await account.findSharedFolders(person, kSharedFolders));
+    sharedFolders = account.newShares(person, await account.findSharedFolders(person, kSharedFolderIDs));
     await onAddPerson(person);
   }
 
   async function onAddPerson(person: PersonUID) {
     sharedPerson = null;
-    if (sharedFolders.includes("msgfolderroot")) {
-      await account.addSharedFolders(person, "msgfolderroot");
-    } else if (sharedFolders.includes("inbox")) {
-      await account.addSharedFolders(person, "inbox");
-    }
-    if (sharedFolders.includes("contacts")) {
-      await account.addSharedAddressbook(person);
-    }
-    if (sharedFolders.includes("calendar")) {
-      await account.addSharedCalendar(person);
-    }
+    await account.addSharedAccounts(person, sharedFolders);
     await listAccounts();
   }
 
