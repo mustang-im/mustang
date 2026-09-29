@@ -1,4 +1,4 @@
-{#await check(start, $participants) }
+{#await checkPromise }
   {$t`Checking…`}
 {:then}
   <vbox class="availability-grid">
@@ -56,6 +56,15 @@
    * so they are shown as overlay and not as events, which the user could open. */
   let freeBusy = new ArrayColl<Event>();
   let noEvents = new ArrayColl<Event>();
+
+  /** Re-check only when the start time or the participants actually change.
+   * `start` is passed in from the event, so it gets re-set on every change
+   * of the event, e.g. when typing the title. Compare the time value instead
+   * of the `Date` object, to avoid querying the server for each keystroke. */
+  $: startTime = start?.getTime();
+  let checkPromise: Promise<void>;
+  $: checkPromise = check(new Date(startTime), $participants);
+
   async function check(start: Date, participants: Collection<Participant>) {
     freeBusy.clear();
     if (!participants?.length || participants.length == 1) {
