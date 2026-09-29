@@ -14,7 +14,14 @@ import { assert } from "../../util/util";
  * set up completely automatically.
  *
  * The file format is the same as AutoConfig, but with a
- * concrete user email address and real name.
+ * concrete user email address and real name:
+ * <clientConfig version="1.2">
+ *   <user>
+ *     <emailAddress>fred.flintstone@example.com</emailAddress>
+ *     <realName>Fred Flintstone</realName>
+ *   </user>
+ *   <emailProvider id="example.com">…</emailProvider>
+ * </clientConfig>
  *
  * This check runs at startup.
  */
@@ -30,7 +37,7 @@ export async function predefinedConfig(): Promise<MailAccount | null> {
     if (appGlobal.emailAccounts.some(acc => acc.emailAddress == config.emailAddress)) {
       return null; // already set up
     }
-    assert(config.realname, "Need <realname> in useraccount.xml");
+    assert(config.realname, "Need <realName> in useraccount.xml");
     assert(config.emailAddress, "Need <emailAddress> in useraccount.xml");
     appGlobal.me.name ??= config.realname;
     fillConfig(config, config.emailAddress, config.password);

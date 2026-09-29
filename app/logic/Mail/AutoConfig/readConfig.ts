@@ -39,8 +39,9 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
 
   forDomain ??= sanitize.hostname(xml.domain);
   let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
-  let realName = sanitize.label(autoconfigXML.clientConfig.realName, null);
-  let emailAddress = sanitize.emailAddress(autoconfigXML.clientConfig.emailAddress, null);
+  let user = fullXML.user ?? {};
+  let realName = sanitize.label(user.realName, null);
+  let emailAddress = sanitize.emailAddress(user.emailAddress, null);
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;
