@@ -5,6 +5,7 @@ import type { EMail } from "../EMail";
 import type { Folder } from "../Folder";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
+import { ActiveSyncAutoResponder } from "./ActiveSyncAutoResponder";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { ActiveSyncGAL } from "../../Contacts/ActiveSync/ActiveSyncGAL";
@@ -53,6 +54,10 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
    * not tell which of the emails that we already have it found, and list them twice. */
   newSearch(): null {
     return null;
+  }
+
+  newAutoResponder(): ActiveSyncAutoResponder {
+    return new ActiveSyncAutoResponder(this);
   }
 
   /**
