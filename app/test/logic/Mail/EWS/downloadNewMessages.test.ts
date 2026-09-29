@@ -17,6 +17,9 @@ import { expect, test } from "vitest";
 
 /** As many as arrive while the app was not running for 2 days */
 const kNewMessages = 50;
+/** Relative to now, so that they stay within the 2 weeks that we download */
+const kSent = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+const kReceived = new Date(kSent.getTime() + 1000);
 
 /** An Exchange server whose inbox has `kNewMessages` messages that we do not have yet */
 class TestEWSAccount extends EWSAccount {
@@ -74,8 +77,8 @@ function headersOfMessage(id: string) {
     IsDraft: "false",
     Subject: "Subject of " + id,
     Size: "20000",
-    DateTimeSent: "2026-09-01T10:00:00Z",
-    DateTimeReceived: "2026-09-01T10:00:01Z",
+    DateTimeSent: kSent.toISOString(),
+    DateTimeReceived: kReceived.toISOString(),
     From: { Mailbox: { EmailAddress: "alice@example.com", Name: "Alice" } },
     ToRecipients: { Mailbox: { EmailAddress: "user@example.com", Name: "User" } },
   };
@@ -87,7 +90,7 @@ function mimeOfMessage(id: string): string {
     "From: Alice <alice@example.com>",
     "To: User <user@example.com>",
     `Subject: Subject of ${id}`,
-    "Date: Tue, 1 Sep 2026 10:00:00 +0000",
+    "Date: " + kSent.toUTCString(),
     "MIME-Version: 1.0",
     "Content-Type: text/plain; charset=utf-8",
     "",
