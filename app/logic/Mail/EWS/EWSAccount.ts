@@ -29,8 +29,9 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { ConnectionPurpose } from "./ConnectionPurpose";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Lock } from "../../util/flow/Lock";
+import { Timeout } from "../../util/flow/Timeout";
 import { notifyChangedProperty } from "../../util/Observable";
-import { isNetworkError } from "../../util/netUtil";
+import { isNetworkError, isTransientError, waitUntilOnline } from "../../util/netUtil";
 import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
@@ -457,11 +458,32 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   /** @param username stable ID per stream, e.g. the streamed account's username */
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
-    let lastAttempt: number;
     let signal = abort.signal;
-    do {
+    // A connection that stays open for 29 minutes drops all the time:
+    // computer sleep, Wi-Fi change, VPN reconnect, server restart.
+    // Reconnecting is normal, for as long as we want notifications,
+    // even when the network is not back yet on the first attempts.
+    let reconnectThrottle = new Throttle(1, 10);
+    while (!signal.aborted) {
+      await reconnectThrottle.throttle();
+      /** Aborts only the current HTTP request, not the whole stream */
+      let connection = new AbortController();
+      let heartbeat: Timeout | null = null;
+      /** Exchange sends a heartbeat every 45 seconds, even when nothing changed.
+       * If none arrives, the TCP connection died without telling us, e.g. while
+       * the computer slept, and we would wait for notifications forever. */
+      const expectHeartbeat = () => {
+        heartbeat?.fulfilled();
+        heartbeat = new Timeout(kHeartbeatTimeoutSec, () => connection.abort("No heartbeat from the server"));
+      };
+      /** The server sent something other than an error */
+      let accepted = false;
+      /** The server refused the stream right away */
+      let refusal: Error | null = null;
       try {
-        lastAttempt = Date.now();
+        if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(false); // The access token expired, e.g. while the computer slept
+        }
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
@@ -484,6 +506,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               if (message.ResponseClass == "Error") {
                 throw new EWSItemError(message, request);
               }
+              accepted = true;
               if (message.ConnectionStatus == "Closed") {
                 continue; // Re-open connection
               }
@@ -497,36 +520,55 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
                 await this.resubscribeNotifications(username);
                 return; // it restarted the stream, and aborted this one
               }
+              if (!accepted) {
+                refusal = ex; // Reported below, once the server closed the stream
+                continue;
+              }
               this.errorCallback(ex);
             }
           }
         };
+        /** Our own processing may take a while, which is not the server's fault */
+        const onChunk = async (chunk: string) => {
+          heartbeat?.fulfilled();
+          try {
+            await processChunk(chunk);
+          } finally {
+            expectHeartbeat();
+          }
+        };
+        expectHeartbeat();
+        let connectionSignal = AbortSignal.any([signal, connection.signal]);
         let response: any;
         if (this.authMethod == AuthMethod.NTLM) {
           // The stream runs for up to 29 minutes, so give it its own
           // TCP connection, outside of the pool.
           let conn = this.ntlm.newDedicatedConnection(username);
           let onAbort = () => conn.close(); // the only way to abort the stream
-          signal.addEventListener("abort", onAbort);
+          connectionSignal.addEventListener("abort", onAbort);
           try {
-            assert(!signal.aborted, "Stream was aborted");
-            // Streams via `processChunk`. Resolves once the stream ended.
-            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk: processChunk });
+            assert(!connectionSignal.aborted, "Stream was aborted");
+            // Streams via `onChunk`. Resolves once the stream ended.
+            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk });
           } finally {
-            signal.removeEventListener("abort", onAbort);
+            connectionSignal.removeEventListener("abort", onAbort);
             conn.close();
           }
         } else {
-          response = await fetch(this.url, this.createRequestOptions({ body, signal }));
+          response = await fetch(this.url, this.createRequestOptions({ body, signal: connectionSignal }));
         }
         if (!response.ok) {
-          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
-          return;
+          response.responseText = await response.text();
+          response.responseXML = this.parseXML(response.responseText);
+          throw new EWSError(response, request);
         }
-        if (response.body) { // `fetch()`. The NTLM path streamed via `processChunk` above.
+        if (response.body) { // `fetch()`. The NTLM path streamed via `onChunk` above.
           for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
-            await processChunk(chunk);
+            await onChunk(chunk);
           }
+        }
+        if (refusal) {
+          throw refusal; // It would only refuse again
         }
       } catch (ex) {
         if (signal.aborted) {
@@ -534,15 +576,19 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           console.log(signal.reason);
           break;
         }
-        if (isNetworkError(ex) || ex?.message == "terminated") { // `fetch()` says "terminated"
-          // Connection broke down, which is normal after a while.
-          // Loop and re-open the connection.
-          continue;
+        if (!isTransientError(ex) && !connection.signal.aborted &&
+            ex?.message != "terminated") { // `fetch()` says "terminated"
+          this.errorCallback(ex);
+          break;
         }
-        this.errorCallback(ex);
-        break;
+        console.log(`${this.name}: Notification stream dropped, reconnecting:`, connection.signal.reason ?? ex?.message);
+        if (isNetworkError(ex)) {
+          await waitUntilOnline(); // Computer sleep drops the network
+        }
+      } finally {
+        heartbeat?.fulfilled();
       }
-    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    }
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
@@ -1264,6 +1310,10 @@ export interface EWSSubscribable extends Account {
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
 const kXMLContentType = "text/xml; charset=utf-8";
+
+/** 2 missed heartbeats, like Microsoft's EWS Managed API.
+ * The server sends one every 45 seconds. */
+const kHeartbeatTimeoutSec = 2 * 45;
 
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
