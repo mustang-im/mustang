@@ -2,7 +2,9 @@ import "../../../../../logic/app";
 import { setupTestFolder } from "../../SQL/setup";
 import { appGlobal } from "../../../../../logic/app";
 import { MailIdentity } from "../../../../../logic/Mail/MailIdentity";
-import { expect, test } from "vitest";
+import { SMIMEPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
+import type { EMail } from "../../../../../logic/Mail/EMail";
+import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
 globalThis.indexedDB ??= {
@@ -17,21 +19,140 @@ globalThis.indexedDB ??= {
   },
 } as any;
 
-test("An encrypted message that is not for us tells the user why it stays empty", async () => {
+/**
+ * Reads the message as the user that it is addressed to.
+ * @param privateKeys the S/MIME keys of that user, in the order that the
+ *   settings hold them
+ * @returns the message, and the errors that the user was shown
+ */
+async function read(mime: string, ...privateKeys: SMIMEPrivateKey[]): Promise<{ email: EMail, errors: string[] }> {
   let { folder } = await setupTestFolder();
+  // `findIdentity()` searches all accounts, including those of earlier tests
+  appGlobal.emailAccounts.clear();
   let identity = new MailIdentity(folder.account);
   identity.emailAddress = "user@example.com";
   identity.realname = "User";
+  identity.encryptionPrivateKeys.addAll(privateKeys);
   folder.account.identities.add(identity);
   appGlobal.emailAccounts.add(folder.account);
-  let errors: Error[] = [];
-  folder.account.errorCallback = (ex) => errors.push(ex);
+  let errors: string[] = [];
+  folder.account.errorCallback = ex => errors.push(ex.message);
 
   let email = folder.newEMail();
-  email.mime = new TextEncoder().encode(kEncrypted.replace(/\n/g, "\r\n"));
+  email.mime = new TextEncoder().encode(mime.replace(/\n/g, "\r\n"));
   await email.parseMIME();
+  return { email, errors };
+}
 
-  expect(errors.map(ex => ex.message)).toEqual(["This message is encrypted, and the key is not available"]);
+test("An encrypted message that is not for us tells the user why it stays empty", async () => {
+  let { errors } = await read(kEncrypted);
+
+  expect(errors).toEqual(["This message is encrypted, and the key is not available"]);
+});
+
+describe("Ciphers that other mail apps encrypt with", () => {
+  test("Triple DES, as Apple Mail and Thunderbird send it", async () => {
+    let { email, errors } = await read(k3DES, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("RC2 with 128 bits", async () => {
+    let { email, errors } = await read(kRC2, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("RC2 with the 40 bit export key length", async () => {
+    let { email, errors } = await read(kRC2Export, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+});
+
+test("A message that names our certificate by its subjectKeyIdentifier", async () => {
+  let { email, errors } = await read(kKeyIdentifier, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+  expect(errors).toEqual([]);
+  expect(email.wasEncrypted).toBe(true);
+  expect(email.text.trim()).toBe("Hello, this is encrypted.");
+});
+
+test("A CMS blob that was delivered as a plain file, as Microsoft sends it", async () => {
+  let { email, errors } = await read(kOctetStream, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+  expect(errors).toEqual([]);
+  expect(email.wasEncrypted).toBe(true);
+  expect(email.text.trim()).toBe("Hello, this is encrypted.");
+});
+
+describe("RSA-OAEP key transport, which RFC 8551 asks for", () => {
+  test("with SHA-1, which the sender leaves out as the default", async () => {
+    let { email, errors } = await read(kOAEP, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+
+  test("with SHA-256", async () => {
+    let { email, errors } = await read(kOAEPSHA256, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.wasEncrypted).toBe(true);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  });
+});
+
+describe("Messages that only claim to be S/MIME", () => {
+  test("An archiver kept the S/MIME headers around the plain message", async () => {
+    let { email, errors } = await read(kMislabelled);
+
+    expect(errors).toEqual([]);
+    expect(email.text.trim()).toBe("Hello, this is signed.");
+    expect(email.signedByKeyID).toBe("b687f50d63928c37"); // the inner signature was checked
+  });
+
+  test("A blob that is neither MIME nor valid CMS says so", async () => {
+    let { errors } = await read(kNotCMS);
+
+    expect(errors).toEqual(["This message is not a valid S/MIME message"]);
+  });
+});
+
+describe("Algorithms that we do not implement", () => {
+  test("An unsupported cipher is named, instead of leaving the message empty", async () => {
+    let { errors } = await read(kCamellia, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["This message is encrypted with 1.2.392.200011.61.1.1.1.2, which is not supported"]);
+  });
+
+  test("OAEP with a different hash for the mask than for the digest", async () => {
+    let { errors } = await read(kOAEPMixedHashes, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["The key of this message is encrypted with rsaESOAEP, which is not supported"]);
+  });
+
+  test("A message to an EC certificate is not for us, whatever the sender used", async () => {
+    let { errors } = await read(kECDH, await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual(["This message is encrypted, and the key is not available"]);
+  });
+
+  test("A key without a certificate does not stop the other keys", async () => {
+    let { email, errors } = await read(k3DES,
+      await SMIMEPrivateKey.createNewPrivateKey("user@example.com"), // as [Create new key] leaves it
+      await SMIMEPrivateKey.importPrivateKey(kOurKey));
+
+    expect(errors).toEqual([]);
+    expect(email.text.trim()).toBe("Hello, this is encrypted.");
+  }, 30000); // generating the 4096 bit key takes a while
 });
 
 /** `openssl smime -sign | openssl smime -encrypt`, to a certificate that is not ours */
@@ -112,3 +233,381 @@ sF4lpN22hBEJeL/Ophn6Bgp84v4WwbCJAZawO9JNhL+d/WBn0yf05KU4yfqKcOH4
 OTI4DTbekCe8ODSpWFo/1MynsRWTDM2B+enLAnX2XLMdVwQ=
 
 `;
+
+/** The S/MIME identity that the messages below are encrypted to.
+ * `openssl req -x509 -newkey rsa:2048 -keyout user.key -out user.crt -nodes
+ *   -subj "/CN=User/emailAddress=user@example.com"
+ *   -addext "subjectAltName=email:user@example.com"
+ *   -addext "subjectKeyIdentifier=hash"
+ *   -addext "keyUsage=digitalSignature,keyEncipherment"` */
+const kOurKey = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHFL19V/qBg0z4
+KcGCo9GIcy/9SyL8g6rTgn0QXdhjoUXdIjMG/uJ/XnSiFWJjps6WSOSY93XcSXrp
+30ngrUBa0qRnC/cUe4Jlj1HU1izE1fAi+onlvY1ny3OEiFNpbsVMv3QUsiz8Xh5v
+QmNkR97q5GkOipEryuOdoZjuHCmERFjBiG0+JIuCbG0JzgWiREJ9PGI3TjbDx9Pj
+YAnwBTIBMeUGbpXCT+o1AKmMJ/Pr/F1WBqe77hVGbfmqNtvkcrYzweUt8bo7VJck
+Jix+AUHNcPMEftnuU8xq/fDt+buAQOcHzQOunuJcxVSF8AoF77UMYBY1zWLPIyG8
+PBU+4jEPAgMBAAECggEAXcTWldXdH6iNFexxAYwQsvDyXx9HXOHVkedJ6e4R8Kdz
+JTupBjgCzhRa4kcpPx+/+Yhe5+/S203e745lGUbxY3YIyqKXn9Wm7xgo5pN0pcfQ
+4mDYl9YG5ycsg3XEuAndM4+P6Pmdd8cLFcOS1haGGGQ6WYeJ5jMbr9EAG9M2+N11
+Z8Po5pumGEC7tXYeso707r+tqQLYVCl7WuA2H0HqvTsyptmHxz0asZxAwVeMalJT
+OcJnfjevISlhRJa9ZfksDBu/L4nfS/5X/6MIym/s/8TvSWrIygFh74u83znIPs6K
+kcmZnFOFoBxHowguuFNvmEJ/A2kuxnykFIDo9eS24QKBgQDuV78FLzJ0uTy7YRzN
+cgYlmBbTuOUqeRMfGRZcVcC6auhecSsunsdtBM38lD7RXiRdAWBJlahTsvS+upwL
+SzhFcCb+YOEjGuV4NY5VmY1gnY4VmD1YNQ3tnsPl34OM4WB0s0ILRVZ6mWHoB1mV
+l854CWzndIbtitmN7xZ2FGqqLwKBgQDV1GGfmiwXHDHfC9fzps9S0OoXNeLJLs4J
+rDdIowMpedVnmV7/YkoDLjEBdH1BG4LXe0l6Kb7yVEVKS5j1DtrcVVs9fOoNkVl8
+62RDq8Q7wHZ+FLDqnUC2X3jKYcY4b1d1tx58vjZ8+NwfIvx2uSQUVN+9srb94DSK
+fbGQ/o6PIQKBgQDCRM80QJYVwe6YpL0/T9NmzSK+DBTum6VUUbSCKnte90jTwdZ6
+t3zBhYsIdyUEroFhNX/wOoXrQxBubdhG9Fa3coS2Du0zGfc0FiMf7nrn50Qqod5O
+iWAC8MeoFJk7OXDPblVEro2gfGjrISKJ5iSqfrQ/rCFWeTh+kgRy1o1ijQKBgFzF
+wn1OlKaKMxEEwHMUAot53LapSHXk+ruznmDDaRHLrE1Ae7jt2hK7LcPl2Jow53m6
+Ic0A47mb2lw7pGdeRJKn7egllB7C20KZlmzNz1vlSwO00nVYOMVncq7L8QZ3OEj4
+ZB/XHyjliAtyUHrqJL81e8WADmjjp6gWlL3F0/BBAoGAWdLZeoxC+jTiT7/QKeh+
+gByK2TC7+CbSNMLkDwF/C1vM08ACn6rHaz2L53TmRRlPIhHPbE4t7ENlsM+wca5n
+UjMQcdDfg+MMl5xzhc89Wcu7NMuvxWDqD1jjhi9Poik1QyRYu1IJ+2DtsH5Viqf1
+d4Lk+gHjiODNex6QqnxkIwc=
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+MIIDazCCAlOgAwIBAgIUNn2UnxH1jnnZYFI4xfGh+UMMu3cwDQYJKoZIhvcNAQEL
+BQAwMDENMAsGA1UEAwwEVXNlcjEfMB0GCSqGSIb3DQEJARYQdXNlckBleGFtcGxl
+LmNvbTAeFw0yNjA5MDMwNjE4MzdaFw0zNjA4MzEwNjE4MzdaMDAxDTALBgNVBAMM
+BFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDHFL19V/qBg0z4KcGCo9GIcy/9SyL8g6rT
+gn0QXdhjoUXdIjMG/uJ/XnSiFWJjps6WSOSY93XcSXrp30ngrUBa0qRnC/cUe4Jl
+j1HU1izE1fAi+onlvY1ny3OEiFNpbsVMv3QUsiz8Xh5vQmNkR97q5GkOipEryuOd
+oZjuHCmERFjBiG0+JIuCbG0JzgWiREJ9PGI3TjbDx9PjYAnwBTIBMeUGbpXCT+o1
+AKmMJ/Pr/F1WBqe77hVGbfmqNtvkcrYzweUt8bo7VJckJix+AUHNcPMEftnuU8xq
+/fDt+buAQOcHzQOunuJcxVSF8AoF77UMYBY1zWLPIyG8PBU+4jEPAgMBAAGjfTB7
+MB8GA1UdIwQYMBaAFEMlUw+zyn92kfdBY9waadqEGIeXMA8GA1UdEwEB/wQFMAMB
+Af8wGwYDVR0RBBQwEoEQdXNlckBleGFtcGxlLmNvbTAdBgNVHQ4EFgQUQyVTD7PK
+f3aR90Fj3Bpp2oQYh5cwCwYDVR0PBAQDAgWgMA0GCSqGSIb3DQEBCwUAA4IBAQDF
+VeJlLzy0dK1c78kqQIqWrPTWtRFgypW0Kvz6mnG9649gqm0HmHe/PLbUm4oZrdFD
+7C3xBYwVL7JSSjsdU2tOiS5eAtv26y/kThfxjgp9I7uBpiJ28tUylicB3wD+G6bN
+WUzH0zg4B2GInfrutwziwFQ1gheKyf8Q4Q9xgW+HgP7EiX6NaMCCNdPeolIw1LkI
+WV0rzv81Q5Ad3uta5BG4cy9kptUIYvLPrUkqhbXkrOo4KyAfljVw90B6DSjZrU4n
+5n/ySiiSVlEY9VygZJdPDuDE73MiI9VrZvEN2PA5xZldHcohvQW3XaXw/17RHmKq
+1ewAnoWSUmfPbKCQgmtF
+-----END CERTIFICATE-----`;
+
+/** `openssl cms -encrypt -des3 -in body.txt -outform SMIME -recip user.crt`,
+ * where `body.txt` is the MIME entity that the message decrypts to */
+const k3DES = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with 3DES
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-des3@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB6wYJKoZIhvcNAQcDoIIB3DCCAdgCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBALvgpagNSko+cHvDIw9D
+S2khFMKv2hPEtlJHdBBJ6bAuqu20DJUgMq3zlXLM5IzWFKRYR/2Nwmk35lVxLCny
+9KXj4+RtJC4RQlFWToElr57/z63sUbPMLYh6EvDv2URdag3Pb5KXJ+x1BXgcm4e+
+nP1MgmlFgOxc9FXS9iCXXiUf6/NBS0BGtDWA1oY6UzFg9Z33NDjHuzJuv9U0XzKw
+9wN4yK/dy9juYWQ7QFpTHL3c/2x0y6MAnCB/a9WfA7uQNBTHa7sMkBi4+++fwohM
+QLXTuOTmGCc303IW7vwbVJfnrNXiMRONC+FxWYSSq1pSDcS6RL0iUBPccKpqIw9k
+4gEwawYJKoZIhvcNAQcBMBQGCCqGSIb3DQMHBAjQon5SqXREV4BIwkEbCZV79TBG
+SUEJfF087NTIp84e6tiNuFzXJDIFXlcQqwoY5BIvyvZ+vZ9gfCrseB/O4tX1YNvq
+/w9PYPmjQsZ08TyBa0QB`;
+
+/** `openssl cms -encrypt -rc2-128 -provider legacy -provider default
+ *   -in body.txt -outform SMIME -recip user.crt`.
+ * RC2 lives in the legacy provider of OpenSSL 3. */
+const kRC2 = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RC2
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-rc2@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB8AYJKoZIhvcNAQcDoIIB4TCCAd0CAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAFwAwL+jAyj56j1HUfCv
+7GPHHtyNGmKyAd4ZVljWWkSeyY5Ggt9MqzN1mb5mLX5qZ3/f3fewHFqLQuNOOmde
+SHSsj9LkSOryoHdaz5HcfB7fcc6J7N7ZydSZ6kxOc4JyYn7vOHDfLEkuC4xSeJQV
+ICA1DtLFCIflkkie+FR+bJnwnZTY271NQaowmtTaVkT+Ewv4Oe0+uyyNzVwOyZVs
+18ty9c3XSW12yvK3Tiz8K+aiNlq04APPMFnE+sSWNagdcJjAeo7KuxRfn4HHjQPS
+DDvhe0GrrnkN0f5QepxEVDgGlvZzs1AEanixKA+m0celuK95gxm2eSeRQATX1dgI
+KvcwcAYJKoZIhvcNAQcBMBkGCCqGSIb3DQMCMA0CAToECFu0so91oorLgEg3jcBR
+2P2Gh+U0oulXNEgiKt5lUWdvIZpcDX08kHjZmObAPJBIN9LTitsJUDGqGPri4qv1
+3iM1LDR56tCa3qKnXz/PMxKisHQ=`;
+
+/** As `kRC2`, but with `-rc2-40` */
+const kRC2Export = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RC2-40
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-rc240@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB8QYJKoZIhvcNAQcDoIIB4jCCAd4CAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAFj92uLMItuLnZWN6FhH
+UJ2nH73j8oz6dZmQiRgSUJDJxVY3umLVBT4l+yC3/B9Wl5S18E0yQ3lZaSLiDqsk
+QQ16OBRsQCz/gC1SYWA9RNJ40W2QEQ4L95cKQWE0wWOGgXhDcZJEvzhEiUCqntPv
+WPtOCBLj3/i3HlpZqoaXJuSt32V7uJP6d7E+yB7rHTuIRB7m4YbWsJ6mKM9RyoZt
+9CN9d7dZaRqgLa/f0tp+/PO8k7NmzYgUC5pau5ddsu3DFUZOnN0aDO85JfK4iY/f
+U2g8BfQFpt80fgIWrFVw8Kh8zwhcl0tifFzGgVhy94wJhg0AW4U8Fy6NIPfTdUTd
+0uswcQYJKoZIhvcNAQcBMBoGCCqGSIb3DQMCMA4CAgCgBAgSZnhpIyC3u4BIYyJy
+FX/G+LwiLT2k641mQH1sAaQXDv9LK/ULoZZHyQAFzMFpiEBE7WD4CdOG59a8+PMZ
+UMYGFLFYP9MPSj13EdiN7JbrOZVJ`;
+
+/** `openssl cms -encrypt -camellia128 ...`: a cipher that we do not implement */
+const kCamellia = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with Camellia
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-camellia@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/gYJKoZIhvcNAQcDoIIB7zCCAesCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBAC9DhweaUbqf4w89Bj2P
+EyJAFVPUXTnlwEkY5zlYTi6iXwMunRobvoI8DoXf/lN5vBxuUBA3cQwg1+c2L/Xr
+BTsrbFGSZT8iKxb1TiVpsA0Gphtr3Tn+vslvaI8b0dRPvf6kBsTvNVTXCFQ0wjGh
+AZkdz7WiemeILXbW17nVq4l1aRBVYDlcLRqzxJ0LSdGF9M2fazdXmYakilMwofWs
+E9+e7seMMM+xuLNr1wGogviVJEzMFLOsqLiBxNkDwDNqCGVMDfaK5MM6vjg/IY2z
+xyRd7PvaXgStA6rRpBEkJpI5fX1aQM4bqPNXjrZzufytLLR5/4Qyj8BbgELRcfE+
+hN0wfgYJKoZIhvcNAQcBMB8GCyqDCIyaSz0BAQECBBAIRM331zx1v66IGd/vNXTI
+gFDGGMQO5T77gbbSkB6bK7wuVfwKTGVJNsQEVAkW+fb8dxA9YfWJavtiUaWxUUB4
+fwOvE+nAm22cF7W8FTPUaqGiMyBXStfBfbudN7yYSTruhQ==`;
+
+/** `openssl cms -encrypt -aes256 -recip user.crt -keyopt rsa_padding_mode:oaep`:
+ * the content key is encrypted with RSA-OAEP instead of PKCS#1 v1.5 */
+const kOAEP = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaep@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/AYJKoZIhvcNAQcDoIIB7TCCAekCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBBzAABIIBAEAa1wWQ61WqVJl2Z87B
+WN/IwnnV1RrO7p9odFZ4aLe+EmEPLlys9qnP/Jx7bsFN1fMOY13VFZz+xg6xw5TG
+VbvQOuf5cpFmytoNak9LXQJA5tw/jxP0SlJhb+ARX8hmZ2NxVUNPBVgxgzKzNX16
+6y5BmOMnHoTPPxlcVjRt1/6rf/9l8fNt+3vrRbzlXJO1mwTGN2DNaEFxP+c652gu
+0HUTar2vrf3dca4YRj1iz2Qua4cUKd8xMTvlNf9GWsfWpD59dQLbH2usfAulo3H0
+6IbKwlnbBx0+cMRtjI0ow/+jn8WgkAKY3ZZz63LKz7khJSLSmXSfX7jw6zejNYji
+z0owfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQHpzfNJOdR+9vexUeW0BEboBQ
+aBrnnQ9HhHGEcMqjqjlS87kikTbSyy3HR479tEzVMHHfv8FQQp9el2DKypN8qIww
+DSoahJ89vm89/M6HMB2X2Rlx7UAXFmjvwJgIBDx/480=`;
+
+/** `openssl cms -encrypt -aes256 ... -recip ec.crt`, where `ec.crt` is an
+ * EC certificate: the sender then uses key agreement, not key transport.
+ * `openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256` */
+const kECDH = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted to an EC key
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-ecdh@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIBggYJKoZIhvcNAQcDoIIBczCCAW8CAQIxgeuhgegCAQOgUaFPMAkGByqGSM49
+AgEDQgAEDvN8iS2lkk5NBffdBBA2TFOh4oOyFrmPZuBsKHHWysczNW6Vkf47GFEz
+8x8TV5EKLo2qfeJO5gqvIv/8l1HE8zAYBgkrgQUQhkg/AAIwCwYJYIZIAWUDBAEt
+MHYwdDBIMDAxDTALBgNVBAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhh
+bXBsZS5jb20CFCrDSc8tdxKCmYU+ZU6DjBEiOTOzBCiKYMhaZ7u88Esj5yN7IMD2
+RzdNM/j29ibMdc79c1Iwtm5UbTXt6uo1MHwGCSqGSIb3DQEHATAdBglghkgBZQME
+ASoEELZRNmez5JQ3FWy++6q9JTKAUJuCIk93Mea2ePGVnVePWa744VxpkfzX9Oja
+wSRTDC7T1ij8Z94jF0Lueip0XOYXKwxD0IY0fnYcPNZgnNiAF9bhj17QmADGf49g
+f5OAMaBd`;
+
+/** `openssl cms -encrypt -keyid -aes256 ...`: the recipient is named by the
+ * subjectKeyIdentifier of the certificate, not by issuer and serial number */
+const kKeyIdentifier = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted by key identifier
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-keyid@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIByAYJKoZIhvcNAQcDoIIBuTCCAbUCAQIxggEwMIIBLAIBAoAUQyVTD7PKf3aR
+90Fj3Bpp2oQYh5cwDQYJKoZIhvcNAQEBBQAEggEAm3dcHXGfuSs7AJY6V3DllJmG
+c2bNY75AahsSXsmIG3G7b6Ll0SrJL+/0mKv7YxMA02F/H0e/pjiz2e+smxbyyzhl
+XxQUsAIjz8ZmxyjjwmA3udRZmkRwV8JNNADCxJlVSQUI2+OWIX7JlM19sTrzG6Iu
+Jr6UFoSmrcmQ9UYyb9Lu7891jkBvbyTdcvLkVoOR3whRJ1sC3L+yTwXIrum3Dh3a
+ZP8k4I/hYiSsHmcNpwduN+KVNlR7lFex69xhTeF2eAVBTTWJ3I9ceXkwLJ/urHhY
+xEUsq+M6twfxGBGHhmCR+rz2pqd8CrL1JLJEvd5Mkk+ngFL6PbuXpVsUhhmCjDB8
+BgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBAxdIlTvEfnQrSKea7ihQxzgFDk3W25
+fGVVagXm1xTBCsl4oCNjrKPK93GMEiBDztEktg3oIAuRn8WMJQ+tKOPTwAPoveL9
+HLxHAcbqU8yiKZB81KFOji2jLU6WIqdorSqPmQ==`;
+
+/** `openssl cms -encrypt -aes256 -in body.txt -outform SMIME -recip user.crt`,
+ * with the Content-Type replaced by the generic file type that Microsoft
+ * uses and that gateways rewrite to. MS-OXOSMIME section 2.2.1 */
+const kOctetStream = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted, delivered as a file
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-octet@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/octet-stream; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIIB/AYJKoZIhvcNAQcDoIIB7TCCAekCAQAxggFkMIIBYAIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MA0GCSqGSIb3DQEBAQUABIIBABA2+2E7Tdf+TWzwzy6i
+K3DOG35PkFxaLLOLWiXX0P/CcQis+pDNg5Ga2hb5O4orCGzg0D/XFsIYfDOGzUyg
+KMJPNLnQ2tnO3ObkWJ2DMHCuJkfLwA9i9pNTi6DSWsq0RhqqlTs01GlIq8gBfoj3
+d8wHwdvVURDpP2f9e5X3Ht8FOzA5N1LTNpjqq3TX9nQjU5VIFcSlEACtBz80FFnW
+50nTI8YgFqcmZ2Gl9tDDhcSJZVQt0TewqtpRsDNGc0IBPFnFvpdF3rHyrZelvaSW
+DNdHAPJQuCZuybECCZUKMaABQzGiwKhPvQTvpe2CfpiQPXi0wBf9IeaMXMxnN0bO
+REUwfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQLhZ9MZr1QUFEQ7ufBZWtN4BQ
+85DMorulmVpREDsUAoQyZqPsjQMs0aaAincZRr3Dwu4L0E3PX20k5wLaNmOG4XK3
+5Gllpx+qCxwIIr7h99iaHTy8LfqFSpdYbWcLbYYkUz4=`;
+
+/** As archivers mangle them: the headers say enveloped-data, but the
+ * content is the plain MIME message, here a `multipart/signed` from
+ * `openssl cms -sign -in part.txt -signer alice.crt -inkey alice.key
+ *   -outform SMIME -md sha256`, base64-encoded with CRLF */
+const kMislabelled = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Mangled by an archiver
+Date: Thu, 03 Sep 2026 06:45:06 +0000
+Message-ID: <enc-mislabelled@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+TUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogbXVsdGlwYXJ0L3NpZ25l
+ZDsgcHJvdG9jb2w9ImFwcGxpY2F0aW9uL3BrY3M3LXNpZ25hdHVyZSI7IG1pY2Fs
+Zz0ic2hhLTI1NiI7IGJvdW5kYXJ5PSItLS0tNkM5NDg0MDkxN0M3NEE1MjEyRTI2
+OEZGODc5ODNDODMiDQoNClRoaXMgaXMgYW4gUy9NSU1FIHNpZ25lZCBtZXNzYWdl
+DQoNCi0tLS0tLTZDOTQ4NDA5MTdDNzRBNTIxMkUyNjhGRjg3OTgzQzgzDQpDb250
+ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9dXRmLTgNCg0KSGVsbG8sIHRo
+aXMgaXMgc2lnbmVkLg0KDQotLS0tLS02Qzk0ODQwOTE3Qzc0QTUyMTJFMjY4RkY4
+Nzk4M0M4Mw0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9wa2NzNy1zaWduYXR1
+cmU7IG5hbWU9InNtaW1lLnA3cyINCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6
+IGJhc2U2NA0KQ29udGVudC1EaXNwb3NpdGlvbjogYXR0YWNobWVudDsgZmlsZW5h
+bWU9InNtaW1lLnA3cyINCg0KTUlJRit3WUpLb1pJaHZjTkFRY0NvSUlGN0RDQ0Jl
+Z0NBUUV4RFRBTEJnbGdoa2dCWlFNRUFnRXdDd1lKS29aSQ0KaHZjTkFRY0JvSUlE
+WnpDQ0EyTXdnZ0pMb0FNQ0FRSUNGQ1U5M2FBQVBMeFM2cDhYWGJaTjFEVWlETWpD
+TUEwRw0KQ1NxR1NJYjNEUUVCQ3dVQU1ESXhEakFNQmdOVkJBTU1CVUZzYVdObE1T
+QXdIZ1lKS29aSWh2Y05BUWtCRmhGaA0KYkdsalpVQmxlR0Z0Y0d4bExtTnZiVEFl
+RncweU5qQTVNRE13TmpNd01UUmFGdzB6TmpBNE16RXdOak13TVRSYQ0KTURJeERq
+QU1CZ05WQkFNTUJVRnNhV05sTVNBd0hnWUpLb1pJaHZjTkFRa0JGaEZoYkdsalpV
+QmxlR0Z0Y0d4bA0KTG1OdmJUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQ
+QURDQ0FRb0NnZ0VCQU15NFFMOC9RVmxvUlRjcg0KRERhOTQxOWdZMnMyRFN6cW1q
+S0pvdllxdDRodDJ6Y0E1TzgxSkRucDVYeU9ra01tOUFNVHZ0d05lenNUMWI5Sw0K
+K29OZ1ZSc1RTdTZGWWdZdFkwbHdQK3EvcDZXSTY1MzIvTUUzcHN2UXoyeDJxRk9l
+MCtyMkdOK3UxY0hVN0lQNQ0KeXhoaHhYUGpwcFJnTHo0YUNIMTEzc282OWtFM3VP
+cXdCQlZQYXIwMFp1N1l1aytIak13d1BUR2dLUlZaek9RdQ0KVS9FOCtTL2JFZExE
+NTFocjRRVTBJN0VxNnpUeG5ybUszWms2bjlMb2pQaXlqUCtYVTdTSkgyOVlUTjBH
+QlZUTw0KQURIV2grelEyWFlTMjRBS0ppdmEzME1ObkRkZW0zTGVmZzVXRy9DS2Fn
+S1FNK1k0bXdUTHdzbE5ZbVJGdG9mMQ0KRFdPU2pEY0NBd0VBQWFOeE1HOHdIUVlE
+VlIwT0JCWUVGQW54Rnh5MGJ3Z21wZ2JrdFl1OC9iNnoxcVJxTUI4Rw0KQTFVZEl3
+UVlNQmFBRkFueEZ4eTBid2dtcGdia3RZdTgvYjZ6MXFScU1BOEdBMVVkRXdFQi93
+UUZNQU1CQWY4dw0KSEFZRFZSMFJCQlV3RTRFUllXeHBZMlZBWlhoaGJYQnNaUzVq
+YjIwd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQg0KQUtUaVVwTnpSUlNVSjBSR0d3
+a2Z3RHlQdSs4V1NMR2ZkdEZZRS92bk9BYlRWaTAzUDRrYnNTSlFCZHBjcGNJKw0K
+cXpQa3JBeU1UaGFxeTNEajJyT2F6T2szWjkwZEZlVjNJZUxsZ0tkQlNtMHkydHU2
+aFVTS2gwYklSNnZMcC94RQ0KMkxvcmhnZUdEL1BNUVZIZkRtYmJ1UXlGUDZDSHoz
+UmhyQUR4bm1EeFRGM0FMdlhTMjRpWmY4UUY2T3ZCSWxUbw0KbmpOcnNjcTlzWUhD
+QmpuNWQvOVBDYm1lMlFRRFliMzVpeS9HV2JzeG5HZXk5UzVmVVUrY3FUU3hKL25J
+OVNzNA0KQURjTnNLNityV2ZmeDFjQllPNVN3SGEyOUIvdHFvS2VMT0JxbDNaM2tV
+Z2R4RUxGRGhwdmV4R1RHNXVaTFFkQQ0KWklzMDVDR0I1eGJjWVlQaS95VDZjeVl4
+Z2dKYU1JSUNWZ0lCQVRCS01ESXhEakFNQmdOVkJBTU1CVUZzYVdObA0KTVNBd0hn
+WUpLb1pJaHZjTkFRa0JGaEZoYkdsalpVQmxlR0Z0Y0d4bExtTnZiUUlVSlQzZG9B
+QTh2RkxxbnhkZA0KdGszVU5TSU15TUl3Q3dZSllJWklBV1VEQkFJQm9JSGtNQmdH
+Q1NxR1NJYjNEUUVKQXpFTEJna3Foa2lHOXcwQg0KQndFd0hBWUpLb1pJaHZjTkFR
+a0ZNUThYRFRJMk1Ea3dNekEyTkRVd05sb3dMd1lKS29aSWh2Y05BUWtFTVNJRQ0K
+SUZETnBKcTZmVmFWNS8wY3NxNkZMbkh4YjlwRHYzL2pDVlk2WkIzZG1SSzRNSGtH
+Q1NxR1NJYjNEUUVKRHpGcw0KTUdvd0N3WUpZSVpJQVdVREJBRXFNQXNHQ1dDR1NB
+RmxBd1FCRmpBTEJnbGdoa2dCWlFNRUFRSXdDZ1lJS29aSQ0KaHZjTkF3Y3dEZ1lJ
+S29aSWh2Y05Bd0lDQWdDQU1BMEdDQ3FHU0liM0RRTUNBZ0ZBTUFjR0JTc09Bd0lI
+TUEwRw0KQ0NxR1NJYjNEUU1DQWdFb01BMEdDU3FHU0liM0RRRUJBUVVBQklJQkFG
+c2VNRnBIQUNGaXNDR0hKRHE0UkJvag0KUE1oOG1hNVhybEV2OSt5ZzJpNGhMdVJk
+cityUHB5S0h3NzVnN0xzN29oekVqQ1NYTmFOUGhVNko0ZnJLZE04UA0KMkp1RVpk
+SXhvR2sxTFFWZEhGNjhHMCtYVE1WRWhPcmxFQnN6WjRQeXk3UEFTTkZ3VnFQL3Y5
+ZFd6dTA0blZoUQ0KUGRqK3Mya21FR1dwdHArVDFoU0FyWlo1aUJDVUlWYTRpcWll
+U1UxQXRpN3JTSkkvT0hvRXNqVStQdTV6bTVRRw0KQUJPTnBEOGUvNnVQQXFUVXhx
+bmptcGt6RHJNMjBIdEw0L21Sb04zTGtWVWZ6N2EwdkV2aVdVVkUwWllzWS9EZg0K
+bkVwaVYrWE5iSXlqVnhjcUNMQklOa1o0ZFNwdmE1T1F2NjdWb0JHclZ3UEZESHkv
+a0RPVVk4K3Q2cnRxOURzPQ0KDQotLS0tLS02Qzk0ODQwOTE3Qzc0QTUyMTJFMjY4
+RkY4Nzk4M0M4My0tDQoNCg==`;
+
+/** The content is an ASN.1 SEQUENCE, but not a CMS ContentInfo */
+const kNotCMS = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Not a CMS blob
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-notcms@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MAMCAQU=`;
+
+/** As `kOAEP`, but with `-keyopt rsa_oaep_md:sha256` */
+const kOAEPSHA256 = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP and SHA-256
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaep256@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIICJwYJKoZIhvcNAQcDoIICGDCCAhQCAQAxggGPMIIBiwIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MDgGCSqGSIb3DQEBBzAroA0wCwYJYIZIAWUDBAIBoRow
+GAYJKoZIhvcNAQEIMAsGCWCGSAFlAwQCAQSCAQB3zs6BjpmNbYsS9OTUeTvtm3pq
+WgTbIrMFzJaEJvAgBtPcwq1iKSZ0dazRPOxPvyGt31l5Xax79yPsn9QfGGWyQdgw
+HKgRHFcNyWE/bALly3tfIp50ZUEuoOeG2QaCWOR8CJUZ76WGQFKgZKTRCSb0p9TI
+6Ljwy3jcEOOjBTALL+iQIDMPgfUP8JeghNVUpFaZZV6wq4xB5UyXNz7HABz0twfZ
+zsD2hAuwPqLlTjoI0WL1amwvBokWPL/rck554g7WjwkMKNG79IRFDuynQQAqOPp8
+Z7xRZlYPVIaogqeq40wnqAfs92UBcmd5MsdaNOytzqMnoPn9ZD16RfoMIXJXMHwG
+CSqGSIb3DQEHATAdBglghkgBZQMEASoEELuPk9hIoNve/YWGQD6S+OCAUMaHwD4v
+gDlQdrYeLWUy/YZXYnXMiEPxqWSTgfaCVJ9dAgqjformP4grMxonMG1QQpfFYccF
+VFMbbjUkFXWCGUh4e6ceKHQzVn8/n04gRd8l`;
+
+/** As `kOAEP`, but with `-keyopt rsa_oaep_md:sha256 -keyopt rsa_mgf1_md:sha1`,
+ * which WebCrypto cannot do: it uses one hash for the digest and the mask */
+const kOAEPMixedHashes = `From: Alice <alice@example.com>
+To: User <user@example.com>
+Subject: Encrypted with RSA-OAEP and 2 hashes
+Date: Tue, 14 Jul 2026 10:00:00 +0000
+Message-ID: <enc-oaepmix@example.com>
+MIME-Version: 1.0
+Content-Disposition: attachment; filename="smime.p7m"
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Transfer-Encoding: base64
+
+MIICCwYJKoZIhvcNAQcDoIIB/DCCAfgCAQAxggFzMIIBbwIBADBIMDAxDTALBgNV
+BAMMBFVzZXIxHzAdBgkqhkiG9w0BCQEWEHVzZXJAZXhhbXBsZS5jb20CFDZ9lJ8R
+9Y552WBSOMXxoflDDLt3MBwGCSqGSIb3DQEBBzAPoA0wCwYJYIZIAWUDBAIBBIIB
+AKu2MkkXt3aad4BOfHEYA8FF9wS6mOV2bV95wJzNCHjc2v3kpvNUCaxnnD0Z00Gp
+kOvc1e0gABAy723+D3Yup5PjbVFaALjNnWaAb92Nf0dLad0egZznULeUgd5dIGdU
+sT0gxsdKBHPMdT349gK1DlqQU0oXBUcuRNhjX0i+sWBpEZ8ic+0MMNSkAWWyCjVP
+I+Ga7Hahv1TQYyx6ovwfeVoF/BpZ23zg/F7xhJtakccoQBsSrvSI/9/khg0gF19t
+7aShS+Hc/L+1NGsV/A3Cn81ropICoxIpTCvchHmJPzM/DbxBiBZYDG9Kan7Jp/Fb
+wM1P7/iE9uAS7ZuhVYXaA88wfAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQRxQ7
+TNLlehPPNu8+eZGzY4BQoFaD6JFl51+vbUjWxNzZM9UoarLm8IuY1d7/ZcZtSoDv
+oHIbzPGWb+TXMqpLR0nP2VEAr/dG9X/+CMmJSVonKKUrd3m/a16kI7xyezqjuWg=`;
