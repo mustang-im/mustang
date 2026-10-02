@@ -1,6 +1,6 @@
-<WebView url={purchagePageURL("inline-payment")} title="Payment" autoSize />
+<WebView url={License.purchasePageURL("inline-payment")} title="Payment" autoSize />
 
 <script lang="ts">
-  import { purchagePageURL } from "../../../../logic/util/LicenseClient";
+  import { License } from "../../../../logic/util/LicenseClient";
   import WebView from "../../../Shared/WebView.svelte";
 </script>

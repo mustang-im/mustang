@@ -103,7 +103,7 @@
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import type { Editor } from "@tiptap/core";
   import { appName, siteRoot } from "../../../../logic/build";
-  import { isLicensed } from "../../../../logic/util/LicenseClient";
+  import { license } from "../../../../logic/util/LicenseClient";
   import { catchErrors } from "../../../Util/error";
   import { checkInputField } from "../../../Util/util";
   import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -142,7 +142,7 @@
   }
 
   onMount(() => catchErrors(async () => {
-    showSentBy = !await isLicensed();
+    showSentBy = !await license.isLicensed();
   }));
 </script>
 

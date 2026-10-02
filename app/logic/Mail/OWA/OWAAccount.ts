@@ -26,7 +26,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
-import { ensureLicensed } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -176,7 +176,7 @@ export class OWAAccount extends ExchangeMailAccount {
         await this.mainAccount.login(interactive);
         return;
       }
-      await ensureLicensed();
+      await license.ensureLicensed();
       await super.login(interactive);
       await this.loginCommon(interactive);
       this.authorizationHeader = await appGlobal.remoteApp.OWA.getAnyScrapedAuth(this.partition);

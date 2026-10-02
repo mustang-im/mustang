@@ -4,18 +4,17 @@
   <hbox flex />
   <Button
     label={$t`Buy`}
-    onClick={() => openPurchasePage(paid => license = paid)}
+    onClick={() => license.openPurchasePage()}
     classes="filled"
     />
 </hbox>
 
 <script lang="ts">
-  import { Ticket, openPurchasePage } from "../../../../logic/util/LicenseClient";
+  import { license } from "../../../../logic/util/LicenseClient";
   import { appName } from "../../../../logic/build";
   import Button from "../../../Shared/Button.svelte";
   import { t } from "../../../../l10n/l10n";
 
-  export let license: Ticket;
   export let message: string = undefined;
 </script>
 
