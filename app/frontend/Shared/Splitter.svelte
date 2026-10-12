@@ -1,7 +1,8 @@
 {#if hasLeft && hasRight}
   <hbox class="splitter" bind:clientWidth={containerWidth}
     class:mobile={appGlobal.isMobile}>
-    <hbox class="left" bind:clientWidth={currentLeftWidth}>
+    <hbox class="left" bind:clientWidth={currentLeftWidth}
+      style="min-width: {leftMinWidth}px;">
       <ErrorBoundary>
         <slot name="left" />
       </ErrorBoundary>
@@ -13,7 +14,7 @@
     <hbox class="right" style={
       rightFixedWidth
       ? `width: ${rightFixedWidth};`
-      : `flex: ${rightRatio} 0 0;`
+      : `flex: ${rightRatio} 0 0; min-width: ${rightMinWidth}px;`
       }>
       <ErrorBoundary>
         <slot name="right" />
