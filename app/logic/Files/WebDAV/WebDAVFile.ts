@@ -32,7 +32,7 @@ export class WebDAVFile extends File {
     if (this.lastModOnServer?.getTime() == this.lastMod.getTime() &&
         (this.size != size || this.etag != etag ||
          this.lastModOnServer?.getTime() != lastMod.getTime())) {
-      this.deleteLocalCache()
+      this.deleteStaleLocalCache()
         .catch(this.account.errorCallback);
     }
     this.size = size;

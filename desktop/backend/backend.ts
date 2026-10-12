@@ -446,7 +446,10 @@ async function openExternalURL(url: string) {
 }
 
 async function openFileInNativeApp(filePath: string) {
-  await shell.openPath(filePath);
+  let error = await shell.openPath(filePath);
+  if (error) {
+    throw new Error(error);
+  }
 }
 
 class StartupArgs extends Observable {

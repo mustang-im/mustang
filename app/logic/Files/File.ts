@@ -8,6 +8,7 @@ import { RunOnce } from "../util/flow/RunOnce";
 import { notifyChangedProperty } from "../util/Observable";
 import { NotImplemented, UserError, assert, type URLString } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export class File extends FileOrDirectory {
@@ -35,6 +36,7 @@ export class File extends FileOrDirectory {
   protected readonly downloadRunOnce = new RunOnce<void>();
   protected readonly readFileRunOnce = new RunOnce<void>();
   protected readonly getURLRunOnce = new RunOnce<URLString | null>();
+  protected removingLocalFile: Promise<void> | null = null;
 
   /** If a File is GCed, the registered blob: URL is revoked automatically.
    * @see Abstract/Attachment. */
@@ -124,11 +126,18 @@ export class File extends FileOrDirectory {
 
   protected async saveAsLocalFile() {
     assert(this.contents, "Need contents");
+    await this.removingLocalFile;
     this.filepathLocal ??= await this.getLocalFilePath();
     let contents = new Uint8Array(await this.contents.arrayBuffer());
     await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
+    await this.setLocalFileLastMod();
     await this.saveLocally(); // file path as marker that we have the file on disk
     // TODO Watch local file for changes, in case user edited, and then trigger upload
+  }
+
+  protected async setLocalFileLastMod() {
+    let lastMod = this.lastMod.getTime() / 1000;
+    await appGlobal.remoteApp.fs.utimes(this.filepathLocal, lastMod, lastMod);
   }
 
   async getURL(): Promise<URLString | null> {
@@ -164,11 +173,47 @@ export class File extends FileOrDirectory {
   }
 
   async deleteLocalCache() {
-    this.clearURL();
-    if (this.filepathLocal) {
-      await appGlobal.remoteApp.deleteFile(this.filepathLocal);
-      this.filepathLocal = null; // the "on disk" marker, @see saveAsLocalFile()
+    let filepathLocal = this.forgetLocalCache();
+    if (filepathLocal) {
+      await appGlobal.remoteApp.deleteFile(filepathLocal);
     }
+  }
+
+  async deleteStaleLocalCache() {
+    let lastMod = this.lastMod;
+    let filepathLocal = this.forgetLocalCache();
+    if (!filepathLocal) {
+      return;
+    }
+    this.removingLocalFile = this.deleteOrRenameLocalFile(filepathLocal, lastMod);
+    if (!await this.removingLocalFile) {
+      return;
+    }
+    await conflictedCopy.upload();
+    this.parent.files.add(conflictedCopy);
+    await conflictedCopy.setLocalFileLastMod();
+    await conflictedCopy.saveLocally();
+  }
+
+  protected async deleteOrRenameLocalFile(filepathLocal: string, lastMod: Date): Promise<File | null> {
+    let stat = await appGlobal.remoteApp.statFile(filepathLocal);
+    if (Math.abs(stat.lastMod.getTime() - lastMod.getTime()) < 2000) {
+      await appGlobal.remoteApp.deleteFile(filepathLocal);
+      return null;
+    }
+    let conflictedCopy = this.parent.newFile(conflictedCopyName(this, stat.lastMod));
+    conflictedCopy.filepathLocal = await conflictedCopy.getLocalFilePath();
+    await appGlobal.remoteApp.fs.rename(filepathLocal, conflictedCopy.filepathLocal);
+    return conflictedCopy;
+  }
+
+  protected forgetLocalCache(): string | null {
+    this.clearURL();
+    this.contents = null;
+    this.executable = undefined;
+    let filepathLocal = this.filepathLocal;
+    this.filepathLocal = null; // the "on disk" marker, @see saveAsLocalFile()
+    return filepathLocal;
   }
 
   async deleteLocally() {
@@ -245,3 +290,11 @@ export class File extends FileOrDirectory {
 }
 
 let filesDir: string = null;
+
+function conflictedCopyName(file: File, time: Date): string {
+  let pad = (num: number) => String(num).padStart(2, "0");
+  let timestamp = `${time.getFullYear()}-${pad(time.getMonth() + 1)}-${pad(time.getDate())} ` +
+    `${pad(time.getHours())}-${pad(time.getMinutes())}-${pad(time.getSeconds())}`;
+  let ext = file.ext ? "." + file.ext : "";
+  return `${file.nameWithoutExt} (${gt`conflicted copy`} ${timestamp})${ext}`;
+}
