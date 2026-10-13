@@ -193,7 +193,11 @@ export class SMIMESend {
       contentHeaders.unshift("Content-Type: text/plain");
     }
     return {
-      content: [...contentHeaders, "", body].join(kLineBreak),
+      content: [
+        ...contentHeaders,
+        "",
+        body,
+      ].join(kLineBreak),
       otherHeaders,
     };
   }
