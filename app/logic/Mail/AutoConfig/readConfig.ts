@@ -14,6 +14,7 @@ import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileS
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
 import { SetupInfo } from "./SetupInfo";
+import { PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import { OWAAccount } from "../OWA/OWAAccount";
 import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
 import { OWAAuth } from "../../Auth/OWAAuth";
@@ -42,9 +43,14 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   let user = fullXML.user ?? {};
   let realName = sanitize.label(user.realName, null);
   let emailAddress = sanitize.emailAddress(user.emailAddress, null);
-  let delegatedAccounts = ensureArray(user.$delegatedAccount)
-    .map(delegate => sanitize.emailAddress(delegate, null))
-    .filter(Boolean);
+  let delegatedAccounts: PersonUID[] = [];
+  for (let delegate of ensureArray(user.$delegatedAccount)) {
+    let delegateEmailAddress = sanitize.emailAddress(delegate?.emailAddress, null);
+    if (delegateEmailAddress) {
+      let delegateName = sanitize.label(delegate.realName, nameFromEmailAddress(delegateEmailAddress));
+      delegatedAccounts.push(new PersonUID(delegateEmailAddress, delegateName));
+    }
+  }
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;

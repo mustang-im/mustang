@@ -39,11 +39,25 @@ test("useraccount.xml: <delegatedAccount> in <user>", () => {
     <user>
       <emailAddress>fred.flintstone@example.com</emailAddress>
       <realName>Fred Flintstone</realName>
-      <delegatedAccount>Barney.Rubble@example.com</delegatedAccount>
-      <delegatedAccount>not an email address</delegatedAccount>
-      <delegatedAccount>team@example.com</delegatedAccount>
+      <delegatedAccount>
+        <emailAddress>Barney.Rubble@example.com</emailAddress>
+        <realName>Barney Rubble</realName>
+      </delegatedAccount>
+      <delegatedAccount>
+        <emailAddress>not an email address</emailAddress>
+        <realName>Invalid</realName>
+      </delegatedAccount>
+      <delegatedAccount>barney.rubble@example.com</delegatedAccount>
+      <delegatedAccount>
+        <emailAddress>team@example.com</emailAddress>
+      </delegatedAccount>
     </user>`), null, "harddisk").first;
-  expect(config.setup.delegatedAccounts).toEqual(["barney.rubble@example.com", "team@example.com"]);
+  let delegates = config.setup.delegatedAccounts;
+  // Invalid email address and the email address without <emailAddress> are skipped
+  expect(delegates.map(person => person.emailAddress)).toEqual(["barney.rubble@example.com", "team@example.com"]);
+  expect(delegates[0].name).toBe("Barney Rubble");
+  // Without <realName>, the name is derived from the email address
+  expect(delegates[1].name).toBe("Team");
 
   config = readConfigFromXML(userAccountXML(`
     <user>

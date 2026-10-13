@@ -1,7 +1,7 @@
 import { MailAccount } from "../MailAccount";
 import { ContactEntry } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import { PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
+import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import type { Account } from "../../Abstract/Account";
 import { Calendar } from "../../Calendar/Calendar";
 import { Addressbook } from "../../Contacts/Addressbook";
@@ -137,9 +137,9 @@ export async function addDelegates(config: MailAccount) {
   if (!config.setup?.delegatedAccounts?.length) {
     return;
   }
-  for (let emailAddress of config.setup?.delegatedAccounts) {
+  for (let person of config.setup.delegatedAccounts) {
     try {
-      await config.addDelegate(new PersonUID(emailAddress, nameFromEmailAddress(emailAddress)));
+      await config.addDelegate(person);
     } catch (ex) {
       backgroundError(ex);
     }

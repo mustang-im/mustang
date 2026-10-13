@@ -3,6 +3,7 @@ import type { Addressbook } from "../../Contacts/Addressbook";
 import type { FileSharingAccount } from "../../Files/FileSharingAccount";
 import type { ChatAccount } from "../../Chat/ChatAccount";
 import type { MeetAccount } from "../../Meet/MeetAccount";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import type { URLString } from "../../util/util";
 
 /** Only for setup. Additional info about an account or related accounts. */
@@ -12,8 +13,8 @@ export class SetupInfo {
   fileShare: FileSharingAccount;
   chat: ChatAccount;
   meet: MeetAccount;
-  /** Email addresses of colleagues' accounts to add after the login, like in Settings | Sharing */
-  delegatedAccounts: string[] = [];
+  /** Colleagues whose accounts to add after the login, like in Settings | Sharing */
+  delegatedAccounts: PersonUID[] = [];
   /** We know a config, but the user needs to do some manual steps for this ISP */
   instructions: SetupInstruction[] | null = null;
 }

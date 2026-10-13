@@ -27,16 +27,19 @@ test("Setup refuses an empty email address", async () => {
 test("Setup adds the delegated accounts, even when one fails", async () => {
   let config = new MailAccount();
   config.setup = new SetupInfo();
-  config.setup.delegatedAccounts = ["fails@example.com", "barney.rubble@example.com"];
+  config.setup.delegatedAccounts = [
+    new PersonUID("fails@example.com", "Fails"),
+    new PersonUID("barney.rubble@example.com", "Barney Rubble"),
+  ];
   let tried: string[] = [];
   config.addDelegate = async (person: PersonUID) => {
-    tried.push(person.emailAddress);
+    tried.push(`${person.name} <${person.emailAddress}>`);
     if (person.emailAddress == "fails@example.com") {
       throw new UserError("No access");
     }
   };
   await addDelegates(config);
-  expect(tried).toEqual(["fails@example.com", "barney.rubble@example.com"]);
+  expect(tried).toEqual(["Fails <fails@example.com>", "Barney Rubble <barney.rubble@example.com>"]);
 });
 
 test("A protocol without delegated accounts says so", async () => {

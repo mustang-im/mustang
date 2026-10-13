@@ -19,7 +19,10 @@ import { assert } from "../../util/util";
  *   <user>
  *     <emailAddress>fred.flintstone@example.com</emailAddress>
  *     <realName>Fred Flintstone</realName>
- *     <delegatedAccount>barney.rubble@example.com</delegatedAccount>
+ *     <delegatedAccount>
+ *       <emailAddress>barney.rubble@example.com</emailAddress>
+ *       <realName>Barney Rubble</realName>
+ *     </delegatedAccount>
  *   </user>
  *   <emailProvider id="example.com">…</emailProvider>
  * </clientConfig>
