@@ -260,6 +260,7 @@ export function toRFC822DateString(date: Date) {
     " +0000";
 }
 
+/** @param keys the header names that should be copied. All other headers are not copied. */
 function copyHeaders(headers: HeaderLine[], keys: string[]): string[] {
   return headers.filter(header => keys.includes(header.key)).map(header => header.line);
 }
