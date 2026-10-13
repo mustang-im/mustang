@@ -111,26 +111,25 @@ export class PGPSend {
       encryptedMessage,
       ``,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
   }
 
   /**
-   * Wraps the message in a `multipart/mixed; protected-headers="v1"` and
-   * moves the `Subject` and other headers into that part, so that they are
-   * encrypted.
+   * Wraps the message in a `multipart/mixed; protected-headers="v1"` and moves the
+   * `Subject` and other headers into that part, so that they are encrypted.
    * <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
    */
   static protectHeaders(mime: string): string {
-    let split = mime.indexOf("\r\n\r\n");
-    let body = split >= 0 ? mime.slice(split + 4) : "";
-    let headerBlock = split >= 0 ? mime.slice(0, split) : mime;
+    let splitPos = mime.indexOf(kLineBreak + kLineBreak);
+    let body = splitPos >= 0 ? mime.slice(splitPos + 4) : "";
+    let headerBlock = splitPos >= 0 ? mime.slice(0, splitPos) : mime;
 
     // Unfold continuation lines (starting with space or tab)
     let headers: string[] = [];
-    for (let line of headerBlock.split("\r\n")) {
+    for (let line of headerBlock.split(kLineBreak)) {
       if (/^[ \t]/.test(line) && headers.length) {
-        headers[headers.length - 1] += "\r\n" + line;
+        headers[headers.length - 1] += kLineBreak + line;
       } else {
         headers.push(line);
       }
@@ -161,7 +160,7 @@ export class PGPSend {
       body.replace(/(\r\n)+$/, ""),
       `--${boundary}--`,
       ``,
-    ].join('\r\n');
+    ].join(kLineBreak);
   }
 
   static createMIMEForSignedDetached(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
@@ -179,10 +178,10 @@ export class PGPSend {
       `Content-Type: application/pgp-signature; name="signature.asc"`,
       `Content-Disposition: inline; filename="signature.asc"`,
       ``,
-      signature.replaceAll("\n", "\r\n"),
+      signature.replaceAll("\n", kLineBreak),
       ``,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
   }
 
@@ -190,7 +189,7 @@ export class PGPSend {
     // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
 
     // need to add `hp=clean` *sigh*
-    let msgLines = message.split("\r\n");
+    let msgLines = message.split(kLineBreak);
     for (let i = 0; i < msgLines.length; i++) {
       let msgLine = msgLines[i];
       if (msgLine.startsWith("Content-Type: ")) {
@@ -214,7 +213,7 @@ export class PGPSend {
       ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
       ...msgLines,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
   }
 
@@ -286,3 +285,5 @@ export function toRFC822DateString(date: Date) {
     }) +
     " +0000";
 }
+
+const kLineBreak = "\r\n";
